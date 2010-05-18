@@ -1,0 +1,338 @@
+#!/bin/sh
+# nfsroot and tftp preparation for network boot on target hardware
+#
+# Copyright (C) 2006-2007 OpenedHand Ltd.
+# Copyright (C) 2010 Intel Corporation
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+#TODO: handle initramfs
+
+me=`basename $0`
+verbose=0
+gpxe=0
+pxelinux=0
+nfs_pre_umount=1
+
+nfsroot=/srv/nfs/rootfs
+nfs_opts="rw,fsid=0,no_root_squash,no_subtree_check"
+iface=eth0
+ipstring=":::::eth0:dhcp"
+extra_kernel_cmdline=
+
+gpxe_default_name=boot.gpxe
+pxelinux_default_name=pxelinux.cfg/default
+
+
+
+if [ "x$BUILDDIR" = "x" ]; then
+    echo "You need to source poky-init-build-env before running this script"
+    exit 1
+fi
+
+function shorthelp {
+    cat >&2 <<EOF
+Type \`$me' --help' for more information.
+EOF
+}
+
+function usage {
+    cat >&2 << EOF
+Usage:
+   $me [options] [--] machine
+
+Copy kernel image to tftp, mount and export nfsroot for
+poky images, can also generate scripts for booting with
+gpxe and pxelinux
+
+Options:
+   -h, --help                  print this message
+
+   -b, --tftpboot=DIR          tftp directory [/srv/tftp or /var/lib/tftpboot]
+   -t, --kernel-type=TYPE      kernel image type [zImage or bzImage]
+   -k, --kernel-image=FILE     kernel image location [auto]
+
+   -n, --nfsroot=DIR           nfsroot mount point [/srv/nfs/rootfs]
+       --nfs-no-umount         do not try to umount before mount nfsroot
+   -o, --nfs-options=OPTs      nfs mount options [rw,fsid=0,no_root_squash,no_subtree_check]
+   -r, --rootfs-image=FILE     rootfs image location [auto]
+
+   -g, --gpxe                  generate gpxe script
+       --gpxe-script=FILE      gpxe script name [<TFTPBOOT>/boot.gpxe]
+   -l, --pxelinux              generate pxelinux config script
+       --pxelinux-script=FILE  pxelinux config script name [<TFTPBOOT>/pxelinux.cfg/default]
+
+   -i, --interface=IFACE       host interface used for nfsroot [eth0]
+   -s, --ip-string=STRING      ip= in kernel command line [::::eth0:dhcp]
+
+   -v, --verbose               be verbose
+
+Available machines:
+   qemux86 qemuarm netbook spitz borzoi akita nokia800
+
+EOF
+}
+
+function findimage {
+    T=$BUILDDIR/tmp/deploy/images
+    extension=$1
+    for name in $2; do
+	fullname=$T/$name-$machine.$extension
+        if [ -e "$fullname" ]; then
+            rootfs_image=$fullname
+            return
+        fi
+    done
+    echo "couldn't find rootfs image in $T. Attempted image names were:" >&2
+    for name in $2;
+    do
+        echo $name-$machine.$extension >&2
+    done
+    exit 1
+}
+
+function guess_rootfs {
+    case $machine in
+        qemux86 | netbook)
+            findimage ext3 "moblin-image-sdk moblin-image-netbook poky-image-sdk \
+                            poky-image-sato poky-image-minimal"
+            ;;
+        qemuarm | spitz)
+            findimage ext3 "poky-image-sdk poky-image-sato poky-image-minimal"
+            ;;
+        akita | nokia800)
+            findimage jffs2 "poky-image-sdk poky-image-sato poky-image-minimal"
+            ;;
+    esac
+
+    # delink the rootfs to minimize impact of rebuild
+    if [ -h $rootfs_image ]; then
+        rootfs_image=`readlink -fn $rootfs_image`
+    fi
+}
+
+function set_default {
+    # dir for TFTPD: /srv/tftp or /var/lib/tftpboot
+    if [ "x$tftpdir" = "x" ]; then
+        if [ -d /srv/tftp ]; then
+            tftpdir=/srv/tftp
+        elif [ -d /var/lib/tftpboot ]; then
+            tftpdir=/var/lib/tftpboot
+        fi
+    fi
+
+    # kernel image location
+    if [ "x$kernel_type" = "x" ]; then
+        case $machine in
+            qemux86 | netbook)
+                kernel_type=bzImage ;;
+            qemuarm | spitz | borzoi | akita | nokia800)
+                kernel_type=zImage ;;
+            *)
+                echo "unknown machine time, assume zImage" >&2
+                kernel_type=zImage ;;
+        esac
+    fi
+
+    if [ "x$kernel_image" = "x" ]; then
+        kernel_image=$BUILDDIR/tmp/deploy/images/$kernel_type-$machine.bin
+    fi
+
+    if [ "x$rootfs_image" = "x" ]; then
+        guess_rootfs
+    fi
+
+    if [ "x$gpxe_script" = "x" ]; then
+        gpxe_script=$tftpdir/$gpxe_default_name
+    fi
+    if [ "x$pxelinux_script" = "x" ]; then
+        pxelinux_script=$tftpdir/$pxelinux_default_name
+    fi
+}
+
+function check_sanity {
+    if [ "x$tftpdir" = "x" ]; then
+        echo "no tftp directory is found" >&2
+        exit 1
+    fi
+    if [ ! -d "$tftpdir" ]; then
+        echo "tftp directory \`$tftpdir' not found" >&2
+        exit 1
+    fi
+
+    if [ ! -d "$nfsroot" ]; then
+        echo "nfsroot mount point \`$nfsroot' not found" >&2
+        exit 1
+    fi
+
+    if [ ! -e "$kernel_image" ]; then
+        echo "kernel image \`$kernel_image' not found" >&2
+        exit 1
+    fi
+    if [ ! -e "$rootfs_image" ]; then
+        echo "rootfs image \`$rootfs_image' not found" >&2
+        exit 1
+    fi
+}
+
+
+while [ $# -gt 0 ]; do
+    opt=$1
+    optarg=
+    case $opt in
+        --*=*)
+            optarg=`echo "$1" | sed -e 's/^[^=]*=\(.*\)$/\1/'`
+            ;;
+        --*)
+            ;;
+        -[btknoris])
+            optarg=$2
+            shift ;;
+    esac
+
+    shift
+    case $opt in
+        --help | -h)
+            usage ; exit 0 ;;
+        --tftpboot=* | -b)
+            tftpdir=$optarg ;;
+        --kernel-type=* | -t)
+            kernel_type=$optarg ;;
+        --kernel-image=* | -k)
+            kernel_image=$optarg ;;
+        --nfsroot=* | -n)
+            nfsroot=$optarg ;;
+        --nfs-no-umount)
+            nfs_pre_umount=0 ;;
+        --nfs-options=* | -o)
+            nfs_opts=$optarg ;;
+        --rootfs-image=* | -r)
+            rootfs_image=$optarg ;;
+        --interface=* | -i)
+            iface=$optarg ;;
+        --ip-string=* | -s)
+            ipstring=$optarg ;;
+        --gpxe | -g)
+            gpxe=1 ;;
+        --gpxe-script=*)
+            gpxe_script=$optarg ;;
+        --pxelinux | -l)
+            pxelinux=1 ;;
+        --pxelinux-script=*)
+            pxelinux_script=$optarg ;;
+        --verbose | -v)
+            verbose=1 ;;
+        --)
+            break ;;
+        -*)
+            echo "error: invalid option '$opt'" >&2
+            shorthelp; exit 1 ;;
+        *)
+            if [ "x$machine" = "x" ]; then
+                machine=$opt
+            else
+                echo "error: extra operand" >&2
+                shorthelp; exit 1
+            fi
+            ;;
+    esac
+done
+if [ "x$machine" = "x" ]; then
+    if [ "x$1" != "x" ]; then
+        machine=$1; shift
+    else
+        echo "error: no machine specified" >&2
+        shorthelp; exit 1
+    fi
+fi
+if [ "x$1" != "x" ]; then
+    echo "error: extra operand" >&2
+    shorthelp; exit 1
+fi
+
+
+if [ $verbose -ne 0 ]; then
+    exec 3>&1
+else
+    exec 3> /dev/null
+fi
+
+set_default
+check_sanity
+
+function fail {
+    echo "$1 failed" >&2
+    exit 1
+}
+
+
+echo "using kernel file: $kernel_image" >&3
+echo "using rootfs file: $rootfs_image" >&3
+
+# default installation use root for tftpboot
+# it's very like the user don't have write permission
+# so test if it's writable and use sudo if necessary
+
+tftp_sudo=
+if [ ! -w "$tftpdir" ]; then
+    tftp_sudo=sudo
+    if [ $verbose -ne 0 ]; then
+        echo "\`tftpdir' not writable, assume sudo" >&3
+    fi
+fi
+
+
+echo "copying \`$kernel_image' to \`$tftpdir'..." >&3
+$tftp_sudo cp -f "$kernel_image" "$tftpdir" || fail "copying kernel image"
+
+echo "unexporting \`*:$nfsroot'..." >&3
+sudo exportfs -uv "*:$nfsroot" || fail "unexporting rootfs"
+if [ $nfs_pre_umount -ne 0 ]; then
+    echo "unmonting \`$nfsroot'..." >&3
+    sudo umount "$nfsroot"
+fi
+
+echo "mounting \`$rootfs_image' to \`$nfsroot'..." >&3
+sudo mount -o loop "$rootfs_image" "$nfsroot" || fail "mounting rootfs"
+echo "exporting \`*:$nfsroot'..." >&3
+sudo exportfs -iv "*:$nfsroot" -o "$nfs_opts" || fail "exporting rootfs"
+
+
+# generate boot.gpxe and pxelinux.cfg/default
+
+ipaddr=`/sbin/ifconfig $iface | grep 'inet addr' | sed -e 's/^.*addr:\([0-9.]*\).*$/\1/'`
+kernel_uri="tftp://$ipaddr/`basename $kernel_image`"
+kernel_cmdline="rw root=/dev/nfs nfsroot=$ipaddr:$nfsroot/ ip=$ipstring $extra_kernel_cmdline"
+
+echo "kernel uri is: $kernel_uri"
+echo "kernel command line is: $kernel_cmdline"
+
+if [ $gpxe -ne 0 ]; then
+    echo "generating \`$gpxe_script'..." >&3
+    $tftp_sudo cat > $gpxe_script <<EOF
+#!gpxe
+kernel ${kernel_uri} ${kernel_cmdline}
+boot
+EOF
+fi
+
+if [ $pxelinux -ne 0 ]; then
+    echo "generating \`$pxelinux_script'..." >&3
+    $tftp_sudo cat > $pxelinux_script <<EOF
+kernel ${kernel_uri}
+append  ${kernel_cmdline}
+EOF
+fi
+
+exec 3>&-
