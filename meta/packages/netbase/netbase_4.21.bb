@@ -17,7 +17,8 @@ INITSCRIPT_PARAMS_slugos = "start 42 S 0 6 ."
 SRC_URI = "${DEBIAN_MIRROR}/main/n/netbase/netbase_${PV}.tar.gz \
            file://init \
            file://hosts \
-           file://interfaces"
+           file://interfaces \
+           file://nfsroot"
 
 do_install () {
 	install -d ${D}${sysconfdir}/init.d \
@@ -35,6 +36,7 @@ do_install () {
 	install -m 0755 update-inetd ${D}${sbindir}/
 	install -m 0644 update-inetd.8 ${D}${mandir}/man8/
 	install -m 0644 ${WORKDIR}/interfaces ${D}${sysconfdir}/network/interfaces
+	install -m 0755 ${WORKDIR}/nfsroot ${D}${sysconfdir}/network/if-pre-up.d
 
 	# Disable network manager on machines that commonly do NFS booting
 	case "${MACHINE}" in
