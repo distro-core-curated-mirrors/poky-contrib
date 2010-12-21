@@ -82,3 +82,9 @@ def get_parsed_dict():
     shortcut
     """
     return _parsed_methods
+
+def get_parsed_fns():
+    """
+    used by environment restruct
+    """
+    return _parsed_fns

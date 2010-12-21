@@ -138,7 +138,7 @@ class MethodNode:
 
 class PythonMethodNode(AstNode):
     def __init__(self, funcname, root, body, fn):
-        self.func_name = funcname
+        self.func_name = re.sub('_', '-', funcname)
         self.root = root
         self.body = body
         self.fn = fn
