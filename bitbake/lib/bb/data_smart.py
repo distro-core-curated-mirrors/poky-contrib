@@ -32,6 +32,13 @@ import copy, re, sys
 import bb
 from bb   import utils
 from bb.COW  import COWDictBase
+import socket
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+    bb.msg.note(1, bb.msg.domain.Cache, "Importing cPickle failed. Falling back to a very slow implementation.")
 
 
 __setvar_keyword__ = ["_append", "_prepend"]
@@ -188,6 +195,12 @@ class DataSmart:
         while dest:
             if var in dest:
                 return dest[var]
+
+            if "_remote_data" in dest:
+                s = dest["_remote_data"]["content"]
+                s.send(var)
+                l = int(s.recv(4), 16)
+                return pickle.loads(s.recv(l, socket.MSG_WAITALL))
 
             if "_data" not in dest:
                 break
@@ -351,8 +364,18 @@ class DataSmart:
                 _keys(d["_data"], mykey)
 
             for key in d.keys():
-                if key != "_data":
+                if key != "_data" and key != "_remote_data":
                     mykey[key] = None
+
+            if "_remote_data" in d:
+                s = d["_remote_data"]["content"]
+                s.send("_cmd_keys")
+                l = int(s.recv(4), 16)
+                rk = pickle.loads(s.recv(l, socket.MSG_WAITALL))
+                for key in rk:
+                    if key != "_data":
+                        mykey[key] = None
+
         keytab = {}
         _keys(self.dict, keytab)
         return keytab.keys()
