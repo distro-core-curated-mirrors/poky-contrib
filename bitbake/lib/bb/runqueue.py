@@ -24,7 +24,7 @@ Handles preparation and execution of a queue of tasks
 
 import bb, os, sys
 import subprocess
-from bb import msg, data, event
+from bb import msg, data, event, parse
 import signal
 import stat
 import fcntl
@@ -1007,6 +1007,8 @@ class RunQueueExecute:
         self.build_pids = {}
         self.build_pipes = {}
         self.build_procs = {}
+        self.build_sockpids = {}
+        self.build_sockfiles = {}
         self.failed_fnids = []
 
     def runqueue_process_waitpid(self):
@@ -1019,10 +1021,16 @@ class RunQueueExecute:
             proc.poll()
             if proc.returncode is not None:
                 task = self.build_pids[pid]
+                sockfile = self.build_sockfiles[pid]
+                sockpid = self.build_sockpids[pid]
+                os.waitpid(sockpid, 0)
+                os.unlink(sockfile)
                 del self.build_pids[pid]
                 self.build_pipes[pid].close()
                 del self.build_pipes[pid]
                 del self.build_procs[pid]
+                del self.build_sockpids[pid]
+                del self.build_sockfiles[pid]
                 if proc.returncode != 0:
                     self.task_fail(task, proc.returncode)
                 else:
@@ -1058,9 +1066,51 @@ class RunQueueExecute:
         return
 
     def fork_off_task(self, fn, task, taskname):
-        try:
-            the_data = self.cooker.bb_cache.loadDataFull(fn, self.cooker.get_file_appends(fn), self.cooker.configuration.data)
+        the_data = self.cooker.bb_cache.loadDataFull(fn, self.cooker.get_file_appends(fn), self.cooker.configuration.data)
 
+        sockfile = os.tempnam("/tmp", "sock-")
+        sockpid = os.fork()
+        if sockpid == 0:
+            import socket
+
+            try:
+                #si = file("/dev/null", 'r')
+                #os.dup2(si.fileno( ), sys.stdin.fileno( ))
+                #so = file("/dev/null", 'w')
+                #os.dup2(so.fileno( ), sys.stdout.fileno( ))
+                #os.dup2(so.fileno( ), sys.stderr.fileno( ))
+
+                os.setpgrp()
+                signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+                signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+                bb.event.worker_pid = 0
+
+                s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                s.bind(sockfile)
+                s.listen(1)
+                conn, _ = s.accept()
+
+                while 1:
+                    k = conn.recv(1024)
+                    if k == "_cmd_end":
+                        conn.flush()
+                        conn.close()
+                        os._exit(os.EX_OK)
+                    elif k == "_cmd_parsed_fns":
+                        dump = pickle.dumps(bb.methodpool.get_parsed_fns())
+                    elif k == "_cmd_keys":
+                        dump = pickle.dumps(the_data.keys())
+                    else:
+                        dump = pickle.dumps(the_data._findVar(k))
+
+                    conn.send("%04x" % len(dump))
+                    conn.sendall(dump)
+            except:
+                pass
+            os._exit(os.EX_OK)
+
+        try:
             env = bb.data.export_vars(the_data)
             env = bb.data.export_envvars(env, the_data)
 
@@ -1082,14 +1132,14 @@ class RunQueueExecute:
             sys.stderr.flush()
 
             runtask = the_data.getVar("BB_RUNTASK", True) or "bitbake-runtask"
-            proc = subprocess.Popen([runtask, self.rqdata.hashfile, fn, taskname, str(self.cooker.configuration.dry_run)], env=env, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+            proc = subprocess.Popen([runtask, self.rqdata.hashfile, fn, taskname, str(self.cooker.configuration.dry_run), sockfile], env=env, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
             pipein = proc.stdout
             pipeout = proc.stdin
             pid = proc.pid
         except OSError as e: 
             bb.msg.fatal(bb.msg.domain.RunQueue, "fork failed: %d (%s)" % (e.errno, e.strerror))
 
-        return proc
+        return proc, sockpid, sockfile
 
 class RunQueueExecuteDummy(RunQueueExecute):
     def __init__(self, rq):
@@ -1234,11 +1284,13 @@ class RunQueueExecuteTasks(RunQueueExecute):
                                                                 task,
                                                                 self.rqdata.get_user_idstring(task)))
 
-            proc = self.fork_off_task(fn, task, taskname)
+            proc, sockpid, sockfile = self.fork_off_task(fn, task, taskname)
 
             self.build_pids[proc.pid] = task
             self.build_procs[proc.pid] = proc
             self.build_pipes[proc.pid] = runQueuePipe(proc.stdout, proc.stdin, self.cfgData)
+            self.build_sockpids[proc.pid] = sockpid
+            self.build_sockfiles[proc.pid] = sockfile
             self.runq_running[task] = 1
             self.stats.taskActive()
             if self.stats.active < self.number_tasks:
@@ -1476,11 +1528,13 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
                         "Running setscene task %d of %d (%s:%s)" % (self.stats.completed + self.stats.active + self.stats.failed + 1,
                                                                          self.stats.total, fn, taskname))
 
-            proc = self.fork_off_task(fn, realtask, taskname)
+            proc, sockpid, sockfile = self.fork_off_task(fn, realtask, taskname)
 
             self.build_pids[proc.pid] = task
             self.build_procs[proc.pid] = proc
             self.build_pipes[proc.pid] = runQueuePipe(proc.stdout, proc.stdin, self.cfgData)
+            self.build_sockpids[proc.pid] = sockpid
+            self.build_sockfiles[proc.pid] = sockfile
             self.runq_running[task] = 1
             self.stats.taskActive()
             if self.stats.active < self.number_tasks:

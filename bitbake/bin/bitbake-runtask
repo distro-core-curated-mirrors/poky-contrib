@@ -3,6 +3,7 @@
 import os
 import sys
 import warnings
+import re
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.argv[0])), 'lib'))
 
 try:
@@ -71,8 +72,7 @@ bb.event.useStdout = False
 hashfile = sys.argv[1]
 buildfile = sys.argv[2]
 taskname = sys.argv[3]
-
-import bb.cooker
+socketname = sys.argv[5] or None
 
 p = pickle.Unpickler(file(hashfile, "rb"))
 hashdata = p.load()
@@ -83,25 +83,68 @@ verbose = hashdata["verbose"]
 
 bb.utils.init_logger(bb.msg, verbose, debug, debug_domains)
 
-cooker = bb.cooker.BBCooker(BBConfiguration(debug, debug_domains), None)
-cooker.parseConfiguration()
+if socketname:
+    import bb, bb.data, bb.parse, socket
+    import time
 
-cooker.bb_cache = bb.cache.init(cooker)
-cooker.status = bb.cache.CacheData()
+    fn = buildfile
 
-(fn, cls) = cooker.bb_cache.virtualfn2realfn(buildfile)
-buildfile = cooker.matchFile(fn)
-fn = cooker.bb_cache.realfn2virtual(buildfile, cls)
+    configuration = BBConfiguration(debug, debug_domains)
 
-cooker.buildSetVars()
+    try:
+        the_data = bb.data.init()
+        datasock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        datasock.connect(socketname)
+        bb.data.setVar("_remote_data", datasock, the_data)
+    except:
+        socketname = ""
 
-# Load data into the cache for fn and parse the loaded cache data
-the_data = cooker.bb_cache.loadDataFull(fn, cooker.get_file_appends(fn), cooker.configuration.data)
-cooker.bb_cache.setData(fn, buildfile, the_data)
-cooker.bb_cache.handle_data(fn, cooker.status)
+if socketname:
+    bb.codeparser.parser_cache_init(the_data)
+    bb.parse.init_parser(the_data, configuration.dump_signatures)
 
-#exportlist = bb.utils.preserved_envvars_export_list()
-#bb.utils.filter_environment(exportlist)
+    datasock.send("_cmd_parsed_fns")
+    l = int(datasock.recv(4), 16)
+    parsed = pickle.loads(datasock.recv(l))
+    for key in parsed.keys():
+        funcname = re.sub('_', '-', key)
+        f = bb.data.getVar(funcname, the_data, False)
+        if f:
+            bb.methodpool.check_insert_method(key, f, fn)
+
+    for var in bb.data.getVar('__BBHANDLERS', the_data) or []:
+        bb.event.register(var, bb.data.getVar(var, the_data))
+
+    if not bb.data.getVar("BUILDNAME", the_data):
+        bb.data.setVar("BUILDNAME", time.strftime('%Y%m%d%H%M'), the_data)
+    bb.data.setVar("BUILDSTART", time.strftime('%m/%d/%Y %H:%M:%S', time.gmtime()), the_data)
+
+
+    bb.data.setVar("BB_WORKERCONTEXT", "1", the_data)
+    bb.event.fire(bb.event.ConfigParsed(), the_data)
+
+else:
+    import bb.cooker
+
+    cooker = bb.cooker.BBCooker(BBConfiguration(debug, debug_domains), None)
+    cooker.parseConfiguration()
+
+    cooker.bb_cache = bb.cache.init(cooker)
+    cooker.status = bb.cache.CacheData()
+
+    (fn, cls) = cooker.bb_cache.virtualfn2realfn(buildfile)
+    buildfile = cooker.matchFile(fn)
+    fn = cooker.bb_cache.realfn2virtual(buildfile, cls)
+
+    cooker.buildSetVars()
+
+    # Load data into the cache for fn and parse the loaded cache data
+    the_data = cooker.bb_cache.loadDataFull(fn, cooker.get_file_appends(fn), cooker.configuration.data)
+    cooker.bb_cache.setData(fn, buildfile, the_data)
+    cooker.bb_cache.handle_data(fn, cooker.status)
+
+    #exportlist = bb.utils.preserved_envvars_export_list()
+    #bb.utils.filter_environment(exportlist)
 
 if taskname.endswith("_setscene"):
     the_data.setVarFlag(taskname, "quieterrors", "1")
@@ -116,5 +159,10 @@ for h in hashdata["deps"]:
 ret = 0
 if sys.argv[4] != "True":
     ret = bb.build.exec_task(fn, taskname, the_data)
+
+if socketname:
+    datasock.send("_cmd_end")
+    datasock.close()
+
 sys.exit(ret)
 
