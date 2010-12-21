@@ -287,7 +287,7 @@ def sstate_package(ss, d):
     bb.data.setVar('SSTATE_PKG', sstatepkg, d)
     bb.build.exec_func('sstate_create_package', d)
     
-    bb.siggen.dump_this_task(sstatepkg + ".siginfo", d)
+    #bb.siggen.dump_this_task(sstatepkg + ".siginfo", d)
 
     return
 
