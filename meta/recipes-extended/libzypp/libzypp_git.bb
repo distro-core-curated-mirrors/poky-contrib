@@ -53,6 +53,8 @@ OECMAKE_CXX_LINK_FLAGS_libc-uclibc += "-pthread"
 
 LDFLAGS += "-lpthread"
 
+LDFLAGS += "-lpthread"
+
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 AVOID_CONSTRUCTOR = ""
