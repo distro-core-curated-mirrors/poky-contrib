@@ -9,13 +9,12 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENCE;md5=453de74d749439762ef4814f7bee1fec"
 
 # Upstream updates puzzles.tar.gz for the new release, so checksums seem to be changing regularly right now
-#SRC_URI = "svn://ixion.tartarus.org/main;module=puzzles;rev=${MOD_PV}"
-SRC_URI = "http://www.chiark.greenend.org.uk/~sgtatham/puzzles/puzzles-${PV}.tar.gz"
-SRC_URI[md5sum] = "c86695aebfc95efe1d6241863849101b"
-SRC_URI[sha256sum] = "2c20a45189387e3de8804a58bdb4e47ac4bb0f890001a509dfbdc015b5a84b95"
+SRC_URI = "svn://svn.tartarus.org/sgt;module=puzzles;rev=${MOD_PV}"
+#SRC_URI = "http://www.chiark.greenend.org.uk/~sgtatham/puzzles/puzzles-${PV}.tar.gz"
+SRC_URI[md5sum] = "d45c4ce0530d62d59d819a91b1b1e055"
+SRC_URI[sha256sum] = "87b54f2990fb6bee4981e22851f86361fb7e0b0d2010e22eeb387b6564d0bc11"
 
-
-S = "${WORKDIR}/${BPN}-${PV}"
+S = "${WORKDIR}/${BPN}"
 
 do_configure () {
 	./mkfiles.pl
