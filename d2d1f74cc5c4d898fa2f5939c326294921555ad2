@@ -1,2 +1,1 @@
-I'm not sure where this is coming from and how to selectively
-disable some of the -Werror flags
+This replaces the previous patch series that fixes libx11 issues
