@@ -1,3 +1,4 @@
 Not sure if we should just skip for all virtual/kernel's?
 
-v2: use BUILD_64BIT_KERNEL?
+Should we use some variable for this instead?
+-BUILD_64BIT_KERNEL? PROMOTE_TO_64BIT_KERNEL?
