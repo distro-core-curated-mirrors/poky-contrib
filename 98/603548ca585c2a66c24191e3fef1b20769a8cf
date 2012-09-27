@@ -1,1 +1,2 @@
 v2: refresh patch for other new arches that were added by the previous commit
+    which was causing new build errors
