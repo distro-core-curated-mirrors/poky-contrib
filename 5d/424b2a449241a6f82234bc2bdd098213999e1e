@@ -1,2 +1,3 @@
 v2: refresh for all Freescale targets, and fix mixup between
     single and double precision
+v3: add 32-bit e6500 which was missed
