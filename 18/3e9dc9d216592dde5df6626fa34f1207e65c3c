@@ -1,3 +1,7 @@
 v2: refresh for all Freescale targets, and fix mixup between
     single and double precision
 v3: add 32-bit e6500 which was missed
+v4: Screwed up the patch, fixed in v4
+
+All these patches are on my tree in poky-contrib:
+http://git.yoctoproject.org/cgit/cgit.cgi/poky-contrib/log/?h=mattsm/master
