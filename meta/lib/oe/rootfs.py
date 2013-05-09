@@ -51,8 +51,8 @@ class Rootfs(object):
                 m = r.search(line)
                 if m:
                     bb.warn('[log_check] %s: found a warning message in the logfile (keyword \'%s\'):\n[log_check] %s'
-				    % (self.d.getVar('PN', True), m.group(), line))
-
+                                    % (self.d.getVar('PN', True), m.group(), line))
+                                
     def _log_check_error(self):
         r = re.compile(self.log_check_regex)
         log_path = self.d.expand("${T}/log.do_rootfs")
@@ -77,7 +77,7 @@ class Rootfs(object):
                     found_error = 1
                     bb.warn('[log_check] In line: [%s]' % line)
                     bb.warn('[log_check] %s: found an error message in the logfile (keyword \'%s\'):\n[log_check] %s'
-				    % (self.d.getVar('PN', True), m.group(), line))
+                                    % (self.d.getVar('PN', True), m.group(), line))
 
                 if found_error >= 1 and found_error <= 5:
                     message += line + '\n'
@@ -485,7 +485,7 @@ class RpmRootfs(Rootfs):
                     continue
                 # sh -x may emit code which isn't actually executed
                 if line.startswith('+'):
-		    continue
+                    continue
 
                 m = r.search(line)
                 if m:

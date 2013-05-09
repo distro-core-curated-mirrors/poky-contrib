@@ -9,9 +9,9 @@ def release_dict():
 
     data = {}
     for line in output.splitlines():
-        if line.startswith("-e"): line = line[3:]
+        if line.startswith(b"-e"): line = line[3:]
         try:
-            key, value = line.split(":\t", 1)
+            key, value = line.decode().split(":\t", 1)
         except ValueError:
             continue
         else:

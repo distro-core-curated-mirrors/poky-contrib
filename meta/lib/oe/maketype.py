@@ -6,7 +6,7 @@ the arguments of the type's factory for details.
 """
 
 import inspect
-import types
+import oe.types as types
 
 available_types = {}
 
@@ -53,7 +53,9 @@ def get_callable_args(obj):
     if type(obj) is type:
         obj = obj.__init__
 
-    args, varargs, keywords, defaults = inspect.getargspec(obj)
+    sig = inspect.signature(obj)
+    args = list(sig.parameters.keys())
+    defaults = list(s for s in sig.parameters.keys() if sig.parameters[s].default != inspect.Parameter.empty)
     flaglist = []
     if args:
         if len(args) > 1 and args[0] == 'self':
@@ -97,3 +99,4 @@ for name in dir(types):
         continue
 
     register(name, obj)
+

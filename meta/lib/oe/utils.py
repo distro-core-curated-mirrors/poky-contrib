@@ -235,7 +235,7 @@ def format_pkg_list(pkg_dict, ret_format=None):
 # so implement a version here
 #
 
-from Queue import Queue
+from queue import Queue
 from threading import Thread
 
 class ThreadedWorker(Thread):
@@ -264,8 +264,8 @@ class ThreadedWorker(Thread):
 
             try:
                 func(self, *args, **kargs)
-            except Exception, e:
-                print e
+            except Exception as e:
+                print(e)
             finally:
                 self.tasks.task_done()
 

@@ -43,17 +43,17 @@ class ELFFile:
         if not os.path.isfile(self.name):
             raise NotELFFileError("%s is not a normal file" % self.name)
 
-        self.file = file(self.name, "r")
-        # Read 4k which should cover most of the headers we're after
-        self.data = self.file.read(4096)
+        with open(self.name, "rb") as f:
+            # Read 4k which should cover most of the headers we're after
+            self.data = f.read(4096)
 
         if len(self.data) < ELFFile.EI_NIDENT + 4:
             raise NotELFFileError("%s is not an ELF" % self.name)
 
         self.my_assert(self.data[0], chr(0x7f) )
-        self.my_assert(self.data[1], 'E')
-        self.my_assert(self.data[2], 'L')
-        self.my_assert(self.data[3], 'F')
+        self.my_assert(self.data[1], b'E')
+        self.my_assert(self.data[2], b'L')
+        self.my_assert(self.data[3], b'F')
         if self.bits == 0:
             if self.data[ELFFile.EI_CLASS] == chr(ELFFile.ELFCLASS32):
                 self.bits = 32
@@ -148,4 +148,4 @@ if __name__ == "__main__":
     import sys
     elf = ELFFile(sys.argv[1])
     elf.open()
-    print elf.isDynamic()
+    print(elf.isDynamic())

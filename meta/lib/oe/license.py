@@ -47,7 +47,7 @@ class LicenseVisitor(ast.NodeVisitor):
     """Get elements based on OpenEmbedded license strings"""
     def get_elements(self, licensestr):
         new_elements = []
-        elements = filter(lambda x: x.strip(), license_operator.split(licensestr))
+        elements = list(filter(lambda x: x.strip(), license_operator.split(licensestr)))
         for pos, element in enumerate(elements):
             if license_pattern.match(element):
                 if pos > 0 and license_pattern.match(elements[pos-1]):

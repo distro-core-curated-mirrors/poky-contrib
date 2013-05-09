@@ -17,7 +17,7 @@ def create_index(arg):
 
     try:
         bb.note("Executing '%s' ..." % index_cmd)
-        result = subprocess.check_output(index_cmd, stderr=subprocess.STDOUT, shell=True)
+        result = subprocess.check_output(index_cmd, stderr=subprocess.STDOUT, shell=True).decode("utf-8")
     except subprocess.CalledProcessError as e:
         return("Index creation command '%s' failed with return code %d:\n%s" %
                (e.cmd, e.returncode, e.output))
@@ -357,7 +357,7 @@ class RpmPkgsList(PkgsList):
         # Determine rpm version
         cmd = "%s --version" % self.rpm_cmd
         try:
-            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True).decode("utf-8")
         except subprocess.CalledProcessError as e:
             bb.fatal("Getting rpm version failed. Command '%s' "
                      "returned %d:\n%s" % (cmd, e.returncode, e.output))
@@ -401,7 +401,7 @@ class RpmPkgsList(PkgsList):
                "-t", self.image_rpmlib]
 
         try:
-            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).strip()
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).strip().decode("utf-8")
         except subprocess.CalledProcessError as e:
             bb.fatal("Cannot get the package dependencies. Command '%s' "
                      "returned %d:\n%s" % (' '.join(cmd), e.returncode, e.output))
@@ -415,7 +415,7 @@ class RpmPkgsList(PkgsList):
 
         try:
             # bb.note(cmd)
-            tmp_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True).strip()
+            tmp_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True).strip().decode("utf-8")
         except subprocess.CalledProcessError as e:
             bb.fatal("Cannot get the installed packages list. Command '%s' "
                      "returned %d:\n%s" % (cmd, e.returncode, e.output))
@@ -475,6 +475,8 @@ class OpkgPkgsList(PkgsList):
         # output streams separately and check for empty stderr.
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         cmd_output, cmd_stderr = p.communicate()
+        cmd_output = cmd_output.decode("utf-8")
+        cmd_stderr = cmd_stderr.decode("utf-8")
         if p.returncode or cmd_stderr:
             bb.fatal("Cannot get the installed packages list. Command '%s' "
                      "returned %d and stderr:\n%s" % (cmd, p.returncode, cmd_stderr))
@@ -492,7 +494,7 @@ class DpkgPkgsList(PkgsList):
         cmd.append("-f=Package: ${Package}\nArchitecture: ${PackageArch}\nVersion: ${Version}\nFile: ${Package}_${Version}_${Architecture}.deb\nDepends: ${Depends}\nRecommends: ${Recommends}\n\n")
 
         try:
-            cmd_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).strip()
+            cmd_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).strip().decode("utf-8")
         except subprocess.CalledProcessError as e:
             bb.fatal("Cannot get the installed packages list. Command '%s' "
                      "returned %d:\n%s" % (' '.join(cmd), e.returncode, e.output))
@@ -598,7 +600,7 @@ class PackageManager(object):
         try:
             bb.note("Installing complementary packages ...")
             bb.note('Running %s' % cmd)
-            complementary_pkgs = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            complementary_pkgs = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode("utf-8")
         except subprocess.CalledProcessError as e:
             bb.fatal("Could not compute complementary packages list. Command "
                      "'%s' returned %d:\n%s" %
@@ -774,7 +776,7 @@ class RpmPM(PackageManager):
         try:
             complementary_pkgs = subprocess.check_output(cmd,
                                                          stderr=subprocess.STDOUT,
-                                                         shell=True)
+                                                         shell=True).decode("utf-8")
             # bb.note(complementary_pkgs)
             return complementary_pkgs
         except subprocess.CalledProcessError as e:
@@ -798,7 +800,7 @@ class RpmPM(PackageManager):
                 (self.smart_cmd, self.smart_opt, pkg)
         cmd += " | sed -ne 's/ *Provides://p'"
         bb.note('cmd: %s' % cmd)
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True).decode("utf-8")
         # Found a provider
         if output:
             bb.note('Found providers for %s: %s' % (pkg, output))
@@ -1081,7 +1083,7 @@ class RpmPM(PackageManager):
         open(self.scriptlet_wrapper, 'w+').write(scriptlet_content)
 
         bb.note("Note: configuring RPM cross-install scriptlet_wrapper")
-        os.chmod(self.scriptlet_wrapper, 0755)
+        os.chmod(self.scriptlet_wrapper, 0o755)
         cmd = 'config --set rpm-extra-macros._cross_scriptlet_wrapper=%s' % \
               self.scriptlet_wrapper
         self._invoke_smart(cmd)
@@ -1193,7 +1195,7 @@ class RpmPM(PackageManager):
             cmd = "%s %s install --attempt -y %s" % \
                   (self.smart_cmd, self.smart_opt, ' '.join(pkgs))
         try:
-            output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
+            output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT).decode("utf-8")
             bb.note(output)
         except subprocess.CalledProcessError as e:
             bb.fatal("Unable to install packages. Command '%s' "
@@ -1223,7 +1225,7 @@ class RpmPM(PackageManager):
 
         try:
             bb.note(cmd)
-            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True).decode("utf-8")
             bb.note(output)
         except subprocess.CalledProcessError as e:
             bb.note("Unable to remove packages. Command '%s' "
@@ -1369,9 +1371,9 @@ class RpmPM(PackageManager):
 
         try:
             bb.note(cmd)
-            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True).strip()
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True).strip().decode("utf-8")
             bb.note(output)
-            os.chmod(saved_dir, 0755)
+            os.chmod(saved_dir, 0o755)
         except subprocess.CalledProcessError as e:
             bb.fatal("Invoke save_rpmpostinst failed. Command '%s' "
                      "returned %d:\n%s" % (cmd, e.returncode, e.output))
@@ -1595,7 +1597,7 @@ class OpkgPM(PackageManager):
         try:
             bb.note("Installing the following packages: %s" % ' '.join(pkgs))
             bb.note(cmd)
-            output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
+            output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT).decode("utf-8")
             bb.note(output)
         except subprocess.CalledProcessError as e:
             (bb.fatal, bb.note)[attempt_only]("Unable to install packages. "
@@ -1612,7 +1614,7 @@ class OpkgPM(PackageManager):
 
         try:
             bb.note(cmd)
-            output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
+            output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT).decode("utf-8")
             bb.note(output)
         except subprocess.CalledProcessError as e:
             bb.fatal("Unable to remove packages. Command '%s' "
@@ -1659,7 +1661,7 @@ class OpkgPM(PackageManager):
                 pkg_info = cmd + pkg
 
                 try:
-                    output = subprocess.check_output(pkg_info.split(), stderr=subprocess.STDOUT).strip()
+                    output = subprocess.check_output(pkg_info.split(), stderr=subprocess.STDOUT).strip().decode("utf-8")
                 except subprocess.CalledProcessError as e:
                     bb.fatal("Cannot get package info. Command '%s' "
                              "returned %d:\n%s" % (pkg_info, e.returncode, e.output))

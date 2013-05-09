@@ -177,9 +177,8 @@ def package_qa_write_error(type, error, d):
     logfile = d.getVar('QA_LOGFILE', True)
     if logfile:
         p = d.getVar('P', True)
-        f = file( logfile, "a+")
-        print >> f, "%s: %s [%s]" % (p, error, type)
-        f.close()
+        with open(logfile, "a+") as f:
+            f.write("%s: %s [%s]" % (p, error, type))
 
 def package_qa_handle_error(error_class, error_msg, d):
     package_qa_write_error(error_class, error_msg, d)
@@ -984,12 +983,12 @@ def package_qa_check_expanded_d(path,name,d,elf,messages):
     return sane
 
 def package_qa_check_encoding(keys, encode, d):
-    def check_encoding(key,enc):
+    def check_encoding(key, enc):
         sane = True
         value = d.getVar(key, True)
         if value:
             try:
-                s = unicode(value, enc)
+                s = value.encode(enc)
             except UnicodeDecodeError as e:
                 error_msg = "%s has non %s characters" % (key,enc)
                 sane = False
@@ -1221,7 +1220,7 @@ Missing inherit gettext?""" % (gt, config))
         try:
             flag = "WARNING: unrecognized options:"
             log = os.path.join(d.getVar('B', True), 'config.log')
-            output = subprocess.check_output(['grep', '-F', flag, log]).replace(', ', ' ')
+            output = subprocess.check_output(['grep', '-F', flag, log]).decode("utf-8").replace(', ', ' ')
             options = set()
             for line in output.splitlines():
                 options |= set(line.partition(flag)[2].split())
