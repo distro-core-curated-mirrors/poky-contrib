@@ -3,19 +3,14 @@ import logging
 import os
 import re
 import tempfile
+import pickle
 import bb.data
 from bb.checksum import FileChecksumCache
 
 logger = logging.getLogger('BitBake.SigGen')
 
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-    logger.info('Importing cPickle failed.  Falling back to a very slow implementation.')
-
 def init(d):
-    siggens = [obj for obj in globals().itervalues()
+    siggens = [obj for obj in globals().values()
                       if type(obj) is type and issubclass(obj, SignatureGenerator)]
 
     desired = d.getVar("BB_SIGNATURE_HANDLER", True) or "noop"
@@ -138,7 +133,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
                 var = lookupcache[dep]
                 if var is not None:
                     data = data + str(var)
-            self.basehash[fn + "." + task] = hashlib.md5(data).hexdigest()
+            self.basehash[fn + "." + task] = hashlib.md5(data.encode("latin1")).hexdigest()
             taskdeps[task] = alldeps
 
         self.taskdeps[fn] = taskdeps
@@ -154,8 +149,9 @@ class SignatureGeneratorBasic(SignatureGenerator):
 
         try:
             taskdeps = self._build_data(fn, d)
-        except:
+        except Exception as e:
             bb.warn("Error during finalise of %s" % fn)
+            bb.error(str(e))
             raise
 
         #Slow but can be useful for debugging mismatched basehashes
@@ -223,7 +219,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
             self.taints[k] = taint
             logger.warn("%s is tainted from a forced run" % k)
 
-        h = hashlib.md5(data).hexdigest()
+        h = hashlib.md5(data.encode("latin1")).hexdigest()
         self.taskhash[k] = h
         #d.setVar("BB_TASKHASH_task-%s" % task, taskhash[task])
         return h
@@ -287,7 +283,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
             with os.fdopen(fd, "wb") as stream:
                 p = pickle.dump(data, stream, -1)
                 stream.flush()
-            os.chmod(tmpfile, 0664)
+            os.chmod(tmpfile, 0o664)
             os.rename(tmpfile, sigfile)
         except (OSError, IOError) as err:
             try:
@@ -536,7 +532,7 @@ def calc_basehash(sigdata):
         if val is not None:
             basedata = basedata + str(val)
 
-    return hashlib.md5(basedata).hexdigest()
+    return hashlib.md5(basedata.encode("latin1")).hexdigest()
 
 def calc_taskhash(sigdata):
     data = sigdata['basehash']
@@ -553,7 +549,7 @@ def calc_taskhash(sigdata):
         else:
             data = data + sigdata['taint']
 
-    return hashlib.md5(data).hexdigest()
+    return hashlib.md5(data.encode("latin1")).hexdigest()
 
 
 def dump_sigfile(a):

@@ -32,22 +32,19 @@
 """
 
 import bb
-import xmlrpclib, sys
+import xmlrpc.client as xmlrpclib, sys
 from bb import daemonize
 from bb.ui import uievent
 import hashlib, time
 import socket
 import os, signal
 import threading
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+import pickle
 
 DEBUG = False
 
-from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
-import inspect, select, httplib
+from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
+import inspect, select, http.client as httplib
 
 from . import BitBakeBaseServer, BitBakeBaseServerConnection, BaseImplServer
 

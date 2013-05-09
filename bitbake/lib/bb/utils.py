@@ -34,7 +34,7 @@ import traceback
 import errno
 import signal
 import ast
-from commands import getstatusoutput
+from subprocess import getstatusoutput
 from contextlib import contextmanager
 from ctypes import cdll
 
@@ -71,7 +71,7 @@ def explode_version(s):
             r.append((0, int(m.group(1))))
             s = m.group(2)
             continue
-        if s[0] in string.letters:
+        if s[0] in string.ascii_letters:
             m = alpha_regexp.match(s)
             r.append((1, m.group(1)))
             s = m.group(2)
@@ -563,6 +563,7 @@ def preserved_envvars_exported():
         'SHELL',
         'TERM',
         'USER',
+        'LC_ALL',
     ]
 
 def preserved_envvars():
@@ -582,13 +583,15 @@ def filter_environment(good_vars):
     """
 
     removed_vars = {}
-    for key in os.environ.keys():
+    for key in list(os.environ):
         if key in good_vars:
             continue
 
         removed_vars[key] = os.environ[key]
         os.unsetenv(key)
         del os.environ[key]
+
+    os.environ["LC_ALL"] = "C.UTF-8"
 
     if removed_vars:
         logger.debug(1, "Removed the following variables from the environment: %s", ", ".join(removed_vars.keys()))
@@ -629,7 +632,7 @@ def empty_environment():
     """
     Remove all variables from the environment.
     """
-    for s in os.environ.keys():
+    for s in list(os.environ.keys()):
         os.unsetenv(s)
         del os.environ[s]
 
@@ -946,7 +949,7 @@ def contains(variable, checkvalues, truevalue, falsevalue, d):
     if not val:
         return falsevalue
     val = set(val.split())
-    if isinstance(checkvalues, basestring):
+    if isinstance(checkvalues, str):
         checkvalues = set(checkvalues.split())
     else:
         checkvalues = set(checkvalues)
@@ -959,7 +962,7 @@ def contains_any(variable, checkvalues, truevalue, falsevalue, d):
     if not val:
         return falsevalue
     val = set(val.split())
-    if isinstance(checkvalues, basestring):
+    if isinstance(checkvalues, str):
         checkvalues = set(checkvalues.split())
     else:
         checkvalues = set(checkvalues)
@@ -1028,7 +1031,7 @@ def exec_flat_python_func(func, *args, **kwargs):
         aidx += 1
     # Handle keyword arguments
     context.update(kwargs)
-    funcargs.extend(['%s=%s' % (arg, arg) for arg in kwargs.iterkeys()])
+    funcargs.extend(['%s=%s' % (arg, arg) for arg in kwargs.keys()])
     code = 'retval = %s(%s)' % (func, ', '.join(funcargs))
     comp = bb.utils.better_compile(code, '<string>', '<string>')
     bb.utils.better_exec(comp, context, code, '<string>')
@@ -1115,7 +1118,7 @@ def edit_metadata(meta_lines, variables, varfunc, match_overrides=False):
             else:
                 varset_new = varset_start
 
-            if isinstance(indent, (int, long)):
+            if isinstance(indent, int):
                 if indent == -1:
                     indentspc = ' ' * (len(varset_new) + 2)
                 else:
@@ -1183,7 +1186,7 @@ def edit_metadata(meta_lines, variables, varfunc, match_overrides=False):
                 in_var = None
         else:
             skip = False
-            for (varname, var_re) in var_res.iteritems():
+            for (varname, var_re) in var_res.items():
                 res = var_re.match(line)
                 if res:
                     isfunc = varname.endswith('()')
@@ -1361,7 +1364,7 @@ def get_file_layer(filename, d):
         # Use longest path so we handle nested layers
         matchlen = 0
         match = None
-        for collection, regex in collection_res.iteritems():
+        for collection, regex in collection_res.items():
             if len(regex) > matchlen and re.match(regex, path):
                 matchlen = len(regex)
                 match = collection

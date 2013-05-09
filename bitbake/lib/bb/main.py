@@ -115,7 +115,7 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
             _warnings_showwarning(message, category, filename, lineno, file, line)
     else:
         s = warnings.formatwarning(message, category, filename, lineno)
-        warnlog.warn(s)
+        warnlog.warning(s)
 
 warnings.showwarning = _showwarning
 warnings.filterwarnings("ignore")
@@ -299,19 +299,19 @@ def start_server(servermodule, configParams, configuration, features):
         server.addcooker(cooker)
         server.saveConnectionDetails()
     except Exception as e:
-        exc_info = sys.exc_info()
+        import traceback
+        traceback.print_exc()
+        #print("hello" + str(e))
         while hasattr(server, "event_queue"):
-            try:
-                import queue
-            except ImportError:
-                import Queue as queue
+            import queue
             try:
                 event = server.event_queue.get(block=False)
             except (queue.Empty, IOError):
                 break
             if isinstance(event, logging.LogRecord):
                 logger.handle(event)
-        raise exc_info[1], None, exc_info[2]
+        #print(str(e))
+        raise
     server.detach()
     cooker.lock.close()
     return server
@@ -328,7 +328,11 @@ def bitbake_main(configParams, configuration):
     # updates to log files for use with tail
     try:
         if sys.stdout.name == '<stdout>':
-            sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+            import fcntl
+            fl = fcntl.fcntl(sys.stdout.fileno(), fcntl.F_GETFL)
+            fl |= os.O_SYNC 
+            fcntl.fcntl(sys.stdout.fileno(), fcntl.F_SETFL, fl)
+            #sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
     except:
         pass
 

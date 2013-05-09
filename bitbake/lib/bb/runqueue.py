@@ -35,11 +35,10 @@ import bb
 from bb import msg, data, event
 from bb import monitordisk
 import subprocess
+import pickle
 
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+if sys.version_info >= (3, 0):
+    xrange = range
 
 bblogger = logging.getLogger("BitBake")
 logger = logging.getLogger("BitBake.RunQueue")
@@ -127,11 +126,11 @@ class RunQueueScheduler(object):
         if len(self.buildable) == 1:
             taskid = self.buildable[0]
             stamp = self.stamps[taskid]
-            if stamp not in self.rq.build_stamps.itervalues():
+            if stamp not in self.rq.build_stamps.values():
                 return taskid
 
         if not self.rev_prio_map:
-            self.rev_prio_map = range(self.numTasks)
+            self.rev_prio_map = list(range(self.numTasks))
             for taskid in xrange(self.numTasks):
                 self.rev_prio_map[self.prio_map[taskid]] = taskid
 
@@ -141,7 +140,7 @@ class RunQueueScheduler(object):
             prio = self.rev_prio_map[taskid]
             if bestprio is None or bestprio > prio:
                 stamp = self.stamps[taskid]
-                if stamp in self.rq.build_stamps.itervalues():
+                if stamp in self.rq.build_stamps.values():
                     continue
                 bestprio = prio
                 best = taskid
@@ -982,8 +981,8 @@ class RunQueue:
             "time" : self.cfgData.getVar("TIME", True),
         }
 
-        worker.stdin.write("<cookerconfig>" + pickle.dumps(self.cooker.configuration) + "</cookerconfig>")
-        worker.stdin.write("<workerdata>" + pickle.dumps(workerdata) + "</workerdata>")
+        worker.stdin.write(b"<cookerconfig>" + pickle.dumps(self.cooker.configuration) + b"</cookerconfig>")
+        worker.stdin.write(b"<workerdata>" + pickle.dumps(workerdata) + b"</workerdata>")
         worker.stdin.flush()
 
         return worker, workerpipe
@@ -993,8 +992,9 @@ class RunQueue:
             return
         logger.debug(1, "Teardown for bitbake-worker")
         try:
-           worker.stdin.write("<quit></quit>")
+           worker.stdin.write(b"<quit></quit>")
            worker.stdin.flush()
+           worker.stdin.close()
         except IOError:
            pass
         while worker.returncode is None:
@@ -1085,15 +1085,19 @@ class RunQueue:
                 stampfile3 = bb.build.stampfile(taskname2 + "_setscene", self.rqdata.dataCache, fn2)
                 t2 = get_timestamp(stampfile2)
                 t3 = get_timestamp(stampfile3)
+                if t3 and not t2:
+                    continue
                 if t3 and t3 > t2:
-                   continue
+                    continue
                 if fn == fn2 or (fulldeptree and fn2 not in stampwhitelist):
                     if not t2:
                         logger.debug(2, 'Stampfile %s does not exist', stampfile2)
                         iscurrent = False
+                        break
                     if t1 < t2:
                         logger.debug(2, 'Stampfile %s < %s', stampfile, stampfile2)
                         iscurrent = False
+                        break
                     if recurse and iscurrent:
                         if dep in cache:
                             iscurrent = cache[dep]
@@ -1342,7 +1346,7 @@ class RunQueue:
                     match = m
             if match is None:
                 bb.fatal("Can't find a task we're supposed to have written out? (hash: %s)?" % h)
-            matches = {k : v for k, v in matches.iteritems() if h not in k}
+            matches = {k : v for k, v in iter(matches.items()) if h not in k}
             if matches:
                 latestmatch = sorted(matches.keys(), key=lambda f: matches[f])[-1]
                 prevh = __find_md5__.search(latestmatch).group(0)
@@ -1391,17 +1395,15 @@ class RunQueueExecute:
         return True
 
     def finish_now(self):
-
         for worker in [self.rq.worker, self.rq.fakeworker]:
             if not worker:
                 continue
             try:
-                worker.stdin.write("<finishnow></finishnow>")
+                worker.stdin.write(b"<finishnow></finishnow>")
                 worker.stdin.flush()
             except IOError:
                 # worker must have died?
                 pass
-
         if len(self.failed_fnids) != 0:
             self.rq.state = runQueueFailed
             return
@@ -1680,10 +1682,10 @@ class RunQueueExecuteTasks(RunQueueExecute):
                         logger.critical("Failed to spawn fakeroot worker to run %s:%s: %s" % (fn, taskname, str(exc)))
                         self.rq.state = runQueueFailed
                         return True
-                self.rq.fakeworker.stdin.write("<runtask>" + pickle.dumps((fn, task, taskname, False, self.cooker.collection.get_file_appends(fn), taskdepdata)) + "</runtask>")
+                self.rq.fakeworker.stdin.write(b"<runtask>" + pickle.dumps((fn, task, taskname, False, self.cooker.collection.get_file_appends(fn), taskdepdata)) + b"</runtask>")
                 self.rq.fakeworker.stdin.flush()
             else:
-                self.rq.worker.stdin.write("<runtask>" + pickle.dumps((fn, task, taskname, False, self.cooker.collection.get_file_appends(fn), taskdepdata)) + "</runtask>")
+                self.rq.worker.stdin.write(b"<runtask>" + pickle.dumps((fn, task, taskname, False, self.cooker.collection.get_file_appends(fn), taskdepdata)) + b"</runtask>")
                 self.rq.worker.stdin.flush()
 
             self.build_stamps[task] = bb.build.stampfile(taskname, self.rqdata.dataCache, fn)
@@ -2098,10 +2100,10 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
             if 'fakeroot' in taskdep and taskname in taskdep['fakeroot'] and not self.cooker.configuration.dry_run:
                 if not self.rq.fakeworker:
                     self.rq.start_fakeworker(self)
-                self.rq.fakeworker.stdin.write("<runtask>" + pickle.dumps((fn, realtask, taskname, True, self.cooker.collection.get_file_appends(fn), None)) + "</runtask>")
+                self.rq.fakeworker.stdin.write(b"<runtask>" + pickle.dumps((fn, realtask, taskname, True, self.cooker.collection.get_file_appends(fn), None)) + b"</runtask>")
                 self.rq.fakeworker.stdin.flush()
             else:
-                self.rq.worker.stdin.write("<runtask>" + pickle.dumps((fn, realtask, taskname, True, self.cooker.collection.get_file_appends(fn), None)) + "</runtask>")
+                self.rq.worker.stdin.write(b"<runtask>" + pickle.dumps((fn, realtask, taskname, True, self.cooker.collection.get_file_appends(fn), None)) + b"</runtask>")
                 self.rq.worker.stdin.flush()
 
             self.runq_running[task] = 1
@@ -2249,7 +2251,7 @@ class runQueuePipe():
         if pipeout:
             pipeout.close()
         bb.utils.nonblockingfd(self.input)
-        self.queue = ""
+        self.queue = b""
         self.d = d
         self.rq = rq
         self.rqexec = rqexec
@@ -2273,7 +2275,7 @@ class runQueuePipe():
 
         start = len(self.queue)
         try:
-            self.queue = self.queue + self.input.read(102400)
+            self.queue = self.queue + (self.input.read(102400) or b"")
         except (OSError, IOError) as e:
             if e.errno != errno.EAGAIN:
                 raise
@@ -2281,8 +2283,8 @@ class runQueuePipe():
         found = True
         while found and len(self.queue):
             found = False
-            index = self.queue.find("</event>")
-            while index != -1 and self.queue.startswith("<event>"):
+            index = self.queue.find(b"</event>")
+            while index != -1 and self.queue.startswith(b"<event>"):
                 try:
                     event = pickle.loads(self.queue[7:index])
                 except ValueError as e:
@@ -2290,9 +2292,9 @@ class runQueuePipe():
                 bb.event.fire_from_worker(event, self.d)
                 found = True
                 self.queue = self.queue[index+8:]
-                index = self.queue.find("</event>")
-            index = self.queue.find("</exitcode>")
-            while index != -1 and self.queue.startswith("<exitcode>"):
+                index = self.queue.find(b"</event>")
+            index = self.queue.find(b"</exitcode>")
+            while index != -1 and self.queue.startswith(b"<exitcode>"):
                 try:
                     task, status = pickle.loads(self.queue[10:index])
                 except ValueError as e:
@@ -2300,7 +2302,7 @@ class runQueuePipe():
                 self.rqexec.runqueue_process_waitpid(task, status)
                 found = True
                 self.queue = self.queue[index+11:]
-                index = self.queue.find("</exitcode>")
+                index = self.queue.find(b"</exitcode>")
         return (end > start)
 
     def close(self):

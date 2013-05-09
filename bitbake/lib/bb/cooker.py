@@ -22,7 +22,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from __future__ import print_function
+
 import sys, os, glob, os.path, re, time
 import atexit
 import itertools
@@ -30,13 +30,13 @@ import logging
 import multiprocessing
 import sre_constants
 import threading
-from cStringIO import StringIO
+from io import StringIO
 from contextlib import closing
 from functools import wraps
 from collections import defaultdict
 import bb, bb.exceptions, bb.command
 from bb import utils, data, parse, event, cache, providers, taskdata, runqueue, build
-import Queue
+import queue
 import signal
 import subprocess
 import errno
@@ -65,7 +65,7 @@ class CollectionError(bb.BBHandledException):
     """
 
 class state:
-    initial, parsing, running, shutdown, forceshutdown, stopped, error = range(7)
+    initial, parsing, running, shutdown, forceshutdown, stopped, error = list(range(7))
 
     @classmethod
     def get_name(cls, code):
@@ -93,7 +93,7 @@ class SkippedPackage:
 
 
 class CookerFeatures(object):
-    _feature_list = [HOB_EXTRA_CACHES, SEND_DEPENDS_TREE, BASEDATASTORE_TRACKING, SEND_SANITYEVENTS] = range(4)
+    _feature_list = [HOB_EXTRA_CACHES, SEND_DEPENDS_TREE, BASEDATASTORE_TRACKING, SEND_SANITYEVENTS] = list(range(4))
 
     def __init__(self):
         self._features=set()
@@ -110,8 +110,8 @@ class CookerFeatures(object):
     def __iter__(self):
         return self._features.__iter__()
 
-    def next(self):
-        return self._features.next()
+    def __next__(self):
+        return next(self._features)
 
 
 #============================================================================#
@@ -732,7 +732,7 @@ class BBCooker:
         depend_tree['providermap'] = {}
         depend_tree["layer-priorities"] = self.recipecache.bbfile_config_priorities
 
-        for name, fn in taskdata.get_providermap().iteritems():
+        for name, fn in list(taskdata.get_providermap().items()):
             pn = self.recipecache.pkg_fn[fn]
             if name != pn:
                 version = "%s:%s-%s" % self.recipecache.pkg_pepvpr[fn]
@@ -956,7 +956,7 @@ class BBCooker:
         # Determine which bbappends haven't been applied
 
         # First get list of recipes, including skipped
-        recipefns = self.recipecache.pkg_fn.keys()
+        recipefns = list(self.recipecache.pkg_fn.keys())
         recipefns.extend(self.skiplist.keys())
 
         # Work out list of bbappends that have been applied
@@ -1155,7 +1155,7 @@ class BBCooker:
                         deplist = bb.utils.explode_dep_versions2(deps)
                     except bb.utils.VersionStringException as vse:
                         bb.fatal('Error parsing LAYERDEPENDS_%s: %s' % (c, str(vse)))
-                    for dep, oplist in deplist.iteritems():
+                    for dep, oplist in list(deplist.items()):
                         if dep in collection_list:
                             for opstr in oplist:
                                 layerver = self.data.getVar("LAYERVERSION_%s" % dep, True)
@@ -1891,7 +1891,7 @@ class Feeder(multiprocessing.Process):
         while True:
             try:
                 quit = self.quit.get_nowait()
-            except Queue.Empty:
+            except queue.Empty:
                 pass
             else:
                 if quit == 'cancel':
@@ -1905,7 +1905,7 @@ class Feeder(multiprocessing.Process):
 
             try:
                 self.to_parsers.put(job, timeout=0.5)
-            except Queue.Full:
+            except queue.Full:
                 self.jobs.insert(0, job)
                 continue
 
@@ -1945,7 +1945,7 @@ class Parser(multiprocessing.Process):
         while True:
             try:
                 self.quit.get_nowait()
-            except Queue.Empty:
+            except queue.Empty:
                 pass
             else:
                 self.results.cancel_join_thread()
@@ -1956,7 +1956,7 @@ class Parser(multiprocessing.Process):
             else:
                 try:
                     job = self.jobs.get(timeout=0.25)
-                except Queue.Empty:
+                except queue.Empty:
                     continue
 
                 if job is None:
@@ -1965,7 +1965,7 @@ class Parser(multiprocessing.Process):
 
             try:
                 self.results.put(result, timeout=0.25)
-            except Queue.Full:
+            except queue.Full:
                 pending.append(result)
 
     def parse(self, filename, appends, caches_array):
@@ -2118,7 +2118,7 @@ class CookerParser(object):
 
             try:
                 result = self.result_queue.get(timeout=0.25)
-            except Queue.Empty:
+            except queue.Empty:
                 pass
             else:
                 value = result[1]
@@ -2131,7 +2131,7 @@ class CookerParser(object):
         result = []
         parsed = None
         try:
-            parsed, result = self.results.next()
+            parsed, result = next(self.results)
         except StopIteration:
             self.shutdown()
             return False
@@ -2161,7 +2161,7 @@ class CookerParser(object):
             self.error += 1
             etype, value, tb = sys.exc_info()
             if hasattr(value, "recipe"):
-                logger.error('Unable to parse %s', value.recipe,
+                logger.error('Unable to parse %s' % value.recipe, 
                             exc_info=(etype, value, exc.traceback))
             else:
                 # Most likely, an exception occurred during raising an exception

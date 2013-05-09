@@ -1,10 +1,11 @@
 import os,sys,logging
 import signal, time
-from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
+from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 import threading
-import Queue
+import queue
 import socket
-import StringIO
+#import StringIO
+#import xmlrpc.client as xmlrpclib
 
 try:
     import sqlite3
@@ -64,7 +65,7 @@ class PRServer(SimpleXMLRPCServer):
         self.register_function(self.importone, "importone")
         self.register_introspection_functions()
 
-        self.requestqueue = Queue.Queue()
+        self.requestqueue = queue.Queue()
         self.handlerthread = threading.Thread(target = self.process_request_thread)
         self.handlerthread.daemon = False
 
@@ -83,7 +84,7 @@ class PRServer(SimpleXMLRPCServer):
         while not self.quit:
             try:
                 (request, client_address) = self.requestqueue.get(True, 30)
-            except Queue.Empty:
+            except queue.Empty:
                 self.table.sync_if_dirty()
                 continue
             try:
@@ -242,8 +243,8 @@ class PRServer(SimpleXMLRPCServer):
 
         sys.stdout.flush()
         sys.stderr.flush()
-        si = file('/dev/null', 'r')
-        so = file(self.logfile, 'a+')
+        si = open('/dev/null', 'r')
+        so = open(self.logfile, 'a+')
         se = so
         os.dup2(si.fileno(),sys.stdin.fileno())
         os.dup2(so.fileno(),sys.stdout.fileno())
@@ -263,7 +264,7 @@ class PRServer(SimpleXMLRPCServer):
 
         # write pidfile
         pid = str(os.getpid()) 
-        pf = file(self.pidfile, 'w')
+        pf = open(self.pidfile, 'w')
         pf.write("%s\n" % pid)
         pf.close()
 
@@ -323,7 +324,7 @@ def start_daemon(dbfile, host, port, logfile):
     ip = socket.gethostbyname(host)
     pidfile = PIDPREFIX % (ip, port)
     try:
-        pf = file(pidfile,'r')
+        pf = open(pidfile,'r')
         pid = int(pf.readline().strip())
         pf.close()
     except IOError:
@@ -350,7 +351,7 @@ def stop_daemon(host, port):
     ip = socket.gethostbyname(host)
     pidfile = PIDPREFIX % (ip, port)
     try:
-        pf = file(pidfile,'r')
+        pf = open(pidfile,'r')
         pid = int(pf.readline().strip())
         pf.close()
     except IOError:
@@ -420,7 +421,7 @@ class PRServiceConfigError(Exception):
 def auto_start(d):
     global singleton
 
-    host_params = filter(None, (d.getVar('PRSERV_HOST', True) or '').split(':'))
+    host_params = list(filter(None, (d.getVar('PRSERV_HOST', True) or '').split(':')))
     if not host_params:
         return None
 

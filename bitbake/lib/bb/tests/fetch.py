@@ -22,6 +22,7 @@
 import unittest
 import tempfile
 import subprocess
+import collections
 import os
 from bb.fetch2 import URI
 from bb.fetch2 import FetchMethod
@@ -133,10 +134,10 @@ class URITest(unittest.TestCase):
             'userinfo': 'anoncvs:anonymous',
             'username': 'anoncvs',
             'password': 'anonymous',
-            'params': {
-                'tag': 'V0-99-81',
-                'module': 'familiar/dist/ipkg'
-            },
+            'params': collections.OrderedDict([
+                ('tag', 'V0-99-81'),
+                ('module', 'familiar/dist/ipkg')
+            ]),
             'query': {},
             'relative': False
         },
@@ -450,7 +451,7 @@ class MirrorUriTest(FetcherTest):
 class FetcherLocalTest(FetcherTest):
     def setUp(self):
         def touch(fn):
-            with file(fn, 'a'):
+            with open(fn, 'a'):
                 os.utime(fn, None)
 
         super(FetcherLocalTest, self).setUp()
@@ -549,7 +550,7 @@ class FetcherNetworkTest(FetcherTest):
         def gitfetcher(self, url1, url2):
             def checkrevision(self, fetcher):
                 fetcher.unpack(self.unpackdir)
-                revision = bb.process.run("git rev-parse HEAD", shell=True, cwd=self.unpackdir + "/git")[0].strip()
+                revision = bb.process.run("git rev-parse HEAD", shell=True, cwd=self.unpackdir + "/git")[0].decode("utf-8").strip()
                 self.assertEqual(revision, "270a05b0b4ba0959fe0624d2a4885d7b70426da5")
 
             self.d.setVar("BB_GENERATE_MIRROR_TARBALLS", "1")
@@ -660,7 +661,7 @@ class URLHandle(unittest.TestCase):
     datatable = {
        "http://www.google.com/index.html" : ('http', 'www.google.com', '/index.html', '', '', {}),
        "cvs://anoncvs@cvs.handhelds.org/cvs;module=familiar/dist/ipkg" : ('cvs', 'cvs.handhelds.org', '/cvs', 'anoncvs', '', {'module': 'familiar/dist/ipkg'}),
-       "cvs://anoncvs:anonymous@cvs.handhelds.org/cvs;tag=V0-99-81;module=familiar/dist/ipkg" : ('cvs', 'cvs.handhelds.org', '/cvs', 'anoncvs', 'anonymous', {'tag': 'V0-99-81', 'module': 'familiar/dist/ipkg'}),
+       "cvs://anoncvs:anonymous@cvs.handhelds.org/cvs;tag=V0-99-81;module=familiar/dist/ipkg" : ('cvs', 'cvs.handhelds.org', '/cvs', 'anoncvs', 'anonymous', collections.OrderedDict([('tag', 'V0-99-81'), ('module', 'familiar/dist/ipkg')])),
        "git://git.openembedded.org/bitbake;branch=@foo" : ('git', 'git.openembedded.org', '/bitbake', '', '', {'branch': '@foo'}),
        "file://somelocation;someparam=1": ('file', '', 'somelocation', '', '', {'someparam': '1'}),
     }

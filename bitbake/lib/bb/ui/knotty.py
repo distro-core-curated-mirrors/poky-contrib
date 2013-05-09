@@ -22,7 +22,7 @@ from __future__ import division
 
 import os
 import sys
-import xmlrpclib
+import xmlrpc.client as xmlrpclib
 import logging
 import progressbar
 import signal
@@ -184,8 +184,8 @@ class TerminalFilter(object):
     def clearFooter(self):
         if self.footer_present:
             lines = self.footer_present
-            sys.stdout.write(self.curses.tparm(self.cuu, lines))
-            sys.stdout.write(self.curses.tparm(self.ed))
+            sys.stdout.buffer.write(self.curses.tparm(self.cuu, lines))
+            sys.stdout.buffer.write(self.curses.tparm(self.ed))
         self.footer_present = False
 
     def updateFooter(self):
@@ -590,5 +590,9 @@ def main(server, eventHandler, params, tf = TerminalFilter):
         import errno
         if e.errno == errno.EPIPE:
             pass
+
+    if consolelogfile:
+        logger.removeHandler(consolelog)
+        consolelog.close()
 
     return return_value

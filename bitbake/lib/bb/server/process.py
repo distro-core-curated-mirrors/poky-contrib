@@ -30,9 +30,8 @@ import signal
 import sys
 import time
 import select
-from Queue import Empty
+from queue import Empty
 from multiprocessing import Event, Process, util, Queue, Pipe, queues, Manager
-
 from . import BitBakeBaseServer, BitBakeBaseServerConnection, BaseImplServer
 
 logger = logging.getLogger('BitBake')
@@ -137,7 +136,7 @@ class ProcessServer(Process, BaseImplServer):
         if not fds:
             fds = []
 
-        for function, data in self._idlefuns.items():
+        for function, data in list(self._idlefuns.items()):
             try:
                 retval = function(self, data, False)
                 if retval is False:
@@ -145,7 +144,7 @@ class ProcessServer(Process, BaseImplServer):
                     nextsleep = None
                 elif retval is True:
                     nextsleep = None
-                elif isinstance(retval, float):
+                elif isinstance(retval, float) and nextsleep:
                     if (retval < nextsleep):
                         nextsleep = retval
                 elif nextsleep is None:
@@ -213,7 +212,7 @@ class BitBakeProcessServerConnection(BitBakeBaseServerConnection):
 # Wrap Queue to provide API which isn't server implementation specific
 class ProcessEventQueue(multiprocessing.queues.Queue):
     def __init__(self, maxsize):
-        multiprocessing.queues.Queue.__init__(self, maxsize)
+        multiprocessing.queues.Queue.__init__(self, maxsize, ctx=multiprocessing.get_context())
         self.exit = False
         bb.utils.set_process_name("ProcessEQueue")
 

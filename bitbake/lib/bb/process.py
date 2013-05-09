@@ -18,7 +18,7 @@ class CmdError(RuntimeError):
         self.msg = msg
 
     def __str__(self):
-        if not isinstance(self.command, basestring):
+        if not isinstance(self.command, str):
             cmd = subprocess.list2cmdline(self.command)
         else:
             cmd = self.command
@@ -106,7 +106,8 @@ def _logged_communicate(pipe, log, input, extrafiles, timestamp=False):
 
             if pipe.stdout in r:
                 data = pipe.stdout.read()
-                if data is not None:
+                if data is not None and len(data) > 0:
+                    data = str(data)
                     outdata.append(data)
                     if timestamp:
                         data = data.replace("\n", "\n" + str(time.time()) + ": ")
@@ -114,7 +115,7 @@ def _logged_communicate(pipe, log, input, extrafiles, timestamp=False):
 
             if pipe.stderr in r:
                 data = pipe.stderr.read()
-                if data is not None:
+                if data is not None and len(data) > 0:
                     errdata.append(data)
                     if timestamp:
                         data = data.replace("\n", "\n" + str(time.time()) + ": ")
@@ -140,7 +141,7 @@ def run(cmd, input=None, log=None, extrafiles=None, timestamp=False, **options):
     if not extrafiles:
         extrafiles = []
 
-    if isinstance(cmd, basestring) and not "shell" in options:
+    if isinstance(cmd, str) and not "shell" in options:
         options["shell"] = True
 
     try:
