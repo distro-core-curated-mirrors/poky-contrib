@@ -31,3 +31,35 @@ python () {
        d.setVarFlag("do_devshell", "manualfakeroot", "1")
        d.delVarFlag("do_devshell", "fakeroot")
 } 
+
+python do_devpyshell() {
+    m, s = os.openpty()
+    sname = os.ttyname(s)
+    os.system('stty cs8 -icanon -echo < %s' % sname)
+    pid = os.fork()
+    if pid:
+        oe_terminal("oepydevshell-internal.py %s" % sname, 'OpenEmbedded Developer PyShell', d)
+        os._exit(0)
+    else:
+        os.dup2(m, sys.stdin.fileno())
+        os.dup2(m, sys.stdout.fileno())
+        os.dup2(m, sys.stderr.fileno())
+        bb.utils.nonblockingfd(sys.stdout)
+        bb.utils.nonblockingfd(sys.stdin)
+
+        _context = {
+            "os": os,
+            "bb": bb,
+            "time": time,
+            "d": d,
+        }
+
+        import code
+        try:
+            code.interact("BB: ", local=_context)
+        except Exception as e:
+            bb.fatal(str(e))
+}
+addtask devpyshell after do_patch
+
+do_devpyshell[nostamp] = "1"
