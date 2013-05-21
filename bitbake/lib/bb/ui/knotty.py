@@ -32,6 +32,8 @@ import fcntl
 import struct
 import copy
 import atexit
+import termios
+import select
 from bb.ui import uihelper
 
 featureSet = [bb.cooker.CookerFeatures.SEND_SANITYEVENTS]
@@ -101,6 +103,33 @@ def new_progress(msg, maxval, quiet):
     else:
         return NonInteractiveProgress(msg, maxval)
 
+class StdinMgr:
+    def __init__(self):
+        self.stdinbackup = None
+        self.fd = None
+        if sys.stdin.isatty():
+            self.fd = sys.stdin.fileno()
+            self.stdinbackup = termios.tcgetattr(self.fd)
+            new = termios.tcgetattr(self.fd)
+            new[3] = new[3] & ~termios.ICANON & ~termios.ECHO
+            termios.tcsetattr(self.fd, termios.TCSANOW, new)
+            bb.utils.nonblockingfd(sys.stdin)
+
+    def poll(self):
+        if not self.stdinbackup:
+            return False
+        return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
+
+    def restore(self):
+        if self.stdinbackup:
+            termios.tcsetattr(self.fd, termios.TCSADRAIN, self.stdinbackup)
+            self.stdinbackup = None
+        # Force echo back on "just in case" something went haywire with an exception
+        if sys.stdin.isatty():
+            new = termios.tcgetattr(self.fd)
+            new[3] = new[3] | termios.ECHO
+            termios.tcsetattr(self.fd, termios.TCSANOW, new)
+
 def pluralise(singular, plural, qty):
     if(qty == 1):
         return singular % qty
@@ -118,6 +147,11 @@ class InteractConsoleLogFilter(logging.Filter):
             return False
         self.tf.clearFooter()
         return True
+
+def completer(text, state):
+    """Return a possible readline completion"""
+    print( "completer called with text='%s', state='%d'" % ( text, state ) )
+
 
 class TerminalFilter(object):
     rows = 25
@@ -331,6 +365,12 @@ def main(server, eventHandler, params, tf = TerminalFilter):
     termfilter = tf(main, helper, console, errconsole, format)
     atexit.register(termfilter.finish)
 
+    stdin_mgr = StdinMgr()
+    import readline
+    readline.set_completer( completer )
+    readline.set_completer_delims( " " )
+    readline.parse_and_bind("tab: complete")
+
     while True:
         try:
             event = eventHandler.waitEvent(0)
@@ -338,6 +378,10 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 if main.shutdown > 1:
                     break
                 termfilter.updateFooter()
+                #if stdin_mgr.poll():
+                    #keyinput=raw_input()
+                    #keyinput = sys.stdin.read()
+                    #print("Got input %s" % keyinput)
                 event = eventHandler.waitEvent(0.25)
                 if event is None:
                     continue
@@ -446,9 +490,9 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 if not return_value:
                     return_value = event.exitcode
                 continue
-            if isinstance(event, (bb.command.CommandCompleted, bb.cooker.CookerExit)):
-                main.shutdown = 2
-                continue
+#            if isinstance(event, (bb.command.CommandCompleted, bb.cooker.CookerExit)):
+#                main.shutdown = 2
+#                continue
             if isinstance(event, bb.event.MultipleProviders):
                 logger.info("multiple providers are available for %s%s (%s)", event._is_runtime and "runtime " or "",
                             event._item,
@@ -533,6 +577,7 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 _, error = server.runCommand(["stateForceShutdown"])
             main.shutdown = 2
         except KeyboardInterrupt:
+            stdin_mgr.restore()
             termfilter.clearFooter()
             if params.observe_only:
                 print("\nKeyboard Interrupt, exiting observer...")
