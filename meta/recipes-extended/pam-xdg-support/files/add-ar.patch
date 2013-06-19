@@ -1,0 +1,21 @@
+Newer autotools give this warning:
+  
+  "warning: 'pam_xdg_support.la': linking libtool libraries using a non-POSIX archiver requires 'AM_PROG_AR' in 'configure.ac'"
+  
+So add AM_PROG_AR.
+
+Upstream-Status: Pending
+Signed-off-by: Ross Burton <ross.burton@intel.com>
+
+=== modified file 'configure.ac'
+--- configure.ac	2013-06-19 15:05:17 +0000
++++ configure.ac	2013-06-19 15:21:09 +0000
+@@ -11,6 +11,7 @@
+ 
+ AC_PROG_CC
+ AC_DISABLE_STATIC
++AM_PROG_AR
+ AC_PROG_LIBTOOL
+ 
+ # Save flags to aclocal
+

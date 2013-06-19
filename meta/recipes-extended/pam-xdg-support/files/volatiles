@@ -1,0 +1,2 @@
+# pam-xdg-support won't create /run/user itself, so ensure that it exists
+d root root 0755 /run/user none
