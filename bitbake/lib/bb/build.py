@@ -164,8 +164,7 @@ def exec_func(func, d, dirs = None):
             bb.utils.mkdirhier(adir)
         adir = dirs[-1]
     else:
-        adir = d.getVar('B', True)
-        bb.utils.mkdirhier(adir)
+        adir = os.getcwd()
 
     ispython = flags.get('python')
 
