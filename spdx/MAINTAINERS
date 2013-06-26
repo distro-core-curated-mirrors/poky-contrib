@@ -1,0 +1,35 @@
+Yocto + SPDX(R)
+
+Copyright (C) 2013 University of Nebraska at Omaha.
+
+Contributions
+============
+Yocto + SPDX service privides the following contribution:
+Real-time license scanning for patched components(By FOSSology)
+Generating SPDX standard output
+Verifiying license info among recipe, real-time scanning and archive during the building process.
+
+Installation
+============
+1. Deploy Yocto + SPDX source
+   Deploy SPDX.bbclass to ./meta/classes/
+
+2. Plugin do_SPDX task
+   add the following line to ./build/conf/local.conf
+   INHERIT += "SPDX"
+
+Execution
+============
+1. Using the following command to check if do_SPDX task is plugin
+   bitbake -c listtasks <<target-name>> 
+   For example: bitbake -c listtasks core-image-minimal 
+   "do_SPDX" is supposed to be listed.
+2. Execute the task
+   bitbake <<target-name>>
+   For example: bitbake core-image-minimal
+
+Because the process will take a long time(especially during the first run), 
+if you don't want to keep your console open or think it might run longer than 
+you have your computer open run 
+bitbake <<target-name>> >> logfile 2>&1 &
+bitbake core-image-minimal >> /home/yocto/logfile.log 2>&1 &
