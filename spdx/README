@@ -1,0 +1,44 @@
+Yocto + SPDX(R)
+
+Copyright (C) 2013 University of Nebraska at Omaha.
+
+
+About
+=====
+The Yocto + SPDX Project is a Free Open Source Software (FOSS) project 
+built from Yocto, FOSSology and SPDX project. The goals are integrating Real-time 
+license scanning, generating SPDX standard output and verifiying license info 
+during the building process. Existing module includes scanning patched package, 
+creating SPDX.out file. 
+In addition to this document there is much more
+information available on the website
+
+  http://opensourceuno.pbworks.com/w/page/67191764/SideBar
+
+Download the source from its branch:
+git clone git clone git@git.yoctoproject.org:poky-contrib/spdx
+
+Installation
+============
+1. Deploy Yocto + SPDX source
+   Deploy SPDX.bbclass to ./meta/classes/
+
+2. Plugin do_SPDX task
+   add the following line to ./build/conf/local.conf
+   INHERIT += "SPDX"
+
+Execution
+============
+1. Using the following command to check if do_SPDX task is plugin
+   bitbake -c listtasks <<target-name>> 
+   For example: bitbake -c listtasks core-image-minimal 
+   "do_SPDX" is supposed to be listed.
+2. Execute the task
+   bitbake <<target-name>>
+   For example: bitbake core-image-minimal
+
+Because the process will take a long time(especially during the first run), 
+if you don't want to keep your console open or think it might run longer than 
+you have your computer open run 
+bitbake <<target-name>> >> logfile 2>&1 &
+bitbake core-image-minimal >> /home/yocto/logfile.log 2>&1 &
