@@ -1350,6 +1350,7 @@ python package_do_shlibs() {
         list_re = re.compile('^(.*)\.list$')
         # Go from least to most specific since the last one found wins
         for dir in reversed(shlibs_dirs):
+            bb.debug(2, "Reading shlib providers in %s" % (dir))
             if not os.path.exists(dir):
                 continue
             for file in os.listdir(dir):
@@ -1465,6 +1466,8 @@ python package_do_shlibs() {
 
     needed = {}
     shlib_provider = {}
+    read_shlib_providers()
+
     for pkg in packages.split():
         private_libs = d.getVar('PRIVATE_LIBS_' + pkg, True) or d.getVar('PRIVATE_LIBS', True)
         needs_ldconfig = False
@@ -1496,6 +1499,11 @@ python package_do_shlibs() {
         if len(sonames):
             fd = open(shlibs_file, 'w')
             for s in sonames:
+                if s in shlib_provider:
+                    (old_pkg, old_pkgver) = shlib_provider[s]
+                    if old_pkg != pkg:
+                        bb.warn('%s-%s is already registered as shlib provider for %s, ignoring %s-%s trying to register the same' % (old_pkg, old_pkgver, s, pkg, pkgver))
+                bb.debug(1, 'registering %s-%s as shlib provider for %s' % (pkg, pkgver, s))
                 fd.write(s + '\n')
                 shlib_provider[s] = (pkg, pkgver)
             fd.close()
@@ -1509,8 +1517,6 @@ python package_do_shlibs() {
                 postinst = '#!/bin/sh\n'
             postinst += d.getVar('ldconfig_postinst_fragment', True)
             d.setVar('pkg_postinst_%s' % pkg, postinst)
-
-    read_shlib_providers()
 
     bb.utils.unlockfile(lf)
 
