@@ -1,57 +1,114 @@
-do_SPDX () {
-    ## set up 
-    outfile=/home/yocto/fossology_scans/${PN}.spdx.out
-    foss_server=https://foss-spdx-dev.ist.unomaha.edu
-    foss_flags="-qO - --no-check-certificate --timeout=0"
+python do_SPDX () {
+    import os
+    import tarfile
+    import subprocess
 
-    ## create tmp dir and remove old log file
-    rm -f ${outfile}
-    mkdir -p ${WORKDIR}/spdx_temp
-    echo "Made temp spdx directory in WORKDIR" >> ${outfile}
-    ls -ld ${WORKDIR}/spdx_temp >> ${outfile}
-    echo >> ${outfile}
+    info = {} 
+    info['workdir'] = (d.getVar('WORKDIR', True) or "")
+    info['sourcedir'] = (d.getVar('S', True) or "")
+    info['pn'] = (d.getVar( 'PN', True ) or "")
+    info['pv'] = (d.getVar( 'PV', True ) or "")
 
-	## Eventually we will just assume that if no cache, run against
-    ## all files, but for now leave out this check
-    # if [ there is no cached SPDX ]; then
-    ##   copy the entire contents of the source directory
-    #    cp -fpR ${S}/ ${WORKDIR}/spdx_temp
-    # else 
-        for file in `find ${S}/ -type f`; do
-            ## take only the files in ${S} that have a different
-            ## checksum than is in the cached SPDX
-            # if [ file checksum different than what's in cache ]; then
-                file_chksum=`sha1sum ${file} | awk '{print $1}'`
-                printf "${file} checksum = ${file_chksum}\n" >> ${outfile}
-                printf "Copying to ${WORKDIR}/spdx_temp\n\n" >> ${outfile}
-                cp -fp ${file} ${WORKDIR}/spdx_temp
-            #else
-                ## file is the same as before, doubt I need to do anything
-                # code if I do
-            #fi
-        done
-    # fi
-    
-    ## tar all files that have changed and were copied here, 
-    ## send them to fossology to be scanned. 
-    tar -pzcvf ${WORKDIR}/${BPN}.tar.gz ${WORKDIR}/spdx_temp/
-    spdx_checksum=`sha1sum ${WORKDIR}/${BPN}.tar.gz | awk '{print $1}'`
-    foss_output=`wget ${foss_flags} --post-file=${WORKDIR}/${BPN}.tar.gz ${foss_server}/?mod=spdx_license_once`
-    
-    ## write out the output and checksum of tar file for now
-    echo "\nFOSSOLOGY output:" >> ${outfile}
-    echo ${foss_output} >> ${outfile}
-    printf "Checksum:  %s\n\n" ${spdx_checksum} >> ${outfile}
-        
-    ## remove the tar file that was made and spdx_temp directory
-    rm -f ${WORKDIR}/${BPN}.tar.gz
-    rm -rf ${WORKDIR}/spdx_temp/
-    echo "Removed spdx temp directory" >> ${outfile}
-    ls -ld ${WORKDIR}/spdx_temp || echo "${WORKDIR}/spdx_temp removed properly" >> ${outfile}
+    outfile = "/home/yocto/fossology_scans/" + info['pn'] + ".spdx.out"
+    info['spdxdir'] = info['workdir'] + "/spdx_temp"
 
-    ## compare ${foss_output} against the SPDX file that is in cache
-    # to come
-    ## write possibly updated SPDX back to cache
-    # to come
+    ## remove old log file, create tmp dir
+    remove_file( outfile )
+    if not os.path.exists( info['spdxdir'] ):
+        os.makedirs( info['spdxdir'] )
+
+    file = open( outfile, 'w+' )
+    write_metadata( info, file )
+    cp_changed_files( info, file )
+
+    tar_file = os.path.join( info['workdir'], info['pn'] + ".tar.gz" )
+    with tarfile.open( tar_file, "w:gz" ) as tar:
+        tar.add( info['spdxdir'], arcname=os.path.basename(info['spdxdir']) )
+    tar.close()
+
+    foss_server = "https://foss-spdx-dev.ist.unomaha.edu"\
+        + "/?mod=spdx_license_once"
+    foss_flags = ["wget", "-qO", "-", "--no-check-certificate", 
+        "--timeout=0", "--post-file=" + tar_file, foss_server]
+    p = subprocess.Popen(foss_flags, stdout=subprocess.PIPE)
+    foss_output, foss_error = p.communicate()
+
+    file.write( foss_output + "\n" )
+    file.close()
+
+    ## clean up the temp stuff
+    remove_dir_tree( info['spdxdir'] )
+    remove_file( tar_file )
 }
 addtask SPDX after do_patch before do_configure
+
+def cp_changed_files( info, file ):
+    import errno, shutil
+    for f_dir, f in listFiles( info['sourcedir'] ):
+        full_path =  os.path.join( f_dir, f )
+        dest_dir = os.path.join( info['spdxdir'], f_dir )
+        dest_path = os.path.join( info['spdxdir'], full_path )
+        try:
+            stats = os.stat( full_path )
+        except OSError as e:
+            file.write( "Stat failed" + str(e) + "\n")
+            continue
+
+        checksum = hash_file( full_path )
+        file.write( "Name: %s\nSize: %s\nmtime: %s\nsha1: %s\n\n" % 
+            ( full_path, stats.st_size, 
+            time.asctime(time.localtime(stats.st_mtime)), checksum) )
+
+        try:
+            os.makedirs( dest_dir )
+        except OSError as e:
+            if e.errno == errno.EEXIST and os.path.isdir(dest_dir):
+                pass
+            else: 
+                file.write( "mkdir failed " + str(e) + "\n" )
+                continue
+
+        try:
+            shutil.copyfile( full_path, dest_path )
+        except shutil.Error as e:
+            file.write( str(e) + "\n" )
+        except IOError as e:
+            file.write( str(e) + "\n" )
+
+
+def remove_dir_tree( dir_name ):
+    import shutil
+    try: 
+        shutil.rmtree( dir_name )
+    except:
+        pass
+
+def remove_file( file_name ):
+    try:
+        os.remove( file_name )
+    except OSError as e:
+        pass
+
+def listFiles( dir ):
+    for root, subFolders, files in os.walk( dir ):
+        for f in files:
+            rel_root = os.path.relpath( root, dir )
+            yield rel_root, f
+            #yield os.path.join( root, f )
+    return
+
+def hash_file( file_name ):
+    import hashlib
+    sha1 = hashlib.sha1()
+    f = open( file_name, 'rb' )
+    try:
+        sha1.update(f.read())
+    finally:
+        f.close()
+    return sha1.hexdigest()
+
+def write_metadata( info, file ):
+    file.write( "----------------\n" )
+    for key, value in info.iteritems():
+        file.write( key + " = " + value + "\n" )
+    file.write( "----------------\n\n" )
