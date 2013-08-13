@@ -1,0 +1,12 @@
+Index: Encode-Detect-1.01/Build.PL
+===================================================================
+--- Encode-Detect-1.01.orig/Build.PL	2008-05-27 20:35:11.000000000 +0000
++++ Encode-Detect-1.01/Build.PL	2013-01-19 10:13:14.933080496 +0000
+@@ -14,7 +14,6 @@
+      xs_files => { 'Detector.xs' => 'lib/Encode/Detect/Detector.xs' },
+      dist_version_from => 'Detect.pm',
+      extra_compiler_flags => ['-x', 'c++', '-Iinclude'],
+-     extra_linker_flags => ['-lstdc++'],
+     );
+ $build->create_build_script;
+ 
