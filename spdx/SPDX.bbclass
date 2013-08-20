@@ -6,6 +6,7 @@ SPDXSSTATEDIR = "/home/yocto/sstate_temp_dir"
 
 python do_spdx () {
     import os, sys
+    import json
 
     info = {} 
     info['workdir'] = (d.getVar('WORKDIR', True) or "")
@@ -49,7 +50,8 @@ python do_spdx () {
     if cache_cur:
         spdx_file_info = cached_spdx['Files']
     else:
-        foss_file_info = parse_foss_scan( info['tar_file'] )
+        bb.warn(info['pn'] + json.dumps(local_file_info))
+        foss_file_info = run_fossology( info['tar_file'] )
         spdx_file_info = create_spdx_doc( local_file_info, foss_file_info )
         ## write to cache
         write_cached_spdx(sstatefile,cur_ver_code,spdx_file_info)
@@ -61,7 +63,7 @@ python do_spdx () {
     create_manifest(info,spdx_header_info,spdx_file_info)
 
     ## clean up the temp stuff
-    remove_dir_tree( info['spdx_temp_dir'] )
+    #remove_dir_tree( info['spdx_temp_dir'] )
     if os.path.exists(info['tar_file']):
         remove_file( info['tar_file'] )
 }
@@ -70,7 +72,7 @@ addtask spdx after do_patch before do_configure
 def create_manifest(info,header,files):
     with open(info['outfile'], 'w') as f:
         f.write(header + '\n')
-        for block in files:
+        for chksum, block in files.iteritems():
             for key, value in block.iteritems():
                 f.write(key + ": " + value)
                 f.write('\n')
@@ -100,13 +102,13 @@ def setup_foss_scan( info, cache, cached_files ):
     import tarfile
     file_info = {}
     cache_dict = {}
-    if cache:
-        bb.warn("CACHE IS TRUE FOR " + info['pn'])
-        for i in cached_files:
-            cache_dict[i['FileChecksum: SHA1']] = i['FileName']
-            #cache_dict[i['FileName']] = i['FileChecksum: SHA1']
-    else:
-        bb.warn("CACHE IS FALSE FOR " + info['pn'])
+    #if cache:
+    #    bb.warn("CACHE IS TRUE FOR " + info['pn'])
+    #    for i in cached_files:
+    #        cache_dict[i['FileChecksum: SHA1']] = i['FileName']
+    #        #cache_dict[i['FileName']] = i['FileChecksum: SHA1']
+    #else:
+    #    bb.warn("CACHE IS FALSE FOR " + info['pn'])
 
     for f_dir, f in list_files( info['sourcedir'] ):
         full_path =  os.path.join( f_dir, f )
@@ -121,8 +123,13 @@ def setup_foss_scan( info, cache, cached_files ):
 
         checksum = hash_file( abs_path )
         mtime = time.asctime(time.localtime(stats.st_mtime))
+        
+        ## retain cache information if it exists
         file_info[checksum] = {}
-        file_info[checksum]['FileName'] = full_path
+        if cache and checksum in cached_files:
+            file_info[checksum] = cached_files[checksum]
+        else:
+            file_info[checksum]['FileName'] = full_path
 
         try:
             os.makedirs( dest_dir )
@@ -133,7 +140,7 @@ def setup_foss_scan( info, cache, cached_files ):
                 bb.warn( "mkdir failed " + str(e) + "\n" )
                 continue
 
-        if( cache and checksum not in cache_dict) or not cache:
+        if(cache and checksum not in cached_files) or not cache:
             try:
                 shutil.copyfile( abs_path, dest_path )
             except shutil.Error as e:
@@ -185,7 +192,7 @@ def hash_string( data ):
     sha1.update( data )
     return sha1.hexdigest()
 
-def parse_foss_scan( tar_file ):
+def run_fossology( tar_file ):
     import string, re
     import subprocess
     
@@ -216,25 +223,22 @@ def parse_foss_scan( tar_file ):
 
     return file_info
 
-def create_spdx_doc( local_file_info, foss_file_info ):
+def create_spdx_doc( file_info, scanned_files ):
     import json
-    spdx_doc = []
-    for chksum, lic_info in foss_file_info.iteritems():
-        file_block = {}
-        if chksum in local_file_info:
-            file_block['FileName'] = local_file_info[chksum]['FileName']
-            file_block['FileType'] = lic_info['FileType']
-            file_block['FileChecksum: SHA1'] = chksum
-            file_block['LicenseInfoInFile'] = lic_info['LicenseInfoInFile']
-            file_block['LicenseConcluded'] = lic_info['LicenseConcluded']
-            file_block['FileCopyrightText'] = lic_info['FileCopyrightText']
-
-            spdx_doc.append( file_block )
+    ## push foss changes back into cache
+    for chksum, lic_info in scanned_files.iteritems():
+        if chksum in file_info:
+            file_info[chksum]['FileName'] = file_info[chksum]['FileName']
+            file_info[chksum]['FileType'] = lic_info['FileType']
+            file_info[chksum]['FileChecksum: SHA1'] = chksum
+            file_info[chksum]['LicenseInfoInFile'] = lic_info['LicenseInfoInFile']
+            file_info[chksum]['LicenseConcluded'] = lic_info['LicenseConcluded']
+            file_info[chksum]['FileCopyrightText'] = lic_info['FileCopyrightText']
         else:
             bb.warn(lic_info['FileName'] + " : " + chksum 
                 + " : is not in the local file info: " 
                 + json.dumps(lic_info,indent=1))
-    return spdx_doc
+    return file_info
 
 def get_ver_code( dirname ):
     ##chksums.sort()
