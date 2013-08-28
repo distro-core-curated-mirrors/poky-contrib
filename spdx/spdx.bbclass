@@ -281,7 +281,7 @@ def get_header_info( info, spdx_verification_code, spdx_files ):
     head = []
     DEFAULT = "NOASSERTION"
 
-    licenses = get_license_list( spdx_files.values() )
+    lic_info = get_license_info_from_files(spdx_files.values())
 
     package_checksum = ''
     if os.path.exists(info['tar_file']):
@@ -306,24 +306,24 @@ def get_header_info( info, spdx_verification_code, spdx_files ):
 
     ## package level information
     head.append("## Package Information")
-    head.append("PackageName: " + info['pn'])
-    head.append("PackageVersion: " + info['pv'])
+    head.append("PackageName: %s" % info['pn'])
+    head.append("PackageVersion: %s" % info['pv'])
     head.append("PackageDownloadLocation: %s" 
         % (info['src_uri'].split()[0] or DEFAULT))
     head.append("PackageSummary: <text>%s</text>" % DEFAULT)
-    head.append("PackageFileName: " + os.path.basename(info['tar_file']))
-    head.append("PackageSupplier: Person:" + DEFAULT)
-    head.append("PackageOriginator: Person:" + DEFAULT)
-    head.append("PackageChecksum: SHA1: " + package_checksum)
-    head.append("PackageVerificationCode: " + spdx_verification_code)
-    head.append("PackageDescription: <text>" + info['pn']
-        + " version " + info['pv'] + "</text>")
+    head.append("PackageFileName: %s" % os.path.basename(info['tar_file']))
+    head.append("PackageSupplier: Person:%s" % DEFAULT)
+    head.append("PackageOriginator: Person:%s" % DEFAULT)
+    head.append("PackageChecksum: SHA1: %s" % package_checksum)
+    head.append("PackageVerificationCode: %s" % spdx_verification_code)
+    head.append("PackageDescription: <text>%s version %s</text>" 
+        % (info['pn'], info['pv']))
     head.append("")
-    head.append("PackageCopyrightText: <text>" + DEFAULT + "</text>")
+    head.append("PackageCopyrightText: <text>%s</text>" % DEFAULT)
     head.append("")
-    head.append("PackageLicenseDeclared: (%s)" % ' AND '.join(licenses))
-    head.append("PackageLicenseConcluded: " + DEFAULT)
-    for l in licenses:
+    head.append("PackageLicenseDeclared: (%s)" % ' AND '.join(lic_info))
+    head.append("PackageLicenseConcluded: %s" % DEFAULT)
+    for l in lic_info:
         head.append("PackageLicenseInfoFromFiles: %s" % l)
     head.append("")
     
@@ -333,14 +333,18 @@ def get_header_info( info, spdx_verification_code, spdx_files ):
 
     return '\n'.join(head)
 
-def get_license_list( files ):
+def get_license_info_from_files( files ):
     """
         Get a non-duplicate list of licenses from 
         a list of files
     """
+    ## don't need no license type stuff in the list
+    exclude = ['No_license_found','NOASSERTION']
     licenses = []
     for f in files:
         for l in f['LicenseInfoInFile'].split(','):
+            if l in exclude:
+                continue
             if not l in licenses:
                 licenses.append(l)
 
