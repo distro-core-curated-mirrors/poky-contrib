@@ -10,7 +10,8 @@ try:
 except ImportError:
     from pysqlite2 import dbapi2 as sqlite3
 
-import bb.server.xmlrpc
+#import bb.server.xmlrpc
+import bb
 import prserv
 import prserv.db
 
@@ -106,6 +107,10 @@ class PRServer(SimpleXMLRPCServer):
             return None
 
     def quit(self):
+        import meliae
+        from meliae import scanner
+        scanner.dump_all_objects('/tmp/filename.json')
+
         self.quit=True
         return
 
@@ -215,7 +220,8 @@ class PRServerConnection(object):
             host, port = singleton.getinfo()
         self.host = host
         self.port = port
-        self.connection, self.transport = bb.server.xmlrpc._create_server(self.host, self.port)
+        self.connection = xmlrpclib.ServerProxy('http://%s:%s' % (self.host, self.port))
+        #self.connection, self.transport = bb.server.xmlrpc._create_server(self.host, self.port)
 
     def terminate(self):
         try:

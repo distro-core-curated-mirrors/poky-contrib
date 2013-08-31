@@ -8,7 +8,7 @@ def prserv_make_conn(d, check = False):
         if check:
             if not conn.ping():
                 raise Exception('service not available')
-        d.setVar("__PRSERV_CONN",conn)
+        #d.setVar("__PRSERV_CONN",conn)
     except Exception, exc:
         bb.fatal("Connecting to PR service %s:%s failed: %s" % (host_params[0], host_params[1], str(exc)))
 
