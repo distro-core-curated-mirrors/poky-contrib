@@ -1340,7 +1340,7 @@ python package_do_shlibs() {
             dir = dir[1:]
         if shlibs_search_dirs_re_txt:
             shlibs_search_dirs_re_txt += "|"
-        shlibs_search_dirs_re_txt += "(^.*/%s/.*$)" % dir
+        shlibs_search_dirs_re_txt += "(^/%s/[^/]*$)" % dir
     shlibs_search_dirs_re = re.compile(shlibs_search_dirs_re_txt)
     bb.debug(2, "will use following RE to search for provides sonames %s" % shlibs_search_dirs_re_txt)
 
@@ -1401,12 +1401,13 @@ python package_do_shlibs() {
             if m:
                 this_soname = m.group(1)
                 if not this_soname in sonames:
-                    if shlibs_search_dirs_re.match(file):
+                    targetfile = file.replace(pkgdest + "/" + pkg, "")
+                    if shlibs_search_dirs_re.match(targetfile):
                         # if library is private (only used by package) then do not build shlib for it
                         if not private_libs or -1 == private_libs.find(this_soname):
                             sonames.append(this_soname)
                     else:
-                        bb.debug(2, "ignoring soname %s from %s, because path doesn't match %s" % (this_soname, file, shlibs_search_dirs_re_txt))
+                        bb.debug(2, "ignoring soname %s from %s, because path doesn't match %s" % (this_soname, targetfile, shlibs_search_dirs_re_txt))
                 if libdir_re.match(os.path.dirname(file)):
                     needs_ldconfig = True
                 if snap_symlinks and (os.path.basename(file) != this_soname):
@@ -1522,7 +1523,7 @@ python package_do_shlibs() {
                 if s in shlib_provider:
                     (old_pkg, old_pkgver) = shlib_provider[s]
                     if old_pkg != pkg:
-                        bb.warn('%s-%s is already registered as shlib provider for %s, ignoring %s-%s trying to register the same' % (old_pkg, old_pkgver, s, pkg, pkgver))
+                        bb.warn('%s-%s is already registered as shlib provider for %s yet %s-%s trying to register the same' % (old_pkg, old_pkgver, s, pkg, pkgver))
                 bb.debug(1, 'registering %s-%s as shlib provider for %s' % (pkg, pkgver, s))
                 fd.write(s + '\n')
                 shlib_provider[s] = (pkg, pkgver)
