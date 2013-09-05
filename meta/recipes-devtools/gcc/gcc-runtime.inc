@@ -18,6 +18,9 @@ RUNTIMETARGET = "libssp libstdc++-v3 libgomp"
 # libmudflap
 # libgfortran
 
+DEPENDS_append = " chrpath-replacement-native"
+EXTRANATIVEPATH += "chrpath-native"
+
 do_configure () {
 	export CXX="${CXX} -nostdinc++ -nostdlib++"
 	mtarget=`echo ${MULTIMACH_TARGET_SYS} | sed -e s#-${SDKPKGSUFFIX}##`
@@ -30,6 +33,11 @@ do_configure () {
 		cd ${B}/$target/$d/
 		chmod a+x ${S}/$d/configure
 		${S}/$d/configure ${CONFIGUREOPTS} ${EXTRA_OECONF}
+		# Ugly hack, libgfortran configure looks for ../libquadmath/libquadmath.la 
+		# so we need to compile it before configure
+		if [ "$d" = "libquadmath" ]; then
+			oe_runmake MULTIBUILDTOP=${B}/$target/$d/
+		fi
 	done
 }
 
@@ -38,6 +46,16 @@ do_compile () {
 	for d in libgcc ${RUNTIMETARGET}; do
 		cd ${B}/$target/$d/
 		oe_runmake MULTIBUILDTOP=${B}/$target/$d/
+		if [ "$d" = "libgfortran" ]; then
+			# libtool needs libdir to match the final installation directory which configure
+			# sets from output from this command (e.g. both set to /usr/lib/../lib
+			# It also adds bogus RPATHS which we have to delete
+			fulllibdir=`$CC -print-multi-os-directory`
+			if [ $fulllibdir != "." ]; then
+				sed -i -e "s#relink_command=.*#relink_command=#" ${B}/$target/$d/libgfortran.la
+				chrpath -d `readlink -f ${B}/$target/$d/.libs/libgfortran.so`
+			fi
+		fi
 	done
 }
 
