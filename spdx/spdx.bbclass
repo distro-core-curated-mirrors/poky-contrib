@@ -52,13 +52,13 @@ python do_spdx () {
         cached_spdx = get_cached_spdx( sstatefile )
 
         if cached_spdx['PackageVerificationCode'] == cur_ver_code:
-            bb.warn(info['pn'] + "'s ver code same as cache's. do nothing")
+            #bb.warn(info['pn'] + "'s ver code same as cache's. do nothing")
             cache_cur = True
         else:
             local_file_info = setup_foss_scan( info, 
-                True, cached_spdx['Files'] )
+                cache=True, cached_files=cached_spdx['Files'] )
     else:
-        local_file_info = setup_foss_scan( info, False, None )
+        local_file_info = setup_foss_scan( info )
 
     if cache_cur:
         spdx_file_info = cached_spdx['Files']
@@ -121,7 +121,7 @@ def write_cached_spdx( sstatefile, ver_code, files ):
     with open( sstatefile, 'w' ) as f:
         f.write(json.dumps(spdx_doc))
 
-def setup_foss_scan( info, cache, cached_files ):
+def setup_foss_scan( info, cache=False, cached_files=None ):
     import errno, shutil
     import tarfile
     file_info = {}
@@ -212,31 +212,51 @@ def hash_string( data ):
 def run_fossology( foss_command ):
     import string, re
     import subprocess
+    import json
     
+    file_info = {}
+
     p = subprocess.Popen(foss_command.split(), 
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     foss_output, foss_error = p.communicate()
     ## try and make sure it looks like spdx output
-    if not re.search('FileName:.*?</text>',foss_output,re.S):
-        bb.warn("Error while trying to run fossology scan\n"
-            + "Command: %s\nOutput: %s" % (foss_command,foss_output))
-        return None
+    json_flag = False
+    json_output = ''
+    try: 
+        json_output = json.loads(foss_output)
+        json_flag = True
+    except ValueError as e:
+        json_flag = False
+
+    #bb.warn(json.dumps(json_output))
+    #bb.warn(foss_output)
+    if json_flag:
+        if 'file_level_info' in json_output and json_output['file_level_info'] != None:
+            for f in json_output['file_level_info']:
+                ## change it just a bit to key on filhecksum
+                file_info[f['FileChecksum']] = f
+    else:
+        if not re.search('FileName:.*?</text>',foss_output,re.S):
+            bb.warn("Error while trying to run fossology scan\n"
+                + "Command: %s\nOutput: %s" % (foss_command,foss_output))
+            return None
+        
+        records = []
+        records = re.findall('FileName:.*?</text>', foss_output, re.S)
     
-    records = []
-    records = re.findall('FileName:.*?</text>', foss_output, re.S)
-
-    file_info = {}
-    for rec in records:
-        rec = string.replace( rec, '\r', '' )
-        chksum = re.findall( 'FileChecksum: SHA1: (.*)\n', rec)[0]
-        file_info[chksum] = {}
-        file_info[chksum]['FileCopyrightText'] = re.findall( 'FileCopyrightText: ' 
-            + '(.*?</text>)', rec, re.S )[0]
-        fields = ['FileType','LicenseConcluded',
-            'LicenseInfoInFile','FileName']
-        for field in fields:
-            file_info[chksum][field] = re.findall(field + ': (.*)', rec)[0]
-
+        for rec in records:
+            rec = string.replace( rec, '\r', '' )
+            chksum = re.findall( 'FileChecksum: SHA1: (.*)\n', rec)[0]
+            file_info[chksum] = {}
+            file_info[chksum]['FileCopyrightText'] =\
+                re.findall( 'FileCopyrightText: ' 
+                    + '(.*?</text>)', rec, re.S 
+                )[0]
+            fields = ['FileType','LicenseConcluded',
+                'LicenseInfoInFile','FileName']
+            for field in fields:
+                file_info[chksum][field] = re.findall(field + ': (.*)', rec)[0]
+    
     return file_info
 
 def create_spdx_doc( file_info, scanned_files ):
@@ -246,14 +266,16 @@ def create_spdx_doc( file_info, scanned_files ):
         if chksum in file_info:
             file_info[chksum]['FileName'] = file_info[chksum]['FileName']
             file_info[chksum]['FileType'] = lic_info['FileType']
-            file_info[chksum]['FileChecksum: SHA1'] = chksum
+            file_info[chksum]['FileChecksum: ' 
+                + lic_info['FileChecksumAlgorithm']] = chksum
             file_info[chksum]['LicenseInfoInFile'] = lic_info['LicenseInfoInFile']
             file_info[chksum]['LicenseConcluded'] = lic_info['LicenseConcluded']
             file_info[chksum]['FileCopyrightText'] = lic_info['FileCopyrightText']
         else:
-            bb.warn(lic_info['FileName'] + " : " + chksum 
-                + " : is not in the local file info: " 
-                + json.dumps(lic_info,indent=1))
+            #bb.warn(lic_info['FileName'] + " : " + chksum 
+            #    + " : is not in the local file info: " 
+            #    + json.dumps(lic_info,indent=1))
+            pass
     return file_info
 
 def get_ver_code( dirname ):
@@ -338,15 +360,20 @@ def get_license_info_from_files( files ):
         Get a non-duplicate list of licenses from 
         a list of files
     """
+    import json
     ## don't need no license type stuff in the list
     exclude = ['No_license_found','NOASSERTION']
     licenses = []
     for f in files:
-        for l in f['LicenseInfoInFile'].split(','):
-            if l in exclude:
-                continue
-            if not l in licenses:
-                licenses.append(l)
+        if 'LicenseInfoInFile' in f:
+            for l in f['LicenseInfoInFile'].split(','):
+                if l in exclude:
+                    continue
+                if not l in licenses:
+                    licenses.append(l)
+        else:
+            #bb.warn( json.dumps(f) )
+            pass
 
     licenses.sort()
     return licenses
