@@ -98,6 +98,7 @@ class VariableParse:
         self.references = set()
         self.execs = set()
         self.contains = {}
+        self.foundpython = False
 
     def var_sub(self, match):
             key = match.group()[2:-1]
@@ -116,6 +117,7 @@ class VariableParse:
                 return match.group()
 
     def python_sub(self, match):
+            self.foundpython = True
             code = match.group()[3:-1]
             codeobj = compile(code.strip(), self.varname or "<expansion>", "eval")
 
@@ -350,6 +352,8 @@ class VariableHistory(object):
             else:
                 self.variables[var] = []
 
+gblexp = {}
+
 class DataSmart(MutableMapping):
     def __init__(self):
         self.dict = {}
@@ -389,6 +393,8 @@ class DataSmart(MutableMapping):
             return self.expand_cache[varname]
 
         varparse = VariableParse(varname, self)
+        #origs = s
+        #h = hash(str(s))
 
         while s.find('${') != -1:
             olds = s
@@ -404,6 +410,21 @@ class DataSmart(MutableMapping):
             except Exception as exc:
                 exc_class, exc, tb = sys.exc_info()
                 raise ExpansionError, ExpansionError(varname, s, exc), tb
+
+        #if not varparse.foundpython:
+        #    if h in gblexp:
+        #        if gblexp[h]['refs'] == varparse.references:
+        #            pass
+        #        else:
+        #            bb.warn("Ref not match %s, val %s (%s vs %s) (%s)" % (varname, origs, gblexp[h]['refs'], varparse.references, s))
+        #        if gblexp[h]['execs'] == varparse.execs:
+        #            pass
+        #        else:
+        #            bb.warn("Exec not match")
+        #    else:
+        #        gblexp[h] = {}
+        #        gblexp[h]['refs'] = varparse.references
+        #        gblexp[h]['execs'] = varparse.execs
 
         varparse.value = s
 
@@ -450,9 +471,11 @@ class DataSmart(MutableMapping):
             self.dict[var] = {}
 
     def _findVar(self, var):
+        #n = 0
         dest = self.dict
         while dest:
             if var in dest:
+                #bb.warn(str(n))
                 return dest[var]
 
             if "_remote_data" in dest:
@@ -462,6 +485,9 @@ class DataSmart(MutableMapping):
             if "_data" not in dest:
                 break
             dest = dest["_data"]
+            #n = n + 1
+
+        #bb.warn("Not Found " + str(n))
 
     def _makeShadowCopy(self, var):
         if var in self.dict:
