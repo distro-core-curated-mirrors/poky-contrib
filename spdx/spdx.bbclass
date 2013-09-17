@@ -15,7 +15,7 @@
 # SPDX file will be output to the path which is defined as[SPDX_MANIFEST_DIR] 
 # in ./meta/conf/licenses.conf.
 
-SPDXSSTATEDIR = "${WORKDIR}/spdx_sstate_dir"
+SPDXSSTATEDIR = "${SSTATE_DIR}/spdx"
 
 python do_spdx () {
     import os, sys
@@ -38,6 +38,7 @@ python do_spdx () {
     info['spdx_temp_dir'] = (d.getVar('SPDX_TEMP_DIR', True) or "")
     info['tar_file'] = os.path.join( info['workdir'], info['pn'] + ".tar.gz" )
 
+    official_lics = d.getVarFlags('SPDXLICENSEMAP')
 
     ## get everything from cache.  use it to decide if 
     ## something needs to be rerun 
@@ -55,13 +56,16 @@ python do_spdx () {
             #bb.warn(info['pn'] + "'s ver code same as cache's. do nothing")
             cache_cur = True
         else:
-            local_file_info = setup_foss_scan( info, 
+            local_files = setup_foss_scan( info, 
                 cache=True, cached_files=cached_spdx['Files'] )
+            cache_lics = cached_spdx['Extracted_licenses']
     else:
-        local_file_info = setup_foss_scan( info )
+        local_files = setup_foss_scan( info )
+        cache_lics = {}
 
     if cache_cur:
-        spdx_file_info = cached_spdx['Files']
+        spdx_files = cached_spdx['Files']
+        spdx_lics = cached_spdx['Extracted_licenses']
     else:
         ## setup fossology command
         foss_server = (d.getVar('FOSS_SERVER', True) or "")
@@ -69,22 +73,25 @@ python do_spdx () {
         foss_command = "wget %s --post-file=%s %s"\
             % (foss_flags,info['tar_file'],foss_server)
         
-        foss_file_info = run_fossology( foss_command )
-        if not foss_file_info:
+        foss_files, foss_lics = run_fossology( foss_command )
+        if not foss_files:
             bb.warn("Fossology scan failed for %s. No manifest created."
                 % info['pn'])
-            spdx_file_info = None
+            spdx_files = None
         else:
-            spdx_file_info = create_spdx_doc( local_file_info, foss_file_info )
-            ## write to cache
-            write_cached_spdx(sstatefile,cur_ver_code,spdx_file_info)
+            ## get spdx file information 
+            spdx_files, spdx_lics = create_spdx_doc(local_files, 
+                foss_files, cache_lics, foss_lics, official_lics)
+            
+            write_cached_spdx(sstatefile,cur_ver_code
+                ,spdx_files, spdx_lics)
     
-    if spdx_file_info:
+    if spdx_files:
         ## Get document and package level information
-        spdx_header_info = get_header_info(info, cur_ver_code, spdx_file_info)
+        spdx_header = get_spdx_header(info, cur_ver_code, spdx_files)
     
         ## CREATE MANIFEST
-        create_manifest(info,spdx_header_info,spdx_file_info)
+        create_manifest(info,spdx_header,spdx_files,spdx_lics)
 
         ## clean up the temp stuff
         remove_dir_tree( info['spdx_temp_dir'] )
@@ -93,12 +100,23 @@ python do_spdx () {
 }
 addtask spdx after do_patch before do_configure
 
-def create_manifest(info,header,files):
+def create_manifest(info,header,files,ex_lics):
     with open(info['outfile'], 'w') as f:
         f.write(header + '\n')
+
+        f.write('## File Information')
+        f.write('\n')
         for chksum, block in files.iteritems():
             for key, value in block.iteritems():
                 f.write(key + ": " + value)
+                f.write('\n')
+            f.write('\n')
+
+        f.write('## License Information')
+        f.write('\n')
+        for ex_lic in ex_lics:
+            for key, value in ex_lic.iteritems():
+                f.write(key + ": " + value.encode('ascii','ignore'))
                 f.write('\n')
             f.write('\n')
 
@@ -112,12 +130,14 @@ def get_cached_spdx( sstatefile ):
             cached_spdx_info = None
     return cached_spdx_info
 
-def write_cached_spdx( sstatefile, ver_code, files ):
+def write_cached_spdx( sstatefile, ver_code, files, ex_lics ):
     import json
     spdx_doc = {}
     spdx_doc['PackageVerificationCode'] = ver_code
     spdx_doc['Files'] = {}
     spdx_doc['Files'] = files
+    spdx_doc['Extracted_licenses'] = {}
+    spdx_doc['Extracted_licenses'] = (ex_lics or {})
     with open( sstatefile, 'w' ) as f:
         f.write(json.dumps(spdx_doc))
 
@@ -215,68 +235,127 @@ def run_fossology( foss_command ):
     import json
     
     file_info = {}
+    extracted_licenses= {}
 
     p = subprocess.Popen(foss_command.split(), 
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     foss_output, foss_error = p.communicate()
     ## try and make sure it looks like spdx output
-    json_flag = False
     json_output = ''
     try: 
         json_output = json.loads(foss_output)
-        json_flag = True
     except ValueError as e:
-        json_flag = False
+        bb.warn("Error parsing FOSSology output\n"
+            + "command: %s\nOutput: %s" % (foss_command,foss_output))
+        return None, None
 
-    #bb.warn(json.dumps(json_output))
-    #bb.warn(foss_output)
-    if json_flag:
-        if 'file_level_info' in json_output and json_output['file_level_info'] != None:
-            for f in json_output['file_level_info']:
-                ## change it just a bit to key on filhecksum
-                file_info[f['FileChecksum']] = f
+    ## Make sure there is actually spdx here
+    if 'file_level_info' in json_output and\
+            json_output['file_level_info'] != None:
+        for f in json_output['file_level_info']:
+            file_info[f['FileChecksum']] = f
     else:
-        if not re.search('FileName:.*?</text>',foss_output,re.S):
-            bb.warn("Error while trying to run fossology scan\n"
-                + "Command: %s\nOutput: %s" % (foss_command,foss_output))
-            return None
-        
-        records = []
-        records = re.findall('FileName:.*?</text>', foss_output, re.S)
-    
-        for rec in records:
-            rec = string.replace( rec, '\r', '' )
-            chksum = re.findall( 'FileChecksum: SHA1: (.*)\n', rec)[0]
-            file_info[chksum] = {}
-            file_info[chksum]['FileCopyrightText'] =\
-                re.findall( 'FileCopyrightText: ' 
-                    + '(.*?</text>)', rec, re.S 
-                )[0]
-            fields = ['FileType','LicenseConcluded',
-                'LicenseInfoInFile','FileName']
-            for field in fields:
-                file_info[chksum][field] = re.findall(field + ': (.*)', rec)[0]
-    
-    return file_info
+        bb.warn("Error while trying to run fossology scan\n"
+            + "command: %s\nOutput: %s" % (foss_command,foss_output))
+        return None, None
 
-def create_spdx_doc( file_info, scanned_files ):
+    if 'extracted_license_info' in json_output and\
+            json_output['extracted_license_info'] != None:
+        for e in json_output['extracted_license_info']:
+            extracted_licenses[e['LicenseName']] = e
+
+    return file_info, extracted_licenses
+
+def create_spdx_doc(file_info,foss_files,cache_lics,foss_lics,off_lics):
     import json
     ## push foss changes back into cache
-    for chksum, lic_info in scanned_files.iteritems():
+    for chksum, lic_info in foss_files.iteritems():
         if chksum in file_info:
             file_info[chksum]['FileName'] = file_info[chksum]['FileName']
             file_info[chksum]['FileType'] = lic_info['FileType']
             file_info[chksum]['FileChecksum: ' 
                 + lic_info['FileChecksumAlgorithm']] = chksum
-            file_info[chksum]['LicenseInfoInFile'] = lic_info['LicenseInfoInFile']
-            file_info[chksum]['LicenseConcluded'] = lic_info['LicenseConcluded']
-            file_info[chksum]['FileCopyrightText'] = lic_info['FileCopyrightText']
+            file_info[chksum]['LicenseInfoInFile'] =\
+                lic_info['LicenseInfoInFile']
+            file_info[chksum]['LicenseConcluded'] =\
+                lic_info['LicenseConcluded']
+            file_info[chksum]['FileCopyrightText'] =\
+                lic_info['FileCopyrightText']
         else:
-            #bb.warn(lic_info['FileName'] + " : " + chksum 
-            #    + " : is not in the local file info: " 
-            #    + json.dumps(lic_info,indent=1))
+            bb.warn(lic_info['FileName'] + " : " + chksum 
+                + " : is not in the local file info: " 
+                + json.dumps(lic_info,indent=1))
             pass
-    return file_info
+
+    file_info, spdx_lics = create_extracted_licenses(
+        file_info, foss_lics, cache_lics, off_lics)
+
+    return file_info, spdx_lics
+
+def create_extracted_licenses(files,foss_lics,cache_lics,off_lics):
+    """
+        Take files with license name fields and change to an
+        extracted license format. Return extracted license
+        information as well
+    """
+    import json, re
+
+    spdx_lics = []
+    sel = {}
+    lic_counter = 0
+    refs = {}
+    ref = ""
+
+    ## keep cached license references. Don't
+    ## overwrite LicenseRef-##
+    for ex_lic in cache_lics:
+        refs[ex_lic['LicenseID']] = ex_lic
+        c = re.search('(\d+)$',ex_lic['LicenseID']).group(1)
+        if int(c) > lic_counter:
+            lic_counter = int(c) + 1
+
+    for chksum, f in files.iteritems():
+        if f['LicenseInfoInFile'] == 'No_license_found':
+            continue
+        file_lics = []
+        for l in f['LicenseInfoInFile'].split(','):
+            ## if it is already referencing a license number or
+            ## if it is part of the recognized spdx licenses then skip
+            if re.match('LicenseRef-\d+', l):
+                file_lics.append(l)
+                continue
+            elif l in off_lics:
+                l = off_lics[l]
+                file_lics.append(l)
+                continue
+            elif l in off_lics.values():
+                file_lics.append(l)
+                continue
+    
+            if l in refs:
+                ref = refs[l]
+            else:
+                ref = 'LicenseRef-%d' % lic_counter
+                refs[l] = ref
+                lic_counter += 1
+
+            if not ref in sel:
+                sel[ref] = {}
+                if l in foss_lics:
+                    sel[ref] = foss_lics[l]
+                else:
+                    sel[ref]['LicenseName'] = l
+                    sel[ref]['ExtractedText'] = "<text>NOASSERTION</text>"
+                    sel[ref]['LicenseCrossReference'] = ""
+                
+                sel[ref]['LicenseID'] = ref
+                spdx_lics.append(sel[ref])
+
+            file_lics.append(ref)
+        
+        f['LicenseInfoInFile'] = ','.join(file_lics)
+
+    return files, spdx_lics
 
 def get_ver_code( dirname ):
     chksums = []
@@ -292,7 +371,7 @@ def get_ver_code( dirname ):
     ver_code = hash_string( ver_code_string )
     return ver_code
 
-def get_header_info( info, spdx_verification_code, spdx_files ):
+def get_spdx_header( info, spdx_verification_code, spdx_files ):
     """
         Put together the header SPDX information. 
         Eventually this needs to become a lot less 
@@ -349,10 +428,6 @@ def get_header_info( info, spdx_verification_code, spdx_files ):
         head.append("PackageLicenseInfoFromFiles: %s" % l)
     head.append("")
     
-    ## header for file level
-    head.append("## File Information")
-    head.append("")
-
     return '\n'.join(head)
 
 def get_license_info_from_files( files ):
