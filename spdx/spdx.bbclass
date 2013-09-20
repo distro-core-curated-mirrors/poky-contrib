@@ -379,16 +379,19 @@ def get_spdx_header( info, spdx_verification_code, spdx_files ):
     """
     from datetime import datetime
     import os
+    import tarfile, cStringIO
     head = []
     DEFAULT = "NOASSERTION"
 
     lic_info = get_license_info_from_files(spdx_files.values())
 
-    package_checksum = ''
-    if os.path.exists(info['tar_file']):
-        package_checksum = hash_file( info['tar_file'] )
-    else:
-        package_checksum = DEFAULT
+    c = cStringIO.StringIO()
+    with tarfile.open( mode="w:gz", fileobj=c ) as tar:
+        tar.add( info['sourcedir'], arcname=os.path.basename(info['sourcedir']) )
+    tar.close()
+    package_checksum = hash_string(c.getvalue())
+    c.close()
+    bb.warn(package_checksum)
 
     ## document level information
     head.append("SPDXVersion: " + info['spdx_version'])
@@ -415,7 +418,7 @@ def get_spdx_header( info, spdx_verification_code, spdx_files ):
     head.append("PackageFileName: %s" % os.path.basename(info['tar_file']))
     head.append("PackageSupplier: Person:%s" % DEFAULT)
     head.append("PackageOriginator: Person:%s" % DEFAULT)
-    head.append("PackageChecksum: SHA1: %s" % package_checksum)
+    head.append("PackageChecksum: SHA1: %s" % str(package_checksum))
     head.append("PackageVerificationCode: %s" % spdx_verification_code)
     head.append("PackageDescription: <text>%s version %s</text>" 
         % (info['pn'], info['pv']))
