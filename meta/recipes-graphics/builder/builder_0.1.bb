@@ -1,7 +1,11 @@
 SUMMARY = "New user to do specific job"
 DESCRIPTION = "This recipe create a new user named ${PN}, who is used for specific jobs like building. The task can be auto started via mini X"
 SECTION = "x11"
+<<<<<<< HEAD
 PR = "r6"
+=======
+PR = "r4"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://builder_hob_start.sh;endline=5;md5=84796c3c41785d86100fdabcbdade00e"
 
@@ -15,12 +19,18 @@ RDEPENDS_${PN} = "mini-x-session"
 
 inherit useradd
 
+<<<<<<< HEAD
 # builder user password is "builder"
 BUILDER_PASSWORD ?= ".gLibiNXn0P12"
 USERADD_PACKAGES = "${PN}"
 USERADD_PARAM_${PN} = "--system --create-home \
                        --groups video,tty,audio \
                        --password ${BUILDER_PASSWORD} \
+=======
+USERADD_PACKAGES = "${PN}"
+USERADD_PARAM_${PN} = "--system --create-home \
+                       --groups video,tty,audio \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                        --user-group ${PN}"
 
 do_install () {

@@ -33,7 +33,10 @@ screen_cv_sys_terminfo_used=${screen_cv_sys_terminfo_used=yes}
 
 # libpcap
 ac_cv_linux_vers=${ac_cv_linux_vers=2}
+<<<<<<< HEAD
 
 # apr
 apr_cv_tcp_nodelay_with_cork=${apr_cv_tcp_nodelay_with_cork=yes}
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

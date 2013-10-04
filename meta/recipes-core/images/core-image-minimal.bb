@@ -10,3 +10,8 @@ inherit core-image
 
 IMAGE_ROOTFS_SIZE = "8192"
 
+<<<<<<< HEAD
+=======
+# remove not needed ipkg informations
+ROOTFS_POSTPROCESS_COMMAND += "remove_packaging_data_files ; "
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

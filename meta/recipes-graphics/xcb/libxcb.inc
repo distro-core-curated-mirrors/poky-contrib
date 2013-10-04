@@ -59,4 +59,6 @@ do_configure_prepend () {
         ${S}/configure.ac
     sed -i "s|XCBPROTO_XCBPYTHONDIR=\`|XCBPROTO_XCBPYTHONDIR=${STAGING_DIR_HOST}/\`|" \
         ${S}/configure.ac
+    sed -i "s|XCBPROTO_XCBPYTHONDIR=|XCBPROTO_XCBPYTHONDIR=${STAGING_DIR_HOST}/|" \
+        ${S}/configure.ac
 }

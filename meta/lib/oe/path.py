@@ -55,7 +55,11 @@ def make_relative_symlink(path):
         depth += 1
 
     if not ancestor:
+<<<<<<< HEAD
         print("make_relative_symlink() Error: unable to find the common ancestor of %s and its target" % path)
+=======
+        print "make_relative_symlink() Error: unable to find the common ancestor of %s and its target" % path
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         return
 
     base = link.partition(ancestor)[2].strip('/')
@@ -107,7 +111,11 @@ def remove(path, recurse=True):
     for name in glob.glob(path):
         try:
             os.unlink(name)
+<<<<<<< HEAD
         except OSError as exc:
+=======
+        except OSError, exc:
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             if recurse and exc.errno == errno.EISDIR:
                 shutil.rmtree(name)
             elif exc.errno != errno.ENOENT:
@@ -171,6 +179,7 @@ def find(dir, **walkoptions):
     for root, dirs, files in os.walk(dir, **walkoptions):
         for file in files:
             yield os.path.join(root, file)
+<<<<<<< HEAD
 
 
 ## realpath() related functions
@@ -259,3 +268,5 @@ def realpath(file, root, use_physdir = True, loop_cnt = 100, assume_dir = False)
         raise
 
     return file
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

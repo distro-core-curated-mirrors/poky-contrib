@@ -25,5 +25,8 @@ do_compile() {
 	export LIBC="$(find ${STAGING_DIR_TARGET}/${base_libdir}/ -name 'libc-*.so')"
 	cpan_do_compile
 }
+<<<<<<< HEAD
 
 BBCLASSEXTEND = "native"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

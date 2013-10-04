@@ -3,7 +3,11 @@ DEFAULTTUNE ?= "ppce5500"
 require conf/machine/include/powerpc/arch-powerpc64.inc
 
 TUNEVALID[e5500] = "Enable Freescale e5500 specific processor optimizations"
+<<<<<<< HEAD
 TUNE_CCARGS .= "${@bb.utils.contains("TUNE_FEATURES", "e5500", " -mcpu=e5500", "", d)}"
+=======
+TUNE_CCARGS += "${@bb.utils.contains("TUNE_FEATURES", "e5500", "-mcpu=e5500", "", d)}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 AVAILTUNES += "ppce5500 ppc64e5500"
 TUNE_FEATURES_tune-ppce5500 = "m32 fpu-hard e5500"

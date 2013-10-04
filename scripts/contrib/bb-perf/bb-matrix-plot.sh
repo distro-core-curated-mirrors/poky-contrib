@@ -101,12 +101,21 @@ if [ -z "$TITLE" ]; then
 fi
 
 # Determine the dgrid3d mesh dimensions size
+<<<<<<< HEAD
 MIN=$(tail -n +2 "$DATFILE" | cut -d ' ' -f 1 | sed 's/^0*//' | sort -n | uniq | head -n1)
 MAX=$(tail -n +2 "$DATFILE" | cut -d ' ' -f 1 | sed 's/^0*//' | sort -n | uniq | tail -n1)
 BB_CNT=$[${MAX} - $MIN + 1]
 MIN=$(tail -n +2 "$DATFILE" | cut -d ' ' -f 2 | sed 's/^0*//' | sort -n | uniq | head -n1)
 MAX=$(tail -n +2 "$DATFILE" | cut -d ' ' -f 2 | sed 's/^0*//' | sort -n | uniq | tail -n1)
 PM_CNT=$[${MAX} - $MIN + 1]
+=======
+MIN=$(tail -n +2 "$DATFILE" | cut -d ' ' -f 1 | sort | uniq | head -n1)
+MAX=$(tail -n +2 "$DATFILE" | cut -d ' ' -f 1 | sort | uniq | tail -n1)
+BB_CNT=$[${MAX#*0} - $MIN + 1]
+MIN=$(tail -n +2 "$DATFILE" | cut -d ' ' -f 2 | sort | uniq | head -n1)
+MAX=$(tail -n +2 "$DATFILE" | cut -d ' ' -f 2 | sort | uniq | tail -n1)
+PM_CNT=$[${MAX#*0} - $MIN + 1]
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 
 (cat <<EOF
@@ -115,7 +124,11 @@ set xlabel "$XLABEL"
 set ylabel "$YLABEL"
 set style line 100 lt 5 lw 1.5
 $PM3D_FRAGMENT
+<<<<<<< HEAD
 set dgrid3d $PM_CNT,$BB_CNT splines
+=======
+set dgrid3d $PM_CNT,$BB_CNT
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 set ticslevel 0.2
 
 set term png size $SIZE

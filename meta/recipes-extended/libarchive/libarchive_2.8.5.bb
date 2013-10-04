@@ -5,6 +5,7 @@ LICENSE = "BSD"
 LIC_FILES_CHKSUM = "file://COPYING;md5=4255e2e6f0349a4ac8fbd68459296e46"
 PR = "r0"
 
+<<<<<<< HEAD
 PACKAGECONFIG ?= "libxml2 zlib bz2"
 
 PACKAGECONFIG_class-target += "\
@@ -24,6 +25,9 @@ PACKAGECONFIG[xz] = "--with-lzmadec --with-lzma,--without-lzmadec --without-lzma
 PACKAGECONFIG[openssl] = "--with-openssl,--without-openssl,openssl,"
 PACKAGECONFIG[libxml2] = "--with-xml2,--without-xml2,libxml2,"
 PACKAGECONFIG[expat] = "--with-expat,--without-expat,expat,"
+=======
+DEPENDS = "libxml2"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "http://libarchive.googlecode.com/files/libarchive-${PV}.tar.gz \
            file://0001-Patch-from-upstream-revision-1990.patch \

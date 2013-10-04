@@ -10,14 +10,24 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=c0067273d90f6336008cb2504e14bd32 \
                     file://map-ISO8859-1;beginline=9;endline=23;md5=1cecb984063248f29ffe5c46f5c04f34"
 
 DEPENDS = "encodings util-macros"
+<<<<<<< HEAD
 DEPENDS_class-native = "util-macros-native"
 RDEPENDS_${PN} = "mkfontdir mkfontscale encodings"
 RDEPENDS_${PN}_class-native = "mkfontdir-native mkfontscale-native"
+=======
+DEPENDS_virtclass-native = "util-macros-native"
+RDEPENDS_${PN} = "mkfontdir mkfontscale encodings"
+RDEPENDS_${PN}_virtclass-native = "mkfontdir-native mkfontscale-native"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PR = "${INC_PR}.0"
 
 do_configure_prepend() {
+<<<<<<< HEAD
         sed -i "s#MAPFILES_PATH=\`pkg-config#MAPFILES_PATH=\`PKG_CONFIG_PATH=\"${STAGING_LIBDIR_NATIVE}/pkg-config\" pkg-config#g" ${S}/fontutil.m4.in
+=======
+        sed -i "s#MAPFILES_PATH=\`pkg-config#MAPFILES_PATH=\`PKG_CONFIG_PATH=\"${STAGING_LIBDIR_NATIVE}/pkg-config\" pkg-config#g" fontutil.m4.in
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 BBCLASSEXTEND = "native"

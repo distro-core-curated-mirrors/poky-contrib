@@ -6,12 +6,18 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=db1b7a668b2a6f47b2af88fb008ad555 \
                     file://os.h;beginline=3;endline=14;md5=5c0af5e1bedef3ce8178c89f48cd6f1f"
 DEPENDS = "libogg"
 SRCDATE = "${PV}"
+<<<<<<< HEAD
 PR = "r1"
 
 SRC_URI = "svn://svn.xiph.org/trunk;module=Tremor;rev=18221;protocol=http \
            file://obsolete_automake_macros.patch;striplevel=0 \
            file://tremor-arm-thumb2.patch \
 "
+=======
+PR = "r0"
+
+SRC_URI = "svn://svn.xiph.org/trunk;module=Tremor;rev=18221;protocol=http"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 S = "${WORKDIR}/Tremor"
 

@@ -1,6 +1,10 @@
 require gcc-common.inc
 
+<<<<<<< HEAD
 PR = "r20"
+=======
+PR = "r13"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Third digit in PV should be incremented after a minor release
 # happens from this branch on gcc e.g. currently its 4.7.1
@@ -20,7 +24,11 @@ BINV = "4.7.2"
 
 FILESPATH = "${@base_set_filespath([ '${FILE_DIRNAME}/gcc-4.7' ], d)}"
 
+<<<<<<< HEAD
 DEPENDS =+ "mpfr gmp libmpc zlib"
+=======
+DEPENDS =+ "mpfr gmp libmpc"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 NATIVEDEPS = "mpfr-native gmp-native libmpc-native zlib-native"
 
 LICENSE="GPL-3.0-with-GCC-exception & GPLv3"
@@ -74,10 +82,13 @@ SRC_URI = "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.bz2 \
 	   file://ppc_no_crtsavres.patch \
 	   file://0001-crtstuff.c-USE_PT_GNU_EH_FRAME-Define-for-systems-us.patch \
 	   file://0001-Makefile.in-vis_hide-gen-hide-list-Do-not-make-defin.patch \
+<<<<<<< HEAD
 	   file://use-ml-conf-files-from-B.patch \
 	   file://wcast-qual-PR55383.patch \
 	   file://disable-texinfo-5.patch \
 	   file://avoid-oob-array-access.patch \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	  "
 SRC_URI[md5sum] = "cc308a0891e778cfda7a151ab8a6e762"
 SRC_URI[sha256sum] = "8a9283d7010fb9fe5ece3ca507e0af5c19412626384f8a5e9434251ae100b084"
@@ -92,10 +103,17 @@ JAVA = ""
 EXTRA_OECONF_BASE = " --enable-lto \
 			--enable-libssp \
 			--disable-bootstrap \
+<<<<<<< HEAD
 			--disable-libmudflap \
 			--with-system-zlib \
 			--with-linker-hash-style=${LINKER_HASH_STYLE} \
 			--enable-linker-build-id \
+=======
+			--disable-libgomp \
+			--disable-libmudflap \
+			--with-system-zlib \
+			--with-linker-hash-style=${LINKER_HASH_STYLE} \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 			--with-ppl=no \
 			--with-cloog=no \
 			--enable-checking=release \

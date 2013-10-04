@@ -29,5 +29,10 @@ PACKAGES =+ "${PN}-tests"
 RDEPENDS_${PN} += "dbus"
 
 FILES_${PN} += "${base_libdir}/udev ${systemd_unitdir}"
+<<<<<<< HEAD
 FILES_${PN}-tests = "${libdir}/${BPN}/test"
 RDEPENDS_${PN}-tests = "python python-pygobject python-dbus"
+=======
+FILES_${PN}-tests = "${libdir}/ofono"
+RDEPENDS_${PN}-tests = "python python-pygobject"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

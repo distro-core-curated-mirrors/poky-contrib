@@ -9,24 +9,40 @@ dependencies and stop itself racing itself.
 RP 10/10/2011
 
 Upstream-Status: Pending
+<<<<<<< HEAD
 Signed-off-by: Constantin Musca <constantinx.musca@intel.com>
 
 Index: shared-mime-info-1.0/Makefile.am
 ===================================================================
 --- shared-mime-info-1.0.orig/Makefile.am
 +++ shared-mime-info-1.0/Makefile.am
+=======
+
+Index: shared-mime-info-0.91/Makefile.am
+===================================================================
+--- shared-mime-info-0.91.orig/Makefile.am	2011-10-10 21:47:19.834173921 +0100
++++ shared-mime-info-0.91/Makefile.am	2011-10-10 21:45:57.000000000 +0100
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 @@ -1,5 +1,3 @@
 -SUBDIRS=. po
 -
  INCLUDES = $(ALL_CFLAGS)
  
  packagesdir = $(datadir)/mime/packages
+<<<<<<< HEAD
 @@ -72,8 +70,7 @@ uninstall-hook:
+=======
+@@ -70,8 +68,7 @@
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
  
  all: check create-pot
  
 -create-pot:
+<<<<<<< HEAD
 -	$(AM_V_GEN) $(MAKE) -C po shared-mime-info.pot
+=======
+-	$(MAKE) -C po shared-mime-info.pot
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 +create-pot: po
  
  check: create-pot freedesktop.org.xml update-mime-database check-translations

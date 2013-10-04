@@ -128,7 +128,11 @@ CURL=`which curl`
 WGET=`which wget`
 if [ ! -z ${CURL} ]
 then
+<<<<<<< HEAD
 	DOWNLOAD_CMD="${CURL} -R -L -f --retry 3 --retry-delay 4 --connect-timeout 180 --compressed -C - -o"
+=======
+	DOWNLOAD_CMD="${CURL} -R -L --retry 3 --retry-delay 4 --connect-timeout 180 --compressed -C - -o"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 elif [ ! -z ${WGET} ]
 then
 	DOWNLOAD_CMD="${WGET} -c -t 5 -O"

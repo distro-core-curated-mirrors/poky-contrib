@@ -1,4 +1,8 @@
 SUMMARY = "A system tool for maintaining the /etc/rc*.d hierarchy"
+<<<<<<< HEAD
+=======
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 DESCRIPTION = "Chkconfig is a basic system utility.  It updates and queries runlevel \
 information for system services.  Chkconfig manipulates the numerous \
 symbolic links in /etc/rc.d, to relieve system administrators of some \
@@ -10,15 +14,21 @@ LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=5574c6965ae5f583e55880e397fbb018"
 
 DEPENDS = "libnewt popt"
+<<<<<<< HEAD
 PROVIDES += "virtual/update-alternatives"
 
 PR = "r7"
+=======
+
+PR = "r3"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "http://fedorahosted.org/releases/c/h/chkconfig/${BPN}-${PV}.tar.bz2"
 
 SRC_URI[md5sum] = "c2039ca67f2749fe0c06ef7c6f8ee246"
 SRC_URI[sha256sum] = "18b497d25b2cada955c72810e45fcad8280d105f17cf45e2970f18271211de68"
 
+<<<<<<< HEAD
 inherit gettext
 
 # Makefile uses RPM_OPT_FLAGS to construct CFLAGS
@@ -61,3 +71,16 @@ FILES_${PN}-alternatives = "${sbindir}/alternatives ${sbindir}/update-alternativ
 			    ${sysconfdir}/alternatives ${localstatedir}/lib/alternatives"
 FILES_${PN}-alternatives-doc = "${mandir}/man8/alternatives.8 \
                                 ${mandir}/man8/update-alternatives.8"
+=======
+inherit autotools gettext
+
+# Makefile uses RPM_OPT_fLAGS to construct CFLAGS
+#
+EXTRA_OEMAKE += 'RPM_OPT_FLAGS="${CFLAGS}" MANDIR="${mandir}" \
+                 BINDIR="${base_sbindir}" SBINDIR="${sbindir}"'
+
+do_install_append() {
+    mkdir -p ${D}${sysconfdir}/chkconfig.d
+    rm -f ${D}${sbindir}/update-alternatives
+}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

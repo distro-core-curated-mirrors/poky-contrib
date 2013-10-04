@@ -31,8 +31,13 @@ def siteinfo_data(d):
         "microblaze": "endian-big bit-32 microblaze-common",
         "microblazeel": "endian-little bit-32 microblaze-common",
         "mips": "endian-big bit-32 mips-common",
+<<<<<<< HEAD
         "mips64": "endian-big bit-64 mips-common",
         "mips64el": "endian-little bit-64 mips-common",
+=======
+        "mips64": "endian-big bit-64 mips64-common",
+        "mips64el": "endian-little bit-64 mips64-common",
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         "mipsel": "endian-little bit-32 mips-common",
         "powerpc": "endian-big bit-32 powerpc-common",
         "nios2": "endian-little bit-32 nios2-common",
@@ -51,7 +56,10 @@ def siteinfo_data(d):
         "linux": "common-linux common-glibc",
         "linux-gnu": "common-linux common-glibc",
         "linux-gnux32": "common-linux common-glibc",
+<<<<<<< HEAD
         "linux-gnun32": "common-linux common-glibc",
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         "linux-gnueabi": "common-linux common-glibc",
         "linux-gnuspe": "common-linux common-glibc",
         "linux-uclibc": "common-linux common-uclibc",
@@ -67,8 +75,11 @@ def siteinfo_data(d):
         "arm-linux-uclibceabi": "arm-linux-uclibc",
         "armeb-linux-gnueabi": "armeb-linux",
         "armeb-linux-uclibceabi": "armeb-linux-uclibc",
+<<<<<<< HEAD
         "mips64-linux-gnun32": "mips-linux bit-32",
         "mips64el-linux-gnun32": "mipsel-linux bit-32",
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         "powerpc-linux": "powerpc32-linux",
         "powerpc-linux-uclibc": "powerpc-linux powerpc32-linux",
         "powerpc-linux-gnuspe": "powerpc-linux powerpc32-linux",

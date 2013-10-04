@@ -8,6 +8,7 @@
 inherit archiver
 
 # Get original sources archiving package with patches
+<<<<<<< HEAD
 addtask do_archive_original_sources_patches after do_unpack
 
 # Get archiving package with temp(logs) and scripts(.bb and inc files)
@@ -65,3 +66,12 @@ python do_dumpdata_create_diff_gz_setscene () {
 }
 
 addtask do_dumpdata_create_diff_gz_setscene
+=======
+do_unpack[postfuncs] += "do_archive_original_sources_patches "
+
+# Get archiving package with temp(logs) and scripts(.bb and inc files)
+do_package_write_rpm[prefuncs] += "do_archive_scripts_logs "
+
+# Get dump date and create diff file 
+do_package_write_rpm[postfuncs] += "do_dumpdata_create_diff_gz "
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

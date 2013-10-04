@@ -1,6 +1,10 @@
 Upstream-Status: Inappropriate [configuration]
 
+<<<<<<< HEAD
 Index: libxslt-1.1.27/libexslt.pc.in
+=======
+Index: libxslt-1.1.22/libexslt.pc.in
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ===================================================================
 --- libxslt-1.1.27.orig/libexslt.pc.in
 +++ libxslt-1.1.27/libexslt.pc.in

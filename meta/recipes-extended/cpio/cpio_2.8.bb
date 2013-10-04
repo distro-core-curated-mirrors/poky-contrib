@@ -3,7 +3,11 @@ require cpio_v2.inc
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=b7f772ea3a2489231cb4872656cac34b"
 
+<<<<<<< HEAD
 PR = "r3"
+=======
+PR = "r2"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI += "file://m4extensions.patch \
     file://avoid_heap_overflow.patch \

@@ -6,10 +6,13 @@
 # re-generation of documentation.  For now, we'll make do with this which
 # packages up any existing documentation (so from tarball builds).
 
+<<<<<<< HEAD
 # The documentation directory, where the infrastructure will be copied.
 # gtkdocize has a default of "." so to handle out-of-tree builds set this to $S.
 GTKDOC_DOCDIR ?= "${S}"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 DEPENDS_append = " gtk-doc-stub-native"
 
 EXTRA_OECONF_append = "\
@@ -19,5 +22,9 @@ EXTRA_OECONF_append = "\
 "
 
 do_configure_prepend () {
+<<<<<<< HEAD
 	( cd ${S}; gtkdocize --docdir ${GTKDOC_DOCDIR} )
+=======
+	( cd ${S} && gtkdocize )
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }

@@ -14,7 +14,11 @@ PR = "r2"
 
 S = "${WORKDIR}/git"
 
+<<<<<<< HEAD
 SRC_URI = "git://git.yoctoproject.org/${BPN} \
+=======
+SRC_URI = "git://git.yoctoproject.org/${BPN};protocol=git \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://owl-video-widget.png \
            file://stock_media-play.png \
            file://stock_volume-0.png \

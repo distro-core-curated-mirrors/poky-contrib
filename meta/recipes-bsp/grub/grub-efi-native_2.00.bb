@@ -16,7 +16,11 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504"
 # FIXME: We should be able to optionally drop freetype as a dependency
 DEPENDS = "autogen-native"
 RDEPENDS_${PN} = "diffutils freetype"
+<<<<<<< HEAD
 PR = "r2"
+=======
+PR = "r1"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Native packages do not normally rebuild when the target changes.
 # Ensure this is built once per HOST-TARGET pair.
@@ -24,12 +28,19 @@ PN := "grub-efi-${TRANSLATED_TARGET_ARCH}-native"
 
 SRC_URI = "ftp://ftp.gnu.org/gnu/grub/grub-${PV}.tar.gz \
            file://grub-2.00-fpmath-sse-387-fix.patch \
+<<<<<<< HEAD
            file://grub-2.00-fix-enable_execute_stack-check.patch \
            file://grub-2.00-disable-help2man.patch \
            file://check-if-liblzma-is-disabled.patch \
            file://grub-no-unused-result.patch \
            file://grub-2.00-ignore-gnulib-gets-stupidity.patch \
            file://fix-issue-with-flex-2.5.37.patch \
+=======
+	   file://grub-2.00-fix-enable_execute_stack-check.patch \
+           file://grub-2.00-disable-help2man.patch \
+           file://check-if-liblzma-is-disabled.patch \
+	   file://grub-no-unused-result.patch \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
           "
 SRC_URI[md5sum] = "e927540b6eda8b024fb0391eeaa4091c"
 SRC_URI[sha256sum] = "65b39a0558f8c802209c574f4d02ca263a804e8a564bc6caf1cd0fd3b3cc11e3"
@@ -67,13 +78,21 @@ EXTRA_OECONF = "--with-platform=efi --disable-grub-mkfont \
 
 do_mkimage() {
 	./grub-mkimage -p /EFI/BOOT -d ./grub-core/ \
+<<<<<<< HEAD
 	               -O ${GRUB_TARGET}-efi -o ./${GRUB_IMAGE} \
+=======
+		       -O ${GRUB_TARGET}-efi -o ./${GRUB_IMAGE} \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	               boot linux ext2 fat serial part_msdos part_gpt normal efi_gop
 }
 addtask mkimage after do_compile before do_install
 
 do_deploy() {
+<<<<<<< HEAD
 	install -m 644 ${B}/${GRUB_IMAGE} ${DEPLOYDIR}
+=======
+	install -m 644 ${S}/${GRUB_IMAGE} ${DEPLOYDIR}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 addtask deploy after do_install before do_build
 

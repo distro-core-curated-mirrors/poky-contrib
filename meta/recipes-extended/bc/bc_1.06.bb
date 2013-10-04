@@ -23,5 +23,8 @@ inherit autotools update-alternatives
 
 ALTERNATIVE_${PN} = "dc"
 ALTERNATIVE_PRIORITY = "100"
+<<<<<<< HEAD
 
 BBCLASSEXTEND = "native"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

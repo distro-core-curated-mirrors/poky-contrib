@@ -14,4 +14,10 @@ do_install() {
 	install -m 0644 exports ${D}${sysconfdir}/
 }
 
+<<<<<<< HEAD
 RDEPENDS_${PN} = "packagegroup-core-nfs-server"
+=======
+RDEPENDS_${PN} = "task-core-nfs-server"
+
+inherit allarch
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

@@ -239,6 +239,7 @@ wget "$YOCTOADT_REPO/rootfs/$1" -P $LOCAL_DOWNLOAD --progress=bar:force 2>&1 | t
 # $3 rootfs_image_type (a list of sdk sato minimal lsb)
 get_image()
 {
+<<<<<<< HEAD
   local machine=$2
  
   if [ "$1" == "x86" ] || [ "$1" == "x86_64" ]; then
@@ -247,6 +248,17 @@ get_image()
     kernel="vmlinux-$machine.bin"
   else
     kernel="zImage-$machine.bin"
+=======
+ 
+  local target=`echo "$1" | sed -e 's/x86_64/x86-64/'`
+
+  if [ "$1" == "x86" ] || [ "$1" == "x86_64" ]; then
+    qemu_kernel="bzImage-qemu$target.bin"
+  elif [ "$1" == "ppc" ] || [ "$1" == "mips" ]; then
+    qemu_kernel="vmlinux-qemu$target.bin"
+  else
+    qemu_kernel="zImage-qemu$target.bin"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
   fi
 
   #echo_info "[ADT_INST] Downloading qemu kernel binary: $qemu_kernel"
@@ -254,9 +266,15 @@ get_image()
   check_result
   
   for image_type in $select_rootfs; do
+<<<<<<< HEAD
     #echo_info "[ADT_INST] Downloading rootfs file: core-image-$image_type-$machine.tar.bz2"
     filename="core-image-$image_type-$machine.tar.bz2"
     download_file $machine/$filename
+=======
+    #echo_info "[ADT_INST] Downloading rootfs file: core-image-$image_type-qemu$1.tar.bz2"
+    filename="core-image-$image_type-qemu$target.tar.bz2"
+    download_file qemu$1/$filename
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     check_result
   done
 }
@@ -344,6 +362,7 @@ if [ "$INSTALL_FOLDER" = "" ]; then
     INSTALL_FOLDER=$DEFAULT_INSTALL_FOLDER
 fi
 
+<<<<<<< HEAD
 eval INSTALL_FOLDER=$(printf "%q" "$INSTALL_FOLDER")
 if [ -d "$INSTALL_FOLDER" ]; then
 	export INSTALL_FOLDER=$(cd "$INSTALL_FOLDER"; pwd)
@@ -354,6 +373,13 @@ fi
 if [ -n "$(echo $INSTALL_FOLDER|grep ' ')" ]; then
        echo "The target directory path ($INSTALL_FOLDER) contains spaces. Abort!"
        exit 1
+=======
+eval INSTALL_FOLDER=$INSTALL_FOLDER
+if [ -d $INSTALL_FOLDER ]; then
+	export INSTALL_FOLDER=$(cd $INSTALL_FOLDER; pwd)
+else
+	export INSTALL_FOLDER=$(readlink -m $INSTALL_FOLDER)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fi
 
 clear

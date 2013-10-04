@@ -7,7 +7,11 @@ python () {
 	d.setVar('TUNE_PKGARCH', d.getVar('SDK_ARCH', True))
 }
 
+<<<<<<< HEAD
 STAGING_DIR_TARGET = "${STAGING_DIR}/${SDK_ARCH}-${SDKPKGSUFFIX}${SDK_VENDOR}-${SDK_OS}"
+=======
+STAGING_DIR_TARGET = "${STAGING_DIR}/${SDK_ARCH}-nativesdk${SDK_VENDOR}-${SDK_OS}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 STAGING_BINDIR_TOOLCHAIN = "${STAGING_DIR_NATIVE}${bindir_native}/${TARGET_ARCH}${TARGET_VENDOR}-${TARGET_OS}"
 
 TARGET_ARCH = "${SDK_ARCH}"
@@ -23,6 +27,7 @@ target_libdir = "${SDKPATHNATIVE}${libdir_nativesdk}"
 target_includedir = "${SDKPATHNATIVE}${includedir_nativesdk}"
 target_base_libdir = "${SDKPATHNATIVE}${base_libdir_nativesdk}"
 target_prefix = "${SDKPATHNATIVE}${prefix_nativesdk}"
+<<<<<<< HEAD
 target_exec_prefix = "${SDKPATHNATIVE}${prefix_nativesdk}"
 baselib = "lib"
 
@@ -32,3 +37,13 @@ do_populate_sysroot[stamp-extra-info] = ""
 EXTRA_OECONF_FPU = ""
 
 USE_NLS = "no"
+=======
+target_exec_prefix = "${SDKPATHNATIVE}${exec_prefix_nativesdk}"
+baselib = "lib"
+
+do_populate_sysroot[stamp-extra-info] = ""
+do_package[stamp-extra-info] = ""
+
+# Need to force this to ensure consitency accross architectures
+EXTRA_OECONF_FPU = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

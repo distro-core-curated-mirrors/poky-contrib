@@ -21,3 +21,8 @@ do_install() {
 }
 
 RDEPENDS_${PN} = "distcc"
+<<<<<<< HEAD
+=======
+
+inherit allarch
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

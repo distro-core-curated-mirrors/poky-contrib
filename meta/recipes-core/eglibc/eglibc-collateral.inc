@@ -1,6 +1,9 @@
 INHIBIT_DEFAULT_DEPS = "1"
 LICENSE = "GPLv2 & LGPLv2.1"
+<<<<<<< HEAD
 HOMEPAGE = "http://www.eglibc.org/"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 do_fetch[noexec] = "1"
 do_unpack[noexec] = "1"

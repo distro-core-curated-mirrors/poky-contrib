@@ -6,11 +6,19 @@ DEPENDS = "libaio"
 
 SRCREV = "d6918c8832793b4205ed3bfede78c2f915c23385"
 
+<<<<<<< HEAD
 PR = "r6"
 PV = "1.0.5+git${SRCPV}"
 
 SRC_URI = "git://git.kernel.dk/blktrace.git \
            file://ldflags.patch"
+=======
+PR = "r4"
+PV = "1.0.5+git${SRCPV}"
+
+SRC_URI = "git://git.kernel.dk/blktrace.git;protocol=git \
+           file://blktrace-makefile.patch"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 S = "${WORKDIR}/git"
 

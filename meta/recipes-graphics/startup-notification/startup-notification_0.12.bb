@@ -19,9 +19,13 @@ DEPENDS = "virtual/libx11 libsm xcb-util"
 
 inherit autotools pkgconfig
 
+<<<<<<< HEAD
 SRC_URI = "http://www.freedesktop.org/software/startup-notification/releases/${BPN}-${PV}.tar.gz \
            file://obsolete_automake_macros.patch \
 "
+=======
+SRC_URI = "http://www.freedesktop.org/software/startup-notification/releases/${BPN}-${PV}.tar.gz"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI[md5sum] = "2cd77326d4dcaed9a5a23a1232fb38e9"
 SRC_URI[sha256sum] = "3c391f7e930c583095045cd2d10eb73a64f085c7fde9d260f2652c7cb3cfbe4a"

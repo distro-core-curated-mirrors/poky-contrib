@@ -4,7 +4,11 @@ require conf/machine/include/tune-i586.inc
 
 # Extra tune features
 TUNEVALID[core2] = "Enable core2 specific processor optimizations"
+<<<<<<< HEAD
 TUNE_CCARGS .= "${@bb.utils.contains("TUNE_FEATURES", "core2", " -march=core2 -msse3 -mtune=generic -mfpmath=sse", "", d)}"
+=======
+TUNE_CCARGS += "${@bb.utils.contains("TUNE_FEATURES", "core2", "-march=core2 -msse3 -mtune=generic -mfpmath=sse", "", d)}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Extra tune selections
 AVAILTUNES += "core2"

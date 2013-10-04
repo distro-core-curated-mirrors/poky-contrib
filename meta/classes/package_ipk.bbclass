@@ -10,6 +10,7 @@ PKGWRITEDIRIPK = "${WORKDIR}/deploy-ipks"
 # Program to be used to build opkg packages
 OPKGBUILDCMD ??= "opkg-build"
 
+<<<<<<< HEAD
 OPKG_ARGS = "-f $INSTALL_CONF_IPK -o $INSTALL_ROOTFS_IPK --force_postinstall --prefer-arch-to-version"
 OPKG_ARGS += "${@['', '--no-install-recommends'][d.getVar("NO_RECOMMENDATIONS", True) == "1"]}"
 OPKG_ARGS += "${@['', '--add-exclude ' + ' --add-exclude '.join((d.getVar('PACKAGE_EXCLUDE', True) or "").split())][(d.getVar("PACKAGE_EXCLUDE", True) or "") != ""]}"
@@ -41,6 +42,89 @@ package_tryout_install_multilib_ipk() {
 	done
 }
 
+=======
+python package_ipk_fn () {
+    d.setVar('PKGFN', d.getVar('PKG'))
+}
+
+python package_ipk_install () {
+    import subprocess
+
+    pkg = d.getVar('PKG', True)
+    pkgfn = d.getVar('PKGFN', True)
+    rootfs = d.getVar('IMAGE_ROOTFS', True)
+    ipkdir = d.getVar('DEPLOY_DIR_IPK', True)
+    stagingdir = d.getVar('STAGING_DIR', True)
+    tmpdir = d.getVar('TMPDIR', True)
+
+    if None in (pkg,pkgfn,rootfs):
+        raise bb.build.FuncFailed("missing variables (one or more of PKG, PKGFN, IMAGEROOTFS)")
+    try:
+        bb.mkdirhier(rootfs)
+        os.chdir(rootfs)
+    except OSError:
+        import sys
+        (type, value, traceback) = sys.exc_info()
+        print value
+        raise bb.build.FuncFailed
+
+    # Generate ipk.conf if it or the stamp doesnt exist
+    conffile = os.path.join(stagingdir,"ipkg.conf")
+    if not os.access(conffile, os.R_OK):
+        ipkg_archs = d.getVar('PACKAGE_ARCHS')
+        if ipkg_archs is None:
+            bb.error("PACKAGE_ARCHS missing")
+            raise FuncFailed
+        ipkg_archs = ipkg_archs.split()
+        arch_priority = 1
+
+        f = open(conffile,"w")
+        for arch in ipkg_archs:
+            f.write("arch %s %s\n" % ( arch, arch_priority ))
+            arch_priority += 1
+        f.write("src local file:%s" % ipkdir)
+        f.close()
+
+
+    if not os.access(os.path.join(ipkdir,"Packages"), os.R_OK) or not os.access(os.path.join(tmpdir, "stamps", "IPK_PACKAGE_INDEX_CLEAN"),os.R_OK):
+        ret = subprocess.call('opkg-make-index -p %s %s ' % (os.path.join(ipkdir, "Packages"), ipkdir), shell=True)
+        if (ret != 0 ):
+            raise bb.build.FuncFailed
+        f = open(os.path.join(tmpdir, "stamps", "IPK_PACKAGE_INDEX_CLEAN"),"w")
+        f.close()
+
+    ret = subprocess.call('opkg-cl  -o %s -f %s update' % (rootfs, conffile), shell=True)
+    ret = subprocess.call('opkg-cl  -o %s -f %s install %s' % (rootfs, conffile, pkgfn), shell=True)
+    if (ret != 0 ):
+        raise bb.build.FuncFailed
+}
+
+package_tryout_install_multilib_ipk() {
+	#try install multilib
+	multilib_tryout_dirs=""
+	for item in ${MULTILIB_VARIANTS}; do
+		local target_rootfs="${MULTILIB_TEMP_ROOTFS}/${item}"
+		local ipkg_args="-f ${INSTALL_CONF_IPK} -o ${target_rootfs} --force_overwrite"
+		local selected_pkg=""
+		local pkgname_prefix="${item}-"
+		local pkgname_len=${#pkgname_prefix}
+		for pkg in ${INSTALL_PACKAGES_MULTILIB_IPK}; do
+			local pkgname=$(echo $pkg | awk -v var=$pkgname_len '{ pkgname=substr($1, 1, var); print pkgname; }' )
+			if [ ${pkgname} = ${pkgname_prefix} ]; then
+			    selected_pkg="${selected_pkg} ${pkg}"
+			fi
+		done
+		if [ ! -z "${selected_pkg}" ]; then
+			rm -f ${target_rootfs}
+			mkdir -p ${target_rootfs}/${opkglibdir}
+			opkg-cl ${ipkg_args} update
+			opkg-cl ${ipkg_args} install ${selected_pkg}
+			multilib_tryout_dirs="${multilib_tryout_dirs} ${target_rootfs}"
+		fi
+	done
+}
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 split_multilib_packages() {
 	INSTALL_PACKAGES_NORMAL_IPK=""
 	INSTALL_PACKAGES_MULTILIB_IPK=""
@@ -77,11 +161,16 @@ split_multilib_packages() {
 package_install_internal_ipk() {
 
 	local target_rootfs="${INSTALL_ROOTFS_IPK}"
+<<<<<<< HEAD
+=======
+	local conffile="${INSTALL_CONF_IPK}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	local package_attemptonly="${INSTALL_PACKAGES_ATTEMPTONLY_IPK}"
 	local package_linguas="${INSTALL_PACKAGES_LINGUAS_IPK}"
 	local task="${INSTALL_TASK_IPK}"
 
 	split_multilib_packages
+<<<<<<< HEAD
 
 	local package_to_install="${INSTALL_PACKAGES_NORMAL_IPK}"
 	local package_multilib="${INSTALL_PACKAGES_MULTILIB_IPK}"
@@ -96,6 +185,26 @@ package_install_internal_ipk() {
 	for i in ${package_linguas}; do
 		opkg-cl ${ipkg_args} install $i
 	done
+=======
+
+	local package_to_install="${INSTALL_PACKAGES_NORMAL_IPK}"
+	local package_multilib="${INSTALL_PACKAGES_MULTILIB_IPK}"
+
+	mkdir -p ${target_rootfs}${localstatedir}/lib/opkg/
+
+	local ipkg_args="-f ${conffile} -o ${target_rootfs} --force-overwrite --force_postinstall --prefer-arch-to-version"
+
+	opkg-cl ${ipkg_args} update
+
+	# Uclibc builds don't provide this stuff...
+	if [ x${TARGET_OS} = "xlinux" ] || [ x${TARGET_OS} = "xlinux-gnueabi" ] ; then
+		if [ ! -z "${package_linguas}" ]; then
+			for i in ${package_linguas}; do
+				opkg-cl ${ipkg_args} install $i
+			done
+		fi
+	fi
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	if [ ! -z "${package_to_install}" ]; then
 		opkg-cl ${ipkg_args} install ${package_to_install}
@@ -151,6 +260,14 @@ package_update_index_ipk () {
 	packagedirs="${DEPLOY_DIR_IPK}"
 	for arch in $ipkgarchs; do
 		packagedirs="$packagedirs ${DEPLOY_DIR_IPK}/$arch"
+<<<<<<< HEAD
+=======
+	done
+
+	multilib_archs="${MULTILIB_ARCHS}"
+	for arch in $multilib_archs; do
+		packagedirs="$packagedirs ${DEPLOY_DIR_IPK}/$arch"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	done
 
 	multilib_archs="${MULTILIB_ARCHS}"
@@ -253,7 +370,11 @@ python do_package_ipk () {
         basedir = os.path.join(os.path.dirname(root))
         arch = localdata.getVar('PACKAGE_ARCH', True)
         pkgoutdir = "%s/%s" % (outdir, arch)
+<<<<<<< HEAD
         bb.utils.mkdirhier(pkgoutdir)
+=======
+        bb.mkdirhier(pkgoutdir)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         os.chdir(root)
         from glob import glob
         g = glob('*')
@@ -268,9 +389,15 @@ python do_package_ipk () {
             continue
 
         controldir = os.path.join(root, 'CONTROL')
+<<<<<<< HEAD
         bb.utils.mkdirhier(controldir)
         try:
             ctrlfile = open(os.path.join(controldir, 'control'), 'w')
+=======
+        bb.mkdirhier(controldir)
+        try:
+            ctrlfile = file(os.path.join(controldir, 'control'), 'w')
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         except OSError:
             bb.utils.unlockfile(lf)
             raise bb.build.FuncFailed("unable to open control file for writing.")
@@ -306,6 +433,7 @@ python do_package_ipk () {
                 # Special behavior for description...
                 if 'DESCRIPTION' in fs:
                     summary = localdata.getVar('SUMMARY', True) or localdata.getVar('DESCRIPTION', True) or "."
+<<<<<<< HEAD
                     ctrlfile.write('Description: %s\n' % summary)
                     description = localdata.getVar('DESCRIPTION', True) or "."
                     description = textwrap.dedent(description).strip()
@@ -319,6 +447,12 @@ python do_package_ipk () {
                     else:
                         # Auto indent
                         ctrlfile.write('%s\n' % textwrap.fill(description, width=74, initial_indent=' ', subsequent_indent=' '))
+=======
+                    description = localdata.getVar('DESCRIPTION', True) or "."
+                    description = textwrap.dedent(description).strip()
+                    ctrlfile.write('Description: %s\n' % summary)
+                    ctrlfile.write('%s\n' % textwrap.fill(description, width=74, initial_indent=' ', subsequent_indent=' '))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                 else:
                     ctrlfile.write(c % tuple(pullData(fs, localdata)))
         except KeyError:
@@ -380,7 +514,11 @@ python do_package_ipk () {
             if not scriptvar:
                 continue
             try:
+<<<<<<< HEAD
                 scriptfile = open(os.path.join(controldir, script), 'w')
+=======
+                scriptfile = file(os.path.join(controldir, script), 'w')
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             except OSError:
                 bb.utils.unlockfile(lf)
                 raise bb.build.FuncFailed("unable to open %s script file for writing." % script)
@@ -391,13 +529,21 @@ python do_package_ipk () {
         conffiles_str = localdata.getVar("CONFFILES", True)
         if conffiles_str:
             try:
+<<<<<<< HEAD
                 conffiles = open(os.path.join(controldir, 'conffiles'), 'w')
+=======
+                conffiles = file(os.path.join(controldir, 'conffiles'), 'w')
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             except OSError:
                 bb.utils.unlockfile(lf)
                 raise bb.build.FuncFailed("unable to open conffiles for writing.")
             for f in conffiles_str.split():
+<<<<<<< HEAD
                 if os.path.exists(oe.path.join(root, f)):
                     conffiles.write('%s\n' % f)
+=======
+                conffiles.write('%s\n' % f)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             conffiles.close()
 
         os.chdir(basedir)
@@ -427,6 +573,10 @@ python () {
         deps = ' opkg-utils-native:do_populate_sysroot virtual/fakeroot-native:do_populate_sysroot'
         d.appendVarFlag('do_package_write_ipk', 'depends', deps)
         d.setVarFlag('do_package_write_ipk', 'fakeroot', "1")
+<<<<<<< HEAD
+=======
+        d.setVarFlag('do_package_write_ipk_setscene', 'fakeroot', "1")
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 python do_package_write_ipk () {
@@ -434,10 +584,17 @@ python do_package_write_ipk () {
     bb.build.exec_func("do_package_ipk", d)
 }
 do_package_write_ipk[dirs] = "${PKGWRITEDIRIPK}"
+<<<<<<< HEAD
 do_package_write_ipk[cleandirs] = "${PKGWRITEDIRIPK}"
 do_package_write_ipk[umask] = "022"
 addtask package_write_ipk before do_package_write after do_packagedata do_package
 
 PACKAGEINDEXES += "[ ! -e ${DEPLOY_DIR_IPK} ] || package_update_index_ipk;"
+=======
+do_package_write_ipk[umask] = "022"
+addtask package_write_ipk before do_package_write after do_package
+
+PACKAGEINDEXES += "package_update_index_ipk;"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PACKAGEINDEXDEPS += "opkg-utils-native:do_populate_sysroot"
 PACKAGEINDEXDEPS += "opkg-native:do_populate_sysroot"

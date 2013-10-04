@@ -1,11 +1,16 @@
 DESCRIPTION = "Native version of Qt/[X11|Mac|Embedded]"
 DEPENDS = "zlib-native dbus-native"
 SECTION = "libs"
+<<<<<<< HEAD
 HOMEPAGE = "http://qt-project.org/"
+=======
+HOMEPAGE = "http://qt.nokia.com"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PROVIDES = "qt4-tools-native"
 
 LICENSE = "LGPLv2.1 | GPLv3"
 LIC_FILES_CHKSUM = "file://LICENSE.LGPL;md5=fbc093901857fcd118f065f900982c24 \
+<<<<<<< HEAD
                     file://LICENSE.GPL3;md5=6e1694ee338db410417517884918d4d2 \
                     file://LGPL_EXCEPTION.txt;md5=0145c4d1b6f96a661c2c139dfb268fb6"
 
@@ -18,12 +23,26 @@ SRC_URI = "http://download.qt-project.org/official_releases/qt/4.8/${PV}/qt-ever
            file://0002-qkbdtty_qws-fix-build-with-old-kernel-headers.patch \
            file://0003-webkit2-set-OUTPUT_DIR-value-if-empty.patch \
            file://0021-configure-make-qt4-native-work-with-long-building-pa.patch \
+=======
+                    file://LICENSE.GPL3;md5=babc5b6b77441da277f5c06b2e547720 \
+                    file://LGPL_EXCEPTION.txt;md5=411080a56ff917a5a1aa08c98acae354"
+
+INC_PR = "r17"
+
+inherit native
+
+SRC_URI = "http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-${PV}.tar.gz \
+           file://0001-qlibraryinfo-allow-to-set-qt.conf-from-the-outside-u.patch \
+           file://0002-qkbdtty_qws-fix-build-with-old-kernel-headers.patch \
+           file://0003-webkit2-set-OUTPUT_DIR-value-if-empty.patch \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://g++.conf \
            file://linux.conf \
 	"
 S = "${WORKDIR}/qt-everywhere-opensource-src-${PV}"
 
 EXTRA_OECONF = "-prefix ${prefix} \
+<<<<<<< HEAD
                 -bindir ${bindir} \
                 -libdir ${libdir} \
                 -datadir ${datadir}/qt4 \
@@ -35,6 +54,8 @@ EXTRA_OECONF = "-prefix ${prefix} \
                 -translationdir ${datadir}/qt4/translations \
                 -examplesdir ${bindir}/qt4/examples \
                 -demosdir ${bindir}/qt4/demos \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                 -L ${STAGING_LIBDIR_NATIVE} \
                 -I ${STAGING_INCDIR_NATIVE} \
                 -qt-libjpeg -system-zlib \
@@ -44,6 +65,10 @@ EXTRA_OECONF = "-prefix ${prefix} \
                 -no-nas-sound \
                 -no-nis -no-openssl \
                 -verbose -release \
+<<<<<<< HEAD
+=======
+                -headerdir ${includedir}/qt4 \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                 -embedded -no-freetype -no-glib -no-iconv \
                 -exceptions -xmlpatterns \
                 -qt3support \
@@ -74,12 +99,18 @@ TOBUILD = "\
   src/testlib \
   src/qt3support \
   src/tools/uic3 \
+<<<<<<< HEAD
   tools/linguist/lconvert \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
   tools/linguist/lrelease \
   tools/linguist/lupdate \
   tools/qdbus/qdbuscpp2xml \
   tools/qdbus/qdbusxml2cpp \
+<<<<<<< HEAD
   tools/xmlpatterns \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 "
 
 do_compile() {
@@ -91,7 +122,11 @@ do_compile() {
 do_install() {
 	install -d ${D}${bindir}/
 	install -m 0755 bin/qmake ${D}${bindir}/qmake2
+<<<<<<< HEAD
 	for i in moc uic uic3 rcc lconvert lrelease lupdate qdbuscpp2xml qdbusxml2cpp xmlpatterns; do
+=======
+	for i in moc uic uic3 rcc lrelease lupdate qdbuscpp2xml qdbusxml2cpp; do
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		install -m 0755 bin/${i} ${D}${bindir}/${i}4
 	done
     

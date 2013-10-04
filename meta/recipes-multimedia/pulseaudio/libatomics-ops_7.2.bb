@@ -6,7 +6,11 @@ LICENSE = "GPLv2 & MIT"
 LIC_FILES_CHKSUM = "file://doc/COPYING;md5=94d55d512a9ba36caa9b7df079bae19f \
                     file://doc/LICENSING.txt;md5=607073e04548eac7d1f763e480477bab \
 		   "
+<<<<<<< HEAD
 PR = "r1"
+=======
+PR = "r0"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "http://www.hpl.hp.com/research/linux/atomic_ops/download/libatomic_ops-${PV}.tar.gz \
           "
@@ -25,5 +29,9 @@ inherit autotools pkgconfig
 do_install_append() {
 	# those contain only docs, not necessary for now.
 	install -m 0755 -d ${D}${docdir}
+<<<<<<< HEAD
 	mv ${D}${datadir}/libatomic_ops ${D}${docdir}/${BPN}
+=======
+	mv ${D}${datadir}/libatomic_ops ${D}${docdir}/${PN}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }

@@ -16,6 +16,10 @@ SRC_URI += "file://nocompiler.patch"
 
 inherit allarch
 
+SRC_URI += "file://nocompiler.patch"
+
+inherit allarch
+
 EXTRA_OECONF += "--with-encodingsdir=${datadir}/fonts/X11/encodings"
 
 SRC_URI[md5sum] = "0f2d6546d514c5cc4ecf78a60657a5c1"

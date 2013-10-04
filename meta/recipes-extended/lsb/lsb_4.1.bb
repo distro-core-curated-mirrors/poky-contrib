@@ -2,7 +2,11 @@ DESCRIPTION = "LSB support for OpenEmbedded"
 SECTION = "console/utils"
 HOMEPAGE = "http://prdownloads.sourceforge.net/lsb"
 LICENSE = "GPLv2+"
+<<<<<<< HEAD
 PR = "r2"
+=======
+PR = "r0"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # lsb_release needs getopt
 RDEPENDS_${PN} += "util-linux"
@@ -41,9 +45,12 @@ do_install(){
 	echo "\"" >> ${D}${sysconfdir}/lsb-release
 	echo "DISTRIB_ID=${DISTRO}" >> ${D}${sysconfdir}/lsb-release
 	echo "DISTRIB_RELEASE=${DISTRO_VERSION}" >> ${D}${sysconfdir}/lsb-release
+<<<<<<< HEAD
 	if [ -n "${DISTRO_CODENAME}" ]; then
 		echo "DISTRIB_CODENAME=${DISTRO_CODENAME}" >> ${D}${sysconfdir}/lsb-release
 	fi
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	echo "DISTRIB_DESCRIPTION=\"${DISTRO_NAME} ${DISTRO_VERSION}\"" >> ${D}${sysconfdir}/lsb-release
 
 	if [ "${TARGET_ARCH}" = "i586" ];then
@@ -76,6 +83,7 @@ do_install_append(){
            install -m 0755 ${WORKDIR}/${i} ${D}${sysconfdir}/core-lsb
        done
        install -m 0755 ${WORKDIR}/init-functions ${D}/${baselib}/lsb
+<<<<<<< HEAD
 
        # creat links for LSB test
        install -d ${D}/${libdir}/lsb
@@ -83,6 +91,8 @@ do_install_append(){
        ln -sf ${sbindir}/chkconfig ${D}/${libdir}/lsb/remove_initd
        ln -sf ${sbindir}/sendmail ${D}/${libdir}/sendmail
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
        if [ "${TARGET_ARCH}" = "x86_64" ];then
 	       cd ${D}
                if [ "${baselib}" != "lib64" ]; then
@@ -115,5 +125,8 @@ do_install_append(){
 }
 FILES_${PN} += "/lib64 \
                 ${base_libdir}/lsb/* \
+<<<<<<< HEAD
 		${libdir}/sendmail \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                "

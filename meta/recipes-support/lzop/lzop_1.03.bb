@@ -20,7 +20,11 @@ SRC_URI[sha256sum] = "c1425b8c77d49f5a679d5a126c90ea6ad99585a55e335a613cae59e909
 inherit autotools
 
 do_configure () {
+<<<<<<< HEAD
     ln -sf  ../acinclude.m4 ${S}/acinclude.m4
+=======
+    ln -sf ../acinclude.m4
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     autotools_do_configure
 }
 

@@ -16,6 +16,7 @@ DEPENDS = "${@base_contains('DISTRO_FEATURES', 'directfb', 'directfb', '', d)} \
            ${@base_contains('DISTRO_FEATURES', 'opengl', 'virtual/libgl', '', d)} \
            ${@base_contains('DISTRO_FEATURES', 'x11', 'virtual/libx11 libxext libxrandr libxrender', '', d)} \
            tslib"
+<<<<<<< HEAD
 DEPENDS_class-nativesdk = "${@base_contains('DISTRO_FEATURES', 'x11', 'virtual/nativesdk-libx11 nativesdk-libxrandr nativesdk-libxrender nativesdk-libxext', '', d)}"
 
 PR = "r2"
@@ -24,6 +25,15 @@ SRC_URI = "http://www.libsdl.org/release/SDL-${PV}.tar.gz \
            file://configure_tweak.patch \
            file://libsdl-1.2.15-xdata32.patch \
           "
+=======
+DEPENDS_virtclass-nativesdk = "${@base_contains('DISTRO_FEATURES', 'x11', 'nativesdk-libx11 nativesdk-libxrandr nativesdk-libxrender nativesdk-libxext', '', d)}"
+
+PR = "r1"
+
+SRC_URI = "http://www.libsdl.org/release/SDL-${PV}.tar.gz \
+           file://configure_tweak.patch \
+       "
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 S = "${WORKDIR}/SDL-${PV}"
 
@@ -58,7 +68,11 @@ do_configure_prepend() {
         # Remove old libtool macros.
         MACROS="libtool.m4 lt~obsolete.m4 ltoptions.m4 ltsugar.m4 ltversion.m4"
         for i in ${MACROS}; do
+<<<<<<< HEAD
                rm -f ${S}/acinclude/$i
+=======
+               rm -f acinclude/$i
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         done
         export SYSROOT=$PKG_CONFIG_SYSROOT_DIR
 }

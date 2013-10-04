@@ -11,6 +11,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=7eb5c1bf854e8881005d673599ee74d3"
 
 SRC_URI = "http://linux-pam.org/library/Linux-PAM-${PV}.tar.bz2 \
            file://99_pam \
+<<<<<<< HEAD
            file://pam.d/common-account \
            file://pam.d/common-auth \
            file://pam.d/common-password \
@@ -25,6 +26,11 @@ SRC_URI = "http://linux-pam.org/library/Linux-PAM-${PV}.tar.bz2 \
            file://libpam-fix-for-CVE-2010-4708.patch \
            file://pam-security-abstract-securetty-handling.patch \
            file://pam-unix-nullok-secure.patch \
+=======
+           file://pam.d/* \
+           file://libpam-xtests.patch \
+           file://destdirfix.patch \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
           "
 SRC_URI[md5sum] = "7b73e58b7ce79ffa321d408de06db2c4"
 SRC_URI[sha256sum] = "bab887d6280f47fc3963df3b95735a27a16f0f663636163ddf3acab5f1149fc2"
@@ -41,6 +47,7 @@ EXTRA_OECONF = "--with-db-uniquename=_pam \
 
 CFLAGS_append = " -fPIC "
 
+<<<<<<< HEAD
 PR = "r3"
 
 S = "${WORKDIR}/Linux-PAM-${PV}"
@@ -48,6 +55,13 @@ S = "${WORKDIR}/Linux-PAM-${PV}"
 inherit autotools gettext pkgconfig
 
 PACKAGECONFIG[audit] = "--enable-audit,--disable-audit,audit,"
+=======
+PR = "r1"
+
+S = "${WORKDIR}/Linux-PAM-${PV}"
+
+inherit autotools gettext
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PACKAGES += "${PN}-runtime ${PN}-xtests"
 FILES_${PN} = "${base_libdir}/lib*${SOLIBS}"
@@ -79,6 +93,7 @@ python populate_packages_prepend () {
     pam_filterdir = d.expand('${base_libdir}/security/pam_filter')
 
     do_split_packages(d, pam_libdir, '^pam(.*)\.so$', 'pam-plugin%s', 'PAM plugin for %s', extra_depends='')
+<<<<<<< HEAD
     mlprefix = d.getVar('MLPREFIX', True) or ''
     pam_plugin_append_file('%spam-plugin-unix' % mlprefix, pam_sbindir, 'unix_chkpwd')
     pam_plugin_append_file('%spam-plugin-unix' % mlprefix, pam_sbindir, 'unix_update')
@@ -86,6 +101,14 @@ python populate_packages_prepend () {
     pam_plugin_append_file('%spam-plugin-tally2' % mlprefix, pam_sbindir, 'pam_tally2')
     pam_plugin_append_file('%spam-plugin-timestamp' % mlprefix, pam_sbindir, 'pam_timestamp_check')
     pam_plugin_append_file('%spam-plugin-mkhomedir' % mlprefix, pam_sbindir, 'mkhomedir_helper')
+=======
+    pam_plugin_append_file('pam-plugin-unix', pam_sbindir, 'unix_chkpwd')
+    pam_plugin_append_file('pam-plugin-unix', pam_sbindir, 'unix_update')
+    pam_plugin_append_file('pam-plugin-tally', pam_sbindir, 'pam_tally')
+    pam_plugin_append_file('pam-plugin-tally2', pam_sbindir, 'pam_tally2')
+    pam_plugin_append_file('pam-plugin-timestamp', pam_sbindir, 'pam_timestamp_check')
+    pam_plugin_append_file('pam-plugin-mkhomedir', pam_sbindir, 'mkhomedir_helper')
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     do_split_packages(d, pam_filterdir, '^(.*)$', 'pam-filter-%s', 'PAM filter for %s', extra_depends='')
 }
 
@@ -100,6 +123,7 @@ do_install() {
 	install -d ${D}${sysconfdir}/pam.d/     
 	install -m 0644 ${WORKDIR}/pam.d/* ${D}${sysconfdir}/pam.d/
 
+<<<<<<< HEAD
 	# The lsb requires unix_chkpwd has setuid permission
 	chmod 4755 ${D}${sbindir}/unix_chkpwd
 
@@ -113,3 +137,8 @@ python do_pam_sanity () {
         bb.warn("Building libpam but 'pam' isn't in DISTRO_FEATURES, PAM won't work correctly")
 }
 addtask pam_sanity before do_configure
+=======
+    # The lsb requires unix_chkpwd has setuid permission
+    chmod 4755 ${D}${sbindir}/unix_chkpwd
+}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

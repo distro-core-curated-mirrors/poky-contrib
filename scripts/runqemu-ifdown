@@ -45,11 +45,16 @@ NATIVE_SYSROOT_DIR=$2
 
 TUNCTL=$NATIVE_SYSROOT_DIR/usr/bin/tunctl
 if [ ! -e "$TUNCTL" ]; then
+<<<<<<< HEAD
 	echo "Error: Unable to find tunctl binary in '$NATIVE_SYSROOT_DIR/usr/bin', please bitbake qemu-helper-native"
+=======
+	echo "Error: Unable to find tunctl binary in '$NATIVE_SYSROOT_DIR/usr/bin'"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	exit 1
 fi
 
 $TUNCTL -d $TAP
+<<<<<<< HEAD
 
 # cleanup the remaining iptables rules
 IPTABLES=`which iptables 2> /dev/null`
@@ -64,3 +69,5 @@ n=$[ (`echo $TAP | sed 's/tap//'` * 2) + 1 ]
 dest=$[ (`echo $TAP | sed 's/tap//'` * 2) + 2 ]
 $IPTABLES -D POSTROUTING -t nat -j MASQUERADE -s 192.168.7.$n/32
 $IPTABLES -D POSTROUTING -t nat -j MASQUERADE -s 192.168.7.$dest/32
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

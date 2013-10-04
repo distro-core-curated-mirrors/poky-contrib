@@ -10,7 +10,11 @@ advanced features of the touchpad to become available."
 
 SRCREV = "934bc0012f948c52aadc8eda912f7728fb7394a2"
 PV = "0.15.2+git${SRCPV}"
+<<<<<<< HEAD
 PR = "${INC_PR}.1"
+=======
+PR = "${INC_PR}.0"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "git://anongit.freedesktop.org/git/xorg/driver/xf86-input-synaptics"
 S = "${WORKDIR}/git"

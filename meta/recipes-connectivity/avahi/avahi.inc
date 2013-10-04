@@ -14,6 +14,7 @@ SECTION = "network"
 # python scripts are under GPLv2+
 LICENSE = "GPLv2+ & LGPLv2.1+"
 
+<<<<<<< HEAD
 INC_PR = "r7"
 
 DEPENDS = "expat libcap libdaemon dbus glib-2.0"
@@ -41,6 +42,29 @@ USERADD_PARAM_avahi-autoipd = "--system --home /var/run/avahi-autoipd \
 inherit autotools pkgconfig update-rc.d gettext useradd
 
 EXTRA_OECONF = "--disable-introspection \
+=======
+INC_PR = "r5"
+
+DEPENDS = "expat libcap libdaemon dbus glib-2.0"
+
+SRC_URI = "http://avahi.org/download/avahi-${PV}.tar.gz \
+          file://00avahi-autoipd \
+          file://99avahi-autoipd \
+          file://initscript.patch \
+          file://avahi_fix_install_issue.patch \
+          file://fix_for_automake_1.12.x.patch \
+          "
+
+USERADD_PACKAGES = "avahi-daemon"
+USERADD_PARAM_avahi-daemon = "--system --home /var/run/avahi-daemon \
+                              --no-create-home --shell /bin/false \
+                              --user-group avahi"
+
+inherit autotools pkgconfig update-rc.d gettext useradd
+
+EXTRA_OECONF = "--with-distro=debian \
+             --disable-introspection \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
              --with-avahi-priv-access-group=adm \
              --disable-stack-protector \
              --disable-gdbm \
@@ -50,6 +74,7 @@ EXTRA_OECONF = "--disable-introspection \
              --disable-qt4 \
              --disable-python \
              --disable-doxygen-doc \
+<<<<<<< HEAD
              ${EXTRA_OECONF_SYSVINIT} \
              ${EXTRA_OECONF_SYSTEMD} \
              ${AVAHI_GTK} \
@@ -71,6 +96,25 @@ do_configure_prepend() {
 
 PACKAGES =+ "avahi-daemon libavahi-common libavahi-core libavahi-client avahi-dnsconfd libavahi-glib libavahi-ui avahi-autoipd avahi-utils"
 
+=======
+             --with-systemdsystemunitdir=${systemd_unitdir}/system/ \
+             ${AVAHI_GTK} \
+           "
+
+AVAHI_GTK ?= "--disable-gtk --disable-gtk3"
+
+LDFLAGS_append_libc-uclibc = " -lintl"
+LDFLAGS_append_uclinux-uclibc = " -lintl"
+
+do_configure_prepend() {
+    sed 's:AM_CHECK_PYMOD:echo "no pymod" #AM_CHECK_PYMOD:g' -i configure.ac
+}
+
+
+PACKAGES =+ "avahi-systemd avahi-daemon libavahi-common libavahi-core libavahi-client avahi-dnsconfd libavahi-glib libavahi-ui avahi-autoipd avahi-utils"
+
+FILES_avahi-systemd = "${systemd_unitdir}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_avahi-autoipd = "${sbindir}/avahi-autoipd \
                        ${sysconfdir}/avahi/avahi-autoipd.action \
                        ${sysconfdir}/dhcp/*/avahi-autoipd \
@@ -87,6 +131,10 @@ FILES_avahi-daemon = "${sbindir}/avahi-daemon \
                       ${datadir}/avahi/introspection/*.introspect \
                       ${datadir}/avahi/avahi-service.dtd \
                       ${datadir}/avahi/service-types \
+<<<<<<< HEAD
+=======
+                      ${datadir}/dbus-1/interfaces \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                       ${datadir}/dbus-1/system-services"
 FILES_libavahi-client = "${libdir}/libavahi-client.so.*"
 FILES_libavahi-ui = "${libdir}/libavahi-ui.so.*"
@@ -97,6 +145,13 @@ FILES_libavahi-glib = "${libdir}/libavahi-glib.so.*"
 FILES_libavahi-gobject = "${libdir}/libavahi-gobject.so.*"
 FILES_avahi-utils = "${bindir}/avahi-*"
 
+<<<<<<< HEAD
+=======
+RDEPENDS_avahi-systemd = "avahi-daemon"
+
+RDEPENDS_avahi-daemon = "sysvinit-pidof"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # uclibc has no nss
 RRECOMMENDS_avahi-daemon_append_libc-glibc = "libnss-mdns"
 RRECOMMENDS_${PN}_append_libc-glibc = "libnss-mdns"
@@ -122,7 +177,10 @@ do_install() {
 	# if /var/run become non-empty in the future, need to install it via volatile
 	rm -rf ${D}/var/run
 	rm -rf ${D}${datadir}/dbus-1/interfaces
+<<<<<<< HEAD
 	rmdir --ignore-fail-on-non-empty ${D}${datadir}/dbus-1
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	rm -rf ${D}${libdir}/avahi
 
 	install -d ${D}${sysconfdir}/udhcpc.d
@@ -135,8 +193,26 @@ do_install() {
 
 pkg_postinst_avahi-daemon () {
 if [ -z "$D" ]; then
+<<<<<<< HEAD
 	killall -q -HUP dbus-daemon || true
 fi
+=======
+	DBUSPID=`pidof dbus-daemon`
+
+	if [ "x$DBUSPID" != "x" ]; then
+		/etc/init.d/dbus-1 force-reload
+	fi
+fi
+}
+
+pkg_postinst_avahi-autoipd () {
+	# can't do this offline
+	if [ "x$D" != "x" ]; then
+		exit 1
+	fi
+	grep "^avahi-autoipd:" /etc/group > /dev/null || addgroup avahi-autoipd
+	grep "^avahi-autoipd:" /etc/passwd > /dev/null || adduser --disabled-password --system --home /var/lib/avahi-autoipd --no-create-home avahi-autoipd --ingroup avahi-autoipd -g "Avahi autoip daemon"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 pkg_postrm_avahi-daemon () {

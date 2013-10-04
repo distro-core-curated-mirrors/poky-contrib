@@ -34,6 +34,7 @@ EXTRA_AUTORECONF = "--exclude=autopoint"
 
 export lt_cv_sys_lib_dlsearch_path_spec = "${libdir} ${base_libdir}"
 
+<<<<<<< HEAD
 # When building tools for use at build-time it's recommended for the build
 # system to use these variables when cross-compiling.
 # (http://sources.redhat.com/autobook/autobook/autobook_270.html)
@@ -49,6 +50,8 @@ export CXXFLAGS_FOR_BUILD="${BUILD_CXXFLAGS}"
 export LD_FOR_BUILD = "${BUILD_LD}"
 export LDFLAGS_FOR_BUILD = "${BUILD_LDFLAGS}"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 def autotools_set_crosscompiling(d):
     if not bb.data.inherits_class('native', d):
         return " cross_compiling=yes"
@@ -108,6 +111,7 @@ CONFIGURESTAMPFILE = "${WORKDIR}/configure.sstate"
 
 autotools_preconfigure() {
 	if [ -n "${CONFIGURESTAMPFILE}" -a -e "${CONFIGURESTAMPFILE}" ]; then
+<<<<<<< HEAD
 		if [ "`cat ${CONFIGURESTAMPFILE}`" != "${BB_TASKHASH}" ]; then
 			if [ "${S}" != "${B}" ]; then
 				echo "Previously configured separate build directory detected, cleaning ${B}"
@@ -153,6 +157,25 @@ autotools_copy_aclocal () {
 	fi
 }
 
+=======
+		if [ "`cat ${CONFIGURESTAMPFILE}`" != "${BB_TASKHASH}" -a "${S}" != "${B}" ]; then
+			echo "Previously configured separate build directory detected, cleaning ${B}"
+			rm -rf ${B}
+			mkdir ${B}
+		fi
+	fi
+}
+
+autotools_postconfigure(){
+	if [ -n "${CONFIGURESTAMPFILE}" ]; then
+		echo ${BB_TASKHASH} > ${CONFIGURESTAMPFILE}
+	fi
+}
+
+do_configure[prefuncs] += "autotools_preconfigure"
+do_configure[postfuncs] += "autotools_postconfigure"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 autotools_do_configure() {
 	# WARNING: gross hack follows:
 	# An autotools built package generally needs these scripts, however only
@@ -168,8 +191,14 @@ autotools_do_configure() {
 	if [ -e ${S}/configure.in -o -e ${S}/configure.ac ]; then
 		olddir=`pwd`
 		cd ${S}
+<<<<<<< HEAD
 		autotools_copy_aclocal
 		ACLOCAL="aclocal --system-acdir=${ACLOCALDIR}/"
+=======
+		# Remove any previous copy of the m4 macros
+		rm -rf ${B}/aclocal-copy/
+		ACLOCAL="aclocal --system-acdir=${B}/aclocal-copy/"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		if [ x"${acpaths}" = xdefault ]; then
 			acpaths=
 			for i in `find ${S} -maxdepth 2 -name \*.m4|grep -v 'aclocal.m4'| \
@@ -185,6 +214,21 @@ autotools_do_configure() {
 		if [ -d ${STAGING_DATADIR_NATIVE}/aclocal-$AUTOV ]; then
 			ACLOCAL="$ACLOCAL --automake-acdir=${STAGING_DATADIR_NATIVE}/aclocal-$AUTOV"
 		fi
+<<<<<<< HEAD
+=======
+		# The aclocal directory could get modified by other processes 
+		# uninstalling data from the sysroot. See Yocto #861 for details.
+		# We avoid this by taking a copy here and then files cannot disappear.
+		# We copy native first, then target. This avoids certain races since cp-noerror
+		# won't overwrite existing files.
+		mkdir -p ${B}/aclocal-copy/
+		if [ -d ${STAGING_DATADIR_NATIVE}/aclocal ]; then
+			cp-noerror ${STAGING_DATADIR_NATIVE}/aclocal/ ${B}/aclocal-copy/
+		fi
+		if [ -d ${STAGING_DATADIR}/aclocal -a "${STAGING_DATADIR_NATIVE}/aclocal" != "${STAGING_DATADIR}/aclocal" ]; then
+			cp-noerror ${STAGING_DATADIR}/aclocal/ ${B}/aclocal-copy/
+		fi
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		# autoreconf is too shy to overwrite aclocal.m4 if it doesn't look
 		# like it was auto-generated.  Work around this by blowing it away
 		# by hand, unless the package specifically asked not to run aclocal.
@@ -207,10 +251,14 @@ autotools_do_configure() {
 			# We'd call gettextize here if it wasn't so broken...
 				cp ${STAGING_DATADIR_NATIVE}/gettext/config.rpath ${AUTOTOOLS_AUXDIR}/
 				if [ -d ${S}/po/ ]; then
+<<<<<<< HEAD
 					cp -f ${STAGING_DATADIR_NATIVE}/gettext/po/Makefile.in.in ${S}/po/
 					if [ ! -e ${S}/po/remove-potcdate.sin ]; then
 						cp ${STAGING_DATADIR_NATIVE}/gettext/po/remove-potcdate.sin ${S}/po/
 					fi
+=======
+					cp ${STAGING_DATADIR_NATIVE}/gettext/po/Makefile.in.in ${S}/po/
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 				fi
 				for i in gettext.m4 iconv.m4 lib-ld.m4 lib-link.m4 lib-prefix.m4 nls.m4 po.m4 progtest.m4; do
 					for j in `find ${S} -name $i | grep -v aclocal-copy`; do

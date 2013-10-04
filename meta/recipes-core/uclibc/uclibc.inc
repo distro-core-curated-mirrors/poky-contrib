@@ -12,8 +12,13 @@ LICENSE = "LGPLv2.1+"
 SECTION = "libs"
 LIC_FILES_CHKSUM = "file://COPYING.LIB;md5=a6f89e2100d9b6cdffcea4f398e37343 \
 		    file://COPYING.LIB.boilerplate;md5=aaddeadcddeb918297e0e4afc52ce46f \
+<<<<<<< HEAD
 file://${S}/test/regex/testregex.c;beginline=1;endline=31;md5=234efb227d0a40677f895e4a1e26e960"
 PR = "r9"
+=======
+file://${S}/test/regex/testregex.c;startline=1;endline=31;md5=234efb227d0a40677f895e4a1e26e960"
+INC_PR = "r8"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 require uclibc-config.inc
 
@@ -37,6 +42,7 @@ sed -i -e 's# ${base_libdir}# ${SYSROOT_DESTDIR}${base_libdir}#g' -e 's# ${libdi
 # and our build is not a uclibc one, and we skip a glibc one if our build
 # is a uclibc build.
 COMPATIBLE_HOST = ".*-uclibc.*"
+<<<<<<< HEAD
 
 INHIBIT_DEFAULT_DEPS = "1"
 
@@ -66,6 +72,35 @@ do_compile_prepend () {
   oe_runmake pregen
 }
 
+=======
+
+INHIBIT_DEFAULT_DEPS = "1"
+
+# do_stage barfs on a CC with whitespace, therefore put the 'HOST_CC_ARCH' in
+# the CFLAGS (when building the utils).
+OEMAKE_NO_CC = "'STRIPTOOL=true' 'LD=${LD}'"
+EXTRA_OEMAKE = "${OEMAKE_NO_CC} \
+                'HOSTCC=${BUILD_CC}' \
+                'HOST_CFLAGS=${BUILD_CFLAGS}' \
+                'CC=${CC}' \
+                ARCH=${UCLIBC_ARCH}"
+
+EXTRA_OEMAKE_task_do_package = "${OEMAKE_NO_CC}"
+
+# enable verbose output:
+export V="2"
+
+# -O<n> -fno-omit-frame-pointer ends up with GCC ICE on thumb as reported
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=44860
+#
+CFLAGS_arm := "${@oe_filter_out('-fno-omit-frame-pointer', '${CFLAGS}', d)}"
+UCLIBC_EXTRA_CFLAGS  := "${@oe_filter_out('(-I\S+|-i\S+)', '${CFLAGS}', d)}"
+UCLIBC_EXTRA_LDFLAGS := "${@oe_filter_out('(-L\S+|-l\S+)', '${LDFLAGS}', d)}"
+do_compile_prepend () {
+  unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
+}
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 configmangle = '/^KERNEL_HEADERS/d; \
                 /^RUNTIME_PREFIX/d; \
                 /^DEVEL_PREFIX/d; \
@@ -148,18 +183,27 @@ do_configure() {
 
         # Mangle the resulting .config depending on OE variables
         sed -i -e '${configmangle}' ${S}/merged.config
+<<<<<<< HEAD
 	cp ${S}/merged.config .config
         merge_config.sh -r -n -m .config ${@" ".join(find_cfgs(d))}
 	cml1_do_configure
 
+=======
+
+        oe_runmake KCONFIG_ALLCONFIG=${S}/merged.config allnoconfig
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 do_install() {
         oe_runmake PREFIX=${D} install
+<<<<<<< HEAD
 }
 
 # build ldd, ldconfig and friends but only for full uclibc
 do_install_append_pn-uclibc () {
         oe_runmake PREFIX=${D} "SSP_ALL_CFLAGS=${TARGET_LINK_HASH_STYLE}" -C utils utils_install
+=======
+        oe_runmake PREFIX=${D} "SSP_ALL_CFLAGS=${TARGET_LINK_HASH_STYLE}" install_utils
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 

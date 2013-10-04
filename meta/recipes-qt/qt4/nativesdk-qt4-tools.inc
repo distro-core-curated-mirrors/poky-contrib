@@ -1,16 +1,29 @@
 DESCRIPTION = "SDK tools for Qt/[X11|Mac|Embedded] version 4.x"
+<<<<<<< HEAD
 DEPENDS = "nativesdk-zlib nativesdk-dbus nativesdk-libx11 qt4-native"
 SECTION = "libs"
 HOMEPAGE = "http://qt-project.org/"
 LICENSE = "LGPLv2.1 | GPLv3"
 
 INC_PR = "r13"
+=======
+DEPENDS = "zlib-nativesdk dbus-nativesdk libx11-nativesdk qt4-native"
+SECTION = "libs"
+HOMEPAGE = "http://qt.nokia.com"
+LICENSE = "LGPLv2.1 | GPLv3"
+
+INC_PR = "r12"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 FILESEXTRAPATHS =. "${FILE_DIRNAME}/qt4-${PV}:"
 
 inherit nativesdk qmake2
 
+<<<<<<< HEAD
 SRC_URI = "http://download.qt-project.org/official_releases/qt/4.8/${PV}/qt-everywhere-opensource-src-${PV}.tar.gz \
+=======
+SRC_URI = "http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-${PV}.tar.gz \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://0001-qlibraryinfo-allow-to-set-qt.conf-from-the-outside-u.patch \
            file://0004-configure-qmake-is-already-built-in-qt4-tools-native.patch \
            file://0005-configure-set-LFLAGS-to-pick-up-zlib-from-staging.patch \
@@ -23,8 +36,13 @@ SRC_URI = "http://download.qt-project.org/official_releases/qt/4.8/${PV}/qt-ever
 S = "${WORKDIR}/qt-everywhere-opensource-src-${PV}"
 
 LIC_FILES_CHKSUM = "file://LICENSE.LGPL;md5=fbc093901857fcd118f065f900982c24 \
+<<<<<<< HEAD
                     file://LICENSE.GPL3;md5=6e1694ee338db410417517884918d4d2 \
                     file://LGPL_EXCEPTION.txt;md5=0145c4d1b6f96a661c2c139dfb268fb6"
+=======
+                    file://LICENSE.GPL3;md5=babc5b6b77441da277f5c06b2e547720 \
+                    file://LGPL_EXCEPTION.txt;md5=411080a56ff917a5a1aa08c98acae354"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 require qt4_arch.inc
 
@@ -63,8 +81,13 @@ do_configure() {
 
     if [ -f mkspecs/common/g++-base.conf ] ; then
         # don't use host g++ even during configure (4.8.0+)
+<<<<<<< HEAD
         sed -i -e "s#= g++#= ${CXX}#" mkspecs/common/g++-base.conf
         sed -i -e "s#= gcc#= ${CC}#" mkspecs/common/g++-base.conf
+=======
+        sed -i -e "s#g++#${CXX}#" mkspecs/common/g++-base.conf
+        sed -i -e "s#gcc#${CC}#" mkspecs/common/g++-base.conf
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     fi
 
     # Use qmake from qt4-native for building

@@ -4,7 +4,11 @@
 
 SUMMARY = "Self-hosting"
 DESCRIPTION = "Packages required to run the build system"
+<<<<<<< HEAD
 PR = "r13"
+=======
+PR = "r12"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 LICENSE = "MIT"
 
 inherit packagegroup
@@ -38,6 +42,7 @@ RDEPENDS_packagegroup-self-hosted-host-tools = "\
     hdparm \
     iptables \
     lsb \
+<<<<<<< HEAD
     xdg-utils \
     mc \
     mc-fish \
@@ -46,6 +51,9 @@ RDEPENDS_packagegroup-self-hosted-host-tools = "\
     mc-helpers-python \
     midori \
     pcmanfm \
+=======
+    mc \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     parted \
     pseudo \
     screen \
@@ -82,9 +90,12 @@ RDEPENDS_packagegroup-self-hosted-sdk = "\
     intltool \
     ldd \
     less \
+<<<<<<< HEAD
     libssp \
     libssp-dev \
     libssp-staticdev \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     libstdc++ \
     libstdc++-dev \
     libtool \
@@ -124,9 +135,13 @@ RDEPENDS_packagegroup-self-hosted-extended = "\
     grep \
     groff \
     gzip \
+<<<<<<< HEAD
     settings-daemon \
     hicolor-icon-theme \
     sato-icon-theme \
+=======
+    hicolor-icon-theme \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     libaio \
     libusb1 \
     libxml2 \
@@ -139,12 +154,18 @@ RDEPENDS_packagegroup-self-hosted-extended = "\
     minicom \
     mtools \
     ncurses \
+<<<<<<< HEAD
     ncurses-terminfo-base \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     neon \
     nfs-utils \
     nfs-utils-client \
     openssl \
+<<<<<<< HEAD
     openssh-sftp-server \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     opkg \
     opkg-utils \
     patch \
@@ -160,29 +181,43 @@ RDEPENDS_packagegroup-self-hosted-extended = "\
     python-core \
     python-curses \
     python-datetime \
+<<<<<<< HEAD
     python-difflib \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     python-distutils \
     python-elementtree \
     python-email \
     python-fcntl \
+<<<<<<< HEAD
     python-git \
     python-json \
     python-logging \
     python-misc \
     python-mmap \
+=======
+    python-logging \
+    python-misc \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     python-multiprocessing \
     python-netclient \
     python-netserver \
     python-pickle \
     python-pkgutil \
+<<<<<<< HEAD
     python-pprint \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     python-re \
     python-rpm \
     python-shell \
     python-sqlite3 \
     python-subprocess \
     python-textutils \
+<<<<<<< HEAD
     python-unittest \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     python-unixadmin \
     python-xmlrpc \
     quota \

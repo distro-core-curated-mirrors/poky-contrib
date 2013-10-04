@@ -28,7 +28,10 @@ PACKAGES = ' \
             ${@base_contains("DISTRO_FEATURES", "bluetooth", "packagegroup-base-bluetooth", "", d)} \
             ${@base_contains("DISTRO_FEATURES", "wifi", "packagegroup-base-wifi", "", d)} \
             ${@base_contains("DISTRO_FEATURES", "3g", "packagegroup-base-3g", "", d)} \
+<<<<<<< HEAD
             ${@base_contains("DISTRO_FEATURES", "nfc", "packagegroup-base-nfc", "", d)} \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             ${@base_contains("DISTRO_FEATURES", "cramfs", "packagegroup-base-cramfs", "", d)} \
             ${@base_contains("DISTRO_FEATURES", "ipsec", "packagegroup-base-ipsec", "", d)} \
             ${@base_contains("DISTRO_FEATURES", "ipv6", "packagegroup-base-ipv6", "", d)} \
@@ -44,9 +47,12 @@ PACKAGES = ' \
 #
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
+<<<<<<< HEAD
 # Override by distro if needed
 VIRTUAL-RUNTIME_keymaps ?= "keymaps"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 #
 # packagegroup-base contain stuff needed for base system (machine related)
 #
@@ -72,7 +78,10 @@ RDEPENDS_packagegroup-base = "\
     ${@base_contains('COMBINED_FEATURES', 'bluetooth', 'packagegroup-base-bluetooth', '',d)} \
     ${@base_contains('COMBINED_FEATURES', 'wifi', 'packagegroup-base-wifi', '',d)} \
     ${@base_contains('COMBINED_FEATURES', '3g', 'packagegroup-base-3g', '',d)} \
+<<<<<<< HEAD
     ${@base_contains('COMBINED_FEATURES', 'nfc', 'packagegroup-base-nfc', '',d)} \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     \
     ${@base_contains('DISTRO_FEATURES', 'nfs', 'packagegroup-base-nfs', '',d)} \
     ${@base_contains('DISTRO_FEATURES', 'cramfs', 'packagegroup-base-cramfs', '',d)} \
@@ -98,13 +107,19 @@ RDEPENDS_packagegroup-base-extended = "\
     ${ADD_WIFI} \
     ${ADD_BT} \
     ${ADD_3G} \
+<<<<<<< HEAD
     ${ADD_NFC} \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     "
 
 ADD_WIFI = ""
 ADD_BT = ""
 ADD_3G = ""
+<<<<<<< HEAD
 ADD_NFC = ""
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 python __anonymous () {
     # If Distro want wifi and machine feature wifi/pci/pcmcia/usbhost (one of them)
@@ -122,9 +137,12 @@ python __anonymous () {
     if "3g" in distro_features and not "3g" in machine_features and ("pcmcia" in machine_features or "pci" in machine_features or "usbhost" in machine_features):
         d.setVar("ADD_3G", "packagegroup-base-3g")
 
+<<<<<<< HEAD
     if "nfc" in distro_features and not "nfc" in machine_features and ("usbhost" in machine_features):
         d.setVar("ADD_NFC", "packagegroup-base-nfc")
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     # For backwards compatibility after rename
     packages = d.getVar("PACKAGES", True).split()
     for pkg in packages:
@@ -151,7 +169,11 @@ RRECOMMENDS_packagegroup-machine-base = "${MACHINE_EXTRA_RRECOMMENDS}"
 
 SUMMARY_packagegroup-base-keyboard = "Keyboard support"
 RDEPENDS_packagegroup-base-keyboard = "\
+<<<<<<< HEAD
     ${VIRTUAL-RUNTIME_keymaps}"
+=======
+    keymaps"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SUMMARY_packagegroup-base-pci = "PCI bus support"
 RDEPENDS_packagegroup-base-pci = "\
@@ -179,8 +201,12 @@ RRECOMMENDS_packagegroup-base-vfat = "\
     kernel-module-msdos \
     kernel-module-vfat \
     kernel-module-nls-iso8859-1 \
+<<<<<<< HEAD
     kernel-module-nls-cp437 \
     dosfstools"
+=======
+    kernel-module-nls-cp437"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SUMMARY_packagegroup-base-alsa = "ALSA sound support"
 RDEPENDS_packagegroup-base-alsa = "\
@@ -317,6 +343,7 @@ RRECOMMENDS_packagegroup-base-wifi = "\
     kernel-module-aes-generic \
     kernel-module-aes"
 
+<<<<<<< HEAD
 SUMMARY_packagegroup-base-nfc = "Near Field Communication support"
 RDEPENDS_packagegroup-base-nfc = "\
     neard"
@@ -324,6 +351,8 @@ RDEPENDS_packagegroup-base-nfc = "\
 RRECOMMENDS_packagegroup-base-nfc = "\
     kernel-module-nfc"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 SUMMARY_packagegroup-base-3g = "Cellular data support"
 RDEPENDS_packagegroup-base-3g = "\
     ofono"
@@ -346,7 +375,11 @@ RRECOMMENDS_packagegroup-base-cramfs = "\
 #
 SUMMARY_packagegroup-base-nfs = "NFS network filesystem support"
 RDEPENDS_packagegroup-base-nfs = "\
+<<<<<<< HEAD
     rpcbind"
+=======
+    portmap"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 RRECOMMENDS_packagegroup-base-nfs = "\
     kernel-module-nfs "

@@ -1,6 +1,10 @@
 Upstream-Status: Inappropriate [disable feature]
 
+<<<<<<< HEAD
 Index: iputils-s20121221/Makefile
+=======
+Index: trunk/Makefile
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ===================================================================
 --- iputils-s20121221.orig/Makefile
 +++ iputils-s20121221/Makefile

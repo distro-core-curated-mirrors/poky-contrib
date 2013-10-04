@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 PR = "r1"
+=======
+PR = "r0"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504 \
                     file://tests/COPYING;md5=d32239bcb673463ab874e80d47fae504 \
@@ -6,6 +10,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504 \
 require remake.inc
 
 SRC_URI += "file://version-remake.texi.patch"
+<<<<<<< HEAD
 SRCREV = "f05508e521987c8494c92d9c2871aec46307d51d"
 S = "${WORKDIR}/git"
 
@@ -24,6 +29,22 @@ do_configure_prepend() {
     touch ${S}/po/LINGUAS
     # create config.rpath which required by configure.ac
     ( cd ${S}; autopoint || touch config.rpath )
+=======
+SRCREV = "414d6e84121c6740ff5079370c905dea0f0e1ddb"
+S = "${WORKDIR}/git"
+
+DEPENDS += "readline"
+PROVIDES += "make"
+
+do_configure_prepend() {
+    # create config.rpath which required by configure.ac
+    autopoint || touch config.rpath
+}
+
+do_compile_prepend() {
+    # updating .po and other gnu build files
+    make update
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 BBCLASSEXTEND = "native"

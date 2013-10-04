@@ -4,6 +4,7 @@ HOMEPAGE = "http://dbus.freedesktop.org"
 SECTION = "base"
 LICENSE = "AFL-2 | GPLv2+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=10dded3b58148f3f1fd804b26354af3e \
+<<<<<<< HEAD
                     file://dbus/dbus.h;beginline=6;endline=20;md5=7755c9d7abccd5dbd25a6a974538bb3c"
 X11DEPENDS = "virtual/libx11 libsm"
 DEPENDS = "expat virtual/libintl ${@base_contains('DISTRO_FEATURES', 'x11', '${X11DEPENDS}', '', d)}"
@@ -13,6 +14,15 @@ RDEPENDS_dbus = "${@base_contains('DISTRO_FEATURES', 'ptest', 'dbus-ptest-ptest'
 RDEPENDS_class-native = ""
 
 INC_PR = "r6"
+=======
+                    file://dbus/dbus.h;firstline=6;endline=20;md5=6eea2e0c7750dd8e620dcb1437312fa5"
+X11DEPENDS = "virtual/libx11 libsm"
+DEPENDS = "expat virtual/libintl ${@base_contains('DISTRO_FEATURES', 'x11', '${X11DEPENDS}', '', d)}"
+DEPENDS_virtclass-native = "expat-native virtual/libintl-native"
+DEPENDS_virtclass-nativesdk = "nativesdk-expat virtual/nativesdk-libintl virtual/libx11"
+
+INC_PR = "r5"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "http://dbus.freedesktop.org/releases/dbus/dbus-${PV}.tar.gz \
            file://tmpdir.patch; \
@@ -25,12 +35,15 @@ inherit useradd autotools pkgconfig gettext update-rc.d
 INITSCRIPT_NAME = "dbus-1"
 INITSCRIPT_PARAMS = "start 02 5 3 2 . stop 20 0 1 6 ."
 
+<<<<<<< HEAD
 python __anonymous() {
     features = d.getVar("DISTRO_FEATURES", True).split()
     if "sysvinit" not in features:
         d.setVar("INHIBIT_UPDATERCD_BBCLASS", "1")
 }
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 USERADD_PACKAGES = "${PN}"
 GROUPADD_PARAM_${PN} = "-r netdev"
 USERADD_PARAM_${PN} = "--system --home ${localstatedir}/lib/dbus \
@@ -41,7 +54,16 @@ CONFFILES_${PN} = "${sysconfdir}/dbus-1/system.conf ${sysconfdir}/dbus-1/session
 
 DEBIANNAME_${PN} = "dbus-1"
 
-PACKAGES =+ "${PN}-lib"
+PACKAGES =+ "${PN}-lib ${PN}-systemd"
+
+OLDPKGNAME = "dbus-x11"
+OLDPKGNAME_virtclass-nativesdk = ""
+
+# for compatibility
+RPROVIDES_${PN} = "${OLDPKGNAME}"
+RREPLACES_${PN} += "${OLDPKGNAME}"
+
+FILES_${PN}-systemd = "${systemd_unitdir}/system/"
 
 OLDPKGNAME = "dbus-x11"
 OLDPKGNAME_class-nativesdk = ""
@@ -73,10 +95,14 @@ pkg_postinst_dbus() {
 }
 
 EXTRA_OECONF_X = "${@base_contains('DISTRO_FEATURES', 'x11', '--with-x', '--without-x', d)}"
+<<<<<<< HEAD
 EXTRA_OECONF_X_class-native = "--without-x --disable-x11-autolaunch"
 # TODO: would like to --enable-systemd but that's a circular build-dependency
 # between systemd<->dbus
 EXTRA_OECONF_SYSTEMD = "${@base_contains('DISTRO_FEATURES', 'systemd', '--with-systemdsystemunitdir=${systemd_unitdir}/system/', '--without-systemdsystemunitdir', d)}"
+=======
+EXTRA_OECONF_X_virtclass-native = "--without-x --disable-x11-autolaunch"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 EXTRA_OECONF = "--disable-tests \
                 --disable-checks \
@@ -84,27 +110,43 @@ EXTRA_OECONF = "--disable-tests \
                 --disable-doxygen-docs \
                 --disable-libaudit \
                 --with-xml=expat \
+<<<<<<< HEAD
                 --disable-systemd \
                 ${EXTRA_OECONF_SYSTEMD} \
+=======
+                --with-systemdsystemunitdir=${systemd_unitdir}/system/ \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                 ${EXTRA_OECONF_X}"
 
 do_install() {
 	autotools_do_install
 
+<<<<<<< HEAD
 	if ${@base_contains('DISTRO_FEATURES', 'sysvinit', 'true', 'false', d)}; then
 		install -d ${D}${sysconfdir}/init.d
 		sed 's:@bindir@:${bindir}:' < ${WORKDIR}/dbus-1.init >${WORKDIR}/dbus-1.init.sh
 		install -m 0755 ${WORKDIR}/dbus-1.init.sh ${D}${sysconfdir}/init.d/dbus-1
 	fi
+=======
+	install -d ${D}${sysconfdir}/init.d
+	sed 's:@bindir@:${bindir}:' < ${WORKDIR}/dbus-1.init >${WORKDIR}/dbus-1.init.sh
+	install -m 0755 ${WORKDIR}/dbus-1.init.sh ${D}${sysconfdir}/init.d/dbus-1
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	install -d ${D}${sysconfdir}/default/volatiles
 	echo "d messagebus messagebus 0755 ${localstatedir}/run/dbus none" \
 	     > ${D}${sysconfdir}/default/volatiles/99_dbus
 
 
+<<<<<<< HEAD
 	mkdir -p ${D}${localstatedir}/lib/dbus
 
 	chown messagebus:messagebus ${D}${localstatedir}/lib/dbus
+=======
+	mkdir -p ${D}${localstatedir}/run/dbus ${D}${localstatedir}/lib/dbus
+
+	chown messagebus:messagebus ${D}${localstatedir}/run/dbus ${D}${localstatedir}/lib/dbus
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	chown root:messagebus ${D}${libexecdir}/dbus-daemon-launch-helper
 	chmod 4755 ${D}${libexecdir}/dbus-daemon-launch-helper
@@ -115,8 +157,14 @@ do_install() {
 	# Remove empty testexec directory as we don't build tests
 	rm -rf ${D}${libdir}/dbus-1.0/test
 
+<<<<<<< HEAD
 	# Remove /var/run as it is created on startup
 	rm -rf ${D}${localstatedir}/run
+=======
+	# disable dbus-1 sysv script on systemd installs
+	# nearly all distros call the initscript plain 'dbus', but OE-core is different
+	ln -sf /dev/null ${D}/${systemd_unitdir}/system/dbus-1.service
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 do_install_class-native() {
@@ -141,5 +189,9 @@ do_install_class-nativesdk() {
 	# dbus-launch has no X support so lets not install it in case the host
 	# has a more featured and useful version
 	rm -f ${D}${bindir}/dbus-launch
+}
+
+do_install_virtclass-nativesdk() {
+	autotools_do_install
 }
 BBCLASSEXTEND = "native nativesdk"

@@ -10,6 +10,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=63e2cbac53863f60e2f43343fb34367f"
 DEPENDS += "virtual/libx11"
 
 SRCREV = "28c006c94e57ea71df11ec4fff79d7ffcfc4860f"
+<<<<<<< HEAD
 PR = "${INC_PR}.7"
 PV = "0.1.1+gitr${SRCPV}"
 
@@ -20,6 +21,17 @@ SRC_URI = "git://git.pingu.fi/xf86-video-omapfb;protocol=http \
   file://0004-blacklist-tv-out.patch \
   file://0005-Attempt-to-fix-VRFB.patch \
   file://0006-omapfb-port-to-new-xserver-video-API.patch \
+=======
+PR = "${INC_PR}.6"
+PV = "0.1.1+gitr${SRCPV}"
+
+SRC_URI = "git://git.pingu.fi/xf86-video-omapfb;protocol=http \
+            file://omap-revert-set-CRTC-limit.patch \
+            file://omap-revert-set-virtual-size.patch \
+            file://omap-force-plain-mode.patch  \
+            file://omap-blacklist-tv-out.patch  \
+            file://0004-Attempt-to-fix-VRFB.patch \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 "
 
 S = "${WORKDIR}/git"

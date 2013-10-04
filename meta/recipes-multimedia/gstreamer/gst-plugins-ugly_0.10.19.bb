@@ -8,18 +8,25 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=a6f89e2100d9b6cdffcea4f398e37343 \
                     file://gst/mpegstream/gstmpegparse.h;beginline=1;endline=18;md5=ff65467b0c53cdfa98d0684c1bc240a9"
 
 DEPENDS += "gst-plugins-base libid3tag libmad mpeg2dec liba52 lame"
+<<<<<<< HEAD
 PR = "r3"
+=======
+PR = "r2"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 inherit gettext
 
 EXTRA_OECONF += "--with-plugins=a52dec,lame,id3tag,mad,mpeg2dec,mpegstream,mpegaudioparse,asfdemux,realmedia \
                  --disable-orc"
 
+<<<<<<< HEAD
 PACKAGECONFIG ??= ""
 PACKAGECONFIG[x264] = "--enable-x264,--disable-x264,x264"
 PACKAGECONFIG[cdio] = "--enable-cdio,--disable-cdio,libcdio"
 PACKAGECONFIG[dvdread] = "--enable-dvdread,--disable-dvdread,libdvdread"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_configure_prepend() {
 	# This m4 file contains nastiness which conflicts with libtool 2.2.2
 	rm ${S}/m4/lib-link.m4 || true

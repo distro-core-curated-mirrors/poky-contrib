@@ -6,10 +6,17 @@ from bb.process import Popen, ExecutionError
 logger = logging.getLogger('BitBake.OE.Terminal')
 
 
+<<<<<<< HEAD
 class UnsupportedTerminal(Exception):
     pass
 
 class NoSupportedTerminals(Exception):
+=======
+class UnsupportedTerminal(StandardError):
+    pass
+
+class NoSupportedTerminals(StandardError):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     pass
 
 
@@ -47,7 +54,11 @@ class Terminal(Popen):
 
 class XTerminal(Terminal):
     def __init__(self, sh_cmd, title=None, env=None, d=None):
+<<<<<<< HEAD
         Terminal.__init__(self, sh_cmd, title, env, d)
+=======
+        Terminal.__init__(self, sh_cmd, title, env)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         if not os.environ.get('DISPLAY'):
             raise UnsupportedTerminal(self.name)
 
@@ -55,10 +66,13 @@ class Gnome(XTerminal):
     command = 'gnome-terminal --disable-factory -t "{title}" -x {command}'
     priority = 2
 
+<<<<<<< HEAD
 class Mate(XTerminal):
     command = 'mate-terminal --disable-factory -t "{title}" -x {command}'
     priority = 2
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 class Xfce(XTerminal):
     command = 'Terminal -T "{title}" -e "{command}"'
     priority = 2
@@ -109,6 +123,7 @@ class Screen(Terminal):
         else:
             logger.warn(msg)
 
+<<<<<<< HEAD
 class TmuxRunning(Terminal):
     """Open a new pane in the current running tmux window"""
     name = 'tmux-running'
@@ -162,6 +177,8 @@ class Custom(Terminal):
             logger.debug(1, 'No custom terminal (OE_TERMINAL_CUSTOMCMD) set')
             raise UnsupportedTerminal('OE_TERMINAL_CUSTOMCMD not set')
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 def prioritized():
     return Registry.prioritized()

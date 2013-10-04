@@ -7,7 +7,11 @@ LIC_FILES_CHKSUM = "file://setup.py;beginline=23;endline=23;md5=8a314270dd7a8dbc
 SRCNAME = "setuptools"
 PR = "ml5"
 DEPENDS += "python"
+<<<<<<< HEAD
 DEPENDS_class-native += "python-native"
+=======
+DEPENDS_virtclass-native += "python-native"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "\
   http://cheeseshop.python.org/packages/source/s/setuptools/${SRCNAME}-${PV}.tar.gz\
@@ -23,6 +27,7 @@ do_install_prepend() {
 }
 
 RDEPENDS_${PN} = "\
+<<<<<<< HEAD
   python-stringold \
   python-email \
   python-shell \
@@ -31,6 +36,8 @@ RDEPENDS_${PN} = "\
 "
 
 RDEPENDS_${PN}_class-native = "\
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
   python-distutils \
   python-compression \
 "

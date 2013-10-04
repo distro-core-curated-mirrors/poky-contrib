@@ -2,7 +2,11 @@ DESCRIPTION = "utils for managing LZMA compressed files"
 HOMEPAGE = "http://tukaani.org/xz/"
 SECTION = "base"
 
+<<<<<<< HEAD
 LICENSE = "GPLv2+ & LGPLv2.1+"
+=======
+LICENSE = "GPLv2+ & GPLv3+ & LGPLv2.1+"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 LIC_FILES_CHKSUM = "file://COPYING;md5=c475b6c7dca236740ace4bba553e8e1c \
                     file://COPYING.GPLv2;md5=b234ee4d69f5fce4486a80fdaf4a4263 \
                     file://COPYING.GPLv3;md5=d32239bcb673463ab874e80d47fae504 \

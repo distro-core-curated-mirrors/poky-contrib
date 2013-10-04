@@ -3,6 +3,7 @@ HOMEPAGE = "http://www.denx.de/wiki/U-Boot/WebHome"
 SECTION = "bootloaders"
 PROVIDES = "virtual/bootloader"
 
+<<<<<<< HEAD
 inherit uboot-config deploy
 
 EXTRA_OEMAKE = 'CROSS_COMPILE=${TARGET_PREFIX} CC="${TARGET_PREFIX}gcc ${TOOLCHAIN_OPTIONS}"'
@@ -11,6 +12,20 @@ EXTRA_OEMAKE = 'CROSS_COMPILE=${TARGET_PREFIX} CC="${TARGET_PREFIX}gcc ${TOOLCHA
 # u-boot build system and appended to the u-boot version.  If the .scmversion
 # file already exists it will not be overwritten.
 UBOOT_LOCALVERSION ?= ""
+=======
+inherit deploy
+
+EXTRA_OEMAKE = 'CROSS_COMPILE=${TARGET_PREFIX} CC="${TARGET_PREFIX}gcc ${TOOLCHAIN_OPTIONS}"'
+
+python () {
+	if not d.getVar("UBOOT_MACHINE", True):
+		PN = d.getVar("PN", True)
+		FILE = os.path.basename(d.getVar("FILE", True))
+		bb.debug(1, "To build %s, see %s for instructions on \
+			     setting up your machine config" % (PN, FILE))
+		raise bb.parse.SkipPackage("because UBOOT_MACHINE is not set")
+}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Some versions of u-boot use .bin and others use .img.  By default use .bin
 # but enable individual recipes to change this value.
@@ -36,6 +51,7 @@ do_compile () {
 	unset LDFLAGS
 	unset CFLAGS
 	unset CPPFLAGS
+<<<<<<< HEAD
 
 	if [ ! -e ${B}/.scmversion -a ! -e ${S}/.scmversion ]
 	then
@@ -43,6 +59,8 @@ do_compile () {
 		echo ${UBOOT_LOCALVERSION} > ${S}/.scmversion
 	fi
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	oe_runmake ${UBOOT_MACHINE}
 	oe_runmake ${UBOOT_MAKE_TARGET}
 }

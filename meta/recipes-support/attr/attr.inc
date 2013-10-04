@@ -11,9 +11,13 @@ LIC_FILES_CHKSUM = "file://doc/COPYING;md5=2d0aa14b3fce4694e4f615e30186335f \
                     file://attr/attr.c;endline=17;md5=be0403261f0847e5f43ed5b08d19593c \
                     file://libattr/libattr.c;endline=17;md5=7970f77049f8fa1199fff62a7ab724fb"
 
+<<<<<<< HEAD
 SRC_URI = "http://download.savannah.gnu.org/releases/attr/${BP}.src.tar.gz \
            file://generic-syscalls.patch \
            "
+=======
+SRC_URI = "http://download.savannah.gnu.org/releases/attr/${BP}.src.tar.gz"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 require ea-acl.inc
 

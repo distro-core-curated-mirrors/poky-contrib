@@ -5,7 +5,10 @@ to Richard's opinion.
 Upstream-Status: Pending
 
 Signed-off-by: Kang Kai <kai.kang@windriver.com>
+<<<<<<< HEAD
 Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Author: Chi Xu <chi.xu@windriver.com>
 # Date: Feb 26 2010
@@ -15,7 +18,11 @@ Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
 diff -Nru ghostscript-8.64.orig/base/lib.mak ghostscript-8.64/base/lib.mak
 --- ghostscript-8.64.orig/base/lib.mak	2010-02-10 10:30:02.000000000 +0800
 +++ ghostscript-8.64/base/lib.mak	2010-02-10 10:56:21.000000000 +0800
+<<<<<<< HEAD
 @@ -67,8 +67,8 @@
+=======
+@@ -66,8 +66,8 @@
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
  stdpre_h=$(GLSRC)stdpre.h $(stdpn_h)
  stdint__h=$(GLSRC)stdint_.h $(std_h)
  

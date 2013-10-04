@@ -54,9 +54,14 @@ mk_dir() {
 	chmod ${TMODE} $1 || echo \"Failed to set mode -${TMODE}- for -$1-.\" >/dev/tty0 2>&1 "
 
 	test "$VOLATILE_ENABLE_CACHE" = yes && echo "$EXEC" >> /etc/volatile.cache.build
+<<<<<<< HEAD
+=======
+	
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	[ -e "$1" ] && {
 		[ "${VERBOSE}" != "no" ] && echo "Target already exists. Skipping."
 	} || {
+<<<<<<< HEAD
 		if [ -z "$ROOT_DIR" ]; then
 			eval $EXEC
 		else
@@ -64,10 +69,14 @@ mk_dir() {
 			# not be logged.
 			eval $EXEC > /dev/null 2>&1
 		fi
+=======
+	  eval $EXEC
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	}
 }
 
 link_file() {
+<<<<<<< HEAD
 	EXEC="
 	if [ -L \"$2\" ]; then
 		[ \"\$(readlink -f \"$2\")\" != \"\$(readlink -f \"$1\")\" ] && { rm -f \"$2\"; ln -sf \"$1\" \"$2\"; };
@@ -90,6 +99,17 @@ link_file() {
 		# not be logged.
 		eval $EXEC > /dev/null 2>&1
 	fi
+=======
+	EXEC="test -e \"$2\" -o -L $2 || ln -s \"$1\" \"$2\" >/dev/tty0 2>&1" 
+
+	test "$VOLATILE_ENABLE_CACHE" = yes && echo "	$EXEC" >> /etc/volatile.cache.build
+	
+	[ -e "$2" ] && {
+	  echo "Cannot create link over existing -${TNAME}-." >&2
+	} || {
+	  eval $EXEC &
+	}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 check_requirements() {
@@ -143,10 +163,66 @@ check_requirements() {
 apply_cfgfile() {
 	CFGFILE="$1"
 
+<<<<<<< HEAD
 	check_requirements "${CFGFILE}" || {
 		echo "Skipping ${CFGFILE}"
 		return 1
 	}
+=======
+  CFGFILE="$1"
+
+  check_requirements "${CFGFILE}" || {
+    echo "Skipping ${CFGFILE}"
+    return 1
+    }
+
+  cat ${CFGFILE} | grep -v "^#" | \
+  while read LINE; do
+
+    eval `echo "$LINE" | sed -n "s/\(.*\)\ \(.*\) \(.*\)\ \(.*\)\ \(.*\)\ \(.*\)/TTYPE=\1 ; TUSER=\2; TGROUP=\3; TMODE=\4; TNAME=\5 TLTARGET=\6/p"`
+
+    [ "${VERBOSE}" != "no" ] && echo "Checking for -${TNAME}-."
+
+
+    [ "${TTYPE}" = "l" ] && {
+      TSOURCE="$TLTARGET"
+      [ -L "${TNAME}" ] || {
+        [ "${VERBOSE}" != "no" ] && echo "Creating link -${TNAME}- pointing to -${TSOURCE}-."
+        link_file "${TSOURCE}" "${TNAME}" &
+        }
+      continue
+      }
+
+    [ -L "${TNAME}" ] && {
+      [ "${VERBOSE}" != "no" ] && echo "Found link."
+      NEWNAME=`ls -l "${TNAME}" | sed -e 's/^.*-> \(.*\)$/\1/'`
+      echo ${NEWNAME} | grep -v "^/" >/dev/null && {
+        TNAME="`echo ${TNAME} | sed -e 's@\(.*\)/.*@\1@'`/${NEWNAME}"
+        [ "${VERBOSE}" != "no" ] && echo "Converted relative linktarget to absolute path -${TNAME}-."
+        } || {
+        TNAME="${NEWNAME}"
+        [ "${VERBOSE}" != "no" ] && echo "Using absolute link target -${TNAME}-."
+        }
+      }
+
+    case "${TTYPE}" in
+      "f")  [ "${VERBOSE}" != "no" ] && echo "Creating file -${TNAME}-."
+            create_file "${TNAME}" &
+	    ;;
+      "d")  [ "${VERBOSE}" != "no" ] && echo "Creating directory -${TNAME}-."
+            mk_dir "${TNAME}"
+	    # Add check to see if there's an entry in fstab to mount.
+	    ;;
+      *)    [ "${VERBOSE}" != "no" ] && echo "Invalid type -${TTYPE}-."
+            continue
+	    ;;
+    esac
+
+
+    done
+
+  return 0
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	cat ${CFGFILE} | grep -v "^#" | \
 		while read LINE; do
@@ -204,14 +280,24 @@ exec 9>&-
 
 if test -e ${ROOT_DIR}/etc/volatile.cache -a "$VOLATILE_ENABLE_CACHE" = "yes" -a "x$1" != "xupdate" -a "x$clearcache" = "x0"
 then
+<<<<<<< HEAD
 	sh ${ROOT_DIR}/etc/volatile.cache
 else
 	rm -f ${ROOT_DIR}/etc/volatile.cache ${ROOT_DIR}/etc/volatile.cache.build
+=======
+	sh /etc/volatile.cache
+else	
+	rm -f /etc/volatile.cache /etc/volatile.cache.build
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	for file in `ls -1 "${CFGDIR}" | sort`; do
 		apply_cfgfile "${CFGDIR}/${file}"
 	done
 
+<<<<<<< HEAD
 	[ -e ${ROOT_DIR}/etc/volatile.cache.build ] && sync && mv ${ROOT_DIR}/etc/volatile.cache.build ${ROOT_DIR}/etc/volatile.cache
+=======
+	[ -e /etc/volatile.cache.build ] && sync && mv /etc/volatile.cache.build /etc/volatile.cache
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fi
 
 if [ -z "${ROOT_DIR}" ] && [ -f /etc/ld.so.cache ] && [ ! -f /var/run/ld.so.cache ]

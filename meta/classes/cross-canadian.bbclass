@@ -14,19 +14,31 @@ STAGING_BINDIR_TOOLCHAIN = "${STAGING_DIR_NATIVE}${bindir_native}/${SDK_ARCH}${S
 #
 # Update BASE_PACKAGE_ARCH and PACKAGE_ARCHS
 #
+<<<<<<< HEAD
 PACKAGE_ARCH = "${SDK_ARCH}-${SDKPKGSUFFIX}"
+=======
+PACKAGE_ARCH = "${SDK_ARCH}-nativesdk"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 python () {
     archs = d.getVar('PACKAGE_ARCHS', True).split()
     sdkarchs = []
     for arch in archs:
+<<<<<<< HEAD
         sdkarchs.append(arch + '-${SDKPKGSUFFIX}')
+=======
+        sdkarchs.append(arch + '-nativesdk')
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     d.setVar('PACKAGE_ARCHS', " ".join(sdkarchs))
 }
 MULTIMACH_TARGET_SYS = "${PACKAGE_ARCH}${HOST_VENDOR}-${HOST_OS}"
 
 INHIBIT_DEFAULT_DEPS = "1"
 
+<<<<<<< HEAD
 STAGING_DIR_HOST = "${STAGING_DIR}/${HOST_ARCH}-${SDKPKGSUFFIX}${HOST_VENDOR}-${HOST_OS}"
+=======
+STAGING_DIR_HOST = "${STAGING_DIR}/${HOST_ARCH}-nativesdk${HOST_VENDOR}-${HOST_OS}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 TOOLCHAIN_OPTIONS = " --sysroot=${STAGING_DIR}/${HOST_ARCH}-${SDKPKGSUFFIX}${HOST_VENDOR}-${HOST_OS}"
 
@@ -88,6 +100,13 @@ FILES_${PN}-dbg += "${prefix}/.debug \
 export PKG_CONFIG_DIR = "${STAGING_DIR_HOST}${layout_libdir}/pkgconfig"
 export PKG_CONFIG_SYSROOT_DIR = "${STAGING_DIR_HOST}"
 
+<<<<<<< HEAD
+=======
+# Cross-canadian packages need to pull in nativesdk dynamic libs
+SHLIBSDIRS = "${TMPDIR}/pkgdata/${HOST_ARCH}-nativesdk${HOST_VENDOR}-${HOST_OS}/shlibs/ ${TMPDIR}/pkgdata/all-${HOST_VENDOR}-${HOST_OS}/shlibs/"
+SHLIBSDIR = "${TMPDIR}/pkgdata/${HOST_ARCH}-nativesdk${HOST_VENDOR}-${HOST_OS}/shlibs/"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_populate_sysroot[stamp-extra-info] = ""
 
 USE_NLS = "${SDKUSE_NLS}"

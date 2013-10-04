@@ -12,9 +12,13 @@ RCONFLICTS_${PN} = "console-tools"
 
 PR = "r4"
 
+<<<<<<< HEAD
 SRC_URI = "${KERNELORG_MIRROR}/linux/utils/kbd/kbd-1.15.2.tar.bz2 \
            file://Allow-resizecons-on-x86_64.patch"
 
+=======
+SRC_URI="${KERNELORG_MIRROR}/linux/utils/kbd/kbd-1.15.2.tar.bz2"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 SRC_URI[md5sum] = "e850eb91e4d3b94b194efe8e953204c5"
 SRC_URI[sha256sum] = "b3602d191eef7a6a8317fc3cd231efa40a89ac235dce57a77cac825a2a21eba6"
 

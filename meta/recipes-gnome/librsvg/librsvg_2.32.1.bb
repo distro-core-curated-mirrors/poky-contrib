@@ -7,6 +7,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f \
                     file://rsvg.h;beginline=3;endline=24;md5=20b4113c4909bbf0d67e006778302bc6"
 
 SECTION = "x11/utils"
+<<<<<<< HEAD
 DEPENDS = "cairo glib-2.0 gdk-pixbuf fontconfig freetype libxml2 pango"
 DEPENDS += "gdk-pixbuf-native"
 BBCLASSEXTEND = "native"
@@ -18,10 +19,30 @@ inherit autotools pkgconfig gnomebase gtk-doc pixbufcache
 SRC_URI += "file://doc_Makefile.patch \
             file://librsvg-CVE-2011-3146.patch \
            "
+=======
+DEPENDS = "gtk+ cairo libxml2"
+DEPENDS_virtclass-native = "cairo-native pango-native gdk-pixbuf-native"
+BBCLASSEXTEND = "native"
+
+PR = "r10"
+
+inherit autotools pkgconfig gnome gtk-doc
+
+EXTRA_OECONF = "--disable-mozilla-plugin --without-svgz"
+
+PACKAGECONFIG ??= "croco"
+# When native we can manage without croco, as it's only for GTK+
+PACKAGECONFIG_virtclass-native = ""
+
+PACKAGECONFIG[croco] = "--with-croco,--without-croco,libcroco"
+
+SRC_URI += "file://doc_Makefile.patch"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI[archive.md5sum] = "4b00d0fee130c936644892c152f42db7"
 SRC_URI[archive.sha256sum] = "91b98051f352fab8a6257688d6b2fd665b4648ed66144861f2f853ccf876d334"
 
+<<<<<<< HEAD
 EXTRA_OECONF = "--without-svgz"
 
 PACKAGECONFIG ??= "croco gdkpixbuf"
@@ -32,6 +53,11 @@ PACKAGECONFIG[croco] = "--with-croco,--without-croco,libcroco"
 PACKAGECONFIG[gdkpixbuf] = "--enable-pixbuf-loader,--disable-pixbuf-loader"
 # GTK+ 2 theme engine
 PACKAGECONFIG[gtk] = "--enable-gtk-theme,--disable-gtk-theme,gtk+"
+=======
+do_configure_prepend () {
+	export GDK_PIXBUF_QUERYLOADERS="${libdir}/gtk-2.0/version/loaders"
+}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PACKAGES =+ "librsvg-gtk librsvg-gtk-dbg librsvg-gtk-dev rsvg"
 FILES_${PN} = "${libdir}/*.so.*"
@@ -55,4 +81,17 @@ FILES_librsvg-gtk-dbg += "${libdir}/gdk-pixbuf-2.0/.debug \
 PIXBUF_PACKAGES = "librsvg-gtk"
 PARALLEL_MAKE = ""
 
+<<<<<<< HEAD
 PIXBUFCACHE_SYSROOT_DEPS_append_class-native = " harfbuzz-native:do_populate_sysroot_setscene pango-native:do_populate_sysroot_setscene icu-native:do_populate_sysroot_setscene"
+=======
+if [ -d ${libdir}/gtk-2.0/2.10.0/loaders ] ; then
+	export GDK_PIXBUF_MODULEDIR=${libdir}/gtk-2.0/2.10.0/loaders
+else
+	export GDK_PIXBUF_MODULEDIR=${libdir}/gdk-pixbuf-2.0/2.10.0/loaders
+fi
+
+test -x ${bindir}/gdk-pixbuf-query-loaders && gdk-pixbuf-query-loaders > ${sysconfdir}/gtk-2.0/gdk-pixbuf.loaders
+test -x ${bindir}/gtk-update-icon-cache && gtk-update-icon-cache  -q ${datadir}/icons/hicolor
+}
+PARALLEL_MAKE = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

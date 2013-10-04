@@ -1,7 +1,11 @@
+<<<<<<< HEAD
 import errno
 import re
 import os
 
+=======
+import re
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 class OEList(list):
     """OpenEmbedded 'list' type
@@ -95,7 +99,11 @@ def regex(value, regexflags=None):
 
     try:
         return re.compile(value, flagval)
+<<<<<<< HEAD
     except re.error as exc:
+=======
+    except re.error, exc:
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         raise ValueError("Invalid regex value '%s': %s" %
                          (value, exc.args[0]))
 
@@ -136,6 +144,7 @@ def float(value, fromhex='false'):
         return _float.fromhex(value)
     else:
         return _float(value)
+<<<<<<< HEAD
 
 def path(value, relativeto='', normalize='true', mustexist='false'):
     value = os.path.join(relativeto, value)
@@ -151,3 +160,5 @@ def path(value, relativeto='', normalize='true', mustexist='false'):
                 raise ValueError("{0}: {1}".format(value, os.strerror(errno.ENOENT)))
 
     return value
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

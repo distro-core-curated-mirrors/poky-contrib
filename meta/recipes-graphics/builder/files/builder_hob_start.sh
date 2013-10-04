@@ -7,6 +7,7 @@
 export PSEUDO_PREFIX=/usr
 export PSEUDO_LOCALSTATEDIR=/home/builder/pseudo
 export PSEUDO_LIBDIR=/usr/lib/pseudo/lib64
+<<<<<<< HEAD
 export GIT_PROXY_COMMAND=/home/builder/poky/scripts/oe-git-proxy
 
 #start pcmanfm in daemon mode to allow asynchronous launch
@@ -23,6 +24,8 @@ if [ ! -d /home/builder/.local/share/applications ]; then
     xdg-mime default midori.desktop x-scheme-handler/https
     xdg-mime default midori.desktop text/html
 fi
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 cd /home/builder/poky
 . ./oe-init-build-env

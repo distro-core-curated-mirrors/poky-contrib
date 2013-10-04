@@ -2,7 +2,10 @@
 # Copyright (C) 2011 Intel Corporation
 #
 
+<<<<<<< HEAD
 SUMMARY = "X11 display server"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 LICENSE = "MIT"
 PR = "r39"
 
@@ -11,11 +14,18 @@ inherit packagegroup
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 XSERVER ?= "xserver-xorg xf86-video-fbdev xf86-input-evdev"
+<<<<<<< HEAD
 XSERVERCODECS ?= ""
 
 RDEPENDS_${PN} = "\
     ${XSERVER} \
     ${XSERVERCODECS} \
+=======
+
+SUMMARY_${PN} = "X11 display server"
+RDEPENDS_${PN} = "\
+    ${XSERVER} \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     "
 
 # Allow replacing task-x11-server in meta-oe

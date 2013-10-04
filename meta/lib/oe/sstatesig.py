@@ -80,7 +80,10 @@ def find_siginfo(pn, taskname, taskhashlist, d):
     """ Find signature data files for comparison purposes """
 
     import fnmatch
+<<<<<<< HEAD
     import glob
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     if taskhashlist:
         hashfiles = {}
@@ -94,6 +97,7 @@ def find_siginfo(pn, taskname, taskhashlist, d):
         if key.startswith('virtual:native:'):
             pn = pn + '-native'
 
+<<<<<<< HEAD
     filedates = {}
 
     # First search in stamps dir
@@ -118,6 +122,29 @@ def find_siginfo(pn, taskname, taskhashlist, d):
                         break
         else:
             filedates[fullpath] = os.stat(fullpath).st_mtime
+=======
+    # First search in stamps dir
+    stampdir = d.getVar('TMPDIR', True) + '/stamps'
+    filespec = '%s-*.%s.sigdata.*' % (pn, taskname)
+    filedates = {}
+    foundall = False
+    for root, dirs, files in os.walk(stampdir):
+        for fn in files:
+            if fnmatch.fnmatch(fn, filespec):
+                fullpath = os.path.join(root, fn)
+                match = False
+                if taskhashlist:
+                    for taskhash in taskhashlist:
+                        if fn.endswith('.%s' % taskhash):
+                            hashfiles[taskhash] = fullpath
+                            if len(hashfiles) == len(taskhashlist):
+                                foundall = True
+                                break
+                else:
+                    filedates[fullpath] = os.stat(fullpath).st_mtime
+        if foundall:
+            break
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     if len(filedates) < 2 and not foundall:
         # That didn't work, look in sstate-cache

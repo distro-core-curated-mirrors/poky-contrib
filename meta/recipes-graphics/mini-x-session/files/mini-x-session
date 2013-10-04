@@ -17,6 +17,7 @@ exec /etc/mini_x/session
 fi
 
 MINI_X_SESSION_DIR=/etc/mini_x/session.d
+<<<<<<< HEAD
 if [ -d "$MINI_X_SESSION_DIR" ]; then
 	# Execute session file on behalf of file owner
 	find $MINI_X_SESSION_DIR -type f | while read SESSIONFILE; do
@@ -28,6 +29,16 @@ if [ -d "$MINI_X_SESSION_DIR" ]; then
 		set -e
 	done
 fi
+=======
+
+# Execute session file on behalf of file owner
+for SESSIONFILE in $MINI_X_SESSION_DIR/*; do
+    set +e
+    USERNAME=`stat -c %U $SESSIONFILE`
+    sudo -b -i -u $USERNAME $SESSIONFILE& 
+    set -e
+done
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # This resolution is big enough for hob2's max window size.
 xrandr -s 1024x768

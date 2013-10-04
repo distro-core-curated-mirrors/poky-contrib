@@ -2,13 +2,20 @@ require libtool-${PV}.inc
 
 DEPENDS = ""
 
+<<<<<<< HEAD
 PR = "${INC_PR}.1"
+=======
+PR = "${INC_PR}.0"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 SRC_URI += "file://prefix.patch"
 
 inherit native
 
 EXTRA_OECONF = " --with-libtool-sysroot=${STAGING_DIR_NATIVE}"
+<<<<<<< HEAD
 CACHED_CONFIGUREVARS += "ac_cv_path_SED=/bin/sed"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 do_configure_prepend () {
 	# Remove any existing libtool m4 since old stale versions would break

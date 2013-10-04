@@ -12,9 +12,14 @@ DEPENDS = "flex-native bison-native libnl"
 
 PACKAGECONFIG ??= "${@base_contains('DISTRO_FEATURES', 'bluetooth', 'bluetooth', '', d)}"
 PACKAGECONFIG[bluetooth] = "--enable-bluetooth,--disable-bluetooth,bluez4"
+<<<<<<< HEAD
 PACKAGECONFIG[canusb] = "--enable-canusb,--enable-canusb=no,libusb"
 
 INC_PR = "r5"
+=======
+
+INC_PR = "r3"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "http://www.tcpdump.org/release/libpcap-${PV}.tar.gz"
 

@@ -9,7 +9,11 @@ def base_detect_revision(d):
 
     for scm in scms:
         rev = scm(path, d)
+<<<<<<< HEAD
         if rev != "<unknown>":
+=======
+        if rev <> "<unknown>":
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             return rev
 
     return "<unknown>"
@@ -21,7 +25,11 @@ def base_detect_branch(d):
 
     for scm in scms:
         rev = scm(path, d)
+<<<<<<< HEAD
         if rev != "<unknown>":
+=======
+        if rev <> "<unknown>":
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             return rev.strip()
 
     return "<unknown>"
@@ -32,11 +40,18 @@ def base_get_scmbasepath(d):
 def base_get_metadata_monotone_branch(path, d):
     monotone_branch = "<unknown>"
     try:
+<<<<<<< HEAD
         with open("%s/_MTN/options" % path) as f:
             monotone_branch = f.read().strip()
             if monotone_branch.startswith( "database" ):
                 monotone_branch_words = monotone_branch.split()
                 monotone_branch = monotone_branch_words[ monotone_branch_words.index( "branch" )+1][1:-1]
+=======
+        monotone_branch = file( "%s/_MTN/options" % path ).read().strip()
+        if monotone_branch.startswith( "database" ):
+            monotone_branch_words = monotone_branch.split()
+            monotone_branch = monotone_branch_words[ monotone_branch_words.index( "branch" )+1][1:-1]
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     except:
         pass
     return monotone_branch
@@ -44,11 +59,18 @@ def base_get_metadata_monotone_branch(path, d):
 def base_get_metadata_monotone_revision(path, d):
     monotone_revision = "<unknown>"
     try:
+<<<<<<< HEAD
         with open("%s/_MTN/revision" % path) as f:
             monotone_revision = f.read().strip()
             if monotone_revision.startswith( "format_version" ):
                 monotone_revision_words = monotone_revision.split()
                 monotone_revision = monotone_revision_words[ monotone_revision_words.index( "old_revision" )+1][1:-1]
+=======
+        monotone_revision = file( "%s/_MTN/revision" % path ).read().strip()
+        if monotone_revision.startswith( "format_version" ):
+            monotone_revision_words = monotone_revision.split()
+            monotone_revision = monotone_revision_words[ monotone_revision_words.index( "old_revision" )+1][1:-1]
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     except IOError:
         pass
     return monotone_revision
@@ -56,8 +78,12 @@ def base_get_metadata_monotone_revision(path, d):
 def base_get_metadata_svn_revision(path, d):
     revision = "<unknown>"
     try:
+<<<<<<< HEAD
         with open("%s/.svn/entries" % path) as f:
             revision = f.readlines()[3].strip()
+=======
+        revision = file( "%s/.svn/entries" % path ).readlines()[3].strip()
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     except IOError:
         pass
     return revision

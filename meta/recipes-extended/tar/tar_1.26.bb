@@ -3,7 +3,11 @@ require tar.inc
 LICENSE = "GPLv3"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504"
 
+<<<<<<< HEAD
 PR = "r5"
+=======
+PR = "r3"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI += "file://remove-gets.patch \
            "

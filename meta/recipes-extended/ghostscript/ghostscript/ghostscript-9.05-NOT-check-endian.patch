@@ -4,6 +4,7 @@ So remove the check for Yocto.
 Upstream-Status: Pending
 
 Signed-off-by: Kang Kai <kai.kang@windriver.com>
+<<<<<<< HEAD
 Signed-off-by: Sen Zhang <sen.zhang@windriver.com>
 Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
 
@@ -13,11 +14,23 @@ Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
  
  AC_MSG_CHECKING([for big endian])
  
+=======
+
+--- ghostscript-9.05/base/configure.ac.orig	2012-03-14 15:28:30.828956872 +0800
++++ ghostscript-9.05/base/configure.ac	2012-03-14 15:29:05.060957357 +0800
+@@ -1739,25 +1739,25 @@
+ dnl check for big/little endian for LCMS
+ dnl --------------------------------------------------
+ 
+-AC_MSG_CHECKING([for big endian])
+-
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 -AC_RUN_IFELSE(
 -  [AC_LANG_PROGRAM([#include <stdio.h>], [
 -   static const int one = 1;
 -   return (*(char*)&one == 0 ? 0 : 1);
 -  ])],
+<<<<<<< HEAD
 -  [BIGENDIAN=1;AC_MSG_RESULT(big)],
 -  [BIGENDIAN=0;AC_MSG_RESULT(little)])
 +#AC_RUN_IFELSE(
@@ -40,5 +53,39 @@ Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
    LCMS2_ENDIAN=
 +  AC_MSG_RESULT(little)
  fi
+=======
+-  [LCMS_BIGENDIAN=1],
+-  [LCMS_BIGENDIAN=0])
+-
+-if test "x$LCMS_BIGENDIAN" != "x0"; then
+-  LCMS_ENDIAN="-DUSE_BIG_ENDIAN=$LCMS_BIGENDIAN"
+-  LCMS2_ENDIAN="-DCMS_USE_BIG_ENDIAN=$LCMS_BIGENDIAN"
+-  AC_MSG_RESULT(yes)
+-else
+-  LCMS_ENDIAN=
+-  LCMS2_ENDIAN=
+-  AC_MSG_RESULT(no)
+-fi
++dnl AC_MSG_CHECKING([for big endian])
++dnl 
++dnl AC_RUN_IFELSE(
++dnl   [AC_LANG_PROGRAM([#include <stdio.h>], [
++dnl    static const int one = 1;
++dnl    return (*(char*)&one == 0 ? 0 : 1);
++dnl   ])],
++dnl   [LCMS_BIGENDIAN=1],
++dnl   [LCMS_BIGENDIAN=0])
++dnl 
++dnl if test "x$LCMS_BIGENDIAN" != "x0"; then
++dnl   LCMS_ENDIAN="-DUSE_BIG_ENDIAN=$LCMS_BIGENDIAN"
++dnl   LCMS2_ENDIAN="-DCMS_USE_BIG_ENDIAN=$LCMS_BIGENDIAN"
++dnl   AC_MSG_RESULT(yes)
++dnl else
++dnl   LCMS_ENDIAN=
++dnl   LCMS2_ENDIAN=
++dnl   AC_MSG_RESULT(no)
++dnl fi
+ 
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
  
  AC_SUBST(LCMS_ENDIAN)

@@ -3,7 +3,10 @@ require recipes-core/eglibc/eglibc-package.inc
 INHIBIT_DEFAULT_DEPS = "1"
 
 # License applies to this recipe code, not the toolchain itself
+<<<<<<< HEAD
 SUMMARY = "External Sourcery G++ toolchain"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=3f40d7994397109285ec7b81fdeb3b58 \
                     file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
@@ -16,14 +19,20 @@ PROVIDES += "\
 	virtual/${TARGET_PREFIX}gcc-intermediate \
 	virtual/${TARGET_PREFIX}binutils \
 	virtual/${TARGET_PREFIX}libc-for-gcc \
+<<<<<<< HEAD
 	virtual/${TARGET_PREFIX}libc-initial \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	virtual/${TARGET_PREFIX}compilerlibs \
 	virtual/libc \
 	virtual/libintl \
 	virtual/libiconv \
 	glibc-thread-db \
 	libgcc \
+<<<<<<< HEAD
 	eglibc \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	virtual/linux-libc-headers \
 "
 PV = "${CSL_VER_MAIN}"
@@ -144,6 +153,10 @@ CSL_VER_MAIN ??= ""
 
 python () {
     if not d.getVar("CSL_VER_MAIN"):
+<<<<<<< HEAD
         raise bb.parse.SkipPackage("External CSL toolchain not configured (CSL_VER_MAIN not set).")
+=======
+	raise bb.parse.SkipPackage("External CSL toolchain not configured (CSL_VER_MAIN not set).")
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 

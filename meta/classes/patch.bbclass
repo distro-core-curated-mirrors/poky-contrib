@@ -44,7 +44,11 @@ def src_patches(d, all = False ):
         if patchdir:
             patchparm['patchdir'] = patchdir
 
+<<<<<<< HEAD
         localurl = bb.fetch.encodeurl(('file', '', local, '', '', patchparm))
+=======
+        localurl = bb.encodeurl(('file', '', local, '', '', patchparm))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         patches.append(localurl)
 
     if all:
@@ -147,7 +151,11 @@ python patch_do_patch() {
     os.environ['TMPDIR'] = process_tmpdir
 
     for patch in src_patches(d):
+<<<<<<< HEAD
         _, _, local, _, _, parm = bb.fetch.decodeurl(patch)
+=======
+        _, _, local, _, _, parm = bb.decodeurl(patch)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
         if "patchdir" in parm:
             patchdir = parm["patchdir"]

@@ -1,6 +1,10 @@
 #!/bin/bash
 #
+<<<<<<< HEAD
 # Copyright (c) 2010-2013,  Intel Corporation.
+=======
+# Copyright (c) 2010-2011,  Intel Corporation.
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # All Rights Reserved
 # 
 # This program is free software;  you can redistribute it and/or modify
@@ -123,6 +127,18 @@ done
 if [ -z "$BRANCH" ]; then
 	BRANCH=$(git branch | grep -e "^\* " | cut -d' ' -f2)
 	echo "NOTE: Assuming remote branch '$BRANCH', use -b to override."
+<<<<<<< HEAD
+=======
+fi
+	
+if [ -z "$REMOTE_URL" ]; then
+	usage
+	exit 1
+fi
+
+if [ $RFC -eq 1 ]; then
+	PREFIX="RFC $PREFIX"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fi
 
 if [ -z "$REMOTE_URL" ]; then
@@ -135,6 +151,23 @@ if [ $RFC -eq 1 ]; then
 	PREFIX="RFC $PREFIX"
 fi
 
+
+# Set WEB_URL from known remotes
+WEB_URL=""
+case "$REMOTE_URL" in
+	*git.yoctoproject.org*)
+		WEB_URL="http://git.yoctoproject.org/cgit.cgi/$REMOTE_REPO/log/?h=$BRANCH"
+		;;
+	*git.pokylinux.org*)
+		WEB_URL="http://git.pokylinux.org/cgit.cgi/$REMOTE_REPO/log/?h=$BRANCH"
+		;;
+	*git.openembedded.org*)
+		WEB_URL="http://cgit.openembedded.org/cgit.cgi/$REMOTE_REPO/log/?h=$BRANCH"
+		;;
+	*github.com*)
+		WEB_URL="https://github.com/$REMOTE_REPO/tree/$BRANCH"
+		;;
+esac
 
 # Set WEB_URL from known remotes
 WEB_URL=""

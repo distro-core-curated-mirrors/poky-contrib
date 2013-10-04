@@ -7,7 +7,11 @@ DEPENDS += "virtual/libgl virtual/libx11 fontconfig libxft libxext libxrender li
 PROVIDES += "qt4-x11"
 QT4DEPENDS = ""
 
+<<<<<<< HEAD
 INC_PR = "r50"
+=======
+INC_PR = "r47"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 QT_GLFLAGS ?= "${@base_contains('DISTRO_FEATURES', 'opengl', '-opengl', '-no-opengl', d)} "
 QT_GLFLAGS_qemux86 = "-opengl"

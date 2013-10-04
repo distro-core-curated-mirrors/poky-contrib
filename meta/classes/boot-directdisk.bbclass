@@ -57,6 +57,7 @@ inherit ${EFI_CLASS}
 # Get the build_syslinux_cfg() function from the syslinux class
 
 AUTO_SYSLINUXCFG = "1"
+<<<<<<< HEAD
 DISK_SIGNATURE ?= "${DISK_SIGNATURE_GENERATED}"
 SYSLINUX_ROOT ?= "root=/dev/sda2"
 SYSLINUX_TIMEOUT ?= "10"
@@ -74,11 +75,19 @@ populate() {
 
 }
 
+=======
+SYSLINUX_ROOT ?= "root=/dev/sda2"
+SYSLINUX_TIMEOUT ?= "10"
+
+inherit syslinux
+		
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 build_boot_dd() {
 	HDDDIR="${S}/hdd/boot"
 	HDDIMG="${S}/hdd.image"
 	IMAGE=${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.hdddirect
 
+<<<<<<< HEAD
 	populate ${HDDDIR}
 
 	if [ "${PCBIOS}" = "1" ]; then
@@ -91,11 +100,22 @@ build_boot_dd() {
 	BLOCKS=`du -bks $HDDDIR | cut -f 1`
 	BLOCKS=`expr $BLOCKS + ${BOOTDD_EXTRA_SPACE}`
 
+=======
+	install -d ${HDDDIR}
+	install -m 0644 ${STAGING_KERNEL_DIR}/bzImage ${HDDDIR}/vmlinuz
+	install -m 0644 ${S}/syslinux.cfg ${HDDDIR}/syslinux.cfg
+	install -m 444 ${STAGING_LIBDIR}/syslinux/ldlinux.sys ${HDDDIR}/ldlinux.sys
+
+	BLOCKS=`du -bks ${HDDDIR} | cut -f 1`
+	BLOCKS=`expr $BLOCKS + ${BOOTDD_EXTRA_SPACE}`
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	# Ensure total sectors is an integral number of sectors per
 	# track or mcopy will complain. Sectors are 512 bytes, and we
 	# generate images with 32 sectors per track. This calculation is
 	# done in blocks, thus the mod by 16 instead of 32.
 	BLOCKS=$(expr $BLOCKS + $(expr 16 - $(expr $BLOCKS % 16)))
+<<<<<<< HEAD
 
 	mkdosfs -n ${BOOTDD_VOLUME_ID} -S 512 -C $HDDIMG $BLOCKS 
 	mcopy -i $HDDIMG -s $HDDDIR/* ::/
@@ -104,6 +124,14 @@ build_boot_dd() {
 		syslinux_hdddirect_install $HDDIMG
 	fi	
 	chmod 644 $HDDIMG
+=======
+
+	mkdosfs -n ${BOOTDD_VOLUME_ID} -S 512 -C ${HDDIMG} $BLOCKS 
+	mcopy -i ${HDDIMG} -s ${HDDDIR}/* ::/
+
+	syslinux ${HDDIMG}
+	chmod 644 ${HDDIMG}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	ROOTFSBLOCKS=`du -Lbks ${ROOTFS} | cut -f 1`
 	TOTALSIZE=`expr $BLOCKS + $ROOTFSBLOCKS`
@@ -137,11 +165,15 @@ build_boot_dd() {
 } 
 
 python do_bootdirectdisk() {
+<<<<<<< HEAD
     validate_disk_signature(d)
     if d.getVar("PCBIOS", True) == "1":
         bb.build.exec_func('build_syslinux_cfg', d)
     if d.getVar("EFI", True) == "1":
         bb.build.exec_func('build_grub_cfg', d)
+=======
+    bb.build.exec_func('build_syslinux_cfg', d)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     bb.build.exec_func('build_boot_dd', d)
 }
 

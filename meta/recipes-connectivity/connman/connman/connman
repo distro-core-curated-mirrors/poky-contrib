@@ -28,6 +28,7 @@ done
 
 do_start() {
 	EXTRA_PARAM=""
+<<<<<<< HEAD
 	if test $nfsroot -eq 1 ; then
 	    NET_DEVS=`cat /proc/net/dev | sed -ne 's/^\([a-zA-Z0-9 ]*\):.*$/\1/p'`
 	    NET_ADDR=`cat /proc/cmdline | sed -ne 's/^.*ip=\([^ :]*\).*$/\1/p'`
@@ -53,6 +54,11 @@ do_start() {
 		. @LIBDIR@/connman/wired-setup
 	fi
 	$DAEMON $EXTRA_PARAM
+=======
+	if test $nfsroot -eq 0 ; then
+		$DAEMON $EXTRA_PARAM
+	fi
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 do_stop() {

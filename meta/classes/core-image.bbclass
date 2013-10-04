@@ -16,7 +16,10 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=3f40d7994397109285ec7b81fdeb3
 # - x11-base            - X server with minimal environment
 # - x11-sato            - OpenedHand Sato environment
 # - tools-debug         - debugging tools
+<<<<<<< HEAD
 # - eclipse-debug       - Eclipse remote debugging support
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # - tools-profile       - profiling tools
 # - tools-testapps      - tools usable to make some device tests
 # - tools-sdk           - SDK (C/C++ compiler, autotools, etc.)
@@ -24,19 +27,28 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=3f40d7994397109285ec7b81fdeb3
 # - ssh-server-dropbear - SSH server (dropbear)
 # - ssh-server-openssh  - SSH server (openssh)
 # - qt4-pkgs            - Qt4/X11 and demo applications
+<<<<<<< HEAD
 # - hwcodecs            - Install hardware acceleration codecs
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # - package-management  - installs package management tools and preserves the package manager database
 # - debug-tweaks        - makes an image suitable for development, e.g. allowing passwordless root logins
 # - dev-pkgs            - development packages (headers, etc.) for all installed packages in the rootfs
 # - dbg-pkgs            - debug symbol packages for all installed packages in the rootfs
 # - doc-pkgs            - documentation packages for all installed packages in the rootfs
+<<<<<<< HEAD
 # - read-only-rootfs    - tweaks an image to support read-only rootfs
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 #
 PACKAGE_GROUP_x11 = "packagegroup-core-x11"
 PACKAGE_GROUP_x11-base = "packagegroup-core-x11-base"
 PACKAGE_GROUP_x11-sato = "packagegroup-core-x11-sato"
 PACKAGE_GROUP_tools-debug = "packagegroup-core-tools-debug"
+<<<<<<< HEAD
 PACKAGE_GROUP_eclipse-debug = "packagegroup-core-eclipse-debug"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PACKAGE_GROUP_tools-profile = "packagegroup-core-tools-profile"
 PACKAGE_GROUP_tools-testapps = "packagegroup-core-tools-testapps"
 PACKAGE_GROUP_tools-sdk = "packagegroup-core-sdk packagegroup-core-standalone-sdk-target"
@@ -45,7 +57,10 @@ PACKAGE_GROUP_ssh-server-dropbear = "packagegroup-core-ssh-dropbear"
 PACKAGE_GROUP_ssh-server-openssh = "packagegroup-core-ssh-openssh"
 PACKAGE_GROUP_package-management = "${ROOTFS_PKGMANAGE}"
 PACKAGE_GROUP_qt4-pkgs = "packagegroup-core-qt-demoapps"
+<<<<<<< HEAD
 PACKAGE_GROUP_hwcodecs = "${MACHINE_HWCODECS}"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 
 # IMAGE_FEATURES_REPLACES_foo = 'bar1 bar2'
@@ -55,7 +70,17 @@ IMAGE_FEATURES_REPLACES_ssh-server-openssh = "ssh-server-dropbear"
 # IMAGE_FEATURES_CONFLICTS_foo = 'bar1 bar2'
 # An error exception would be raised if both image features foo and bar1(or bar2) are included
 
+<<<<<<< HEAD
 MACHINE_HWCODECS ??= ""
+=======
+python __anonymous() {
+    # Ensure we still have a splash screen for existing images
+    if base_contains("IMAGE_FEATURES", "apps-console-core", "1", "", d) == "1":
+        bb.warn("%s: apps-console-core in IMAGE_FEATURES is no longer supported; adding \"splash\" to enable splash screen" % d.getVar("PN", True))
+        d.appendVar("IMAGE_FEATURES", " splash")
+}
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 CORE_IMAGE_BASE_INSTALL = '\
     packagegroup-core-boot \
@@ -75,6 +100,12 @@ ROOTFS_POSTPROCESS_COMMAND += "rootfs_update_timestamp ; "
 
 # Zap the root password if debug-tweaks feature is not enabled
 ROOTFS_POSTPROCESS_COMMAND += '${@base_contains("IMAGE_FEATURES", "debug-tweaks", "", "zap_root_password ; ",d)}'
+<<<<<<< HEAD
 
 # Tweak the mount options for rootfs in /etc/fstab if read-only-rootfs is enabled
 ROOTFS_POSTPROCESS_COMMAND += '${@base_contains("IMAGE_FEATURES", "read-only-rootfs", "read_only_rootfs_hook; ", "",d)}'
+=======
+# Allow openssh accept empty password login if both debug-tweaks and ssh-server-openssh are enabled
+ROOTFS_POSTPROCESS_COMMAND += '${@base_contains("IMAGE_FEATURES", "debug-tweaks ssh-server-openssh", "openssh_allow_empty_password; ", "",d)}'
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

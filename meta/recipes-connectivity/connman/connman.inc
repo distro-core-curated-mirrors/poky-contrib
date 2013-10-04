@@ -13,9 +13,23 @@ LICENSE  = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=12f884d2ae1ff87c09e5b7ccc2c4ca7e \
                     file://src/main.c;beginline=1;endline=20;md5=d6a1ac98a6791c5294e8a7f176ecd66d"
 
+<<<<<<< HEAD
 DEPENDS  = "dbus glib-2.0 ppp iptables"
 
 INC_PR = "r20"
+=======
+# we need to define the depends here, the dynamic stuff is too late
+DEPENDS  = "dbus glib-2.0 ppp iptables gnutls \
+            ${@base_contains('DISTRO_FEATURES', 'bluetooth','bluez4', '', d)} \
+            ${@base_contains('DISTRO_FEATURES', 'wifi','wpa-supplicant', '', d)} \
+            ${@base_contains('DISTRO_FEATURES', '3g','ofono', '', d)} \
+            "
+
+INC_PR = "r17"
+
+TIST = "--enable-tist"
+TIST_powerpc = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 EXTRA_OECONF += "\
     ac_cv_path_WPASUPPLICANT=${sbindir}/wpa_supplicant \
@@ -24,6 +38,7 @@ EXTRA_OECONF += "\
     --enable-threads \
     --enable-loopback \
     --enable-ethernet \
+<<<<<<< HEAD
     --enable-tools \
     --enable-test \
     --disable-polkit \
@@ -52,10 +67,22 @@ PACKAGECONFIG[l2tp] = "--enable-l2tp --with-l2tp=${sbindir}/xl2tpd,--disable-l2t
 PACKAGECONFIG[pptp] = "--enable-pptp --with-pptp=${sbindir}/pptp,--disable-pptp,,pptp-linux"
 # WISPr support for logging into hotspots, requires TLS
 PACKAGECONFIG[wispr] = "--enable-wispr,--disable-wispr,gnutls,"
+=======
+    ${@base_contains('DISTRO_FEATURES', 'wifi','--enable-wifi ${TIST}', '--disable-wifi', d)} \
+    ${@base_contains('DISTRO_FEATURES', 'bluetooth','--enable-bluetooth ${TIST}', '--disable-bluetooth', d)} \
+    ${@base_contains('DISTRO_FEATURES', '3g', '', '--disable-ofono', d)} \
+    --enable-tools \
+    --enable-test \
+    --disable-polkit \
+    --disable-client \
+    --enable-fake \
+"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 INITSCRIPT_NAME = "connman"
 INITSCRIPT_PARAMS = "start 05 5 2 3 . stop 22 0 1 6 ."
 
+<<<<<<< HEAD
 python __anonymous () {
     systemd_packages = "${PN}"
     pkgconfig = d.getVar('PACKAGECONFIG', True)
@@ -74,12 +101,23 @@ do_configure_append () {
 	sed -i "s#ExecStart=#${SYSTEMD_WIRED_SETUP}\nExecStart=#" ${S}/src/connman.service
 
 }
+=======
+# IMPORTANT: because xuser is shared with rootless X, please make sure the
+# USERADD_PARAM is in sync with the one in xserver-nodm-init.bb
+USERADD_PACKAGES = "${PN}"
+USERADD_PARAM_${PN} = "--create-home \
+                       --groups video,tty,audio \
+                       --user-group xuser"
+
+inherit autotools gtk-doc pkgconfig update-rc.d useradd
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # This allows *everyone* to access ConnMan over DBus, without any access
 # control.  Really the at_console flag should work, which would mean that
 # both this and the xuser patch can be dropped.
 do_compile_append() {
 	sed -i -e s:deny:allow:g src/connman-dbus.conf
+<<<<<<< HEAD
 	sed -i -e s:deny:allow:g vpn/vpn-dbus.conf
 }
 
@@ -99,10 +137,25 @@ do_install_append() {
 
 	# We don't need to package an empty directory
 	rmdir --ignore-fail-on-non-empty ${D}${libdir}/connman/scripts
+=======
+}
+
+do_install_append() {
+	install -d ${D}${sysconfdir}/init.d
+	install -m 0755 ${WORKDIR}/connman ${D}${sysconfdir}/init.d/connman
+
+	install -d ${D}${bindir}
+	install -m 0755 ${S}/tools/*-test ${D}${bindir}
+	install -m 0755 ${S}/tools/wispr ${D}${bindir}
+
+	# We don't need to package an empty directory
+	rmdir ${D}${libdir}/connman/scripts
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	# Automake 1.12 won't install empty directories, but we need the
 	# plugins directory to be present for ownership
 	mkdir -p ${D}${libdir}/connman/plugins
+<<<<<<< HEAD
 }
 
 # These used to be plugins, but now they are core
@@ -153,14 +206,56 @@ python populate_packages_prepend() {
 }
 
 PACKAGES =+ "${PN}-tools ${PN}-tests ${PN}-client"
+=======
+}
+
+# These used to be plugins, but now they are core
+RPROVIDES_${PN} = "\
+	connman-plugin-loopback \
+	connman-plugin-ethernet \
+	${@base_contains('DISTRO_FEATURES', 'bluetooth','connman-plugin-bluetooth', '', d)} \
+	${@base_contains('DISTRO_FEATURES', 'wifi','connman-plugin-wifi', '', d)} \
+	${@base_contains('DISTRO_FEATURES', '3g','connman-plugin-ofono', '', d)} \
+	"
+
+RDEPENDS_${PN} = "\
+	dbus \
+	${@base_contains('DISTRO_FEATURES', 'bluetooth', 'bluez4', '', d)} \
+	${@base_contains('DISTRO_FEATURES', 'wifi','wpa-supplicant', '', d)} \
+	${@base_contains('DISTRO_FEATURES', '3g','ofono', '', d)} \
+	"
+
+PACKAGES_DYNAMIC += "^${PN}-plugin-.*"
+
+python populate_packages_prepend() {
+    depmap = dict(pppd="ppp")
+    packages = []
+    multilib_prefix = (d.getVar("MLPREFIX", True) or "")
+    hook = lambda file,pkg,b,c,d:packages.append((file,pkg))
+    plugin_dir = d.expand('${libdir}/connman/plugins/')
+    plugin_name = d.expand('${PN}-plugin-%s')
+    do_split_packages(d, plugin_dir, '^(.*).so$', plugin_name, '${PN} plugin for %s', extra_depends='', hook=hook, prepend=True )
+    for (file, package) in packages:
+        plugintype = package.split( '-' )[-1]
+        if plugintype in depmap:
+            rdepends = map(lambda x: multilib_prefix + x,  depmap[plugintype].split())
+            bb.note( "Adding rdependency on %s to %s" % ( rdepends, package ) )
+            d.setVar("RDEPENDS_%s" % package, " ".join(rdepends))
+}
+
+PACKAGES =+ "${PN}-tools ${PN}-tests"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 FILES_${PN}-tools = "${bindir}/wispr"
 
 FILES_${PN}-tests = "${bindir}/*-test ${libdir}/${BPN}/test/*"
 RDEPENDS_${PN}-tests = "python-dbus python-pygobject python-textutils python-subprocess python-fcntl python-netclient"
 
+<<<<<<< HEAD
 FILES_${PN}-client = "${bindir}/connmanctl"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_${PN} = "${bindir}/* ${sbindir}/* ${libexecdir}/* ${libdir}/lib*.so.* \
             ${libdir}/connman/plugins \
             ${sysconfdir} ${sharedstatedir} ${localstatedir} \
@@ -170,6 +265,7 @@ FILES_${PN} = "${bindir}/* ${sbindir}/* ${libexecdir}/* ${libdir}/lib*.so.* \
 FILES_${PN}-dbg += "${libdir}/connman/*/.debug"
 
 FILES_${PN}-dev += "${libdir}/connman/*/*.la"
+<<<<<<< HEAD
 
 PACKAGES =+ "${PN}-vpn"
 
@@ -216,3 +312,5 @@ FILES_${PN}-plugin-vpn-pptp += "${libdir}/connman/scripts/libppp-plugin.so* \
                                 ${libdir}/connman/plugins-vpn/pptp.so"
 RDEPENDS_${PN}-plugin-vpn-pptp += "${PN}-vpn"
 RRECOMMENDS_${PN} += "${@base_contains('PACKAGECONFIG','pptp','${PN}-plugin-vpn-pptp', '', d)}"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

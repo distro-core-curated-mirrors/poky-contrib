@@ -5,7 +5,11 @@ DESCRIPTION = "XML::NamespaceSupport offers a simple way to process namespace-ba
 
 SECTION = "libs"
 LICENSE = "Artistic-1.0 | GPL-1.0+"
+<<<<<<< HEAD
 PR = "r3"
+=======
+PR = "r2"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 LIC_FILES_CHKSUM = "file://META.yml;beginline=22;endline=22;md5=3b2b564dae8b9af9e8896e85c07dcbe5"
 

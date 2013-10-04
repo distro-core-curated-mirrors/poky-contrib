@@ -20,12 +20,18 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #
+<<<<<<< HEAD
 # Currently only has two functions:
 # 1) glob - mapping of packages to their dev/dbg/doc/locale etc. counterparts.
 # 2) read-value - mapping of packagenames to their location in
 #    pkgdata and then returns value of selected variable (e.g. PKGSIZE)
 # Could be extended in future to perform other useful querying functions on the
 # pkgdata though.
+=======
+# Currently only has one function - mapping of packages to their dev/dbg/doc/locale etc. 
+# counterparts ("glob" command). Could be extended in future to perform other useful querying
+# functions on the pkgdata though.
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 #
 
 import sys
@@ -35,19 +41,36 @@ import fnmatch
 import re
 
 def usage():
+<<<<<<< HEAD
     print("syntax: oe-pkgdata-util glob [-d] <pkgdatadir> <vendor-os> <pkglist> \"<globs>\"\n \
                     read-value [-d] <pkgdatadir> <vendor-os> <value-name> \"<package-name>_<package_architecture>\"");
+=======
+    print("syntax: pkgdata-util glob [-d] <pkgdatadir> <vendor-os> <pkglist> \"<globs>\"");
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 
 
 def glob(args):
+<<<<<<< HEAD
     if len(args) < 3:
+=======
+    if len(args) < 4:
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         usage()
         sys.exit(1)
 
     pkgdata_dir = args[0]
+<<<<<<< HEAD
     pkglist_file = args[1]
     globs = args[2].split()
+=======
+    target_suffix = args[1]
+    pkglist_file = args[2]
+    globs = args[3].split()
+
+    if target_suffix.startswith("-"):
+        target_suffix = target_suffix[1:]
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     skipregex = re.compile("-locale-|^locale-base-|-dev$|-doc$|-dbg$|-staticdev$|^kernel-module-")
 
@@ -59,6 +82,10 @@ def glob(args):
                 continue
             pkg = fields[0]
             arch = fields[1]
+<<<<<<< HEAD
+=======
+            multimach_target_sys = "%s-%s" % (arch, target_suffix)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
             # Skip packages for which there is no point applying globs
             if skipregex.search(pkg):
@@ -81,9 +108,15 @@ def glob(args):
 
             # Define some functions
             def revpkgdata(pkgn):
+<<<<<<< HEAD
                 return os.path.join(pkgdata_dir, "runtime-reverse", pkgn)
             def fwdpkgdata(pkgn):
                 return os.path.join(pkgdata_dir, "runtime", pkgn)
+=======
+                return os.path.join(pkgdata_dir, multimach_target_sys, "runtime-reverse", pkgn)
+            def fwdpkgdata(pkgn):
+                return os.path.join(pkgdata_dir, multimach_target_sys, "runtime", pkgn)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             def readpn(pkgdata_file):
                 pn = ""
                 with open(pkgdata_file, 'r') as f:
@@ -114,6 +147,7 @@ def glob(args):
                     if not os.path.exists(fwdfile + ".packaged"):
                         mappedpkg = ""
                 else:
+<<<<<<< HEAD
                     revlink = revpkgdata(pkg)
                     if os.path.exists(revlink):
                         # Check if we can map after undoing the package renaming (by resolving the symlink)
@@ -129,6 +163,16 @@ def glob(args):
                             fwdfile = fwdpkgdata(newpkg)
                             if os.path.exists(fwdfile):
                                 mappedpkg = readrenamed(fwdfile)
+=======
+                    # That didn't work, so now get the PN, substitute that, then map in the other direction
+                    revlink = revpkgdata(pkg)
+                    if os.path.exists(revlink):
+                        pn = readpn(revlink)
+                        newpkg = g.replace("*", pn)
+                        fwdfile = fwdpkgdata(newpkg)
+                        if os.path.exists(fwdfile):
+                            mappedpkg = readrenamed(fwdfile)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                         if not os.path.exists(fwdfile + ".packaged"):
                             mappedpkg = ""
                     else:
@@ -150,6 +194,7 @@ def glob(args):
 
     print("\n".join(mappedpkgs))
 
+<<<<<<< HEAD
 def read_value(args):
     if len(args) < 3:
         usage()
@@ -185,6 +230,9 @@ def read_value(args):
                 # append packagename
                 qvar = "%s_%s" % (var, mappedpkg)
             print(readvar(revlink, qvar))
+=======
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Too lazy to use getopt
 debug = False
@@ -206,8 +254,11 @@ if len(args) < 1:
 
 if args[0] == "glob":
     glob(args[1:])
+<<<<<<< HEAD
 elif args[0] == "read-value":
     read_value(args[1:])
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 else:
     usage()
     sys.exit(1)

@@ -7,8 +7,13 @@ LIC_FILES_CHKSUM = "file://License;md5=3f84fd6f29d453a56514cb7e4ead25f1"
 
 DEPENDS = "attr perl-native-runtime"
 DEPENDS += "${@base_contains('DISTRO_FEATURES', 'pam', 'libpam', '', d)}"
+<<<<<<< HEAD
 # attr and pam are disabled by EXTRA_OEMAKE_class-native
 DEPENDS_class-native = "perl-native-runtime"
+=======
+# attr and pam are disabled by EXTRA_OEMAKE_virtclass-native
+DEPENDS_virtclass-native = "perl-native-runtime"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "${DEBIAN_MIRROR}/main/libc/libcap2/${BPN}2_${PV}.orig.tar.gz"
 
@@ -25,13 +30,22 @@ do_configure() {
 	sed -e 's,^BUILD_CFLAGS ?= $(CFLAGS),BUILD_CFLAGS := $(BUILD_CFLAGS),' -i Make.Rules
 }
 
+<<<<<<< HEAD
+=======
+BUILD_LDFLAGS_virtclass_native += "-Wl,rpath=${base_libdir}"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 EXTRA_OEMAKE = " \
   LIBATTR=yes \
   PAM_CAP=${@base_contains('DISTRO_FEATURES', 'pam', 'yes', 'no', d)} \
   INDENT= SYSTEM_HEADERS=${STAGING_INCDIR} RAISE_SETFCAP=no \
   lib=${@os.path.basename('${libdir}')} \
 "
+<<<<<<< HEAD
 EXTRA_OEMAKE_class-native = " \
+=======
+EXTRA_OEMAKE_virtclass-native = " \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
   LIBATTR=no \
   PAM_CAP=no \
   INDENT= \

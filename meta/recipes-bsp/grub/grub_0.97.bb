@@ -16,7 +16,10 @@ SRC_URI = "ftp://alpha.gnu.org/gnu/grub/grub-${PV}.tar.gz; \
             file://no-reorder-functions.patch \
             file://autohell.patch \
             file://grub_fix_for_automake-1.12.patch \
+<<<<<<< HEAD
             file://objcopy-absolute.patch \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             "
 
 SRC_URI[md5sum] = "cd3f3eb54446be6003156158d51f4884"
@@ -25,8 +28,11 @@ SRC_URI[sha256sum] = "4e1d15d12dbd3e9208111d6b806ad5a9857ca8850c47877d36575b9045
 inherit autotools
 
 COMPATIBLE_HOST = "i.86.*-linux"
+<<<<<<< HEAD
 
 EXTRA_OECONF = "--without-curses"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 do_install_append_vmware() {
 	mkdir -p ${D}/boot/

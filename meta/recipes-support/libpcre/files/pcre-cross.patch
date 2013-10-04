@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 Upstream-Status: Pending
+=======
+Upstream-Status: Inappropriate [configuration]
+
+To be upstreamable, this patch requires check for *_FOR_BUILD, otherwise
+it needs to pass special variables.
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 --- pcre-8.32.orig/Makefile.am
 +++ pcre-8.32/Makefile.am

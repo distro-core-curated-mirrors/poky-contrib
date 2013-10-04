@@ -10,11 +10,17 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=ca77c6c3ea4d29cb68dce8ef5ab0d897 \
                     file://include/vorbis/vorbisenc.h;beginline=1;endline=11;md5=d1c1d138863d6315131193d4046d81cb"
 DEPENDS = "libogg"
 
+<<<<<<< HEAD
 PR = "r1"
 
 SRC_URI = "http://downloads.xiph.org/releases/vorbis/libvorbis-${PV}.tar.gz \
            file://obsolete_automake_macros.patch \
 "
+=======
+PR = "r0"
+
+SRC_URI = "http://downloads.xiph.org/releases/vorbis/libvorbis-${PV}.tar.gz"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI[md5sum] = "6b1a36f0d72332fae5130688e65efe1f"
 SRC_URI[sha256sum] = "6d747efe7ac4ad249bf711527882cef79fb61d9194c45b5ca5498aa60f290762"

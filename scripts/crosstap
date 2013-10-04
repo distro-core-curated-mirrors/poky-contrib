@@ -70,7 +70,11 @@ function systemtap_target_arch() {
         i?86)
             SYSTEMTAP_TARGET_ARCH="i386"
             ;;
+<<<<<<< HEAD
         x86?64*)
+=======
+        x86_64*)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             SYSTEMTAP_TARGET_ARCH="x86_64"
             ;;
         arm*)

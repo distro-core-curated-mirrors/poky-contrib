@@ -12,7 +12,11 @@ SRCREV = "ea5cfe804e112f320f14ad896c7802d53551d3e6"
 PV = "1.3.0+git${SRCPV}"
 PR = "${INC_PR}.0"
 
+<<<<<<< HEAD
 SRC_URI = "git://anongit.freedesktop.org/git/xorg/driver/xf86-input-mouse \
+=======
+SRC_URI = "git://anongit.freedesktop.org/git/xorg/driver/xf86-input-mouse;protocol=git \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://unbreak.patch"
 S = "${WORKDIR}/git"
 

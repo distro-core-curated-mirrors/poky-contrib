@@ -13,6 +13,7 @@ def qemu_target_binary(data):
         target_arch = "ppc64"
 
     return "qemu-" + target_arch
+<<<<<<< HEAD
 #
 # Next function will return a string containing the command that is needed to
 # to run a certain binary through qemu. For example, in order to make a certain
@@ -33,3 +34,5 @@ def qemu_run_binary(data, rootfs_path, binary):
     return "PSEUDO_UNLOAD=1 " + qemu_binary + " -L " + rootfs_path\
             + " -E LD_LIBRARY_PATH=" + libdir + ":" + base_libdir + " "\
             + rootfs_path + binary
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

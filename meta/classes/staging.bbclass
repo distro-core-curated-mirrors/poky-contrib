@@ -76,6 +76,34 @@ python sysroot_cleansstate () {
 }
 do_configure[prefuncs] += "sysroot_cleansstate"
 
+<<<<<<< HEAD
+=======
+
+BB_SETSCENE_VERIFY_FUNCTION = "sysroot_checkhashes"
+
+def sysroot_checkhashes(covered, tasknames, fnids, fns, d, invalidtasks = None):
+    problems = set()
+    configurefnids = set()
+    if not invalidtasks:
+        invalidtasks = xrange(len(tasknames))
+    for task in invalidtasks:
+        if tasknames[task] == "do_configure" and task not in covered:
+            configurefnids.add(fnids[task])
+    for task in covered:
+        if tasknames[task] == "do_populate_sysroot" and fnids[task] in configurefnids:
+            problems.add(task)
+    return problems
+
+python do_populate_sysroot () {
+    #
+    # if do_stage exists, we're legacy. In that case run the do_stage,
+    # modify the SYSROOT_DESTDIR variable and then run the staging preprocess
+    # functions against staging directly.
+    #
+    # Otherwise setup a destdir, copy the results from do_install
+    # and run the staging preprocess against that
+    #
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 BB_SETSCENE_VERIFY_FUNCTION = "sysroot_checkhashes"
 
@@ -110,4 +138,12 @@ python do_populate_sysroot_setscene () {
 }
 addtask do_populate_sysroot_setscene
 
+<<<<<<< HEAD
+=======
+python () {
+    if d.getVar('do_stage', True) is not None:
+        bb.fatal("Legacy staging found for %s as it has a do_stage function. This will need conversion to a do_install or often simply removal to work with OE-core" % d.getVar("FILE", True))
+}
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 

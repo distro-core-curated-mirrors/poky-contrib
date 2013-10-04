@@ -7,7 +7,11 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=12f884d2ae1ff87c09e5b7ccc2c4ca7e \
                     file://COPYING.LIB;md5=fb504b67c50331fc78734fed90fb0e09 \
                     file://src/main.c;beginline=1;endline=24;md5=9bc54b93cd7e17bf03f52513f39f926e \
                     file://sbc/sbc.c;beginline=1;endline=25;md5=1a40781ed30d50d8639323a184aeb191"
+<<<<<<< HEAD
 DEPENDS = "udev libusb dbus-glib glib-2.0 libcheck readline"
+=======
+DEPENDS = "udev libusb dbus-glib glib-2.0 libcheck"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 RDEPENDS_${PN}-dev = "bluez-hcidump"
 
 PACKAGECONFIG ??= "\
@@ -39,8 +43,13 @@ EXTRA_OECONF = "\
   --disable-cups \
   --enable-test \
   --enable-datafiles \
+<<<<<<< HEAD
   --with-udevdir=`pkg-config --variable=udevdir udev` \
   --with-udevrulesdir=`pkg-config --variable=udevdir udev`/rules.d \
 "
 
 EXCLUDE_FROM_WORLD = "1"
+=======
+"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

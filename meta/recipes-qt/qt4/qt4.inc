@@ -8,7 +8,11 @@ require qt4_arch.inc
 QT_DISTRO_FLAGS ?= "-no-accessibility -no-sm"
 QT_DISTRO_FLAGS_linuxstdbase = "-sm"
 
+<<<<<<< HEAD
 QT_SQL_DRIVER_FLAGS ?= "-no-sql-ibase -no-sql-mysql -no-sql-psql -no-sql-odbc -plugin-sql-sqlite -system-sqlite"
+=======
+QT_SQL_DRIVER_FLAGS ?= "-no-sql-ibase -no-sql-mysql -no-sql-psql -no-sql-odbc -plugin-sql-sqlite"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 QT_GLFLAGS ?= ""
 
@@ -129,12 +133,20 @@ PACKAGES_DYNAMIC += "^${QT_BASE_NAME}-plugin-.* ^${QT_BASE_NAME}-translation-.* 
 ALLOW_EMPTY_${PN} = "1"
 FILES_${PN}     = ""
 FILES_${PN}-dev = "${includedir}/${QT_DIR_NAME}/Qt/*"
+<<<<<<< HEAD
 FILES_${PN}-dbg = "/usr/src/debug/"
 FILES_${QT_BASE_NAME}-demos-doc = "${docdir}/${QT_DIR_NAME}/qch/qt.qch"
 RRECOMMENDS_${PN} = "${LIB_PACKAGES} ${OTHER_PACKAGES}"
 RRECOMMENDS_${PN}-dev = "${DEV_PACKAGES}"
 RRECOMMENDS_${PN}-dbg = "${DBG_PACKAGES}"
 RRECOMMENDS_${QT_BASE_LIB}core4_append_libc-glibc = " eglibc-gconv-utf-16"
+=======
+FILES_${PN}-dbg = "${exec_prefix}/src/debug/"
+FILES_${QT_BASE_NAME}-demos-doc = "${docdir}/qtopia/qch/qt.qch"
+RRECOMMENDS_${PN} = "${LIB_PACKAGES} ${OTHER_PACKAGES}"
+RRECOMMENDS_${PN}-dev = "${DEV_PACKAGES}"
+RRECOMMENDS_${PN}-dbg = "${DBG_PACKAGES}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 RRECOMMENDS_${QT_BASE_NAME}-demos += " \
             ${QT_BASE_NAME}-examples \
             ${QT_BASE_NAME}-plugin-sqldriver-sqlite \
@@ -185,8 +197,11 @@ FILES_${QT_BASE_NAME}-xmlpatterns          = "${bindir}/xmlpatterns*"
 FILES_${QT_BASE_NAME}-xmlpatterns-dbg      = "${bindir}/.debug/xmlpatterns*"
 FILES_${QT_BASE_NAME}-qml-plugins          = "${libdir}/${QT_DIR_NAME}/imports/* ${libdir}/${QT_DIR_NAME}/plugins/qmltooling/*"
 FILES_${QT_BASE_NAME}-qml-plugins-dbg      = "${libdir}/${QT_DIR_NAME}/imports/*/*/*/.debug/* ${libdir}/${QT_DIR_NAME}/imports/*/.debug ${libdir}/${QT_DIR_NAME}/plugins/qmltooling/.debug"
+<<<<<<< HEAD
 INSANE_SKIP_${QT_BASE_NAME}-examples      += "libdir"
 INSANE_SKIP_${QT_BASE_NAME}-examples-dbg  += "libdir"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # License options, to be set by the recipe if different values are needed
 QT_LICENSE_FILE ?= ""
@@ -232,7 +247,11 @@ do_configure() {
 	${EXTRA_QMAKE_MUNGE}|| true
 
 	echo yes | QT_LICENSE_FILE="${QT_LICENSE_FILE}" ./configure -v \
+<<<<<<< HEAD
 			-prefix ${prefix} \
+=======
+			-prefix ${prefix}/ \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 			-bindir ${bindir} \
 			-libdir ${libdir} \
 			-datadir ${datadir}/${QT_DIR_NAME} \
@@ -317,7 +336,10 @@ python populate_packages_prepend() {
     qtopia_split('designer',      'designer',      '^lib(.*)\.so$')
     qtopia_split('gfxdrivers',    'gfxdriver',     '^libq(.*)\.so$')
     qtopia_split('graphicssystems','graphicssystems', '^libq(.*)\.so$')
+<<<<<<< HEAD
     qtopia_split('kbddrivers',    'kbddriver',     '^libq(.*)kbddriver\.so$')
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     qtopia_split('mousedrivers',  'mousedriver',   '^libq(.*)mousedriver\.so$')
     qtopia_split('iconengines',   'iconengine',    '^libq(.*)\.so$')
     qtopia_split('imageformats',  'imageformat',   '^libq(.*)\.so$')
@@ -345,8 +367,12 @@ do_install() {
 			-e 's#" -Wl,-rpath-link,${S}/lib/\?"##g' \
 			-e 's#" -Wl,-rpath-link,${libdir}/\?"##g' \
 			-e 's#Iin#I${in#g' \
+<<<<<<< HEAD
 			-e 's#-L\.\./\.\./WebCore/release\s\+-L\.\./\.\./JavaScriptCore/release\s\+-lwebcore##g' \
 			-e 's#-ljscore##g' \
+=======
+			-e 's#-L\.\./\.\./WebCore/release\s\+-L\.\./\.\./JavaScriptCore/release\s\+-lwebcore\s\+-ljscore##g' \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 			${D}${libdir}/*.la ${D}${libdir}/*.prl ${D}${libdir}/pkgconfig/*.pc
 
 	sed -i -e s#" -Wl,-rpath-link,${S}/lib"##g \
@@ -362,7 +388,11 @@ do_install() {
 
 	# QT abuses $includedir to point to its headers, which breaks pkgconfig sysroot, so manually fix it up here:
 	for pc in ${D}${libdir}/pkgconfig/*.pc ; do
+<<<<<<< HEAD
 		sed -i -e "s:prefix}/include/${QT_DIR_NAME}/$(basename $pc .pc):prefix}/include:" \
+=======
+		sed -i -e "s:prefix}include/${QT_DIR_NAME}/$(basename $pc .pc):prefix}/include:" \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 				-e 's:IP{:I${:g' $pc
 	done
 

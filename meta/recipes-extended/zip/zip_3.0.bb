@@ -1,6 +1,10 @@
 require zip.inc
 
+<<<<<<< HEAD
 PR="r2"
+=======
+PR="r1"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # zip-2.32 still uses directory name of zip-2.30
 S = "${WORKDIR}/zip30"

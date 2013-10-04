@@ -18,8 +18,11 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 
+<<<<<<< HEAD
 LANG=C
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 #
 # Defaults
 #
@@ -28,14 +31,22 @@ BOOT_SIZE=20
 # 5% for swap
 SWAP_RATIO=5
 
+<<<<<<< HEAD
 usage() {
+=======
+function usage() {
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	echo "Usage: $(basename $0) DEVICE HDDIMG TARGET_DEVICE"
 	echo "       DEVICE: The device to write the image to, e.g. /dev/sdh"
 	echo "       HDDIMG: The hddimg file to generate the efi disk from"
 	echo "       TARGET_DEVICE: The device the target will boot from, e.g.  /dev/mmcblk0"
 }
 
+<<<<<<< HEAD
 image_details() {
+=======
+function image_details() {
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	IMG=$1
 	echo "Image details"
 	echo "============="
@@ -46,7 +57,11 @@ image_details() {
 	echo ""
 }
 
+<<<<<<< HEAD
 device_details() {
+=======
+function device_details() {
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	DEV=$1
 	BLOCK_SIZE=512
 
@@ -64,13 +79,18 @@ device_details() {
 		echo "   model: UNKNOWN"
 	fi
 	if [ -f "/sys/class/block/$DEV/size" ]; then
+<<<<<<< HEAD
 		echo "    size: $(($(cat /sys/class/block/$DEV/size) * $BLOCK_SIZE)) bytes"
+=======
+		echo "    size: $[$(cat /sys/class/block/$DEV/size)*BLOCK_SIZE] bytes"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	else
 		echo "    size: UNKNOWN"
 	fi
 	echo ""
 }
 
+<<<<<<< HEAD
 unmount_device() {
 	grep -q $DEVICE /proc/mounts
 	if [ $? -eq 0 ]; then
@@ -85,6 +105,8 @@ unmount_device() {
 	fi
 }
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 #
 # Parse and validate arguments
@@ -114,7 +136,17 @@ fi
 #
 # Check if any $DEVICE partitions are mounted
 #
+<<<<<<< HEAD
 unmount_device
+=======
+grep -q $DEVICE /proc/mounts
+if [ $? -eq 0 ]; then
+	echo "ERROR: $DEVICE partitions mounted:"
+	grep $DEVICE /proc/mounts | cut -f 1 -d " "
+	echo "Unmount the partitions listed and try again."
+	exit 1
+fi
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 
 #
@@ -133,14 +165,24 @@ fi
 #
 # Partition $DEVICE
 #
+<<<<<<< HEAD
 DEVICE_SIZE=$(parted $DEVICE unit mb print | grep ^Disk | cut -d" " -f 3 | sed -e "s/MB//")
+=======
+DEVICE_SIZE=$(parted $DEVICE unit mb print | grep Disk | cut -d" " -f 3 | sed -e "s/MB//")
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 SWAP_SIZE=$((DEVICE_SIZE*SWAP_RATIO/100))
 ROOTFS_SIZE=$((DEVICE_SIZE-BOOT_SIZE-SWAP_SIZE))
 ROOTFS_START=$((BOOT_SIZE))
 ROOTFS_END=$((ROOTFS_START+ROOTFS_SIZE))
 SWAP_START=$((ROOTFS_END))
 
+<<<<<<< HEAD
 # MMC devices use a partition prefix character 'p'
+=======
+# MMC devices are special in a couple of ways
+# 1) they use a partition prefix character 'p'
+# 2) they are detected asynchronously (need ROOTWAIT)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PART_PREFIX=""
 if [ ! "${DEVICE#/dev/mmcblk}" = "${DEVICE}" ]; then
 	PART_PREFIX="p"
@@ -149,9 +191,17 @@ BOOTFS=$DEVICE${PART_PREFIX}1
 ROOTFS=$DEVICE${PART_PREFIX}2
 SWAP=$DEVICE${PART_PREFIX}3
 
+<<<<<<< HEAD
 TARGET_PART_PREFIX=""
 if [ ! "${TARGET_DEVICE#/dev/mmcblk}" = "${TARGET_DEVICE}" ]; then
 	TARGET_PART_PREFIX="p"
+=======
+ROOTWAIT=""
+TARGET_PART_PREFIX=""
+if [ ! "${TARGET_DEVICE#/dev/mmcblk}" = "${TARGET_DEVICE}" ]; then
+	TARGET_PART_PREFIX="p"
+	ROOTWAIT="rootwait"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fi
 TARGET_ROOTFS=$TARGET_DEVICE${TARGET_PART_PREFIX}2
 TARGET_SWAP=$TARGET_DEVICE${TARGET_PART_PREFIX}3
@@ -161,6 +211,7 @@ echo "Boot partition size:   $BOOT_SIZE MB ($BOOTFS)"
 echo "ROOTFS partition size: $ROOTFS_SIZE MB ($ROOTFS)"
 echo "Swap partition size:   $SWAP_SIZE MB ($SWAP)"
 echo "*****************"
+<<<<<<< HEAD
 
 echo "Deleting partition table on $DEVICE ..."
 dd if=/dev/zero of=$DEVICE bs=512 count=2
@@ -170,13 +221,23 @@ dd if=/dev/zero of=$DEVICE bs=512 count=2
 # of course varies from device to device.
 echo "Creating new partition table (MSDOS) on $DEVICE ..."
 parted $DEVICE mklabel msdos
+=======
+echo "Deleting partition table on $DEVICE ..."
+dd if=/dev/zero of=$DEVICE bs=512 count=2
+
+echo "Creating new partition table (GPT) on $DEVICE ..."
+parted $DEVICE mklabel gpt
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 echo "Creating boot partition on $BOOTFS"
 parted $DEVICE mkpart primary 0% $BOOT_SIZE
 
+<<<<<<< HEAD
 echo "Enabling boot flag on $BOOTFS"
 parted $DEVICE set 1 boot on
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 echo "Creating ROOTFS partition on $ROOTFS"
 parted $DEVICE mkpart primary $ROOTFS_START $ROOTFS_END
 
@@ -187,20 +248,30 @@ parted $DEVICE print
 
 
 #
+<<<<<<< HEAD
 # Check if any $DEVICE partitions are mounted after partitioning
 #
 unmount_device
 
 
 #
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # Format $DEVICE partitions
 #
 echo ""
 echo "Formatting $BOOTFS as vfat..."
+<<<<<<< HEAD
 mkfs.vfat $BOOTFS -n "efi"
 
 echo "Formatting $ROOTFS as ext3..."
 mkfs.ext3 $ROOTFS -L "root"
+=======
+mkfs.vfat $BOOTFS
+
+echo "Formatting $ROOTFS as ext3..."
+mkfs.ext3 $ROOTFS
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 echo "Formatting swap partition...($SWAP)"
 mkswap $SWAP
@@ -259,6 +330,7 @@ sed -i "/menuentry 'install'/,/^}/d" $GRUBCFG
 sed -i "/initrd /d" $GRUBCFG
 # Delete any LABEL= strings
 sed -i "s/ LABEL=[^ ]*/ /" $GRUBCFG
+<<<<<<< HEAD
 # Remove any existing root= kernel parameters and:
 # o Add a root= parameter with the target rootfs
 # o Specify ro so fsck can be run during boot
@@ -267,6 +339,14 @@ sed -i "s/ LABEL=[^ ]*/ /" $GRUBCFG
 # o Specify "quiet" to minimize boot time when using slow serial consoles
 sed -i "s@ root=[^ ]*@ @" $GRUBCFG
 sed -i "s@vmlinuz @vmlinuz root=$TARGET_ROOTFS ro rootwait quiet @" $GRUBCFG
+=======
+# Replace the ramdisk root with the install device and include other options
+sed -i "s@ root=[^ ]*@ root=$TARGET_ROOTFS rw $ROOTWAIT quiet@" $GRUBCFG
+
+# Provide a startup.nsh script for older firmware with non-standard boot
+# directories and paths.
+echo "bootia32.efi" > $BOOTFS_MNT/startup.nsh
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 umount $BOOTFS_MNT
 umount $HDDIMG_MNT

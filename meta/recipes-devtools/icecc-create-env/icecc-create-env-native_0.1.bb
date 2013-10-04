@@ -11,8 +11,11 @@ PR = "r2"
 DEPENDS = ""
 INHIBIT_DEFAULT_DEPS = "1"
 
+<<<<<<< HEAD
 FILESPATH = "${FILE_DIRNAME}/${PN}/"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 inherit native
 
 PATCHTOOL = "patch"

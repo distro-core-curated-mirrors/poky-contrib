@@ -1,9 +1,13 @@
 DESCRIPTION = "initramfs modular system"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
+<<<<<<< HEAD
 RDEPENDS_${PN} += "busybox"
 
 PR = "r2"
+=======
+RDEPENDS = "busybox"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 inherit allarch
 

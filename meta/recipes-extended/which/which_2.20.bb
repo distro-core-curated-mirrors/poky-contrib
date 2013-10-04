@@ -14,9 +14,15 @@ DEPENDS     = "cwautomacros-native"
 inherit autotools update-alternatives
 
 PR = "r3"
+<<<<<<< HEAD
 
 EXTRA_OECONF = "--disable-iberty"
 
+=======
+
+EXTRA_OECONF = "--disable-iberty"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 SRC_URI = "${GNU_MIRROR}/which/which-${PV}.tar.gz \
            file://remove-declaration.patch"
 

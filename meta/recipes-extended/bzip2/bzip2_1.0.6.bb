@@ -26,17 +26,24 @@ ALTERNATIVE_PRIORITY = "100"
 ALTERNATIVE_${PN} = "bunzip2 bzcat"
 
 #install binaries to bzip2-native under sysroot for replacement-native
+<<<<<<< HEAD
 EXTRA_OECONF_class-native += "--bindir=${STAGING_BINDIR_NATIVE}/${PN}"
+=======
+EXTRA_OECONF_virtclass-native += "--bindir=${STAGING_BINDIR_NATIVE}/${PN}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_configure_prepend () {
 	cp ${WORKDIR}/configure.ac ${S}/
 	cp ${WORKDIR}/Makefile.am ${S}/
 	cp ${STAGING_DATADIR_NATIVE}/automake*/install-sh ${S}/
 }
 
+<<<<<<< HEAD
 do_install_ptest () {
 	sed -i -e "s|^Makefile:|_Makefile:|" ${D}${PTEST_PATH}/Makefile
 }
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_libbz2 = "${libdir}/lib*${SOLIBS}"
 
 FILES_libbz2-dev = "${includedir} ${libdir}/lib*${SOLIBSDEV}"
@@ -47,6 +54,10 @@ FILES_libbz2-staticdev = "${libdir}/*.a"
 SECTION_libbz2-staticdev = "devel"
 RDEPENDS_libbz2-staticdev = "libbz2-dev (= ${EXTENDPKGV})"
 
+<<<<<<< HEAD
 PROVIDES_append_class-native = " bzip2-replacement-native"
+=======
+PROVIDES_append_virtclass-native = " bzip2-replacement-native"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 BBCLASSEXTEND = "native nativesdk"
 

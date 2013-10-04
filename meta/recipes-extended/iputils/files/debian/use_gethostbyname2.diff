@@ -1,6 +1,10 @@
 Upstream-Status: Pending [from other distro Debian]
 
+<<<<<<< HEAD
 Index: iputils-s20121221/tracepath.c
+=======
+Index: trunk/tracepath.c
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ===================================================================
 --- iputils-s20121221.orig/tracepath.c
 +++ iputils-s20121221/tracepath.c

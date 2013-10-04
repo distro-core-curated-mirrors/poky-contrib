@@ -4,6 +4,7 @@ the system load levels drop to a particular level."
 SECTION = "base"
 LICENSE="GPLv2+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=4325afd396febcb659c36b49533135d4"
+<<<<<<< HEAD
 DEPENDS = "flex flex-native \
            ${@base_contains('DISTRO_FEATURES', 'pam', 'libpam', '', d)}"
 
@@ -12,11 +13,20 @@ RDEPENDS_${PN} = "${@base_contains('DISTRO_FEATURES', 'pam', '${PAM_DEPS}', '', 
                   ${VIRTUAL-RUNTIME_initscripts} \
 "
 
+=======
+DEPENDS = "flex flex-native initscripts \
+	${@base_contains('DISTRO_FEATURES', 'pam', 'libpam', '', d)}"
+RDEPENDS_${PN} = "${@base_contains('DISTRO_FEATURES', 'pam', '${PAM_DEPS}', '', d)}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PAM_DEPS = "libpam libpam-runtime pam-plugin-env pam-plugin-limits"
 
 RCONFLICTS_${PN} = "atd"
 RREPLACES_${PN} = "atd"
+<<<<<<< HEAD
 PR = "r5"
+=======
+PR = "r4"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "${DEBIAN_MIRROR}/main/a/at/at_${PV}.orig.tar.gz \
     file://configure.patch \
@@ -39,7 +49,11 @@ EXTRA_OECONF += "ac_cv_path_SENDMAIL=/bin/true \
                  --with-daemon_groupname=root \
                  --with-jobdir=/var/spool/at/jobs \
                  --with-atspool=/var/spool/at/spool \
+<<<<<<< HEAD
                  ac_cv_header_security_pam_appl_h=${@base_contains('DISTRO_FEATURES', 'pam', 'yes', 'no', d)} "
+=======
+                 ${@base_contains('DISTRO_FEATURES', 'pam', '--with-pam', '--without-pam', d)} "
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 inherit autotools
 

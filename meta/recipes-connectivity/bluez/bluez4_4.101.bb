@@ -1,5 +1,6 @@
 require bluez4.inc
 
+<<<<<<< HEAD
 PR = "r5"
 
 SRC_URI += "file://bluetooth.conf \
@@ -8,12 +9,21 @@ SRC_URI += "file://bluetooth.conf \
             file://obsolete_automake_macros.patch \
             file://network-fix-network-Connect-method-parameters.patch \
 "
+=======
+PR = "r3"
+
+SRC_URI += "file://bluetooth.conf \
+            file://sbc_mmx.patch"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI[md5sum] = "fb42cb7038c380eb0e2fa208987c96ad"
 SRC_URI[sha256sum] = "59738410ade9f0e61a13c0f77d9aaffaafe49ba9418107e4ad75fe52846f7487"
 
+<<<<<<< HEAD
 RCONFLICTS_${PN} = "bluez5"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_install_append() {
 	install -m 0644 ${S}/audio/audio.conf ${D}/${sysconfdir}/bluetooth/
 	install -m 0644 ${S}/network/network.conf ${D}/${sysconfdir}/bluetooth/
@@ -28,7 +38,11 @@ ALLOW_EMPTY_libasound-module-bluez = "1"
 PACKAGES =+ "libasound-module-bluez"
 
 FILES_libasound-module-bluez = "${libdir}/alsa-lib/lib*.so ${datadir}/alsa"
+<<<<<<< HEAD
 FILES_${PN} += "${libdir}/bluetooth/plugins ${libdir}/bluetooth/plugins/*.so ${base_libdir}/udev/ ${nonarch_base_libdir}/udev/ ${systemd_unitdir}/ ${datadir}/dbus-1"
+=======
+FILES_${PN} += "${libdir}/bluetooth/plugins ${libdir}/bluetooth/plugins/*.so ${base_libdir}/udev/ ${systemd_unitdir}/ ${datadir}/dbus-1"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_${PN}-dev += "\
   ${libdir}/bluetooth/plugins/*.la \
   ${libdir}/alsa-lib/*.la \
@@ -37,5 +51,9 @@ FILES_${PN}-dev += "\
 FILES_${PN}-dbg += "\
   ${libdir}/bluetooth/plugins/.debug \
   ${libdir}/*/.debug \
+<<<<<<< HEAD
   */udev/.debug \
+=======
+  ${base_libdir}/udev/.debug \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
   "

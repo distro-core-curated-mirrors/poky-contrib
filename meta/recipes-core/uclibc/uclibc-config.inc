@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 DEPENDS += "kern-tools-native"
 inherit cml1
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 #
 # Set the ARCH environment variable for uClibc compilation.
 # Return value must match one of the architectures known to uClibc:
@@ -11,7 +14,10 @@ alpha \
 arm \
 avr32 \
 bfin \
+<<<<<<< HEAD
 c6x \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 cris \
 e1 \
 frv \
@@ -130,6 +136,7 @@ def features_to_uclibc_conf(d):
 def features_to_uclibc_del(d):
     cnf, rem = features_to_uclibc_settings(d)
     return rem
+<<<<<<< HEAD
 
 # returns all the elements from the src uri that are .cfg files
 def find_cfgs(d):
@@ -140,3 +147,5 @@ def find_cfgs(d):
             sources_list.append(s)
 
     return sources_list
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

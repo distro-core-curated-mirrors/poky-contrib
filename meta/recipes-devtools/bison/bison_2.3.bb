@@ -19,8 +19,13 @@ SRC_URI = "${BASE_SRC_URI}"
 SRC_URI[md5sum] = "22327efdd5080e2b1acb6e560a04b43a"
 SRC_URI[sha256sum] = "52f78aa4761a74ceb7fdf770f3554dd84308c3b93c4255e3a5c17558ecda293e"
 
+<<<<<<< HEAD
 DEPENDS_class-native = "gettext-native"
 SRC_URI_class-native = "${BASE_SRC_URI}"
+=======
+DEPENDS_virtclass-native = "gettext-native"
+SRC_URI_virtclass-native = "${BASE_SRC_URI}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 inherit autotools gettext
 acpaths = "-I ${S}/m4"
@@ -30,7 +35,11 @@ do_configure_prepend () {
 	cp ${STAGING_DATADIR_NATIVE}/gettext/po/Makefile.in.in ${S}/runtime-po/
 }
 
+<<<<<<< HEAD
 do_install_append_class-native() {
+=======
+do_install_append_virtclass-native() {
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	create_wrapper ${D}/${bindir}/bison \
 		M4=${STAGING_BINDIR_NATIVE}/m4 \
 		BISON_PKGDATADIR=${STAGING_DATADIR_NATIVE}/bison

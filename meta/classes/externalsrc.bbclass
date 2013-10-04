@@ -8,6 +8,7 @@
 # the build system to build a piece of software rather than the usual fetch/unpack/patch
 # process.
 #
+<<<<<<< HEAD
 # To use, add externalsrc to the global inherit and set EXTERNALSRC to point at the
 # directory you want to use containing the sources e.g. from local.conf for a recipe
 # called "myrecipe" you would do:
@@ -25,6 +26,20 @@
 #
 
 SRCTREECOVEREDTASKS ?= "do_patch do_unpack do_fetch"
+=======
+# To use, set S to point at the directory you want to use containing the sources
+# e.g. S = "/path/to/my/source/tree"
+#
+# If the class is to work for both target and native versions (or with multilibs/
+# cross or other BBCLASSEXTEND variants), its expected that setting B to point to 
+# where to place the compiled binaries will work (split source and build directories).
+# This is the default but B can be set to S if circumstaces dictate.
+#
+
+SRC_URI = ""
+SRCTREECOVEREDTASKS ?= "do_patch do_unpack do_fetch"
+B = "${WORKDIR}/${BPN}-${PV}/"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 def remove_tasks(tasks, deltasks, d):
     for task in tasks:
@@ -42,6 +57,7 @@ def remove_tasks(tasks, deltasks, d):
     d.setVar('__BBTASKS', tasklist)
 
 python () {
+<<<<<<< HEAD
     externalsrc = d.getVar('EXTERNALSRC', True)
     if externalsrc:
         d.setVar('S', externalsrc)
@@ -64,5 +80,19 @@ python () {
                 d.appendVarFlag(task, "lockfiles", "${S}/singletask.lock")
 
         remove_tasks(tasks, covered, d)
+=======
+    tasks = filter(lambda k: d.getVarFlag(k, "task"), d.keys())
+    covered = d.getVar("SRCTREECOVEREDTASKS", True).split()
+
+    for task in tasks:
+        if task.endswith("_setscene"):
+            # sstate is never going to work for external source trees, disable it
+            covered.append(task)
+        else:
+            # Since configure will likely touch ${S}, ensure only we lock so one task has access at a time
+            d.appendVarFlag(task, "lockfiles", "${S}/singletask.lock")
+
+    remove_tasks(tasks, covered, d)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 

@@ -1,8 +1,14 @@
 DESCRIPTION = "Qt is a versatile cross-platform application framework -- this is the embedded version."
 SECTION = "libs"
+<<<<<<< HEAD
 HOMEPAGE = "http://qt-project.org/"
 DEPENDS += "directfb tslib"
 INC_PR = "r52"
+=======
+HOMEPAGE = "http://qt.nokia.com"
+DEPENDS += "directfb tslib"
+INC_PR = "r49"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 QT4EDEPENDS = ""
 QT_BASE_LIB  ?= "libqt-embedded"
@@ -17,7 +23,11 @@ QT_EMBEDDED_FLAGS ?= " \
 QT_EMBEDDED_EXTRA_FLAGS ?= " \
     -plugin-gfx-transformed -plugin-gfx-qvfb -plugin-gfx-vnc -plugin-gfx-directfb \
     -plugin-mouse-tslib -qt-mouse-pc -qt-mouse-qvfb -qt-mouse-linuxinput \
+<<<<<<< HEAD
     -qt-kbd-tty -qt-kbd-linuxinput \
+=======
+    -qt-kbd-tty \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 "
 QT_EMBEDDED_KEYPAD_FLAGS ?= " \
     -DQT_KEYPAD_NAVIGATION \

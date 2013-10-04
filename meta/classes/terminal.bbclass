@@ -4,13 +4,18 @@ OE_TERMINAL[choices] = 'auto none \
                         ${@" ".join(o.name \
                                     for o in oe.terminal.prioritized())}'
 
+<<<<<<< HEAD
 OE_TERMINAL_EXPORTS += 'EXTRA_OEMAKE'
+=======
+OE_TERMINAL_EXPORTS = 'XAUTHORITY SHELL DBUS_SESSION_BUS_ADDRESS DISPLAY EXTRA_OEMAKE SCREENDIR'
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 OE_TERMINAL_EXPORTS[type] = 'list'
 
 XAUTHORITY ?= "${HOME}/.Xauthority"
 SHELL ?= "bash"
 
 
+<<<<<<< HEAD
 def emit_terminal_func(command, envdata, d):
     cmd_func = 'do_terminal'
 
@@ -31,20 +36,26 @@ def emit_terminal_func(command, envdata, d):
 
     return runfile
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 def oe_terminal(command, title, d):
     import oe.data
     import oe.terminal
 
+<<<<<<< HEAD
     envdata = bb.data.init()
 
     for v in os.environ:
         envdata.setVar(v, os.environ[v])
         envdata.setVarFlag(v, 'export', 1)
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     for export in oe.data.typed_value('OE_TERMINAL_EXPORTS', d):
         value = d.getVar(export, True)
         if value is not None:
             os.environ[export] = str(value)
+<<<<<<< HEAD
             envdata.setVar(export, str(value))
             envdata.setVarFlag(export, 'export', 1)
         if export == "PSEUDO_DISABLED":
@@ -66,6 +77,8 @@ def oe_terminal(command, title, d):
 
     # Replace command with an executable wrapper script
     command = emit_terminal_func(command, envdata, d)
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     terminal = oe.data.typed_value('OE_TERMINAL', d).lower()
     if terminal == 'none':

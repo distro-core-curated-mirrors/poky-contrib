@@ -1,7 +1,13 @@
+<<<<<<< HEAD
 PACKAGESPLITFUNCS_prepend = " split_gstreamer10_packages "
 PACKAGESPLITFUNCS_append = " set_metapkg_rdepends "
 
 python split_gstreamer10_packages () {
+=======
+LIBV = "0.10"
+
+python populate_packages_prepend () {
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     gst_libdir = d.expand('${libdir}/gstreamer-${LIBV}')
     postinst = d.getVar('plugin_postinst', True)
     glibdir = d.getVar('libdir', True)
@@ -10,15 +16,20 @@ python split_gstreamer10_packages () {
     do_split_packages(d, gst_libdir, 'libgst(.*)\.so$', d.expand('${PN}-%s'), 'GStreamer plugin for %s', postinst=postinst, extra_depends=d.expand('${PN}'))
     do_split_packages(d, gst_libdir, 'libgst(.*)\.la$', d.expand('${PN}-%s-dev'), 'GStreamer plugin for %s (development files)', extra_depends=d.expand('${PN}-dev'))
     do_split_packages(d, gst_libdir, 'libgst(.*)\.a$', d.expand('${PN}-%s-staticdev'), 'GStreamer plugin for %s (static development files)', extra_depends=d.expand('${PN}-staticdev'))
+<<<<<<< HEAD
 }
 
 python set_metapkg_rdepends () {
     import os
 
+=======
+    
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     pn = d.getVar('PN', True)
     metapkg =  pn + '-meta'
     d.setVar('ALLOW_EMPTY_' + metapkg, "1")
     d.setVar('FILES_' + metapkg, "")
+<<<<<<< HEAD
     blacklist = [ pn, pn + '-locale', pn + '-dev', pn + '-dbg', pn + '-doc', pn + '-meta' ]
     metapkg_rdepends = []
     packages = d.getVar('PACKAGES', True).split()
@@ -36,16 +47,28 @@ python set_metapkg_rdepends () {
             is_empty = len(dir_contents) == 0
             if not is_empty:
                 metapkg_rdepends.append(pkg)
+=======
+    blacklist = [ pn + '-locale', pn + '-dev', pn + '-dbg', pn + '-doc' ]
+    metapkg_rdepends = []
+    packages = d.getVar('PACKAGES', True).split()
+    for pkg in packages[1:]:
+        if not pkg in blacklist and not pkg in metapkg_rdepends and not pkg.endswith('-dev') and not pkg.endswith('-dbg') and not pkg.count('locale') and not pkg.count('-staticdev'):
+            metapkg_rdepends.append(pkg)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     d.setVar('RDEPENDS_' + metapkg, ' '.join(metapkg_rdepends))
     d.setVar('DESCRIPTION_' + metapkg, pn + ' meta package')
 }
 
+<<<<<<< HEAD
 # metapkg has runtime dependency on PN
 # each plugin depends on PN, plugin-dev on PN-dev, plugin-staticdev on PN-staticdev
 # so we need them even when empty (like in gst-plugins-good case)
 ALLOW_EMPTY_${PN} = "1"
 ALLOW_EMPTY_${PN}-dev = "1"
 ALLOW_EMPTY_${PN}-staticdev = "1"
+=======
+ALLOW_EMPTY = "1"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PACKAGES += "${PN}-apps ${PN}-meta ${PN}-glib"
 FILES_${PN}-apps = "${bindir}"

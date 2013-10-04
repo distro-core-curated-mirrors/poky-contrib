@@ -9,7 +9,11 @@ LIC_FILES_CHKSUM = "file://README;md5=4f46756b064c225fae088903300e5c98"
 SECTION = "libs"
 
 DEPENDS = "libtool-cross"
+<<<<<<< HEAD
 DEPENDS_class-native = "libtool-native"
+=======
+DEPENDS_virtclass-native = "libtool-native"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PR = "r1"
 

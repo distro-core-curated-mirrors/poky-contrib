@@ -27,16 +27,24 @@ PREFERRED_PROVIDER_virtual/${TARGET_PREFIX}gcc-intermediate = "external-sourcery
 PREFERRED_PROVIDER_virtual/${TARGET_PREFIX}g++ = "external-sourcery-toolchain"
 PREFERRED_PROVIDER_virtual/${TARGET_PREFIX}binutils = "external-sourcery-toolchain"
 PREFERRED_PROVIDER_virtual/${TARGET_PREFIX}libc-for-gcc = "external-sourcery-toolchain"
+<<<<<<< HEAD
 PREFERRED_PROVIDER_virtual/${TARGET_PREFIX}libc-initial = "external-sourcery-toolchain"
 PREFERRED_PROVIDER_virtual/${TARGET_PREFIX}compilerlibs = "external-sourcery-toolchain"
 PREFERRED_PROVIDER_libgcc = "external-sourcery-toolchain"
 PREFERRED_PROVIDER_eglibc = "external-sourcery-toolchain"
+=======
+PREFERRED_PROVIDER_virtual/${TARGET_PREFIX}compilerlibs = "external-sourcery-toolchain"
+PREFERRED_PROVIDER_libgcc = "external-sourcery-toolchain"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PREFERRED_PROVIDER_virtual/libc = "external-sourcery-toolchain"
 PREFERRED_PROVIDER_virtual/libintl = "external-sourcery-toolchain"
 PREFERRED_PROVIDER_virtual/libiconv = "external-sourcery-toolchain"
 PREFERRED_PROVIDER_glibc-thread-db = "external-sourcery-toolchain"
 PREFERRED_PROVIDER_virtual/linux-libc-headers = "external-sourcery-toolchain"
+<<<<<<< HEAD
 PREFERRED_PROVIDER_virtual/linux-libc-headers-dev = "external-sourcery-toolchain"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PREFERRED_PROVIDER_gdbserver ??= "external-sourcery-toolchain"
 
 # No need to re-compile the locale files
@@ -82,6 +90,12 @@ EXTERNAL_TOOLCHAIN_SYSROOT_CMD += "${@csl_multilib_arg(d)}"
 # to our staging toolchain bindir.
 
 python toolchain_metadata_setup () {
+<<<<<<< HEAD
+=======
+    if not isinstance(e, bb.event.ConfigParsed):
+        return
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     d = e.data
 
     l = d.createCopy()
@@ -90,16 +104,27 @@ python toolchain_metadata_setup () {
         d.setVar('TOOLCHAIN_PATH_ADD', '')
 }
 addhandler toolchain_metadata_setup
+<<<<<<< HEAD
 toolchain_metadata_setup[eventmask] = "bb.event.ConfigParsed"
 
 python toolchain_setup () {
+=======
+
+python toolchain_setup () {
+    if not isinstance(e, bb.event.BuildStarted):
+        return
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     d = e.data
 
     if not d.getVar('TOOLCHAIN_PATH_ADD', True):
         populate_toolchain_links(d)
 }
 addhandler toolchain_setup
+<<<<<<< HEAD
 toolchain_setup[eventmask] = "bb.event.BuildStarted"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 def populate_toolchain_links(d):
     import errno
@@ -114,7 +139,11 @@ def populate_toolchain_links(d):
         bb.fatal("Unable to populate toolchain binary symlinks in %s" % pattern)
 
     bindir = d.getVar('STAGING_BINDIR_TOOLCHAIN', True)
+<<<<<<< HEAD
     bb.utils.mkdirhier(bindir)
+=======
+    bb.mkdirhier(bindir)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     for f in files:
         base = os.path.basename(f)
         newpath = os.path.join(bindir, base)

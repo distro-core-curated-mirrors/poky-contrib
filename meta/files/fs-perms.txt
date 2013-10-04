@@ -41,6 +41,7 @@ ${includedir}		0755	root	root	true	0644	root	root
 ${oldincludedir}	0755	root	root	true	0644	root	root
 
 # Cleanup debug src
+<<<<<<< HEAD
 /usr/src/debug		0755	root	root	true	-	root	root
 
 # Items from base-files
@@ -48,11 +49,25 @@ ${oldincludedir}	0755	root	root	true	0644	root	root
 ${localstatedir}/run	link	/run
 ${localstatedir}/log	link	volatile/log
 ${localstatedir}/lock	link	/run/lock
+=======
+/usr/src/debug		0755	root	root	true	0644	root	root
+
+# Items from base-files
+# Links
+${localstatedir}/cache	link	volatile/cache
+${localstatedir}/run	link	volatile/run
+${localstatedir}/log	link	volatile/log
+${localstatedir}/lock	link	volatile/lock
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ${localstatedir}/tmp	link	volatile/tmp
 
 # Special permissions from base-files
 # Set 1777
 /tmp				01777	root	root	false - - -
+<<<<<<< HEAD
+=======
+${localstatedir}/volatile/lock	01777	root	root	false - - -
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ${localstatedir}/volatile/tmp	01777	root	root	false - - -
 
 # Set 2775

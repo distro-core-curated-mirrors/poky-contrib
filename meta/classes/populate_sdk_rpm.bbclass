@@ -3,6 +3,7 @@ EXTRANATIVEPATH += "python-native"
 
 do_populate_sdk[depends] += "rpm-native:do_populate_sysroot"
 do_populate_sdk[depends] += "rpmresolve-native:do_populate_sysroot"
+<<<<<<< HEAD
 do_populate_sdk[depends] += "python-smartpm-native:do_populate_sysroot"
 
 # Needed for update-alternatives
@@ -11,6 +12,9 @@ do_populate_sdk[depends] += "opkg-native:do_populate_sysroot"
 # Creating the repo info in do_rootfs
 do_populate_sdk[depends] += "createrepo-native:do_populate_sysroot"
 
+=======
+do_populate_sdk[depends] += "createrepo-native:do_populate_sysroot"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_populate_sdk[recrdeptask] += "do_package_write_rpm"
 
 rpmlibdir = "/var/lib/rpm"
@@ -39,6 +43,7 @@ populate_sdk_rpm () {
 	# This needs to work in the same way as rootfs_rpm.bbclass!
 	#
 	export INSTALL_ROOTFS_RPM="${SDK_OUTPUT}/${SDKTARGETSYSROOT}"
+<<<<<<< HEAD
 	export INSTALL_PLATFORM_RPM="$(echo ${TARGET_ARCH} | tr - _)${TARGET_VENDOR}-${TARGET_OS}"
 	export INSTALL_PACKAGES_RPM="${TOOLCHAIN_TARGET_TASK}"
 	export INSTALL_PACKAGES_ATTEMPTONLY_RPM="$(echo '${TOOLCHAIN_TARGET_TASK_ATTEMPTONLY}' | sed 's/ *$//g')"
@@ -87,6 +92,50 @@ populate_sdk_rpm () {
 	if [ -n "$default_extra_rpm" ]; then
 		INSTALL_PLATFORM_EXTRA_RPM="$default_extra_rpm $INSTALL_PLATFORM_EXTRA_RPM"
 	fi
+=======
+	export INSTALL_PLATFORM_RPM="${TARGET_ARCH}"
+	export INSTALL_CONFBASE_RPM="${RPMCONF_TARGET_BASE}"
+	export INSTALL_PACKAGES_RPM="${TOOLCHAIN_TARGET_TASK}"
+	export INSTALL_PACKAGES_ATTEMPTONLY_RPM="${TOOLCHAIN_TARGET_TASK_ATTEMPTONLY}"
+	export INSTALL_PACKAGES_LINGUAS_RPM=""
+	export INSTALL_PROVIDENAME_RPM="/bin/sh /bin/bash /usr/bin/env /usr/bin/perl pkgconfig pkgconfig(pkg-config)"
+	export INSTALL_TASK_RPM="populate_sdk-target"
+	export INSTALL_COMPLEMENTARY_RPM=""
+
+	# Setup base system configuration
+	mkdir -p ${INSTALL_ROOTFS_RPM}/etc/rpm/
+	mkdir -p ${INSTALL_ROOTFS_RPM}${rpmlibdir}
+	mkdir -p ${INSTALL_ROOTFS_RPM}${rpmlibdir}/log
+	cat > ${INSTALL_ROOTFS_RPM}${rpmlibdir}/DB_CONFIG << EOF
+# ================ Environment
+set_data_dir            .
+set_create_dir          .
+set_lg_dir              ./log
+set_tmp_dir             ./tmp
+
+# -- thread_count must be >= 8
+set_thread_count        64
+
+# ================ Logging
+
+# ================ Memory Pool
+set_mp_mmapsize         268435456
+
+# ================ Locking
+set_lk_max_locks        16384
+set_lk_max_lockers      16384
+set_lk_max_objects      16384
+mutex_set_max           163840
+
+# ================ Replication
+EOF
+
+	# List must be prefered to least preferred order
+	INSTALL_PLATFORM_EXTRA_RPM=""
+	for each_arch in ${MULTILIB_PACKAGE_ARCHS} ${PACKAGE_ARCHS} ; do
+		INSTALL_PLATFORM_EXTRA_RPM="$each_arch $INSTALL_PLATFORM_EXTRA_RPM"
+	done
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	export INSTALL_PLATFORM_EXTRA_RPM
 
 	package_install_internal_rpm
@@ -96,9 +145,16 @@ populate_sdk_rpm () {
 	## install nativesdk ##
 	echo "Installing NATIVESDK packages"
 	export INSTALL_ROOTFS_RPM="${SDK_OUTPUT}"
+<<<<<<< HEAD
 	export INSTALL_PLATFORM_RPM="$(echo ${TARGET_ARCH} | tr - _)${SDK_VENDOR}-${SDK_OS}"
 	export INSTALL_PACKAGES_RPM="${TOOLCHAIN_HOST_TASK}"
 	export INSTALL_PACKAGES_ATTEMPTONLY_RPM="$(echo '${TOOLCHAIN_HOST_TASK_ATTEMPTONLY}' | sed 's/ *$//g')"
+=======
+	export INSTALL_PLATFORM_RPM="${SDK_ARCH}"
+	export INSTALL_CONFBASE_RPM="${RPMCONF_HOST_BASE}"
+	export INSTALL_PACKAGES_RPM="${TOOLCHAIN_HOST_TASK}"
+	export INSTALL_PACKAGES_ATTEMPTONLY_RPM="${TOOLCHAIN_TARGET_HOST_ATTEMPTONLY}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	export INSTALL_PACKAGES_LINGUAS_RPM=""
 	export INSTALL_PROVIDENAME_RPM="/bin/sh /bin/bash /usr/bin/env /usr/bin/perl pkgconfig libGL.so()(64bit) libGL.so"
 	export INSTALL_TASK_RPM="populate_sdk_rpm-nativesdk"
@@ -107,8 +163,12 @@ populate_sdk_rpm () {
 	# List must be prefered to least preferred order
 	INSTALL_PLATFORM_EXTRA_RPM=""
 	for each_arch in ${SDK_PACKAGE_ARCHS} ; do
+<<<<<<< HEAD
 		platform="$(echo $each_arch | tr - _)-.*-${SDK_OS}"
 		INSTALL_PLATFORM_EXTRA_RPM="$platform $INSTALL_PLATFORM_EXTRA_RPM"
+=======
+		INSTALL_PLATFORM_EXTRA_RPM="$each_arch $INSTALL_PLATFORM_EXTRA_RPM"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	done
 	export INSTALL_PLATFORM_EXTRA_RPM
 
@@ -167,6 +227,30 @@ list_installed_packages() {
 	fi
 }
 
+<<<<<<< HEAD
 rootfs_list_installed_depends() {
 	rpmresolve -t $INSTALL_ROOTFS_RPM/${rpmlibdir}
 }
+=======
+python () {
+    # The following code should be kept in sync w/ the rootfs_rpm version.
+    ml_package_archs = ""
+    ml_prefix_list = ""
+    multilibs = d.getVar('MULTILIBS', True) or ""
+    for ext in multilibs.split():
+        eext = ext.split(':')
+        if len(eext) > 1 and eext[0] == 'multilib':
+            localdata = bb.data.createCopy(d)
+            default_tune = localdata.getVar("DEFAULTTUNE_virtclass-multilib-" + eext[1], False)
+            if default_tune:
+                localdata.setVar("DEFAULTTUNE", default_tune)
+            package_archs = localdata.getVar("PACKAGE_ARCHS", True) or ""
+            package_archs = " ".join([i in "all noarch any".split() and i or eext[1]+"_"+i for i in package_archs.split()])
+            ml_package_archs += " " + package_archs
+            ml_prefix_list += " " + eext[1]
+            #bb.note("ML_PACKAGE_ARCHS %s %s %s" % (eext[1], localdata.getVar("PACKAGE_ARCHS", True) or "(none)", overrides))
+    d.setVar('MULTILIB_PACKAGE_ARCHS', ml_package_archs)
+    d.setVar('MULTILIB_PREFIX_LIST', ml_prefix_list)
+}
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

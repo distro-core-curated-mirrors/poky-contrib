@@ -13,7 +13,11 @@ SRCREV = "810b0b08eb79e4685202da2ec347b990bb467e07"
 PV = "0.1+git${SRCPV}"
 PR = "r1"
 
+<<<<<<< HEAD
 SRC_URI = "git://git.yoctoproject.org/${BPN}"
+=======
+SRC_URI = "git://git.yoctoproject.org/${BPN};protocol=git"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 S = "${WORKDIR}/git"
 

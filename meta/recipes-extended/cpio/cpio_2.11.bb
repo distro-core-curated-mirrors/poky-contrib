@@ -3,7 +3,11 @@ include cpio_v2.inc
 LICENSE = "GPLv3"
 LIC_FILES_CHKSUM = "file://COPYING;md5=f27defe1e96c2e1ecd4e0c9be8967949"
 
+<<<<<<< HEAD
 PR = "r4"
+=======
+PR = "r3"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI += "file://remove-gets.patch \
            "

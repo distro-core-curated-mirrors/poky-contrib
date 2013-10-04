@@ -11,6 +11,7 @@ Upstream-Status: Inappropriate [embedded specific]
 
 Signed-off-by: Otavio Salvador <otavio@ossystems.com.br>
 
+<<<<<<< HEAD
 Index: cmake-2.8.11/Modules/FindQt4.cmake
 ===================================================================
 --- cmake-2.8.11.orig/Modules/FindQt4.cmake
@@ -28,19 +29,59 @@ Index: cmake-2.8.11/Modules/FindQt4.cmake
      )
  
    find_program(QT_RCC_EXECUTABLE
+=======
+Index: cmake-2.8.5-rc3/Modules/FindQt4.cmake
+===================================================================
+--- cmake-2.8.5-rc3.orig/Modules/FindQt4.cmake	2011-06-27 14:41:05.000000000 +0000
++++ cmake-2.8.5-rc3/Modules/FindQt4.cmake	2011-07-08 15:31:58.057170949 +0000
+@@ -473,7 +473,7 @@
+ # check for qmake
+ # Debian uses qmake-qt4
+ # macports' Qt uses qmake-mac
+-FIND_PROGRAM(QT_QMAKE_EXECUTABLE NAMES qmake qmake4 qmake-qt4 qmake-mac PATHS
++FIND_PROGRAM(QT_QMAKE_EXECUTABLE NAMES qmake qmake2 qmake4 qmake-qt4 qmake-mac PATHS
+   "[HKEY_CURRENT_USER\\Software\\Trolltech\\Qt3Versions\\4.0.0;InstallDir]/bin"
+   "[HKEY_CURRENT_USER\\Software\\Trolltech\\Versions\\4.0.0;InstallDir]/bin"
+   "[HKEY_CURRENT_USER\\Software\\Trolltech\\Versions\\${qt_install_version};InstallDir]/bin"
+@@ -944,13 +944,13 @@
+   ENDIF(QT_QMAKE_CHANGED)
+   
+   FIND_PROGRAM(QT_MOC_EXECUTABLE
+-    NAMES moc-qt4 moc
++    NAMES moc-qt4 moc4 moc
+     PATHS ${QT_BINARY_DIR}
+     NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
+     )
+ 
+   FIND_PROGRAM(QT_UIC_EXECUTABLE
+-    NAMES uic-qt4 uic
++    NAMES uic-qt4 uic4 uic
+     PATHS ${QT_BINARY_DIR}
+     NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
+     )
+@@ -962,49 +962,49 @@
+     )
+ 
+   FIND_PROGRAM(QT_RCC_EXECUTABLE 
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 -    NAMES rcc
 +    NAMES rcc4 rcc
      PATHS ${QT_BINARY_DIR}
      NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
      )
  
+<<<<<<< HEAD
    find_program(QT_DBUSCPP2XML_EXECUTABLE
+=======
+   FIND_PROGRAM(QT_DBUSCPP2XML_EXECUTABLE 
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 -    NAMES qdbuscpp2xml
 +    NAMES qdbuscpp2xml4 qdbuscpp2xml
      PATHS ${QT_BINARY_DIR}
      NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
      )
  
+<<<<<<< HEAD
    find_program(QT_DBUSXML2CPP_EXECUTABLE
 -    NAMES qdbusxml2cpp
 +    NAMES qdbusxml2cp4 qdbusxml2cpp
@@ -53,6 +94,46 @@ Index: cmake-2.8.11/Modules/FindQt4.cmake
    find_program(QT_QCOLLECTIONGENERATOR_EXECUTABLE
 -    NAMES qcollectiongenerator-qt4 qcollectiongenerator
 +    NAMES qcollectiongenerator-qt4 qcollectiongenerator qcollectiongenerator4
+=======
+   FIND_PROGRAM(QT_DBUSXML2CPP_EXECUTABLE 
+-    NAMES qdbusxml2cpp
++    NAMES qdbusxml2cpp4 qdbusxml2cpp
+     PATHS ${QT_BINARY_DIR}
+     NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
+     )
+ 
+   FIND_PROGRAM(QT_LUPDATE_EXECUTABLE
+-    NAMES lupdate-qt4 lupdate
++    NAMES lupdate-qt4 lupdate4 lupdate
+     PATHS ${QT_BINARY_DIR}
+     NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
+     )
+ 
+   FIND_PROGRAM(QT_LRELEASE_EXECUTABLE
+-    NAMES lrelease-qt4 lrelease
++    NAMES lrelease-qt4 lrelease4 lrelease
+     PATHS ${QT_BINARY_DIR}
+     NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
+     )
+ 
+   FIND_PROGRAM(QT_QCOLLECTIONGENERATOR_EXECUTABLE
+-    NAMES qcollectiongenerator-qt4 qcollectiongenerator
++    NAMES qcollectiongenerator-qt4 qcollectiongenerator4 qcollectiongenerator
+     PATHS ${QT_BINARY_DIR}
+     NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
+     )
+ 
+   FIND_PROGRAM(QT_DESIGNER_EXECUTABLE
+-    NAMES designer-qt4 designer
++    NAMES designer-qt4 designer4 designer
+     PATHS ${QT_BINARY_DIR}
+     NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
+     )
+ 
+   FIND_PROGRAM(QT_LINGUIST_EXECUTABLE
+-    NAMES linguist-qt4 linguist
++    NAMES linguist-qt4 linguist4 linguist
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
      PATHS ${QT_BINARY_DIR}
      NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
      )

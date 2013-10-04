@@ -1,10 +1,16 @@
+<<<<<<< HEAD
 # Version v0.85
 SRCREV = "210e625227d21e0b589b8eaa36cd81f1cb981819"
+=======
+# Version v0.84
+SRCREV = "857cdd5320ce1f293f5dbcbec79cc8fe22b0bebf"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PR = "r0"
 
 SRC_URI = "git://git.kernel.org/pub/scm/linux/kernel/git/clrkwllms/rt-tests.git \
            file://0001-rt-tests-Allow-for-user-specified-PYLIB.patch \
+<<<<<<< HEAD
            file://0002-rt-tests-Break-out-install_hwlatdetect.patch \
            file://added-missing-dependencies.patch \
            file://cyclictest-finish-removal-of-1-second-first-loops.patch \
@@ -12,6 +18,11 @@ SRC_URI = "git://git.kernel.org/pub/scm/linux/kernel/git/clrkwllms/rt-tests.git 
 "
 
 INC_PR = "r2"
+=======
+           file://0002-rt-tests-Break-out-install_hwlatdetect.patch"
+
+INC_PR = "r0"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 S = "${WORKDIR}/git"
 

@@ -8,14 +8,25 @@ RPMBUILD="rpmbuild"
 PKGWRITEDIRRPM = "${WORKDIR}/deploy-rpms"
 PKGWRITEDIRSRPM = "${DEPLOY_DIR}/sources/deploy-srpm"
 
+<<<<<<< HEAD
 # Maintaining the perfile dependencies has singificant overhead when writing the 
 # packages. When set, this value merges them for efficiency.
 MERGEPERFILEDEPS = "1"
+=======
+python package_rpm_fn () {
+    d.setVar('PKGFN', d.getVar('PKG'))
+}
+
+python package_rpm_install () {
+    bb.fatal("package_rpm_install not implemented!")
+}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 #
 # Update the packages indexes ${DEPLOY_DIR_RPM}
 #
 package_update_index_rpm () {
+<<<<<<< HEAD
 	if [ ! -z "${DEPLOY_KEEP_PACKAGES}" ]; then
 		return
 	fi
@@ -233,6 +244,104 @@ package_write_smart_config() {
 	for i in ${BAD_RECOMMENDATIONS}; do
 		smart --data-dir=$1/var/lib/smart flag --set ignore-recommends $i
 	done
+=======
+	if [ ! -z "${DEPLOY_KEEP_PACKAGES}" -o ! -e "${DEPLOY_DIR_RPM}" ]; then
+		return
+	fi
+
+	# Update target packages
+	base_archs="`echo ${PACKAGE_ARCHS} | sed 's/-/_/g'`"
+	ml_archs="`echo ${MULTILIB_PACKAGE_ARCHS} | sed 's/-/_/g'`"
+	package_update_index_rpm_common "${RPMCONF_TARGET_BASE}" base_archs ml_archs
+
+	# Update SDK packages
+	base_archs="`echo ${SDK_PACKAGE_ARCHS} | sed 's/-/_/g'`"
+	package_update_index_rpm_common "${RPMCONF_HOST_BASE}" base_archs
+}
+
+package_update_index_rpm_common () {
+	rpmconf_base="$1"
+	shift
+
+        createdirs=""
+	for archvar in "$@"; do
+		eval archs=\${${archvar}}
+		packagedirs=""
+		for arch in $archs; do
+			packagedirs="${DEPLOY_DIR_RPM}/$arch $packagedirs"
+			rm -rf ${DEPLOY_DIR_RPM}/$arch/solvedb.done
+		done
+
+		cat /dev/null > ${rpmconf_base}-${archvar}.conf
+		for pkgdir in $packagedirs; do
+			if [ -e $pkgdir/ ]; then
+				echo "Generating solve db for $pkgdir..."
+				echo $pkgdir/solvedb >> ${rpmconf_base}-${archvar}.conf
+                                createdirs="$createdirs $pkgdir"
+			fi
+		done
+	done
+	rpm-createsolvedb.py "${RPM}" $createdirs
+}
+
+#
+# Generate an rpm configuration suitable for use against the
+# generated depsolver db's...
+#
+package_generate_rpm_conf () {
+	# Update target packages
+	package_generate_rpm_conf_common "${RPMCONF_TARGET_BASE}" base_archs ml_archs
+
+	# Update SDK packages
+	package_generate_rpm_conf_common "${RPMCONF_HOST_BASE}" base_archs
+}
+
+package_generate_rpm_conf_common() {
+	rpmconf_base="$1"
+	shift
+
+	printf "_solve_dbpath " > ${rpmconf_base}.macro
+	o_colon="false"
+
+	for archvar in "$@"; do
+		printf "_solve_dbpath " > ${rpmconf_base}-${archvar}.macro
+		colon="false"
+		for each in `cat ${rpmconf_base}-${archvar}.conf` ; do
+			if [ "$o_colon" = "true" ]; then
+				printf ":" >> ${rpmconf_base}.macro
+			fi
+			if [ "$colon" = "true" ]; then
+				printf ":" >> ${rpmconf_base}-${archvar}.macro
+			fi
+			printf "%s" $each >> ${rpmconf_base}.macro
+			o_colon="true"
+			printf "%s" $each >> ${rpmconf_base}-${archvar}.macro
+			colon="true"
+		done
+		printf "\n" >> ${rpmconf_base}-${archvar}.macro
+	done
+	printf "\n" >> ${rpmconf_base}.macro
+}
+
+rpm_log_check() {
+	target="$1"
+	lf_path="$2"
+
+	lf_txt="`cat $lf_path`"
+	for keyword_die in "Cannot find package" "exit 1" ERR Fail
+	do
+		if (echo "$lf_txt" | grep -v log_check | grep "$keyword_die") >/dev/null 2>&1
+		then
+			echo "log_check: There were error messages in the logfile"
+			printf "log_check: Matched keyword: [$keyword_die]\n\n"
+			echo "$lf_txt" | grep -v log_check | grep -C 5 -i "$keyword_die"
+			echo ""
+			do_exit=1
+		fi
+	done
+	test "$do_exit" = 1 && exit 1
+	true
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 #
@@ -241,6 +350,7 @@ package_write_smart_config() {
 # 1) main package solution
 # 2) complementary solution
 #
+<<<<<<< HEAD
 # It is different when incremental image generation is enabled:
 # 1) The incremental image generation takes action during the main package
 #    installation, the previous installed complementary packages would
@@ -248,11 +358,152 @@ package_write_smart_config() {
 #    installed in the next step.
 # 2) The complementary would always be installed since it is
 #    generated based on the first step's image.
+=======
+resolve_package_rpm () {
+	local conffile="$1"
+	shift
+	local pkg_name=""
+	for solve in `cat ${conffile}`; do
+		pkg_name=$(${RPM} -D "_dbpath $solve" -D "__dbi_txn create nofsync" -q --qf "%{packageorigin}\n" "$@" | grep -v "is not installed" || true)
+		if [ -n "$pkg_name" -a "$pkg_name" != "(none)" ]; then
+			echo $pkg_name
+			break;
+		fi
+	done
+}
+
+# rpm common command and options
+rpm_common_comand () {
+
+    local target_rootfs="${INSTALL_ROOTFS_RPM}"
+
+    ${RPM} --root ${target_rootfs} \
+        --predefine "_rpmds_sysinfo_path ${target_rootfs}/etc/rpm/sysinfo" \
+        --predefine "_rpmrc_platform_path ${target_rootfs}/etc/rpm/platform" \
+        -D "_var ${localstatedir}" \
+        -D "_dbpath ${rpmlibdir}" \
+        -D "_tmppath /install/tmp" \
+        --noparentdirs --nolinktos \
+        -D "__dbi_txn create nofsync private" \
+        -D "_cross_scriptlet_wrapper ${WORKDIR}/scriptlet_wrapper" $@
+}
+
+# install or remove the pkg
+rpm_update_pkg () {
+
+    manifest=$1
+    # The manifest filename, e.g. total_solution.manifest
+    m_name=${manifest##/*/}
+    local target_rootfs="${INSTALL_ROOTFS_RPM}"
+    installdir=$target_rootfs/install
+    pre_btmanifest=$installdir/pre_bt.manifest
+    cur_btmanifest=$installdir/cur_bt.manifest
+
+    # Install/remove the different pkgs when total_solution.manifest is
+    # comming and incremental image generation is enabled.
+    if [ "${INC_RPM_IMAGE_GEN}" = "1" -a -d "${target_rootfs}${rpmlibdir}" \
+        -a "$m_name" = "total_solution.manifest" \
+        -a "${INSTALL_COMPLEMENTARY_RPM}" != "1" ]; then
+        # Get the previous installed list
+        rpm --root $target_rootfs --dbpath ${rpmlibdir} \
+            -qa --qf '%{PACKAGEORIGIN} %{BUILDTIME}\n' | sort -u -o $pre_btmanifest
+        # Get the current installed list (based on install/var/lib/rpm)
+        rpm --root $installdir -D "_dbpath $installdir" \
+            -qa --qf '%{PACKAGEORIGIN} %{BUILDTIME}\n' | sort -u -o $cur_btmanifest
+        comm -1 -3 $cur_btmanifest $pre_btmanifest | sed 's#.*/\(.*\)\.rpm .*#\1#' > \
+            $installdir/remove.manifest
+        comm -2 -3 $cur_btmanifest $pre_btmanifest | awk '{print $1}' > \
+            $installdir/incremental.manifest
+
+        # Attempt to remove unwanted pkgs, the scripts(pre, post, etc.) has not
+        # been run by now, so don't have to run them(preun, postun, etc.) when
+        # erase the pkg
+        if [ -s $installdir/remove.manifest ]; then
+            rpm_common_comand --noscripts --nodeps \
+                -e `cat $installdir/remove.manifest`
+        fi
+
+        # Attempt to install the incremental pkgs
+        if [ -s $installdir/incremental.manifest ]; then
+            rpm_common_comand --replacefiles --replacepkgs \
+               -Uvh $installdir/incremental.manifest
+        fi
+    else
+        # Attempt to install
+        rpm_common_comand --replacepkgs -Uhv $manifest
+    fi
+}
+
+process_pkg_list_rpm() {
+	local insttype=$1
+	shift
+	# $@ is special POSIX linear array can not be assigned
+	# to a local variable directly in dash since its separated by
+	# space and dash expands it before assignment
+	# and local x=1 2 3 and not x="1 2 3"
+	local pkgs
+	pkgs="$@"
+	local confbase=${INSTALL_CONFBASE_RPM}
+
+	printf "" > ${target_rootfs}/install/base_archs.pkglist
+	printf "" > ${target_rootfs}/install/ml_archs.pkglist
+
+	for pkg in $pkgs; do
+		echo "Processing $pkg..."
+
+		archvar=base_archs
+		ml_pkg=$pkg
+		for i in ${MULTILIB_PREFIX_LIST} ; do
+				subst=${pkg#${i}-}
+				if [ $subst != $pkg ] ; then
+						ml_pkg=$subst
+						archvar=ml_archs
+						break
+				fi
+		done
+
+		echo $ml_pkg >> ${target_rootfs}/install/$archvar.pkglist
+	done
+
+	local manifestpfx="install"
+	local extraopt=""
+	if [ "$insttype" = "attemptonly" ] ; then
+		manifestpfx="install_attemptonly"
+		extraopt="-i"
+	fi
+
+	rpmresolve $extraopt ${confbase}-base_archs.conf ${target_rootfs}/install/base_archs.pkglist -o ${target_rootfs}/install/${manifestpfx}.manifest
+	if [ -s ${target_rootfs}/install/ml_archs.pkglist ] ; then
+		rpmresolve $extraopt ${confbase}-ml_archs.conf ${target_rootfs}/install/ml_archs.pkglist -o ${target_rootfs}/install/${manifestpfx}_multilib.manifest
+	fi
+}
+
+#
+# Install a bunch of packages using rpm.
+# There are 3 solutions in an image's FRESH generation:
+# 1) initial_solution
+# 2) total_solution
+# 3) COMPLEMENTARY solution
+#
+# It is different when incremental image generation is enabled in the
+# SECOND generation:
+# 1) The initial_solution is skipped.
+# 2) The incremental image generation takes action during the total_solution
+#    installation, the previous installed COMPLEMENTARY pkgs usually would be
+#    removed here, the new COMPLEMENTARY ones would be installed in the next
+#    step.
+# 3) The COMPLEMENTARY would always be installed since it is
+#    generated based on the second step's image.
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 #
 # the following shell variables needs to be set before calling this func:
 # INSTALL_ROOTFS_RPM - install root dir
 # INSTALL_PLATFORM_RPM - main platform
 # INSTALL_PLATFORM_EXTRA_RPM - extra platform
+<<<<<<< HEAD
+=======
+# INSTALL_CONFBASE_RPM - configuration file base name
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # INSTALL_PACKAGES_RPM - packages to be installed
 # INSTALL_PACKAGES_ATTEMPTONLY_RPM - packages attemped to be installed only
 # INSTALL_PACKAGES_LINGUAS_RPM - additional packages for uclibc
@@ -262,6 +513,7 @@ package_write_smart_config() {
 
 package_install_internal_rpm () {
 
+<<<<<<< HEAD
 	local target_rootfs="$INSTALL_ROOTFS_RPM"
 	local package_to_install="$INSTALL_PACKAGES_RPM"
 	local package_attemptonly="$INSTALL_PACKAGES_ATTEMPTONLY_RPM"
@@ -298,8 +550,74 @@ package_install_internal_rpm () {
 				esac
 				echo "$pt" >> ${target_rootfs}/etc/rpm/platform
 			done
+=======
+	local target_rootfs="${INSTALL_ROOTFS_RPM}"
+	local platform="`echo ${INSTALL_PLATFORM_RPM} | sed 's#-#_#g'`"
+	local platform_extra="`echo ${INSTALL_PLATFORM_EXTRA_RPM} | sed 's#-#_#g'`"
+	local confbase="${INSTALL_CONFBASE_RPM}"
+	local package_to_install="${INSTALL_PACKAGES_RPM}"
+	local package_attemptonly="${INSTALL_PACKAGES_ATTEMPTONLY_RPM}"
+	local package_linguas="${INSTALL_PACKAGES_LINGUAS_RPM}"
+	local providename="${INSTALL_PROVIDENAME_RPM}"
+	local task="${INSTALL_TASK_RPM}"
+
+	if [ "${INSTALL_COMPLEMENTARY_RPM}" != "1" ] ; then
+		# Setup base system configuration
+		mkdir -p ${target_rootfs}/etc/rpm/
+		echo "${platform}${TARGET_VENDOR}-${TARGET_OS}" > ${target_rootfs}/etc/rpm/platform
+		if [ ! -z "$platform_extra" ]; then
+			for pt in $platform_extra ; do
+				case $pt in
+					noarch | any | all)
+						os="`echo ${TARGET_OS} | sed "s,-.*,,"`.*"
+						;;
+					*)
+						os="${TARGET_OS}"
+						;;
+				esac
+				echo "$pt-.*-$os" >> ${target_rootfs}/etc/rpm/platform
+			done
 		fi
 
+		# Tell RPM that the "/" directory exist and is available
+		mkdir -p ${target_rootfs}/etc/rpm/sysinfo
+		echo "/" >${target_rootfs}/etc/rpm/sysinfo/Dirnames
+		if [ ! -z "$providename" ]; then
+			cat /dev/null > ${target_rootfs}/etc/rpm/sysinfo/Providename
+			for provide in $providename ; do
+				echo $provide >> ${target_rootfs}/etc/rpm/sysinfo/Providename
+			done
+		fi
+	else
+		# We may run through the complementary installs multiple times.  For each time
+		# we should add the previous solution manifest to the full "original" set to
+		# avoid duplicate install steps.
+		echo "Update original solution..."
+		for m in ${target_rootfs}/install/initial_solution.manifest \
+			${target_rootfs}/install/total_solution.manifest; do
+			if [ -s $m ]; then
+				cat $m >> ${target_rootfs}/install/original_solution.manifest
+				rm -f $m
+			fi
+		done
+		sort -u ${target_rootfs}/install/original_solution.manifest -o ${target_rootfs}/install/original_solution.manifest.new
+		mv ${target_rootfs}/install/original_solution.manifest.new ${target_rootfs}/install/original_solution.manifest
+	fi
+
+	# Setup manifest of packages to install...
+	mkdir -p ${target_rootfs}/install
+	rm -f ${target_rootfs}/install/install.manifest
+	rm -f ${target_rootfs}/install/install_multilib.manifest
+	rm -f ${target_rootfs}/install/install_attemptonly.manifest
+
+	# Uclibc builds don't provide this stuff...
+	if [ x${TARGET_OS} = "xlinux" ] || [ x${TARGET_OS} = "xlinux-gnueabi" ] ; then
+		if [ ! -z "${package_linguas}" ]; then
+			process_pkg_list_rpm linguas ${package_linguas}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
+		fi
+
+<<<<<<< HEAD
 		# Tell RPM that the "/" directory exist and is available
 		echo "Note: configuring RPM system provides"
 		mkdir -p ${target_rootfs}/etc/rpm/sysinfo
@@ -364,8 +682,43 @@ EOF
 		fi
 		for i in ${PACKAGE_EXCLUDE}; do
 			smart --data-dir=${target_rootfs}/var/lib/smart flag --set exclude-packages $i
+=======
+	if [ ! -z "${package_to_install}" ]; then
+		process_pkg_list_rpm default ${package_to_install}
+	fi
+
+	# Normal package installation
+
+	# Generate an install solution by doing a --justdb install, then recreate it with
+	# an actual package install!
+	if [ -s ${target_rootfs}/install/install.manifest ]; then
+		echo "# Install manifest padding" >> ${target_rootfs}/install/install.manifest
+		${RPM} --predefine "_rpmds_sysinfo_path ${target_rootfs}/etc/rpm/sysinfo" \
+			--predefine "_rpmrc_platform_path ${target_rootfs}/etc/rpm/platform" \
+			--root "${target_rootfs}/install" \
+			-D "_dbpath ${target_rootfs}/install" -D "`cat ${confbase}-base_archs.macro`" \
+			-D "__dbi_txn create nofsync" \
+			-U --justdb --replacepkgs --noscripts --notriggers --noparentdirs --nolinktos --ignoresize \
+			${target_rootfs}/install/install.manifest
+	fi
+
+	if [ ! -z "${package_attemptonly}" ]; then
+		echo "Adding attempt only packages..."
+		process_pkg_list_rpm attemptonly ${package_attemptonly}
+		cat ${target_rootfs}/install/install_attemptonly.manifest | while read pkg_name
+		do
+			echo "Attempting $pkg_name..." >> "`dirname ${BB_LOGFILE}`/log.do_${task}_attemptonly.${PID}"
+			${RPM} --predefine "_rpmds_sysinfo_path ${target_rootfs}/etc/rpm/sysinfo" \
+				--predefine "_rpmrc_platform_path ${target_rootfs}/etc/rpm/platform" \
+				--root "${target_rootfs}/install" \
+				-D "_dbpath ${target_rootfs}/install" -D "`cat ${confbase}.macro`" \
+				-D "__dbi_txn create nofsync private" \
+				-U --justdb --replacepkgs --noscripts --notriggers --noparentdirs --nolinktos --ignoresize \
+			$pkg_name >> "`dirname ${BB_LOGFILE}`/log.do_${task}_attemptonly.${PID}" 2>&1 || true
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		done
 
+<<<<<<< HEAD
 		# Optional debugging
 		#smart --data-dir=${target_rootfs}/var/lib/smart config --set rpm-log-level=debug
 		#smart --data-dir=${target_rootfs}/var/lib/smart config --set rpm-log-file=/tmp/smart-debug-logfile
@@ -382,9 +735,60 @@ EOF
 				touch ${target_rootfs}/install/channel.$arch.stamp
 			fi
 			channel_priority=$(expr $channel_priority - 5)
+=======
+	#### Note: 'Recommends' is an arbitrary tag that means _SUGGESTS_ in OE-core..
+	# Add any recommended packages to the image
+	# RPM does not solve for recommended packages because they are optional...
+	# So we query them and tree them like the ATTEMPTONLY packages above...
+	# Change the loop to "1" to run this code...
+	loop=0
+	if [ $loop -eq 1 ]; then
+	 echo "Processing recommended packages..."
+	 cat /dev/null >  ${target_rootfs}/install/recommend.list
+	 while [ $loop -eq 1 ]; do
+		# Dump the full set of recommends...
+		${RPM} --predefine "_rpmds_sysinfo_path ${target_rootfs}/etc/rpm/sysinfo" \
+			--predefine "_rpmrc_platform_path ${target_rootfs}/etc/rpm/platform" \
+			--root "${target_rootfs}/install" \
+			-D "_dbpath ${target_rootfs}/install" -D "`cat ${confbase}.macro`" \
+			-D "__dbi_txn create nofsync private" \
+			-qa --qf "[%{RECOMMENDS}\n]" | sort -u > ${target_rootfs}/install/recommend
+		# Did we add more to the list?
+		grep -v -x -F -f ${target_rootfs}/install/recommend.list ${target_rootfs}/install/recommend > ${target_rootfs}/install/recommend.new || true
+		# We don't want to loop unless there is a change to the list!
+		loop=0
+		cat ${target_rootfs}/install/recommend.new | \
+		 while read pkg ; do
+			# Ohh there was a new one, we'll need to loop again...
+			loop=1
+			echo "Processing $pkg..."
+			found=0
+			for archvar in base_archs ml_archs ; do
+				pkg_name=$(resolve_package_rpm ${confbase}-${archvar}.conf ${pkg})
+				if [ -n "$pkg_name" ]; then
+					found=1
+					break
+				fi
+			done
+
+			if [ $found -eq 0 ]; then
+				echo "Note: Unable to find package $pkg -- suggests"
+				echo "Unable to find package $pkg." >> "`dirname ${BB_LOGFILE}`/log.do_${task}_recommend.${PID}"
+				continue
+			fi
+			echo "Attempting $pkg_name..." >> "`dirname ${BB_LOGFILE}`/log.do_{task}_recommend.${PID}"
+			${RPM} --predefine "_rpmds_sysinfo_path ${target_rootfs}/etc/rpm/sysinfo" \
+				--predefine "_rpmrc_platform_path ${target_rootfs}/etc/rpm/platform" \
+				--root "${target_rootfs}/install" \
+				-D "_dbpath ${target_rootfs}/install" -D "`cat ${confbase}.macro`" \
+				-D "__dbi_txn create nofsync private" \
+				-U --justdb --replacepkgs --noscripts --notriggers --noparentdirs --nolinktos --ignoresize \
+				$pkg_name >> "`dirname ${BB_LOGFILE}`/log.do_${task}_recommend.${PID}" 2>&1 || true
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		done
 	fi
 
+<<<<<<< HEAD
 	# Construct install scriptlet wrapper
 	cat << EOF > ${WORKDIR}/scriptlet_wrapper
 #!/bin/bash
@@ -548,6 +952,157 @@ def write_rpm_perfiledata(srcname, d):
 
 
 python write_specfile () {
+=======
+	# Now that we have a solution, pull out a list of what to install...
+	echo "Manifest: ${target_rootfs}/install/install_solution.manifest"
+	${RPM} -D "_dbpath ${target_rootfs}/install" -qa --qf "%{packageorigin}\n" \
+		--root "${target_rootfs}/install" \
+		-D "__dbi_txn create nofsync private" \
+		> ${target_rootfs}/install/install_solution.manifest
+
+	touch ${target_rootfs}/install/install_multilib_solution.manifest
+
+	if [ -s "${target_rootfs}/install/install_multilib.manifest" ]; then
+		# multilib package installation
+		echo "# Install multilib manifest padding" >> ${target_rootfs}/install/install_multilib.manifest
+
+		# Generate an install solution by doing a --justdb install, then recreate it with
+		# an actual package install!
+		${RPM} --predefine "_rpmds_sysinfo_path ${target_rootfs}/etc/rpm/sysinfo" \
+			--predefine "_rpmrc_platform_path ${target_rootfs}/etc/rpm/platform" \
+			--root "${target_rootfs}/install" \
+			-D "_dbpath ${target_rootfs}/install" -D "`cat ${confbase}-ml_archs.macro`" \
+			-D "__dbi_txn create nofsync" \
+			-U --justdb --replacepkgs --noscripts --notriggers --noparentdirs --nolinktos --ignoresize \
+			${target_rootfs}/install/install_multilib.manifest
+
+		# Now that we have a solution, pull out a list of what to install...
+		echo "Manifest: ${target_rootfs}/install/install_multilib.manifest"
+		${RPM} -D "_dbpath ${target_rootfs}/install" -qa --qf "%{packageorigin}\n" \
+			--root "${target_rootfs}/install" \
+			-D "__dbi_txn create nofsync private" \
+			> ${target_rootfs}/install/install_multilib_solution.manifest
+
+	fi
+
+	cat ${target_rootfs}/install/install_solution.manifest \
+	    ${target_rootfs}/install/install_multilib_solution.manifest | sort -u > ${target_rootfs}/install/total_solution.manifest
+
+	# Construct install scriptlet wrapper
+	cat << EOF > ${WORKDIR}/scriptlet_wrapper
+#!/bin/bash
+
+export PATH="${PATH}"
+export D="${target_rootfs}"
+export OFFLINE_ROOT="\$D"
+export IPKG_OFFLINE_ROOT="\$D"
+export OPKG_OFFLINE_ROOT="\$D"
+
+\$2 \$1/\$3 \$4
+if [ \$? -ne 0 ]; then
+  mkdir -p \$1/etc/rpm-postinsts
+  num=100
+  while [ -e \$1/etc/rpm-postinsts/\${num} ]; do num=\$((num + 1)); done
+  echo "#!\$2" > \$1/etc/rpm-postinsts/\${num}
+  echo "# Arg: \$4" >> \$1/etc/rpm-postinsts/\${num}
+  cat \$1/\$3 >> \$1/etc/rpm-postinsts/\${num}
+  chmod +x \$1/etc/rpm-postinsts/\${num}
+fi
+EOF
+
+	chmod 0755 ${WORKDIR}/scriptlet_wrapper
+
+	# Configure RPM... we enforce these settings!
+	mkdir -p ${target_rootfs}${rpmlibdir}
+	mkdir -p ${target_rootfs}${rpmlibdir}/log
+	# After change the __db.* cache size, log file will not be generated automatically,
+	# that will raise some warnings, so touch a bare log for rpm write into it.
+	touch ${target_rootfs}${rpmlibdir}/log/log.0000000001
+	cat > ${target_rootfs}${rpmlibdir}/DB_CONFIG << EOF
+# ================ Environment
+set_data_dir .
+set_create_dir .
+set_lg_dir ./log
+set_tmp_dir ./tmp
+set_flags db_log_autoremove on
+
+# -- thread_count must be >= 8
+set_thread_count 64
+
+# ================ Logging
+
+# ================ Memory Pool
+set_cachesize 0 1048576 0
+set_mp_mmapsize 268435456
+
+# ================ Locking
+set_lk_max_locks 16384
+set_lk_max_lockers 16384
+set_lk_max_objects 16384
+mutex_set_max 163840
+
+# ================ Replication
+EOF
+
+	if [ "${INSTALL_COMPLEMENTARY_RPM}" = "1" ] ; then
+		# Only install packages not already installed (dependency calculation will
+		# almost certainly have added some that have been)
+		sort -u ${target_rootfs}/install/original_solution.manifest > ${target_rootfs}/install/original_solution_sorted.manifest
+		sort -u ${target_rootfs}/install/total_solution.manifest > ${target_rootfs}/install/total_solution_sorted.manifest
+		comm -2 -3 ${target_rootfs}/install/total_solution_sorted.manifest \
+			${target_rootfs}/install/original_solution_sorted.manifest > \
+			${target_rootfs}/install/diff.manifest
+		mv ${target_rootfs}/install/diff.manifest ${target_rootfs}/install/total_solution.manifest
+	elif [ "${INC_RPM_IMAGE_GEN}" = "1" -a -f "${target_rootfs}/etc/passwd" ]; then
+		echo "Skipping pre install due to existing image"
+	else
+		# RPM is special. It can't handle dependencies and preinstall scripts correctly. Its
+		# probably a feature. The only way to convince rpm to actually run the preinstall scripts
+		# for base-passwd and shadow first before installing packages that depend on these packages
+		# is to do two image installs, installing one set of packages, then the other.
+		rm -f ${target_rootfs}/install/initial_install.manifest
+		echo "Installing base dependencies first (base-passwd, base-files and shadow) since rpm is special"
+		grep /base-passwd-[0-9] ${target_rootfs}/install/total_solution.manifest >> ${target_rootfs}/install/initial_install.manifest || true
+		grep /base-files-[0-9] ${target_rootfs}/install/total_solution.manifest >> ${target_rootfs}/install/initial_install.manifest || true
+		grep /shadow-[0-9] ${target_rootfs}/install/total_solution.manifest >> ${target_rootfs}/install/initial_install.manifest || true
+
+		if [ -s ${target_rootfs}/install/initial_install.manifest ]; then
+			echo "# Initial Install manifest padding..." >> ${target_rootfs}/install/initial_install.manifest
+
+			# Generate an install solution by doing a --justdb install, then recreate it with
+			# an actual package install!
+			mkdir -p ${target_rootfs}/initial
+
+			${RPM} --predefine "_rpmds_sysinfo_path ${target_rootfs}/etc/rpm/sysinfo" \
+				--predefine "_rpmrc_platform_path ${target_rootfs}/etc/rpm/platform" \
+				--root "${target_rootfs}/install" \
+				-D "_dbpath ${target_rootfs}/initial" -D "`cat ${confbase}.macro`" \
+				-D "__dbi_txn create nofsync" \
+				-U --justdb --replacepkgs --noscripts --notriggers --noparentdirs --nolinktos --ignoresize \
+				${target_rootfs}/install/initial_install.manifest
+
+			${RPM} -D "_dbpath ${target_rootfs}/initial" -qa --qf "%{packageorigin}\n" \
+				-D "__dbi_txn create nofsync private" \
+				--root "${target_rootfs}/install" \
+				> ${target_rootfs}/install/initial_solution.manifest
+
+			rpm_update_pkg ${target_rootfs}/install/initial_solution.manifest
+		
+			grep -Fv -f ${target_rootfs}/install/initial_solution.manifest ${target_rootfs}/install/total_solution.manifest > ${target_rootfs}/install/total_solution.manifest.new
+			mv ${target_rootfs}/install/total_solution.manifest.new ${target_rootfs}/install/total_solution.manifest
+		
+			rm -rf ${target_rootfs}/initial
+		fi
+	fi
+
+	echo "Installing main solution manifest (${target_rootfs}/install/total_solution.manifest)"
+
+	rpm_update_pkg ${target_rootfs}/install/total_solution.manifest
+}
+
+python write_specfile () {
+    import textwrap
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     import oe.packagedata
 
     # append information for logs and patches to %prep
@@ -617,6 +1172,7 @@ python write_specfile () {
                     if '-' in ver:
                         subd = oe.packagedata.read_subpkgdata_dict(dep, d)
                         if 'PKGV' in subd:
+<<<<<<< HEAD
                             pv = subd['PV']
                             pkgv = subd['PKGV']
                             reppv = pkgv.replace('-', '+')
@@ -628,6 +1184,11 @@ python write_specfile () {
                             if pkgr not in ver:
                                 ver = ver.replace(pr, pkgr)
                         verlist.append(ver)
+=======
+                            pv = subd['PKGV']
+                            reppv = pv.replace('-', '+')
+                            verlist.append(ver.replace(pv, reppv))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                     else:
                         verlist.append(ver)
                 newdeps_dict[dep] = verlist
@@ -670,6 +1231,7 @@ python write_specfile () {
         scr = scr[:pos] + 'if [ "$1" = "0" ] ; then\n' + scr[pos:] + '\nfi'
         return scr
 
+<<<<<<< HEAD
     def get_perfile(varname, pkg, d):
         deps = []
         dependsflist_key = 'FILE' + varname + 'FLIST' + "_" + pkg
@@ -694,6 +1256,8 @@ python write_specfile () {
         else:
             spec_preamble.append('%s' % textwrap.fill(dedent_text, width=75))
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     packages = d.getVar('PACKAGES', True)
     if not packages or packages == '':
         bb.debug(1, "No packages; nothing to do")
@@ -702,10 +1266,18 @@ python write_specfile () {
     pkgdest = d.getVar('PKGDEST', True)
     if not pkgdest:
         bb.fatal("No PKGDEST")
+<<<<<<< HEAD
+=======
+        return
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     outspecfile = d.getVar('OUTSPECFILE', True)
     if not outspecfile:
         bb.fatal("No OUTSPECFILE")
+<<<<<<< HEAD
+=======
+        return
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     # Construct the SPEC file...
     srcname    = strip_multilib(d.getVar('PN', True), d)
@@ -728,10 +1300,17 @@ python write_specfile () {
     srcrconflicts  = []
     srcrobsoletes  = []
 
+<<<<<<< HEAD
     srcrpreinst  = []
     srcrpostinst = []
     srcrprerm    = []
     srcrpostrm   = []
+=======
+    srcpreinst  = []
+    srcpostinst = []
+    srcprerm    = []
+    srcpostrm   = []
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     spec_preamble_top = []
     spec_preamble_bottom = []
@@ -742,8 +1321,11 @@ python write_specfile () {
     spec_files_top = []
     spec_files_bottom = []
 
+<<<<<<< HEAD
     perfiledeps = (d.getVar("MERGEPERFILEDEPS", True) or "0") == "0"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     for pkg in packages.split():
         localdata = bb.data.createCopy(d)
 
@@ -792,6 +1374,7 @@ python write_specfile () {
         splitrconflicts  = strip_multilib_deps(localdata.getVar('RCONFLICTS', True), d)
         splitrobsoletes  = []
 
+<<<<<<< HEAD
         splitrpreinst  = localdata.getVar('pkg_preinst', True)
         splitrpostinst = localdata.getVar('pkg_postinst', True)
         splitrprerm    = localdata.getVar('pkg_prerm', True)
@@ -803,6 +1386,8 @@ python write_specfile () {
             splitrdepends = splitrdepends + " " + get_perfile('RDEPENDS', pkg, d)
             splitrprovides = splitrprovides + " " + get_perfile('RPROVIDES', pkg, d)
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         # Gather special src/first package data
         if srcname == splitname:
             srcrdepends    = splitrdepends
@@ -812,10 +1397,17 @@ python write_specfile () {
             srcrreplaces   = splitrreplaces
             srcrconflicts  = splitrconflicts
 
+<<<<<<< HEAD
             srcrpreinst    = splitrpreinst
             srcrpostinst   = splitrpostinst
             srcrprerm      = splitrprerm
             srcrpostrm     = splitrpostrm
+=======
+            srcpreinst  = localdata.getVar('pkg_preinst', True)
+            srcpostinst = localdata.getVar('pkg_postinst', True)
+            srcprerm    = localdata.getVar('pkg_prerm', True)
+            srcpostrm   = localdata.getVar('pkg_postrm', True)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
             file_list = []
             walk_files(root, file_list, conffiles)
@@ -861,6 +1453,7 @@ python write_specfile () {
         splitrprovides = bb.utils.join_deps(rprovides, commasep=False)
 
         print_deps(splitrdepends, "Requires", spec_preamble_bottom, d)
+<<<<<<< HEAD
         if splitrpreinst:
             print_deps(splitrdepends, "Requires(pre)", spec_preamble_bottom, d)
         if splitrpostinst:
@@ -870,6 +1463,8 @@ python write_specfile () {
         if splitrpostrm:
             print_deps(splitrdepends, "Requires(postun)", spec_preamble_bottom, d)
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         # Suggests in RPM are like recommends in OE-core!
         print_deps(splitrrecommends, "Suggests", spec_preamble_bottom, d)
         # While there is no analog for suggests... (So call them recommends for now)
@@ -894,11 +1489,17 @@ python write_specfile () {
         spec_preamble_bottom.append('')
 
         spec_preamble_bottom.append('%%description -n %s' % splitname)
+<<<<<<< HEAD
         append_description(spec_preamble_bottom, splitdescription)
+=======
+        dedent_text = textwrap.dedent(splitdescription).strip()
+        spec_preamble_bottom.append('%s' % textwrap.fill(dedent_text, width=75))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
         spec_preamble_bottom.append('')
 
         # Now process scriptlets
+<<<<<<< HEAD
         if splitrpreinst:
             spec_scriptlets_bottom.append('%%pre -n %s' % splitname)
             spec_scriptlets_bottom.append('# %s - preinst' % splitname)
@@ -919,6 +1520,23 @@ python write_specfile () {
             spec_scriptlets_bottom.append('%%postun -n %s' % splitname)
             spec_scriptlets_bottom.append('# %s - postrm' % splitname)
             scriptvar = wrap_uninstall(splitrpostrm)
+=======
+        for script in ["preinst", "postinst", "prerm", "postrm"]:
+            scriptvar = localdata.getVar('pkg_%s' % script, True)
+            if not scriptvar:
+                continue
+            if script == 'preinst':
+                spec_scriptlets_bottom.append('%%pre -n %s' % splitname)
+            elif script == 'postinst':
+                spec_scriptlets_bottom.append('%%post -n %s' % splitname)
+            elif script == 'prerm':
+                spec_scriptlets_bottom.append('%%preun -n %s' % splitname)
+                scriptvar = wrap_uninstall(scriptvar)
+            elif script == 'postrm':
+                spec_scriptlets_bottom.append('%%postun -n %s' % splitname)
+                scriptvar = wrap_uninstall(scriptvar)
+            spec_scriptlets_bottom.append('# %s - %s' % (splitname, script))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             spec_scriptlets_bottom.append(scriptvar)
             spec_scriptlets_bottom.append('')
 
@@ -967,6 +1585,7 @@ python write_specfile () {
 
     print_deps(srcdepends, "BuildRequires", spec_preamble_top, d)
     print_deps(srcrdepends, "Requires", spec_preamble_top, d)
+<<<<<<< HEAD
     if srcrpreinst:
         print_deps(srcrdepends, "Requires(pre)", spec_preamble_top, d)
     if srcrpostinst:
@@ -976,6 +1595,8 @@ python write_specfile () {
     if srcrpostrm:
         print_deps(srcrdepends, "Requires(postun)", spec_preamble_top, d)
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     # Suggests in RPM are like recommends in OE-core!
     print_deps(srcrrecommends, "Suggests", spec_preamble_top, d)
     # While there is no analog for suggests... (So call them recommends for now)
@@ -1000,6 +1621,7 @@ python write_specfile () {
     spec_preamble_top.append('')
 
     spec_preamble_top.append('%description')
+<<<<<<< HEAD
     append_description(spec_preamble_top, srcdescription)
 
     spec_preamble_top.append('')
@@ -1024,12 +1646,44 @@ python write_specfile () {
         spec_scriptlets_top.append('%postun')
         spec_scriptlets_top.append('# %s - postrm' % srcname)
         scriptvar = wrap_uninstall(srcrpostrm)
+=======
+    dedent_text = textwrap.dedent(srcdescription).strip()
+    spec_preamble_top.append('%s' % textwrap.fill(dedent_text, width=75))
+
+    spec_preamble_top.append('')
+
+    if srcpreinst:
+        spec_scriptlets_top.append('%pre')
+        spec_scriptlets_top.append('# %s - preinst' % srcname)
+        spec_scriptlets_top.append(srcpreinst)
+        spec_scriptlets_top.append('')
+    if srcpostinst:
+        spec_scriptlets_top.append('%post')
+        spec_scriptlets_top.append('# %s - postinst' % srcname)
+        spec_scriptlets_top.append(srcpostinst)
+        spec_scriptlets_top.append('')
+    if srcprerm:
+        spec_scriptlets_top.append('%preun')
+        spec_scriptlets_top.append('# %s - prerm' % srcname)
+        scriptvar = wrap_uninstall(srcprerm)
+        spec_scriptlets_top.append(scriptvar)
+        spec_scriptlets_top.append('')
+    if srcpostrm:
+        spec_scriptlets_top.append('%postun')
+        spec_scriptlets_top.append('# %s - postrm' % srcname)
+        scriptvar = wrap_uninstall(srcpostrm)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         spec_scriptlets_top.append(scriptvar)
         spec_scriptlets_top.append('')
 
     # Write the SPEC file
     try:
+<<<<<<< HEAD
         specfile = open(outspecfile, 'w')
+=======
+        from __builtin__ import file
+        specfile = file(outspecfile, 'w')
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     except OSError:
         raise bb.build.FuncFailed("unable to open spec file for writing.")
 
@@ -1066,7 +1720,11 @@ python do_package_rpm () {
             clean_licenses = get_licenses(d)
             pkgwritesrpmdir = bb.data.expand('${PKGWRITEDIRSRPM}/${PACKAGE_ARCH_EXTEND}', d)
             pkgwritesrpmdir = pkgwritesrpmdir + '/' + clean_licenses
+<<<<<<< HEAD
             bb.utils.mkdirhier(pkgwritesrpmdir)
+=======
+            bb.mkdirhier(pkgwritesrpmdir)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             os.chmod(pkgwritesrpmdir, 0755)
             return pkgwritesrpmdir
             
@@ -1079,10 +1737,18 @@ python do_package_rpm () {
         return name
 
     workdir = d.getVar('WORKDIR', True)
+<<<<<<< HEAD
     tmpdir = d.getVar('TMPDIR', True)
     pkgd = d.getVar('PKGD', True)
     pkgdest = d.getVar('PKGDEST', True)
     if not workdir or not pkgd or not tmpdir:
+=======
+    outdir = d.getVar('DEPLOY_DIR_IPK', True)
+    tmpdir = d.getVar('TMPDIR', True)
+    pkgd = d.getVar('PKGD', True)
+    pkgdest = d.getVar('PKGDEST', True)
+    if not workdir or not outdir or not pkgd or not tmpdir:
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         bb.error("Variables incorrectly set, unable to package")
         return
 
@@ -1092,6 +1758,7 @@ python do_package_rpm () {
         return
 
     # Construct the spec file...
+<<<<<<< HEAD
     # If the spec file already exist, and has not been stored into 
     # pseudo's files.db, it maybe cause rpmbuild src.rpm fail,
     # so remove it before doing rpmbuild src.rpm.
@@ -1105,6 +1772,76 @@ python do_package_rpm () {
     perfiledeps = (d.getVar("MERGEPERFILEDEPS", True) or "0") == "0"
     if perfiledeps:
         outdepends, outprovides = write_rpm_perfiledata(srcname, d)
+=======
+    srcname    = strip_multilib(d.getVar('PN', True), d)
+    outspecfile = workdir + "/" + srcname + ".spec"
+    d.setVar('OUTSPECFILE', outspecfile)
+    bb.build.exec_func('write_specfile', d)
+
+    # Construct per file dependencies file
+    def dump_filerdeps(varname, outfile, d):
+        outfile.write("#!/usr/bin/env python\n\n")
+        outfile.write("# Dependency table\n")
+        outfile.write('deps = {\n')
+        for pkg in packages.split():
+            dependsflist_key = 'FILE' + varname + 'FLIST' + "_" + pkg
+            dependsflist = (d.getVar(dependsflist_key, True) or "")
+            for dfile in dependsflist.split():
+                key = "FILE" + varname + "_" + dfile + "_" + pkg
+                depends_dict = bb.utils.explode_dep_versions(d.getVar(key, True) or "")
+                file = dfile.replace("@underscore@", "_")
+                file = file.replace("@closebrace@", "]")
+                file = file.replace("@openbrace@", "[")
+                file = file.replace("@tab@", "\t")
+                file = file.replace("@space@", " ")
+                file = file.replace("@at@", "@")
+                outfile.write('"' + pkgd + file + '" : "')
+                for dep in depends_dict:
+                    ver = depends_dict[dep]
+                    if dep and ver:
+                        ver = ver.replace("(","")
+                        ver = ver.replace(")","")
+                        outfile.write(dep + " " + ver + " ")
+                    else:
+                        outfile.write(dep + " ")
+                outfile.write('",\n')
+        outfile.write('}\n\n')
+        outfile.write("import sys\n")
+        outfile.write("while 1:\n")
+        outfile.write("\tline = sys.stdin.readline().strip()\n")
+        outfile.write("\tif not line:\n")
+        outfile.write("\t\tsys.exit(0)\n")
+        outfile.write("\tif line in deps:\n")
+        outfile.write("\t\tprint(deps[line] + '\\n')\n")
+
+    # OE-core dependencies a.k.a. RPM requires
+    outdepends = workdir + "/" + srcname + ".requires"
+
+    try:
+        from __builtin__ import file
+        dependsfile = file(outdepends, 'w')
+    except OSError:
+        raise bb.build.FuncFailed("unable to open spec file for writing.")
+
+    dump_filerdeps('RDEPENDS', dependsfile, d)
+
+    dependsfile.close()
+    os.chmod(outdepends, 0755)
+
+    # OE-core / RPM Provides
+    outprovides = workdir + "/" + srcname + ".provides"
+
+    try:
+        from __builtin__ import file
+        providesfile = file(outprovides, 'w')
+    except OSError:
+        raise bb.build.FuncFailed("unable to open spec file for writing.")
+
+    dump_filerdeps('RPROVIDES', providesfile, d)
+
+    providesfile.close()
+    os.chmod(outprovides, 0755)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     # Setup the rpmbuild arguments...
     rpmbuild = d.getVar('RPMBUILD', True)
@@ -1119,7 +1856,11 @@ python do_package_rpm () {
     pkgwritedir = d.expand('${PKGWRITEDIRRPM}/${PACKAGE_ARCH_EXTEND}')
     pkgarch = d.expand('${PACKAGE_ARCH_EXTEND}${TARGET_VENDOR}-${TARGET_OS}')
     magicfile = d.expand('${STAGING_DIR_NATIVE}${datadir_native}/misc/magic.mgc')
+<<<<<<< HEAD
     bb.utils.mkdirhier(pkgwritedir)
+=======
+    bb.mkdirhier(pkgwritedir)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     os.chmod(pkgwritedir, 0755)
 
     cmd = rpmbuild
@@ -1127,12 +1868,17 @@ python do_package_rpm () {
     cmd = cmd + " --define '_topdir " + workdir + "' --define '_rpmdir " + pkgwritedir + "'"
     cmd = cmd + " --define '_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm'"
     cmd = cmd + " --define '_use_internal_dependency_generator 0'"
+<<<<<<< HEAD
     if perfiledeps:
         cmd = cmd + " --define '__find_requires " + outdepends + "'"
         cmd = cmd + " --define '__find_provides " + outprovides + "'"
     else:
         cmd = cmd + " --define '__find_requires %{nil}'"
         cmd = cmd + " --define '__find_provides %{nil}'"
+=======
+    cmd = cmd + " --define '__find_requires " + outdepends + "'"
+    cmd = cmd + " --define '__find_provides " + outprovides + "'"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     cmd = cmd + " --define '_unpackaged_files_terminate_build 0'"
     cmd = cmd + " --define 'debug_package %{nil}'"
     cmd = cmd + " --define '_rpmfc_magic_path " + magicfile + "'"
@@ -1160,6 +1906,10 @@ python () {
         deps = ' rpm-native:do_populate_sysroot virtual/fakeroot-native:do_populate_sysroot'
         d.appendVarFlag('do_package_write_rpm', 'depends', deps)
         d.setVarFlag('do_package_write_rpm', 'fakeroot', 1)
+<<<<<<< HEAD
+=======
+        d.setVarFlag('do_package_write_rpm_setscene', 'fakeroot', 1)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 SSTATETASKS += "do_package_write_rpm"
@@ -1181,10 +1931,17 @@ python do_package_write_rpm () {
 }
 
 do_package_write_rpm[dirs] = "${PKGWRITEDIRRPM}"
+<<<<<<< HEAD
 do_package_write_rpm[cleandirs] = "${PKGWRITEDIRRPM}"
 do_package_write_rpm[umask] = "022"
 addtask package_write_rpm before do_package_write after do_packagedata do_package
 
 PACKAGEINDEXES += "[ ! -e ${DEPLOY_DIR_RPM} ] || package_update_index_rpm;"
+=======
+do_package_write_rpm[umask] = "022"
+addtask package_write_rpm before do_package_write after do_package
+
+PACKAGEINDEXES += "package_update_index_rpm; [ ! -e ${DEPLOY_DIR_RPM} ] || createrepo ${DEPLOY_DIR_RPM};"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PACKAGEINDEXDEPS += "rpm-native:do_populate_sysroot"
 PACKAGEINDEXDEPS += "createrepo-native:do_populate_sysroot"

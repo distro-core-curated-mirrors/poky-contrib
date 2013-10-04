@@ -4,7 +4,11 @@ DEPENDS = "virtual/libx11 xdmcp xau"
 
 SRC_URI = "file://pong-clock-no-flicker.c"
 
+<<<<<<< HEAD
 LIC_FILES_CHKSUM = "file://pong-clock-no-flicker.c;beginline=1;endline=23;md5=dd248d50f73f746d1ee78586b0b2ebd3"
+=======
+LIC_FILES_CHKSUM = "file://pong-clock-no-flicker.c;startline=0;endline=23;md5=dd248d50f73f746d1ee78586b0b2ebd3"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 S = "${WORKDIR}"
 

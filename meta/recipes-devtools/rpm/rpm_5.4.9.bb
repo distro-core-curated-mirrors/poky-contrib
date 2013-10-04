@@ -43,7 +43,11 @@ LICENSE = "LGPLv2.1"
 LIC_FILES_CHKSUM = "file://COPYING.LIB;md5=2d5025d4aa3495befef8f17206a5b0a1"
 
 DEPENDS = "libpcre attr acl popt ossp-uuid file bison-native"
+<<<<<<< HEAD
 PR = "r63"
+=======
+PR = "r52"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # rpm2cpio is a shell script, which is part of the rpm src.rpm.  It is needed
 # in order to extract the distribution SRPM into a format we can extract...
@@ -80,6 +84,7 @@ SRC_URI = "http://www.rpm5.org/files/rpm/rpm-5.4/rpm-5.4.9-0.20120508.src.rpm;ex
 	   file://makefile-am-exec-hook.patch \
 	   file://rpm-stub-out-git_strerror.patch \
 	   file://rpm-db_buffer_small.patch \
+<<<<<<< HEAD
 	   file://rpm-py-init.patch \
 	   file://python-rpm-rpmsense.patch \
 	   file://rpm-reloc-macros.patch \
@@ -95,6 +100,10 @@ SRC_URI = "http://www.rpm5.org/files/rpm/rpm-5.4/rpm-5.4.9-0.20120508.src.rpm;ex
 # to process certain package feeds.
 #SRC_URI += "file://rpm-debug-platform.patch"
 
+=======
+	  "
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 SRC_URI[md5sum] = "60d56ace884340c1b3fcac6a1d58e768"
 SRC_URI[sha256sum] = "bac7cc5bd9d0e8262fdc0099349924608da8f680f5cb243751f696552239dde8"
 
@@ -104,13 +113,21 @@ acpaths = "-I ${S}/db/dist/aclocal -I ${S}/db/dist/aclocal_java"
 
 # Specify the default rpm macros in terms of adjustable variables
 rpm_macros = "%{_usrlibrpm}/macros:%{_usrlibrpm}/poky/macros:%{_usrlibrpm}/poky/%{_target}/macros:%{_etcrpm}/macros.*:%{_etcrpm}/macros:%{_etcrpm}/%{_target}/macros:~/.oerpmmacros"
+<<<<<<< HEAD
 rpm_macros_class-native = "%{_usrlibrpm}/macros:%{_usrlibrpm}/poky/macros:%{_usrlibrpm}/poky/%{_target}/macros:~/.oerpmmacros"
+=======
+rpm_macros_virtclass-native = "%{_usrlibrpm}/macros:%{_usrlibrpm}/poky/macros:%{_usrlibrpm}/poky/%{_target}/macros:~/.oerpmmacros"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # sqlite lua tcl augeas nss gcrypt neon xz xar keyutils perl selinux
 
 # Note: perl and sqlite w/o db specified does not currently work.
 #       tcl, augeas, nss, gcrypt, xar and keyutils support is untested.
+<<<<<<< HEAD
 PACKAGECONFIG_class-native ??= "db bzip2 zlib beecrypt openssl libelf python"
+=======
+PACKAGECONFIG_virtclass-native ??= "db bzip2 zlib beecrypt openssl libelf python"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PACKAGECONFIG ??= "db bzip2 zlib beecrypt openssl libelf python"
 
 PACKAGECONFIG[bzip2] = "--with-bzip2,--without-bzip2,bzip2,"
@@ -120,7 +137,11 @@ PACKAGECONFIG[xar] = "--with-xar,--without-xar,xar,"
 
 WITH_PYTHON = " --with-python=${PYTHON_BASEVERSION} \
 		--with-python-inc-dir=${STAGING_INCDIR}/python${PYTHON_BASEVERSION} \
+<<<<<<< HEAD
 		--with-python-lib-dir=${libdir}/python${PYTHON_BASEVERSION}/site-packages \
+=======
+		--with-python-lib-dir=${libdir}/python${PYTHON_BASEVERSION} \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		--without-pythonembed"
 PACKAGECONFIG[python] = "${WITH_PYTHON},--without-python,python,"
 
@@ -156,10 +177,17 @@ PACKAGECONFIG[neon] = "${WITH_NEON},${WITHOUT_NEON},neon expat,"
 PACKAGECONFIG[lua] = "--with-lua,--without-lua,expat,"
 PACKAGECONFIG[tcl] = "--with-tcl,--without-tcl,tcl,"
 
+<<<<<<< HEAD
 PACKAGECONFIG[augeas] = "--with-augeas,--without-augeas,augeas,"
 
 EXTRA_OECONF += "--verbose \
 		--sysconfdir=${sysconfdir} \
+=======
+PACAKGECONFIG[augeas] = "--with-augeas,--without-augeas,augeas,"
+
+EXTRA_OECONF += "--verbose \
+		--sysconfdir=/etc \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		--with-file \
 		--with-path-magic=%{_usrlibrpm}/../../share/misc/magic.mgc \
 		--with-syck=internal \
@@ -202,7 +230,11 @@ CFLAGS_append = " -DRPM_VENDOR_WINDRIVER -DRPM_VENDOR_POKY -DRPM_VENDOR_OE"
 
 LDFLAGS_append_libc-uclibc = "-lrt -lpthread"
 
+<<<<<<< HEAD
 PACKAGES = "${PN}-dbg ${PN} ${PN}-doc ${PN}-libs ${PN}-dev ${PN}-staticdev ${PN}-common ${PN}-build python-rpm-dbg python-rpm-staticdev python-rpm-dev python-rpm perl-module-rpm perl-module-rpm-dev ${PN}-locale"
+=======
+PACKAGES = "${PN}-dbg ${PN} ${PN}-doc ${PN}-libs ${PN}-dev ${PN}-staticdev ${PN}-common ${PN}-build python-rpm-dbg python-rpm-staticdev python-rpm perl-module-rpm perl-module-rpm-dev ${PN}-locale"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SOLIBS = "5.4.so"
 
@@ -214,6 +246,10 @@ FILES_${PN} =  "${bindir}/rpm \
 		${libdir}/rpm/tgpg \
 		${libdir}/rpm/macros \
 		${libdir}/rpm/rpmpopt \
+<<<<<<< HEAD
+=======
+		${libdir}/rpm/rpmdb_loadcvt \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		${libdir}/rpm/rpm2cpio \
 		${libdir}/rpm/vcheck \
 		${libdir}/rpm/helpers \
@@ -226,6 +262,10 @@ FILES_${PN} =  "${bindir}/rpm \
 		${libdir}/rpm/bin/wget \
 		/var/lib/rpm \
 		/var/cache/rpm \
+<<<<<<< HEAD
+=======
+		/var/volatile/cache/rpm \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		"
 
 FILES_${PN}-dbg += "${libdir}/rpm/.debug \
@@ -234,7 +274,11 @@ FILES_${PN}-dbg += "${libdir}/rpm/.debug \
 
 FILES_${PN}-common = "${bindir}/rpm2cpio \
 		${bindir}/gendiff \
+<<<<<<< HEAD
 		${sysconfdir}/rpm \
+=======
+		/etc/rpm \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		/var/spool/repackage \
 		"
 
@@ -246,8 +290,11 @@ FILES_${PN}-libs = "${libdir}/librpm-*.so \
 		${libdir}/librpmbuild-*.so \
 		"
 
+<<<<<<< HEAD
 RDEPENDS_${PN}-build += "bash"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_${PN}-build = "${prefix}/src/rpm \
 		${bindir}/rpmbuild \
 		${libdir}/rpm/brp-* \
@@ -311,6 +358,7 @@ FILES_${PN}-build = "${prefix}/src/rpm \
 		${libdir}/rpm/vpkg-provides2.sh \
 		${libdir}/rpm/perfile_rpmdeps.sh \
 		"
+<<<<<<< HEAD
 RDEPENDS_${PN} = "base-files run-postinsts"
 RDEPENDS_${PN}_class-native = ""
 RDEPENDS_${PN}-build = "file"
@@ -321,6 +369,15 @@ FILES_python-rpm-dbg = "${libdir}/python*/site-packages/rpm/.debug/_*"
 FILES_python-rpm-dev = "${libdir}/python*/site-packages/rpm/*.la"
 FILES_python-rpm-staticdev = "${libdir}/python*/site-packages/rpm/*.a"
 FILES_python-rpm = "${libdir}/python*/site-packages/rpm"
+=======
+RDEPENDS_${PN} = "base-files"
+RDEPENDS_${PN}_class-native = ""
+RDEPENDS_${PN}-build = "file"
+
+FILES_python-rpm-dbg = "${libdir}/python*/rpm/.debug/_*"
+FILES_python-rpm-staticdev = "${libdir}/python*/rpm/*.a"
+FILES_python-rpm = "${libdir}/python*/rpm"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 FILES_perl-module-rpm = "${libdir}/perl/*/* \
 		"
@@ -328,8 +385,11 @@ FILES_perl-module-rpm = "${libdir}/perl/*/* \
 FILES_perl-module-rpm-dev = "${prefix}/share/man/man3/RPM* \
 		"
 
+<<<<<<< HEAD
 RDEPENDS_${PN}-dev += "bash"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_${PN}-dev = "${includedir}/rpm \
 		${libdir}/librpm.la \
 		${libdir}/librpm.so \
@@ -345,7 +405,10 @@ FILES_${PN}-dev = "${includedir}/rpm \
 		${libdir}/librpmbuild.so \
 		${libdir}/rpm/lib/liblua.la \
 		${libdir}/pkgconfig/rpm.pc \
+<<<<<<< HEAD
 		${libdir}/rpm/rpmdb_loadcvt \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		"
 
 FILES_${PN}-staticdev = " \
@@ -360,6 +423,7 @@ FILES_${PN}-staticdev = " \
 
 do_configure() {
 	# Disable tests!
+<<<<<<< HEAD
 	echo "all:" > ${S}/tests/Makefile.am
 	sed -e 's/@__MKDIR_P@/%{__mkdir} -p/' -i ${S}/macros/macros.in
 
@@ -370,16 +434,34 @@ do_configure() {
 	    -e 's/pkg-config uuid/pkg-config ossp-uuid/g' -i ${S}/configure
 
 	export varprefix=${localstatedir}
+=======
+	echo "all:" > tests/Makefile.am
+
+	./autogen.sh
+
+	# NASTY hack to make sure configure files the right pkg-config file...
+	sed -e 's/pkg-config --exists uuid/pkg-config --exists ossp-uuid/g' \
+	    -e 's/pkg-config uuid/pkg-config ossp-uuid/g' -i configure
+
+	export varprefix=${localstatedir}
+	export CC_FOR_BUILD="${BUILD_CC}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	oe_runconf
 }
 
 do_install_append() {
 	sed -i -e 's,%__check_files,#%%__check_files,' ${D}/${libdir}/rpm/macros
 	sed -i -e 's,%__scriptlet_requires,#%%__scriptlet_requires,' ${D}/${libdir}/rpm/macros
+<<<<<<< HEAD
 	sed -i -e 's,%__perl_provides,#%%__perl_provides,' ${D}/${libdir}/rpm/macros ${D}/${libdir}/rpm/macros.d/*
 	sed -i -e 's,%__perl_requires,#%%__perl_requires,' ${D}/${libdir}/rpm/macros ${D}/${libdir}/rpm/macros.d/*
 	sed -i -e 's,%_repackage_all_erasures[^_].*,%_repackage_all_erasures 0,' ${D}/${libdir}/rpm/macros
 	sed -i -e 's,^#%_openall_before_chroot.*,%_openall_before_chroot\t1,' ${D}/${libdir}/rpm/macros
+=======
+	sed -i -e 's,%__perl_provides,#%%__perl_provides,' ${D}/${libdir}/rpm/macros
+	sed -i -e 's,%__perl_requires,#%%__perl_requires,' ${D}/${libdir}/rpm/macros
+	sed -i -e 's,%_repackage_all_erasures[^_].*,%_repackage_all_erasures 0,' ${D}/${libdir}/rpm/macros
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	# Enable Debian style arbitrary tags...
 	sed -i -e 's,%_arbitrary_tags[^_].*,%_arbitrary_tags %{_arbitrary_tags_debian},' ${D}/${libdir}/rpm/macros
@@ -448,6 +530,7 @@ do_install_append() {
 	rm -f ${D}/${libdir}/rpm/bin/pom2spec
 
 	rm -rf ${D}/var/lib/wdj ${D}/var/cache/wdj
+<<<<<<< HEAD
 	rm -f ${D}/${libdir}/rpm/bin/api-sanity-checker.pl
 
 }
@@ -479,6 +562,42 @@ do_install_append_class-native() {
 			RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm} \
 			RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
 	done
+=======
+	rm -f ${D}/usr/lib/rpm/bin/api-sanity-checker.pl
+}
+
+do_install_append_virtclass-native() {
+        create_wrapper ${D}/${bindir}/rpm \
+		RPM_USRLIBRPM=${STAGING_LIBDIR_NATIVE}/rpm \
+		RPM_ETCRPM=${STAGING_ETCDIR_NATIVE}/rpm \
+		RPM_LOCALEDIRRPM=${STAGING_DATADIR_NATIVE}/locale
+
+        create_wrapper ${D}/${bindir}/rpm2cpio \
+		RPM_USRLIBRPM=${STAGING_LIBDIR_NATIVE}/rpm \
+		RPM_ETCRPM=${STAGING_ETCDIR_NATIVE}/rpm \
+		RPM_LOCALEDIRRPM=${STAGING_DATADIR_NATIVE}/locale
+
+        create_wrapper ${D}/${bindir}/rpmbuild \
+		RPM_USRLIBRPM=${STAGING_LIBDIR_NATIVE}/rpm \
+		RPM_ETCRPM=${STAGING_ETCDIR_NATIVE}/rpm \
+		RPM_LOCALEDIRRPM=${STAGING_DATADIR_NATIVE}/locale
+
+        create_wrapper ${D}/${bindir}/rpmconstant \
+		RPM_USRLIBRPM=${STAGING_LIBDIR_NATIVE}/rpm \
+		RPM_ETCRPM=${STAGING_ETCDIR_NATIVE}/rpm \
+		RPM_LOCALEDIRRPM=${STAGING_DATADIR_NATIVE}/locale
+
+	for rpm_binary in ${D}/${libdir}/rpm/bin/rpm*; do
+        	create_wrapper $rpm_binary
+			RPM_USRLIBRPM=${STAGING_LIBDIR_NATIVE}/rpm \
+			RPM_ETCRPM=${STAGING_ETCDIR_NATIVE}/rpm \
+			RPM_LOCALEDIRRPM=${STAGING_DATADIR_NATIVE}/locale
+	done
+
+	# Adjust popt macros to match...
+	cat ${D}/${libdir}/rpm/rpmpopt | sed -e "s,^\(rpm[^ 	]*\)\([ 	]\),\1.real\2," > ${D}/${libdir}/rpm/rpmpopt.new
+	mv ${D}/${libdir}/rpm/rpmpopt.new ${D}/${libdir}/rpm/rpmpopt
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 BBCLASSEXTEND = "native"

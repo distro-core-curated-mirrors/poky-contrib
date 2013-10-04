@@ -10,12 +10,17 @@ SECTION = "libs"
 LICENSE = "LGPLv2.0+"
 
 X11DEPENDS = "virtual/libx11 libxft"
+<<<<<<< HEAD
 DEPENDS = "glib-2.0 fontconfig freetype zlib virtual/libiconv cairo harfbuzz"
+=======
+DEPENDS = "glib-2.0 fontconfig freetype zlib virtual/libiconv cairo elfutils"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PACKAGECONFIG ??= "${@base_contains('DISTRO_FEATURES', 'x11', 'x11', '', d)}"
 PACKAGECONFIG[x11] = "--with-x,--without-x,${X11DEPENDS}"
 
 BBCLASSEXTEND = "native"
+<<<<<<< HEAD
 DEPENDS_class-native = "glib-2.0-native cairo-native harfbuzz-native"
 
 PACKAGES_DYNAMIC += "^pango-module-.*"
@@ -23,6 +28,15 @@ PACKAGES_DYNAMIC += "^pango-module-.*"
 RRECOMMENDS_${PN} = "pango-module-basic-fc"
 
 inherit gnomebase gtk-doc qemu
+=======
+DEPENDS_virtclass-native = "glib-2.0-native cairo-native"
+
+PACKAGES_DYNAMIC += "^pango-module-.*"
+
+RRECOMMENDS_${PN} = "${@base_contains('DISTRO_FEATURES', 'x11', 'pango-module-basic-x', '', d)} pango-module-basic-fc" 
+
+inherit gnomebase gtk-doc
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # Create a pango-modules package
 ALLOW_EMPTY_${BPN}-modules = "1"
 PACKAGES += "${BPN}-modules"
@@ -61,12 +75,26 @@ if [ "x$D" != "x" ]; then
 fi
 }
 
+<<<<<<< HEAD
 do_install_append () {
 	if [ "${MLPREFIX}" != "" ]; then
 		mv ${D}/${bindir}/pango-querymodules ${D}/${bindir}/${MLPREFIX}pango-querymodules 
 	fi
 }
 
+=======
+if ! [ -e $D${sysconfdir}/pango ] ; then
+	mkdir -p $D${sysconfdir}/pango
+fi
+}
+
+do_install_append () {
+	if [ "${MLPREFIX}" != "" ]; then
+		mv ${D}/${bindir}/pango-querymodules ${D}/${bindir}/${MLPREFIX}pango-querymodules 
+	fi
+}
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 python populate_packages_prepend () {
     prologue = d.getVar("postinst_prologue", True)

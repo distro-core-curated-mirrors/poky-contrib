@@ -13,7 +13,11 @@ DEPENDS = "flex-native bison-native iptables"
 
 inherit update-alternatives
 
+<<<<<<< HEAD
 EXTRA_OEMAKE = "CC='${CC}' KERNEL_INCLUDE=${STAGING_INCDIR} DOCDIR=${docdir}/iproute2 SUBDIRS='lib tc ip' SBINDIR='${base_sbindir}' LIBDIR='${libdir}'"
+=======
+EXTRA_OEMAKE = "CC='${CC}' KERNEL_INCLUDE=${STAGING_KERNEL_DIR}/include DOCDIR=${docdir}/iproute2 SUBDIRS='lib tc ip' SBINDIR='${base_sbindir}' LIBDIR='${libdir}'"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 do_install () {
     oe_runmake DESTDIR=${D} install
@@ -31,7 +35,11 @@ FILES_${PN}-dbg += "${libdir}/tc/.debug"
 
 ALTERNATIVE_${PN} = "ip"
 ALTERNATIVE_TARGET[ip] = "${base_sbindir}/ip.${BPN}"
+<<<<<<< HEAD
 ALTERNATIVE_LINK_NAME[ip] = "${base_sbindir}/ip"
+=======
+ALTERNATIVE_LINK_NAME[ip] = "${base_bindir}/ip"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ALTERNATIVE_PRIORITY = "100"
 
 PARALLEL_MAKE = ""

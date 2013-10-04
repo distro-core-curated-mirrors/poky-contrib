@@ -4,13 +4,21 @@ DEFAULTTUNE ?= "sh4"
 require conf/machine/include/sh/arch-sh.inc
 
 TUNEVALID[sh4] = "Enable SH4 optimizations"
+<<<<<<< HEAD
 TUNE_CCARGS .= "${@bb.utils.contains("TUNE_FEATURES", "sh4", " -m4", "", d)}"
+=======
+TUNE_CCARGS += "${@bb.utils.contains("TUNE_FEATURES", "sh4", "-m4", "", d)}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # NOTE: If you want to optimize to sh4a, conf/machine/include/tune-sh4a.inc.
 # But it is not compatible for sh4.
 # The binary optimized by m4a doesn't operate on sh4. It works on sh4a only.
 TUNEVALID[sh4a] = "Enable SH4a optimizations"
+<<<<<<< HEAD
 TUNE_CCARGS .= "${@bb.utils.contains("TUNE_FEATURES", "sh4a", " -m4a", "", d)}"
+=======
+TUNE_CCARGS += "${@bb.utils.contains("TUNE_FEATURES", "sh4a", "-m4a", "", d)}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 AVAILTUNES += "sh4 sh4eb sh4a sh4aeb"
 TUNE_FEATURES_tune-sh4 = "sh4"

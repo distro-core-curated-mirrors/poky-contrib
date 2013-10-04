@@ -33,6 +33,10 @@ RDEPENDS_${PN}-base = "\
     matchbox-keyboard \
     matchbox-keyboard-applet \
     matchbox-keyboard-im \
+<<<<<<< HEAD
+=======
+    matchbox-stroke \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     matchbox-config-gtk \
     xcursor-transparent-theme \
     sato-icon-theme \
@@ -41,7 +45,10 @@ RDEPENDS_${PN}-base = "\
     shutdown-desktop \
     libsdl \
     ${NETWORK_MANAGER} \
+<<<<<<< HEAD
     udev-extraconf \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     "
 
 # pcmanfm doesn't work on mips
@@ -49,10 +56,18 @@ FILEMANAGER ?= "pcmanfm"
 FILEMANAGER_mips ?= ""
 
 WEB ?= ""
+<<<<<<< HEAD
 #WEB = "midori"
 
 SUMMARY_${PN}-apps = "Sato desktop - applications"
 RDEPENDS_${PN}-apps = "\
+=======
+#WEB = "web-webkit"
+
+SUMMARY_${PN}-apps = "Sato desktop - applications"
+RDEPENDS_${PN}-apps = "\
+    gthumb \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     leafpad \
     gaku \
     x11vnc \

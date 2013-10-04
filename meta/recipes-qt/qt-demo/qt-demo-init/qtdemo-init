@@ -12,13 +12,21 @@ case "$1" in
   start)
 	echo "Starting qtdemo"
 	if [ -f /etc/profile.d/tslib.sh ]; then
+<<<<<<< HEAD
 		. /etc/profile.d/tslib.sh
+=======
+		source /etc/profile.d/tslib.sh
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	fi
 	if [ -e "$TSLIB_TSDEVICE" ]; then
 		if [ ! -f /etc/pointercal ]; then
 			/usr/bin/ts_calibrate
 		fi
+<<<<<<< HEAD
 		if [ "$QTDEMO" = qtdemo ]; then
+=======
+		if [ "$QTDEMO" == qtdemo ]; then
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 			Xorg &
 			export DISPLAY=:0
 			$QTDEMO &
@@ -26,7 +34,11 @@ case "$1" in
 			QWS_MOUSE_PROTO=tslib:$TSLIB_TSDEVICE $QTDEMO &
 		fi
 	else
+<<<<<<< HEAD
 		if [ "$QTDEMO" = qtdemo ]; then
+=======
+		if [ "$QTDEMO" == qtdemo ]; then
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 			Xorg &
 			export DISPLAY=:0
 		fi
@@ -35,7 +47,11 @@ case "$1" in
 	;;
   stop)
 	echo "Stopping qtdemo"
+<<<<<<< HEAD
 	if [ "$QTDEMO" = qtdemo ]; then
+=======
+	if [ "$QTDEMO" == qtdemo ]; then
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		killall Xorg
 		killall qtdemo
 	else

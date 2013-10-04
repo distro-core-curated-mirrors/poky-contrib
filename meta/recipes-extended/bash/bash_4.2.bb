@@ -4,7 +4,11 @@ require bash.inc
 LICENSE = "GPLv3+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504"
 
+<<<<<<< HEAD
 PR = "r6"
+=======
+PR = "r5"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "${GNU_MIRROR}/bash/${BPN}-${PV}.tar.gz;name=tarball \
            ${GNU_MIRROR}/bash/bash-4.2-patches/bash42-001;apply=yes;striplevel=0;name=patch001 \
@@ -18,10 +22,13 @@ SRC_URI = "${GNU_MIRROR}/bash/${BPN}-${PV}.tar.gz;name=tarball \
            ${GNU_MIRROR}/bash/bash-4.2-patches/bash42-009;apply=yes;striplevel=0;name=patch009 \
            ${GNU_MIRROR}/bash/bash-4.2-patches/bash42-010;apply=yes;striplevel=0;name=patch010 \
            file://execute_cmd.patch;striplevel=0 \
+<<<<<<< HEAD
            file://mkbuiltins_have_stringize.patch \
            file://build-tests.patch \
            file://test-output.patch \
            file://run-ptest \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            "
 
 SRC_URI[tarball.md5sum] = "3fb927c7c33022f1c327f14a81c0d4b0"

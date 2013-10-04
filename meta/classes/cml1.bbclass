@@ -9,11 +9,18 @@ addtask configure after do_unpack do_patch before do_compile
 
 inherit terminal
 
+<<<<<<< HEAD
 OE_TERMINAL_EXPORTS += "HOST_EXTRACFLAGS HOSTLDFLAGS HOST_LOADLIBES TERMINFO"
 HOST_EXTRACFLAGS = "${BUILD_CFLAGS} ${BUILD_LDFLAGS}"
 HOSTLDFLAGS = "${BUILD_LDFLAGS}"
 HOST_LOADLIBES = "-lncurses"
 TERMINFO = "${STAGING_DATADIR_NATIVE}/terminfo"
+=======
+OE_TERMINAL_EXPORTS += "HOST_EXTRACFLAGS HOSTLDFLAGS HOST_LOADLIBES"
+HOST_EXTRACFLAGS = "${BUILD_CFLAGS} ${BUILD_LDFLAGS}"
+HOSTLDFLAGS = "${BUILD_LDFLAGS}"
+HOST_LOADLIBES = "-lncurses"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 python do_menuconfig() {
     try:

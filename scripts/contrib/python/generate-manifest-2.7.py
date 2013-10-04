@@ -272,7 +272,11 @@ if __name__ == "__main__":
     m.addPackage( "${PN}-image", "Python Graphical Image Handling", "${PN}-core",
     "colorsys.* imghdr.* lib-dynload/imageop.so lib-dynload/rgbimg.so" )
 
+<<<<<<< HEAD
     m.addPackage( "${PN}-io", "Python Low-Level I/O", "${PN}-core ${PN}-math ${PN}-textutils",
+=======
+    m.addPackage( "${PN}-io", "Python Low-Level I/O", "${PN}-core ${PN}-math",
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     "lib-dynload/_socket.so lib-dynload/_io.so lib-dynload/_ssl.so lib-dynload/select.so lib-dynload/termios.so lib-dynload/cStringIO.so " +
     "pipes.* socket.* ssl.* tempfile.* StringIO.* io.* _pyio.*" )
 
@@ -291,7 +295,11 @@ if __name__ == "__main__":
     m.addPackage( "${PN}-mailbox", "Python Mailbox Format Support", "${PN}-core ${PN}-mime",
     "mailbox.*" )
 
+<<<<<<< HEAD
     m.addPackage( "${PN}-math", "Python Math Support", "${PN}-core ${PN}-crypt",
+=======
+    m.addPackage( "${PN}-math", "Python Math Support", "${PN}-core",
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     "lib-dynload/cmath.so lib-dynload/math.so lib-dynload/_random.so random.* sets.*" )
 
     m.addPackage( "${PN}-mime", "Python MIME Handling APIs", "${PN}-core ${PN}-io",
@@ -300,7 +308,11 @@ if __name__ == "__main__":
     m.addPackage( "${PN}-mmap", "Python Memory-Mapped-File Support", "${PN}-core ${PN}-io",
     "lib-dynload/mmap.so " )
 
+<<<<<<< HEAD
     m.addPackage( "${PN}-multiprocessing", "Python Multiprocessing Support", "${PN}-core ${PN}-io ${PN}-lang ${PN}-pickle ${PN}-threading ${PN}-ctypes",
+=======
+    m.addPackage( "${PN}-multiprocessing", "Python Multiprocessing Support", "${PN}-core ${PN}-io ${PN}-lang",
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     "lib-dynload/_multiprocessing.so multiprocessing" ) # package
 
     m.addPackage( "${PN}-netclient", "Python Internet Protocol Clients", "${PN}-core ${PN}-crypt ${PN}-datetime ${PN}-io ${PN}-lang ${PN}-logging ${PN}-mime",
@@ -319,7 +331,11 @@ if __name__ == "__main__":
     m.addPackage( "${PN}-pkgutil", "Python Package Extension Utility Support", "${PN}-core",
     "pkgutil.*")
 
+<<<<<<< HEAD
     m.addPackage( "${PN}-pprint", "Python Pretty-Print Support", "${PN}-core ${PN}-io",
+=======
+    m.addPackage( "${PN}-pprint", "Python Pretty-Print Support", "${PN}-core",
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     "pprint.*" )
 
     m.addPackage( "${PN}-profile", "Python Basic Profiling Support", "${PN}-core ${PN}-textutils",

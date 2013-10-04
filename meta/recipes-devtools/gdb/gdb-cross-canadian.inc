@@ -6,10 +6,15 @@ PN = "gdb-cross-canadian-${TRANSLATED_TARGET_ARCH}"
 BPN = "gdb"
 
 DEPENDS = "nativesdk-ncurses nativesdk-expat nativesdk-gettext nativesdk-readline nativesdk-python"
+<<<<<<< HEAD
 RDEPENDS_${PN} += "nativesdk-python-core nativesdk-python-lang nativesdk-python-re \
                    nativesdk-python-codecs nativesdk-python-netclient"
 
 GDBPROPREFIX = "--program-prefix='${TARGET_PREFIX}'"
+=======
+RDEPENDS += "nativesdk-python-core nativesdk-python-lang nativesdk-python-re \
+             nativesdk-python-codecs nativesdk-python-netclient"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 EXTRA_OECONF_append = "--with-python=${WORKDIR}/python"
 
@@ -19,7 +24,11 @@ cat > ${WORKDIR}/python << EOF
 case "\$2" in
         --includes) echo "-I${STAGING_INCDIR}/${PYTHON_DIR}/" ;;
         --ldflags) echo "-Wl,-rpath-link,${STAGING_LIBDIR}/.. -Wl,-rpath,${libdir}/.. -lpthread -ldl -lutil -lm -lpython${PYTHON_BASEVERSION}" ;;
+<<<<<<< HEAD
         --exec-prefix) echo "${exec_prefix}" ;;
+=======
+        --exec-prefix) echo "${exec_prefix}/bin" ;;
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         *) exit 1 ;;
 esac
 exit 0

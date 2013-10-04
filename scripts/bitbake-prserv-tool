@@ -47,6 +47,7 @@ do_import ()
     return $ret
 }
 
+<<<<<<< HEAD
 do_migrate_localcount ()
 {
     df=`bitbake -R conf/migrate_localcount.conf -e | \
@@ -84,6 +85,8 @@ do_migrate_localcount ()
     return 0
 }
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 [ $# -eq 0 ] && help  && exit 1
 
 case $1 in
@@ -93,9 +96,12 @@ export)
 import)
     do_import $2
     ;;
+<<<<<<< HEAD
 migrate_localcount)
     do_migrate_localcount
     ;;
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 *)
     help
     exit 1

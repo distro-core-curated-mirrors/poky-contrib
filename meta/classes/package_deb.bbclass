@@ -10,9 +10,62 @@ DPKG_ARCH ?= "${TARGET_ARCH}"
 
 PKGWRITEDIRDEB = "${WORKDIR}/deploy-debs"
 
+<<<<<<< HEAD
 APTCONF_TARGET = "${WORKDIR}"
 
 APT_ARGS = "${@['', '--no-install-recommends'][d.getVar("NO_RECOMMENDATIONS", True) == "1"]}"
+=======
+python package_deb_fn () {
+    d.setVar('PKGFN', d.getVar('PKG'))
+}
+
+addtask package_deb_install
+python do_package_deb_install () {
+    pkg = d.getVar('PKG', True)
+    pkgfn = d.getVar('PKGFN', True)
+    rootfs = d.getVar('IMAGE_ROOTFS', True)
+    debdir = d.getVar('DEPLOY_DIR_DEB', True)
+    apt_config = d.expand('${STAGING_ETCDIR_NATIVE}/apt/apt.conf')
+    stagingbindir = d.getVar('STAGING_BINDIR_NATIVE', True)
+    tmpdir = d.getVar('TMPDIR', True)
+
+    if None in (pkg,pkgfn,rootfs):
+        raise bb.build.FuncFailed("missing variables (one or more of PKG, PKGFN, IMAGE_ROOTFS)")
+    try:
+        if not os.exists(rootfs):
+            os.makedirs(rootfs)
+        os.chdir(rootfs)
+    except OSError:
+        import sys
+        raise bb.build.FuncFailed(str(sys.exc_value))
+
+    # update packages file
+    (exitstatus, output) = commands.getstatusoutput('dpkg-scanpackages %s > %s/Packages' % (debdir, debdir))
+    if (exitstatus != 0 ):
+        raise bb.build.FuncFailed(output)
+
+    f = open(os.path.join(tmpdir, "stamps", "DEB_PACKAGE_INDEX_CLEAN"), "w")
+    f.close()
+
+    # NOTE: this env stuff is racy at best, we need something more capable
+    # than 'commands' for command execution, which includes manipulating the
+    # env of the fork+execve'd processs
+
+    # Set up environment
+    apt_config_backup = os.getenv('APT_CONFIG')
+    os.putenv('APT_CONFIG', apt_config)
+    path = os.getenv('PATH')
+    os.putenv('PATH', '%s:%s' % (stagingbindir, os.getenv('PATH')))
+
+    # install package
+    commands.getstatusoutput('apt-get update')
+    commands.getstatusoutput('apt-get install -y %s' % pkgfn)
+
+    # revert environment
+    os.putenv('APT_CONFIG', apt_config_backup)
+    os.putenv('PATH', path)
+}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 #
 # Update the Packages index files in ${DEPLOY_DIR_DEB}
@@ -112,6 +165,7 @@ package_install_internal_deb () {
 
 	apt-get update
 
+<<<<<<< HEAD
 	if [ ! -z "${package_linguas}" ]; then
 		for i in ${package_linguas}; do
 			apt-get ${APT_ARGS} install $i --force-yes --allow-unauthenticated
@@ -119,6 +173,22 @@ package_install_internal_deb () {
 				exit 1
 			fi
 		done
+=======
+	# Uclibc builds don't provide this stuff..
+	if [ x${TARGET_OS} = "xlinux" ] || [ x${TARGET_OS} = "xlinux-gnueabi" ] ; then
+		if [ ! -z "${package_linguas}" ]; then
+			apt-get install glibc-localedata-i18n --force-yes --allow-unauthenticated
+			if [ $? -ne 0 ]; then
+				exit 1
+			fi
+			for i in ${package_linguas}; do
+				apt-get install $i --force-yes --allow-unauthenticated
+				if [ $? -ne 0 ]; then
+					exit 1
+				fi
+			done
+		fi
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	fi
 
 	# normal install
@@ -128,6 +198,7 @@ package_install_internal_deb () {
 			exit 1
 		fi
 
+<<<<<<< HEAD
 		# Attempt to correct the probable broken dependencies in place.
 		apt-get ${APT_ARGS} -f install
 		if [ $? -ne 0 ]; then
@@ -139,6 +210,12 @@ package_install_internal_deb () {
 	if [ ! -z "${package_attemptonly}" ]; then
 		for i in ${package_attemptonly}; do
 			apt-get ${APT_ARGS} install $i --force-yes --allow-unauthenticated >> `dirname ${BB_LOGFILE}`/log.do_${task}-attemptonly.${PID} 2>&1 || true
+=======
+	rm -f `dirname ${BB_LOGFILE}`/log.do_${task}-attemptonly.${PID}
+	if [ ! -z "${package_attemptonly}" ]; then
+		for i in ${package_attemptonly}; do
+			apt-get install $i --force-yes --allow-unauthenticated >> `dirname ${BB_LOGFILE}`/log.do_${task}-attemptonly.${PID} 2>&1 || true
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		done
 	fi
 
@@ -220,7 +297,11 @@ python do_package_deb () {
         basedir = os.path.join(os.path.dirname(root))
 
         pkgoutdir = os.path.join(outdir, localdata.getVar('PACKAGE_ARCH', True))
+<<<<<<< HEAD
         bb.utils.mkdirhier(pkgoutdir)
+=======
+        bb.mkdirhier(pkgoutdir)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
         os.chdir(root)
         from glob import glob
@@ -291,6 +372,11 @@ python do_package_deb () {
                 # Special behavior for description...
                 if 'DESCRIPTION' in fs:
                      summary = localdata.getVar('SUMMARY', True) or localdata.getVar('DESCRIPTION', True) or "."
+<<<<<<< HEAD
+=======
+                     description = localdata.getVar('DESCRIPTION', True) or "."
+                     description = textwrap.dedent(description).strip()
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                      ctrlfile.write('Description: %s\n' % unicode(summary))
                      description = localdata.getVar('DESCRIPTION', True) or "."
                      description = textwrap.dedent(description).strip()
@@ -318,15 +404,19 @@ python do_package_deb () {
         mapping_rename_hook(localdata)
 
         def debian_cmp_remap(var):
+<<<<<<< HEAD
             # dpkg does not allow for '(' or ')' in a dependency name
             # replace these instances with '__' and '__'
             #
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             # In debian '>' and '<' do not mean what it appears they mean
             #   '<' = less or equal
             #   '>' = greater or equal
             # adjust these to the '<<' and '>>' equivalents
             #
             for dep in var:
+<<<<<<< HEAD
                 if '(' in dep:
                     newdep = dep.replace('(', '__')
                     newdep = newdep.replace(')', '__')
@@ -334,6 +424,8 @@ python do_package_deb () {
                         var[newdep] = var[dep]
                         del var[dep]
             for dep in var:
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                 for i, v in enumerate(var[dep]):
                     if (v or "").startswith("< "):
                         var[dep][i] = var[dep][i].replace("< ", "<< ")
@@ -424,6 +516,7 @@ python () {
         deps = ' dpkg-native:do_populate_sysroot virtual/fakeroot-native:do_populate_sysroot'
         d.appendVarFlag('do_package_write_deb', 'depends', deps)
         d.setVarFlag('do_package_write_deb', 'fakeroot', "1")
+<<<<<<< HEAD
 
     # Map TARGET_ARCH to Debian's ideas about architectures
     darch = d.getVar('DPKG_ARCH', True)
@@ -431,6 +524,13 @@ python () {
          d.setVar('DPKG_ARCH', 'i386')
     elif darch == "arm":
          d.setVar('DPKG_ARCH', 'armel')
+=======
+        d.setVarFlag('do_package_write_deb_setscene', 'fakeroot', "1")
+
+    # Map TARGET_ARCH to Debian's ideas about architectures
+    if d.getVar('DPKG_ARCH', True) in ["x86", "i486", "i586", "i686", "pentium"]:
+        d.setVar('DPKG_ARCH', 'i386')
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 python do_package_write_deb () {
@@ -438,11 +538,19 @@ python do_package_write_deb () {
     bb.build.exec_func("do_package_deb", d)
 }
 do_package_write_deb[dirs] = "${PKGWRITEDIRDEB}"
+<<<<<<< HEAD
 do_package_write_deb[cleandirs] = "${PKGWRITEDIRDEB}"
 do_package_write_deb[umask] = "022"
 addtask package_write_deb before do_package_write after do_packagedata do_package
 
 
 PACKAGEINDEXES += "[ ! -e ${DEPLOY_DIR_DEB} ] || package_update_index_deb;"
+=======
+do_package_write_deb[umask] = "022"
+addtask package_write_deb before do_package_write after do_package
+
+
+PACKAGEINDEXES += "package_update_index_deb;"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PACKAGEINDEXDEPS += "dpkg-native:do_populate_sysroot"
 PACKAGEINDEXDEPS += "apt-native:do_populate_sysroot"

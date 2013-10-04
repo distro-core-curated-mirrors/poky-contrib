@@ -5,6 +5,7 @@ SDK_DIR = "${WORKDIR}/sdk"
 SDK_OUTPUT = "${SDK_DIR}/image"
 SDK_DEPLOY = "${TMPDIR}/deploy/sdk"
 
+<<<<<<< HEAD
 SDKTARGETSYSROOT = "${SDKPATH}/sysroots/${REAL_MULTIMACH_TARGET_SYS}"
 
 TOOLCHAIN_HOST_TASK ?= "nativesdk-packagegroup-sdk-host packagegroup-cross-canadian-${MACHINE}"
@@ -12,6 +13,15 @@ TOOLCHAIN_HOST_TASK_ATTEMPTONLY ?= ""
 TOOLCHAIN_TARGET_TASK ?= "packagegroup-core-standalone-sdk-target packagegroup-core-standalone-sdk-target-dbg"
 TOOLCHAIN_TARGET_TASK_ATTEMPTONLY ?= ""
 TOOLCHAIN_OUTPUTNAME ?= "${SDK_NAME}-toolchain-${SDK_VERSION}"
+=======
+SDKTARGETSYSROOT = "${SDKPATH}/sysroots/${MULTIMACH_TARGET_SYS}"
+
+TOOLCHAIN_HOST_TASK ?= "nativesdk-packagegroup-sdk-host packagegroup-cross-canadian-${TRANSLATED_TARGET_ARCH}"
+TOOLCHAIN_HOST_TASK_ATTEMPTONLY ?= ""
+TOOLCHAIN_TARGET_TASK ?= "packagegroup-core-standalone-sdk-target packagegroup-core-standalone-sdk-target-dbg"
+TOOLCHAIN_TARGET_TASK_ATTEMPTONLY ?= ""
+TOOLCHAIN_OUTPUTNAME ?= "${SDK_NAME}-toolchain-${DISTRO_VERSION}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SDK_RDEPENDS = "${TOOLCHAIN_TARGET_TASK} ${TOOLCHAIN_HOST_TASK}"
 SDK_DEPENDS = "virtual/fakeroot-native sed-native"
@@ -26,10 +36,21 @@ EXCLUDE_FROM_WORLD = "1"
 
 SDK_PACKAGING_FUNC ?= "create_shar"
 
+<<<<<<< HEAD
 fakeroot python do_populate_sdk() {
     pn = d.getVar('PN', True)
     runtime_mapping_rename("TOOLCHAIN_TARGET_TASK", pn, d)
 
+=======
+python () {
+    # If we don't do this we try and run the mapping hooks while parsing which is slow
+    # bitbake should really provide something to let us know this...
+    if bb.data.getVar('BB_WORKERCONTEXT', d, True) is not None:
+        runtime_mapping_rename("TOOLCHAIN_TARGET_TASK", d)
+}
+
+fakeroot python do_populate_sdk() {
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     bb.build.exec_func("populate_sdk_image", d)
 
     # Handle multilibs in the SDK environment, siteconfig, etc files...
@@ -84,8 +105,11 @@ fakeroot populate_sdk_image() {
 
 	# Link the ld.so.cache file into the hosts filesystem
 	ln -s /etc/ld.so.cache ${SDK_OUTPUT}/${SDKPATHNATIVE}/etc/ld.so.cache
+<<<<<<< HEAD
 
 	${SDK_POSTPROCESS_COMMAND}
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 fakeroot create_sdk_files() {
@@ -105,6 +129,7 @@ fakeroot create_sdk_files() {
 	sed -i -e "s:##DEFAULT_INSTALL_DIR##:$escaped_sdkpath:" ${SDK_OUTPUT}/${SDKPATH}/relocate_sdk.py
 }
 
+<<<<<<< HEAD
 SDKTAROPTS = "--owner=root --group=root -j"
 
 fakeroot tar_sdk() {
@@ -112,12 +137,20 @@ fakeroot tar_sdk() {
 	mkdir -p ${SDK_DEPLOY}
 	cd ${SDK_OUTPUT}/${SDKPATH}
 	tar ${SDKTAROPTS} -c --file=${SDK_DEPLOY}/${TOOLCHAIN_OUTPUTNAME}.tar.bz2 .
+=======
+fakeroot tar_sdk() {
+	# Package it up
+	mkdir -p ${SDK_DEPLOY}
+	cd ${SDK_OUTPUT}
+	tar --owner=root --group=root -cj --file=${SDK_DEPLOY}/${TOOLCHAIN_OUTPUTNAME}.tar.bz2 .
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 fakeroot create_shar() {
 	cat << "EOF" > ${SDK_DEPLOY}/${TOOLCHAIN_OUTPUTNAME}.sh
 #!/bin/bash
 
+<<<<<<< HEAD
 INST_ARCH=$(uname -m | sed -e "s/i[3-6]86/ix86/" -e "s/x86[-_]64/x86_64/")
 SDK_ARCH=$(echo ${SDK_ARCH} | sed -e "s/i[3-6]86/ix86/" -e "s/x86[-_]64/x86_64/")
 
@@ -208,6 +241,29 @@ if [ "$answer" = "" ]; then
 	[ "$answer" = "" ] && answer="$default_answer"
 else
 	echo $answer
+=======
+DEFAULT_INSTALL_DIR="${SDKPATH}"
+
+printf "Enter target directory for SDK (default: $DEFAULT_INSTALL_DIR): "
+read target_sdk_dir
+
+if [ "$target_sdk_dir" = "" ]; then
+	target_sdk_dir=$DEFAULT_INSTALL_DIR
+fi
+
+eval target_sdk_dir=$target_sdk_dir
+if [ -d $target_sdk_dir ]; then
+	target_sdk_dir=$(cd $target_sdk_dir; pwd)
+else
+	target_sdk_dir=$(readlink -m $target_sdk_dir)
+fi
+
+printf "You are about to install the SDK to \"$target_sdk_dir\". Proceed[Y/n]?"
+read answer
+
+if [ "$answer" = "" ]; then
+	answer="y"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fi
 
 if [ "$answer" != "Y" -a "$answer" != "y" ]; then
@@ -215,6 +271,7 @@ if [ "$answer" != "Y" -a "$answer" != "y" ]; then
 	exit 1
 fi
 
+<<<<<<< HEAD
 # Try to create the directory (this will not succeed if user doesn't have rights)
 mkdir -p $target_sdk_dir >/dev/null 2>&1
 
@@ -232,16 +289,27 @@ if [ ! -x $target_sdk_dir -o ! -w $target_sdk_dir -o ! -r $target_sdk_dir ]; the
 
 	# now that we have sudo rights, create the directory
 	$SUDO_EXEC mkdir -p $target_sdk_dir >/dev/null 2>&1
+=======
+mkdir -p $target_sdk_dir >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+	echo "Error: Unable to create target directory. Do you have permissions?"
+	exit 1
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fi
 
 payload_offset=$(($(grep -na -m1 "^MARKER:$" $0|cut -d':' -f1) + 1))
 
 printf "Extracting SDK..."
+<<<<<<< HEAD
 tail -n +$payload_offset $0| $SUDO_EXEC tar xj -C $target_sdk_dir
+=======
+tail -n +$payload_offset $0| tar xj --strip-components=4 -C $target_sdk_dir
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 echo "done"
 
 printf "Setting it up..."
 # fix environment paths
+<<<<<<< HEAD
 for env_setup_script in `ls $target_sdk_dir/environment-setup-*`; do
 	$SUDO_EXEC sed -e "s:$DEFAULT_INSTALL_DIR:$target_sdk_dir:g" -i $env_setup_script
 done
@@ -286,15 +354,40 @@ done
 for perl_script in $($SUDO_EXEC grep "^#!.*perl" -rl $native_sysroot); do
 	$SUDO_EXEC sed -i -e "s:^#! */usr/bin/perl.*:#! /usr/bin/env perl:g" -e \
 		"s: /usr/bin/perl: /usr/bin/env perl:g" $perl_script
+=======
+env_setup_script=$(find $target_sdk_dir/ -name "environment-setup-${REAL_MULTIMACH_TARGET_SYS}")
+sed -e "s:$DEFAULT_INSTALL_DIR:$target_sdk_dir:g" -i $env_setup_script
+
+# fix dynamic loader paths in all ELF SDK binaries
+native_sysroot=$(cat $env_setup_script |grep OECORE_NATIVE_SYSROOT|cut -d'=' -f2|tr -d '"')
+dl_path=$(find $native_sysroot/lib -name "ld-linux*")
+executable_files=$(find $native_sysroot -type f -perm +111)
+${env_setup_script%/*}/relocate_sdk.py $target_sdk_dir $dl_path $executable_files
+if [ $? -ne 0 ]; then
+	echo "SDK could not be set up. Relocate script failed. Abort!"
+	exit 1
+fi
+
+# replace ${SDKPATH} with the new prefix in all text files: configs/scripts/etc
+find $native_sysroot -type f -exec file '{}' \;|grep ":.*ASCII.*text"|cut -d':' -f1|xargs sed -i -e "s:$DEFAULT_INSTALL_DIR:$target_sdk_dir:g"
+
+# change all symlinks pointing to ${SDKPATH}
+for l in $(find $native_sysroot -type l); do
+	ln -sf $(readlink $l|sed -e "s:$DEFAULT_INSTALL_DIR:$target_sdk_dir:") $l
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 done
 
 echo done
 
 # delete the relocating script, so that user is forced to re-run the installer
 # if he/she wants another location for the sdk
+<<<<<<< HEAD
 if [ $savescripts = 0 ] ; then
 	$SUDO_EXEC rm ${env_setup_script%/*}/relocate_sdk.py ${env_setup_script%/*}/relocate_sdk.sh
 fi
+=======
+rm ${env_setup_script%/*}/relocate_sdk.py
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 echo "SDK has been successfully set up and is ready to be used."
 
@@ -302,9 +395,12 @@ exit 0
 
 MARKER:
 EOF
+<<<<<<< HEAD
 	# add execution permission
 	chmod +x ${SDK_DEPLOY}/${TOOLCHAIN_OUTPUTNAME}.sh
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	# append the SDK tarball
 	cat ${SDK_DEPLOY}/${TOOLCHAIN_OUTPUTNAME}.tar.bz2 >> ${SDK_DEPLOY}/${TOOLCHAIN_OUTPUTNAME}.sh
 

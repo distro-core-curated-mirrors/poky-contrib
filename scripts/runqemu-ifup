@@ -53,7 +53,11 @@ NATIVE_SYSROOT_DIR=$3
 
 TUNCTL=$NATIVE_SYSROOT_DIR/usr/bin/tunctl
 if [ ! -x "$TUNCTL" ]; then
+<<<<<<< HEAD
        echo "Error: Unable to find tunctl binary in '$NATIVE_SYSROOT_DIR/usr/bin', please bitbake qemu-helper-native"
+=======
+	echo "Error: Unable to find tunctl binary in '$NATIVE_SYSROOT_DIR/usr/bin'"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	exit 1
 fi
 
@@ -70,16 +74,36 @@ if [ $STATUS -ne 0 ]; then
 	fi
 fi
 
+<<<<<<< HEAD
 IFCONFIG=`which ip 2> /dev/null`
 if [ "x$IFCONFIG" = "x" ]; then
 	# better than nothing...
 	IFCONFIG=/sbin/ip
+=======
+IFCONFIG=`which ifconfig 2> /dev/null`
+if [ "x$IFCONFIG" = "x" ]; then
+	# better than nothing...
+	IFCONFIG=/sbin/ifconfig
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fi
 if [ ! -x "$IFCONFIG" ]; then
 	echo "$IFCONFIG cannot be executed"
 	exit 1
 fi
 
+<<<<<<< HEAD
+=======
+ROUTE=`which route`
+if [ "x$ROUTE" = "x" ]; then
+	# better than nothing...
+	ROUTE=/sbin/route
+fi
+if [ ! -x "$ROUTE" ]; then
+	echo "$ROUTE cannot be executed"
+	exit 1
+fi
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 IPTABLES=`which iptables 2> /dev/null`
 if [ "x$IPTABLES" = "x" ]; then
 	IPTABLES=/sbin/iptables
@@ -90,11 +114,18 @@ if [ ! -x "$IPTABLES" ]; then
 fi
 
 n=$[ (`echo $TAP | sed 's/tap//'` * 2) + 1 ]
+<<<<<<< HEAD
 $IFCONFIG addr add 192.168.7.$n/32 broadcast 192.168.7.255 dev $TAP
 $IFCONFIG link set dev $TAP up
 
 dest=$[ (`echo $TAP | sed 's/tap//'` * 2) + 2 ]
 $IFCONFIG route add to 192.168.7.$dest dev $TAP
+=======
+$IFCONFIG $TAP 192.168.7.$n netmask 255.255.255.255
+
+dest=$[ (`echo $TAP | sed 's/tap//'` * 2) + 2 ]
+$ROUTE add -host 192.168.7.$dest $TAP
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # setup NAT for tap0 interface to have internet access in QEMU
 $IPTABLES -A POSTROUTING -t nat -j MASQUERADE -s 192.168.7.$n/32

@@ -5,7 +5,11 @@ SECTION = "x11/drivers"
 LICENSE = "MIT-X"
 
 PE = "2"
+<<<<<<< HEAD
 INC_PR = "r21"
+=======
+INC_PR = "r17"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 DEPENDS = "virtual/xserver xproto randrproto util-macros"
 
@@ -18,11 +22,23 @@ FILES_${PN}-dbg += " ${libdir}/xorg/modules/drivers/.debug"
 
 inherit autotools pkgconfig
 
+<<<<<<< HEAD
+=======
+# AC_CHECK_FILE doesn't work when cross compiling, so we create a replacement
+# macro that simply assumes the test succeeds. 
+do_configure_prepend () {
+    echo 'AC_DEFUN(CC_AC_CHECK_FILE, $2)' > configure.ac.new
+    sed 's/AC_CHECK_FILE/CC_AC_CHECK_FILE/g' configure.ac >> configure.ac.new
+    mv configure.ac.new configure.ac
+}
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # FIXME: We don't want to include the libtool archives (*.la) from modules
 # directory, as they serve no useful purpose. Upstream should fix Makefile.am
 do_install_append() {
 	find ${D}${libdir}/xorg/modules -regex ".*\.la$" | xargs rm -f --
 }
+<<<<<<< HEAD
 
 # Function to add the relevant ABI dependency to drivers, which should be called
 # from a populate_packages append/prepend.
@@ -39,3 +55,5 @@ def add_abi_depends(d, name):
 
     pn = d.getVar("PN", True)
     d.appendVar('RDEPENDS_' + pn, ' ' + abi)
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

@@ -41,6 +41,11 @@ FILES_${PN}-dev = "${libdir}/libapt*.so ${includedir}"
 
 do_install () {
 	set -x
+<<<<<<< HEAD
+=======
+	${@get_commands_apt_doc(d, bb, d.getVar('apt-manpages', True))}
+	${@get_commands_apt_doc(d, bb, d.getVar('apt-utils-manpages', True))}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	install -d ${D}${bindir}
 	install -m 0755 bin/apt-cdrom ${D}${bindir}/
 	install -m 0755 bin/apt-get ${D}${bindir}/
@@ -50,8 +55,17 @@ do_install () {
 	install -m 0755 bin/apt-sortpkgs ${D}${bindir}/
 	install -m 0755 bin/apt-extracttemplates ${D}${bindir}/
 
+<<<<<<< HEAD
 	oe_libinstall -so -C bin libapt-pkg ${D}${libdir}
 	oe_libinstall -so -C bin libapt-inst ${D}${libdir}
+=======
+	eval `cat environment.mak | grep ^GLIBC_VER | sed -e's, = ,=,'`
+	eval `cat environment.mak | grep ^LIBSTDCPP_VER | sed -e's, = ,=,'`
+	oe_libinstall -so -C bin libapt-pkg$GLIBC_VER$LIBSTDCPP_VER ${D}${libdir}/
+	ln -sf libapt-pkg$GLIBC_VER$LIBSTDCPP_VER.so ${D}${libdir}/libapt-pkg.so
+	oe_libinstall -so -C bin libapt-inst$GLIBC_VER$LIBSTDCPP_VER ${D}${libdir}/
+	ln -sf libapt-inst$GLIBC_VER$LIBSTDCPP_VER.so ${D}${libdir}/libapt-inst.so
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	install -d ${D}${libdir}/apt/methods
 	install -m 0755 bin/methods/* ${D}${libdir}/apt/methods/

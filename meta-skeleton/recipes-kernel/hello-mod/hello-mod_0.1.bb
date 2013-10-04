@@ -13,6 +13,9 @@ SRC_URI = "file://Makefile \
           "
 
 S = "${WORKDIR}"
+<<<<<<< HEAD
 
 # The inherit of module.bbclass will automatically name module packages with
 # "kernel-module-" prefix as required by the oe-core build environment.
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

@@ -18,7 +18,10 @@ def csl_get_version(d):
 		stdout, stderr = csl_run(d, 'gcc', '-v')
 	except bb.process.CmdError as exc:
 		bb.error('Failed to obtain CodeSourcery toolchain version: %s' % exc)
+<<<<<<< HEAD
 		bb.error('Make sure that MACHINE is set correctly in your local.conf and the toolchain supports %s.' % d.getVar("TARGET_ARCH", True))
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		return 'UNKNOWN'
 	else:
 		last_line = stderr.splitlines()[-1]
@@ -89,6 +92,11 @@ def csl_get_gdb_version(d):
 		return first_line.split()[-1]
 
 python csl_version_handler () {
+<<<<<<< HEAD
+=======
+    if not isinstance(e, bb.event.ConfigParsed):
+        return
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     d = e.data
     ld = d.createCopy()
     ld.finalize()
@@ -100,7 +108,10 @@ python csl_version_handler () {
     d.setVar('CSL_VER_GDB', csl_get_gdb_version(ld))
 }
 addhandler csl_version_handler
+<<<<<<< HEAD
 csl_version_handler[eventmask] = "bb.event.ConfigParsed"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Ensure that any variable which includes the --sysroot (CC, CXX, etc) also
 # depends on the toolchain version

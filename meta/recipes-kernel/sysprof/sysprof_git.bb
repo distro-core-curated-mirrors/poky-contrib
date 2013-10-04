@@ -4,16 +4,29 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f"
 
 DEPENDS = "gtk+ libglade"
 
+<<<<<<< HEAD
 SRCREV = "cd44ee6644c3641507fb53b8a2a69137f2971219"
 PV = "1.2.0+git${SRCPV}"
 
 SRC_URI = "git://git.gnome.org/sysprof \
            file://define-NT_GNU_BUILD_ID.patch \
+=======
+SRCREV = "4692f85f625f4fd969cef4ab5dc47cc4655c87f9"
+PR = "r2"
+PV = "1.1.8+git${SRCPV}"
+
+SRC_URI = "git://git.gnome.org/sysprof;protocol=git \
+           file://define-NT_GNU_BUILD_ID.patch \
+	   file://0001-Fix-PowerPC-checks-for-__NR_perf_counter_open.patch \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
           "
 
 SRC_URI_append_arm  = " file://rmb-arm.patch"
 SRC_URI_append_mips = " file://rmb-mips.patch"
+<<<<<<< HEAD
 SRC_URI_append_mips64 = " file://rmb-mips.patch"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 S = "${WORKDIR}/git"
 

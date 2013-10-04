@@ -4,11 +4,17 @@
 
 SUMMARY = "Linux Standard Base (LSB)"
 DESCRIPTION = "Packages required to satisfy the Linux Standard Base (LSB) specification"
+<<<<<<< HEAD
 PR = "r10"
 LICENSE = "MIT"
 
 COMPATIBLE_HOST_mips64 = "mips64.*-linux-gnun32"
 
+=======
+PR = "r9"
+LICENSE = "MIT"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 inherit packagegroup
 
 PACKAGES = "\
@@ -52,10 +58,13 @@ RDEPENDS_packagegroup-core-sys-extended = "\
     lrzsz \
     lzo \
     mc \
+<<<<<<< HEAD
     mc-fish \
     mc-helpers \
     mc-helpers-perl \
     mc-helpers-python \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     mdadm \
     minicom \
     neon \
@@ -65,7 +74,10 @@ RDEPENDS_packagegroup-core-sys-extended = "\
     screen \
     setserial \
     sysstat \
+<<<<<<< HEAD
     udev-extraconf \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     unzip \
     watchdog \
     wget \
@@ -108,6 +120,10 @@ RDEPENDS_packagegroup-core-lsb-misc = "\
     gettext-runtime \
     groff \
     lsbinitscripts \
+<<<<<<< HEAD
+=======
+    lsbsetup \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     lsbtest \
     lsof \
     strace \
@@ -167,9 +183,12 @@ RDEPENDS_packagegroup-core-lsb-core = "\
     libxml2 \
     ncurses \
     zlib \
+<<<<<<< HEAD
     nspr \
     libpng12 \
     nss \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 "
 
 SUMMARY_packagegroup-core-lsb-perl = "LSB Runtime Languages (Perl)"
@@ -193,6 +212,7 @@ RDEPENDS_packagegroup-core-lsb-python = "\
     python-misc \
 "
 
+<<<<<<< HEAD
 def get_libqt3(d):
     if 'linuxstdbase' in d.getVar('DISTROOVERRIDES') or "":
         if 'qt3' in d.getVar('BBFILE_COLLECTIONS') or "":
@@ -203,6 +223,8 @@ def get_libqt3(d):
         bb.warn('a requirement for LSB')
     return ''
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 SUMMARY_packagegroup-core-lsb-desktop = "LSB Desktop"
 DESCRIPTION_packagegroup-core-lsb-desktop = "Packages required to support libraries \
     specified in the LSB Desktop specification"
@@ -231,7 +253,10 @@ RDEPENDS_packagegroup-core-lsb-desktop = "\
     atk \
     libasound \
     ${@base_contains("DISTRO_FEATURES", "opengl", "libqtopengl4", "", d)} \
+<<<<<<< HEAD
     ${@get_libqt3(d)} \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 "
 
 RDEPENDS_packagegroup-core-lsb-runtime-add = "\

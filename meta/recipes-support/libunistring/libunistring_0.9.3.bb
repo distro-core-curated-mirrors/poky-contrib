@@ -19,9 +19,13 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504 \
 
 SRC_URI = "${GNU_MIRROR}/libunistring/libunistring-${PV}.tar.gz \
            file://parallelmake.patch \
+<<<<<<< HEAD
            file://libunistring_fix_for_automake_1.12.patch \
            file://iconv-m4-remove-the-test-to-convert-euc-jp.patch \
 "
+=======
+           file://libunistring_fix_for_automake_1.12.patch"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI[md5sum] = "db8eca3b64163abadf8c40e5cecc261f"
 SRC_URI[sha256sum] = "610d3ec724fbdaa654afe3cff20b9f4d504be3fd296fded2e0f7f764041006a3"

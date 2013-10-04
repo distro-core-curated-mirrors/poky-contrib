@@ -22,7 +22,11 @@ import re
 import subprocess
 import shutil
 
+<<<<<<< HEAD
 pkg_cur_dirs = {}
+=======
+pkg_cur_dirs = []
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 obsolete_dirs = []
 parser = None
 
@@ -101,7 +105,11 @@ will be deleted. Be CAUTIOUS.""")
             version = parse_version(elems[1])
         else:
             version = parse_version(elems[2])
+<<<<<<< HEAD
         pkg_cur_dirs[elems[0]] = version
+=======
+        pkg_cur_dirs.append(elems[0] + '-' + version)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     cmd = "bitbake -e"
     output = run_command(cmd)
@@ -156,6 +164,7 @@ will be deleted. Be CAUTIOUS.""")
                 for pkgdir in sorted(pkgdirs):
                     if pkgdir not in pkg_cur_dirs:
                         obsolete_dirs.append(os.path.join(pkgroot, pkgdir))
+<<<<<<< HEAD
                     else:
                         for verroot, verdirs, verfiles in os.walk(os.path.join(pkgroot, pkgdir)):
                             for f in verfiles:
@@ -164,6 +173,8 @@ will be deleted. Be CAUTIOUS.""")
                                if v not in pkg_cur_dirs[pkgdir]:
                                    obsolete_dirs.append(os.path.join(pkgroot, pkgdir, v))
                             break
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
                 # just process the top dir of every package under tmp/work/*/,
                 # then jump out of the above os.walk()
@@ -174,7 +185,11 @@ will be deleted. Be CAUTIOUS.""")
         break
 
     for d in obsolete_dirs:
+<<<<<<< HEAD
         print "Deleting %s" % d
+=======
+        print "Deleleting %s" % d
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         shutil.rmtree(d, True)
 
     if len(obsolete_dirs):

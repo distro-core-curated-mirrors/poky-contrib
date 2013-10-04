@@ -12,7 +12,11 @@ PR = "r1"
 SRC_URI = "http://zlib.net/pigz/pigz-${PV}.tar.gz \
            file://ldflags.patch"
 
+<<<<<<< HEAD
 PROVIDES_class-native += "gzip-native"
+=======
+PROVIDES_virtclass-native += "gzip-native"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 DEPENDS = "zlib"
 
@@ -29,7 +33,11 @@ do_install () {
 	fi
 }
 
+<<<<<<< HEAD
 ALTERNATIVE_${PN} = "gzip gunzip"
+=======
+ALTERNARIVE_${PN} = "gzip gunzip"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ALTERNATIVE_LINK_NAME[gzip] = "${base_bindir}/gzip"
 ALTERNATIVE_LINK_NAME[gunzip] = "${base_bindir}/gunzip"
 ALTERNATIVE_PRIORITY = "80"

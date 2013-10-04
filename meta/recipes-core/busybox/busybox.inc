@@ -11,9 +11,12 @@ LICENSE = "GPLv2 & bzip2"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=de10de48642ab74318e893a61105afbb"
 
 SECTION = "base"
+<<<<<<< HEAD
 
 # Whether to split the suid apps into a seperate binary
 BUSYBOX_SPLIT_SUID ?= "1"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 export EXTRA_CFLAGS = "${CFLAGS}"
 export EXTRA_LDFLAGS = "${LDFLAGS}"
@@ -21,7 +24,11 @@ export EXTRA_LDFLAGS = "${LDFLAGS}"
 PACKAGES =+ "${PN}-httpd ${PN}-udhcpd ${PN}-udhcpc ${PN}-syslog ${PN}-mdev ${PN}-hwclock"
 
 FILES_${PN}-httpd = "${sysconfdir}/init.d/busybox-httpd /srv/www"
+<<<<<<< HEAD
 FILES_${PN}-syslog = "${sysconfdir}/init.d/syslog* ${sysconfdir}/syslog-startup.conf* ${sysconfdir}/syslog.conf* ${systemd_unitdir}/system/syslog.service ${sysconfdir}/default/busybox-syslog"
+=======
+FILES_${PN}-syslog = "${sysconfdir}/init.d/syslog* ${sysconfdir}/syslog-startup.conf*"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_${PN}-mdev = "${sysconfdir}/init.d/mdev ${sysconfdir}/mdev.conf"
 FILES_${PN}-udhcpd = "${sysconfdir}/init.d/busybox-udhcpd"
 FILES_${PN}-udhcpc = "${sysconfdir}/udhcpc.d ${datadir}/udhcpc"
@@ -34,16 +41,23 @@ INITSCRIPT_NAME_${PN}-hwclock = "hwclock.sh"
 INITSCRIPT_NAME_${PN}-mdev = "mdev"
 INITSCRIPT_PARAMS_${PN}-mdev = "start 03 S ."
 INITSCRIPT_NAME_${PN}-syslog = "syslog"
+INITSCRIPT_NAME_${PN}-mdev = "mdev"
+INITSCRIPT_NAME_${PN}-hwclock = "hwclock.sh"
+INITSCRIPT_PARAMS_${PN}-mdev = "start 06 S ."
 INITSCRIPT_NAME_${PN}-udhcpd = "busybox-udhcpd" 
+<<<<<<< HEAD
 
 SYSTEMD_PACKAGES = "${PN}-syslog"
 SYSTEMD_SERVICE_${PN}-syslog = "busybox-syslog.service"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 CONFFILES_${PN}-syslog = "${sysconfdir}/syslog-startup.conf.${BPN}"
 CONFFILES_${PN}-mdev = "${sysconfdir}/mdev.conf"
 
 RRECOMMENDS_${PN} = "${PN}-syslog ${PN}-udhcpc"
 
+<<<<<<< HEAD
 inherit cml1 systemd update-rc.d ptest
 
 # internal helper
@@ -130,15 +144,97 @@ def find_cfgs(d):
             sources_list.append(s)
 
     return sources_list
+=======
+inherit cml1 update-rc.d
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
+
+# internal helper
+def busybox_cfg(feature, features, tokens, cnf, rem):
+	if type(tokens) == type(""):
+		tokens = [tokens]
+	rem.extend(['/^[# ]*' + token + '[ =]/d' for token in tokens])
+	if type(features) == type([]) and feature in features:
+		cnf.extend([token + '=y' for token in tokens])
+	else:
+		cnf.extend(['# ' + token + ' is not set' for token in tokens])
+
+# Map distro features to config settings
+def features_to_busybox_settings(d):
+	cnf, rem = ([], [])
+	distro_features = d.getVar('DISTRO_FEATURES', True).split()
+	busybox_cfg('ipv6', distro_features, 'CONFIG_FEATURE_IPV6', cnf, rem)
+	busybox_cfg('largefile', distro_features, 'CONFIG_LFS', cnf, rem)
+	busybox_cfg('largefile', distro_features, 'CONFIG_FDISK_SUPPORT_LARGE_DISKS', cnf, rem)
+	busybox_cfg('nls',  distro_features, 'CONFIG_LOCALE_SUPPORT', cnf, rem)
+	busybox_cfg('ipv4', distro_features, 'CONFIG_FEATURE_IFUPDOWN_IPV4', cnf, rem)
+	busybox_cfg('ipv6', distro_features, 'CONFIG_FEATURE_IFUPDOWN_IPV6', cnf, rem)
+	busybox_cfg('wifi', distro_features, 'CONFIG_RFKILL', cnf, rem)
+	busybox_cfg('bluetooth', distro_features, 'CONFIG_RFKILL', cnf, rem)
+	return "\n".join(cnf), "\n".join(rem)
+
+# X, Y = ${@features_to_uclibc_settings(d)}
+# unfortunately doesn't seem to work with bitbake, workaround:
+def features_to_busybox_conf(d):
+	cnf, rem = features_to_busybox_settings(d)
+	return cnf
+def features_to_busybox_del(d):
+	cnf, rem = features_to_busybox_settings(d)
+	return rem
+
+configmangle = '/CROSS_COMPILER_PREFIX/d; \
+		/CONFIG_EXTRA_CFLAGS/d; \
+		'
+OE_FEATURES := "${@features_to_busybox_conf(d)}"
+OE_DEL      := "${@features_to_busybox_del(d)}"
+DO_IPv4 := "${@base_contains('DISTRO_FEATURES', 'ipv4', 1, 0, d)}"
+DO_IPv6 := "${@base_contains('DISTRO_FEATURES', 'ipv6', 1, 0, d)}"
+
+python () {
+  if "${OE_DEL}":
+    d.setVar('configmangle_append', "${OE_DEL}" + "\n")
+  if "${OE_FEATURES}":
+    d.setVar('configmangle_append',
+                   "/^### DISTRO FEATURES$/a\\\n%s\n\n" %
+                   ("\\n".join((d.expand("${OE_FEATURES}").split("\n")))))
+  d.setVar('configmangle_append',
+                 "/^### CROSS$/a\\\n%s\n" %
+                  ("\\n".join(["CONFIG_CROSS_COMPILER_PREFIX=\"${TARGET_PREFIX}\"",
+			       "CONFIG_EXTRA_CFLAGS=\"${CFLAGS}\" \"${HOST_CC_ARCH}\""
+                        ])
+                  ))
+}
+
+do_prepare_config () {
+	sed -e 's#@DATADIR@#${datadir}#g' \
+		< ${WORKDIR}/defconfig > ${S}/.config
+	sed -i -e '/CONFIG_STATIC/d' .config
+	echo "# CONFIG_STATIC is not set" >> .config
+	for i in 'CROSS' 'DISTRO FEATURES'; do echo "### $i"; done >> \
+		${S}/.config
+	sed -i -e '${configmangle}' ${S}/.config
+	if test ${DO_IPv4} -eq 0 && test ${DO_IPv6} -eq 0; then
+	  # disable networking applets
+	  mv ${S}/.config ${S}/.config.oe-tmp
+	  awk 'BEGIN{net=0}
+	  /^# Networking Utilities/{net=1}
+	  /^#$/{if(net){net=net+1}}
+	  {if(net==2&&$0 !~ /^#/&&$1){print("# "$1" is not set")}else{print}}' \
+		  ${S}/.config.oe-tmp > ${S}/.config
+	fi
+}
 
 do_configure () {
 	do_prepare_config
+<<<<<<< HEAD
 	merge_config.sh -m .config ${@" ".join(find_cfgs(d))}
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	cml1_do_configure
 }
 
 do_compile() {
 	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
+<<<<<<< HEAD
 	if [ "${BUSYBOX_SPLIT_SUID}" = "1" -a x`grep "CONFIG_FEATURE_INDIVIDUAL=y" .config` = x ]; then
 	# split the .config into two parts, and make two busybox binaries
 		cp .config .config.orig
@@ -176,10 +272,26 @@ do_install () {
 	fi
 	if [ "${base_sbindir}" != "/sbin" ]; then
 		sed -i "s:^/sbin/:${base_sbindir}/:" busybox.links*
+=======
+	oe_runmake busybox_unstripped
+	cp busybox_unstripped busybox
+}
+
+do_install () {
+	oe_runmake busybox.links
+	if [ "${prefix}" != "/usr" ]; then
+		sed "s:^/usr/:${prefix}/:" busybox.links > busybox.links.new
+		mv busybox.links.new busybox.links
+	fi
+	if [ "${base_sbindir}" != "/sbin" ]; then
+		sed "s:^/sbin/:${base_sbindir}/:" busybox.links > busybox.links.new
+		mv busybox.links.new busybox.links
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	fi
 
 	install -d ${D}${sysconfdir}/init.d
 
+<<<<<<< HEAD
 	if ! grep -q "CONFIG_FEATURE_INDIVIDUAL=y" ${B}/.config; then
 		# Install /bin/busybox, and the /bin/sh link so the postinst script
 		# can run. Let update-alternatives handle the rest.
@@ -209,6 +321,18 @@ do_install () {
 			# This symlink will be safely deleted in postinst, thus no negative effect.
 			ln -sf busybox ${D}${base_bindir}/busybox.nosuid
 		fi
+=======
+	if ! grep -q "CONFIG_FEATURE_INDIVIDUAL=y" ${WORKDIR}/defconfig; then
+		# Install /bin/busybox, and the /bin/sh link so the postinst script
+		# can run. Let update-alternatives handle the rest.
+		install -d ${D}${base_bindir}
+		if grep -q "CONFIG_FEATURE_SUID=y" ${WORKDIR}/defconfig; then
+			install -m 4755 ${S}/busybox ${D}${base_bindir}
+		else
+			install -m 0755 ${S}/busybox ${D}${base_bindir}
+		fi
+		ln -sf busybox ${D}${base_bindir}/sh
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	else
 		install -d ${D}${base_bindir} ${D}${base_sbindir}
 		install -d ${D}${libdir} ${D}${bindir} ${D}${sbindir}
@@ -217,7 +341,11 @@ do_install () {
 			install -m 0755 "0_lib/$NAME" "${D}$FILE.${BPN}"
 		done
 		# add suid bit where needed
+<<<<<<< HEAD
 		for i in `grep -E "APPLET.*BB_SUID_((MAYBE|REQUIRE))" include/applets.h | grep -v _BB_SUID_DROP | cut -f 3 -d '(' | cut -f 1 -d ','`; do
+=======
+		for i in `grep -E "APPLET.*_BB_SUID_((MAYBE|REQUIRE))" include/applets.h | grep -v _BB_SUID_DROP | cut -f 3 -d '(' | cut -f 1 -d ','`; do
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 			find ${D} -name $i.${BPN} -exec chmod a+s {} \;
 		done
 		install -m 0755 0_lib/libbusybox.so.${PV} ${D}${libdir}/libbusybox.so.${PV}
@@ -227,6 +355,7 @@ do_install () {
 		if [ -f ${D}/linuxrc.${BPN} ]; then
 			mv ${D}/linuxrc.${BPN} ${D}/linuxrc
 		fi
+<<<<<<< HEAD
 		install -m 0644 ${S}/busybox.links ${D}${sysconfdir}
 	fi
 
@@ -249,11 +378,34 @@ do_install () {
 		install -m 0755 ${WORKDIR}/hwclock.sh ${D}${sysconfdir}/init.d/
 	fi
 	if grep "CONFIG_UDHCPC=y" ${B}/.config; then
+=======
+	fi
+
+	if grep -q "CONFIG_SYSLOGD=y" ${WORKDIR}/defconfig; then
+		install -m 0755 ${WORKDIR}/syslog ${D}${sysconfdir}/init.d/syslog.${BPN}
+		install -m 644 ${WORKDIR}/syslog-startup.conf ${D}${sysconfdir}/syslog-startup.conf.${BPN}
+	fi
+	if grep "CONFIG_CROND=y" ${WORKDIR}/defconfig; then
+		install -m 0755 ${WORKDIR}/busybox-cron ${D}${sysconfdir}/init.d/
+	fi
+	if grep "CONFIG_HTTPD=y" ${WORKDIR}/defconfig; then
+		install -m 0755 ${WORKDIR}/busybox-httpd ${D}${sysconfdir}/init.d/
+		install -d ${D}/srv/www
+	fi
+	if grep "CONFIG_UDHCPD=y" ${WORKDIR}/defconfig; then
+		install -m 0755 ${WORKDIR}/busybox-udhcpd ${D}${sysconfdir}/init.d/
+	fi
+	if grep "CONFIG_HWCLOCK=y" ${WORKDIR}/defconfig; then
+		install -m 0755 ${WORKDIR}/hwclock.sh ${D}${sysconfdir}/init.d/
+	fi
+	if grep "CONFIG_UDHCPC=y" ${WORKDIR}/defconfig; then
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		install -d ${D}${sysconfdir}/udhcpc.d
 		install -d ${D}${datadir}/udhcpc
                 install -m 0755 ${WORKDIR}/simple.script ${D}${sysconfdir}/udhcpc.d/50default
 		install -m 0755 ${WORKDIR}/default.script ${D}${datadir}/udhcpc/default.script
 	fi
+<<<<<<< HEAD
 	if grep "CONFIG_INETD=y" ${B}/.config; then
 		install -m 0755 ${WORKDIR}/inetd ${D}${sysconfdir}/init.d/inetd.${BPN}
 		sed -i "s:/usr/sbin/:${sbindir}/:" ${D}${sysconfdir}/init.d/inetd.${BPN}
@@ -369,6 +521,61 @@ pkg_postinst_${PN} () {
 			fi
 		done
 	fi
+=======
+	if grep "CONFIG_INETD=y" ${WORKDIR}/defconfig; then
+		install -m 0755 ${WORKDIR}/inetd ${D}${sysconfdir}/init.d/inetd.${BPN}
+		install -m 0644 ${WORKDIR}/inetd.conf ${D}${sysconfdir}/
+	fi
+        if grep "CONFIG_MDEV=y" ${WORKDIR}/defconfig; then
+               install -m 0755 ${WORKDIR}/mdev ${D}${sysconfdir}/init.d/mdev
+               if grep "CONFIG_FEATURE_MDEV_CONF=y" ${WORKDIR}/defconfig; then
+                       install -m 644 ${WORKDIR}/mdev.conf ${D}${sysconfdir}/mdev.conf
+               fi
+	fi
+	install -m 0644 ${S}/busybox.links ${D}${sysconfdir}
+}
+
+inherit update-alternatives
+
+ALTERNATIVE_PRIORITY = "50"
+
+ALTERNATIVE_${PN}-syslog = "syslog-init syslog-startup-conf"
+
+ALTERNATIVE_LINK_NAME[syslog-init] = "${sysconfdir}/init.d/syslog"
+ALTERNATIVE_TARGET[syslog-init] = "${sysconfdir}/init.d/syslog.${BPN}"
+
+ALTERNATIVE_LINK_NAME[syslog-startup-conf] = "${sysconfdir}/syslog-startup.conf"
+ALTERNATIVE_TARGET[syslog-startup-conf] = "${sysconfdir}/syslog-startup.conf.${BPN}"
+
+ALTERNATIVE_TARGET = "/bin/busybox"
+
+python do_package_prepend () {
+    # We need to load the full set of busybox provides from the /etc/busybox.links
+    # Use this to see the update-alternatives with the right information
+
+    dvar = d.getVar('D', True)
+    pn = d.getVar('PN', True)
+    f = open('%s/etc/busybox.links' % (dvar), 'r')
+
+    for alt_link_name in f:
+        alt_link_name = alt_link_name.strip()
+        alt_name = os.path.basename(alt_link_name)
+
+        # Match coreutils
+        if alt_name == '[':
+            alt_name = 'lbracket'
+
+        d.appendVar('ALTERNATIVE_%s' % (pn), ' ' + alt_name)
+        d.setVarFlag('ALTERNATIVE_LINK_NAME', alt_name, alt_link_name)
+}
+
+pkg_postinst_${PN} () {
+	# If we are not making an image we create links for the utilities that doesn't exist
+	# so the update-alternatives script will get the utilities it needs
+	# (update-alternatives have no problem replacing links later anyway)
+	test -n 2> /dev/null || alias test='busybox test'
+	if test "x$D" = "x"; then while read link; do if test ! -h "$link"; then case "$link" in /*/*/*) to="../../bin/busybox";; /bin/*) to="busybox";; /*/*) to="../bin/busybox";; esac; busybox ln -s $to $link; fi; done </etc/busybox.links; fi
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 pkg_prerm_${PN} () {

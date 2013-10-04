@@ -6,9 +6,13 @@ LICENSE = "CC-BY-SA-3.0"
 LIC_FILES_CHKSUM = "file://COPYING;md5=56a830bbe6e4697fe6cbbae01bb7c2b2"
 SECTION = "x11"
 
+<<<<<<< HEAD
 PR = "r6"
 
 DEPENDS = "icon-naming-utils-native libxml-simple-perl-native"
+=======
+PR = "r5"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "http://pokylinux.org/releases/sato/${BPN}-${PV}.tar.gz \
            file://iconpath-option.patch \

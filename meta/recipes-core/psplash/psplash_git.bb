@@ -5,11 +5,19 @@ SECTION = "base"
 LICENSE = "GPLv2+"
 LIC_FILES_CHKSUM = "file://psplash.h;beginline=1;endline=16;md5=840fb2356b10a85bed78dd09dc7745c6"
 
+<<<<<<< HEAD
 SRCREV = "afd4e228c606a9998feae44a3fed4474803240b7"
 PV = "0.1+git${SRCPV}"
 PR = "r15"
 
 SRC_URI = "git://git.yoctoproject.org/${BPN} \
+=======
+SRCREV = "de9979aefbc56af59b4d236a4b63dd19dcdcfb53"
+PV = "0.1+git${SRCPV}"
+PR = "r5"
+
+SRC_URI = "git://git.yoctoproject.org/${BPN};protocol=git \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://psplash-init \
            ${SPLASH_IMAGES}"
 
@@ -50,6 +58,7 @@ python __anonymous() {
         d.appendVar("DEPENDS", " gdk-pixbuf-native")
 
     d.prependVar("PACKAGES", "%s " % (" ".join(pkgs)))
+<<<<<<< HEAD
     mlprefix = d.getVar('MLPREFIX', True) or ''
     pn = d.getVar('PN', True) or ''
     for p in pkgs:
@@ -61,6 +70,15 @@ python __anonymous() {
         d.appendVar("RDEPENDS_%s" % ep, " %s" % pn)
         if p == "psplash-default":
             d.appendVar("RRECOMMENDS_%s" % pn, " %s" % ep)
+=======
+    for p in pkgs:
+        d.setVar("FILES_%s" % p, "${bindir}/%s" % p)
+        d.setVar("ALTERNATIVE_%s" % p, 'psplash')
+        d.setVarFlag("ALTERNATIVE_TARGET_%s" % p, 'psplash', '${bindir}/%s' % p)
+        d.appendVar("RDEPENDS_%s" % p, " ${PN}")
+        if p == "psplash-default":
+            d.appendVar("RRECOMMENDS_${PN}", " %s" % p)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 S = "${WORKDIR}/git"
@@ -71,16 +89,26 @@ ALTERNATIVE_PRIORITY = "100"
 ALTERNATIVE_LINK_NAME[psplash] = "${bindir}/psplash"
 
 python do_compile () {
+<<<<<<< HEAD
     import shutil
 
     # Build a separate executable for each splash image
     convertscript = "%s/make-image-header.sh" % d.getVar('S', True)
+=======
+    import shutil, commands
+
+    # Build a separate executable for each splash image
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     destfile = "%s/psplash-poky-img.h" % d.getVar('S', True)
     localfiles = d.getVar('SPLASH_LOCALPATHS', True).split()
     outputfiles = d.getVar('SPLASH_INSTALL', True).split()
     for localfile, outputfile in zip(localfiles, outputfiles):
         if localfile.endswith(".png"):
+<<<<<<< HEAD
             outp = oe.utils.getstatusoutput('%s %s POKY' % (convertscript, localfile))
+=======
+            outp = commands.getstatusoutput('./make-image-header.sh %s POKY' % localfile)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             print(outp[1])
             fbase = os.path.splitext(os.path.basename(localfile))[0]
             shutil.copyfile("%s-img.h" % fbase, destfile)
@@ -88,7 +116,11 @@ python do_compile () {
             shutil.copyfile(localfile, destfile)
         # For some reason just updating the header is not enough, we have to touch the .c
         # file in order to get it to rebuild
+<<<<<<< HEAD
         os.utime("%s/psplash.c" % d.getVar('S', True), None)
+=======
+        os.utime("psplash.c", None)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         bb.build.exec_func("oe_runmake", d)
         shutil.copyfile("psplash", outputfile)
 }

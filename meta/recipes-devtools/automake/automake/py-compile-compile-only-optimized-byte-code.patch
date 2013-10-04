@@ -5,6 +5,7 @@ Upstream-Status: Inappropriate [embedded specific]
   pyc files by automake.
 
 Signed-off-by: Andreas Oberritter <obi@opendreambox.org>
+<<<<<<< HEAD
 
 Updated for automake-1.12.6
 
@@ -14,11 +15,26 @@ diff -Nurd automake-1.12.6/lib/py-compile automake-1.12.6/lib/py-compile
 --- automake-1.12.6/lib/py-compile	2012-12-13 21:57:31.000000000 +0200
 +++ automake-1.12.6/lib/py-compile	2012-12-27 19:34:01.426015140 +0200
 @@ -115,26 +115,6 @@
+=======
+---
+ lib/py-compile |   17 -----------------
+ 1 files changed, 0 insertions(+), 17 deletions(-)
+
+diff --git a/lib/py-compile b/lib/py-compile
+index 3f9d05b..101c814 100755
+--- a/lib/py-compile
++++ b/lib/py-compile
+@@ -101,23 +101,6 @@ else
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
      filetrans="filepath = os.path.normpath('$destdir' + os.sep + path)"
  fi
  
 -$PYTHON -c "
+<<<<<<< HEAD
 -import sys, os, py_compile, imp
+=======
+-import sys, os, py_compile
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 -
 -files = '''$files'''
 -
@@ -31,12 +47,23 @@ diff -Nurd automake-1.12.6/lib/py-compile automake-1.12.6/lib/py-compile
 -	    continue
 -    sys.stdout.write(file)
 -    sys.stdout.flush()
+<<<<<<< HEAD
 -    if hasattr(imp, 'get_tag'):
 -        py_compile.compile(filepath, imp.cache_from_source(filepath), path)
 -    else:
 -        py_compile.compile(filepath, filepath + 'c', path)
+=======
+-    py_compile.compile(filepath, filepath + 'c', path)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 -sys.stdout.write('\n')" || exit $?
 -
  # this will fail for python < 1.5, but that doesn't matter ...
  $PYTHON -O -c "
+<<<<<<< HEAD
  import sys, os, py_compile, imp
+=======
+ import sys, os, py_compile
+-- 
+1.7.0.4
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

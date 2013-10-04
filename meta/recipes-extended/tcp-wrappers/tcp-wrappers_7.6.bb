@@ -1,11 +1,19 @@
 SUMMARY = "Security tool that is a wrapper for TCP daemons"
 DESCRIPTION = "Tools for monitoring and filtering incoming requests for tcp \
+<<<<<<< HEAD
                services."
+=======
+	      services."
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 SECTION = "console/network"
 
 LICENSE = "BSD"
 LIC_FILES_CHKSUM = "file://DISCLAIMER;md5=071bd69cb78b18888ea5e3da5c3127fa"
+<<<<<<< HEAD
 PR ="r10"
+=======
+PR ="r9"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 
 PACKAGES = "${PN}-dbg libwrap libwrap-doc libwrap-dev libwrap-staticdev ${PN} ${PN}-doc"

@@ -8,12 +8,15 @@ ttyS1
 ttyS2
 ttyS3
 
+<<<<<<< HEAD
 # ARM AMBA SoCs
 ttyAMA0
 ttyAMA1
 ttyAMA2
 ttyAMA3
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # Samsung ARM SoCs
 ttySAC0
 ttySAC1

@@ -5,15 +5,23 @@ SECTION = "libs"
 LICENSE = "BSD"
 LIC_FILES_CHKSUM = "file://COPYING;md5=641ff1e4511f0a87044ad42f87cb1045"
 
+<<<<<<< HEAD
 PR = "r1"
+=======
+PR = "r0"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # At -Os it encounters calls to some inline functions which are then
 # not found in any other objects with gcc 4.5
 FULL_OPTIMIZATION += "-O2"
 
+<<<<<<< HEAD
 SRC_URI = "${SOURCEFORGE_MIRROR}/openjade/OpenSP-${PV}.tar.gz \
            file://obsolete_automake_macros.patch \
 "
+=======
+SRC_URI = "${SOURCEFORGE_MIRROR}/openjade/OpenSP-${PV}.tar.gz"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI[md5sum] = "670b223c5d12cee40c9137be86b6c39b"
 SRC_URI[sha256sum] = "57f4898498a368918b0d49c826aa434bb5b703d2c3b169beb348016ab25617ce"
@@ -24,7 +32,11 @@ inherit autotools gettext
 
 EXTRA_OECONF = "--disable-doc-build"
 
+<<<<<<< HEAD
 EXTRA_OECONF_class-native = "\
+=======
+EXTRA_OECONF_virtclass-native = "\
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	--disable-doc-build \
 	--enable-default-catalog=${sysconfdir}/sgml/catalog \
 	--enable-default-search-path=${datadir}/sgml \
@@ -43,7 +55,11 @@ do_install_append() {
 	ln -sf osx sgml2xml
 }
 
+<<<<<<< HEAD
 do_install_append_class-native() {
+=======
+do_install_append_virtclass-native() {
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	for util in nsgmls sgmlnorm spam spcat spent sx; do
 		create_cmdline_wrapper ${D}/${bindir}/$util \
 		    -D ${sysconfdir}/sgml

@@ -9,6 +9,7 @@ TUNE_PKGARCH = "${TUNE_PKGARCH_tune-${DEFAULTTUNE}}"
 ABIEXTENSION ?= ""
 
 TUNEVALID[m32] = "Power ELF32 standard ABI"
+<<<<<<< HEAD
 TUNE_CCARGS .= "${@bb.utils.contains("TUNE_FEATURES", "m32", " -m32", "", d)}"
 TUNE_ARCH .= "${@bb.utils.contains("TUNE_FEATURES", "m32", "powerpc", "", d)}"
 
@@ -17,6 +18,16 @@ TUNE_CCARGS .= "${@bb.utils.contains("TUNE_FEATURES", "fpu-hard", " -mhard-float
 
 TUNEVALID[fpu-soft] = "Use software FPU."
 TUNE_CCARGS .= "${@bb.utils.contains("TUNE_FEATURES", "fpu-soft", " -msoft-float", "", d)}"
+=======
+TUNE_CCARGS += "${@bb.utils.contains("TUNE_FEATURES", "m32", "-m32", "", d)}"
+TUNE_ARCH .= "${@bb.utils.contains("TUNE_FEATURES", "m32", "powerpc", "", d)}"
+
+TUNEVALID[fpu-hard] = "Use hardware FPU."
+TUNE_CCARGS += "${@bb.utils.contains("TUNE_FEATURES", "fpu-hard", "-mhard-float", "", d)}"
+
+TUNEVALID[fpu-soft] = "Use software FPU."
+TUNE_CCARGS += "${@bb.utils.contains("TUNE_FEATURES", "fpu-soft", "-msoft-float", "", d)}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 TARGET_FPU .= "${@bb.utils.contains("TUNE_FEATURES", "fpu-soft", "soft", "", d)}"
 
 TUNEVALID[altivec] = "Altivec"

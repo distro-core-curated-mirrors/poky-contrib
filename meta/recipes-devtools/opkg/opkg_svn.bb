@@ -1,13 +1,36 @@
 require opkg.inc
 
 SRC_URI = "svn://opkg.googlecode.com/svn;module=trunk;protocol=http \
+<<<<<<< HEAD
            file://no-install-recommends.patch \
            file://add-exclude.patch \
+=======
+  file://0001-add-opkg_compare_versions-function.patch \
+  file://0002-Ensure-we-use-the-uname-gname-fields-when-extracting.patch \
+  file://0003-Fix-dependency-issues-for-preinst-scripts.patch \
+  file://0004-Failed-postinst-script-is-not-fatal-with-conf-offlin.patch \
+  file://0005-Do-not-read-etc-opkg-.conf-if-f-is-specified.patch \
+  file://0006-detect-circular-dependencies.patch \
+  file://0007-merge-newpkg-provides-even-when-oldpkg-provides-exis.patch \
+  file://0008-select_higher_version.patch \
+  file://0009-pkg_depends-fix-version-constraints.patch \
+  file://0010-pkg_depends-fix-version_constraints_satisfied.patch \
+  file://opkg-no-sync-offline.patch \
+  file://don-t-add-recommends-pkgs-to-depended-upon-by.patch \
+  file://don-t-print-provides-if-nothing-is-provided.patch \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 "
 
 S = "${WORKDIR}/trunk"
 
+<<<<<<< HEAD
 SRCREV = "653"
 PV = "0.1.8+svnr${SRCPV}"
 
 PR = "${INC_PR}.0"
+=======
+SRCREV = "633"
+PV = "0.1.8+svnr${SRCPV}"
+
+PR = "${INC_PR}.8"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

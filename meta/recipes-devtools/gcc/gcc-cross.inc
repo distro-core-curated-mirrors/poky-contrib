@@ -117,6 +117,7 @@ then
 	echo "in such case do something like below on build host"
 	echo "ssh-keygen -f "~/.ssh/known_hosts" -R \$target"
 	echo "and then try ssh \$user@\$target"
+<<<<<<< HEAD
 
 	usage
 	exit 1
@@ -183,3 +184,22 @@ do_packagedata[noexec] = "1"
 do_package_write_ipk[noexec] = "1"
 do_package_write_rpm[noexec] = "1"
 do_package_write_deb[noexec] = "1"
+=======
+
+	usage
+	exit 1
+fi
+	echo "lappend boards_dir [pwd]/../../.." > ${B}/site.exp
+	echo "load_generic_config \"unix\"" > ${B}/${PACKAGE_ARCH}.exp
+	echo "set_board_info username \$user" >> ${B}/${PACKAGE_ARCH}.exp
+	echo "set_board_info rsh_prog ssh" >> ${B}/${PACKAGE_ARCH}.exp
+	echo "set_board_info rcp_prog scp" >> ${B}/${PACKAGE_ARCH}.exp
+	echo "set_board_info hostname \$target" >> ${B}/${PACKAGE_ARCH}.exp
+	DEJAGNU=${B}/site.exp make -k check RUNTESTFLAGS="--target_board=${PACKAGE_ARCH}\$@"
+
+STOP
+
+	chmod +x ${B}/${TARGET_PREFIX}testgcc
+
+}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

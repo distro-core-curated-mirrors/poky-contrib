@@ -3,7 +3,11 @@ require eglibc-ld.inc
 require eglibc-testing.inc
 
 STAGINGCC = "gcc-cross-initial"
+<<<<<<< HEAD
 STAGINGCC_class-nativesdk = "gcc-crosssdk-initial"
+=======
+STAGINGCC_virtclass-nativesdk = "gcc-crosssdk-initial"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PATH_prepend = "${STAGING_BINDIR_TOOLCHAIN}.${STAGINGCC}:"
 
 TOOLCHAIN_OPTIONS = " --sysroot=${STAGING_DIR_TCBOOTSTRAP}"
@@ -50,7 +54,11 @@ CACHED_CONFIGUREVARS += "ac_cv_path_KSH=${base_bindir}/bash \
 		       "
 
 GLIBC_EXTRA_OECONF ?= ""
+<<<<<<< HEAD
 GLIBC_EXTRA_OECONF_class-nativesdk = ""
+=======
+GLIBC_EXTRA_OECONF_virtclass-nativesdk = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 INHIBIT_DEFAULT_DEPS = "1"
 
 ARM_INSTRUCTION_SET = "arm"
@@ -75,6 +83,7 @@ do_configure_prepend() {
 
 do_configure_append() {
 	oe_runmake config
+<<<<<<< HEAD
 
 	# Remove quotation marks from OPTION_EGLIBC_NSSWITCH_FIXED_*. This will
 	# avoid install error.
@@ -82,3 +91,10 @@ do_configure_append() {
 }
 
 GLIBC_ADDONS ?= "ports,nptl,libidn"
+=======
+}
+
+GLIBC_ADDONS ?= "ports,nptl,libidn"
+SDK_GLIBC_ADDONS ?= "ports,nptl,libidn"
+GLIBC_ADDONS_virtclass-nativesdk = "${SDK_GLIBC_ADDONS}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

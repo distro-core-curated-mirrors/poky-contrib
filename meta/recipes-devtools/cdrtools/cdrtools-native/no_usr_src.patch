@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 From 8d835cc7185e7cd878712d8208e6aa29b227ceff Mon Sep 17 00:00:00 2001
 From: Andrei Dinu <andrei.adrianx.dinu@intel.com>
 Date: Thu, 9 May 2013 16:03:59 +0300
@@ -20,6 +21,20 @@ index e3e102b..8a18209
 --- a/DEFAULTS/Defaults.gnu
 +++ b/DEFAULTS/Defaults.gnu
 @@ -28,7 +28,7 @@ DEFLINKMODE=	static
+=======
+Remove hard-coded references to /usr/src/linux/include to avoid
+host contamination.
+
+Upstream-Status: Inappropriate [configuration]
+
+Signed-off-by: Scott Garman <scott.a.garman@intel.com>
+
+Index: cdrtools-2.01/DEFAULTS/Defaults.gnu
+===================================================================
+--- cdrtools-2.01.orig/DEFAULTS/Defaults.gnu	2008-09-22 12:42:12.000000000 +0100
++++ cdrtools-2.01/DEFAULTS/Defaults.gnu	2008-09-22 12:42:27.000000000 +0100
+@@ -18,7 +18,7 @@
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
  ###########################################################################
  CWARNOPTS=
  

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
 Upstream-Status: Inappropriate [embedded specific]
@@ -25,3 +26,27 @@ Index: nfs-utils-1.2.6/support/nfs/svc_socket.c
  
  	if (ret == 0 && servp != NULL)
  		return ntohs(servp->s_port);
+=======
+Upstream-Status: Inappropriate [embedded specific]
+
+Index: nfs-utils-1.2.3/support/nfs/svc_socket.c
+===================================================================
+--- nfs-utils-1.2.3.orig/support/nfs/svc_socket.c
++++ nfs-utils-1.2.3/support/nfs/svc_socket.c
+@@ -67,6 +67,7 @@ svc_socket (u_long number, int type, int
+   memset (&addr, 0, sizeof (addr));
+   addr.sin_family = AF_INET;
+ 
++#ifndef __UCLIBC__	/* neither getrpcbynumber() nor getrpcbynumber_r() is SuSv3 */
+   ret = getrpcbynumber_r (number, &rpcbuf, rpcdata, sizeof rpcdata,
+ 			  &rpcp);
+   if (ret == 0 && rpcp != NULL)
+@@ -100,6 +101,7 @@ svc_socket (u_long number, int type, int
+ 	}
+     }
+   else
++#endif
+     {
+ 	  addr.sin_port = 0;
+ 	  if (bind (sock, (struct sockaddr *) &addr, len) < 0)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

@@ -10,11 +10,20 @@ LIC_FILES_CHKSUM = "file://src/wm.h;endline=21;md5=a7e844465edbcf79c282369f93caa
 SECTION = "x11/wm"
 DEPENDS = "libmatchbox virtual/libx11 libxext libxrender startup-notification expat gconf"
 
+<<<<<<< HEAD
 SRCREV = "29544f0e61cc281fc60061443a537271e1081b78"
+=======
+SRCREV = "f4394eaed475de6e627d373c5b35ee2cf87072e3"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PV = "1.2+git${SRCPV}"
-PR = "r0"
+PR = "r1"
 
+<<<<<<< HEAD
 SRC_URI = "git://git.yoctoproject.org/matchbox-window-manager \
+=======
+SRC_URI = "git://git.yoctoproject.org/matchbox-window-manager;protocol=git \
+           file://configure_fix.patch;maxrev=1818 \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://kbdconfig"
 
 S = "${WORKDIR}/git"

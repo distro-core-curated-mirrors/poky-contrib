@@ -10,8 +10,13 @@ javaness."
 SECTION = "libs"
 LICENSE = "Artistic-1.0 | GPL-1.0+"
 DEPENDS += "libxml-namespacesupport-perl-native"
+<<<<<<< HEAD
 RDEPENDS_${PN} += "libxml-namespacesupport-perl libxml-sax-base-perl perl-module-file-temp"
 PR = "r2"
+=======
+RDEPENDS_${PN} += "libxml-namespacesupport-perl perl-module-file-temp"
+PR = "r1"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=65c4cd8f39c24c7135ed70dacbcb09e3"
 

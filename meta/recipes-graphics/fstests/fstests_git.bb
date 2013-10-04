@@ -9,7 +9,11 @@ PV = "0.1+git${SRCPV}"
 PR = "r0"
 
 
+<<<<<<< HEAD
 SRC_URI = "git://git.yoctoproject.org/${BPN} \
+=======
+SRC_URI = "git://git.yoctoproject.org/${BPN};protocol=git \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://dso_linking_change_build_fix.patch"
 
 S = "${WORKDIR}/git/tests"

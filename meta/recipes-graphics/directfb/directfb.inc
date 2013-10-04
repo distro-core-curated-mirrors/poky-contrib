@@ -14,8 +14,13 @@ DEPENDS = "jpeg libpng freetype zlib tslib"
 INC_PR = "r0"
 
 SRC_URI = "http://directfb.org/downloads/Core/DirectFB-1.6/DirectFB-${PV}.tar.gz \
+<<<<<<< HEAD
            file://configurefix.patch \
            file://fusion.patch"
+=======
+           file://directfb-1.2.x-fix-pkgconfig-cflags.patch \
+           file://configurefix.patch"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 S = "${WORKDIR}/DirectFB-${PV}"
 
@@ -36,10 +41,13 @@ EXTRA_OECONF = "\
   --disable-mesa \
 "
 
+<<<<<<< HEAD
 #Once -fno-omit-frame-pointer option of gcc is added into TARGET_CLFAGS as default
 #this will cause directfb build failure on x86 arch, so filter out it.
 TARGET_CFLAGS_x86 := "${@oe_filter_out('-fno-omit-frame-pointer', '${TARGET_CFLAGS}', d)}"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 #PACKAGES_DYNAMIC += "^directfb-inputdrivers-.*"
 #
 #python populate_packages_prepend () {

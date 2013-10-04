@@ -10,7 +10,11 @@ SRCREV = "3dfd0a09de696ec8c544762747f8a0f77153622e"
 PV = "0.0+git${SRCPV}"
 PR = "r0"
 
+<<<<<<< HEAD
 SRC_URI = "git://git.gnome.org/${BPN}"
+=======
+SRC_URI = "git://git.gnome.org/${BPN};protocol=git"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 S = "${WORKDIR}/git"
 

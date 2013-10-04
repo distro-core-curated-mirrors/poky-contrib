@@ -7,9 +7,16 @@ HOMEPAGE = "http://www.gnu.org/software/coreutils/"
 BUGTRACKER = "http://debbugs.gnu.org/coreutils"
 LICENSE = "GPLv2+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe \
+<<<<<<< HEAD
                     file://src/ls.c;beginline=4;endline=16;md5=15ed60f67b1db5fedd5dbc37cf8a9543"
 PR = "r5"
 DEPENDS_class-native = "gettext-native"
+=======
+                    file://src/ls.c;startline=4;endline=16;md5=482a96d4f25010a4e13f8743e0c3685e"
+PR = "r3"
+DEPENDS = "coreutils-native-${PV}"
+DEPENDS_virtclass-native = "gettext-native"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 inherit autotools gettext
 
@@ -27,6 +34,7 @@ SRC_URI_BASE = "${GNU_MIRROR}/coreutils/${BP}.tar.bz2 \
            "
 
 SRC_URI = "${SRC_URI_BASE} file://fix_for_manpage_building.patch"
+<<<<<<< HEAD
 SRC_URI_class-native = "${SRC_URI_BASE}"
 
 SRC_URI[md5sum] = "c9607d8495f16e98906e7ed2d9751a06"
@@ -42,6 +50,12 @@ PACKAGECONFIG_class-native ??= ""
 #
 PACKAGECONFIG[acl] = "--enable-acl,--disable-acl,acl,"
 
+=======
+SRC_URI_virtclass-native = "${SRC_URI_BASE}"
+
+SRC_URI[md5sum] = "c9607d8495f16e98906e7ed2d9751a06"
+SRC_URI[sha256sum] = "89c2895ad157de50e53298b22d91db116ee4e1dd3fdf4019260254e2e31497b0"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # [ gets a special treatment and is not included in this
 bindir_progs = "base64 basename cksum comm csplit cut dir dircolors dirname du \
@@ -76,6 +90,7 @@ do_install() {
 	# in update-alternatives to fail, therefore use lbracket - the name used
 	# for the actual source file.
 	mv ${D}${bindir}/[ ${D}${bindir}/lbracket.${BPN}
+<<<<<<< HEAD
 
 	# Newer versions of coreutils do not include su, to mimic this behavior
 	# we simply remove it.
@@ -86,6 +101,14 @@ inherit update-alternatives
 
 ALTERNATIVE_PRIORITY = "100"
 
+=======
+}
+
+inherit update-alternatives
+
+ALTERNATIVE_PRIORITY = "100"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ALTERNATIVE_${PN} = "lbracket ${bindir_progs} ${base_bindir_progs} ${sbindir_progs}"
 
 ALTERNATIVE_PRIORITY[uptime] = "10"

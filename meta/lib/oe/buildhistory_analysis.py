@@ -17,12 +17,20 @@ import bb.utils
 
 
 # How to display fields
+<<<<<<< HEAD
 list_fields = ['DEPENDS', 'RPROVIDES', 'RDEPENDS', 'RRECOMMENDS', 'RSUGGESTS', 'RREPLACES', 'RCONFLICTS', 'FILES', 'FILELIST', 'USER_CLASSES', 'IMAGE_CLASSES', 'IMAGE_FEATURES', 'IMAGE_LINGUAS', 'IMAGE_INSTALL', 'BAD_RECOMMENDATIONS']
+=======
+list_fields = ['DEPENDS', 'RDEPENDS', 'RRECOMMENDS', 'FILES', 'FILELIST', 'USER_CLASSES', 'IMAGE_CLASSES', 'IMAGE_FEATURES', 'IMAGE_LINGUAS', 'IMAGE_INSTALL', 'BAD_RECOMMENDATIONS']
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 list_order_fields = ['PACKAGES']
 defaultval_fields = ['PKG', 'PKGE', 'PKGV', 'PKGR']
 numeric_fields = ['PKGSIZE', 'IMAGESIZE']
 # Fields to monitor
+<<<<<<< HEAD
 monitor_fields = ['RPROVIDES', 'RDEPENDS', 'RRECOMMENDS', 'RREPLACES', 'RCONFLICTS', 'PACKAGES', 'FILELIST', 'PKGSIZE', 'IMAGESIZE', 'PKG', 'PKGE', 'PKGV', 'PKGR']
+=======
+monitor_fields = ['RDEPENDS', 'RRECOMMENDS', 'PACKAGES', 'FILELIST', 'PKGSIZE', 'IMAGESIZE', 'PKG', 'PKGE', 'PKGV', 'PKGR']
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # Percentage change to alert for numeric fields
 monitor_numeric_threshold = 10
 # Image files to monitor (note that image-info.txt is handled separately)
@@ -52,10 +60,14 @@ class ChangeRecord:
 
     def _str_internal(self, outer):
         if outer:
+<<<<<<< HEAD
             if '/image-files/' in self.path:
                 prefix = '%s: ' % self.path.split('/image-files/')[0]
             else:
                 prefix = '%s: ' % self.path
+=======
+            prefix = '%s: ' % self.path
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         else:
             prefix = ''
 
@@ -69,7 +81,11 @@ class ChangeRecord:
             return pkglist
 
         if self.fieldname in list_fields or self.fieldname in list_order_fields:
+<<<<<<< HEAD
             if self.fieldname in ['RPROVIDES', 'RDEPENDS', 'RRECOMMENDS', 'RSUGGESTS', 'RREPLACES', 'RCONFLICTS']:
+=======
+            if self.fieldname in ['RDEPENDS', 'RRECOMMENDS']:
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                 (depvera, depverb) = compare_pkg_lists(self.oldvalue, self.newvalue)
                 aitems = pkglist_combine(depvera)
                 bitems = pkglist_combine(depverb)
@@ -110,6 +126,7 @@ class ChangeRecord:
             diff = difflib.unified_diff(alines, blines, self.fieldname, self.fieldname, lineterm='')
             out += '\n  '.join(list(diff)[2:])
             out += '\n  --'
+<<<<<<< HEAD
         elif self.fieldname in img_monitor_files or '/image-files/' in self.path:
             fieldname = self.fieldname
             if '/image-files/' in self.path:
@@ -119,12 +136,22 @@ class ChangeRecord:
                 if outer:
                     prefix = 'Changes to %s ' % self.path
                 out = '(%s):\n  ' % self.fieldname
+=======
+        elif self.fieldname in img_monitor_files:
+            if outer:
+                prefix = 'Changes to %s ' % self.path
+            out = '(%s):\n  ' % self.fieldname
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             if self.filechanges:
                 out += '\n  '.join(['%s' % i for i in self.filechanges])
             else:
                 alines = self.oldvalue.splitlines()
                 blines = self.newvalue.splitlines()
+<<<<<<< HEAD
                 diff = difflib.unified_diff(alines, blines, fieldname, fieldname, lineterm='')
+=======
+                diff = difflib.unified_diff(alines, blines, self.fieldname, self.fieldname, lineterm='')
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                 out += '\n  '.join(list(diff))
                 out += '\n  --'
         else:
@@ -193,7 +220,11 @@ def blob_to_dict(blob):
     adict = {}
     for line in alines:
         splitv = [i.strip() for i in line.split('=',1)]
+<<<<<<< HEAD
         if len(splitv) > 1:
+=======
+        if splitv.count > 1:
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             adict[splitv[0]] = splitv[1]
     return adict
 
@@ -239,7 +270,11 @@ def compare_file_lists(alines, blines):
                 filechanges.append(FileChange(path, FileChange.changetype_ownergroup, oldvalue, newvalue))
             # Check symlink target
             if newsplitv[0][0] == 'l':
+<<<<<<< HEAD
                 if len(splitv) > 3:
+=======
+                if splitv.count > 3:
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                     oldvalue = splitv[3]
                 else:
                     oldvalue = None
@@ -336,7 +371,11 @@ def compare_dict_blobs(path, ablob, bblob, report_all):
             elif (not report_all) and key in list_fields:
                 if key == "FILELIST" and path.endswith("-dbg") and bstr.strip() != '':
                     continue
+<<<<<<< HEAD
                 if key in ['RPROVIDES', 'RDEPENDS', 'RRECOMMENDS', 'RSUGGESTS', 'RREPLACES', 'RCONFLICTS']:
+=======
+                if key in ['RDEPENDS', 'RRECOMMENDS']:
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                     (depvera, depverb) = compare_pkg_lists(astr, bstr)
                     if depvera == depverb:
                         continue
@@ -401,9 +440,12 @@ def process_changes(repopath, revision1, revision2 = 'HEAD', report_all = False)
                     changes.append(chg)
             elif filename == 'image-info.txt':
                 changes.extend(compare_dict_blobs(path, d.a_blob, d.b_blob, report_all))
+<<<<<<< HEAD
             elif '/image-files/' in path:
                 chg = ChangeRecord(path, filename, d.a_blob.data_stream.read(), d.b_blob.data_stream.read(), True)
                 changes.append(chg)
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     # Look for added preinst/postinst/prerm/postrm
     # (without reporting newly added recipes)

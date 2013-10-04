@@ -8,8 +8,14 @@ and executables, so that far fewer relocations need to be resolved at \
 runtime and thus programs come up faster."
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=c93c0550bd3173f4504b2cbd8991e50b"
+<<<<<<< HEAD
 SRCREV = "6822ec76aa95f278195aeae59d4868ef224d7e4d"
 PV = "1.0+git${SRCPV}"
+=======
+SRCREV = "a2d8e30942bd4bc0a5c852b9d9d12f8684c4bb8d"
+PV = "1.0+git${SRCPV}"
+PR = "r10"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 #
 # The cron script attempts to re-prelink the system daily -- on
@@ -26,7 +32,11 @@ FILES_${PN}-cron = "${sysconfdir}/cron.daily ${sysconfdir}/default"
 
 PACKAGES =+ "${PN}-cron"
 
+<<<<<<< HEAD
 SRC_URI = "git://git.yoctoproject.org/prelink-cross.git \
+=======
+SRC_URI = "git://git.yoctoproject.org/prelink-cross.git;protocol=git \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://prelink.conf \
            file://prelink.cron.daily \
            file://prelink.default \

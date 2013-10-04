@@ -4,6 +4,7 @@ Signed-off-by: Björn Stenberg <bjst@enea.com>
 
 Upstream-Status: Pending
 
+<<<<<<< HEAD
 Index: pigz-2.3/Makefile
 ===================================================================
 --- pigz-2.3.orig/Makefile
@@ -17,3 +18,16 @@ Index: pigz-2.3/Makefile
  	ln -f pigz unpigz
  
  pigz.o: pigz.c yarn.h zopfli/deflate.h zopfli/util.h
+=======
+--- pigz-2.2.4/Makefile.orig	2012-01-01 02:46:58.000000000 +0100
++++ pigz-2.2.4/Makefile	2012-03-09 08:47:40.025094863 +0100
+@@ -2,7 +2,7 @@
+ CFLAGS=-O3 -Wall -Wextra
+ 
+ pigz: pigz.o yarn.o
+-	$(CC) -o pigz pigz.o yarn.o -lpthread -lz
++	$(CC) $(LDFLAGS) -o pigz pigz.o yarn.o -lpthread -lz
+ 	ln -f pigz unpigz
+ 
+ pigz.o: pigz.c yarn.h
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

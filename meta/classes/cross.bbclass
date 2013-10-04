@@ -7,7 +7,11 @@ EXCLUDE_FROM_WORLD = "1"
 CLASSOVERRIDE = "class-cross"
 PACKAGES = ""
 PACKAGES_DYNAMIC = ""
+<<<<<<< HEAD
 PACKAGES_DYNAMIC_class-native = ""
+=======
+PACKAGES_DYNAMIC_virtclass-native = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 HOST_ARCH = "${BUILD_ARCH}"
 HOST_VENDOR = "${BUILD_VENDOR}"
@@ -72,8 +76,28 @@ python cross_virtclass_handler () {
 addhandler cross_virtclass_handler
 cross_virtclass_handler[eventmask] = "bb.event.RecipePreFinalise"
 
+python cross_virtclass_handler () {
+    if not isinstance(e, bb.event.RecipePreFinalise):
+        return
+
+    classextend = e.data.getVar('BBCLASSEXTEND', True) or ""
+    if "cross" not in classextend:
+        return
+
+    pn = e.data.getVar("PN", True)
+    if not pn.endswith("-cross"):
+        return
+
+    bb.data.setVar("OVERRIDES", e.data.getVar("OVERRIDES", False) + ":virtclass-cross", e.data)
+}
+
+addhandler cross_virtclass_handler
+
 do_install () {
 	oe_runmake 'DESTDIR=${D}' install
 }
+<<<<<<< HEAD
 
 USE_NLS = "no"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

@@ -10,7 +10,11 @@ to recode S-Lang procedures in C if you need to."
 HOMEPAGE = "http://www.jedsoft.org/slang/"
 SECTION = "libs"
 DEPENDS = "pcre"
+<<<<<<< HEAD
 PR = "r12"
+=======
+PR = "r11"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=a52a18a472d4f7e45479b06563717c02"
@@ -27,6 +31,7 @@ inherit autotools
 SRC_URI[md5sum] = "7fcfd447e378f07dd0c0bae671fe6487"
 SRC_URI[sha256sum] = "9a8257a9a2a55099af858b13338dc8f3a06dd2069f46f0df2c9c3bb84a01d5db"
 
+<<<<<<< HEAD
 EXTRA_OECONF += " --without-z --without-png --without-onig --x-includes=${STAGING_DIR_HOST}/usr/include/X11 --x-libraries=${STAGING_DIR_HOST}/usr/lib"
 
 do_configure_prepend() {
@@ -36,12 +41,18 @@ do_configure_prepend() {
     cd ${S}/autoconf && gnu-configize --force && mv autoconf/config.* .
     cd ${B}
 }
+=======
+EXTRA_OECONF += " --without-z --without-png --x-includes=${STAGING_DIR_HOST}/usr/include/X11 --x-libraries=${STAGING_DIR_HOST}/usr/lib"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 do_install() {
 	oe_runmake install DESTDIR=${D} -e 'INST_LIB_DIR=${STAGING_DIR_HOST}/usr/lib'
 }
 
 FILES_${PN} += "${libdir}/${BPN}/v2/modules/ ${datadir}/slsh/"
+<<<<<<< HEAD
 FILES_${PN}-dbg += "${libdir}/${BPN}/v2/modules/.debug"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PARALLEL_MAKE = ""

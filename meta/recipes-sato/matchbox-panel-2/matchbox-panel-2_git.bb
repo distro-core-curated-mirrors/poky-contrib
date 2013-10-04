@@ -7,6 +7,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f \
                     file://matchbox-panel/mb-panel.h;endline=10;md5=0b7db28f4b6863fb853d0467e590019a \
                     file://applets/startup/startup.c;endline=22;md5=b0a64fbef3097d79f8264e6907a98f03"
 
+<<<<<<< HEAD
 DEPENDS = "gnome-common gtk+ startup-notification dbus dbus-glib"
 DEPENDS += " ${@base_contains("MACHINE_FEATURES", "acpi", "libacpi", "",d)}"
 DEPENDS += " ${@base_contains("MACHINE_FEATURES", "apm", "apmd", "",d)}"
@@ -14,12 +15,26 @@ DEPENDS += " ${@base_contains("MACHINE_FEATURES", "apm", "apmd", "",d)}"
 SRCREV = "26a3a67b41c50e0ae163d8fe86ccf7a0f0a671ae"
 PV = "2.0+git${SRCPV}"
 PR = "r0"
+=======
+DEPENDS = "gtk+ startup-notification dbus dbus-glib"
+DEPENDS += " ${@base_contains("MACHINE_FEATURES", "acpi", "libacpi", "",d)}"
+DEPENDS += " ${@base_contains("MACHINE_FEATURES", "apm", "apmd", "",d)}"
+
+SRCREV = "cdf7a22716b87468f10573f622d5c7a58a684e35"
+PV = "0.0+git${SRCPV}"
+PR = "r6"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 RPROVIDES_${PN} = "matchbox-panel"
 RREPLACES_${PN} = "matchbox-panel"
 RCONFLICTS_${PN} = "matchbox-panel"
 
+<<<<<<< HEAD
 SRC_URI = "git://git.yoctoproject.org/${BPN}"
+=======
+SRC_URI = "git://git.yoctoproject.org/${BPN};protocol=git \	
+	   file://gcc-4.6.0-compile.patch"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 EXTRA_OECONF = "--enable-startup-notification --enable-dbus"
 EXTRA_OECONF += " ${@base_contains("MACHINE_FEATURES", "acpi", "--with-battery=acpi", "",d)}"

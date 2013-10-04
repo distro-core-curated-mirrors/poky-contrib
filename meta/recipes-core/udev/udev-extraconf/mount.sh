@@ -21,6 +21,7 @@ automount() {
 	name="`basename "$DEVNAME"`"
 
 	! test -d "/media/$name" && mkdir -p "/media/$name"
+<<<<<<< HEAD
 	# Silent util-linux's version of mounting auto
 	if [ "x`readlink $MOUNT`" = "x/bin/mount.util-linux" ] ;
 	then
@@ -38,6 +39,9 @@ automount() {
 		;;
 	esac
 
+=======
+	
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	if ! $MOUNT -t auto $DEVNAME "/media/$name"
 	then
 		#logger "mount.sh/automount" "$MOUNT -t auto $DEVNAME \"/media/$name\" failed!"
@@ -58,23 +62,32 @@ rm_dir() {
 	fi
 }
 
+<<<<<<< HEAD
 # No ID_FS_TYPE for cdrom device, yet it should be mounted
 name="`basename "$DEVNAME"`"
 [ -e /sys/block/$name/device/media ] && media_type=`cat /sys/block/$name/device/media`
 
 if [ "$ACTION" = "add" ] && [ -n "$DEVNAME" ] && [ -n "$ID_FS_TYPE" -o "$media_type" = "cdrom" ]; then
+=======
+if [ "$ACTION" = "add" ] && [ -n "$DEVNAME" ]; then
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	if [ -x "$PMOUNT" ]; then
 		$PMOUNT $DEVNAME 2> /dev/null
 	elif [ -x $MOUNT ]; then
     		$MOUNT $DEVNAME 2> /dev/null
 	fi
 	
+<<<<<<< HEAD
 	# If the device isn't mounted at this point, it isn't
 	# configured in fstab (note the root filesystem can show up as
 	# /dev/root in /proc/mounts, so check the device number too)
 	if expr $MAJOR "*" 256 + $MINOR != `stat -c %d /`; then
 		grep -q "^$DEVNAME " /proc/mounts || automount
 	fi
+=======
+	# If the device isn't mounted at this point, it isn't configured in fstab
+	grep -q "^$DEVNAME " /proc/mounts || automount
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fi
 
 

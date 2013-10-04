@@ -24,7 +24,11 @@ RPROVIDES_${PN} = "glibc rtld(GNU_HASH)"
 RPROVIDES_${PN}-utils = "glibc-utils"
 RPROVIDES_${PN}-mtrace = "glibc-mtrace libc-mtrace"
 RPROVIDES_${PN}-pic = "glibc-pic"
+<<<<<<< HEAD
 RPROVIDES_${PN}-dev = "glibc-dev libc6-dev virtual-libc-dev"
+=======
+RPROVIDES_${PN}-dev = "glibc-dev"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 RPROVIDES_${PN}-staticdev = "glibc-staticdev"
 RPROVIDES_${PN}-doc = "glibc-doc"
 RPROVIDES_eglibc-extra-nss = "glibc-extra-nss"
@@ -73,6 +77,7 @@ inherit libc-common multilib_header
 do_install_append () {
 	rm -f ${D}${sysconfdir}/localtime
 	rm -rf ${D}${localstatedir}
+<<<<<<< HEAD
 
 	# remove empty eglibc dir
 	if [ -d ${D}${libdir}/eglibc -a ! -e ${D}${libdir}/eglibc/pt_chown ]; then
@@ -127,13 +132,55 @@ addtask do_install_locale after do_install before do_populate_sysroot do_package
 
 bashscripts = "mtrace sotruss xtrace"
 
+=======
+
+	oe_multilib_header bits/syscall.h
+
+	if [ -f ${D}${bindir}/mtrace ]; then
+		sed -i -e '1s,#!.*perl,#! ${USRBINPATH}/env perl,' -e '2s,exec.*perl,exec ${USRBINPATH}/env perl,' ${D}${bindir}/mtrace
+	fi
+	rm -rf ${D}${includedir}/rpcsvc/rquota*
+}
+
+do_install_locale () {
+	dest=${D}/${includedir}/eglibc-locale-internal-${MULTIMACH_TARGET_SYS}
+	install -d ${dest}${base_libdir} ${dest}${bindir} ${dest}${libdir} ${dest}${datadir}
+	if [ "${base_libdir}" != "${libdir}" ]; then
+		cp -fpPR ${D}${base_libdir}/* ${dest}${base_libdir}
+	fi
+	if [ -e ${D}${bindir}/localedef ]; then
+		mv -f ${D}${bindir}/localedef ${dest}${bindir}
+	fi
+	if [ -e ${D}${libdir}/gconv ]; then
+		mv -f ${D}${libdir}/gconv ${dest}${libdir}
+	fi
+	if [ -e ${D}${exec_prefix}/lib ]; then
+		cp -fpPR ${D}${exec_prefix}/lib ${dest}${exec_prefix}
+	fi
+	if [ -e ${D}${datadir}/i18n ]; then
+		mv ${D}${datadir}/i18n ${dest}${datadir}
+	fi
+	cp -fpPR ${D}${datadir}/* ${dest}${datadir}
+	rm -rf ${D}${datadir}/locale/
+	cp -fpPR ${WORKDIR}/SUPPORTED ${dest}
+}
+
+addtask do_install_locale after do_install before do_populate_sysroot do_package
+
+bashscripts = "mtrace sotruss xtrace"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_evacuate_scripts () {
 	target=${D}${includedir}/eglibc-scripts-internal-${MULTIMACH_TARGET_SYS}
 	mkdir -p $target
 	for i in ${bashscripts}; do
+<<<<<<< HEAD
 		if [ -f ${D}${bindir}/$i ]; then
 			cp ${D}${bindir}/$i $target/
 		fi
+=======
+		cp ${D}${bindir}/$i $target/
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	done
 }
 

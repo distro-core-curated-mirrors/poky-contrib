@@ -1,5 +1,6 @@
 require readline.inc
 
+<<<<<<< HEAD
 PR = "r4"
 
 SRC_URI += "${GNU_MIRROR}/readline/readline-6.2-patches/readline62-001;name=patch1;apply=yes;striplevel=0 \
@@ -20,3 +21,9 @@ SRC_URI[patch3.md5sum]    = "c9d5d79718856e711667dede87cb7622"
 SRC_URI[patch3.sha256sum] = "cb2131ff352d6e5f82edc09755191f74220b15f026bdb6c52624931c79622374"
 SRC_URI[patch4.md5sum]    = "c08e787f50579ce301075c523fa660a4"
 SRC_URI[patch4.sha256sum] = "09bd342479ea5bb8b6411bfdf7d302fab2e521d1d241bcb8344d3bad5d9f5476"
+=======
+PR = "r3"
+
+SRC_URI[md5sum] = "67948acb2ca081f23359d0256e9a271c"
+SRC_URI[sha256sum] = "79a696070a058c233c72dd6ac697021cc64abd5ed51e59db867d66d196a89381"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

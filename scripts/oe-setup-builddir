@@ -37,7 +37,11 @@ fi
 
 cd "$BUILDDIR"
 
+<<<<<<< HEAD
 TEMPLATECONF=${TEMPLATECONF:-meta-yocto/conf}
+=======
+TEMPLATECONF=${TEMPLATECONF:-meta/conf}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # 
 # $TEMPLATECONF can point to a directory for the template local.conf & bblayers.conf
@@ -55,7 +59,10 @@ if [ "x" != "x$TEMPLATECONF" ]; then
     fi
     OECORELAYERCONF="$TEMPLATECONF/bblayers.conf.sample"
     OECORELOCALCONF="$TEMPLATECONF/local.conf.sample"
+<<<<<<< HEAD
     OECORENOTESCONF="$TEMPLATECONF/conf-notes.txt"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fi
 
 if [ "x" = "x$OECORELOCALCONF" ]; then
@@ -101,10 +108,14 @@ EOM
 
     # Put the abosolute path to the layers in bblayers.conf so we can run
     # bitbake without the init script after the first run
+<<<<<<< HEAD
     sed "s|##OEROOT##|$OEROOT|g" $OECORELAYERCONF > $BUILDDIR/conf/bblayers.conf
     # ##COREBASE## is deprecated as it's meaning was inconsistent, but continue
     # to replace it for compatibility.
     sed -i -e "s|##COREBASE##|$OEROOT|g" $BUILDDIR/conf/bblayers.conf
+=======
+    sed "s|##COREBASE##|$OEROOT|g" $OECORELAYERCONF > $BUILDDIR/conf/bblayers.conf
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fi
 
 # Prevent disturbing a new GIT clone in same console
@@ -117,9 +128,23 @@ cat <<EOM
 
 You can now run 'bitbake <target>'
 
+<<<<<<< HEAD
 EOM
 if [ "x" = "x$OECORENOTESCONF" ]; then
     OECORENOTESCONF="$OEROOT/meta/conf/conf-notes.txt"
 fi
 [ ! -r "$OECORENOTESCONF" ] || cat $OECORENOTESCONF
 unset OECORENOTESCONF
+=======
+Common targets are:
+    core-image-minimal
+    core-image-sato
+    meta-toolchain
+    meta-toolchain-sdk
+    adt-installer
+    meta-ide-support
+
+You can also run generated qemu images with a command like 'runqemu qemux86'
+
+EOM
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

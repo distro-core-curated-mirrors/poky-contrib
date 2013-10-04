@@ -10,8 +10,12 @@ PR = "r6"
 SRC_URI = "http://www.ngolde.de/download/libacpi-${PV}.tar.gz \
 	   file://makefile-fix.patch \
 	   file://libacpi_fix_for_x32.patch \
+<<<<<<< HEAD
 	   file://use_correct_strip_in_cross_environment.patch \
 	   file://ldflags.patch "
+=======
+	   file://use_correct_strip_in_cross_environment.patch"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI[md5sum] = "05b53dd7bead66dda35fec502b91066c"
 SRC_URI[sha256sum] = "13086e31d428b9c125954d48ac497b754bbbce2ef34ea29ecd903e82e25bad29"

@@ -8,6 +8,10 @@
 
 ARCHIVE_EXCLUDE_FROM ?= ".pc autom4te.cache"
 ARCHIVE_TYPE ?= "tar srpm"
+<<<<<<< HEAD
+=======
+DISTRO ?= "poky"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PATCHES_ARCHIVE_WITH_SERIES = 'yes'
 SOURCE_ARCHIVE_LOG_WITH_SCRIPTS ?= '${@d.getVarFlag('ARCHIVER_MODE', 'log_type') \
     if d.getVarFlag('ARCHIVER_MODE', 'log_type') != 'none' else 'logs_with_scripts'}'
@@ -63,10 +67,14 @@ def copyleft_should_include(d):
         bb.fatal('%s: %s' % (d.getVar('PF', True), exc))
     else:
         if is_included:
+<<<<<<< HEAD
             if reason:
                 return True, 'recipe has included licenses: %s' % ', '.join(reason)
             else:
                 return False, 'recipe does not include a copyleft license'
+=======
+            return True, 'recipe has included licenses: %s' % ', '.join(reason)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         else:
             return False, 'recipe has excluded licenses: %s' % ', '.join(reason)
 
@@ -78,7 +86,14 @@ def tar_filter(d):
     """
     if d.getVar('FILTER', True) == "yes":
         included, reason = copyleft_should_include(d)
+<<<<<<< HEAD
         return not included
+=======
+        if not included:
+            return False
+        else:
+            return True
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     else:
         return False
 
@@ -94,12 +109,19 @@ def get_bb_inc(d):
     work_dir = d.getVar('WORKDIR', True)
     bbfile = d.getVar('FILE', True)
     bbdir = os.path.dirname(bbfile)
+<<<<<<< HEAD
     target_sys = d.getVar('TARGET_SYS', True)
     pf = d.getVar('PF', True)
     licenses = get_licenses(d)
     script_logs = os.path.join(work_dir, 'script-logs/'+ target_sys + '/' + licenses + '/' + pf + '/script-logs')
     bb_inc = os.path.join(script_logs, 'bb_inc')
     bb.utils.mkdirhier(bb_inc)
+=======
+    script_logs = os.path.join(work_dir, 'script-logs')
+    bb_inc = os.path.join(script_logs, 'bb_inc')
+    bb.mkdirhier(script_logs)
+    bb.mkdirhier(bb_inc)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     def find_file(dir, file):
         for root, dirs, files in os.walk(dir):
@@ -126,6 +148,7 @@ def get_bb_inc(d):
     for bbincfile in bbinc:
         shutil.copy(bbincfile, bb_inc)
 
+<<<<<<< HEAD
     return script_logs
 
 def get_logs(d):
@@ -140,6 +163,10 @@ def get_logs(d):
 
     try:
         bb.utils.mkdirhier(os.path.join(script_logs, 'temp'))
+=======
+    try:
+        bb.mkdirhier(os.path.join(script_logs, 'temp'))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         oe.path.copytree(os.path.join(work_dir, 'temp'), os.path.join(script_logs, 'temp'))
     except (IOError, AttributeError):
         pass
@@ -158,7 +185,11 @@ def get_series(d):
     s = d.getVar('S', True)
     dest = os.path.join(work_dir, pf + '-series')
     shutil.rmtree(dest, ignore_errors=True)
+<<<<<<< HEAD
     bb.utils.mkdirhier(dest)
+=======
+    bb.mkdirhier(dest)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     src_uri = d.getVar('SRC_URI', True).split()
     fetch = bb.fetch2.Fetch(src_uri, d)
@@ -175,7 +206,11 @@ def get_series(d):
             shutil.copy(patch, dest)
         except IOError:
             if os.path.isdir(patch):
+<<<<<<< HEAD
                 bb.utils.mkdirhier(os.path.join(dest, patch))
+=======
+                bb.mkdirhier(os.path.join(dest, patch))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                 oe.path.copytree(patch, os.path.join(dest, patch))
     return dest
 
@@ -190,11 +225,19 @@ def get_applying_patches(d):
     work_dir = d.getVar('WORKDIR', True)
     dest = os.path.join(work_dir, pf + '-patches')
     shutil.rmtree(dest, ignore_errors=True)
+<<<<<<< HEAD
     bb.utils.mkdirhier(dest)
 
     patches = src_patches(d)
     for patch in patches:
         _, _, local, _, _, parm = bb.fetch.decodeurl(patch)
+=======
+    bb.mkdirhier(dest)
+
+    patches = src_patches(d)
+    for patch in patches:
+        _, _, local, _, _, parm = bb.decodeurl(patch)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         if local:
              shutil.copy(local, dest)
     return dest
@@ -323,8 +366,12 @@ def archive_logs(d, logdir, bbinc=False):
     work_dir = d.getVar('WORKDIR', True)
     log_dir =  os.path.basename(logdir)
     tarname = pf + '-' + log_dir + ".tar.gz"
+<<<<<<< HEAD
     archive_dir = os.path.join( logdir, '..' )
     tarname = do_tarball(archive_dir, log_dir, tarname)
+=======
+    tarname = do_tarball(work_dir, log_dir, tarname)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     if bbinc:
         shutil.rmtree(logdir, ignore_errors=True)
     return tarname
@@ -357,7 +404,11 @@ def move_tarball_deploy(d, tarball_list):
     work_dir = d.getVar('WORKDIR', True)
     tar_sources = d.getVar('DEPLOY_DIR', True) + '/sources/' + target_sys + '/' + licenses + '/' + pf
     if not os.path.exists(tar_sources):
+<<<<<<< HEAD
         bb.utils.mkdirhier(tar_sources)
+=======
+        bb.mkdirhier(tar_sources)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     for source in tarball_list:
         if source:
             if os.path.exists(os.path.join(tar_sources, source)):
@@ -400,6 +451,11 @@ def archive_sources_patches(d, stage_name):
     import shutil
 
     check_archiving_type(d)
+<<<<<<< HEAD
+=======
+    if not_tarball(d) or tar_filter(d):
+        return
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     source_tar_name = archive_sources(d, stage_name)
     if stage_name == "prepatch":
@@ -427,12 +483,19 @@ def archive_scripts_logs(d):
     archive scripts and logs. scripts include .bb and .inc files and
     logs include stuff in "temp".
     """
+<<<<<<< HEAD
     import shutil
 
+=======
+
+    if tar_filter(d):
+        return
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     work_dir = d.getVar('WORKDIR', True)
     temp_dir = os.path.join(work_dir, 'temp')
     source_archive_log_with_scripts = d.getVar('SOURCE_ARCHIVE_LOG_WITH_SCRIPTS', True)
     if source_archive_log_with_scripts == 'logs_with_scripts':
+<<<<<<< HEAD
         logdir = get_logs(d)
         logdir = get_bb_inc(d)
     elif source_archive_log_with_scripts == 'logs':
@@ -443,6 +506,20 @@ def archive_scripts_logs(d):
     tarlog = archive_logs(d, logdir, True)
 
     if d.getVar('SOURCE_ARCHIVE_PACKAGE_TYPE', True) == 'srpm':
+=======
+        logdir = get_bb_inc(d)
+        tarlog = archive_logs(d, logdir, True)
+    elif source_archive_log_with_scripts == 'logs':
+        if os.path.exists(temp_dir):
+            tarlog = archive_logs(d, temp_dir, False)
+    else:
+        return
+
+    if d.getVar('SOURCE_ARCHIVE_PACKAGE_TYPE', True) != 'srpm':
+        move_tarball_deploy(d, [tarlog])
+
+    else:
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         store_package(d, tarlog)
 
 def dumpdata(d):
@@ -451,15 +528,26 @@ def dumpdata(d):
     kinds of variables and functions when running a task
     """
 
+<<<<<<< HEAD
+=======
+    if tar_filter(d):
+        return
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     workdir = bb.data.getVar('WORKDIR', d, 1)
     distro = bb.data.getVar('DISTRO', d, 1)
     s = d.getVar('S', True)
     pf = d.getVar('PF', True)
     target_sys = d.getVar('TARGET_SYS', True)
     licenses = get_licenses(d)
+<<<<<<< HEAD
     dumpdir = os.path.join(workdir, 'diffgz-envdata/'+ target_sys + '/' + licenses + '/' + pf )
     if not os.path.exists(dumpdir):
         bb.utils.mkdirhier(dumpdir)
+=======
+    dumpdir = d.getVar('DEPLOY_DIR', True) + '/sources/' + target_sys + '/' + licenses + '/' + pf
+    if not os.path.exists(dumpdir):
+        bb.mkdirhier(dumpdir)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     dumpfile = os.path.join(dumpdir, bb.data.expand("${P}-${PR}.showdata.dump", d))
 
@@ -481,12 +569,21 @@ def create_diff_gz(d):
     import shutil
     import subprocess
 
+<<<<<<< HEAD
+=======
+    if tar_filter(d):
+        return
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     work_dir = d.getVar('WORKDIR', True)
     exclude_from = d.getVar('ARCHIVE_EXCLUDE_FROM', True).split()
     pf = d.getVar('PF', True)
     licenses = get_licenses(d)
     target_sys = d.getVar('TARGET_SYS', True)
+<<<<<<< HEAD
     diff_dir = os.path.join(work_dir, 'diffgz-envdata/'+ target_sys + '/' + licenses + '/' + pf )
+=======
+    diff_dir = d.getVar('DEPLOY_DIR', True) + '/sources/' + target_sys + '/' + licenses + '/' + pf
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     diff_file = os.path.join(diff_dir, bb.data.expand("${P}-${PR}.diff.gz",d))
 
     f = open(os.path.join(work_dir,'temp/exclude-from-file'), 'a')
@@ -496,10 +593,17 @@ def create_diff_gz(d):
     f.close()
 
     s=d.getVar('S', True)
+<<<<<<< HEAD
     distro = d.getVar('DISTRO',True) or ""
     dest = s + '/' + distro + '/files'
     if not os.path.exists(dest):
         bb.utils.mkdirhier(dest)
+=======
+    distro = d.getVar('DISTRO',True)
+    dest = s + '/' + distro + '/files'
+    if not os.path.exists(dest):
+        bb.mkdirhier(dest)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     for i in os.listdir(os.getcwd()):
         if os.path.isfile(i):
             try:
@@ -559,11 +663,20 @@ python do_archive_linux_yocto(){
 do_kernel_checkout[postfuncs] += "do_archive_linux_yocto "
 
 # remove tarball for sources, patches and logs after creating srpm.
+<<<<<<< HEAD
 python do_delete_tarlist(){
+=======
+python do_remove_tarlist(){
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     work_dir = d.getVar('WORKDIR', True)
     tarlist = os.path.join(work_dir, 'tar-package')
     if os.path.exists(tarlist):
         os.remove(tarlist)
 }
+<<<<<<< HEAD
 do_delete_tarlist[deptask] = "do_archive_scripts_logs"
 do_package_write_rpm[postfuncs] += "do_delete_tarlist "
+=======
+do_remove_tarlist[deptask] = "do_archive_scripts_logs"
+do_package_write_rpm[postfuncs] += "do_remove_tarlist "
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

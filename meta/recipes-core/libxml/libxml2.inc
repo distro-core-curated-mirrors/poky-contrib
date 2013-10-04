@@ -4,7 +4,11 @@ HOMEPAGE = "http://www.xmlsoft.org/"
 BUGTRACKER = "http://bugzilla.gnome.org/buglist.cgi?product=libxml2"
 SECTION = "libs"
 LICENSE = "MIT"
+<<<<<<< HEAD
 LIC_FILES_CHKSUM = "file://Copyright;md5=2044417e2e5006b65a8b9067b683fcf1 \
+=======
+LIC_FILES_CHKSUM = "file://Copyright;md5=bb90c48926316d9af6e2d70ca7013ade \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                     file://hash.c;beginline=6;endline=15;md5=96f7296605eae807670fb08947829969 \
                     file://list.c;beginline=4;endline=13;md5=cdbfa3dee51c099edb04e39f762ee907 \
                     file://trio.c;beginline=5;endline=14;md5=6c025753c86d958722ec76e94cae932e"
@@ -13,25 +17,41 @@ DEPENDS_class-nativesdk = "nativesdk-python"
 DEPENDS_class-native = "python-native"
 DEPENDS =+ "zlib"
 
+<<<<<<< HEAD
 SRC_URI = "ftp://xmlsoft.org/libxml2/libxml2-${PV}.tar.gz;name=libtar \
            file://libxml-64bit.patch \
            file://ansidecl.patch \
            file://runtest.patch \
            file://run-ptest \
           "
+=======
+SRC_URI = "ftp://xmlsoft.org/libxml2/libxml2-${PV}.tar.gz \
+           file://libxml-64bit.patch \
+           file://ansidecl.patch"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 inherit autotools pkgconfig binconfig pythonnative ptest
 
+<<<<<<< HEAD
 RDEPENDS_${PN}-ptest_append_libc-glibc += "eglibc-gconv-ebcdic-us eglibc-gconv-ibm1141"
+=======
+inherit autotools pkgconfig binconfig pythonnative
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # We don't DEPEND on binutils for ansidecl.h so ensure we don't use the header
 do_configure_prepend () {
 	sed -i -e '/.*ansidecl.h.*/d' ${S}/configure.in
 }
 
+<<<<<<< HEAD
 EXTRA_OECONF = "--without-python --without-debug --without-legacy --without-catalog --without-docbook --with-c14n --without-lzma --with-fexceptions"
 EXTRA_OECONF_class-native = "--with-python=${STAGING_BINDIR}/python --without-legacy --with-catalog --without-docbook --with-c14n --without-lzma"
 EXTRA_OECONF_class-nativesdk = "--with-python=${STAGING_BINDIR}/python --without-legacy --with-catalog --without-docbook --with-c14n --without-lzma"
+=======
+EXTRA_OECONF = "--without-python --without-debug --without-legacy --without-catalog --without-docbook --with-c14n --without-lzma"
+EXTRA_OECONF_virtclass-native = "--with-python=${STAGING_BINDIR}/python --without-legacy --with-catalog --without-docbook --with-c14n --without-lzma"
+EXTRA_OECONF_virtclass-nativesdk = "--with-python=${STAGING_BINDIR}/python --without-legacy --with-catalog --without-docbook --with-c14n --without-lzma"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 EXTRA_OECONF_linuxstdbase = "--without-python --with-debug --with-legacy --with-catalog --with-docbook --with-c14n --without-lzma"
 
 # required for pythong binding
@@ -53,8 +73,11 @@ PACKAGES += "${PN}-utils"
 FILES_${PN}-dev += "${libdir}/xml2Conf.sh"
 FILES_${PN}-utils += "${bindir}/*"
 
+<<<<<<< HEAD
 do_install_ptest () {
   cp -r ${WORKDIR}/xmlconf ${D}${PTEST_PATH}
 }
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 BBCLASSEXTEND = "native nativesdk"

@@ -19,7 +19,11 @@ do_install() {
 	install -m 0755 rpmresolve ${D}${bindir}
 }
 
+<<<<<<< HEAD
 do_install_append_class-native() {
+=======
+do_install_append_virtclass-native() {
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	create_wrapper ${D}/${bindir}/rpmresolve \
 			RPM_USRLIBRPM=${STAGING_LIBDIR_NATIVE}/rpm \
 			RPM_ETCRPM=${STAGING_ETCDIR_NATIVE}/rpm \

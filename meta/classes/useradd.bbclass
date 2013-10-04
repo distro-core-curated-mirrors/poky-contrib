@@ -1,13 +1,21 @@
+<<<<<<< HEAD
 inherit useradd_base
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # base-passwd-cross provides the default passwd and group files in the
 # target sysroot, and shadow -native and -sysroot provide the utilities
 # and support files needed to add and modify user and group accounts
 DEPENDS_append = "${USERADDDEPENDS}"
 USERADDDEPENDS = " base-passwd shadow-native shadow-sysroot shadow"
 USERADDDEPENDS_virtclass-cross = ""
+<<<<<<< HEAD
 USERADDDEPENDS_class-native = ""
 USERADDDEPENDS_class-nativesdk = ""
+=======
+USERADDDEPENDS_virtclass-native = ""
+USERADDDEPENDS_virtclass-nativesdk = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # This preinstall function can be run in four different contexts:
 #
@@ -26,15 +34,23 @@ if test "x$D" != "x"; then
 	OPT="--root $D"
 
 	# Add groups and users defined for all recipe packages
+<<<<<<< HEAD
 	GROUPADD_PARAM="${@get_all_cmd_params(d, 'groupadd')}"
 	USERADD_PARAM="${@get_all_cmd_params(d, 'useradd')}"
 	GROUPMEMS_PARAM="${@get_all_cmd_params(d, 'groupmems')}"
+=======
+	GROUPADD_PARAM="${@get_all_cmd_params(d, 'group')}"
+	USERADD_PARAM="${@get_all_cmd_params(d, 'user')}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 else
 	# Installing onto a target
 	# Add groups and users defined only for this package
 	GROUPADD_PARAM="${GROUPADD_PARAM}"
 	USERADD_PARAM="${USERADD_PARAM}"
+<<<<<<< HEAD
 	GROUPMEMS_PARAM="${GROUPMEMS_PARAM}"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fi
 
 # Perform group additions first, since user additions may depend
@@ -46,7 +62,34 @@ if test "x$GROUPADD_PARAM" != "x"; then
 	opts=`echo "$GROUPADD_PARAM" | cut -d ';' -f 1`
 	remaining=`echo "$GROUPADD_PARAM" | cut -d ';' -f 2-`
 	while test "x$opts" != "x"; do
+<<<<<<< HEAD
 		perform_groupadd "$SYSROOT" "$OPT $opts" 10
+=======
+		groupname=`echo "$opts" | awk '{ print $NF }'`
+		group_exists=`grep "^$groupname:" $SYSROOT/etc/group || true`
+		if test "x$group_exists" = "x"; then
+			count=1
+			while true; do
+				eval $PSEUDO groupadd $OPT $opts || true
+				group_exists=`grep "^$groupname:" $SYSROOT/etc/group || true`
+				if test "x$group_exists" = "x"; then
+					# File locking issues can require us to retry the command
+					echo "WARNING: groupadd command did not succeed. Retrying..."
+					sleep 1
+				else
+					break
+				fi
+				count=`expr $count + 1`
+				if test $count = 11; then
+					echo "ERROR: tried running groupadd command 10 times without success, giving up"
+					exit 1
+				fi
+			done		
+		else
+			echo "Note: group $groupname already exists, not re-creating it"
+		fi
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		if test "x$opts" = "x$remaining"; then
 			break
 		fi
@@ -62,6 +105,7 @@ if test "x$USERADD_PARAM" != "x"; then
 	opts=`echo "$USERADD_PARAM" | cut -d ';' -f 1`
 	remaining=`echo "$USERADD_PARAM" | cut -d ';' -f 2-`
 	while test "x$opts" != "x"; do
+<<<<<<< HEAD
 		perform_useradd "$SYSROOT" "$OPT $opts" 10
 		if test "x$opts" = "x$remaining"; then
 			break
@@ -79,6 +123,34 @@ if test "x$GROUPMEMS_PARAM" != "x"; then
 	remaining=`echo "$GROUPMEMS_PARAM" | cut -d ';' -f 2-`
 	while test "x$opts" != "x"; do
 		perform_groupmems "$SYSROOT" "$OPT $opts" 10
+=======
+		# useradd does not have a -f option, so we have to check if the
+		# username already exists manually
+		username=`echo "$opts" | awk '{ print $NF }'`
+		user_exists=`grep "^$username:" $SYSROOT/etc/passwd || true`
+		if test "x$user_exists" = "x"; then
+			count=1
+			while true; do
+				eval $PSEUDO useradd $OPT $opts || true
+				user_exists=`grep "^$username:" $SYSROOT/etc/passwd || true`
+				if test "x$user_exists" = "x"; then
+					# File locking issues can require us to retry the command
+					echo "WARNING: useradd command did not succeed. Retrying..."
+					sleep 1
+				else
+					break
+				fi
+				count=`expr $count + 1`
+				if test $count = 11; then
+					echo "ERROR: tried running useradd command 10 times without success, giving up"
+					exit 1
+				fi
+			done
+		else
+			echo "Note: username $username already exists, not re-creating it"
+		fi
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		if test "x$opts" = "x$remaining"; then
 			break
 		fi
@@ -101,7 +173,11 @@ useradd_sysroot () {
 }
 
 useradd_sysroot_sstate () {
+<<<<<<< HEAD
 	if [ "${BB_CURRENTTASK}" = "package_setscene" -o "${BB_CURRENTTASK}" = "populate_sysroot_setscene" ]
+=======
+	if [ "${BB_CURRENTTASK}" = "package_setscene" ]
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	then
 		useradd_sysroot
 	fi
@@ -110,6 +186,7 @@ useradd_sysroot_sstate () {
 do_install[prefuncs] += "${SYSROOTFUNC}"
 SYSROOTFUNC = "useradd_sysroot"
 SYSROOTFUNC_virtclass-cross = ""
+<<<<<<< HEAD
 SYSROOTFUNC_class-native = ""
 SYSROOTFUNC_class-nativesdk = ""
 SSTATEPREINSTFUNCS += "${SYSROOTPOSTFUNC}"
@@ -124,17 +201,40 @@ USERADDSETSCENEDEPS_class-native = ""
 USERADDSETSCENEDEPS_class-nativesdk = ""
 do_package_setscene[depends] += "${USERADDSETSCENEDEPS}"
 do_populate_sysroot_setscene[depends] += "${USERADDSETSCENEDEPS}"
+=======
+SYSROOTFUNC_virtclass-native = ""
+SYSROOTFUNC_virtclass-nativesdk = ""
+SSTATEPREINSTFUNCS += "${SYSROOTPOSTFUNC}"
+SYSROOTPOSTFUNC = "useradd_sysroot_sstate"
+SYSROOTPOSTFUNC_virtclass-cross = ""
+SYSROOTPOSTFUNC_virtclass-native = ""
+SYSROOTPOSTFUNC_virtclass-nativesdk = ""
+
+USERADDSETSCENEDEPS = "${MLPREFIX}base-passwd:do_populate_sysroot_setscene shadow-native:do_populate_sysroot_setscene ${MLPREFIX}shadow-sysroot:do_populate_sysroot_setscene"
+USERADDSETSCENEDEPS_virtclass-cross = ""
+USERADDSETSCENEDEPS_virtclass-native = ""
+USERADDSETSCENEDEPS_virtclass-nativesdk = ""
+do_package_setscene[depends] = "${USERADDSETSCENEDEPS}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Recipe parse-time sanity checks
 def update_useradd_after_parse(d):
     useradd_packages = d.getVar('USERADD_PACKAGES', True)
 
     if not useradd_packages:
+<<<<<<< HEAD
         raise bb.build.FuncFailed("%s inherits useradd but doesn't set USERADD_PACKAGES" % d.getVar('FILE'))
 
     for pkg in useradd_packages.split():
         if not d.getVar('USERADD_PARAM_%s' % pkg, True) and not d.getVar('GROUPADD_PARAM_%s' % pkg, True) and not d.getVar('GROUPMEMS_PARAM_%s' % pkg, True):
             bb.fatal("%s inherits useradd but doesn't set USERADD_PARAM, GROUPADD_PARAM or GROUPMEMS_PARAM for package %s" % (d.getVar('FILE'), pkg))
+=======
+        raise bb.build.FuncFailed, "%s inherits useradd but doesn't set USERADD_PACKAGES" % d.getVar('FILE')
+
+    for pkg in useradd_packages.split():
+        if not d.getVar('USERADD_PARAM_%s' % pkg, True) and not d.getVar('GROUPADD_PARAM_%s' % pkg, True):
+            raise bb.build.FuncFailed, "%s inherits useradd but doesn't set USERADD_PARAM or GROUPADD_PARAM for package %s" % (d.getVar('FILE'), pkg)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 python __anonymous() {
     update_useradd_after_parse(d)
@@ -145,7 +245,11 @@ python __anonymous() {
 def get_all_cmd_params(d, cmd_type):
     import string
     
+<<<<<<< HEAD
     param_type = cmd_type.upper() + "_PARAM_%s"
+=======
+    param_type = cmd_type.upper() + "ADD_PARAM_%s"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     params = []
 
     useradd_packages = d.getVar('USERADD_PACKAGES', True) or ""
@@ -154,7 +258,11 @@ def get_all_cmd_params(d, cmd_type):
         if param:
             params.append(param)
 
+<<<<<<< HEAD
     return "; ".join(params)
+=======
+    return string.join(params, "; ")
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Adds the preinst script into generated packages
 fakeroot python populate_packages_prepend () {
@@ -169,12 +277,15 @@ fakeroot python populate_packages_prepend () {
         preinst = d.getVar('pkg_preinst_%s' % pkg, True) or d.getVar('pkg_preinst', True)
         if not preinst:
             preinst = '#!/bin/sh\n'
+<<<<<<< HEAD
         preinst += 'bbnote () {\n%s}\n' % d.getVar('bbnote', True)
         preinst += 'bbwarn () {\n%s}\n' % d.getVar('bbwarn', True)
         preinst += 'bbfatal () {\n%s}\n' % d.getVar('bbfatal', True)
         preinst += 'perform_groupadd () {\n%s}\n' % d.getVar('perform_groupadd', True)
         preinst += 'perform_useradd () {\n%s}\n' % d.getVar('perform_useradd', True)
         preinst += 'perform_groupmems () {\n%s}\n' % d.getVar('perform_groupmems', True)
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         preinst += d.getVar('useradd_preinst', True)
         d.setVar('pkg_preinst_%s' % pkg, preinst)
 

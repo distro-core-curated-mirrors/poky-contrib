@@ -23,7 +23,11 @@ export GST_CVS="no"
 
 EXTRA_OECONF += "--disable-valgrind"
 
+<<<<<<< HEAD
 PR = "r4"
+=======
+PR = "r3"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 FILES_${PN} += "${libdir}/gstreamer-0.10/libgstomx.so"
 FILES_${PN}-dev += "${libdir}/gstreamer-0.10/libgstomx.la"

@@ -12,7 +12,24 @@ SECTION = "libs"
 
 X11DEPENDS = "virtual/libx11 libxext libxcursor libxrandr libxdamage libxrender libxcomposite"
 DEPENDS = "glib-2.0 pango atk jpeg libpng gdk-pixbuf-native docbook-utils-native \
+<<<<<<< HEAD
  cairo gdk-pixbuf"
+=======
+ libgcrypt cairo gdk-pixbuf"
+
+PACKAGECONFIG ??= "${@base_contains('DISTRO_FEATURES', 'x11', 'x11', '', d)} \
+ ${@base_contains('DISTRO_FEATURES', 'gtk-directfb', 'gtk-directfb', '', d)}"
+
+# for gtk+ 2.x, have to pick either x11 or directfb not both
+# for gtk+ 3.x, PACKAGECONFIG[gtk-directfb] should be removed because directfb will not be support as
+# a backend.
+PACKAGECONFIG[x11] = "--with-x=yes --with-gdktarget=x11,--with-x=no,${X11DEPENDS}"
+PACKAGECONFIG[gtk-directfb] = "--with-gdktarget=directfb,,directfb"
+
+inherit autotools gtk-doc pkgconfig
+
+PACKAGES += "libgail gtk-demo"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PACKAGECONFIG ??= "${@base_contains('DISTRO_FEATURES', 'x11', 'x11', '', d)}"
 
@@ -60,9 +77,12 @@ GTKGLIBC_RRECOMMENDS ?= "${GTKBASE_RRECOMMENDS} glibc-gconv-iso8859-1"
 
 RRECOMMENDS_${PN} = "${GTKBASE_RRECOMMENDS}"
 RRECOMMENDS_${PN}_libc-glibc = "${GTKGLIBC_RRECOMMENDS}"
+<<<<<<< HEAD
 
 ALTERNATIVE_${PN} = "gtk-update-icon-cache"
 ALTERNATIVE_TARGET[gtk-update-icon-cache] = "${bindir}/gtk-update-icon-cache-2.0"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 do_install () {
 	autotools_do_install

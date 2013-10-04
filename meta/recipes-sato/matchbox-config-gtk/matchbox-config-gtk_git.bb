@@ -15,7 +15,11 @@ PR = "r0"
 
 S = "${WORKDIR}/git"
 
+<<<<<<< HEAD
 SRC_URI = "git://git.yoctoproject.org/${BPN} \
+=======
+SRC_URI = "git://git.yoctoproject.org/${BPN};protocol=git \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         file://no-handed.patch;striplevel=0"
 
 inherit autotools pkgconfig

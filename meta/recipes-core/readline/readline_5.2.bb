@@ -10,7 +10,11 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=03b36fdd84f74b8d8189a202b980b67f"
 
 DEPENDS += "ncurses"
 
+<<<<<<< HEAD
 PR = "r9"
+=======
+PR = "r8"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "${GNU_MIRROR}/readline/${BPN}-${PV}.tar.gz;name=archive \
            ${GNU_MIRROR}/readline/readline-5.2-patches/readline52-001;name=patch1;apply=yes;striplevel=0 \
@@ -31,6 +35,7 @@ SRC_URI = "${GNU_MIRROR}/readline/${BPN}-${PV}.tar.gz;name=archive \
            file://acinclude.m4 \
            file://fix-redundant-rpath.patch"
 
+<<<<<<< HEAD
 SRC_URI[archive.md5sum] = "e39331f32ad14009b9ff49cc10c5e751"
 SRC_URI[archive.sha256sum] = "12e88d96aee2cd1192500356f0535540db499282ca7f76339fb4228c31249f45"
 
@@ -62,6 +67,10 @@ SRC_URI[patch13.md5sum]    = "3e2e5f543ed268a68fd1fa839faade1a"
 SRC_URI[patch13.sha256sum] = "0cc649516a5bdfa61c5e56937407570288b6972d75aa1bd060ad30ebe98144d5"
 SRC_URI[patch14.md5sum]    = "a1be30e1c6f1099bb5fcef00a2631fb8"
 SRC_URI[patch14.sha256sum] = "6f1a68320d01522ca1ea5a737124ecc8739f3dcbfea2dee21e3ccf839a21a817"
+=======
+SRC_URI[md5sum] = "e39331f32ad14009b9ff49cc10c5e751"
+SRC_URI[sha256sum] = "12e88d96aee2cd1192500356f0535540db499282ca7f76339fb4228c31249f45"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 S = "${WORKDIR}/${BPN}-${PV}"
 

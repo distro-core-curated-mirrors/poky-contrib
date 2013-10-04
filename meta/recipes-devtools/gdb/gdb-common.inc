@@ -5,7 +5,10 @@ SECTION = "devel"
 DEPENDS = "expat ncurses readline ${LTTNGUST}"
 
 LTTNGUST = "lttng-ust"
+<<<<<<< HEAD
 LTTNGUST_aarch64 = ""
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 LTTNGUST_libc-uclibc = ""
 LTTNGUST_mips = ""
 LTTNGUST_mipsel = ""
@@ -23,6 +26,12 @@ inherit autotools
 
 SRC_URI = "${GNU_MIRROR}/gdb/gdb-${PV}.tar.gz \
           "
+<<<<<<< HEAD
+=======
+SRC_URI[md5sum] = "c9f5ed81008194f8f667f131234f3ef0"
+SRC_URI[sha256sum] = "8dcf38dd04f7f031b51d0672050d6b14626302ddc24d74e486b4666335de2df3"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 export CC_FOR_BUILD = "${BUILD_CC}"
 export CXX_FOR_BUILD = "${BUILD_CXX}"
 export CPP_FOR_BUILD = "${BUILD_CPP}"
@@ -38,10 +47,15 @@ EXPAT = "--with-expat --with-libexpat-prefix=${STAGING_DIR_HOST}"
 
 EXTRA_OECONF = "--disable-gdbtk --disable-tui --disable-x --disable-werror \
                 --with-curses --disable-multilib --with-system-readline --disable-sim \
+<<<<<<< HEAD
                 --without-lzma \
                 ${GDBPROPREFIX} ${EXPAT} \
                 ${@base_contains('DISTRO_FEATURES', 'multiarch', '--enable-64-bit-bfd', '', d)} \
                 --disable-rpath \
+=======
+                ${GDBPROPREFIX} ${EXPAT} \
+                ${@base_contains('DISTRO_FEATURES', 'multiarch', '--enable-64-bit-bfd', '', d)} \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                "
 
 GDBPROPREFIX = "--program-prefix=''"

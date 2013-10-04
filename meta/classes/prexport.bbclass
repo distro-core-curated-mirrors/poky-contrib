@@ -24,6 +24,7 @@ python prexport_handler () {
             bb.warn("prexport_handler: No AUTOPR values found for %s" % ver)
             return
         oe.prservice.prserv_export_tofile(e.data, None, datainfo, False)
+<<<<<<< HEAD
         if 'AUTOINC' in ver:
             import re
             srcpv =  bb.fetch2.get_srcrev(e.data)
@@ -34,6 +35,8 @@ python prexport_handler () {
                 bb.fatal("prexport_handler: export failed!")
             (metainfo, datainfo) = retval
             oe.prservice.prserv_export_tofile(e.data, None, datainfo, False)
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     elif isinstance(e, bb.event.ParseStarted):
         import bb.utils
         import oe.prservice
@@ -55,4 +58,7 @@ python prexport_handler () {
 }
 
 addhandler prexport_handler
+<<<<<<< HEAD
 prexport_handler[eventmask] = "bb.event.RecipeParsed bb.event.ParseStarted bb.event.ParseCompleted"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

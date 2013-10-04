@@ -6,9 +6,15 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=9ea3144f04c41cd2eada5d3f472e6ea5"
 
 PR = "r6"
 DEPENDS = "virtual/libiconv"
+<<<<<<< HEAD
 DEPENDS_class-native = ""
 PROVIDES = "virtual/libintl virtual/gettext"
 PROVIDES_class-native = ""
+=======
+DEPENDS_virtclass-native = ""
+PROVIDES = "virtual/libintl virtual/gettext"
+PROVIDES_virtclass-native = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "${GNU_MIRROR}/gettext/gettext-${PV}.tar.gz \
            file://gettext-vpath.patch \

@@ -48,7 +48,11 @@ addtask generate_qt_config_file after do_patch before do_configure
 
 qmake_base_do_configure() {
 	case ${QMAKESPEC} in
+<<<<<<< HEAD
 	*linux-oe-g++|*linux-uclibc-oe-g++|*linux-gnueabi-oe-g++|*linux-uclibceabi-oe-g++|*linux-gnuspe-oe-g++|*linux-uclibcspe-oe-g++|*linux-gnun32-oe-g++)
+=======
+	*linux-oe-g++|*linux-uclibc-oe-g++|*linux-gnueabi-oe-g++|*linux-uclibceabi-oe-g++|*linux-gnuspe-oe-g++|*linux-uclibcspe-oe-g++)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		;;
 	*-oe-g++)
 		die Unsupported target ${TARGET_OS} for oe-g++ qmake spec
@@ -94,6 +98,7 @@ qmake_base_do_configure() {
 	fi
 
 	# Hack .pro files to use OE utilities
+<<<<<<< HEAD
 	LCONVERT_NAME=$(basename ${OE_QMAKE_LCONVERT})
 	LRELEASE_NAME=$(basename ${OE_QMAKE_LRELEASE})
 	LUPDATE_NAME=$(basename ${OE_QMAKE_LUPDATE})
@@ -108,6 +113,11 @@ qmake_base_do_configure() {
 	                  -e "s|\(=\s*.*\)/lupdate|\1/$LUPDATE_NAME|g" \
 	                  -e "s|\(=\s*.*\)/xmlpatterns|\1/$XMLPATTERNS_NAME|g" \
 	                  '{}' ';'
+=======
+	find -name '*.pro' \
+	     -exec sed -i -e 's,=\s*.*/lrelease,= ${OE_QMAKE_LRELEASE},g' \
+	                  -e 's,=\s*.*/lupdate,= ${OE_QMAKE_LUPDATE},g' '{}' ';'
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 #bbnote "Calling '${OE_QMAKE_QMAKE} -makefile -spec ${QMAKESPEC} -o Makefile $QMAKE_VARSUBST_PRE $AFTER $PROFILES $QMAKE_VARSUBST_POST'"
 	unset QMAKESPEC || true

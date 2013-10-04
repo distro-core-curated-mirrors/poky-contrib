@@ -5,12 +5,20 @@ SECTION = "base"
 SRC_URI = "${DEBIAN_MIRROR}/main/a/apt/apt_${PV}.tar.gz \
            file://no-ko-translation.patch \
            file://use-host.patch \
+<<<<<<< HEAD
            file://makerace.patch \
            file://no-nls-dpkg.patch \
            file://fix-gcc-4.6-null-not-defined.patch \
            file://truncate-filename.patch \
            file://nodoc.patch \
            file://disable-configure-in-makefile.patch \
+=======
+           file://localefixes.patch \
+           file://makerace.patch \
+           file://remove-redeclaration.patch \
+           file://truncate-filename.patch \
+           file://allocate-larger-memory.patch \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            "
 
 inherit autotools gettext

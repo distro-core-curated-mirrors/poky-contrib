@@ -7,7 +7,11 @@ LICENSE = "BSD"
 LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=8ad8615198542444f84d28a6cf226dd8"
 
 DEPENDS = ""
+<<<<<<< HEAD
 PR = "r2"
+=======
+PR = "r1"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "http://www.xinetd.org/xinetd-${PV}.tar.gz \
       file://xinetd.init \
@@ -28,6 +32,7 @@ INITSCRIPT_PARAMS = "defaults"
 
 EXTRA_OECONF="--disable-nls"
 
+<<<<<<< HEAD
 PACKAGECONFIG ??= "tcp-wrappers"
 PACKAGECONFIG[tcp-wrappers] = "--with-libwrap,,tcp-wrappers"
 
@@ -35,6 +40,11 @@ do_configure() {
 	# Looks like configure.in is broken, so we are skipping
 	# rebuilding configure and are just using the shipped one
 	( cd ${S}; gnu-configize --force )
+=======
+do_configure() {
+	# Looks like configure.in is broken, so we are skipping
+	# rebuilding configure and are just using the shipped one
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	oe_runconf
 }
 
@@ -49,8 +59,13 @@ do_install() {
 	install -m 644 "${WORKDIR}/xinetd.conf" "${D}${sysconfdir}"
 	install -m 755 "${WORKDIR}/xinetd.init" "${D}${sysconfdir}/init.d/xinetd"
 	install -m 644 "${WORKDIR}/xinetd.default" "${D}${sysconfdir}/default/xinetd"
+<<<<<<< HEAD
 	install -m 755 "${B}/xinetd/xinetd" "${D}${sbindir}"
 	install -m 755 "${B}/xinetd/itox" "${D}${sbindir}"
+=======
+	install -m 755 "${S}/xinetd/xinetd" "${D}${sbindir}"
+	install -m 755 "${S}/xinetd/itox" "${D}${sbindir}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 CONFFILES_${PN} = "${sysconfdir}/xinetd.conf"

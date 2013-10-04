@@ -12,7 +12,11 @@ RDEPENDS_${PN} = "trace-cmd"
 
 inherit pkgconfig pythonnative
 
+<<<<<<< HEAD
 SRC_URI = "git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/trace-cmd.git \
+=======
+SRC_URI = "git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/trace-cmd.git;protocol=git \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://addldflags.patch \
            file://make-docs-optional.patch \
            file://blktrace-api-compatibility.patch"

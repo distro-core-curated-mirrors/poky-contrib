@@ -1,5 +1,6 @@
 inherit terminal
 
+<<<<<<< HEAD
 DEVSHELL = "${SHELL}"
 
 python do_devshell () {
@@ -13,12 +14,17 @@ python do_devshell () {
        d.delVarFlag("do_devshell", "fakeroot")
 
     oe_terminal(d.getVar('DEVSHELL', True), 'OpenEmbedded Developer Shell', d)
+=======
+python do_devshell () {
+    oe_terminal(d.getVar('SHELL', True), 'OpenEmbedded Developer Shell', d)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 addtask devshell after do_patch
 
 do_devshell[dirs] = "${S}"
 do_devshell[nostamp] = "1"
+<<<<<<< HEAD
 
 # devshell and fakeroot/pseudo need careful handling since only the final
 # command should run under fakeroot emulation, any X connection should
@@ -31,3 +37,5 @@ python () {
        d.setVarFlag("do_devshell", "manualfakeroot", "1")
        d.delVarFlag("do_devshell", "fakeroot")
 } 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

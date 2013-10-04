@@ -8,6 +8,11 @@ SRC_URI = "file://etc \
            file://gplv2-license.patch"
 
 S = "${WORKDIR}"
+<<<<<<< HEAD
+=======
+
+inherit allarch
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 do_install() {
 	cp -R ${S}/etc ${D}${sysconfdir}

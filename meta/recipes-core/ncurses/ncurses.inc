@@ -5,8 +5,13 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://ncurses/base/version.c;beginline=1;endline=27;md5=cbc180a8c44ca642e97c35452fab5f66"
 SECTION = "libs"
 DEPENDS = "ncurses-native"
+<<<<<<< HEAD
 DEPENDS_class-native = ""
 INC_PR = "r15"
+=======
+DEPENDS_virtclass-native = ""
+INC_PR = "r11"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 inherit autotools binconfig multilib_header
 
@@ -15,6 +20,7 @@ SRC_URI = "${GNU_MIRROR}/ncurses/ncurses-${PV}.tar.gz"
 
 EXTRA_AUTORECONF = "-I m4"
 CONFIG_SITE =+ "${WORKDIR}/config.cache"
+<<<<<<< HEAD
 
 # Whether to enable separate widec libraries; must be 'true' or 'false'
 #
@@ -56,6 +62,22 @@ EX_TERMINFO = ""
 EX_TERMINFO_virtclass-native = ":/etc/terminfo:/usr/share/terminfo:/usr/share/misc/terminfo:/lib/terminfo"
 EX_TERMINFO_virtclass-nativesdk = ":/etc/terminfo:/usr/share/terminfo:/usr/share/misc/terminfo:/lib/terminfo"
 
+=======
+
+# Whether to enable separate widec libraries; must be 'true' or 'false'
+#
+# TODO: remove this variable when widec is supported in every setup?
+ENABLE_WIDEC ?= "true"
+
+# _GNU_SOURCE is required for widec stuff and is detected automatically
+# for target objects.  But it must be set manually for native and sdk
+# builds.
+BUILD_CPPFLAGS += "-D_GNU_SOURCE"
+
+# natives don't generally look in base_libdir
+base_libdir_virtclass-native = "${libdir}"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # Helper function for do_configure to allow multiple configurations
 # $1 the directory to run configure in
 # $@ the arguments to pass to configure
@@ -71,8 +93,13 @@ ncurses_configure() {
 	        --enable-hard-tabs \
 	        --enable-xmc-glitch \
 	        --enable-colorfgbg \
+<<<<<<< HEAD
 	        --with-termpath='${sysconfdir}/termcap:${datadir}/misc/termcap${EX_TERMCAP}' \
 	        --with-terminfo-dirs='${sysconfdir}/terminfo:${datadir}/terminfo${EX_TERMINFO}' \
+=======
+	        --with-termpath='${sysconfdir}/termcap:${datadir}/misc/termcap' \
+	        --with-terminfo-dirs='${sysconfdir}/terminfo:${datadir}/terminfo' \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	        --with-shared \
 	        --disable-big-core \
 	        --program-prefix= \
@@ -81,7 +108,10 @@ ncurses_configure() {
 	        --enable-sigwinch \
 	        --enable-pc-files \
 	        --disable-rpath-hack \
+<<<<<<< HEAD
 		${EXCONFIG_ARGS} \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	        --with-manpage-format=normal \
 	        "$@" || return 1
 	cd ..
@@ -96,7 +126,10 @@ do_configure() {
         # not the case for /dev/null redirections)
         export cf_cv_working_poll=yes
 
+<<<<<<< HEAD
 	( cd ${S}; gnu-configize --force )
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	ncurses_configure "narrowc" || \
 		return 1
 	! ${ENABLE_WIDEC} || \
@@ -174,7 +207,11 @@ shell_do_install() {
 
         # include some basic terminfo files
         # stolen ;) from gentoo and modified a bit
+<<<<<<< HEAD
         for x in ansi console dumb linux rxvt screen sun vt{52,100,102,200,220} xterm-color xterm-xfree86 xterm-256color
+=======
+        for x in ansi console dumb linux rxvt screen sun vt{52,100,102,200,220} xterm-color xterm-xfree86
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         do
                 local termfile="$(find "${D}${datadir}/terminfo/" -name "${x}" 2>/dev/null)"
                 local basedir="$(basename $(dirname "${termfile}"))"
@@ -247,7 +284,11 @@ inherit update-alternatives
 
 ALTERNATIVE_PRIORITY = "100"
 
+<<<<<<< HEAD
 ALTERNATIVE_ncurses-tools_class-target = "clear reset"
+=======
+ALTERNATIVE_ncurses-tools = "clear reset"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 BBCLASSEXTEND = "native nativesdk"
 

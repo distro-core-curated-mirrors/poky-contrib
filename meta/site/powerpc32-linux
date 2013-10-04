@@ -203,6 +203,10 @@ apr_cv_use_lfs64=${apr_cv_use_lfs64=yes}
 apr_cv_epoll=${apr_cv_epoll=yes}
 apr_cv_pthreads_cflags=${apr_cv_pthreads_cflags=-pthread}
 apr_cv_pthreads_lib=${apr_cv_pthreads_lib=-lpthread}
+<<<<<<< HEAD
+=======
+apr_cv_mutex_recursive=${apr_cv_mutex_recursive=yes}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ac_cv_func_mmap=${ac_cv_func_mmap=yes}
 ac_cv_file__dev_zero=${ac_cv_file__dev_zero=yes}
 ac_cv_sizeof_off_t=${ac_cv_sizeof_off_t=4}
@@ -211,6 +215,10 @@ ac_cv_socklen_t=${ac_cv_socklen_t=yes}
 ac_cv_struct_rlimit=${ac_cv_struct_rlimit=yes}
 ac_cv_negative_eai=${ac_cv_negative_eai=yes}
 apr_cv_gai_addrconfig=${apr_cv_gai_addrconfig=no}
+<<<<<<< HEAD
+=======
+ac_cv_o_nonblock_inherited=${ac_cv_o_nonblock_inherited=no}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 apr_cv_tcp_nodelay_with_cork=${apr_cv_tcp_nodelay_with_cork=yes}
 
 # binutils (libiberty)

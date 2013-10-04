@@ -26,7 +26,11 @@ EXTRA_OECONF_PATHS ?= ""
 EXTRA_OECONF_INITIAL ?= ""
 EXTRA_OECONF_INTERMEDIATE ?= ""
 
+<<<<<<< HEAD
 GCCMULTILIB ?= "--disable-multilib"
+=======
+GCCMULTILIB = "--disable-multilib"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 GCCTHREADS ?= "posix"
 
 EXTRA_OECONF = "${@['--enable-clocale=generic', ''][d.getVar('USE_NLS', True) != 'no']} \

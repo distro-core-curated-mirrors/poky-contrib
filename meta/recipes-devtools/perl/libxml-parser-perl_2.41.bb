@@ -29,7 +29,11 @@ do_compile() {
 	cpan_do_compile
 }
 
+<<<<<<< HEAD
 do_compile_class-native() {
+=======
+do_compile_virtclass-native() {
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	cpan_do_compile
 }
 

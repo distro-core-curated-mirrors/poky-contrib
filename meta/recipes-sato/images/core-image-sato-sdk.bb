@@ -5,7 +5,11 @@ core-image-sato plus meta-toolchain, development headers and libraries to \
 form a standalone SDK."
 
 IMAGE_FEATURES += "dev-pkgs tools-sdk qt4-pkgs \
+<<<<<<< HEAD
 	tools-debug eclipse-debug tools-profile tools-testapps debug-tweaks ssh-server-openssh"
+=======
+	tools-debug tools-profile tools-testapps debug-tweaks ssh-server-openssh"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 IMAGE_INSTALL += "kernel-dev"
 

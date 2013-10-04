@@ -27,16 +27,23 @@ UCLIBCPATCHES ?= ""
 SRC_URI[md5sum] = "1a77ddb1aaea8099ab19c351eeb26316"
 SRC_URI[sha256sum] = "c92f263e0353887f16379d7708ef1fb4c7eedcf20448bc1e4838f59497a00de3"
 
+<<<<<<< HEAD
 PR = "r4"
 
 inherit autotools update-rc.d systemd
 
 PACKAGECONFIG ??= "tcp-wrappers"
 PACKAGECONFIG[tcp-wrappers] = "--enable-libwrap,--disable-libwrap,tcp-wrappers"
+=======
+PR = "r3"
+
+inherit autotools update-rc.d
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 INITSCRIPT_NAME = "rpcbind"
 INITSCRIPT_PARAMS = "start 43 S . start 32 0 6 . stop 81 1 ."
 
+<<<<<<< HEAD
 SYSTEMD_SERVICE_${PN} = "rpcbind.service"
 SYSTEMD_AUTO_ENABLE = "disable"
 
@@ -57,4 +64,14 @@ do_install_append () {
 	sed -i -e 's,@SBINDIR@,${sbindir},g' \
 		-e 's,@SYSCONFDIR@,${sysconfdir},g' \
 		${D}${systemd_unitdir}/system/rpcbind.service
+=======
+do_install_append () {
+    mv ${D}${bindir} ${D}${sbindir}
+
+    install -d ${D}${sysconfdir}/init.d
+    sed -e 's,/etc/,${sysconfdir}/,g' \
+        -e 's,/sbin/,${sbindir}/,g' \
+        ${WORKDIR}/init.d > ${D}${sysconfdir}/init.d/rpcbind
+    chmod 0755 ${D}${sysconfdir}/init.d/rpcbind
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }

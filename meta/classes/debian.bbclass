@@ -51,6 +51,7 @@ python debian_package_name_hook () {
         sonames = []
         has_bins = 0
         has_libs = 0
+<<<<<<< HEAD
         for file in pkgfiles[orig_pkg]:
             root = os.path.dirname(file)
             if bin_re.match(root):
@@ -66,6 +67,25 @@ python debian_package_name_hook () {
                         m = re.match("\s+SONAME\s+([^\s]*)", l)
                         if m and not m.group(1) in sonames:
                             sonames.append(m.group(1))
+=======
+        pkg_dir = os.path.join(pkgdest, orig_pkg)
+        for root, dirs, files in os.walk(pkg_dir):
+            if bin_re.match(root) and files:
+                has_bins = 1
+            if lib_re.match(root) and files:
+                has_libs = 1
+                for f in files:
+                    if so_re.match(f):
+                        fp = os.path.join(root, f)
+                        cmd = (d.getVar('TARGET_PREFIX', True) or "") + "objdump -p " + fp + " 2>/dev/null"
+                        fd = os.popen(cmd)
+                        lines = fd.readlines()
+                        fd.close()
+                        for l in lines:
+                            m = re.match("\s+SONAME\s+([^\s]*)", l)
+                            if m and not m.group(1) in sonames:
+                                sonames.append(m.group(1))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
         bb.debug(1, 'LIBNAMES: pkg %s libs %d bins %d sonames %s' % (orig_pkg, has_libs, has_bins, sonames))
         soname = None

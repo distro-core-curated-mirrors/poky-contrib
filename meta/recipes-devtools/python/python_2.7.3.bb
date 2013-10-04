@@ -1,15 +1,27 @@
 require python.inc
 DEPENDS = "python-native bzip2 db gdbm openssl readline sqlite3 zlib"
+<<<<<<< HEAD
 PR = "${INC_PR}.3"
+=======
+PR = "${INC_PR}.2"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 DISTRO_SRC_URI ?= "file://sitecustomize.py"
 DISTRO_SRC_URI_linuxstdbase = ""
 SRC_URI += "\
   file://01-use-proper-tools-for-cross-build.patch \
   file://03-fix-tkinter-detection.patch \
+<<<<<<< HEAD
   file://05-enable-ctypes-cross-build.patch \
   file://06-ctypes-libffi-fix-configure.patch \
   file://06-avoid_usr_lib_termcap_path_in_linking.patch \
+=======
+  file://04-default-is-optimized.patch \
+  file://05-enable-ctypes-cross-build.patch \
+  file://06-ctypes-libffi-fix-configure.patch \
+  file://06-avoid_usr_lib_termcap_path_in_linking.patch \
+  file://99-ignore-optimization-flag.patch \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
   ${DISTRO_SRC_URI} \
   file://multilib.patch \
   file://cgi_py.patch \
@@ -25,6 +37,7 @@ SRC_URI += "\
   file://avoid_warning_for_sunos_specific_module.patch \
   file://python-2.7.3-berkeley-db-5.3.patch \
   file://python-2.7.3-remove-bsdb-rpath.patch \
+<<<<<<< HEAD
   file://builddir.patch \
   file://python-2.7.3-CVE-2012-2135.patch \
   file://gcc-4.8-fix-configure-Wformat.patch \
@@ -32,6 +45,8 @@ SRC_URI += "\
   file://run-ptest \
   file://CVE-2013-4073_py27.patch \
   file://pypirc-secure.patch \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 "
 
 S = "${WORKDIR}/Python-${PV}"
@@ -60,6 +75,20 @@ do_compile() {
         sed -e 's,${STAGING_DIR_HOST},,g' -i *.py
         cd -
 
+<<<<<<< HEAD
+=======
+	#
+	# Copy config.h and an appropriate Makefile for distutils.sysconfig,
+	# which laters uses the information out of these to compile extensions
+	#
+	# The following part (until python compilation) should probably moved to an
+	# -initial recipe to handle staging better
+	#
+	install -d ${STAGING_INCDIR}/python${PYTHON_MAJMIN}/
+	install -d ${STAGING_LIBDIR}/python${PYTHON_MAJMIN}/config/
+	install -m 0644 pyconfig.h ${STAGING_INCDIR}/python${PYTHON_MAJMIN}/
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	# remove hardcoded ccache, see http://bugs.openembedded.net/show_bug.cgi?id=4144
 	sed -i -e s,ccache,'$(CCACHE)', Makefile
 
@@ -77,12 +106,29 @@ do_compile() {
 		-e 's,^INCLUDEDIR=.*,INCLUDE=${STAGING_INCDIR},g' \
 		-e 's,^CONFINCLUDEDIR=.*,CONFINCLUDE=${STAGING_INCDIR},g' \
 		Makefile
+<<<<<<< HEAD
+=======
+	install -m 0644 Makefile ${STAGING_LIBDIR}/python${PYTHON_MAJMIN}/config/
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	# save copy of it now, because if we do it in do_install and 
 	# then call do_install twice we get Makefile.orig == Makefile.sysroot
 	install -m 0644 Makefile Makefile.sysroot
 
 	export CROSS_COMPILE="${TARGET_PREFIX}"
+<<<<<<< HEAD
 	export PYTHONBUILDDIR="${S}"
+=======
+
+	oe_runmake HOSTPGEN=${STAGING_BINDIR_NATIVE}/python-native/pgen \
+		HOSTPYTHON=${STAGING_BINDIR_NATIVE}/python-native/python \
+		STAGING_LIBDIR=${STAGING_LIBDIR} \
+		STAGING_BASELIBDIR=${STAGING_BASELIBDIR} \
+		STAGING_INCDIR=${STAGING_INCDIR} \
+		BUILD_SYS=${BUILD_SYS} HOST_SYS=${HOST_SYS} \
+		OPT="${CFLAGS}" libpython${PYTHON_MAJMIN}.so
+
+	oe_libinstall -so libpython${PYTHON_MAJMIN} ${STAGING_LIBDIR}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	oe_runmake HOSTPGEN=${STAGING_BINDIR_NATIVE}/python-native/pgen \
 		HOSTPYTHON=${STAGING_BINDIR_NATIVE}/python-native/python \
@@ -99,7 +145,10 @@ do_install() {
 	install -m 0644 Makefile.orig Makefile
 
 	export CROSS_COMPILE="${TARGET_PREFIX}"
+<<<<<<< HEAD
 	export PYTHONBUILDDIR="${S}"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	
 	oe_runmake HOSTPGEN=${STAGING_BINDIR_NATIVE}/python-native/pgen \
 		HOSTPYTHON=${STAGING_BINDIR_NATIVE}/python-native/python \
@@ -119,6 +168,7 @@ do_install() {
 	oe_multilib_header python${PYTHON_MAJMIN}/pyconfig.h
 }
 
+<<<<<<< HEAD
 do_install_append_class-nativesdk () {
 	create_wrapper ${D}${bindir}/python2.7 TERMINFO_DIRS='${sysconfdir}/terminfo:/etc/terminfo:/usr/share/terminfo:/usr/share/misc/terminfo:/lib/terminfo'
 }
@@ -128,15 +178,20 @@ do_install_ptest() {
 	sed -i s:LIBDIR:${libdir}:g ${D}${PTEST_PATH}/run-ptest
 }
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 SSTATE_SCAN_FILES += "Makefile"
 PACKAGE_PREPROCESS_FUNCS += "py_package_preprocess"
 
 py_package_preprocess () {
 	# copy back the old Makefile to fix target package
 	install -m 0644 Makefile.orig ${PKGD}/${libdir}/python${PYTHON_MAJMIN}/config/Makefile
+<<<<<<< HEAD
 
 	# Remove references to buildmachine paths in target Makefile
 	sed -i -e 's:--sysroot=${STAGING_DIR_TARGET}::g' -e s:'--with-libtool-sysroot=${STAGING_DIR_TARGET}'::g ${PKGD}/${libdir}/python${PYTHON_MAJMIN}/config/Makefile
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 require python-${PYTHON_MAJMIN}-manifest.inc
@@ -145,7 +200,11 @@ require python-${PYTHON_MAJMIN}-manifest.inc
 RPROVIDES_${PN}-core = "${PN}"
 RRECOMMENDS_${PN}-core = "${PN}-readline"
 RRECOMMENDS_${PN}-crypt = "openssl"
+<<<<<<< HEAD
 RRECOMMENDS_${PN}-crypt_class-nativesdk = "nativesdk-openssl"
+=======
+RRECOMMENDS_${PN}-crypt_virtclass-nativesdk = "nativesdk-openssl"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # package libpython2
 PACKAGES =+ "lib${BPN}2"
@@ -157,9 +216,12 @@ FILES_${PN}-dbg += "${libdir}/python${PYTHON_MAJMIN}/lib-dynload/.debug"
 # catch all the rest (unsorted)
 PACKAGES += "${PN}-misc"
 FILES_${PN}-misc = "${libdir}/python${PYTHON_MAJMIN}"
+<<<<<<< HEAD
 RDEPENDS_${PN}-ptest = "${PN}-modules ${PN}-misc"
 #inherit ptest after "require python-${PYTHON_MAJMIN}-manifest.inc" so PACKAGES doesn't get overwritten
 inherit ptest
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # catch manpage
 PACKAGES += "${PN}-man"

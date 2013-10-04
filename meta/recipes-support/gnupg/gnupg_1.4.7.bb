@@ -7,13 +7,20 @@ LICENSE = "GPLv2"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=eb723b61539feef013de476e68b5c50a"
 
+<<<<<<< HEAD
 PR = "r9"
+=======
+PR = "r6"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-${PV}.tar.bz2 \
            file://long-long-thumb.patch \
            file://configure.patch \
            file://mips_gcc4.4.patch \
+<<<<<<< HEAD
            file://GnuPG1-CVE-2012-6085.patch \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://curl_typeof_fix_backport.patch"
 
 SRC_URI[md5sum] = "b06a141cca5cd1a55bbdd25ab833303c"
@@ -79,9 +86,15 @@ EXTRA_OECONF = "--disable-ldap \
 
 do_install () {
 	autotools_do_install
+<<<<<<< HEAD
 	install -d ${D}${docdir}/${BPN}
 	mv ${D}${datadir}/${BPN}/* ${D}/${docdir}/${BPN}/ || :
 	mv ${D}${prefix}/doc/* ${D}/${docdir}/${BPN}/ || :
+=======
+	install -d ${D}${docdir}/${PN}
+	mv ${D}${datadir}/${PN}/* ${D}/${docdir}/${PN}/ || :
+	mv ${D}${prefix}/doc/* ${D}/${docdir}/${PN}/ || :
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 # split out gpgv from main package
@@ -90,5 +103,10 @@ PACKAGES =+ "gpgv"
 FILES_gpgv = "${bindir}/gpgv"
 
 # Exclude debug files from the main packages
+<<<<<<< HEAD
 FILES_${PN} = "${bindir}/* ${datadir}/${BPN} ${libexecdir}/${BPN}/*"
 FILES_${PN}-dbg += "${libexecdir}/${BPN}/.debug"
+=======
+FILES_${PN} = "${bindir}/* ${datadir}/${PN} ${libexecdir}/${PN}/*"
+FILES_${PN}-dbg += "${libexecdir}/${PN}/.debug"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

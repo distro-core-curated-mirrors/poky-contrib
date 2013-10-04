@@ -1,9 +1,17 @@
 def release_dict():
+<<<<<<< HEAD
     """Return the output of lsb_release -ir as a dictionary"""
     from subprocess import PIPE
 
     try:
         output, err = bb.process.run(['lsb_release', '-ir'], stderr=PIPE)
+=======
+    """Return the output of lsb_release -a as a dictionary"""
+    from subprocess import PIPE
+
+    try:
+        output, err = bb.process.run(['lsb_release', '-a'], stderr=PIPE)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     except bb.process.CmdError as exc:
         return None
 
@@ -17,6 +25,7 @@ def release_dict():
             data[key] = value
     return data
 
+<<<<<<< HEAD
 def release_dict_file():
     """ Try to gather LSB release information manually when lsb_release tool is unavailable """
     data = None
@@ -56,6 +65,8 @@ def release_dict_file():
         return None
     return data
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 def distro_identifier(adjust_hook=None):
     """Return a distro identifier string based upon lsb_release -ri,
        with optional adjustment via a hook"""
@@ -64,18 +75,27 @@ def distro_identifier(adjust_hook=None):
     if lsb_data:
         distro_id, release = lsb_data['Distributor ID'], lsb_data['Release']
     else:
+<<<<<<< HEAD
         lsb_data_file = release_dict_file()
         if lsb_data_file:
             distro_id, release = lsb_data_file['DISTRIB_ID'], lsb_data_file.get('DISTRIB_RELEASE', None)
         else:
             distro_id, release = None, None
 
+=======
+        distro_id, release = None, None
+        
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     if adjust_hook:
         distro_id, release = adjust_hook(distro_id, release)
     if not distro_id:
         return "Unknown"
+<<<<<<< HEAD
     if release:
         id_str = '{0}-{1}'.format(distro_id, release)
     else:
         id_str = distro_id
     return id_str.replace(' ','-').replace('/','-')
+=======
+    return '{0}-{1}'.format(distro_id, release).replace(' ','-')
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

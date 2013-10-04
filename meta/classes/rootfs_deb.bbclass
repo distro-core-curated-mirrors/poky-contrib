@@ -19,6 +19,10 @@ do_rootfs[prefuncs] += "rootfs_deb_bad_recommendations"
 
 DEB_POSTPROCESS_COMMANDS = ""
 
+do_rootfs[lockfiles] += "${DEPLOY_DIR_DEB}/deb.lock"
+
+DEB_POSTPROCESS_COMMANDS = ""
+
 opkglibdir = "${localstatedir}/lib/opkg"
 
 deb_package_setflag() {
@@ -55,8 +59,11 @@ fakeroot rootfs_deb_do_rootfs () {
 	export OFFLINE_ROOT=${IMAGE_ROOTFS}
 	export IPKG_OFFLINE_ROOT=${IMAGE_ROOTFS}
 	export OPKG_OFFLINE_ROOT=${IMAGE_ROOTFS}
+<<<<<<< HEAD
 	export INTERCEPT_DIR=${WORKDIR}/intercept_scripts
 	export NATIVE_ROOT=${STAGING_DIR_NATIVE}
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	# Attempt to run preinsts
 	# Mark packages with preinst failures as unpacked
@@ -118,6 +125,7 @@ remove_packaging_data_files() {
 	rm -rf ${IMAGE_ROOTFS}/var/lib/dpkg/
 }
 
+<<<<<<< HEAD
 rootfs_install_packages() {
 	${STAGING_BINDIR_NATIVE}/apt-get ${APT_ARGS} install `cat $1` --force-yes --allow-unauthenticated
 
@@ -130,3 +138,38 @@ rootfs_uninstall_packages() {
 	${STAGING_BINDIR_NATIVE}/dpkg --admindir=${IMAGE_ROOTFS}/var/lib/dpkg --instdir=${IMAGE_ROOTFS} -r --force-depends $@
 }
 
+=======
+# This will of course only work after rootfs_deb_do_rootfs has been called
+DPKG_QUERY_COMMAND = "${STAGING_BINDIR_NATIVE}/dpkg-query --admindir=$INSTALL_ROOTFS_DEB/var/lib/dpkg"
+
+list_installed_packages() {
+	if [ "$1" = "arch" ] ; then
+		# Here we want the PACKAGE_ARCH not the deb architecture
+		${DPKG_QUERY_COMMAND} -W -f='${Package} ${PackageArch}\n'
+	elif [ "$1" = "file" ] ; then
+		${DPKG_QUERY_COMMAND} -W -f='${Package} ${Package}_${Version}_${Architecture}.deb\n' | while read pkg pkgfile
+		do
+			fullpath=`find ${DEPLOY_DIR_DEB} -name "$pkgfile" || true`
+			if [ "$fullpath" = "" ] ; then
+				echo "$pkg $pkgfile"
+			else
+				echo "$pkg $fullpath"
+			fi
+		done
+	else
+		${DPKG_QUERY_COMMAND} -W -f='${Package}\n'
+	fi
+}
+
+rootfs_list_installed_depends() {
+	# Cheat here a little bit by using the opkg query helper util
+	${DPKG_QUERY_COMMAND} -W -f='Package: ${Package}\nDepends: ${Depends}\nRecommends: ${Recommends}\n\n' | opkg-query-helper.py
+}
+
+rootfs_install_packages() {
+	${STAGING_BINDIR_NATIVE}/apt-get install `cat $1` --force-yes --allow-unauthenticated
+
+	# Mark all packages installed
+	sed -i -e "s/Status: install ok unpacked/Status: install ok installed/;" $INSTALL_ROOTFS_DEB/var/lib/dpkg/status
+}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

@@ -8,10 +8,18 @@ LICENSE = "GPLv2 & LGPLv2.1"
 LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe \
     file://libltdl/COPYING.LIB;md5=e3eda01d9815f8d24aae2dbd89b68b06"
 
+<<<<<<< HEAD
 INC_PR = "r6"
 
 SRC_URI = "${GNU_MIRROR}/libtool/libtool-${PV}.tar.gz \
            file://trailingslash.patch \
+=======
+INC_PR = "r5"
+
+SRC_URI = "${GNU_MIRROR}/libtool/libtool-${PV}.tar.gz \
+           file://trailingslash.patch \
+           file://prefix-manpage-fix.patch \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://rename-with-sysroot.patch \
            file://use-sysroot-in-libpath.patch \
            file://fix-final-rpath.patch \
@@ -19,8 +27,11 @@ SRC_URI = "${GNU_MIRROR}/libtool/libtool-${PV}.tar.gz \
            file://fix-rpath.patch \
 	   file://respect-fstack-protector.patch \
            file://norm-rpath.patch \
+<<<<<<< HEAD
            file://dont-depend-on-help2man.patch \
            file://fix-resolve-lt-sysroot.patch \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
           "
 
 SRC_URI[md5sum] = "d2f3b7d4627e69e13514a40e72a24d50"

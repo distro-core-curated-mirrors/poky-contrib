@@ -12,10 +12,13 @@ SRC_URI[sha256sum] = "3d72a292e432beb9a73f9d0acfe3a77c9b4d7e42209919bb244e9958c7
 
 inherit autotools
 
+<<<<<<< HEAD
 EXTRA_OECONF_darwin += "--without-date \
                         --without-getopt \
                         "
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PACKAGES += "guards guards-doc"
 FILES_${PN} = "${sysconfdir} ${datadir}/quilt \
                ${bindir}/quilt ${libdir}/quilt"
@@ -25,12 +28,18 @@ FILES_guards-doc = "${mandir}/man1/guards.1"
 
 RDEPENDS_${PN} = "bash"
 
+<<<<<<< HEAD
 EXTRA_OE_MAKE_ARGS_darwin ?= ""
 EXTRA_OE_MAKE_ARGS ?= "BUILD_ROOT=${D}"
 
 # quilt ignores DESTDIR
 do_install () {
 	oe_runmake ${EXTRA_OE_MAKE_ARGS} install
+=======
+# quilt ignores DESTDIR
+do_install () {
+	oe_runmake 'BUILD_ROOT=${D}' install
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	# cleanup unpackaged files
 	rm -rf ${D}/${datadir}/emacs
 }

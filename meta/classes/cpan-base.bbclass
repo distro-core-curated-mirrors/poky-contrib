@@ -9,6 +9,8 @@ RDEPENDS_${PN} += "${@["perl", ""][(bb.data.inherits_class('native', d))]}"
 
 PERL_OWN_DIR = "${@["", "/perl-native"][(bb.data.inherits_class('native', d))]}"
 
+PERL_OWN_DIR = "${@["", "/perl-native"][(bb.data.inherits_class('native', d))]}"
+
 # Determine the staged version of perl from the perl configuration file
 def get_perl_version(d):
     import re

@@ -20,9 +20,13 @@ SRC_URI = "ftp://ftp.gnu.org/gnu/grub/grub-${PV}.tar.gz \
           file://grub-2.00-fpmath-sse-387-fix.patch \
           file://remove-gets.patch \
           file://check-if-liblzma-is-disabled.patch \
+<<<<<<< HEAD
           file://40_custom \
           file://fix-issue-with-flex-2.5.37.patch \
           "
+=======
+          file://40_custom"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI[md5sum] = "e927540b6eda8b024fb0391eeaa4091c"
 SRC_URI[sha256sum] = "65b39a0558f8c802209c574f4d02ca263a804e8a564bc6caf1cd0fd3b3cc11e3"
@@ -35,9 +39,12 @@ FILES_${PN}-dbg += "${libdir}/${BPN}/i386-pc/.debug"
 inherit autotools
 inherit gettext
 
+<<<<<<< HEAD
 PACKAGECONFIG ??= ""
 PACKAGECONFIG[grub-mount] = "--enable-grub-mount,--disable-grub-mount,fuse"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 EXTRA_OECONF = "--with-platform=pc --disable-grub-mkfont --program-prefix="" \
                --enable-liblzma=no --enable-device-mapper=no --enable-libzfs=no"
 

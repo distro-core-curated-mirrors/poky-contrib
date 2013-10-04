@@ -11,12 +11,19 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=a916467b91076e631dd8edb7424769c7"
 PR = "r1"
 
 SRC_URI = "ftp://ftp.gnome.org/pub/gnome/sources/pygtk/2.24/${SRCNAME}-${PV}.tar.bz2 \
+<<<<<<< HEAD
            file://add-gtk-types.defs-into-gdk.c-dependence.patch \
            file://fix-gtkunixprint.patch \
            file://prevent_to_get_display_during_import.patch \
            file://nodocs.patch \
            file://acinclude.m4 \
            file://update-dependences-of-defs.c.patch"
+=======
+           file://fix-gtkunixprint.patch \
+           file://prevent_to_get_display_during_import.patch \
+           file://nodocs.patch \
+           file://acinclude.m4"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI[md5sum] = "a1051d5794fd7696d3c1af6422d17a49"
 SRC_URI[sha256sum] = "cd1c1ea265bd63ff669e92a2d3c2a88eb26bcd9e5363e0f82c896e649f206912"
@@ -36,7 +43,11 @@ do_configure_prepend() {
 		-e s:'`$PKG_CONFIG --variable codegendir pygobject-2.0`':\"${STAGING_DATADIR}/pygobject/2.0/codegen\":g \
 		-e s:'`$PKG_CONFIG --variable=fixxref pygobject-2.0`':\"${STAGING_DATADIR}/pygobject/xsl/fixxref.py\":g \
 		${S}/configure.ac
+<<<<<<< HEAD
 	sed -i 's:tests docs:tests:' ${S}/Makefile.am
+=======
+	sed -i 's:tests docs:tests:' Makefile.am
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 # dirty fix #1: remove dependency on python-pygobject-dev

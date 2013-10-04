@@ -6,11 +6,14 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=2d5025d4aa3495befef8f17206a5b0a1 \
 
 require avahi.inc
 
+<<<<<<< HEAD
 inherit python-dir pythonnative
 
 PACKAGECONFIG ??= "python"
 PACKAGECONFIG[python] = "--enable-python,--disable-python,python-native python"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PR = "${INC_PR}.0"
 
 SRC_URI[md5sum] = "2f22745b8f7368ad5a0a3fddac343f2d"
@@ -31,7 +34,11 @@ FILES_${PN}-staticdev += "${libdir}/libavahi-ui.a"
 
 FILES_${PN}-utils = "${bindir}/b* ${datadir}/applications/b*"
 
+<<<<<<< HEAD
 FILES_python-avahi = "${PYTHON_SITEPACKAGES_DIR}/avahi ${PYTHON_SITEPACKAGES_DIR}/avahi_discover"
+=======
+FILES_python-avahi = "${PYTHON_SITEPACKAGES_DIR}/avahi/*"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_avahi-discover = "${bindir}/avahi-discover \
                         ${datadir}/applications/avahi-discover.desktop \
                         ${datadir}/avahi/interfaces/avahi-discover*"
@@ -39,7 +46,11 @@ FILES_avahi-discover-standalone = "${bindir}/avahi-discover-standalone \
                                    ${datadir}/avahi/interfaces/avahi-discover.glade"
 
 RDEPENDS_avahi-discover = "python-avahi python-pygtk"
+<<<<<<< HEAD
 RDEPENDS_python-avahi = "python-core python-dbus"
+=======
+RDEPENDS_python-avahi = "python-dbus"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 
 do_install_append () {

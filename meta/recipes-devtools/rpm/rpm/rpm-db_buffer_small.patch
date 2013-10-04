@@ -14,7 +14,11 @@ If DBI debugging is enabled, additional diagnostics are printed, otherwise
 a basic retry and success message is added to show that the failure was
 resolved.
 
+<<<<<<< HEAD
 Upstream-Status: Inappropriate (workaround)
+=======
+Upstream-status: Inappropriate (workaround)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
 

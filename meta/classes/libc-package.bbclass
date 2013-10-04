@@ -146,7 +146,11 @@ python package_do_split_gconvs () {
 
     def calc_gconv_deps(fn, pkg, file_regex, output_pattern, group):
         deps = []
+<<<<<<< HEAD
         f = open(fn, "rb")
+=======
+        f = open(fn, "r")
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         c_re = re.compile('^copy "(.*)"')
         i_re = re.compile('^include "(\w+)".*')
         for l in f.readlines():
@@ -167,7 +171,11 @@ python package_do_split_gconvs () {
 
     def calc_charmap_deps(fn, pkg, file_regex, output_pattern, group):
         deps = []
+<<<<<<< HEAD
         f = open(fn, "rb")
+=======
+        f = open(fn, "r")
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         c_re = re.compile('^copy "(.*)"')
         i_re = re.compile('^include "(\w+)".*')
         for l in f.readlines():
@@ -187,7 +195,11 @@ python package_do_split_gconvs () {
 
     def calc_locale_deps(fn, pkg, file_regex, output_pattern, group):
         deps = []
+<<<<<<< HEAD
         f = open(fn, "rb")
+=======
+        f = open(fn, "r")
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         c_re = re.compile('^copy "(.*)"')
         i_re = re.compile('^include "(\w+)".*')
         for l in f.readlines():
@@ -267,7 +279,10 @@ python package_do_split_gconvs () {
             target_arch = d.getVar('TARGET_ARCH', True)
             locale_arch_options = { \
                 "arm":     " --uint32-align=4 --little-endian ", \
+<<<<<<< HEAD
                 "armeb":   " --uint32-align=4 --big-endian ",    \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                 "sh4":     " --uint32-align=4 --big-endian ",    \
                 "powerpc": " --uint32-align=4 --big-endian ",    \
                 "powerpc64": " --uint32-align=4 --big-endian ",  \

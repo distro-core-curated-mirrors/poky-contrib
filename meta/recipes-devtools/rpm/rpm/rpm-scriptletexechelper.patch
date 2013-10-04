@@ -20,7 +20,11 @@ Index: rpm-5.4.9/lib/psm.c
      int xx;
      int i;
  
+<<<<<<< HEAD
 +#ifdef RPM_VENDOR_OE
+=======
++#ifdef RPM_VENDOR_POKY
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 +    const char * scriptletWrapper = rpmExpand("%{?_cross_scriptlet_wrapper}", NULL);
 +#endif
 +    
@@ -41,7 +45,11 @@ Index: rpm-5.4.9/lib/psm.c
 +	argc = 0;
 +    }
 +
+<<<<<<< HEAD
 +#ifdef RPM_VENDOR_OE
+=======
++#ifdef RPM_VENDOR_POKY
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 +    if (scriptletWrapper && *scriptletWrapper) {
 +	argv[argc++] = scriptletWrapper;
 +	argv[argc] = rpmtsRootDir(ts);
@@ -69,7 +77,11 @@ Index: rpm-5.4.9/lib/psm.c
  	if (rpmIsDebug() &&
 -	    (!strcmp(argv[0], "/bin/sh") || !strcmp(argv[0], "/bin/bash")))
 +	    (!strcmp(argv[0], "/bin/sh") || !strcmp(argv[0], "/bin/bash"))
+<<<<<<< HEAD
 +#ifdef RPM_VENDOR_OE
+=======
++#ifdef RPM_VENDOR_POKY
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 +	    || (scriptletWrapper && *scriptletWrapper && !strcmp(argv[1], "/bin/sh"))
 +	    || (scriptletWrapper && *scriptletWrapper && !strcmp(argv[1], "/bin/bash"))
 +#endif
@@ -81,7 +93,11 @@ Index: rpm-5.4.9/lib/psm.c
  
  	{   const char * rootDir = rpmtsRootDir(ts);
  	    if (!rpmtsChrootDone(ts) && rootDir != NULL &&
+<<<<<<< HEAD
 +#ifdef RPM_VENDOR_OE
+=======
++#ifdef RPM_VENDOR_POKY
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 +		!(scriptletWrapper && *scriptletWrapper) &&
 +#endif
  		!(rootDir[0] == '/' && rootDir[1] == '\0'))
@@ -90,7 +106,11 @@ Index: rpm-5.4.9/lib/psm.c
  		xx = Chroot(rootDir);
  		/*@=modobserver@*/
  	    }
+<<<<<<< HEAD
 +#ifdef RPM_VENDOR_OE
+=======
++#ifdef RPM_VENDOR_POKY
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 +	    if (!rpmtsChrootDone(ts) && rootDir != NULL &&
 +		(scriptletWrapper && *scriptletWrapper) &&
 +		!(rootDir[0] == '/' && rootDir[1] == '\0'))
@@ -105,7 +125,11 @@ Index: rpm-5.4.9/lib/psm.c
  	/* XXX running %verifyscript/%sanitycheck doesn't have psm->te */
      {	rpmtxn _parent = (psm && psm->te ? psm->te->txn : NULL);
 +
+<<<<<<< HEAD
 +#ifdef RPM_VENDOR_OE
+=======
++#ifdef RPM_VENDOR_POKY
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 +        const char * scriptletWrapper = rpmExpand("%{?_cross_scriptlet_wrapper}", NULL);
 +	if (scriptletWrapper && *scriptletWrapper)
 +	     rc = rpmpsmNext(psm, PSM_CHROOT_OUT);
@@ -118,7 +142,11 @@ Index: rpm-5.4.9/lib/psm.c
  	else
  	     xx = rpmtxnCommit(rpmtsGetRdb(ts)->db_txn);
  	rpmtsGetRdb(ts)->db_txn = NULL;
+<<<<<<< HEAD
 +#ifdef RPM_VENDOR_OE
+=======
++#ifdef RPM_VENDOR_POKY
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 +	if (scriptletWrapper && *scriptletWrapper)
 +	     rc = rpmpsmNext(psm, PSM_CHROOT_IN);
 +#endif
@@ -126,13 +154,21 @@ Index: rpm-5.4.9/lib/psm.c
      case PSM_TRIGGERS:
  	/* Run triggers in other package(s) this package sets off. */
  	if (rpmtsFlags(ts) & RPMTRANS_FLAG_TEST)	break;
+<<<<<<< HEAD
 +#ifdef RPM_VENDOR_OE
+=======
++#ifdef RPM_VENDOR_POKY
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 +        const char * scriptletWrapper = rpmExpand("%{?_cross_scriptlet_wrapper}", NULL);
 +	if (scriptletWrapper && *scriptletWrapper)
 +	     rc = rpmpsmNext(psm, PSM_CHROOT_OUT);
 +#endif
  	rc = runTriggers(psm);
+<<<<<<< HEAD
 +#ifdef RPM_VENDOR_OE
+=======
++#ifdef RPM_VENDOR_POKY
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 +	if (scriptletWrapper && *scriptletWrapper)
 +	     rc = rpmpsmNext(psm, PSM_CHROOT_IN);
 +#endif
@@ -143,14 +179,22 @@ Index: rpm-5.4.9/lib/psm.c
  	    F_SET(psm, GOTTRIGGERS);
  	}
  	if (psm->triggers != NULL)
+<<<<<<< HEAD
 +#ifdef RPM_VENDOR_OE
+=======
++#ifdef RPM_VENDOR_POKY
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 +	{
 +            const char * scriptletWrapper = rpmExpand("%{?_cross_scriptlet_wrapper}", NULL);
 +	    if (scriptletWrapper && *scriptletWrapper)
 +	         rc = rpmpsmNext(psm, PSM_CHROOT_OUT);
 +#endif
  	    rc = runImmedTriggers(psm);
+<<<<<<< HEAD
 +#ifdef RPM_VENDOR_OE
+=======
++#ifdef RPM_VENDOR_POKY
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 +	    if (scriptletWrapper && *scriptletWrapper)
 +	         rc = rpmpsmNext(psm, PSM_CHROOT_IN);
 +	}

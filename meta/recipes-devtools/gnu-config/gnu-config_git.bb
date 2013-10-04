@@ -4,7 +4,11 @@ SECTION = "devel"
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://config.guess;endline=39;md5=0e6ca0501b27177f3bc640f7225e3ead"
 
+<<<<<<< HEAD
 DEPENDS_class-native = "perl-native-runtime"
+=======
+DEPENDS_virtclass-native = "perl-native-runtime"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 INHIBIT_DEFAULT_DEPS = "1"
 
@@ -12,7 +16,11 @@ SRCREV = "a47f842264fc19837f8a00eb1d2d254a4c527334"
 PV = "1.0+git${SRCPV}"
 PR = "r0"
 
+<<<<<<< HEAD
 SRC_URI = "git://git.sv.gnu.org/config.git \
+=======
+SRC_URI = "git://git.sv.gnu.org/config.git;protocol=git \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	   file://config-guess-uclibc.patch \
            file://gnu-configize.in"
 

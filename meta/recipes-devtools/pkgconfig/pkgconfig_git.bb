@@ -1,6 +1,10 @@
 require pkgconfig.inc
 
+<<<<<<< HEAD
 SRC_URI = "git://anongit.freedesktop.org/pkg-config \
+=======
+SRC_URI = "git://anongit.freedesktop.org/pkg-config;protocol=git \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://autofoo.patch \
            file://glibconfig-sysdefs.h"
 

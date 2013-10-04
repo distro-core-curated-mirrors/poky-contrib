@@ -23,6 +23,7 @@ do_install () {
     rmdir ${D}${bindir}/
 }
 
+<<<<<<< HEAD
 PACKAGES =+ "${PN}-rmt"
 
 FILES_${PN}-rmt = "${base_sbindir}/rmt*"
@@ -33,8 +34,19 @@ ALTERNATIVE_PRIORITY = "100"
 
 ALTERNATIVE_${PN} = "cpio"
 ALTERNATIVE_${PN}-rmt = "rmt"
+=======
+inherit update-alternatives
+
+ALTERNATIVE_PRIORITY = "100"
+
+ALTERNATIVE_${PN} = "cpio rmt"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 ALTERNATIVE_LINK_NAME[cpio] = "${base_bindir}/cpio"
 
 ALTERNATIVE_PRIORITY[rmt] = "50"
+<<<<<<< HEAD
 ALTERNATIVE_LINK_NAME[rmt] = "${base_sbindir}/rmt"
+=======
+ALTERNATIVE_LINK_NAME[rmt] = "${libexecdir}/rmt"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

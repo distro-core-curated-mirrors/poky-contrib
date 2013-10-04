@@ -5,7 +5,11 @@ import ast
 import re
 from fnmatch import fnmatchcase as fnmatch
 
+<<<<<<< HEAD
 class LicenseError(Exception):
+=======
+class LicenseError(StandardError):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     pass
 
 class LicenseSyntaxError(LicenseError):

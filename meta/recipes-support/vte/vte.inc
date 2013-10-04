@@ -10,7 +10,12 @@ EXTRA_OECONF = "--disable-python --disable-introspection"
 
 PACKAGES =+ "libvte vte-termcap"
 FILES_libvte = "${libdir}/*.so.* ${libexecdir}/gnome-pty-helper"
+<<<<<<< HEAD
 FILES_${PN}-dbg =+ "${libexecdir}/.debug ${prefix}/src ${bindir}/.debug \
                ${libdir}/.debug"
 FILES_vte-termcap = "${datadir}/vte/termcap-0.0"
 
+=======
+FILES_vte-dbg =+ "${libexecdir}/.debug"
+FILES_vte-termcap = "${datadir}/vte/termcap-0.0"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

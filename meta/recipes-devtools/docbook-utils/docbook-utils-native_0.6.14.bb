@@ -22,12 +22,21 @@ inherit autotools native
 do_configure_prepend() {
 	# Fix hard-coded references to /etc/sgml
 	if [ ! -e ${S}/.sed_done ]; then
+<<<<<<< HEAD
 		sed -i -e "s|/etc/sgml|${sysconfdir}/sgml|g" ${S}/bin/jw.in
 		sed -i -e "s|/etc/sgml|${sysconfdir}/sgml|g" ${S}/doc/man/Makefile.am
 		sed -i -e "s|/etc/sgml|${sysconfdir}/sgml|g" ${S}/doc/HTML/Makefile.am
 
 		# Point jw to the native sysroot catalog
 		sed -i -e 's|^SGML_EXTRA_CATALOGS=""|SGML_EXTRA_CATALOGS=":${sysconfdir}/sgml/catalog"|g' ${S}/bin/jw.in
+=======
+		sed -i -e "s|/etc/sgml|${sysconfdir}/sgml|g" bin/jw.in
+		sed -i -e "s|/etc/sgml|${sysconfdir}/sgml|g" doc/man/Makefile.am
+		sed -i -e "s|/etc/sgml|${sysconfdir}/sgml|g" doc/HTML/Makefile.am
+
+		# Point jw to the native sysroot catalog
+		sed -i -e 's|^SGML_EXTRA_CATALOGS=""|SGML_EXTRA_CATALOGS=":${sysconfdir}/sgml/catalog"|g' bin/jw.in
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		touch ${S}/.sed_done
 	fi
 }

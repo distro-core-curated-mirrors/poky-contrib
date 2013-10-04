@@ -2,7 +2,11 @@ DESCRIPTION = "An Embeddable SQL Database Engine"
 HOMEPAGE = "http://www.sqlite.org"
 SECTION = "libs"
 DEPENDS = "readline ncurses"
+<<<<<<< HEAD
 DEPENDS_class-native = ""
+=======
+DEPENDS_virtclass-native = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 LICENSE = "PD"
 
 inherit autotools pkgconfig
@@ -29,6 +33,10 @@ FILES_lib${BPN}-dev = "${libdir}/*.la ${libdir}/*.so \
 	                	   ${libdir}/pkgconfig ${includedir}"
 FILES_lib${BPN}-doc = "${docdir} ${mandir} ${infodir}"
 FILES_lib${BPN}-staticdev = "${libdir}/lib*.a"
+<<<<<<< HEAD
 AUTO_LIBNAME_PKGS = "${MLPREFIX}lib${BPN}"
+=======
+AUTO_LIBNAME_PKGS = "lib${BPN}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 BBCLASSEXTEND = "native nativesdk"

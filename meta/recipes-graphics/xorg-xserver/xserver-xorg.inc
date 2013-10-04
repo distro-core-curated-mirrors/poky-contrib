@@ -2,7 +2,11 @@ DESCRIPTION = "The X.Org X server"
 HOMEPAGE = "http://www.x.org"
 SECTION = "x11/base"
 LICENSE = "MIT-X"
+<<<<<<< HEAD
 LIC_FILES_CHKSUM = "file://COPYING;md5=bc098b9774ed096943f6c37b5beeef13"
+=======
+LIC_FILES_CHKSUM = "file://COPYING;md5=74df27b6254cc88d2799b5f4f5949c00"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # xf86-*-* packages depend on an X server built with the xfree86 DDX
 # so we have a virtual to represent that:
@@ -13,7 +17,11 @@ PROVIDES = "virtual/xserver-xf86"
 PROVIDES += "virtual/xserver"
 
 PE = "2"
+<<<<<<< HEAD
 INC_PR = "r8"
+=======
+INC_PR = "r3"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 XORG_PN = "xorg-server"
 SRC_URI = "${XORG_MIRROR}/individual/xserver/${XORG_PN}-${PV}.tar.bz2"
@@ -23,8 +31,13 @@ S = "${WORKDIR}/${XORG_PN}-${PV}"
 
 inherit autotools pkgconfig
 
+<<<<<<< HEAD
 PROTO_DEPS = "randrproto renderproto fixesproto damageproto xextproto xproto xf86dgaproto xf86miscproto xf86vidmodeproto compositeproto recordproto resourceproto videoproto scrnsaverproto  xineramaproto fontsproto kbproto inputproto bigreqsproto xcmiscproto"
 LIB_DEPS = "pixman libxfont xtrans libxau libxext libxdmcp libdrm libxkbfile libpciaccess openssl libgcrypt"
+=======
+PROTO_DEPS = "randrproto renderproto fixesproto damageproto xextproto xproto xf86dgaproto xf86miscproto xf86vidmodeproto compositeproto recordproto resourceproto videoproto scrnsaverproto  xineramaproto fontsproto kbproto inputproto bigreqsproto xcmiscproto glproto"
+LIB_DEPS = "pixman libxfont xtrans libxau libxext libxdmcp libdrm libxkbfile libpciaccess openssl"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 DEPENDS = "${PROTO_DEPS} ${LIB_DEPS} font-util"
 
 # Split out some modules and extensions from the main package
@@ -64,7 +77,11 @@ PACKAGES =+ "${PN}-security-policy \
              ${PN}-module-libxf1bpp \
              ${PN}-module-libxf4bpp"
 
+<<<<<<< HEAD
 RRECOMMENDS_${PN} += "${PN}-security-policy xkeyboard-config rgb xserver-xf86-config xkbcomp"
+=======
+RRECOMMENDS_${PN} += "${PN}-security-policy xkeyboard-config rgb xserver-xf86-config"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 RDEPENDS_${PN}-xvfb += "xkeyboard-config"
 RDEPENDS_${PN}-module-exa = "${PN} (= ${EXTENDPKGV})"
 
@@ -111,7 +128,11 @@ EXTRA_OECONF += "--with-fop=no \
                  --disable-record \
                  --disable-dmx \
                  --disable-xnest \
+<<<<<<< HEAD
                  --enable-xvfb \
+=======
+                 --disable-xvfb \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                  --enable-composite \
                  --without-dtrace \
                  --with-int10=x86emu \
@@ -122,11 +143,19 @@ EXTRA_OECONF += "--with-fop=no \
                  ac_cv_file__usr_share_sgml_X11_defs_ent=no \
 "
 
+<<<<<<< HEAD
 PACKAGECONFIG ??= "udev ${@base_contains('DISTRO_FEATURES', 'opengl', 'dri dri2 glx', '', d)}"
 PACKAGECONFIG[udev] = "--enable-config-udev,--disable-config-udev,udev"
 PACKAGECONFIG[dri] = "--enable-dri,--disable-dri,glproto virtual/mesa xf86driproto"
 PACKAGECONFIG[dri2] = "--enable-dri2,--disable-dri2,dri2proto"
 PACKAGECONFIG[glx] = "--enable-glx --enable-glx-tls,--disable-glx,glproto virtual/libgl virtual/libx11"
+=======
+PACKAGECONFIG ??= "udev ${@base_contains('DISTRO_FEATURES', 'opengl', 'glx', '', d)}"
+PACKAGECONFIG[udev] = "--enable-config-udev,--disable-config-udev,udev"
+PACKAGECONFIG[glx] = "--enable-dri --enable-dri2 --enable-glx --enable-glx-tls,\
+                      --disable-dri --disable-glx,\
+                      xf86driproto dri2proto mesa-dri"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 do_install_append () {
 	# Its assumed base-files creates this for us
@@ -151,8 +180,12 @@ python populate_packages_prepend() {
         p = subprocess.Popen(args="pkg-config --variable=%s xorg-server" % abis[name],
                              shell=True, env=newenv, stdout=subprocess.PIPE)
         output = p.communicate()[0]
+<<<<<<< HEAD
         mlprefix = d.getVar('MLPREFIX', True) or ''
         return "%sxorg-abi-%s-%s" % (mlprefix, name, output.split(".")[0])
+=======
+        return "xorg-abi-%s-%s" % (name, output.split(".")[0])
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     pn = d.getVar("PN", True)
     d.appendVar("RPROVIDES_" + pn, " " + get_abi("input"))

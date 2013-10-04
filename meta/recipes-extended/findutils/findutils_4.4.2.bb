@@ -11,7 +11,10 @@ SRC_URI += "file://01-27017.patch \
             file://03-28872.patch \
             file://findutils_fix_for_x32.patch \
             file://findutils_fix_for_automake-1.12.patch \
+<<<<<<< HEAD
             file://findutils_fix_doc.patch \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             "
 
 SRC_URI[md5sum] = "351cc4adb07d54877fa15f75fb77d39f"

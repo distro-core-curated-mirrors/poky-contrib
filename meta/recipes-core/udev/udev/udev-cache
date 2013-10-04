@@ -12,6 +12,7 @@
 export TZ=/etc/localtime
 
 [ -r /proc/mounts ] || exit 1
+<<<<<<< HEAD
 [ -x @UDEVD@ ] || exit 1
 [ -d /sys/class ] || exit 1
 
@@ -27,6 +28,19 @@ if [ "$DEVCACHE" != "" -a -e /dev/shm/udev.cache ]; then
 	echo "Populating dev cache"
 	(cd /; tar cf "$DEVCACHE" dev)
 	mv /dev/shm/udev.cache /etc/udev/cache.data
+=======
+[ -x /sbin/udevd ] || exit 1
+[ -d /sys/class ] || exit 1
+
+[ -f /etc/default/udev-cache ] && . /etc/default/udev-cache
+
+if [ "$DEVCACHE" != "" ]; then
+	echo "Populating dev cache"
+	(cd /; tar cf "$DEVCACHE" dev)
+	mv /dev/shm/udev.cache /etc/udev/cache.data
+else
+	rm -f /dev/shm/udev.cache
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fi
 
 exit 0

@@ -14,5 +14,7 @@ SRC_URI = "git://anongit.freedesktop.org/git/xorg/proto/dri2proto"
 
 LIC_FILES_CHKSUM="file://COPYING;md5=2e396fa91834f8786032cad2da5638f3"
 
+LIC_FILES_CHKSUM="file://COPYING;md5=2e396fa91834f8786032cad2da5638f3"
+
 S = "${WORKDIR}/git"
 

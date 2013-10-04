@@ -35,6 +35,7 @@ BBCLASSEXTEND = "native nativesdk"
 # files.
 FILES_${PN}-dev = ""
 FILES_${PN} += "${datadir}/aclocal/pkg.m4"
+<<<<<<< HEAD
 
 # When using the RPM generated automatic package dependencies, some packages
 # will end up requiring 'pkgconfig(pkg-config)'.  Allow this behavior by
@@ -49,3 +50,5 @@ do_install_append_class-native () {
         < ${WORKDIR}/pkg-config-native.in > ${B}/pkg-config-native
     install -m755 ${B}/pkg-config-native ${D}${bindir}/pkg-config-native
 }
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

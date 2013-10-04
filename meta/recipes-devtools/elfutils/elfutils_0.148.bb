@@ -6,7 +6,11 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=0636e73ff0215e8d672dc4c32c317bb3\
                     file://EXCEPTION;md5=570adcb0c1218ab57f2249c67d0ce417"
 DEPENDS = "libtool bzip2 zlib virtual/libintl"
 
+<<<<<<< HEAD
 PR = "r11"
+=======
+PR = "r9"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "https://fedorahosted.org/releases/e/l/elfutils/elfutils-${PV}.tar.bz2"
 
@@ -30,8 +34,11 @@ SRC_URI += "\
 	file://mempcpy.patch \
 	file://fix_for_gcc-4.7.patch \
 	file://dso-link-change.patch \
+<<<<<<< HEAD
 	file://nm-Fix-size-passed-to-snprintf-for-invalid-sh_name-case.patch \
 	file://elfutils-ar-c-fix-num-passed-to-memset.patch \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 "
 # Only apply when building uclibc based target recipe
 SRC_URI_append_libc-uclibc = " file://uclibc-support.patch"
@@ -47,7 +54,11 @@ SRC_URI += "\
 inherit autotools gettext
 
 EXTRA_OECONF = "--program-prefix=eu- --without-lzma"
+<<<<<<< HEAD
 EXTRA_OECONF_append_class-native = " --without-bzlib"
+=======
+EXTRA_OECONF_append_virtclass-native = " --without-bzlib"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 EXTRA_OECONF_append_libc-uclibc = " --enable-uclibc"
 
 do_configure_prepend() {
@@ -61,8 +72,13 @@ do_configure_prepend() {
 # build only libelf for uclibc case
 
 EXTRA_OEMAKE_libc-uclibc = "-C libelf"
+<<<<<<< HEAD
 EXTRA_OEMAKE_class-native = ""
 EXTRA_OEMAKE_class-nativesdk = ""
+=======
+EXTRA_OEMAKE_virtclass-native = ""
+EXTRA_OEMAKE_virtclass-nativesdk = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 BBCLASSEXTEND = "native nativesdk"
 
@@ -76,6 +92,7 @@ FILES_${PN}-binutils = "\
     ${bindir}/eu-size \
     ${bindir}/eu-strip"
 
+<<<<<<< HEAD
 FILES_libelf = "${libdir}/libelf-${PV}.so ${libdir}/libelf.so.*"
 FILES_libasm = "${libdir}/libasm-${PV}.so ${libdir}/libasm.so.*"
 FILES_libdw  = "${libdir}/libdw-${PV}.so ${libdir}/libdw.so.* ${libdir}/elfutils/lib*"
@@ -89,3 +106,13 @@ FILES_libdw-dev  = "${libdir}/libdw.so  ${includedir}/dwarf.h ${includedir}/elfu
 
 # The package contains symlinks that trip up insane
 INSANE_SKIP_${MLPREFIX}libdw = "dev-so"
+=======
+# Some packages have the version preceeding the .so instead properly
+# versioned .so.<version>, so we need to reorder and repackage.
+FILES_${PN} += "${libdir}/*-${PV}.so ${base_libdir}/*-${PV}.so"
+FILES_SOLIBSDEV = "${libdir}/libasm.so ${libdir}/libdw.so ${libdir}/libelf.so"
+
+# The package contains symlinks that trip up insane
+INSANE_SKIP_${PN} = "dev-so"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

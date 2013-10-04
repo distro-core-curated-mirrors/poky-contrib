@@ -8,7 +8,11 @@ LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=59530bdf33659b29e73d4adb9f9f6552"
 PR = "r0"
 
+<<<<<<< HEAD
 SRC_URI = "http://alioth.debian.org/frs/download.php/file/3648/chrpath-${PV}.tar.gz \
+=======
+SRC_URI = "http://alioth.debian.org/frs/download.php/3648/chrpath-${PV}.tar.gz \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://standarddoc.patch"
 
 SRC_URI[md5sum] = "ea6b212b23393bf58b0ef9bcf6491b86"
@@ -18,9 +22,15 @@ inherit autotools
 
 # We don't have a staged chrpath-native for ensuring our binary is
 # relocatable, so use the one we've just built
+<<<<<<< HEAD
 CHRPATH_BIN_class-native = "${B}/chrpath"
 
 PROVIDES_append_class-native = " chrpath-replacement-native"
+=======
+CHRPATH_BIN_virtclass-native = "${S}/chrpath"
+
+PROVIDES_append_virtclass-native = " chrpath-replacement-native"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 NATIVE_PACKAGE_PATH_SUFFIX = "/${PN}"
 
 BBCLASSEXTEND = "native nativesdk"

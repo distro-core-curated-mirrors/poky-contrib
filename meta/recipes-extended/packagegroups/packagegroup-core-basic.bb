@@ -3,7 +3,11 @@
 #
 
 DESCRIPTION = "Create Basic Image Tasks"
+<<<<<<< HEAD
 PR = "r6"
+=======
+PR = "r5"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 LICENSE = "MIT"
 
 inherit packagegroup
@@ -59,10 +63,13 @@ RDEPENDS_packagegroup-core-basic-utils = "\
     grep \
     makedevs \
     mc \
+<<<<<<< HEAD
     mc-fish \
     mc-helpers \
     mc-helpers-perl \
     mc-helpers-python \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     mktemp \
     ncurses \
     net-tools \
@@ -73,6 +80,10 @@ RDEPENDS_packagegroup-core-basic-utils = "\
     sed \
     tar \
     time \
+<<<<<<< HEAD
+=======
+    udev \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     util-linux \
     zlib \
     "
@@ -93,6 +104,7 @@ RDEPENDS_packagegroup-core-dev-utils = "\
     patch \
     "
 
+<<<<<<< HEAD
 VIRTUAL-RUNTIME_initscripts ?= "initscripts"
 VIRTUAL-RUNTIME_init_manager ?= "sysvinit"
 VIRTUAL-RUNTIME_login_manager ?= "busybox"
@@ -101,6 +113,13 @@ RDEPENDS_packagegroup-core-initscripts = "\
     ${VIRTUAL-RUNTIME_init_manager} \
     ethtool \
     ${VIRTUAL-RUNTIME_login_manager} \
+=======
+RDEPENDS_packagegroup-core-initscripts = "\
+    initscripts \
+    sysvinit \
+    ethtool \
+    mingetty \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     sysklogd \
     "
 
@@ -108,6 +127,10 @@ RDEPENDS_packagegroup-core-multiuser = "\
     cracklib \
     gzip \
     libuser \
+<<<<<<< HEAD
+=======
+    libpam \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     shadow \
     sudo \
     "

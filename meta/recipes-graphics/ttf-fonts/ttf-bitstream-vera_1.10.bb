@@ -7,12 +7,19 @@ but is visibly different than normal and bold, and reasonably pleasing."
 SECTION = "x11/fonts"
 LICENSE = "BitstreamVera"
 LIC_FILES_CHKSUM = "file://COPYRIGHT.TXT;md5=27d7484b1e18d0ee4ce538644a3f04be"
+<<<<<<< HEAD
 PR = "r7"
 RDEPENDS_${PN} = "fontconfig-utils"
 
 inherit fontcache
 
 FONT_PACKAGES = "${PN}"
+=======
+PR = "r6"
+RDEPENDS_${PN} = "fontconfig-utils"
+
+inherit allarch
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "${GNOME_MIRROR}/ttf-bitstream-vera/1.10/ttf-bitstream-vera-${PV}.tar.bz2" 
 

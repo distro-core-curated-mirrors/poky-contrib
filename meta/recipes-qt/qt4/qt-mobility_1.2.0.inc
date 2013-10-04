@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 HOMEPAGE = "http://qt-project.org/"
 DEPENDS = "gstreamer util-linux"
 
@@ -5,6 +6,10 @@ PACKAGECONFIG ??= "${@base_contains('DISTRO_FEATURES', 'pulseaudio', 'pulseaudio
                    ${@base_contains('DISTRO_FEATURES', 'bluetooth', 'bluetooth', '', d)}"
 PACKAGECONFIG[bluetooth] = ",,bluez4"
 PACKAGECONFIG[pulseaudio] = ",,pulseaudio"
+=======
+HOMEPAGE = "http://qt.nokia.com"
+DEPENDS += "pulseaudio bluez4"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 LICENSE = "LGPLv2.1"
 LIC_FILES_CHKSUM = "file://LICENSE.LGPL;md5=fbc093901857fcd118f065f900982c24 \
@@ -16,15 +21,23 @@ SRC_URI = "http://get.qt.nokia.com/qt/add-ons/qt-mobility-opensource-src-${PV}.t
            file://0001-gstvideoconnector-fixed-buffers-allocation.patch \
            file://0002-Remove-unnecessary-rpaths-from-qml_device-example.patch \
            file://qt-mobility-no-opengl.patch \
+<<<<<<< HEAD
            file://gcc-scope.patch \
            file://qt-mobility-no-xvideo.patch \
            file://0001-fix-embedded-usage-doesn-t-work-outside-of-Qt.patch \
+=======
+	   file://gcc-scope.patch \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	   "
 
 SRC_URI[md5sum]="ea5db5a8d3dd4709c2926dceda646bd8"
 SRC_URI[sha256sum]="ee3c88975e04139ac9589f76d4be646d44fcbc4c8c1cf2db621abc154cf0ba44"
 
+<<<<<<< HEAD
 PR = "r8"
+=======
+PR = "r7"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 S = "${WORKDIR}/qt-mobility-opensource-src-${PV}"
 
@@ -37,9 +50,12 @@ qtm_plugins	:= "/usr/lib/${qtm_dir}/plugins/QtMobility"
 qtm_data	:= "/usr/share/${qtm_dir}"
 qtm_imports	:= "/usr/lib/${qtm_dir}/imports"
 
+<<<<<<< HEAD
 QTM_MODULES_LIST ?= "bearer contacts gallery location publishsubscribe messaging multimedia \
 systeminfo serviceframework sensors versit organizer feedback connectivity"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_configure_prepend() {
 	cp qtmobility.pro qtmobility.pro.old
 	sed -e 's@...QT_INSTALL_DATA.@${qtm_data}@' <qtmobility.pro.old >qtmobility.pro
@@ -51,6 +67,7 @@ do_configure_prepend() {
 	cp staticconfig.pri staticconfig.pri.old
 	echo "include(${STAGING_DATADIR}/${qtm_dir}/mkspecs/qconfig.pri)" >staticconfig.pri
 	cat staticconfig.pri.old >>staticconfig.pri
+<<<<<<< HEAD
 
         cat > features/platformconfig/oe.pri <<EOF
 qmf_enabled = no
@@ -80,6 +97,9 @@ ${qtm_extra_config}
 EOF
 
 	./configure -qmake-exec qmake2 -prefix /usr -staticconfig oe -examples -demos -modules "${QTM_MODULES_LIST}"
+=======
+	./configure -qmake-exec qmake2 -prefix /usr -examples -demos
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	echo QT_MOBILITY_BIN = ${qtm_bin} >>./config.pri
 	echo QT_MOBILITY_LIB = ${qtm_lib} >>./config.pri
 	echo QT_MOBILITY_INCLUDE = ${qtm_include} >>./config.pri
@@ -87,6 +107,7 @@ EOF
 	echo QT_MOBILITY_EXAMPLES = ${qtm_examples} >>./config.pri
 	echo QT_MOBILITY_DEMOS = ${qtm_demos} >>./config.pri
 	echo QT_CONFIG ${qtm_glflags} >>./config.pri
+<<<<<<< HEAD
 	echo CONFIG += ${qtm_embedded} >>./config.pri
 }
 
@@ -96,6 +117,13 @@ do_compile_prepend() {
 	done
 }
 
+=======
+	echo bluez_enabled = yes >>./config.pri
+	echo ${qtm_extra_config} >>./config.pri
+	echo CONFIG += ${qtm_embedded} >>./config.pri
+}
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_install() {
 	for NAME in */*.prf
 	do

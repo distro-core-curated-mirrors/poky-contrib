@@ -7,7 +7,11 @@ PACKAGES = ""
 PACKAGES_DYNAMIC = ""
 
 STAGINGCC = "gcc-cross-initial"
+<<<<<<< HEAD
 STAGINGCC_class-nativesdk = "gcc-crosssdk-initial"
+=======
+STAGINGCC_virtclass-nativesdk = "gcc-crosssdk-initial"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 TOOLCHAIN_OPTIONS = " --sysroot=${STAGING_DIR_TARGET}"
 
 do_configure () {
@@ -72,7 +76,11 @@ eglibcinitial_sstate_postinst() {
 	fi
 }
 
+<<<<<<< HEAD
 do_populate_sysroot[sstate-outputdirs] = "${STAGING_DIR_TCBOOTSTRAP}/"
+=======
+do_populate_sysroot[sstate-outputdirs] = "${STAGING_DIR_TCBOOTSTRAP}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # We don't install any scripts so there is nothing to evacuate
 do_evacuate_scripts () {

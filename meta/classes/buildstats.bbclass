@@ -28,12 +28,23 @@ def set_bn(e):
         os.remove(e.data.getVar('BNFILE', True))
     except:
         pass
+<<<<<<< HEAD
     with open(e.data.getVar('BNFILE', True), "w") as f:
         f.write(os.path.join(bn, e.data.getVar('BUILDNAME', True)))
 
 def get_bn(e):
     with open(e.data.getVar('BNFILE', True)) as f:
         bn = f.readline()
+=======
+    file = open(e.data.getVar('BNFILE', True), "w")
+    file.write(os.path.join(bn, e.data.getVar('BUILDNAME', True)))
+    file.close()
+
+def get_bn(e):
+    file = open(e.data.getVar('BNFILE', True))
+    bn = file.readline()
+    file.close()
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     return bn
 
 def set_device(e):
@@ -63,10 +74,16 @@ def set_device(e):
     ############################################################################
     rdev="NoLogicalDevice"
     try:
+<<<<<<< HEAD
         with open("/proc/diskstats", "r") as f:
             for line in f:
                 if majordev == int(line.split()[0]) and minordev == int(line.split()[1]):
                     rdev=line.split()[2]
+=======
+        for line in open("/proc/diskstats", "r"):
+            if majordev == int(line.split()[0]) and minordev == int(line.split()[1]):
+                rdev=line.split()[2]
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     except:
         pass
     file = open(e.data.getVar('DEVFILE', True), "w")
@@ -86,10 +103,16 @@ def get_diskstats(dev):
     ############################################################################
     DSTAT_KEYS = ['ReadsComp', 'ReadsMerged', 'SectRead', 'TimeReads', 'WritesComp', 'SectWrite', 'TimeWrite', 'IOinProgress', 'TimeIO', 'WTimeIO']  
     try:
+<<<<<<< HEAD
         with open("/proc/diskstats", "r") as f:
             for x in f:
                 if dev in x:
                     diskstats_val = x.rstrip().split()[4:]
+=======
+        for x in open("/proc/diskstats", "r"):
+            if dev in x:
+                diskstats_val = x.rstrip().split()[4:]
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     except IOError as e:
         return
     diskstats = dict(itertools.izip(DSTAT_KEYS, diskstats_val))
@@ -175,7 +198,11 @@ python run_buildstats () {
         # set the buildname
         ########################################################################
         try:
+<<<<<<< HEAD
             bb.utils.mkdirhier(e.data.getVar('BUILDSTATS_BASE', True))
+=======
+            bb.mkdirhier(e.data.getVar('BUILDSTATS_BASE', True))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         except:
             pass
         set_bn(e)
@@ -217,6 +244,10 @@ python run_buildstats () {
         if timedata:
             time, cpu = timedata
             # write end of build and cpu used into build_time
+<<<<<<< HEAD
+=======
+            file = open(build_time, "a")
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             file.write("Elapsed time: %0.2f seconds \n" % (time))
             if cpu:
                 file.write("CPU usage: %0.1f%% \n" % cpu)
@@ -275,6 +306,10 @@ python run_buildstats () {
         file = open(build_status,"a")
         file.write(e.data.expand("Failed at: ${PF} at task: %s \n" % e.task))
         file.close()
+<<<<<<< HEAD
+=======
+        
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 addhandler run_buildstats

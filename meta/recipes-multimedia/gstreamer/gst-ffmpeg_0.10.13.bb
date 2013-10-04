@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 SUMMARY = "FFmpeg-based GStreamer plug-in"
+=======
+DESCRIPTION = "FFmpeg-based GStreamer plug-in"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 SECTION = "multimedia"
 LICENSE = "GPLv2+ & LGPLv2+ & ( (GPLv2+ & LGPLv2.1+) | (GPLv3+ & LGPLv3+) )"
 LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263 \
@@ -12,7 +16,11 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263 \
                     file://gst-libs/ext/libav/COPYING.LGPLv3;md5=e6a600fd5e1d9cbde2d983680233ad02"
 LICENSE_FLAGS = "commercial"
 HOMEPAGE = "http://www.gstreamer.net/"
+<<<<<<< HEAD
 DEPENDS = "gstreamer gst-plugins-base zlib bzip2 yasm-native"
+=======
+DEPENDS = "gstreamer gst-plugins-base zlib bzip2"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 inherit autotools pkgconfig
 
@@ -21,22 +29,33 @@ SRC_URI = "http://gstreamer.freedesktop.org/src/${BPN}/${BPN}-${PV}.tar.bz2 \
            file://configure-fix.patch \
            file://h264_qpel_mmx.patch \
            file://libav_e500mc.patch \
+<<<<<<< HEAD
            file://libav_e5500.patch \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 "
 
 SRC_URI[md5sum] = "7f5beacaf1312db2db30a026b36888c4"
 SRC_URI[sha256sum] = "76fca05b08e00134e3cb92fa347507f42cbd48ddb08ed3343a912def187fbb62"
 
+<<<<<<< HEAD
 PR = "r7"
+=======
+PR = "r4"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 GSTREAMER_DEBUG ?= "--disable-debug"
 
 FFMPEG_EXTRA_CONFIGURE = "--with-ffmpeg-extra-configure"
+<<<<<<< HEAD
 # pass --cpu for powerpc. get cpu name by stripping "ppc" or "ppc64"
 # from DEFAULTTUNE
 FFMPEG_CPU_powerpc = "--cpu=${@d.getVar('DEFAULTTUNE')[3:]}"
 FFMPEG_CPU_powerpc64 = "--cpu=${@d.getVar('DEFAULTTUNE')[5:]}"
 FFMPEG_EXTRA_CONFIGURE_COMMON_ARG = "--target-os=linux ${FFMPEG_CPU} \
+=======
+FFMPEG_EXTRA_CONFIGURE_COMMON_ARG = "--target-os=linux \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
   --cc='${CC}' --as='${CC}' --ld='${CC}' --nm='${NM}' --ar='${AR}' \
   --ranlib='${RANLIB}' \
   ${GSTREAMER_DEBUG}"
@@ -45,9 +64,15 @@ FFMPEG_EXTRA_CONFIGURE_COMMON = \
 
 EXTRA_OECONF = "${FFMPEG_EXTRA_CONFIGURE_COMMON}"
 
+<<<<<<< HEAD
 PACKAGECONFIG ??= "external-libav"
 PACKAGECONFIG[external-libav] = "--with-system-ffmpeg,,libav"
 PACKAGECONFIG[orc] = "--enable-orc,--disable-orc,orc"
+=======
+# yasm not found, use --disable-yasm for a crippled build for libav
+EXTRA_OECONF_append_x86-64 = " --disable-yasm "
+EXTRA_OECONF_append_x86 = " --disable-yasm "
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 FILES_${PN} += "${libdir}/gstreamer-0.10/*.so"
 FILES_${PN}-dbg += "${libdir}/gstreamer-0.10/.debug"

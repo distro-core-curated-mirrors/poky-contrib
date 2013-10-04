@@ -7,16 +7,23 @@ def get_imagecmds(d):
     ctypes = d.getVar('COMPRESSIONTYPES', True).split()
     cimages = {}
 
+<<<<<<< HEAD
     # The elf image depends on the cpio.gz image already having
     # been created, so we add that explicit ordering here.
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     if "elf" in alltypes:
         alltypes.remove("elf")
         if "cpio.gz" not in alltypes:
                 alltypes.append("cpio.gz")
         alltypes.append("elf")
 
+<<<<<<< HEAD
     # Filter out all the compressed images from alltypes
+=======
+    # Filter out all the compressed images from types
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     for type in alltypes:
         basetype = None
         for ctype in ctypes:
@@ -51,11 +58,15 @@ def get_imagecmds(d):
         types.remove("live")
 
     if d.getVar('IMAGE_LINK_NAME', True):
+<<<<<<< HEAD
         if d.getVar('RM_OLD_IMAGE', True) == "1":
             # Remove the old image
             cmds += "\trm -f `find ${DEPLOY_DIR_IMAGE} -maxdepth 1 -type l -name ${IMAGE_LINK_NAME}'.*' -exec readlink -f {} \;`"
         # Remove the symlink
         cmds += "\n\trm -f ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.*"
+=======
+        cmds += "\trm -f ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.*"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     for type in types:
         ccmd = []
@@ -99,9 +110,13 @@ runimagecmd () {
         # And create the symlinks
         if [ -n "${IMAGE_LINK_NAME}" ]; then
             for type in ${subimages}; do
+<<<<<<< HEAD
                 if [ -e ${IMAGE_NAME}.rootfs.$type ]; then
                     ln -s ${IMAGE_NAME}.rootfs.$type ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.$type
                 fi
+=======
+                ln -s ${IMAGE_NAME}.rootfs.$type ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.$type
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             done
         fi
 }
@@ -139,6 +154,7 @@ IMAGE_CMD_jffs2 = "mkfs.jffs2 --root=${IMAGE_ROOTFS} --faketime --output=${DEPLO
 IMAGE_CMD_sum.jffs2 = "${IMAGE_CMD_jffs2} && sumtool -i ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.jffs2 \
 	-o ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.sum.jffs2 -n ${EXTRA_IMAGECMD}"
 
+<<<<<<< HEAD
 IMAGE_CMD_cramfs = "mkfs.cramfs ${IMAGE_ROOTFS} ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.cramfs ${EXTRA_IMAGECMD}"
 
 oe_mkext234fs () {
@@ -159,13 +175,49 @@ oe_mkext234fs () {
 IMAGE_CMD_ext2 = "oe_mkext234fs ext2 ${EXTRA_IMAGECMD}"
 IMAGE_CMD_ext3 = "oe_mkext234fs ext3 ${EXTRA_IMAGECMD}"
 IMAGE_CMD_ext4 = "oe_mkext234fs ext4 ${EXTRA_IMAGECMD}"
+=======
+IMAGE_CMD_cramfs = "mkcramfs ${IMAGE_ROOTFS} ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.cramfs ${EXTRA_IMAGECMD}"
+
+IMAGE_CMD_ext2 () {
+	rm -rf ${DEPLOY_DIR_IMAGE}/tmp.gz-${PN} && mkdir ${DEPLOY_DIR_IMAGE}/tmp.gz-${PN}
+	genext2fs -b $ROOTFS_SIZE -d ${IMAGE_ROOTFS} ${EXTRA_IMAGECMD} ${DEPLOY_DIR_IMAGE}/tmp.gz-${PN}/${IMAGE_NAME}.rootfs.ext2
+	mv ${DEPLOY_DIR_IMAGE}/tmp.gz-${PN}/${IMAGE_NAME}.rootfs.ext2 ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.ext2
+	rmdir ${DEPLOY_DIR_IMAGE}/tmp.gz-${PN}
+}
+
+IMAGE_CMD_ext3 () {
+	genext2fs -b $ROOTFS_SIZE -d ${IMAGE_ROOTFS} ${EXTRA_IMAGECMD} ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.ext3
+	tune2fs -j ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.ext3
+}
+
+oe_mkext4fs () {
+	genext2fs -b $ROOTFS_SIZE -d ${IMAGE_ROOTFS} ${EXTRA_IMAGECMD} $1
+	tune2fs -O extents,uninit_bg,dir_index,has_journal $1
+	e2fsck -yfDC0 $1 || chk=$?
+	case $chk in
+	0|1|2)
+	    ;;
+	*)
+	    return $chk
+	    ;;
+	esac
+}
+
+IMAGE_CMD_ext4 () {
+	oe_mkext4fs ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.ext4
+}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 IMAGE_CMD_btrfs () {
 	mkfs.btrfs -b `expr ${ROOTFS_SIZE} \* 1024` ${EXTRA_IMAGECMD} -r ${IMAGE_ROOTFS} ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.btrfs
 }
 
 IMAGE_CMD_squashfs = "mksquashfs ${IMAGE_ROOTFS} ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.squashfs ${EXTRA_IMAGECMD} -noappend"
+<<<<<<< HEAD
 IMAGE_CMD_squashfs-xz = "mksquashfs ${IMAGE_ROOTFS} ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.squashfs-xz ${EXTRA_IMAGECMD} -noappend -comp xz"
+=======
+IMAGE_CMD_squashfs-lzma = "mksquashfs ${IMAGE_ROOTFS} ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.squashfs-lzma ${EXTRA_IMAGECMD} -noappend -comp lzma"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 IMAGE_CMD_tar = "cd ${IMAGE_ROOTFS} && tar -cvf ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.tar ."
 
 CPIO_TOUCH_INIT () {
@@ -179,7 +231,11 @@ IMAGE_CMD_cpio () {
 	cd ${IMAGE_ROOTFS} && (find . | cpio -o -H newc >${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.cpio)
 }
 
+<<<<<<< HEAD
 ELF_KERNEL ?= "${STAGING_DIR_HOST}/usr/src/kernel/${KERNEL_IMAGETYPE}"
+=======
+ELF_KERNEL ?= "${STAGING_DIR_HOST}/kernel/${KERNEL_IMAGETYPE}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ELF_APPEND ?= "ramdisk_size=32768 root=/dev/ram0 rw console="
 
 IMAGE_CMD_elf () {
@@ -208,7 +264,11 @@ JFFS2_ENDIANNESS ?= "${@base_conditional('SITEINFO_ENDIANNESS', 'le', '--little-
 JFFS2_ERASEBLOCK ?= "0x40000"
 EXTRA_IMAGECMD_jffs2 ?= "--pad ${JFFS2_ENDIANNESS} --eraseblock=${JFFS2_ERASEBLOCK} --no-cleanmarkers"
 
+<<<<<<< HEAD
 # Change these if you want default mkfs behavior (i.e. create minimal inode number)
+=======
+# Change these if you want default genext2fs behavior (i.e. create minimal inode number)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 EXTRA_IMAGECMD_ext2 ?= "-i 8192"
 EXTRA_IMAGECMD_ext3 ?= "-i 8192"
 EXTRA_IMAGECMD_ext4 ?= "-i 8192"
@@ -218,6 +278,7 @@ EXTRA_IMAGECMD_elf ?= ""
 IMAGE_DEPENDS = ""
 IMAGE_DEPENDS_jffs2 = "mtd-utils-native"
 IMAGE_DEPENDS_sum.jffs2 = "mtd-utils-native"
+<<<<<<< HEAD
 IMAGE_DEPENDS_cramfs = "util-linux-native"
 IMAGE_DEPENDS_ext2 = "e2fsprogs-native"
 IMAGE_DEPENDS_ext3 = "e2fsprogs-native"
@@ -225,12 +286,25 @@ IMAGE_DEPENDS_ext4 = "e2fsprogs-native"
 IMAGE_DEPENDS_btrfs = "btrfs-tools-native"
 IMAGE_DEPENDS_squashfs = "squashfs-tools-native"
 IMAGE_DEPENDS_squashfs-xz = "squashfs-tools-native"
+=======
+IMAGE_DEPENDS_cramfs = "cramfs-native"
+IMAGE_DEPENDS_ext2 = "genext2fs-native"
+IMAGE_DEPENDS_ext3 = "genext2fs-native e2fsprogs-native"
+IMAGE_DEPENDS_ext4 = "genext2fs-native e2fsprogs-native"
+IMAGE_DEPENDS_btrfs = "btrfs-tools-native"
+IMAGE_DEPENDS_squashfs = "squashfs-tools-native"
+IMAGE_DEPENDS_squashfs-lzma = "squashfs-tools-native"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 IMAGE_DEPENDS_elf = "virtual/kernel mkelfimage-native"
 IMAGE_DEPENDS_ubi = "mtd-utils-native"
 IMAGE_DEPENDS_ubifs = "mtd-utils-native"
 
 # This variable is available to request which values are suitable for IMAGE_FSTYPES
+<<<<<<< HEAD
 IMAGE_TYPES = "jffs2 sum.jffs2 cramfs ext2 ext2.gz ext2.bz2 ext3 ext3.gz ext2.lzma btrfs live squashfs squashfs-xz ubi ubifs tar tar.gz tar.bz2 tar.xz cpio cpio.gz cpio.xz cpio.lzma vmdk elf"
+=======
+IMAGE_TYPES = "jffs2 sum.jffs2 cramfs ext2 ext2.gz ext2.bz2 ext3 ext3.gz ext2.lzma btrfs live squashfs squashfs-lzma ubi tar tar.gz tar.bz2 tar.xz cpio cpio.gz cpio.xz cpio.lzma vmdk elf"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 COMPRESSIONTYPES = "gz bz2 lzma xz"
 COMPRESS_CMD_lzma = "lzma -k -f -7 ${IMAGE_NAME}.rootfs.${type}"

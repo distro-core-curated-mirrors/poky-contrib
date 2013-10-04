@@ -38,9 +38,13 @@ do_install () {
 	install -m 755 ${WORKDIR}/sysklogd ${D}${sysconfdir}/init.d/syslog
 }
 
+<<<<<<< HEAD
 # sysklogd package has no internal systemd support, so we weigh busybox's
 # sysklogd utility over it in case of systemd
 ALTERNATIVE_PRIORITY = "${@base_contains('DISTRO_FEATURES','systemd','10','100',d)}"
+=======
+ALTERNATIVE_PRIORITY = "100"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 ALTERNATIVE_${PN} = "syslogd klogd syslog-init syslog-conf"
 

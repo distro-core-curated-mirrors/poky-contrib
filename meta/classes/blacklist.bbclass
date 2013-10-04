@@ -12,6 +12,7 @@
 #   PNBLACKLIST[pn] = "message"
 #
 
+<<<<<<< HEAD
 # Cope with PNBLACKLIST flags for multilib case
 addhandler blacklist_multilib_eventhandler
 blacklist_multilib_eventhandler[eventmask] = "bb.event.ConfigParsed"
@@ -37,6 +38,8 @@ python blacklist_multilib_eventhandler() {
                 e.data.setVarFlag('PNBLACKLIST', newpkg, reason)
 }
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 python () {
     blacklist = d.getVarFlag('PNBLACKLIST', d.getVar('PN', True), True)
 

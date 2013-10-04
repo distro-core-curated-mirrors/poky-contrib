@@ -18,10 +18,19 @@ SRC_URI = "http://www.openssl.org/source/openssl-${PV}.tar.gz \
 S = "${WORKDIR}/openssl-${PV}"
 
 AR_append = " r"
+<<<<<<< HEAD
 # Avoid binaries being marked as requiring an executable stack since it 
 # doesn't(which causes and this causes issues with SELinux
 CFLAG = "${@base_conditional('SITEINFO_ENDIANNESS', 'le', '-DL_ENDIAN', '-DB_ENDIAN', d)} \
 	-DTERMIO ${CFLAGS} -Wall -Wa,--noexecstack"
+=======
+CFLAG = "${@base_conditional('SITEINFO_ENDIANNESS', 'le', '-DL_ENDIAN', '-DB_ENDIAN', d)} \
+	-DTERMIO ${FULL_OPTIMIZATION} -Wall"
+
+# Avoid binaries being marked as requiring an executable stack (which causes 
+# issues with SELinux on the host)
+CFLAG_append_virtclass-native = " -Wa,--noexecstack"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # -02 does not work on mipsel: ssh hangs when it tries to read /dev/urandom
 CFLAG_mtx-1 := "${@'${CFLAG}'.replace('-O2', '')}"
@@ -145,7 +154,10 @@ do_install () {
 	cp --dereference -R include/openssl ${D}${includedir}
 	sed -i -e '1s,.*,#!${bindir}/env perl,' ${D}${libdir}/ssl/misc/CA.pl
 
+<<<<<<< HEAD
 	oe_multilib_header openssl/opensslconf.h
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 BBCLASSEXTEND = "native nativesdk"

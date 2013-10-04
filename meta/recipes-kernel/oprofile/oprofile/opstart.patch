@@ -1,5 +1,6 @@
 Upstream-Status: Pending
 
+<<<<<<< HEAD
 The patch gives a low overhead way of starting/stopping oprofile which
 doesn't involve script exection.
 
@@ -10,6 +11,13 @@ index d34b060..dff15f9 100644
 --- oprofile.orig/utils/Makefile.am
 +++ oprofile/utils/Makefile.am
 @@ -7,7 +7,7 @@ AM_LDFLAGS = @OP_LDFLAGS@
+=======
+Index: oprofile/utils/Makefile.am
+===================================================================
+--- oprofile.orig/utils/Makefile.am	2005-03-31 18:20:41.000000000 +0100
++++ oprofile/utils/Makefile.am	2008-07-02 15:14:07.000000000 +0100
+@@ -3,8 +3,15 @@
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
  
  LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
  

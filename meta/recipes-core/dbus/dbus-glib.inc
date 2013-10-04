@@ -13,7 +13,10 @@ DEPENDS_class-native = "glib-2.0-native dbus-native"
 SRC_URI = "http://dbus.freedesktop.org/releases/dbus-glib/dbus-glib-${PV}.tar.gz \
            file://no-examples.patch \
            file://test-install-makefile.patch \
+<<<<<<< HEAD
            file://obsolete_automake_macros.patch \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 "
 
 inherit autotools pkgconfig gettext
@@ -29,6 +32,11 @@ EXTRA_OECONF_class-native = "--with-introspect-xml=${STAGING_DATADIR_NATIVE}/dbu
 
 PACKAGES += "${PN}-bash-completion ${PN}-tests-dbg ${PN}-tests"
 
+<<<<<<< HEAD
+=======
+PACKAGES += "${PN}-bash-completion ${PN}-tests-dbg ${PN}-tests"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_${PN} = "${libdir}/lib*${SOLIBS}"
 FILES_${PN}-bash-completion = "${sysconfdir}/bash_completion.d/dbus-bash-completion.sh \
    ${libexecdir}/dbus-bash-completion-helper"
@@ -36,9 +44,16 @@ FILES_${PN}-dev += "${libdir}/dbus-1.0/include ${bindir}/dbus-glib-tool"
 FILES_${PN}-dev += "${bindir}/dbus-binding-tool"
 
 RDEPENDS_${PN}-tests += "dbus-x11"
+<<<<<<< HEAD
 FILES_${PN}-tests = "${datadir}/${BPN}/tests"
 FILES_${PN}-tests-dbg = "${datadir}/${BPN}/tests/.debug/* \
                          ${datadir}/${BPN}/tests/core/.debug/* \
                          ${datadir}/${BPN}/tests/interfaces/.debug/*"
+=======
+FILES_${PN}-tests = "${datadir}/${PN}/tests"
+FILES_${PN}-tests-dbg = "${datadir}/${PN}/tests/.debug/* \
+                         ${datadir}/${PN}/tests/core/.debug/* \
+                         ${datadir}/${PN}/tests/interfaces/.debug/*"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 BBCLASSEXTEND = "native"

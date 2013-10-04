@@ -3,6 +3,7 @@ HOMEPAGE = "http://wiki.eclipse.org/TCF"
 BUGTRACKER = "https://bugs.eclipse.org/bugs/"
 
 LICENSE = "EPL-1.0 | EDL-1.0"
+<<<<<<< HEAD
 LIC_FILES_CHKSUM = "file://edl-v10.html;md5=522a390a83dc186513f0500543ad3679"
 
 SRCREV = "4ef94ecb927a8912c3d79ce137182247786cff8f"
@@ -10,10 +11,27 @@ PV = "0.4.0+git${SRCPV}"
 PR = "r2"
 
 SRC_URI = "git://git.eclipse.org/gitroot/tcf/org.eclipse.tcf.agent.git \
+=======
+LIC_FILES_CHKSUM = "file://../epl-v10.html;md5=7aa4215a330a0a4f6a1cbf8da1a0879f \
+                    file://edl-v10.html;md5=522a390a83dc186513f0500543ad3679"
+
+SRCREV = "4ef94ecb927a8912c3d79ce137182247786cff8f"
+PV = "0.4.0+git${SRCPV}"
+PR = "r0"
+
+SRC_URI = "git://git.eclipse.org/gitroot/tcf/org.eclipse.tcf.agent.git;protocol=git \
+           http://www.eclipse.org/legal/epl-v10.html;name=epl \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://fix_ranlib.patch \
            file://fix_tcf-agent.init.patch \
           "
 
+<<<<<<< HEAD
+=======
+SRC_URI[epl.md5sum] = "7aa4215a330a0a4f6a1cbf8da1a0879f"
+SRC_URI[epl.sha256sum] = "4fd64aeed340d62a64a8da4b371efe0f6d0d745f4d2dbefacba86c646d36bc72"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 DEPENDS = "util-linux openssl"
 RDEPENDS_${PN} = "bash"
 
@@ -22,7 +40,11 @@ S = "${WORKDIR}/git"
 inherit update-rc.d
 
 INITSCRIPT_NAME = "tcf-agent"
+<<<<<<< HEAD
 INITSCRIPT_PARAMS = "start 99 3 5 . stop 20 0 1 2 6 ."
+=======
+INITSCRIPT_PARAMS = "start 999 3 5 . stop 20 0 1 2 6 ."
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # mangling needed for make
 MAKE_ARCH = "`echo ${TARGET_ARCH} | sed s,i.86,i686,`"

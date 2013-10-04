@@ -43,16 +43,30 @@ python populate_packages_append () {
                     mimes.append(f)
         if mimes:
             bb.note("adding mime postinst and postrm scripts to %s" % pkg)
+<<<<<<< HEAD
             postinst = d.getVar('pkg_postinst_%s' % pkg, True)
+=======
+            postinst = d.getVar('pkg_postinst_%s' % pkg, True) or d.getVar('pkg_postinst', True)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             if not postinst:
                 postinst = '#!/bin/sh\n'
             postinst += d.getVar('mime_postinst', True)
             d.setVar('pkg_postinst_%s' % pkg, postinst)
+<<<<<<< HEAD
             postrm = d.getVar('pkg_postrm_%s' % pkg, True)
+=======
+            postrm = d.getVar('pkg_postrm_%s' % pkg, True) or d.getVar('pkg_postrm', True)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             if not postrm:
                 postrm = '#!/bin/sh\n'
             postrm += d.getVar('mime_postrm', True)
             d.setVar('pkg_postrm_%s' % pkg, postrm)
             bb.note("adding shared-mime-info-data dependency to %s" % pkg)
+<<<<<<< HEAD
             d.appendVar('RDEPENDS_' + pkg, " shared-mime-info-data")
+=======
+            rdepends = explode_deps(d.getVar('RDEPENDS_' + pkg, False) or d.getVar('RDEPENDS', False) or "" ) 
+            rdepends.append("shared-mime-info-data")
+            d.setVar('RDEPENDS_' + pkg, " " + " ".join(rdepends))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }

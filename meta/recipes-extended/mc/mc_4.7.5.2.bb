@@ -20,6 +20,7 @@ EXTRA_OECONF = "--with-screen=ncurses --without-gpm-mouse --without-x --without-
 FILES_${PN}-dbg += "${libexecdir}/mc/.debug/"
 
 do_install_append () {
+<<<<<<< HEAD
 	sed -i -e '1s,#!.*perl,#!${bindir}/env perl,' ${D}${libexecdir}/mc/extfs.d/*
 	sed -i -e '1s,#!.*python,#!${bindir}/env python,' ${D}${libexecdir}/mc/extfs.d/*
 }
@@ -45,3 +46,8 @@ FILES_${BPN}-helpers = "${libexecdir}/mc/extfs.d/* ${libexecdir}/mc/ext.d/*"
 DESCRIPTION_${BPN}-fish = "Midnight Commander Fish scripts"
 FILES_${BPN}-fish = "${libexecdir}/mc/fish"
 
+=======
+       sed -i -e '1s,#!.*perl,#!${bindir}/env perl,' ${D}${libexecdir}/mc/extfs.d/*
+       
+}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

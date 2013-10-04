@@ -11,11 +11,16 @@ SRC_URI = "${GNU_MIRROR}/grep/grep-${PV}.tar.bz2 \
            file://uclibc-fix.patch \
            file://grep_fix_for_automake-1.12.patch \
            file://gettext.patch \
+<<<<<<< HEAD
            file://fix64-int-to-pointer.patch \
            file://Makevars \
            file://grep-CVE-2012-5667.patch \
            file://fix-for-texinfo-5.1.patch \
           "
+=======
+           file://Makevars \
+           "
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI[md5sum] = "52202fe462770fa6be1bb667bd6cf30c"
 SRC_URI[sha256sum] = "38c8a2bb9223d1fb1b10bdd607cf44830afc92fd451ac4cd07619bf92bdd3132"

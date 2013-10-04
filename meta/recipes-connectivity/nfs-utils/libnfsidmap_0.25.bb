@@ -9,7 +9,10 @@ PR = "r0"
 
 SRC_URI = "http://www.citi.umich.edu/projects/nfsv4/linux/libnfsidmap/${BPN}-${PV}.tar.gz \
            file://fix-ac-prereq.patch \
+<<<<<<< HEAD
            file://Set_nobody_user_group.patch \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
           "
 
 SRC_URI[md5sum] = "2ac4893c92716add1a1447ae01df77ab"
@@ -18,9 +21,12 @@ SRC_URI[sha256sum] = "656d245d84400e1030f8f40a5a27da76370690c4a932baf249110f047f
 inherit autotools
 
 EXTRA_OECONF = "--disable-ldap"
+<<<<<<< HEAD
 
 do_install_append () {
 	install -d ${D}${sysconfdir}/
 	install -m 0644 ${WORKDIR}/${BPN}-${PV}/idmapd.conf ${D}${sysconfdir}/idmapd.conf
 }
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

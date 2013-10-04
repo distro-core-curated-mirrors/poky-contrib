@@ -17,13 +17,27 @@ do_compile() {
 do_install() {
 	install -d ${D}${sysconfdir}
     install -m 0644 ${WORKDIR}/inittab ${D}${sysconfdir}/inittab
+<<<<<<< HEAD
 
+=======
+    if [ ! -z "${SERIAL_CONSOLE}" ]; then
+        echo "S:2345:respawn:${base_sbindir}/getty ${SERIAL_CONSOLE}" >> ${D}${sysconfdir}/inittab
+    fi
+
+    idx=0
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     tmp="${SERIAL_CONSOLES}"
     for i in $tmp
     do
 	j=`echo ${i} | sed s/\;/\ /g`
+<<<<<<< HEAD
 	label=`echo ${i} | sed -e 's/^.*;tty//'`
 	echo "$label:12345:respawn:${base_sbindir}/getty ${j}" >> ${D}${sysconfdir}/inittab
+=======
+	echo "${idx}:12345:respawn:${base_sbindir}/getty ${j}" >> ${D}${sysconfdir}/inittab
+
+	idx=`expr $idx + 1`
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     done
 
     if [ "${USE_VT}" = "1" ]; then
@@ -68,7 +82,11 @@ else
 fi
 }
 
+<<<<<<< HEAD
 # USE_VT and SERIAL_CONSOLES are generally defined by the MACHINE .conf.
+=======
+# USE_VT and SERIAL_CONSOLE are generally defined by the MACHINE .conf.
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # Set PACKAGE_ARCH appropriately.
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

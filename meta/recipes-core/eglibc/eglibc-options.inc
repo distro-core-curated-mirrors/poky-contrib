@@ -7,8 +7,13 @@ def eglibc_cfg(feature, features, tokens, cnf):
         for token in tokens:
             cnf.extend([token + '=n'])
             if token == 'OPTION_EGLIBC_NSSWITCH':
+<<<<<<< HEAD
                 cnf.extend(["OPTION_EGLIBC_NSSWITCH_FIXED_CONFIG=\"${S}/nss/nsswitch.conf\""])
                 cnf.extend(["OPTION_EGLIBC_NSSWITCH_FIXED_FUNCTIONS=\"${S}/nss/fixed-nsswitch.functions\""])
+=======
+                cnf.extend(["OPTION_EGLIBC_NSSWITCH_FIXED_CONFIG = ${S}/nss/nsswitch.conf"])
+                cnf.extend(["OPTION_EGLIBC_NSSWITCH_FIXED_FUNCTIONS = ${S}/nss/fixed-nsswitch.functions"])
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # arrange the dependencies among eglibc configuable options according to file option-groups.def from eglibc source code
 def distro_features_check_deps(distro_features):
@@ -107,6 +112,10 @@ def features_to_eglibc_settings(d):
         eglibc_cfg('ipv4',      distro_features, 'OPTION_EGLIBC_INET', cnf)
         eglibc_cfg('libc-inet-anl',      distro_features, 'OPTION_EGLIBC_INET_ANL', cnf)
         eglibc_cfg('libc-libm',      distro_features, 'OPTION_EGLIBC_LIBM', cnf)
+<<<<<<< HEAD
+=======
+        eglibc_cfg('libc-libm-big',      distro_features, 'OPTION_EGLIBC_LIBM_BIG', cnf)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         eglibc_cfg('libc-locales',      distro_features, 'OPTION_EGLIBC_LOCALES', cnf)
         eglibc_cfg('libc-locale-code',      distro_features, 'OPTION_EGLIBC_LOCALE_CODE', cnf)
         eglibc_cfg('libc-memusage',      distro_features, 'OPTION_EGLIBC_MEMUSAGE', cnf)

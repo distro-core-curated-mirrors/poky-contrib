@@ -7,6 +7,11 @@ NATIVEDEPS = ""
 
 inherit autotools gettext
 
+<<<<<<< HEAD
+=======
+FILESDIR = "${@os.path.dirname(d.getVar('FILE',1))}/gcc-${PV}"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 def get_gcc_fpu_setting(bb, d):
     if d.getVar('ARMPKGSFX_EABI', True) == "hf" and d.getVar('TRANSLATED_TARGET_ARCH', True) == "arm":
         return "--with-float=hard"
@@ -34,6 +39,7 @@ def get_gcc_multiarch_setting(bb, d):
             return multiarch_options[target_arch]
     return ""
 
+<<<<<<< HEAD
 # this is used by the multilib setup of gcc
 def get_tune_parameters(tune, d):
     availtunes = d.getVar('AVAILTUNES', True)
@@ -59,6 +65,11 @@ def get_tune_parameters(tune, d):
     return retdict
 
 get_tune_parameters[vardepsexclude] = "AVAILTUNES"
+=======
+# We really need HOST_SYS here for some packages and TARGET_SYS for others.
+# For now, libgcc is most important so we fix for that - RP.
+SHLIBSDIR = "${STAGING_DIR_TARGET}/shlibs"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 DEBIANNAME_${MLPREFIX}libgcc = "libgcc1"
 

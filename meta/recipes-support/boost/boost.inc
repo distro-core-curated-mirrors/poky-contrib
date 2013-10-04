@@ -1,9 +1,36 @@
+<<<<<<< HEAD
 DESCRIPTION = "Free peer-reviewed portable C++ source libraries"
 SECTION = "libs"
 DEPENDS = "bjam-native zlib bzip2"
 
 ARM_INSTRUCTION_SET = "arm"
 
+=======
+# The Boost web site provides free peer-reviewed portable
+# C++ source libraries. The emphasis is on libraries which
+# work well with the C++ Standard Library. The libraries are
+# intended to be widely useful, and are in regular use by
+# thousands of programmers across a broad spectrum of applications.
+DESCRIPTION = "Free peer-reviewed portable C++ source libraries"
+HOMEPAGE = "http://www.boost.org/"
+SECTION = "libs"
+DEPENDS = "boost-native zlib"
+DEPENDS_virtclass-native = ""
+LICENSE = "BSL-1.0 & MIT & Python-2.0"
+
+ARM_INSTRUCTION_SET = "arm"
+
+BOOST_VER = "${@"_".join(d.getVar("PV",1).split("."))}"
+BOOST_MAJ = "${@"_".join(d.getVar("PV",1).split(".")[0:2])}"
+BOOST_P = "boost_${BOOST_VER}"
+
+INC_PR = "r4"
+
+SRC_URI = "${SOURCEFORGE_MIRROR}/${BPN}/${BOOST_P}.tar.bz2"
+
+S = "${WORKDIR}/${BOOST_P}"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 BOOST_LIBS = "\
 	date_time \
 	filesystem \
@@ -11,13 +38,22 @@ BOOST_LIBS = "\
 	iostreams \
 	program_options \
 	regex \
+<<<<<<< HEAD
 	serialization \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	signals \
 	system \
 	test \
 	thread \
 	"
 
+<<<<<<< HEAD
+=======
+# FIXME: for some reason this fails on powerpc
+#BOOST_LIBS += "serialization"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # To enable python, uncomment the following:
 #BOOST_LIBS += "python"
 #DEPENDS += "python"
@@ -53,7 +89,11 @@ FILES_${PN}-staticdev = "${libdir}/libboost_*.a"
 # "boost" is a metapackage which pulls in all boost librabries
 PACKAGES += "${PN}"
 RRECOMMENDS_${PN} += "${BOOST_PACKAGES}"
+<<<<<<< HEAD
 RRECOMMENDS_${PN}_class-native = ""
+=======
+RRECOMMENDS_${PN}_virtclass-native = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ALLOW_EMPTY_${PN} = "1"
 
 # to avoid GNU_HASH QA errors added LDFLAGS to ARCH; a little bit dirty but at least it works
@@ -89,17 +129,29 @@ EQD = '\"'
 #boost.bb:   "...  '-sGCC=... '${SQD}'-DBOOST_PLATFORM_CONFIG=${EQD}config${EQD}'${SQD} ..."
 BJAM_CONF = "${SQD}'-DBOOST_PLATFORM_CONFIG=${EQD}boost/config/platform/${TARGET_OS}.hpp${EQD}'${SQD}"
 
+<<<<<<< HEAD
+=======
+# bzip2 and zip are disabled because... they're broken - the compilation simply
+# isn't working with bjam.  I guess they will fix it, but who needs it?  This
+# only affects the (new in 33) iostream library.
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 BJAM_TOOLS   = "-sTOOLS=gcc \
 		'-sGCC=${CC} '${BJAM_CONF} \
 		'-sGXX=${CXX} '${BJAM_CONF} \
 		'-sGCC_INCLUDE_DIRECTORY=${STAGING_INCDIR}' \
 		'-sGCC_STDLIB_DIRECTORY=${STAGING_LIBDIR}' \
+<<<<<<< HEAD
+=======
+		'-sNO_BZIP2=1' \
+		'-sNO_ZLIB=1' \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		'-sBUILD=release <optimization>space <threading>multi <inlining>on <debug-symbols>off' \
 		'-sPYTHON_VERSION=${PYTHON_VERSION}' \
 		'-sPYTHON_ROOT=${PYTHON_ROOT}' \
 		'--layout=system' \
 		"
 
+<<<<<<< HEAD
 # use PARALLEL_MAKE to speed up the build, but limit it by -j 64, greater paralelism causes bjam to segfault or to ignore -j
 # https://svn.boost.org/trac/boost/ticket/7634
 def get_boost_parallel_make(bb, d):
@@ -126,6 +178,14 @@ BJAM_OPTS    = '${BOOST_PARALLEL_MAKE} \
 
 # Native compilation of bzip2 isn't working
 BJAM_OPTS_append_class-native = ' -sNO_BZIP2=1'
+=======
+BJAM_OPTS    = '${BJAM_TOOLS} \
+                -sBOOST_BUILD_USER_CONFIG=${S}/tools/build/v2/user-config.jam \
+		--builddir=${S}/${TARGET_SYS} \
+                --disable-icu \
+		${BJAM_EXTRA}'
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 do_boostconfig() {
 	cp -f boost/config/platform/linux.hpp boost/config/platform/linux-gnueabi.hpp
@@ -138,7 +198,11 @@ do_boostconfig() {
 
 	echo "using python : ${PYTHON_VERSION} : : ${STAGING_INCDIR}/python${PYTHON_VERSION} ;" >> ${S}/tools/build/v2/user-config.jam
 
+<<<<<<< HEAD
 	CC="${BUILD_CC}" CFLAGS="${BUILD_CFLAGS}" ./bootstrap.sh --with-bjam=bjam --with-toolset=gcc --with-python-root=${PYTHON_ROOT}
+=======
+	CC="${BUILD_CC}" CFLAGS="${BUILD_CFLAGS}" ./bootstrap.sh --with-toolset=gcc --with-python-root=${PYTHON_ROOT}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	sed -i '/^using python/d' project-config.jam
 }
 
@@ -170,3 +234,33 @@ do_install() {
 }
 
 BBCLASSEXTEND = "native"
+<<<<<<< HEAD
+=======
+
+do_configure_virtclass-native() {
+	:
+}
+
+do_boostconfig_virtclass-native() {
+	:
+}
+
+do_compile_virtclass-native() {
+	set -ex
+	cd ${S}/tools/build/v2/engine
+	rm -rf bin.*
+	./build.sh gcc
+}
+
+# This is too terrible - the build script doesn't give any good
+# way I can see to find out where the binaries are placed, so
+# rely on only one bin.foo directory being created.
+do_install_virtclass-native () {
+	set -ex
+	cd ${S}/tools/build/v2/engine
+	install -d ${D}${bindir}/
+	install -c -m 755 bin.*/bjam ${D}${bindir}/
+}
+
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

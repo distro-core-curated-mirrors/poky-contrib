@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 PREFERRED_PROVIDER_virtual/xserver ?= "xserver-xorg"
 PREFERRED_PROVIDER_virtual/egl ?= "mesa"
 PREFERRED_PROVIDER_virtual/libgl ?= "mesa"
@@ -6,16 +7,31 @@ PREFERRED_PROVIDER_virtual/libgles2 ?= "mesa"
 
 XSERVER ?= "xserver-xorg \
             ${@base_contains('DISTRO_FEATURES', 'opengl', 'mesa-driver-swrast', '', d)} \
+=======
+PCMCIA_MANAGER = "pcmciautils"
+PREFERRED_PROVIDER_virtual/xserver ?= "xserver-xorg"
+
+XSERVER ?= "xserver-xorg \
+            mesa-dri-driver-swrast \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             xf86-input-evdev \
             xf86-input-mouse \
             xf86-video-fbdev \
             xf86-input-keyboard"
 
+<<<<<<< HEAD
 MACHINE_FEATURES = "alsa pcmcia bluetooth irda usbgadget screen"
 
 MACHINEOVERRIDES =. "qemuall:"
 
 IMAGE_FSTYPES += "tar.bz2 ext3"
+=======
+MACHINE_FEATURES = "apm alsa pcmcia bluetooth irda usbgadget screen"
+
+IMAGE_FSTYPES += "tar.bz2 ext3"
+
+ROOT_FLASH_SIZE = "280"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Don't include kernels in standard images
 RDEPENDS_kernel-base = ""

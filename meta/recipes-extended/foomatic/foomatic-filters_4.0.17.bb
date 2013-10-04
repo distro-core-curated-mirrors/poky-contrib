@@ -10,7 +10,11 @@ format using a printer-specific, but spooler-independent PPD file. \
 "
 
 DEPENDS += "cups perl libxml2"
+<<<<<<< HEAD
 PR = "r1"
+=======
+PR = "r0"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 LICENSE = "GPLv2+"
 LIC_FILES_CHKSUM = "file://${WORKDIR}/foomatic-filters-${PV}/COPYING;md5=393a5ca445f6965873eca0259a17f833"
@@ -26,7 +30,14 @@ EXTRA_OECONF += "--disable-file-converter-check --with-file-converter=texttops"
 
 do_configure_prepend() {
     export PERL="${bindir}/env perl"
+<<<<<<< HEAD
     export CUPS_SERVERBIN=${exec_prefix}/lib/cups       # /usr/lib NOT libdir
+=======
+    export LIB_CUPS=${exec_prefix}/lib/cups               # /usr/lib NOT libdir
+    export CUPS_BACKENDS=${exec_prefix}/lib/cups/backend  # /usr/lib NOT libdir
+    export CUPS_FILTERS=${exec_prefix}/lib/cups/filter    # /usr/lib NOT libdir
+    export CUPS_PPDS=${datadir}/cups/model
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 do_install_append_linuxstdbase() {

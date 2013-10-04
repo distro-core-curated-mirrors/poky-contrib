@@ -9,9 +9,15 @@ SECTION = "base"
 LICENSE = "LGPL2.1"
 DEPENDS = "sqlite3"
 
+<<<<<<< HEAD
 SRC_URI_append_class-nativesdk = " file://symver.patch"
 
 SRC_URI_append_class-native = " file://symver.patch"
+=======
+SRC_URI_append_virtclass-nativesdk = " file://symver.patch"
+
+SRC_URI_append_virtclass-native = " file://symver.patch"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 FILES_${PN} = "${libdir}/pseudo/lib*/libpseudo.so ${bindir}/* ${localstatedir}/pseudo ${prefix}/var/pseudo"
 FILES_${PN}-dbg += "${libdir}/pseudo/lib*/.debug"
@@ -26,11 +32,15 @@ do_configure () {
 }
 
 NO32LIBS ??= "1"
+<<<<<<< HEAD
 NO32LIBS_virtclass-nativesdk = "1"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Compile for the local machine arch...
 do_compile () {
 	if [ "${SITEINFO_BITS}" = "64" ]; then
+<<<<<<< HEAD
 	  ${S}/configure ${PSEUDO_EXTRA_OPTS} --prefix=${prefix} --libdir=${prefix}/lib/pseudo/lib${SITEINFO_BITS} --with-sqlite-lib=${baselib} --with-sqlite=${STAGING_DIR_TARGET}${exec_prefix} --cflags="${CFLAGS}" --bits=${SITEINFO_BITS} --enable-static-sqlite --without-rpath
 	else
 	  ${S}/configure ${PSEUDO_EXTRA_OPTS} --prefix=${prefix} --libdir=${prefix}/lib/pseudo/lib --with-sqlite-lib=${baselib} --with-sqlite=${STAGING_DIR_TARGET}${exec_prefix} --cflags="${CFLAGS}" --bits=${SITEINFO_BITS} --enable-static-sqlite --without-rpath
@@ -66,35 +76,63 @@ maybe_make32() {
 		echo "Building/installing only 64-bit libpseudo.so for ${PN}."
 		echo "If you need to run 32-bit executables, ensure that NO32LIBS is set to 0."
 	fi
+=======
+	  ${S}/configure --prefix=${prefix} --libdir=${prefix}/lib/pseudo/lib${SITEINFO_BITS} --with-sqlite=${STAGING_DIR_TARGET}${exec_prefix} --cflags="${CFLAGS}" --bits=${SITEINFO_BITS} --enable-static-sqlite --without-rpath
+	else
+	  ${S}/configure --prefix=${prefix} --libdir=${prefix}/lib/pseudo/lib --with-sqlite=${STAGING_DIR_TARGET}${exec_prefix} --cflags="${CFLAGS}" --bits=${SITEINFO_BITS} --enable-static-sqlite --without-rpath
+	fi
+	oe_runmake ${MAKEOPTS}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 # Two below are the same
 # If necessary compile for the alternative machine arch.  This is only 
 # necessary in a native build.
+<<<<<<< HEAD
 do_compile_prepend_class-native () {
 	maybe_make32
 	if $make32; then
 		# We need the 32-bit libpseudo on a 64-bit machine...
 		# Note that this is not well-tested outside of x86/x86_64.
+=======
+do_compile_prepend_virtclass-native () {
+	if [ "${SITEINFO_BITS}" = "64" -a -e "/usr/include/gnu/stubs-32.h" -a "${PN}" = "pseudo-native" -a "${NO32LIBS}" != "1" ]; then
+		# We need the 32-bit libpseudo on a 64-bit machine...
+                # ... and we really, really, hope that the native host is
+                # x86, or else --bits may not work.
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 		# if we're being rebuilt due to a dependency change, we need to make sure
 		# everything is clean before we configure and build -- if we haven't previously
 		# built this will fail and be ignored.
 		make ${MAKEOPTS} distclean || :
 
+<<<<<<< HEAD
 		./configure ${PSEUDO_EXTRA_OPTS} --prefix=${prefix} --libdir=${prefix}/lib/pseudo/lib --with-sqlite-lib=${baselib} --with-sqlite=${STAGING_DIR_TARGET}${exec_prefix} --bits=32 --without-rpath
+=======
+		./configure --prefix=${prefix} --libdir=${prefix}/lib/pseudo/lib --with-sqlite=${STAGING_DIR_TARGET}${exec_prefix} --bits=32 --without-rpath
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		oe_runmake ${MAKEOPTS} libpseudo
 		# prevent it from removing the lib, but remove everything else
 		make 'LIB=foo' ${MAKEOPTS} distclean 
 	fi
 }
 
+<<<<<<< HEAD
 do_compile_prepend_class-nativesdk () {
 	maybe_make32
 	if $make32; then
 		# We need the 32-bit libpseudo on a 64-bit machine.
 		# Note that this is not well-tested outside of x86/x86_64.
 		./configure ${PSEUDO_EXTRA_OPTS} --prefix=${prefix} --libdir=${prefix}/lib/pseudo/lib --with-sqlite-lib=${baselib} --with-sqlite=${STAGING_DIR_TARGET}${exec_prefix} --bits=32 --without-rpath
+=======
+do_compile_prepend_virtclass-nativesdk () {
+	if [ "${SITEINFO_BITS}" = "64" -a -e "/usr/include/gnu/stubs-32.h" -a "${PN}" = "pseudo-native" -a "${NO32LIBS}" != "1" ]; then
+		# We need the 32-bit libpseudo on a 64-bit machine...
+                # ... and we really, really, hope that the native host is
+                # x86, or else --bits may not work.
+		./configure --prefix=${prefix} --libdir=${prefix}/lib/pseudo/lib --with-sqlite=${STAGING_DIR_TARGET}${exec_prefix} --bits=32 --without-rpath
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		oe_runmake ${MAKEOPTS} libpseudo
 		# prevent it from removing the lib, but remove everything else
 		make 'LIB=foo' ${MAKEOPTS} distclean 
@@ -108,17 +146,27 @@ do_install () {
 # Two below are the same
 # If necessary install for the alternative machine arch.  This is only 
 # necessary in a native build.
+<<<<<<< HEAD
 do_install_append_class-native () {
 	maybe_make32
 	if $make32; then
+=======
+do_install_append_virtclass-native () {
+	if [ "${SITEINFO_BITS}" = "64" -a -e "/usr/include/gnu/stubs-32.h" -a "${PN}" = "pseudo-native" -a "${NO32LIBS}" != "1" ]; then
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		mkdir -p ${D}${prefix}/lib/pseudo/lib
 		cp lib/pseudo/lib/libpseudo.so ${D}${prefix}/lib/pseudo/lib/.
 	fi
 }
 
+<<<<<<< HEAD
 do_install_append_class-nativesdk () {
 	maybe_make32
 	if $make32; then
+=======
+do_install_append_virtclass-nativesdk () {
+	if [ "${SITEINFO_BITS}" = "64" -a -e "/usr/include/gnu/stubs-32.h" -a "${PN}" = "pseudo-native" -a "${NO32LIBS}" != "1" ]; then
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		mkdir -p ${D}${prefix}/lib/pseudo/lib
 		cp lib/pseudo/lib/libpseudo.so ${D}${prefix}/lib/pseudo/lib/.
 	fi

@@ -48,7 +48,10 @@ python do_checkuri() {
 
 addtask checkuriall after do_checkuri
 do_checkuriall[recrdeptask] = "do_checkuriall do_checkuri"
+<<<<<<< HEAD
 do_checkuriall[recideptask] = "do_${BB_DEFAULT_TASK}"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_checkuriall[nostamp] = "1"
 do_checkuriall() {
 	:
@@ -56,7 +59,10 @@ do_checkuriall() {
 
 addtask fetchall after do_fetch
 do_fetchall[recrdeptask] = "do_fetchall do_fetch"
+<<<<<<< HEAD
 do_fetchall[recideptask] = "do_${BB_DEFAULT_TASK}"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_fetchall() {
 	:
 }

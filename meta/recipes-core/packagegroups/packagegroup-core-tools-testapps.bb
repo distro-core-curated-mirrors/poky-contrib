@@ -5,7 +5,11 @@
 SUMMARY = "Testing tools/applications"
 LICENSE = "MIT"
 
+<<<<<<< HEAD
 PR = "r2"
+=======
+PR = "r1"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 inherit packagegroup
 
@@ -24,6 +28,7 @@ KEXECTOOLS_powerpc ?= ""
 KEXECTOOLS_e5500-64b ?= ""
 KEXECTOOLS_aarch64 ?= ""
 
+<<<<<<< HEAD
 X11TOOLS = "\
     fstests \
     owl-video \
@@ -37,15 +42,34 @@ X11TOOLS = "\
 
 RDEPENDS_${PN} = "\
     blktool \
+=======
+RDEPENDS_${PN} = "\
+    blktool \
+    fstests \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     tslib-calibrate \
     tslib-tests \
     lrzsz \
     ${KEXECTOOLS} \
     alsa-utils-amixer \
     alsa-utils-aplay \
+<<<<<<< HEAD
     gst-meta-video \
     gst-meta-audio \
     ltp \
     connman-client \
     ${@base_contains('DISTRO_FEATURES', 'x11', "${X11TOOLS}", "", d)} \
+=======
+    owl-video \
+    gst-meta-video \
+    gst-meta-audio \
+    mesa-demos \
+    x11perf \
+    xrestop \
+    xwininfo \
+    xprop \
+    xvideo-tests \
+    clutter-box2d \
+    ltp \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     "

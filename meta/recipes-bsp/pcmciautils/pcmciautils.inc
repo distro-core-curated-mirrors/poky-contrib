@@ -21,7 +21,11 @@ export udevrulesdir = "`pkg-config --variable=udevdir udev`/rules.d"
 export UDEV = "1"
 LD = "${CC}"
 CFLAGS =+ "-I${S}/src"
+<<<<<<< HEAD
 CFLAGS =+ "-DPCMCIAUTILS_VERSION=\\"${PV}\\""
+=======
+CFLAGS =+ "-DPCMCIAUTILS_VERSION=\'${PV}\'"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PARALLEL_MAKE = ""
 EXTRA_OEMAKE = "-e 'STRIP=echo' 'LIB_OBJS=-lc -lsysfs' 'LEX=flex'"

@@ -5,14 +5,25 @@ SECTION = "base"
 LICENSE = "GPLv2+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe \
                     file://COPYRIGHT;endline=15;md5=349c872e0066155e1818b786938876a4"
+<<<<<<< HEAD
 PR = "r11"
+=======
+PR = "r7"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 RDEPENDS_${PN} = "${PN}-inittab"
 
 SRC_URI = "http://download.savannah.gnu.org/releases-noredirect/sysvinit/sysvinit-${PV}.tar.bz2 \
+<<<<<<< HEAD
            file://install.patch \
            file://crypt-lib.patch \
            file://pidof-add-m-option.patch \
+=======
+	   file://install.patch \
+	   file://crypt-lib.patch \
+           file://need \
+           file://provide \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://rcS-default \
            file://rc \
            file://rcS \
@@ -34,6 +45,16 @@ ALTERNATIVE_PRIORITY = "200"
 ALTERNATIVE_LINK_NAME[init] = "${base_sbindir}/init"
 ALTERNATIVE_PRIORITY[init] = "50"
 
+<<<<<<< HEAD
+=======
+ALTERNATIVE_${PN} = "init mountpoint halt reboot runlevel shutdown poweroff last mesg wall"
+
+ALTERNATIVE_PRIORITY = "200"
+
+ALTERNATIVE_LINK_NAME[init] = "${base_sbindir}/init"
+ALTERNATIVE_PRIORITY[init] = "50"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ALTERNATIVE_LINK_NAME[mountpoint] = "${base_bindir}/mountpoint"
 ALTERNATIVE_LINK_NAME[halt] = "${base_sbindir}/halt"
 ALTERNATIVE_LINK_NAME[reboot] = "${base_sbindir}/reboot"
@@ -43,6 +64,7 @@ ALTERNATIVE_LINK_NAME[poweroff] = "${base_sbindir}/poweroff"
 
 ALTERNATIVE_${PN}-pidof = "pidof"
 ALTERNATIVE_LINK_NAME[pidof] = "${base_bindir}/pidof"
+<<<<<<< HEAD
 
 ALTERNATIVE_${PN}-doc = "mountpoint.1 last.1 mesg.1 wall.1 sulogin.8 utmpdump.1"
 
@@ -55,6 +77,8 @@ ALTERNATIVE_LINK_NAME[wall.1] = "${mandir}/man1/wall.1"
 
 USERADD_PACKAGES = "${PN}"
 GROUPADD_PARAM_${PN} = "--system shutdown"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PACKAGES =+ "sysvinit-pidof sysvinit-sulogin"
 FILES_${PN} += "${base_sbindir}/* ${base_bindir}/*"
@@ -79,19 +103,31 @@ do_install () {
 	install -d ${D}${sysconfdir} \
 		   ${D}${sysconfdir}/default \
 		   ${D}${sysconfdir}/init.d
+<<<<<<< HEAD
 	for level in S 0 1 2 3 4 5 6; do
 		install -d ${D}${sysconfdir}/rc$level.d
 	done
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	install -m 0644    ${WORKDIR}/rcS-default	${D}${sysconfdir}/default/rcS
 	install -m 0755    ${WORKDIR}/rc		${D}${sysconfdir}/init.d
 	install -m 0755    ${WORKDIR}/rcS		${D}${sysconfdir}/init.d
 	install -m 0755    ${WORKDIR}/bootlogd.init     ${D}${sysconfdir}/init.d/bootlogd
 	ln -sf bootlogd ${D}${sysconfdir}/init.d/stop-bootlogd
+<<<<<<< HEAD
 
 	update-rc.d -r ${D} bootlogd start 07 S .
 	update-rc.d -r ${D} stop-bootlogd start 99 2 3 4 5 .
 
 	chown root.shutdown ${D}${base_sbindir}/halt ${D}${base_sbindir}/shutdown
 	chmod o-x,u+s ${D}${base_sbindir}/halt ${D}${base_sbindir}/shutdown
+=======
+	install -d ${D}${sysconfdir}/rcS.d
+	ln -sf ../init.d/bootlogd ${D}${sysconfdir}/rcS.d/S07bootlogd
+	for level in 2 3 4 5; do
+		install -d ${D}${sysconfdir}/rc$level.d
+		ln -s ../init.d/stop-bootlogd ${D}${sysconfdir}/rc$level.d/S99stop-bootlogd
+	done
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }

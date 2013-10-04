@@ -1,10 +1,15 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # This class integrates real-time license scanning, generation of SPDX standard
 # output and verifiying license info during the building process.
 =======
 # This class integrates real-time license scanning, generation of SPDX standard 
 # output and verifiying license info during the building process. 
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+# This class integrates real-time license scanning, generation of SPDX standard 
+# output and verifiying license info during the building process. 
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # It is a combination of efforts from the OE-Core, SPDX and Fossology projects.
 #
 # For more information on FOSSology:
@@ -21,11 +26,15 @@
 # in ./meta/conf/licenses.conf.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SPDXOUTPUTDIR = "${WORKDIR}/spdx_output_dir"
 SPDXSSTATEDIR = "${WORKDIR}/spdx_sstate_dir"
 =======
 SPDXSSTATEDIR = "${SSTATE_DIR}/spdx"
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+SPDXSSTATEDIR = "${SSTATE_DIR}/spdx"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 python do_spdx () {
     import os, sys
@@ -49,15 +58,20 @@ python do_spdx () {
     info['tar_file'] = os.path.join( info['workdir'], info['pn'] + ".tar.gz" )
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     official_lics = d.getVarFlags('SPDXLICENSEMAP')
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+    official_lics = d.getVarFlags('SPDXLICENSEMAP')
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     ## get everything from cache.  use it to decide if 
     ## something needs to be rerun 
     cur_ver_code = get_ver_code( info['sourcedir'] ) 
     cache_cur = False
     if not os.path.exists( spdx_sstate_dir ):
+<<<<<<< HEAD
 <<<<<<< HEAD
         bb.utils.mkdirhier( spdx_sstate_dir )
     if not os.path.exists( info['spdx_temp_dir'] ):
@@ -67,11 +81,17 @@ python do_spdx () {
     if not os.path.exists( info['spdx_temp_dir'] ):
         bb.mkdirhier( info['spdx_temp_dir'] )
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+        bb.mkdirhier( spdx_sstate_dir )
+    if not os.path.exists( info['spdx_temp_dir'] ):
+        bb.mkdirhier( info['spdx_temp_dir'] )
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     if os.path.exists( sstatefile ):
         ## cache for this package exists. read it in
         cached_spdx = get_cached_spdx( sstatefile )
 
         if cached_spdx['PackageVerificationCode'] == cur_ver_code:
+<<<<<<< HEAD
 <<<<<<< HEAD
             bb.warn(info['pn'] + "'s ver code same as cache's. do nothing")
             cache_cur = True
@@ -84,6 +104,8 @@ python do_spdx () {
     if cache_cur:
         spdx_file_info = cached_spdx['Files']
 =======
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             #bb.warn(info['pn'] + "'s ver code same as cache's. do nothing")
             cache_cur = True
         else:
@@ -97,7 +119,10 @@ python do_spdx () {
     if cache_cur:
         spdx_files = cached_spdx['Files']
         spdx_lics = cached_spdx['Extracted_licenses']
+<<<<<<< HEAD
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     else:
         ## setup fossology command
         foss_server = (d.getVar('FOSS_SERVER', True) or "")
@@ -105,6 +130,7 @@ python do_spdx () {
         foss_command = "wget %s --post-file=%s %s"\
             % (foss_flags,info['tar_file'],foss_server)
         
+<<<<<<< HEAD
 <<<<<<< HEAD
         #bb.warn(info['pn'] + json.dumps(local_file_info))
         foss_file_info = run_fossology( foss_command )
@@ -129,6 +155,8 @@ def create_manifest(info,header,files):
     with open(info['outfile'], 'w') as f:
         f.write(header + '\n')
 =======
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         foss_files, foss_lics = run_fossology( foss_command )
         if not foss_files:
             bb.warn("Fossology scan failed for %s. No manifest created."
@@ -162,7 +190,10 @@ def create_manifest(info,header,files,ex_lics):
 
         f.write('## File Information')
         f.write('\n')
+<<<<<<< HEAD
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         for chksum, block in files.iteritems():
             for key, value in block.iteritems():
                 f.write(key + ": " + value)
@@ -170,7 +201,10 @@ def create_manifest(info,header,files,ex_lics):
             f.write('\n')
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         f.write('## License Information')
         f.write('\n')
         for ex_lic in ex_lics:
@@ -179,7 +213,10 @@ def create_manifest(info,header,files,ex_lics):
                 f.write('\n')
             f.write('\n')
 
+<<<<<<< HEAD
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 def get_cached_spdx( sstatefile ):
     import json
     cached_spdx_info = {}
@@ -191,28 +228,38 @@ def get_cached_spdx( sstatefile ):
     return cached_spdx_info
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 def write_cached_spdx( sstatefile, ver_code, files ):
 =======
 def write_cached_spdx( sstatefile, ver_code, files, ex_lics ):
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+def write_cached_spdx( sstatefile, ver_code, files, ex_lics ):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     import json
     spdx_doc = {}
     spdx_doc['PackageVerificationCode'] = ver_code
     spdx_doc['Files'] = {}
     spdx_doc['Files'] = files
 <<<<<<< HEAD
+<<<<<<< HEAD
     with open( sstatefile, 'w' ) as f:
         f.write(json.dumps(spdx_doc))
 
 def setup_foss_scan( info, cache, cached_files ):
 =======
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     spdx_doc['Extracted_licenses'] = {}
     spdx_doc['Extracted_licenses'] = (ex_lics or {})
     with open( sstatefile, 'w' ) as f:
         f.write(json.dumps(spdx_doc))
 
 def setup_foss_scan( info, cache=False, cached_files=None ):
+<<<<<<< HEAD
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     import errno, shutil
     import tarfile
     file_info = {}
@@ -245,10 +292,14 @@ def setup_foss_scan( info, cache=False, cached_files=None ):
             if e.errno == errno.EEXIST and os.path.isdir(dest_dir):
                 pass
 <<<<<<< HEAD
+<<<<<<< HEAD
             else:
 =======
             else: 
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+            else: 
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                 bb.warn( "mkdir failed " + str(e) + "\n" )
                 continue
 
@@ -270,10 +321,14 @@ def setup_foss_scan( info, cache=False, cached_files=None ):
 def remove_dir_tree( dir_name ):
     import shutil
 <<<<<<< HEAD
+<<<<<<< HEAD
     try:
 =======
     try: 
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+    try: 
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         shutil.rmtree( dir_name )
     except:
         pass
@@ -293,10 +348,14 @@ def list_files( dir ):
 
 def hash_file( file_name ):
 <<<<<<< HEAD
+<<<<<<< HEAD
     try:
 =======
     try: 
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+    try: 
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         f = open( file_name, 'rb' )
         data_string = f.read()
     except:
@@ -315,6 +374,7 @@ def hash_string( data ):
 def run_fossology( foss_command ):
     import string, re
     import subprocess
+<<<<<<< HEAD
 <<<<<<< HEAD
     
     p = subprocess.Popen(foss_command.split(),
@@ -355,6 +415,8 @@ def create_spdx_doc( file_info, scanned_files ):
                 + json.dumps(lic_info,indent=1))
     return file_info
 =======
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     import json
     
     file_info = {}
@@ -479,7 +541,10 @@ def create_extracted_licenses(files,foss_lics,cache_lics,off_lics):
         f['LicenseInfoInFile'] = ','.join(file_lics)
 
     return files, spdx_lics
+<<<<<<< HEAD
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 def get_ver_code( dirname ):
     chksums = []
@@ -490,6 +555,7 @@ def get_ver_code( dirname ):
             bb.warn( "Stat failed" + str(e) + "\n")
             continue
         chksums.append(hash_file(os.path.join(dirname,f_dir,f)))
+<<<<<<< HEAD
 <<<<<<< HEAD
     ver_code_string = ''.join( chksums ).lower()
     ver_code = hash_string( ver_code_string )
@@ -513,6 +579,8 @@ def get_header_info( info, spdx_verification_code, spdx_files ):
     else:
         package_checksum = DEFAULT
 =======
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     chksums.sort()
     ver_code_string = ''.join(chksums).lower()
     ver_code = hash_string( ver_code_string )
@@ -539,7 +607,10 @@ def get_spdx_header( info, spdx_verification_code, spdx_files ):
     package_checksum = hash_string(c.getvalue())
     c.close()
     bb.warn(package_checksum)
+<<<<<<< HEAD
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     ## document level information
     head.append("SPDXVersion: " + info['spdx_version'])
@@ -558,6 +629,7 @@ def get_spdx_header( info, spdx_verification_code, spdx_files ):
 
     ## package level information
     head.append("## Package Information")
+<<<<<<< HEAD
 <<<<<<< HEAD
     head.append("PackageName: " + info['pn'])
     head.append("PackageVersion: " + info['pv'])
@@ -584,6 +656,8 @@ def get_spdx_header( info, spdx_verification_code, spdx_files ):
 
     return '\n'.join(head)
 =======
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     head.append("PackageName: %s" % info['pn'])
     head.append("PackageVersion: %s" % info['pv'])
     head.append("PackageDownloadLocation: %s" 
@@ -629,4 +703,7 @@ def get_license_info_from_files( files ):
 
     licenses.sort()
     return licenses
+<<<<<<< HEAD
 >>>>>>> cb9658c... Moved spdx.bbclass and licenses.conf to proper place
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

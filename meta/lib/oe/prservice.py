@@ -1,21 +1,37 @@
 
 def prserv_make_conn(d, check = False):
     import prserv.serv
+<<<<<<< HEAD
     host_params = filter(None, (d.getVar("PRSERV_HOST", True) or '').split(':'))
     try:
         conn = None
         conn = prserv.serv.PRServerConnection(host_params[0], int(host_params[1]))
+=======
+    host = d.getVar("PRSERV_HOST",True)
+    port = d.getVar("PRSERV_PORT",True)
+    try:
+        conn = None
+        conn = prserv.serv.PRServerConnection(host,int(port))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         if check:
             if not conn.ping():
                 raise Exception('service not available')
         d.setVar("__PRSERV_CONN",conn)
     except Exception, exc:
+<<<<<<< HEAD
         bb.fatal("Connecting to PR service %s:%s failed: %s" % (host_params[0], host_params[1], str(exc)))
+=======
+        bb.fatal("Connecting to PR service %s:%s failed: %s" % (host, port, str(exc)))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     return conn
 
 def prserv_dump_db(d):
+<<<<<<< HEAD
     if not d.getVar('PRSERV_HOST', True):
+=======
+    if d.getVar('USE_PR_SERV', True) != "1":
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         bb.error("Not using network based PR service")
         return None
 
@@ -34,7 +50,11 @@ def prserv_dump_db(d):
     return conn.export(opt_version, opt_pkgarch, opt_checksum, opt_col)
 
 def prserv_import_db(d, filter_version=None, filter_pkgarch=None, filter_checksum=None):
+<<<<<<< HEAD
     if not d.getVar('PRSERV_HOST', True):
+=======
+    if d.getVar('USE_PR_SERV', True) != "1":
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         bb.error("Not using network based PR service")
         return None
 
@@ -101,7 +121,11 @@ def prserv_export_tofile(d, metainfo, datainfo, lockdown, nomax=False):
         for i in range(len(datainfo)):
             pkgarch = datainfo[i]['pkgarch']
             value = datainfo[i]['value']
+<<<<<<< HEAD
             if pkgarch not in idx:
+=======
+            if not idx.has_key(pkgarch):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                 idx[pkgarch] = i
             elif value > datainfo[idx[pkgarch]]['value']:
                 idx[pkgarch] = i
@@ -114,6 +138,7 @@ def prserv_export_tofile(d, metainfo, datainfo, lockdown, nomax=False):
     bb.utils.unlockfile(lf)
 
 def prserv_check_avail(d):
+<<<<<<< HEAD
     host_params = filter(None, (d.getVar("PRSERV_HOST", True) or '').split(':'))
     try:
         if len(host_params) != 2:
@@ -122,5 +147,16 @@ def prserv_check_avail(d):
             int(host_params[1])
     except TypeError:
         bb.fatal('Undefined/incorrect PRSERV_HOST value. Format: "host:port"')
+=======
+    host = d.getVar("PRSERV_HOST",True)
+    port = d.getVar("PRSERV_PORT",True)
+    try:
+        if not host:
+            raise TypeError
+        else:
+            port = int(port)
+    except TypeError:
+        bb.fatal("Undefined or incorrect values of PRSERV_HOST or PRSERV_PORT")
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     else:
         prserv_make_conn(d, True)

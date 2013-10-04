@@ -26,10 +26,15 @@
 #Error checking is kept to minimum so double check any parameters you pass to the class
 ###########################################################################################
 
+<<<<<<< HEAD
 BB_HASHBASE_WHITELIST += "ICECC_PARALLEL_MAKE ICECC_DISABLED"
 
 ICECC_ENV_EXEC ?= "${STAGING_BINDIR_NATIVE}/icecc-create-env"
 
+=======
+ICECC_ENV_EXEC ?= "${STAGING_BINDIR_NATIVE}/icecc-create-env"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 def icecc_dep_prepend(d):
     # INHIBIT_DEFAULT_DEPS doesn't apply to the patch command.  Whether or  not
     # we need that built is the responsibility of the patch function / class, not
@@ -47,9 +52,12 @@ def get_cross_kernel_cc(bb,d):
     kernel_cc = kernel_cc.strip()
     return kernel_cc
 
+<<<<<<< HEAD
 def get_icecc(d):
     return d.getVar('ICECC_PATH') or os.popen("which icecc").read()[:-1]
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 def create_path(compilers, bb, d):
     """
     Create Symlinks for the icecc in the staging directory
@@ -59,7 +67,11 @@ def create_path(compilers, bb, d):
         staging += "-kernel"
 
     #check if the icecc path is set by the user
+<<<<<<< HEAD
     icecc = get_icecc(d)
+=======
+    icecc   = d.getVar('ICECC_PATH') or os.popen("which icecc").read()[:-1]
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     # Create the dir if necessary
     try:
@@ -79,6 +91,7 @@ def create_path(compilers, bb, d):
                 os.symlink(icecc, gcc_path)
             except:
                 pass
+<<<<<<< HEAD
 
     return staging
 
@@ -89,6 +102,18 @@ def use_icc(bb,d):
     user_class_blacklist = (d.getVar('ICECC_USER_CLASS_BL') or "none").split()
     package_class_blacklist = system_class_blacklist + user_class_blacklist
 
+=======
+
+    return staging
+
+def use_icc(bb,d):
+    package_tmp = d.expand('${PN}')
+
+    system_class_blacklist = [ "none" ] 
+    user_class_blacklist = (d.getVar('ICECC_USER_CLASS_BL') or "none").split()
+    package_class_blacklist = system_class_blacklist + user_class_blacklist
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     for black in package_class_blacklist:
         if bb.data.inherits_class(black, d):
             #bb.note(package_tmp, ' class ', black, ' found in blacklist, disable icecc')
@@ -99,6 +124,7 @@ def use_icc(bb,d):
     system_package_blacklist = [ "uclibc", "glibc", "gcc", "bind", "u-boot", "dhcp-forwarder", "enchant", "connman", "orbit2" ]
     user_package_blacklist = (d.getVar('ICECC_USER_PACKAGE_BL') or "").split()
     package_blacklist = system_package_blacklist + user_package_blacklist
+<<<<<<< HEAD
 
     for black in package_blacklist:
         if black in package_tmp:
@@ -149,8 +175,42 @@ def icc_version(bb, d):
 def icc_path(bb,d):
     if icc_is_kernel(bb, d):
         return create_path( [get_cross_kernel_cc(bb,d), ], bb, d)
+=======
 
+    for black in package_blacklist:
+        if black in package_tmp:
+            #bb.note(package_tmp, ' found in blacklist, disable icecc')
+            return "no"
+
+    if d.getVar('PARALLEL_MAKE') == "":
+        bb.note(package_tmp, " ", d.expand('${PV}'), " has empty PARALLEL_MAKE, disable icecc")
+        return "no"
+
+    return "yes"
+
+def icc_is_kernel(bb, d):
+    return \
+        bb.data.inherits_class("kernel", d);
+
+def icc_is_native(bb, d):
+    return \
+        bb.data.inherits_class("cross", d) or \
+        bb.data.inherits_class("native", d);
+
+def icc_version(bb, d):
+    if use_icc(bb, d) == "no":
+        return ""
+
+    parallel = d.getVar('ICECC_PARALLEL_MAKE') or ""
+    d.setVar("PARALLEL_MAKE", parallel)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
+
+    if icc_is_native(bb, d):
+        archive_name = "local-host-env"
+    elif d.expand('${HOST_PREFIX}') == "":
+        bb.fatal(d.expand("${PN}"), " NULL prefix")
     else:
+<<<<<<< HEAD
         prefix = d.expand('${HOST_PREFIX}')
         return create_path( [prefix+"gcc", prefix+"g++"], bb, d)      
 
@@ -201,17 +261,91 @@ set_icecc_env() {
 
     ICE_PATH="${@icc_path(bb, d)}"
     if [ "x${ICE_PATH}" = "x" ]
+=======
+        prefix = d.expand('${HOST_PREFIX}' )
+        distro = d.expand('${DISTRO}')
+        target_sys = d.expand('${TARGET_SYS}')
+        float = d.getVar('TARGET_FPU') or "hard"
+        archive_name = prefix + distro + "-"        + target_sys + "-" + float
+        if icc_is_kernel(bb, d):
+            archive_name += "-kernel"
+
+    import socket
+    ice_dir = d.expand('${STAGING_DIR_NATIVE}${prefix_native}')
+    tar_file = os.path.join(ice_dir, 'ice', archive_name + "-@VERSION@-" + socket.gethostname() + '.tar.gz')
+
+    return tar_file
+
+def icc_path(bb,d):
+    if icc_is_kernel(bb, d):
+        return create_path( [get_cross_kernel_cc(bb,d), ], bb, d)
+
+    else:
+        prefix = d.expand('${HOST_PREFIX}')
+        return create_path( [prefix+"gcc", prefix+"g++"], bb, d)      
+
+def icc_get_tool(bb, d, tool):
+    if icc_is_native(bb, d):
+        return os.popen("which %s" % tool).read()[:-1]
+    elif icc_is_kernel(bb, d):
+        return os.popen("which %s" % get_cross_kernel_cc(bb, d)).read()[:-1]
+    else:
+        ice_dir = d.expand('${STAGING_BINDIR_TOOLCHAIN}')
+        target_sys = d.expand('${TARGET_SYS}')
+        return os.path.join(ice_dir, "%s-%s" % (target_sys, tool))
+
+set_icecc_env() {
+    ICECC_VERSION="${@icc_version(bb, d)}"
+    if [ "x${ICECC_VERSION}" = "x" ]
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     then
         return
     fi
 
+<<<<<<< HEAD
     ICECC_CC="${@icc_get_and_check_tool(bb, d, "gcc")}"
     ICECC_CXX="${@icc_get_and_check_tool(bb, d, "g++")}"
     if [ ! -x "${ICECC_CC}" -o ! -x "${ICECC_CXX}" ]
+=======
+    ICE_PATH="${@icc_path(bb, d)}"
+    if [ "x${ICE_PATH}" = "x" ]
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     then
         return
     fi
 
+<<<<<<< HEAD
+    ICE_VERSION=`$ICECC_CC -dumpversion`
+    ICECC_VERSION=`echo ${ICECC_VERSION} | sed -e "s/@VERSION@/$ICE_VERSION/g"`
+    if [ ! -x "${ICECC_ENV_EXEC}" ]
+=======
+    ICECC_CC="${@icc_get_tool(bb,d, "gcc")}"
+    ICECC_CXX="${@icc_get_tool(bb,d, "g++")}"
+    if [ ! -x "${ICECC_CC}" -o ! -x "${ICECC_CXX}" ]
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
+    then
+        return
+    fi
+
+<<<<<<< HEAD
+    ICECC_AS="`${ICECC_CC} -print-prog-name=as`"
+    if [ "`dirname "${ICECC_AS}"`" = "." ]
+    then
+        ICECC_AS="`which as`"
+    fi
+
+    if [ ! -r "${ICECC_VERSION}" ]
+    then
+        mkdir -p "`dirname "${ICECC_VERSION}"`"
+        ${ICECC_ENV_EXEC} "${ICECC_CC}" "${ICECC_CXX}" "${ICECC_AS}" "${ICECC_VERSION}"
+    fi
+
+    export ICECC_VERSION ICECC_CC ICECC_CXX
+    export PATH="$ICE_PATH:$PATH"
+    export CCACHE_PATH="$PATH"
+
+    bbnote "Using icecc"
+=======
     ICE_VERSION=`$ICECC_CC -dumpversion`
     ICECC_VERSION=`echo ${ICECC_VERSION} | sed -e "s/@VERSION@/$ICE_VERSION/g"`
     if [ ! -x "${ICECC_ENV_EXEC}" ]
@@ -234,8 +368,7 @@ set_icecc_env() {
     export ICECC_VERSION ICECC_CC ICECC_CXX
     export PATH="$ICE_PATH:$PATH"
     export CCACHE_PATH="$PATH"
-
-    bbnote "Using icecc"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 do_configure_prepend() {

@@ -14,7 +14,10 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=eef098b27f09d0ac39268df0cc2c00b5"
 PR = "${INC_PR}.0"
 PE = "1"
 
+<<<<<<< HEAD
 SRC_URI += "file://gnu-source.patch"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 SRC_URI[md5sum] = "d9b65f6881afe0d6d9863b30e1081bde"
 SRC_URI[sha256sum] = "ef22ede9c4a3c720da539292c6911515a8408e618e0dec6aa2196ee2153de4b5"

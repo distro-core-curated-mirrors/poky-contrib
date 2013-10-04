@@ -47,9 +47,13 @@ Options:
 
   -d, --remove-duplicated
         Remove the duplicated sstate cache files of one package, only
+<<<<<<< HEAD
         the newest one will be kept. The duplicated sstate cache files
         of one package must have the same arch, which means sstate cache
         files with multiple archs are not considered duplicate.
+=======
+        the newest one will be kept.
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
         Conflicts with --stamps-dir.
 
@@ -72,7 +76,11 @@ Options:
   -v, --verbose
         explain what is being done
 
+<<<<<<< HEAD
   -D, --debug
+=======
+  -d, --debug
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         show debug info, repeat for more debug info
 
 EOF
@@ -185,6 +193,7 @@ remove_duplicated () {
           | sed -e 's/-/_/g' -e 's/ /\n/g' | sort -u)
   echo "Done"
 
+<<<<<<< HEAD
   # Save all the sstate files in a file
   sstate_list=`mktemp` || exit 1
   find $cache_dir -name 'sstate-*.tgz' >$sstate_list
@@ -195,6 +204,13 @@ remove_duplicated () {
   echo "The following suffixes have been found in the cache dir:"
   echo $sstate_suffixes
 
+=======
+  sstate_suffixes="deploy-rpm deploy-ipk deploy-deb deploy package populate-lic populate-sysroot"
+
+  # Save all the sstate files in a file
+  sstate_list=`mktemp` || exit 1
+  find $cache_dir -name 'sstate-*.tgz' >$sstate_list
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
   echo -n "Figuring out the archs in the sstate cache dir ... "
   for arch in $all_archs; do
       grep -q "\-$arch-" $sstate_list
@@ -301,7 +317,11 @@ rm_by_stamps (){
   for i in $suffixes; do
       # There is no "\.sigdata" but "_setcene" when it is mirrored
       # from the SSTATE_MIRRORS, use them to figure out the sum.
+<<<<<<< HEAD
       sums=`find $stamps -maxdepth 3 -name "*.do_$i.*" \
+=======
+      sums=`find $stamps -maxdepth 2 -name "*.do_$i.*" \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         -o -name "*.do_${i}_setscene.*" | \
         sed -ne 's#.*_setscene\.##p' -e 's#.*\.sigdata\.##p' | \
         sed -e 's#\..*##' | sort -u`
@@ -393,7 +413,11 @@ while [ -n "$1" ]; do
       verbose="-v"
       shift
         ;;
+<<<<<<< HEAD
     --debug|-D)
+=======
+    --debug)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
       debug=`expr $debug + 1`
       echo "Debug level $debug"
       shift
@@ -422,4 +446,8 @@ done
 [ -n "$stamps" ] && rm_by_stamps
 [ -z "$rm_duplicated" -a -z "$stamps" ] && \
     echo "What do you want to do?"
+<<<<<<< HEAD
 exit 0
+=======
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

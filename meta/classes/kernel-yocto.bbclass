@@ -9,7 +9,11 @@ def find_patches(d):
     patches = src_patches(d)
     patch_list=[]
     for p in patches:
+<<<<<<< HEAD
         _, _, local, _, _, _ = bb.fetch.decodeurl(p)
+=======
+        _, _, local, _, _, _ = bb.decodeurl(p)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         patch_list.append(local)
 
     return patch_list
@@ -20,13 +24,18 @@ def find_sccs(d):
     sources_list=[]
     for s in sources:
         base, ext = os.path.splitext(os.path.basename(s))
+<<<<<<< HEAD
         if ext and ext in [".scc", ".cfg"]:
+=======
+        if ext and ext in ('.scc' '.cfg'):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             sources_list.append(s)
         elif base and base in 'defconfig':
             sources_list.append(s)
 
     return sources_list
 
+<<<<<<< HEAD
 # check the SRC_URI for "kmeta" type'd git repositories. Return the name of
 # the repository as it will be found in WORKDIR
 def find_kernel_feature_dirs(d):
@@ -56,6 +65,23 @@ def get_machine_branch(d, default):
             return branches[0]
 	    
     return default
+=======
+# this is different from find_patches, in that it returns a colon separated
+# list of <patches>:<subdir> instead of just a list of patches
+def find_urls(d):
+    patches=src_patches(d)
+    fetch = bb.fetch2.Fetch([], d)
+    patch_list=[]
+    for p in patches:
+        _, _, local, _, _, _ = bb.decodeurl(p)
+        for url in fetch.urls:
+            urldata = fetch.ud[url]
+            if urldata.localpath == local:
+                patch_list.append(local+':'+urldata.path)
+
+    return patch_list
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 do_patch() {
 	cd ${S}
@@ -70,7 +96,11 @@ do_patch() {
 		fi
 	fi
 
+<<<<<<< HEAD
 	machine_branch="${@ get_machine_branch(d, "${KBRANCH}" )}"
+=======
+	kbranch=${KBRANCH}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	# if we have a defined/set meta branch we should not be generating
 	# any meta data. The passed branch has what we need.
@@ -78,7 +108,11 @@ do_patch() {
 		createme_flags="--disable-meta-gen --meta ${KMETA}"
 	fi
 
+<<<<<<< HEAD
 	createme ${createme_flags} ${ARCH} ${machine_branch}
+=======
+	createme ${createme_flags} ${ARCH} ${kbranch}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	if [ $? -ne 0 ]; then
 		echo "ERROR. Could not create ${machine_branch}"
 		exit 1
@@ -86,7 +120,10 @@ do_patch() {
 
 	sccs="${@" ".join(find_sccs(d))}"
 	patches="${@" ".join(find_patches(d))}"
+<<<<<<< HEAD
 	feat_dirs="${@" ".join(find_kernel_feature_dirs(d))}"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	set +e
 	# add any explicitly referenced features onto the end of the feature
@@ -97,6 +134,7 @@ do_patch() {
 		done
 	fi
 
+<<<<<<< HEAD
 	# check for feature directories/repos/branches that were part of the
 	# SRC_URI. If they were supplied, we convert them into include directives
 	# for the update part of the process
@@ -112,11 +150,19 @@ do_patch() {
 
 	if [ "${machine_branch}" != "${KBRANCH_DEFAULT}" ]; then
 		updateme_flags="--branch ${machine_branch}"
+=======
+	if [ "${kbranch}" != "${KBRANCH_DEFAULT}" ]; then
+		updateme_flags="--branch ${kbranch}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	fi
 
 	# updates or generates the target description
 	updateme ${updateme_flags} -DKDESC=${KMACHINE}:${LINUX_KERNEL_TYPE} \
+<<<<<<< HEAD
                          ${includes} ${addon_features} ${ARCH} ${KMACHINE} ${sccs} ${patches}
+=======
+                           ${addon_features} ${ARCH} ${KMACHINE} ${sccs} ${patches}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	if [ $? -ne 0 ]; then
 		echo "ERROR. Could not update ${machine_branch}"
 		exit 1
@@ -135,9 +181,15 @@ do_patch() {
 	# should thrown an error, since we aren't building what was expected
 	final_branch="$(git symbolic-ref HEAD 2>/dev/null)"
 	final_branch=${final_branch##refs/heads/}
+<<<<<<< HEAD
 	if [ "${machine_branch}" != "${KBRANCH_DEFAULT}" ] &&
 	   [ "${final_branch}" != "${machine_branch}" ]; then
 		echo "ERROR: branch ${machine_branch} was requested, but was not properly"
+=======
+	if [ "${kbranch}" != "${KBRANCH_DEFAULT}" ] &&
+	   [ "${final_branch}" != "${kbranch}" ]; then
+		echo "ERROR: branch ${kbranch} was requested, but was not properly"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		echo "       configured to be built. The current branch is ${final_branch}"
 		exit 1
 	fi
@@ -148,6 +200,7 @@ do_kernel_checkout() {
 
 	# A linux yocto SRC_URI should use the bareclone option. That
 	# ensures that all the branches are available in the WORKDIR version
+<<<<<<< HEAD
 	# of the repository.
 	source_dir=`echo ${S} | sed 's%/$%%'`
 	source_workdir="${WORKDIR}/git"
@@ -158,6 +211,31 @@ do_kernel_checkout() {
 		if [ "${source_dir}" != "${source_workdir}" ]; then
 			rm -rf ${S}
 			mv ${WORKDIR}/git ${S}
+=======
+	# of the repository. If it wasn't passed, we should detect it, and put
+	# out a useful error message
+	if [ -d "${WORKDIR}/git/" ] && [ -d "${WORKDIR}/git/.git" ]; then
+		# we build out of {S}, so ensure that ${S} is clean and present
+		rm -rf ${S}
+		mkdir -p ${S}
+
+		echo "WARNING. ${WORKDIR}/git is not a bare clone."
+		echo "Ensure that the SRC_URI includes the 'bareclone=1' option."
+		
+		# we can fix up the kernel repository, but at the least the meta
+		# branch must be present. The machine branch may be created later.
+		mv ${WORKDIR}/git/.git ${S}
+		rm -rf ${WORKDIR}/git/
+		cd ${S}
+		if [ -n "${KMETA}" ]; then
+			git branch -a | grep -q ${KMETA}
+			if [ $? -ne 0 ]; then
+				echo "ERROR. The branch '${KMETA}' is required and was not"
+				echo "found. Ensure that the SRC_URI points to a valid linux-yocto"
+				echo "kernel repository"
+				exit 1
+			fi
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		fi
 		cd ${S}
 	elif [ -d "${WORKDIR}/git/" ] && [ ! -d "${WORKDIR}/git/.git" ]; then
@@ -191,6 +269,7 @@ do_kernel_checkout() {
 		git add .
 		git commit -q -m "baseline commit: creating repo for ${PN}-${PV}"
 	fi
+<<<<<<< HEAD
 	# end debare
 
        	# If KMETA is defined, the branch must exist, but a machine branch
@@ -229,6 +308,36 @@ do_kernel_checkout() {
 		git checkout -f ${machine_branch}
 	else
 		echo "Not checking out ${machine_branch}, it will be created later"
+=======
+	if [ -d "${WORKDIR}/git/" ] && [ ! -d "${WORKDIR}/git/.git" ]; then
+		# we build out of {S}, so ensure that ${S} is clean and present
+		rm -rf ${S}
+		mkdir -p ${S}/.git
+
+		mv ${WORKDIR}/git/* ${S}/.git
+		rm -rf ${WORKDIR}/git/
+		cd ${S}	
+		git config core.bare false
+	fi
+	# end debare
+
+	# convert any remote branches to local tracking ones
+	for i in `git branch -a | grep remotes | grep -v HEAD`; do
+		b=`echo $i | cut -d' ' -f2 | sed 's%remotes/origin/%%'`;
+		git show-ref --quiet --verify -- "refs/heads/$b"
+		if [ $? -ne 0 ]; then
+			git branch $b $i > /dev/null
+		fi
+	done
+
+	# Create a working tree copy of the kernel by checking out a branch
+	git show-ref --quiet --verify -- "refs/heads/${KBRANCH}"
+	if [ $? -eq 0 ]; then
+		# checkout and clobber any unimportant files
+		git checkout -f ${KBRANCH}
+	else
+		echo "Not checking out ${KBRANCH}, it will be created later"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		git checkout -f master
 	fi
 }
@@ -264,9 +373,13 @@ do_kernel_configme() {
 }
 
 python do_kernel_configcheck() {
+<<<<<<< HEAD
     import re, string, sys
 
     bb.plain("NOTE: validating kernel config, see log.do_kernel_configcheck for details")
+=======
+    import re, string, sys, commands
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     # if KMETA isn't set globally by a recipe using this routine, we need to
     # set the default to 'meta'. Otherwise, kconf_check is not passed a valid
@@ -275,9 +388,20 @@ python do_kernel_configcheck() {
     if not os.path.exists(kmeta):
         kmeta = "." + kmeta
 
+<<<<<<< HEAD
     pathprefix = "export PATH=%s:%s; " % (d.getVar('PATH', True), "${S}/scripts/util/")
     cmd = d.expand("cd ${S}; kconf_check -config- %s/meta-series ${S} ${B}" % kmeta)
     ret, result = oe.utils.getstatusoutput("%s%s" % (pathprefix, cmd))
+=======
+    # if KMETA isn't set globally by a recipe using this routine, we need to
+    # set the default to 'meta'. Otherwise, kconf_check is not passed a valid
+    # meta-series for processing
+    kmeta = d.getVar( "KMETA", True ) or "meta"
+
+    pathprefix = "export PATH=%s:%s; " % (d.getVar('PATH', True), "${S}/scripts/util/")
+    cmd = d.expand("cd ${S}; kconf_check -config- %s/meta-series ${S} ${B}" % kmeta)
+    ret, result = commands.getstatusoutput("%s%s" % (pathprefix, cmd))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     config_check_visibility = d.getVar( "KCONF_AUDIT_LEVEL", True ) or 1
     if config_check_visibility == 1:
@@ -293,6 +417,7 @@ do_validate_branches() {
 	cd ${S}
 	export KMETA=${KMETA}
 
+<<<<<<< HEAD
 	machine_branch="${@ get_machine_branch(d, "${KBRANCH}" )}"
 
 	set +e
@@ -300,16 +425,30 @@ do_validate_branches() {
 	# check and we can exit early
 	if [ "${SRCREV_machine}" = "AUTOINC" ] || "${SRCREV_machine}" = "INVALID" ] ||
 	   [ "${SRCREV_machine}" = "" ]; then
+=======
+	set +e
+	# if SRCREV is AUTOREV it shows up as AUTOINC there's nothing to
+	# check and we can exit early
+	if [ "${SRCREV_machine}" = "AUTOINC" ]; then
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		return
 	fi
 
 	# If something other than the default branch was requested, it must
 	# exist in the tree, and it's a hard error if it wasn't
+<<<<<<< HEAD
 	git show-ref --quiet --verify -- "refs/heads/${machine_branch}"
 	if [ $? -eq 1 ]; then
 		if [ -n "${KBRANCH_DEFAULT}" ] && 
                       [ "${machine_branch}" != "${KBRANCH_DEFAULT}" ]; then
 			echo "ERROR: branch ${machine_branch} was set for kernel compilation, "
+=======
+	git show-ref --quiet --verify -- "refs/heads/${KBRANCH}"
+	if [ $? -eq 1 ]; then
+		if [ -n "${KBRANCH_DEFAULT}" ] && 
+                      [ "${KBRANCH}" != "${KBRANCH_DEFAULT}" ]; then
+			echo "ERROR: branch ${KBRANCH} was set for kernel compilation, "
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 			echo "       but it does not exist in the kernel repository."
 			echo "       Check the value of KBRANCH and ensure that it describes"
 			echo "       a valid banch in the source kernel repository"
@@ -387,12 +526,19 @@ do_validate_branches() {
 		fi
 	fi
 
+<<<<<<< HEAD
 	git show-ref --quiet --verify -- "refs/heads/${machine_branch}"
 	if [ $? -eq 0 ]; then
 		# restore the branch for builds
 		git checkout -q -f ${machine_branch}
         else
 	        git checkout -q master
+=======
+	git show-ref --quiet --verify -- "refs/heads/${KBRANCH}"
+	if [ $? -eq 0 ]; then
+		# restore the branch for builds
+		git checkout -q -f ${KBRANCH}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	fi
 }
 
@@ -408,6 +554,11 @@ do_kernel_link_vmlinux() {
 	ln -sf ../../../vmlinux
 }
 
+<<<<<<< HEAD
 OE_TERMINAL_EXPORTS += "GUILT_BASE KBUILD_OUTPUT"
 GUILT_BASE = "meta"
 KBUILD_OUTPUT = "${B}"
+=======
+OE_TERMINAL_EXPORTS += "GUILT_BASE"
+GUILT_BASE = "meta"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

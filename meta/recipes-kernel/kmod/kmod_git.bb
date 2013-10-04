@@ -3,7 +3,11 @@
 
 require kmod.inc
 
+<<<<<<< HEAD
 PV_append = "+git${SRCPV}"
+=======
+PR = "${INC_PR}.0"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PROVIDES += "module-init-tools-insmod-static module-init-tools-depmod module-init-tools"
 RPROVIDES_${PN} += "module-init-tools-insmod-static module-init-tools-depmod module-init-tools"
@@ -36,6 +40,7 @@ do_install_append () {
         install -Dm644 "${WORKDIR}/depmod-search.conf" "${D}${base_libdir}/depmod.d/search.conf"
 }
 
+<<<<<<< HEAD
 do_compile_prepend() {
             sed -i 's/ac_pwd=/#ac_pwd=/' config.status ; sed -i "/#ac_pwd=/a\ac_pwd='.'" config.status
 }
@@ -45,6 +50,8 @@ do_compile_ptest () {
         oe_runmake rootfs
 }
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 inherit update-alternatives
 
 ALTERNATIVE_PRIORITY = "60"

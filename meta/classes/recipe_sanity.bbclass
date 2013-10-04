@@ -57,7 +57,11 @@ def can_use_autotools_base(cfgdata, d):
 
     return True
 
+<<<<<<< HEAD
 def can_delete_FILESPATH(cfgdata, d):
+=======
+def can_remove_FILESPATH(cfgdata, d):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     expected = cfgdata.get("FILESPATH")
     #expected = "${@':'.join([os.path.normpath(os.path.join(fp, p, o)) for fp in d.getVar('FILESPATHBASE', True).split(':') for p in d.getVar('FILESPATHPKG', True).split(':') for o in (d.getVar('OVERRIDES', True) + ':').split(':') if os.path.exists(os.path.join(fp, p, o))])}:${FILESDIR}"
     expectedpaths = d.expand(expected)
@@ -71,9 +75,15 @@ def can_delete_FILESPATH(cfgdata, d):
             return False
     return expected != unexpanded
 
+<<<<<<< HEAD
 def can_delete_FILESDIR(cfgdata, d):
     expected = cfgdata.get("FILESDIR")
     #expected = "${@bb.utils.which(d.getVar('FILESPATH', True), '.')}"
+=======
+def can_remove_FILESDIR(cfgdata, d):
+    expected = cfgdata.get("FILESDIR")
+    #expected = "${@bb.which(d.getVar('FILESPATH', True), '.')}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     unexpanded = d.getVar("FILESDIR", 0)
     if unexpanded is None:
         return False
@@ -87,7 +97,11 @@ def can_delete_FILESDIR(cfgdata, d):
            (expanded in filespath or
             expanded == d.expand(expected))
 
+<<<<<<< HEAD
 def can_delete_others(p, cfgdata, d):
+=======
+def can_remove_others(p, cfgdata, d):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     for k in ["S", "PV", "PN", "DESCRIPTION", "DEPENDS",
               "SECTION", "PACKAGES", "EXTRA_OECONF", "EXTRA_OEMAKE"]:
     #for k in cfgdata:
@@ -113,8 +127,13 @@ python do_recipe_sanity () {
     p = "%s %s %s" % (d.getVar("PN", True), d.getVar("PV", True), d.getVar("PR", True))
 
     sanitychecks = [
+<<<<<<< HEAD
         (can_delete_FILESDIR, "candidate for removal of FILESDIR"),
         (can_delete_FILESPATH, "candidate for removal of FILESPATH"),
+=======
+        (can_remove_FILESDIR, "candidate for removal of FILESDIR"),
+        (can_remove_FILESPATH, "candidate for removal of FILESPATH"),
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         #(can_use_autotools_base, "candidate for use of autotools_base"),
         (incorrect_nonempty_PACKAGES, "native or cross recipe with non-empty PACKAGES"),
     ]
@@ -124,7 +143,11 @@ python do_recipe_sanity () {
         if func(cfgdata, d):
             __note(msg, d)
 
+<<<<<<< HEAD
     can_delete_others(p, cfgdata, d)
+=======
+    can_remove_others(p, cfgdata, d)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     var_renames_overwrite(cfgdata, d)
     req_vars(cfgdata, d)
     bad_runtime_vars(cfgdata, d)
@@ -140,6 +163,12 @@ do_recipe_sanity_all () {
 addtask recipe_sanity_all after do_recipe_sanity
 
 python recipe_sanity_eh () {
+<<<<<<< HEAD
+=======
+    if bb.event.getName(e) != "ConfigParsed":
+        return
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     d = e.data
 
     cfgdata = {}
@@ -165,4 +194,7 @@ python recipe_sanity_eh () {
     DataSmart.renameVar = myrename
 }
 addhandler recipe_sanity_eh
+<<<<<<< HEAD
 recipe_sanity_eh[eventmask] = "bb.event.ConfigParsed"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

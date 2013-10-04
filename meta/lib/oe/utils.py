@@ -105,12 +105,17 @@ def features_backfill(var,d):
     # disturbing distributions that have already set DISTRO_FEATURES.
     # Distributions wanting to elide a value in DISTRO_FEATURES_BACKFILL should
     # add the feature to DISTRO_FEATURES_BACKFILL_CONSIDERED
+<<<<<<< HEAD
     features = (d.getVar(var, True) or "").split()
+=======
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     backfill = (d.getVar(var+"_BACKFILL", True) or "").split()
     considered = (d.getVar(var+"_BACKFILL_CONSIDERED", True) or "").split()
 
     addfeatures = []
     for feature in backfill:
+<<<<<<< HEAD
         if feature not in features and feature not in considered:
             addfeatures.append(feature)
 
@@ -150,3 +155,12 @@ def trim_version(version, num_parts=2):
     parts = version.split(".")
     trimmed = ".".join(parts[:num_parts])
     return trimmed
+=======
+        if feature not in considered:
+            addfeatures.append(feature)
+
+    if addfeatures:
+        return " %s" % (" ".join(addfeatures))
+    else:
+        return ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

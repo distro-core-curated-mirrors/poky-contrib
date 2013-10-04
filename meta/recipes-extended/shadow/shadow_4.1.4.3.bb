@@ -5,6 +5,7 @@ BUGTRACKER = "https://alioth.debian.org/tracker/?group_id=30580"
 SECTION = "base utils"
 LICENSE = "BSD | Artistic-1.0"
 LIC_FILES_CHKSUM = "file://COPYING;md5=08c553a87d4e51bbed50b20e0adcaede \
+<<<<<<< HEAD
                     file://src/passwd.c;beginline=8;endline=30;md5=d83888ea14ae61951982d77125947661"
 
 DEPENDS = "${@base_contains('DISTRO_FEATURES', 'pam', 'libpam', '', d)} \
@@ -12,6 +13,13 @@ DEPENDS = "${@base_contains('DISTRO_FEATURES', 'pam', 'libpam', '', d)} \
 RDEPENDS_${PN} = "shadow-securetty ${@base_contains('DISTRO_FEATURES', 'pam', '${PAM_PLUGINS}', '', d)} \
                   base-passwd"
 PR = "r13"
+=======
+                    file://src/passwd.c;firstline=8;endline=30;md5=2899a045e90511d0e043b85a7db7e2fe"
+
+DEPENDS = "${@base_contains('DISTRO_FEATURES', 'pam', 'libpam', '', d)}"
+RDEPENDS_${PN} = "shadow-securetty ${@base_contains('DISTRO_FEATURES', 'pam', '${PAM_PLUGINS}', '', d)}"
+PR = "r12"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "http://pkg-shadow.alioth.debian.org/releases/${BPN}-${PV}.tar.bz2 \
            file://login_defs_pam.sed \
@@ -23,8 +31,11 @@ SRC_URI = "http://pkg-shadow.alioth.debian.org/releases/${BPN}-${PV}.tar.bz2 \
            file://shadow-4.1.4.2-su_no_sanitize_env.patch \
            file://shadow-update-pam-conf.patch \
            file://shadow_fix_for_automake-1.12.patch \
+<<<<<<< HEAD
            file://slackware_fix_for_glib-2.17_crypt.patch \
            file://fix-etc-gshadow-reading.patch \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            "
 
 SRC_URI[md5sum] = "b8608d8294ac88974f27b20f991c0e79"
@@ -38,10 +49,13 @@ EXTRA_OECONF += "--without-audit \
                  --without-selinux"
 EXTRA_OECONF_libc-uclibc += "--with-nscd=no"
 
+<<<<<<< HEAD
 # Build falsely assumes that if --enable-libpam is set, we don't need to link against
 # libcrypt. This breaks chsh.
 BUILD_LDFLAGS += "${@base_contains('DISTRO_FEATURES', 'pam', base_contains('DISTRO_FEATURES', 'libc-crypt',  '-lcrypt', '', d), '', d)}"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PAM_PLUGINS = "libpam-runtime \
                pam-plugin-faildelay \
                pam-plugin-securetty \
@@ -113,7 +127,10 @@ do_install() {
 	fi
 	if [ "${bindir}" != "${base_bindir}" ]; then
 		mv ${D}${bindir}/login ${D}${base_bindir}/login
+<<<<<<< HEAD
 		mv ${D}${bindir}/su ${D}${base_bindir}/su
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	fi
 
 	# Handle link properly after rename, otherwise missing files would
@@ -125,12 +142,19 @@ inherit update-alternatives
 
 ALTERNATIVE_PRIORITY = "200"
 
+<<<<<<< HEAD
 ALTERNATIVE_${PN} = "passwd chfn newgrp chsh groups chpasswd login vipw vigr su"
+=======
+ALTERNATIVE_${PN} = "passwd chfn newgrp chsh groups chpasswd login vipw vigr"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 ALTERNATIVE_LINK_NAME[chpasswd] = "${sbindir}/chpasswd"
 ALTERNATIVE_LINK_NAME[login] = "${base_bindir}/login"
 ALTERNATIVE_LINK_NAME[vipw] = "${base_sbindir}/vipw"
 ALTERNATIVE_LINK_NAME[vigr] = "${base_sbindir}/vigr"
+<<<<<<< HEAD
 ALTERNATIVE_LINK_NAME[su] = "${base_bindir}/su"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 pkg_postinst_${PN} () {
 	if [ "x$D" != "x" ]; then

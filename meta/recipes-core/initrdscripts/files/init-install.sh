@@ -13,6 +13,7 @@ boot_size=20
 # 5% for the swap
 swap_ratio=5
 
+<<<<<<< HEAD
 # Get a list of hard drives
 hdnamelist=""
 live_dev_name=${1%%/*}
@@ -36,6 +37,40 @@ for device in `ls /sys/block/`; do
 	    ;;
     esac
 done
+=======
+found="no"
+
+echo "Searching for a hard drive..."
+for device in 'hda' 'hdb' 'sda' 'sdb' 'mmcblk0' 'mmcblk1'
+  do
+  if [ -e /sys/block/${device}/removable ]; then
+      if [ "$(cat /sys/block/${device}/removable)" = "0" ]; then
+	  found="yes"
+
+	  while true; do
+	      # Try sleeping here to avoid getting kernel messages
+              # obscuring/confusing user
+	      sleep 5
+	      echo "Found drive at /dev/${device}. Do you want to install this image there ? [y/n]"
+	      read answer
+	      if [ "$answer" = "y" ] ; then
+		  break
+	      fi
+	  
+	      if [ "$answer" = "n" ] ; then
+		  found=no
+		  break
+	      fi
+
+	      echo "Please answer by y or n"
+	  done
+      fi
+  fi
+
+  if [ "$found" = "yes" ]; then
+      break;
+  fi
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 TARGET_DEVICE_NAME=""
 for hdname in $hdnamelist; do
@@ -84,6 +119,17 @@ rm -f /etc/udev/scripts/mount*
 # Unmount anything the automounter had mounted
 #
 umount /dev/${device}* 2> /dev/null || /bin/true
+<<<<<<< HEAD
+=======
+
+if [ ! -b /dev/sda ] ; then
+    mknod /dev/sda b 8 0
+fi
+
+if [ ! -b /dev/sdb ] ; then
+    mknod /dev/sdb b 8 16
+fi
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 if [ ! -b /dev/loop0 ] ; then
     mknod /dev/loop0 b 7 0
@@ -145,9 +191,18 @@ mkfs.ext3 $rootfs
 echo "Formatting swap partition...($swap)"
 mkswap $swap
 
+<<<<<<< HEAD
 mkdir /tgt_root
 mkdir /src_root
 mkdir -p /boot
+=======
+mkdir /ssd
+mkdir /rootmnt
+mkdir /bootmnt
+
+mount $rootfs /ssd
+mount -o rw,loop,noatime,nodiratime /media/$1/$2 /rootmnt
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Handling of the target root partition
 mount $rootfs /tgt_root
@@ -165,8 +220,25 @@ fi
 umount /tgt_root
 umount /src_root
 
+<<<<<<< HEAD
 # Handling of the target boot partition
 mount $bootfs /boot
+=======
+if [ -f /ssd/etc/grub.d/40_custom ] ; then
+    echo "Preparing custom grub2 menu..."
+    sed -i "s@__ROOTFS__@$rootfs $rootwait@g" /ssd/etc/grub.d/40_custom
+    sed -i "s/__VIDEO_MODE__/$3/g" /ssd/etc/grub.d/40_custom
+    sed -i "s/__VGA_MODE__/$4/g" /ssd/etc/grub.d/40_custom
+    sed -i "s/__CONSOLE__/$5/g" /ssd/etc/grub.d/40_custom
+    mount $bootfs /bootmnt
+    cp /ssd/etc/grub.d/40_custom /bootmnt/40_custom
+    umount /bootmnt
+fi
+
+umount /ssd
+umount /rootmnt
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 echo "Preparing boot partition..."
 if [ -f /etc/grub.d/40_custom ] ; then
     echo "Preparing custom grub2 menu..."
@@ -194,7 +266,23 @@ if [ ! -f /boot/grub/grub.cfg ] ; then
     echo "kernel /vmlinuz root=$rootfs rw $3 $4 quiet" >> /boot/grub/menu.lst
 fi
 
+<<<<<<< HEAD
 cp /media/$1/vmlinuz /boot/
+=======
+if [ -f /ssd/40_custom ] ; then
+    mv /ssd/40_custom /ssd/boot/grub/grub.cfg
+    sed -i "/#/d" /ssd/boot/grub/grub.cfg
+    sed -i "/exec tail/d" /ssd/boot/grub/grub.cfg
+    chmod 0444 /ssd/boot/grub/grub.cfg
+else
+    echo "Preparing custom grub menu..."
+    echo "default 0" > /ssd/boot/grub/menu.lst
+    echo "timeout 30" >> /ssd/boot/grub/menu.lst
+    echo "title Live Boot/Install-Image" >> /ssd/boot/grub/menu.lst
+    echo "root  (hd0,0)" >> /ssd/boot/grub/menu.lst
+    echo "kernel /boot/vmlinuz root=$rootfs rw $3 $4 quiet" >> /ssd/boot/grub/menu.lst
+fi
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 umount /boot
 

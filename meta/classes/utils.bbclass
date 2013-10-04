@@ -246,12 +246,21 @@ oe_machinstall() {
 }
 
 create_cmdline_wrapper () {
+<<<<<<< HEAD
 	# Create a wrapper script where commandline options are needed
 	#
 	# These are useful to work around relocation issues, by passing extra options 
 	# to a program
 	#
 	# Usage: create_cmdline_wrapper FILENAME <extra-options>
+=======
+	# Create a wrapper script
+	#
+	# These are useful to work around relocation issues, by setting environment
+	# variables which point to paths in the filesystem.
+	#
+	# Usage: create_wrapper FILENAME [[VAR=VALUE]..]
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	cmd=$1
 	shift
@@ -261,15 +270,25 @@ create_cmdline_wrapper () {
 	mv $cmd $cmd.real
 	cmdname=`basename $cmd`.real
 	cat <<END >$cmd
+<<<<<<< HEAD
 #!/bin/bash
 realpath=\`readlink -fn \$0\`
 exec -a $cmd \`dirname \$realpath\`/$cmdname $@ "\$@"
+=======
+#!/bin/sh
+realpath=\`readlink -fn \$0\`
+exec \`dirname \$realpath\`/$cmdname $@ "\$@"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 END
 	chmod +x $cmd
 }
 
 create_wrapper () {
+<<<<<<< HEAD
 	# Create a wrapper script where extra environment variables are needed
+=======
+	# Create a wrapper script
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	#
 	# These are useful to work around relocation issues, by setting environment
 	# variables which point to paths in the filesystem.
@@ -282,20 +301,36 @@ create_wrapper () {
 	echo "Generating wrapper script for $cmd"
 
 	mv $cmd $cmd.real
+<<<<<<< HEAD
 	cmdname=`basename $cmd`
 	cat <<END >$cmd
 #!/bin/bash
 realpath=\`readlink -fn \$0\`
 export $@
 exec -a \`dirname \$realpath\`/$cmdname \`dirname \$realpath\`/$cmdname.real "\$@"
+=======
+	cmdname=`basename $cmd`.real
+	cat <<END >$cmd
+#!/bin/sh
+realpath=\`readlink -fn \$0\`
+exec env $@ \`dirname \$realpath\`/$cmdname "\$@"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 END
 	chmod +x $cmd
 }
 
 def check_app_exists(app, d):
+<<<<<<< HEAD
     app = d.expand(app)
     path = d.getVar('PATH', d, True)
     return bool(bb.utils.which(path, app))
+=======
+    from bb import which, data
+
+    app = data.expand(app, d)
+    path = data.getVar('PATH', d, 1)
+    return bool(which(path, app))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 def explode_deps(s):
     return bb.utils.explode_deps(s)
@@ -307,10 +342,17 @@ def base_set_filespath(path, d):
     if extrapaths != "":
         path = extrapaths.split(":") + path
     # The ":" ensures we have an 'empty' override
+<<<<<<< HEAD
     overrides = ((d.getVar("FILESOVERRIDES", True) or "") + ":").split(":")
     for p in path:
         if p != "": 
             for o in overrides:
+=======
+    overrides = (d.getVar("OVERRIDES", True) or "") + ":"
+    for p in path:
+        if p != "": 
+            for o in overrides.split(":"):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
                 filespath.append(os.path.join(p, o))
     return ":".join(filespath)
 

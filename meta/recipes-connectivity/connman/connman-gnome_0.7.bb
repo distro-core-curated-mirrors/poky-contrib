@@ -6,6 +6,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=eb723b61539feef013de476e68b5c50a \
                     file://properties/main.c;beginline=1;endline=20;md5=50c77c81871308b033ab7a1504626afb \
                     file://common/connman-dbus.c;beginline=1;endline=20;md5=de6b485c0e717a0236402d220187717a"
 
+<<<<<<< HEAD
 DEPENDS = "gtk+ dbus-glib intltool-native"
 
 # 0.7 tag
@@ -15,13 +16,23 @@ SRC_URI = "git://github.com/connectivity/connman-gnome.git \
        file://null_check_for_ipv4_config.patch \
 	   file://images/* \
           "
+=======
+DEPENDS = "gtk+ dbus-glib"
+
+# 0.7 tag
+SRCREV = "cf3c325b23dae843c5499a113591cfbc98acb143"
+SRC_URI = "git://github.com/connectivity/connman-gnome.git;protocol=git"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 S = "${WORKDIR}/git"
 
 inherit autotools gtk-icon-cache
 
 RDEPENDS_${PN} = "connman"
+<<<<<<< HEAD
 
 do_install_append() {
     install -m 0644 ${WORKDIR}/images/* ${D}/usr/share/icons/hicolor/22x22/apps/
 }
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

@@ -24,6 +24,7 @@ do_install_extra () {
     rmdir ${D}${bindir}/
 }
 
+<<<<<<< HEAD
 PACKAGES =+ "${PN}-rmt"
 
 FILES_${PN}-rmt = "${base_sbindir}/rmt*"
@@ -41,3 +42,13 @@ ALTERNATIVE_LINK_NAME[tar] = "${base_bindir}/tar"
 ALTERNATIVE_LINK_NAME[rmt] = "${base_sbindir}/rmt"
 
 BBCLASSEXTEND = "nativesdk"
+=======
+inherit update-alternatives
+
+ALTERNATIVE_PRIORITY = "100"
+
+ALTERNATIVE_${PN} = "tar rmt"
+
+ALTERNATIVE_LINK_NAME[tar] = "${base_bindir}/tar"
+ALTERNATIVE_LINK_NAME[rmt] = "${libexecdir}/rmt"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

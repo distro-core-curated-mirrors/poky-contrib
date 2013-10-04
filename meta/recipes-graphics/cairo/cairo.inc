@@ -10,12 +10,21 @@ HOMEPAGE = "http://cairographics.org"
 BUGTRACKER = "http://bugs.freedesktop.org"
 SECTION = "libs"
 LICENSE = "MPL-1 & LGPLv2.1"
+<<<<<<< HEAD
 X11DEPENDS = "virtual/libx11 libsm libxrender libxext"
 DEPENDS = "libpng fontconfig pixman glib-2.0"
 PACKAGECONFIG ??= "${@base_contains('DISTRO_FEATURES', 'x11', 'x11', '', d)} \
            ${@base_contains('DISTRO_FEATURES', 'directfb', 'directfb', '', d)}"
 PACKAGECONFIG[x11] = "--with-x=yes,--without-x,${X11DEPENDS}"
 PACKAGECONFIG[directfb] = "--enable-directfb=yes,,directfb"
+=======
+X11DEPENDS = "virtual/libx11 libsm libxrender"
+DEPENDS = "libpng fontconfig pixman glib-2.0"
+PACKAGECONFIG ??= "${@base_contains('DISTRO_FEATURES', 'x11', 'x11', '', d)} \
+           ${@base_contains('DISTRO_FEATURES', 'gtk-directfb', 'gtk-directfb', '', d)}"
+PACKAGECONFIG[x11] = "--with-x=yes,--without-x,${X11DEPENDS}"
+PACKAGECONFIG[gtk-directfb] = "--enable-directfb=yes,,directfb"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 BBCLASSEXTEND = "native"
 
 #check for TARGET_FPU=soft and inform configure of the result so it can disable some floating points 
@@ -23,10 +32,17 @@ require cairo-fpu.inc
 EXTRA_OECONF += "${@get_cairo_fpu_setting(bb, d)} \
                  --enable-tee \
                 "
+<<<<<<< HEAD
+=======
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 inherit autotools pkgconfig
 
 # We don't depend on binutils so we need to disable this
 export ac_cv_lib_bfd_bfd_openr="no"
+<<<<<<< HEAD
 # Ensure we don't depend on LZO
 export ac_cv_lib_lzo2_lzo2a_decompress="no"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

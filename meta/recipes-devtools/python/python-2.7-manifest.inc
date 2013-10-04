@@ -119,7 +119,11 @@ RDEPENDS_${PN}-image="${PN}-core"
 FILES_${PN}-image="${libdir}/python2.7/colorsys.* ${libdir}/python2.7/imghdr.* ${libdir}/python2.7/lib-dynload/imageop.so ${libdir}/python2.7/lib-dynload/rgbimg.so "
 
 DESCRIPTION_${PN}-io="Python Low-Level I/O"
+<<<<<<< HEAD
 RDEPENDS_${PN}-io="${PN}-core ${PN}-math ${PN}-textutils"
+=======
+RDEPENDS_${PN}-io="${PN}-core ${PN}-math"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_${PN}-io="${libdir}/python2.7/lib-dynload/_socket.so ${libdir}/python2.7/lib-dynload/_io.so ${libdir}/python2.7/lib-dynload/_ssl.so ${libdir}/python2.7/lib-dynload/select.so ${libdir}/python2.7/lib-dynload/termios.so ${libdir}/python2.7/lib-dynload/cStringIO.so ${libdir}/python2.7/pipes.* ${libdir}/python2.7/socket.* ${libdir}/python2.7/ssl.* ${libdir}/python2.7/tempfile.* ${libdir}/python2.7/StringIO.* ${libdir}/python2.7/io.* ${libdir}/python2.7/_pyio.* "
 
 DESCRIPTION_${PN}-json="Python JSON Support"
@@ -139,7 +143,11 @@ RDEPENDS_${PN}-mailbox="${PN}-core ${PN}-mime"
 FILES_${PN}-mailbox="${libdir}/python2.7/mailbox.* "
 
 DESCRIPTION_${PN}-math="Python Math Support"
+<<<<<<< HEAD
 RDEPENDS_${PN}-math="${PN}-core ${PN}-crypt"
+=======
+RDEPENDS_${PN}-math="${PN}-core"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_${PN}-math="${libdir}/python2.7/lib-dynload/cmath.so ${libdir}/python2.7/lib-dynload/math.so ${libdir}/python2.7/lib-dynload/_random.so ${libdir}/python2.7/random.* ${libdir}/python2.7/sets.* "
 
 DESCRIPTION_${PN}-mime="Python MIME Handling APIs"
@@ -151,7 +159,11 @@ RDEPENDS_${PN}-mmap="${PN}-core ${PN}-io"
 FILES_${PN}-mmap="${libdir}/python2.7/lib-dynload/mmap.so "
 
 DESCRIPTION_${PN}-multiprocessing="Python Multiprocessing Support"
+<<<<<<< HEAD
 RDEPENDS_${PN}-multiprocessing="${PN}-core ${PN}-io ${PN}-lang ${PN}-pickle ${PN}-threading ${PN}-ctypes"
+=======
+RDEPENDS_${PN}-multiprocessing="${PN}-core ${PN}-io ${PN}-lang"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_${PN}-multiprocessing="${libdir}/python2.7/lib-dynload/_multiprocessing.so ${libdir}/python2.7/multiprocessing "
 
 DESCRIPTION_${PN}-netclient="Python Internet Protocol Clients"
@@ -175,7 +187,11 @@ RDEPENDS_${PN}-pkgutil="${PN}-core"
 FILES_${PN}-pkgutil="${libdir}/python2.7/pkgutil.* "
 
 DESCRIPTION_${PN}-pprint="Python Pretty-Print Support"
+<<<<<<< HEAD
 RDEPENDS_${PN}-pprint="${PN}-core ${PN}-io"
+=======
+RDEPENDS_${PN}-pprint="${PN}-core"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_${PN}-pprint="${libdir}/python2.7/pprint.* "
 
 DESCRIPTION_${PN}-profile="Python Basic Profiling Support"

@@ -1,6 +1,10 @@
 require x-load.inc
 
+<<<<<<< HEAD
 FILESPATH = "${FILE_DIRNAME}/x-load-git/${MACHINE}:${FILE_DIRNAME}/x-load-git/"
+=======
+FILESDIR = "${@os.path.dirname(d.getVar('FILE',1))}/x-load-git/${MACHINE}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 LICENSE = "GPLv2+"
 LIC_FILES_CHKSUM = "file://README;beginline=1;endline=25;md5=ef08d08cb99057bbb5b9d6d0c5a4396f"
@@ -15,6 +19,11 @@ SRC_URI = "git://gitorious.org/x-loader/x-loader.git;branch=master"
 
 SRC_URI_append_beagleboard = " file://name.patch "
 
+<<<<<<< HEAD
+=======
+SRC_URI_append_beagleboard = " file://name.patch "
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 S = "${WORKDIR}/git"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"

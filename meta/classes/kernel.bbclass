@@ -1,7 +1,11 @@
 inherit linux-kernel-base module_strip kernel-module-split
 
 PROVIDES += "virtual/kernel"
+<<<<<<< HEAD
 DEPENDS += "virtual/${TARGET_PREFIX}binutils virtual/${TARGET_PREFIX}gcc kmod-native depmodwrapper-cross"
+=======
+DEPENDS += "virtual/${TARGET_PREFIX}gcc kmod-native virtual/${TARGET_PREFIX}gcc${KERNEL_CCSUFFIX} update-modules"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # we include gcc above, we dont need virtual/libc
 INHIBIT_DEFAULT_DEPS = "1"
@@ -9,7 +13,10 @@ INHIBIT_DEFAULT_DEPS = "1"
 KERNEL_IMAGETYPE ?= "zImage"
 INITRAMFS_IMAGE ?= ""
 INITRAMFS_TASK ?= ""
+<<<<<<< HEAD
 INITRAMFS_IMAGE_BUNDLE ?= ""
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 python __anonymous () {
     kerneltype = d.getVar('KERNEL_IMAGETYPE', True) or ''
@@ -20,6 +27,7 @@ python __anonymous () {
 
     image = d.getVar('INITRAMFS_IMAGE', True)
     if image:
+<<<<<<< HEAD
         d.appendVarFlag('do_bundle_initramfs', 'depends', ' ${INITRAMFS_IMAGE}:do_rootfs')
 
     # NOTE: setting INITRAMFS_TASK is for backward compatibility
@@ -29,6 +37,9 @@ python __anonymous () {
     image_task = d.getVar('INITRAMFS_TASK', True)
     if image_task:
         d.appendVarFlag('do_configure', 'depends', ' ${INITRAMFS_TASK}')
+=======
+        d.setVar('INITRAMFS_TASK', '${INITRAMFS_IMAGE}:do_rootfs')
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 inherit kernel-arch deploy
@@ -46,6 +57,23 @@ KERNEL_PRIORITY ?= "${@int(d.getVar('PV',1).split('-')[0].split('+')[0].split('.
 
 KERNEL_RELEASE ?= "${KERNEL_VERSION}"
 
+<<<<<<< HEAD
+=======
+KERNEL_CCSUFFIX ?= ""
+KERNEL_LDSUFFIX ?= ""
+
+# Set TARGET_??_KERNEL_ARCH in the machine .conf to set architecture
+# specific options necessary for building the kernel and modules.
+#FIXME: should be this: TARGET_CC_KERNEL_ARCH ?= "${TARGET_CC_ARCH}"
+TARGET_CC_KERNEL_ARCH ?= ""
+HOST_CC_KERNEL_ARCH ?= "${TARGET_CC_KERNEL_ARCH}"
+TARGET_LD_KERNEL_ARCH ?= ""
+HOST_LD_KERNEL_ARCH ?= "${TARGET_LD_KERNEL_ARCH}"
+
+KERNEL_CC = "${CCACHE}${HOST_PREFIX}gcc${KERNEL_CCSUFFIX} ${HOST_CC_KERNEL_ARCH}${TOOLCHAIN_OPTIONS}"
+KERNEL_LD = "${HOST_PREFIX}ld${KERNEL_LDSUFFIX} ${HOST_LD_KERNEL_ARCH}${TOOLCHAIN_OPTIONS}"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # Where built kernel lies in the kernel tree
 KERNEL_OUTPUT ?= "arch/${ARCH}/boot/${KERNEL_IMAGETYPE}"
 KERNEL_IMAGEDEST = "boot"
@@ -81,6 +109,7 @@ KERNEL_SRC_PATH = "/usr/src/kernel"
 
 KERNEL_IMAGETYPE_FOR_MAKE = "${@(lambda s: s[:-3] if s[-3:] == ".gz" else s)(d.getVar('KERNEL_IMAGETYPE', True))}"
 
+<<<<<<< HEAD
 copy_initramfs() {
 	echo "Copying initramfs into ./usr ..."
 	# Find and use the first initramfs image archive type we find
@@ -157,6 +186,11 @@ kernel_do_compile() {
 	# is to specify:
 	# make ...args... CONFIG_INITRAMFS_SOURCE=some_other_initramfs.cpio
 	oe_runmake ${KERNEL_IMAGETYPE_FOR_MAKE} ${KERNEL_ALT_IMAGETYPE} CC="${KERNEL_CC}" LD="${KERNEL_LD}" ${KERNEL_EXTRA_ARGS} $use_alternate_initrd
+=======
+kernel_do_compile() {
+	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS MACHINE
+	oe_runmake ${KERNEL_IMAGETYPE_FOR_MAKE} ${KERNEL_ALT_IMAGETYPE} CC="${KERNEL_CC}" LD="${KERNEL_LD}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	if test "${KERNEL_IMAGETYPE_FOR_MAKE}.gz" = "${KERNEL_IMAGETYPE}"; then
 		gzip -9c < "${KERNEL_IMAGETYPE_FOR_MAKE}" > "${KERNEL_OUTPUT}"
 	fi
@@ -165,12 +199,20 @@ kernel_do_compile() {
 do_compile_kernelmodules() {
 	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS MACHINE
 	if (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
+<<<<<<< HEAD
 		oe_runmake ${PARALLEL_MAKE} modules CC="${KERNEL_CC}" LD="${KERNEL_LD}" ${KERNEL_EXTRA_ARGS}
+=======
+		oe_runmake ${PARALLEL_MAKE} modules CC="${KERNEL_CC}" LD="${KERNEL_LD}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	else
 		bbnote "no modules to compile"
 	fi
 }
+<<<<<<< HEAD
 addtask compile_kernelmodules after do_compile before do_strip
+=======
+addtask compile_kernelmodules after do_compile before do_install
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 kernel_do_install() {
 	#
@@ -179,6 +221,11 @@ kernel_do_install() {
 	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS MACHINE
 	if (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
 		oe_runmake DEPMOD=echo INSTALL_MOD_PATH="${D}" modules_install
+<<<<<<< HEAD
+=======
+		rm -f "${D}/lib/modules/${KERNEL_VERSION}/modules.order"
+		rm -f "${D}/lib/modules/${KERNEL_VERSION}/modules.builtin"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		rm "${D}/lib/modules/${KERNEL_VERSION}/build"
 		rm "${D}/lib/modules/${KERNEL_VERSION}/source"
 	else
@@ -204,11 +251,19 @@ kernel_do_install() {
 	#
 	kerneldir=${D}${KERNEL_SRC_PATH}
 	install -d $kerneldir
+<<<<<<< HEAD
 
 	#
 	# Store the kernel version in sysroots for module-base.bbclass
 	#
 
+=======
+
+	#
+	# Store the kernel version in sysroots for module-base.bbclass
+	#
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	echo "${KERNEL_VERSION}" > $kerneldir/kernel-abiversion
 
 	#
@@ -226,6 +281,7 @@ kernel_do_install() {
 	# work and sysroots can be on different partitions, so we can't rely on
 	# hardlinking, unfortunately.
 	#
+<<<<<<< HEAD
 	find . -depth -not -name "*.cmd" -not -name "*.o" -not -path "./.*" -print0 | cpio --null -pdu $kerneldir
 	cp .config $kerneldir
 	if [ "${S}" != "${B}" ]; then
@@ -233,6 +289,12 @@ kernel_do_install() {
 		cd "${S}"
 		find . -depth -not -path "./.*" -print0 | cpio --null -pdu $kerneldir
 		cd "$pwd"
+=======
+	cp -fR * $kerneldir
+	cp .config $kerneldir
+	if [ "${S}" != "${B}" ]; then
+		cp -fR ${S}/* $kerneldir
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	fi
 	install -m 0644 ${KERNEL_OUTPUT} $kerneldir/${KERNEL_IMAGETYPE}
 	install -m 0644 System.map $kerneldir/System.map-${KERNEL_VERSION}
@@ -276,11 +338,16 @@ kernel_do_install() {
 		rm -f $kerneldir/$entry
 	done
 
+<<<<<<< HEAD
 	# kernels <2.6.30 don't have $kerneldir/tools directory so we check if it exists before calling sed
 	if [ -f $kerneldir/tools/perf/Makefile ]; then
 		# Fix SLANG_INC for slang.h
 		sed -i 's#-I/usr/include/slang#-I=/usr/include/slang#g' $kerneldir/tools/perf/Makefile
 	fi
+=======
+	# Fix SLANG_INC for slang.h
+	sed -i 's#-I/usr/include/slang#-I=/usr/include/slang#g' $kerneldir/tools/perf/Makefile
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 do_install[prefuncs] += "package_get_auto_pr"
 
@@ -299,12 +366,42 @@ kernel_do_configure() {
 	# recipes to manage the .config themselves in do_configure_prepend().
 	if [ -f "${WORKDIR}/defconfig" ] && [ ! -f "${B}/.config" ]; then
 		cp "${WORKDIR}/defconfig" "${B}/.config"
+<<<<<<< HEAD
 	fi
 	yes '' | oe_runmake oldconfig
+=======
+	fi
+	yes '' | oe_runmake oldconfig
+
+	if [ ! -z "${INITRAMFS_IMAGE}" ]; then
+		for img in cpio.gz cpio.lzo cpio.lzma cpio.xz; do
+		if [ -e "${DEPLOY_DIR_IMAGE}/${INITRAMFS_IMAGE}-${MACHINE}.$img" ]; then
+			cp "${DEPLOY_DIR_IMAGE}/${INITRAMFS_IMAGE}-${MACHINE}.$img" initramfs.$img
+		fi
+		done
+	fi
 }
+
+do_configure[depends] += "${INITRAMFS_TASK}"
 
 do_savedefconfig() {
 	oe_runmake savedefconfig
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
+}
+do_savedefconfig[nostamp] = "1"
+addtask savedefconfig after do_configure
+
+<<<<<<< HEAD
+do_savedefconfig() {
+	oe_runmake savedefconfig
+=======
+pkg_postinst_kernel-base () {
+	update-alternatives --install /${KERNEL_IMAGEDEST}/${KERNEL_IMAGETYPE} ${KERNEL_IMAGETYPE} ${KERNEL_IMAGETYPE}-${KERNEL_VERSION} ${KERNEL_PRIORITY} || true
+}
+
+pkg_postrm_kernel-base () {
+	update-alternatives --remove ${KERNEL_IMAGETYPE} ${KERNEL_IMAGETYPE}-${KERNEL_VERSION} || true
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 do_savedefconfig[nostamp] = "1"
 addtask savedefconfig after do_configure
@@ -316,8 +413,12 @@ EXPORT_FUNCTIONS do_compile do_install do_configure
 # kernel-base becomes kernel-${KERNEL_VERSION}
 # kernel-image becomes kernel-image-${KERNEL_VERISON}
 PACKAGES = "kernel kernel-base kernel-vmlinux kernel-image kernel-dev kernel-modules"
+<<<<<<< HEAD
 FILES_${PN} = ""
 FILES_kernel-base = "/lib/modules/${KERNEL_VERSION}/modules.order /lib/modules/${KERNEL_VERSION}/modules.builtin"
+=======
+FILES = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_kernel-image = "/boot/${KERNEL_IMAGETYPE}*"
 FILES_kernel-dev = "/boot/System.map* /boot/Module.symvers* /boot/config* ${KERNEL_SRC_PATH}"
 FILES_kernel-vmlinux = "/boot/vmlinux*"
@@ -336,6 +437,7 @@ ALLOW_EMPTY_kernel-modules = "1"
 DESCRIPTION_kernel-modules = "Kernel modules meta package"
 
 pkg_postinst_kernel-image () {
+<<<<<<< HEAD
 	update-alternatives --install /${KERNEL_IMAGEDEST}/${KERNEL_IMAGETYPE} ${KERNEL_IMAGETYPE} ${KERNEL_IMAGETYPE}-${KERNEL_VERSION} ${KERNEL_PRIORITY} || true
 	if [ ! -e "$D/lib/modules/${KERNEL_VERSION}" ]; then
 		mkdir -p $D/lib/modules/${KERNEL_VERSION}
@@ -349,6 +451,23 @@ pkg_postinst_kernel-image () {
 
 pkg_postrm_kernel-image () {
 	update-alternatives --remove ${KERNEL_IMAGETYPE} ${KERNEL_IMAGETYPE}-${KERNEL_VERSION} || true
+=======
+if [ ! -e "$D/lib/modules/${KERNEL_VERSION}" ]; then
+	mkdir -p $D/lib/modules/${KERNEL_VERSION}
+fi
+if [ -n "$D" ]; then
+	depmod -a -b $D -F ${STAGING_KERNEL_DIR}/System.map-${KERNEL_VERSION} ${KERNEL_VERSION}
+else
+	depmod -a ${KERNEL_VERSION}
+fi
+}
+
+pkg_postinst_modules () {
+if [ -z "$D" ]; then
+	depmod -a ${KERNEL_VERSION}
+	update-modules || true
+fi
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 PACKAGESPLITFUNCS_prepend = "split_kernel_packages "
@@ -359,6 +478,7 @@ python split_kernel_packages () {
     do_split_packages(d, root='/lib/firmware', file_regex='^(.*)\.cis$', output_pattern='kernel-firmware-%s', description='Firmware for %s', recursive=True, extra_depends='')
 }
 
+<<<<<<< HEAD
 do_strip() {
 	if [ -n "${KERNEL_IMAGE_STRIP_EXTRA_SECTIONS}" ]; then
 		if [[ "${KERNEL_IMAGETYPE}" != "vmlinux" ]]; then
@@ -383,6 +503,181 @@ do_strip() {
 		bbnote "KERNEL_IMAGE_STRIP_EXTRA_SECTIONS is set, stripping sections:" \
 			"${KERNEL_IMAGE_STRIP_EXTRA_SECTIONS}"
 	fi;
+=======
+python populate_packages_prepend () {
+    def extract_modinfo(file):
+        import tempfile, re, subprocess
+        tempfile.tempdir = d.getVar("WORKDIR", True)
+        tf = tempfile.mkstemp()
+        tmpfile = tf[1]
+        cmd = "PATH=\"%s\" %sobjcopy -j .modinfo -O binary %s %s" % (d.getVar("PATH", True), d.getVar("HOST_PREFIX", True) or "", file, tmpfile)
+        subprocess.call(cmd, shell=True)
+        f = open(tmpfile)
+        l = f.read().split("\000")
+        f.close()
+        os.close(tf[0])
+        os.unlink(tmpfile)
+        exp = re.compile("([^=]+)=(.*)")
+        vals = {}
+        for i in l:
+            m = exp.match(i)
+            if not m:
+                continue
+            vals[m.group(1)] = m.group(2)
+        return vals
+    
+    def parse_depmod():
+        import re
+
+        dvar = d.getVar('PKGD', True)
+        if not dvar:
+            bb.error("PKGD not defined")
+            return
+
+        kernelver = d.getVar('KERNEL_VERSION', True)
+        kernelver_stripped = kernelver
+        m = re.match('^(.*-hh.*)[\.\+].*$', kernelver)
+        if m:
+            kernelver_stripped = m.group(1)
+        path = d.getVar("PATH", True)
+
+        cmd = "PATH=\"%s\" depmod -n -a -b %s -F %s/boot/System.map-%s %s" % (path, dvar, dvar, kernelver, kernelver_stripped)
+        f = os.popen(cmd, 'r')
+
+        deps = {}
+        pattern0 = "^(.*\.k?o):..*$"
+        pattern1 = "^(.*\.k?o):\s*(.*\.k?o)\s*$"
+        pattern2 = "^(.*\.k?o):\s*(.*\.k?o)\s*\\\$"
+        pattern3 = "^\t(.*\.k?o)\s*\\\$"
+        pattern4 = "^\t(.*\.k?o)\s*$"
+
+        line = f.readline()
+        while line:
+            if not re.match(pattern0, line):
+                line = f.readline()
+                continue
+            m1 = re.match(pattern1, line)
+            if m1:
+                deps[m1.group(1)] = m1.group(2).split()
+            else:
+                m2 = re.match(pattern2, line)
+                if m2:
+                    deps[m2.group(1)] = m2.group(2).split()
+                    line = f.readline()
+                    m3 = re.match(pattern3, line)
+                    while m3:
+                        deps[m2.group(1)].extend(m3.group(1).split())
+                        line = f.readline()
+                        m3 = re.match(pattern3, line)
+                    m4 = re.match(pattern4, line)
+                    deps[m2.group(1)].extend(m4.group(1).split())
+            line = f.readline()
+        f.close()
+        return deps
+    
+    def get_dependencies(file, pattern, format):
+        # file no longer includes PKGD
+        file = file.replace(d.getVar('PKGD', True) or '', '', 1)
+        # instead is prefixed with /lib/modules/${KERNEL_VERSION}
+        file = file.replace("/lib/modules/%s/" % d.getVar('KERNEL_VERSION', True) or '', '', 1)
+
+        if module_deps.has_key(file):
+            import re
+            dependencies = []
+            for i in module_deps[file]:
+                m = re.match(pattern, os.path.basename(i))
+                if not m:
+                    continue
+                on = legitimize_package_name(m.group(1))
+                dependency_pkg = format % on
+                dependencies.append(dependency_pkg)
+            return dependencies
+        return []
+
+    def frob_metadata(file, pkg, pattern, format, basename):
+        import re
+        vals = extract_modinfo(file)
+
+        dvar = d.getVar('PKGD', True)
+
+        use_update_modules = oe.utils.contains('DISTRO_FEATURES', 'update-modules', True, False, d)
+
+        # If autoloading is requested, output /etc/modules-load.d/<name>.conf and append
+        # appropriate modprobe commands to the postinst
+        autoload = d.getVar('module_autoload_%s' % basename, True)
+        if autoload and use_update_modules:
+            name = '%s/etc/modules-load.d/%s.conf' % (dvar, basename)
+            f = open(name, 'w')
+            for m in autoload.split():
+                f.write('%s\n' % m)
+            f.close()
+            postinst = d.getVar('pkg_postinst_%s' % pkg, True)
+            if not postinst:
+                bb.fatal("pkg_postinst_%s not defined" % pkg)
+            postinst += d.getVar('autoload_postinst_fragment', True) % autoload
+            d.setVar('pkg_postinst_%s' % pkg, postinst)
+
+        # Write out any modconf fragment
+        modconf = d.getVar('module_conf_%s' % basename, True)
+        if modconf and use_update_modules:
+            name = '%s/etc/modprobe.d/%s.conf' % (dvar, basename)
+            f = open(name, 'w')
+            f.write("%s\n" % modconf)
+            f.close()
+
+        if use_update_modules:
+            files = d.getVar('FILES_%s' % pkg, True)
+            files = "%s /etc/modules-load.d/%s.conf /etc/modprobe.d/%s.conf" % (files, basename, basename)
+            d.setVar('FILES_%s' % pkg, files)
+
+        if vals.has_key("description"):
+            old_desc = d.getVar('DESCRIPTION_' + pkg, True) or ""
+            d.setVar('DESCRIPTION_' + pkg, old_desc + "; " + vals["description"])
+
+        rdepends = bb.utils.explode_dep_versions2(d.getVar('RDEPENDS_' + pkg, True) or "")
+        for dep in get_dependencies(file, pattern, format):
+            if not dep in rdepends:
+                rdepends[dep] = []
+        d.setVar('RDEPENDS_' + pkg, bb.utils.join_deps(rdepends, commasep=False))
+
+    module_deps = parse_depmod()
+    module_regex = '^(.*)\.k?o$'
+    module_pattern = 'kernel-module-%s'
+
+    use_update_modules = oe.utils.contains('DISTRO_FEATURES', 'update-modules', True, False, d)
+    if use_update_modules:
+        postinst = d.getVar('pkg_postinst_modules', True)
+        postrm = d.getVar('pkg_postrm_modules', True)
+    else:
+        postinst = None
+        postrm = None
+    do_split_packages(d, root='/lib/firmware', file_regex='^(.*)\.bin$', output_pattern='kernel-firmware-%s', description='Firmware for %s', recursive=True, extra_depends='')
+    do_split_packages(d, root='/lib/firmware', file_regex='^(.*)\.fw$', output_pattern='kernel-firmware-%s', description='Firmware for %s', recursive=True, extra_depends='')
+    do_split_packages(d, root='/lib/firmware', file_regex='^(.*)\.cis$', output_pattern='kernel-firmware-%s', description='Firmware for %s', recursive=True, extra_depends='')
+    do_split_packages(d, root='/lib/modules', file_regex=module_regex, output_pattern=module_pattern, description='%s kernel module', postinst=postinst, postrm=postrm, recursive=True, hook=frob_metadata, extra_depends='%skernel-%s' % (['', 'update-modules '][use_update_modules], d.getVar("KERNEL_VERSION", True)))
+
+    # If modules-load.d and modprobe.d are empty at this point, remove them to
+    # avoid warnings. removedirs only raises an OSError if an empty
+    # directory cannot be removed.
+    dvar = d.getVar('PKGD', True)
+    for dir in ["%s/etc/modprobe.d" % (dvar), "%s/etc/modules-load.d" % (dvar), "%s/etc" % (dvar)]:
+        if len(os.listdir(dir)) == 0:
+            os.rmdir(dir)
+
+    import re
+    metapkg = "kernel-modules"
+    blacklist = [ 'kernel-dev', 'kernel-image', 'kernel-base', 'kernel-vmlinux' ]
+    for l in module_deps.values():
+        for i in l:
+            pkg = module_pattern % legitimize_package_name(re.match(module_regex, os.path.basename(i)).group(1))
+            blacklist.append(pkg)
+    metapkg_rdepends = []
+    packages = d.getVar('PACKAGES', True).split()
+    for pkg in packages[1:]:
+        if not pkg in blacklist and not pkg in metapkg_rdepends:
+            metapkg_rdepends.append(pkg)
+    d.setVar('RDEPENDS_' + metapkg, ' '.join(metapkg_rdepends))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 do_strip[dirs] = "${B}"
 
@@ -392,9 +687,15 @@ addtask do_strip before do_sizecheck after do_kernel_link_vmlinux
 # with a fixed length or there is a limit in transferring the kernel to memory
 do_sizecheck() {
 	if [ ! -z "${KERNEL_IMAGE_MAXSIZE}" ]; then
+<<<<<<< HEAD
 		cd ${B}
 		size=`ls -lL ${KERNEL_OUTPUT} | awk '{ print $5}'`
 		if [ $size -ge ${KERNEL_IMAGE_MAXSIZE} ]; then
+=======
+		size=`ls -l ${KERNEL_OUTPUT} | awk '{ print $5}'`
+		if [ $size -ge ${KERNEL_IMAGE_MAXSIZE} ]; then
+			rm ${KERNEL_OUTPUT}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 			die "This kernel (size=$size > ${KERNEL_IMAGE_MAXSIZE}) is too big for your device. Please reduce the size of the kernel by making more of it modular."
 		fi
 	fi
@@ -441,6 +742,7 @@ addtask uboot_mkimage before do_install after do_compile
 
 kernel_do_deploy() {
 	install -m 0644 ${KERNEL_OUTPUT} ${DEPLOYDIR}/${KERNEL_IMAGE_BASE_NAME}.bin
+<<<<<<< HEAD
 	if [ ${MODULE_TARBALL_DEPLOY} = "1" ] && (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
 		mkdir -p ${D}/lib
 		tar -cvzf ${DEPLOYDIR}/${MODULE_TARBALL_BASE_NAME} -C ${D} lib
@@ -449,6 +751,16 @@ kernel_do_deploy() {
 
 	ln -sf ${KERNEL_IMAGE_BASE_NAME}.bin ${DEPLOYDIR}/${KERNEL_IMAGE_SYMLINK_NAME}.bin
 	ln -sf ${KERNEL_IMAGE_BASE_NAME}.bin ${DEPLOYDIR}/${KERNEL_IMAGETYPE}
+=======
+	if (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
+		tar -cvzf ${DEPLOYDIR}/modules-${KERNEL_VERSION}-${PR}-${MACHINE}.tgz -C ${D} lib
+	fi
+
+	cd ${DEPLOYDIR}
+	rm -f ${KERNEL_IMAGE_SYMLINK_NAME}.bin
+	ln -sf ${KERNEL_IMAGE_BASE_NAME}.bin ${KERNEL_IMAGE_SYMLINK_NAME}.bin
+	ln -sf ${KERNEL_IMAGE_BASE_NAME}.bin ${KERNEL_IMAGETYPE}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	cp ${COREBASE}/meta/files/deploydir_readme.txt ${DEPLOYDIR}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
 }

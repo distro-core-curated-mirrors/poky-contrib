@@ -3,7 +3,11 @@ SECTION = "console/utils"
 LICENSE = "GPLv2"
 DEPENDS = "openssl curl zlib expat"
 
+<<<<<<< HEAD
 PROVIDES_append_class-native = " git-replacement-native"
+=======
+PROVIDES_append_virtclass-native = " git-replacement-native"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 SRC_URI = "${KERNELORG_MIRROR}/software/scm/git/git-${PV}.tar.bz2 "
 S = "${WORKDIR}/git-${PV}"
@@ -14,10 +18,17 @@ EXTRA_OECONF = "--with-perl=${STAGING_BINDIR_NATIVE}/perl-native/perl \
 		--without-tcltk \
 "
 
+<<<<<<< HEAD
 inherit autotools perlnative
 
 EXTRA_OEMAKE = "NO_PYTHON=1"
 
+=======
+EXTRA_OEMAKE = "NO_PYTHON=1"
+
+inherit autotools perlnative
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_compile_prepend () {
 	# Remove perl/perl.mak to fix the out-of-date perl.mak error
 	# during rebuild
@@ -28,6 +39,7 @@ do_install () {
 	oe_runmake install DESTDIR="${D}" bindir=${bindir} \
 		template_dir=${datadir}/git-core/templates \
 		GIT_PYTHON_DIR=${D}${datadir}/git-core/python
+<<<<<<< HEAD
 
 	# ${libdir} is not applicable here, perl-native files are always
 	# installed to /usr/lib on both 32/64 bits targets.
@@ -36,17 +48,26 @@ do_install () {
 }
 
 do_install_append_class-native() {
+=======
+	rm -rf ${D}${libdir}/perl-native
+}
+
+do_install_append_virtclass-native() {
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	create_wrapper ${D}/${bindir}/git \
 		GIT_EXEC_PATH=${libexecdir}/git-core \
 		GIT_TEMPLATE_DIR=${STAGING_DATADIR_NATIVE}/git-core/templates
 }
 
+<<<<<<< HEAD
 do_install_append_class-nativesdk() {
 	create_wrapper ${D}/${bindir}/git \
 		GIT_EXEC_PATH=${libexecdir}/git-core \
 		GIT_TEMPLATE_DIR=${STAGING_DATADIR_NATIVE}/git-core/templates
 }
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_${PN} += "${datadir}/git-core ${libxecdir}/git-core/"
 FILES_${PN}-dbg += "${libexecdir}/git-core/.debug"
 

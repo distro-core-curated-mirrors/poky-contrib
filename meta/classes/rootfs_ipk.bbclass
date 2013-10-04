@@ -14,6 +14,13 @@ do_rootfs[recrdeptask] += "do_package_write_ipk"
 rootfs_ipk_do_rootfs[vardepsexclude] += "BUILDNAME"
 
 do_rootfs[lockfiles] += "${WORKDIR}/ipk.lock"
+<<<<<<< HEAD
+=======
+
+IPKG_ARGS = "-f ${IPKGCONF_TARGET} -o ${IMAGE_ROOTFS} --force-overwrite --prefer-arch-to-version"
+# The _POST version also works when constructing the matching SDK
+IPKG_ARGS_POST = "-f ${IPKGCONF_TARGET} -o $INSTALL_ROOTFS_IPK --force-overwrite --prefer-arch-to-version"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 OPKG_PREPROCESS_COMMANDS = "package_update_index_ipk; package_generate_ipkg_conf"
 
@@ -22,6 +29,10 @@ OPKG_POSTPROCESS_COMMANDS = "ipk_insert_feed_uris; "
 OPKGLIBDIR = "${localstatedir}/lib"
 
 MULTILIBRE_ALLOW_REP = "${OPKGLIBDIR}/opkg"
+
+# Which packages to not install on the basis of a recommendation
+BAD_RECOMMENDATIONS ?= ""
+MULTILIBRE_ALLOW_REP = "${opkglibdir}"
 
 fakeroot rootfs_ipk_do_rootfs () {
 	#set -x
@@ -33,6 +44,7 @@ fakeroot rootfs_ipk_do_rootfs () {
 
 	mkdir -p ${T}/
  
+<<<<<<< HEAD
 	export INSTALL_CONF_IPK="${IPKGCONF_TARGET}"
 	export INSTALL_ROOTFS_IPK="${IMAGE_ROOTFS}"
 	STATUS=${IMAGE_ROOTFS}${OPKGLIBDIR}/opkg/status
@@ -51,6 +63,20 @@ fakeroot rootfs_ipk_do_rootfs () {
                         		       /^Version:/ { print } \
                         		       /^$/ { exit } \
                         		       END { print \"Status: deinstall hold not-installed\n\" }" - >> $STATUS
+=======
+	STATUS=${IMAGE_ROOTFS}${opkglibdir}/status
+	mkdir -p ${IMAGE_ROOTFS}${opkglibdir}
+
+	opkg-cl ${IPKG_ARGS} update
+
+	# prime the status file with bits that we don't want
+	for i in ${BAD_RECOMMENDATIONS}; do
+		pkginfo="`opkg-cl ${IPKG_ARGS} info $i`"
+		if [ ! -z "$pkginfo" ]; then
+			echo "$pkginfo" | grep -e '^Package:' -e '^Architecture:' -e '^Version:' >> $STATUS
+			echo "Status: deinstall hold not-installed" >> $STATUS
+			echo >> $STATUS
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		else
 			echo "Requested ignored recommendation $i is not a package"
 		fi
@@ -61,7 +87,12 @@ fakeroot rootfs_ipk_do_rootfs () {
 	export INSTALL_PACKAGES_LINGUAS_IPK="${LINGUAS_INSTALL}"
 	export INSTALL_TASK_IPK="rootfs"
 
+<<<<<<< HEAD
 	
+=======
+	export INSTALL_ROOTFS_IPK="${IMAGE_ROOTFS}"
+	export INSTALL_CONF_IPK="${IPKGCONF_TARGET}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	export INSTALL_PACKAGES_IPK="${PACKAGE_INSTALL}"
 
 	#post install
@@ -74,6 +105,8 @@ fakeroot rootfs_ipk_do_rootfs () {
 
 	package_install_internal_ipk
 
+	package_install_internal_ipk
+
 	# Distro specific packages should create this
 	#mkdir -p ${IMAGE_ROOTFS}/etc/opkg/
 	#grep "^arch" ${IPKGCONF_TARGET} >${IMAGE_ROOTFS}/etc/opkg/arch.conf
@@ -82,11 +115,22 @@ fakeroot rootfs_ipk_do_rootfs () {
 
 	${OPKG_POSTPROCESS_COMMANDS}
 	${ROOTFS_POSTINSTALL_COMMAND}
+<<<<<<< HEAD
+=======
+	
+	if ${@base_contains("IMAGE_FEATURES", "read-only-rootfs", "true", "false" ,d)}; then
+		if grep Status:.install.ok.unpacked ${STATUS}; then
+			echo "Some packages could not be configured offline and rootfs is read-only."
+			exit 1
+		fi
+	fi
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	install -d ${IMAGE_ROOTFS}/${sysconfdir}
 	echo ${BUILDNAME} > ${IMAGE_ROOTFS}/${sysconfdir}/version
 
 	${ROOTFS_POSTPROCESS_COMMAND}
+<<<<<<< HEAD
 
 	if ${@base_contains("IMAGE_FEATURES", "read-only-rootfs", "true", "false" ,d)}; then
 		if [ -n "$(delayed_postinsts)" ]; then
@@ -110,6 +154,32 @@ save_postinsts () {
 		install -d ${IMAGE_ROOTFS}${sysconfdir}/ipk-postinsts
 		cp ${IMAGE_ROOTFS}${OPKGLIBDIR}/opkg/info/$p.postinst ${IMAGE_ROOTFS}${sysconfdir}/ipk-postinsts/$p
 	done
+=======
+	
+	rm -f ${IMAGE_ROOTFS}${opkglibdir}/lists/*
+	if ${@base_contains("IMAGE_FEATURES", "package-management", "false", "true", d)}; then
+		if ! grep Status:.install.ok.unpacked ${STATUS}; then
+			# All packages were successfully configured.
+			# update-rc.d, base-passwd, run-postinsts are no further use, remove them now
+			remove_run_postinsts=false
+			if [ -e ${IMAGE_ROOTFS}${sysconfdir}/init.d/run-postinsts ]; then
+				remove_run_postinsts=true
+			fi
+			opkg-cl ${IPKG_ARGS} --force-depends remove update-rc.d base-passwd ${ROOTFS_BOOTSTRAP_INSTALL} || true
+
+			# Need to remove rc.d files for run-postinsts by hand since opkg won't
+			# call postrm scripts in offline root mode.
+			if $remove_run_postinsts; then
+				update-rc.d -f -r ${IMAGE_ROOTFS} run-postinsts remove
+			fi
+
+			# Also delete the status files
+			remove_packaging_data_files
+		fi
+	fi
+	set +x
+	log_check rootfs
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 rootfs_ipk_write_manifest() {
@@ -127,6 +197,7 @@ rootfs_ipk_write_manifest() {
 }
 
 remove_packaging_data_files() {
+<<<<<<< HEAD
 	rm -rf ${IMAGE_ROOTFS}${OPKGLIBDIR}/opkg
 	# We need the directory for the package manager lock
 	mkdir ${IMAGE_ROOTFS}${OPKGLIBDIR}/opkg
@@ -138,6 +209,37 @@ rootfs_install_packages() {
 
 rootfs_uninstall_packages() {
 	opkg-cl ${OPKG_ARGS} --force-depends remove $@
+=======
+	rm -rf ${IMAGE_ROOTFS}${opkglibdir}
+	# We need the directory for the package manager lock
+	mkdir ${IMAGE_ROOTFS}${opkglibdir}
+}
+
+list_installed_packages() {
+	if [ "$1" = "arch" ] ; then
+		opkg-cl ${IPKG_ARGS_POST} status | opkg-query-helper.py -a
+	elif [ "$1" = "file" ] ; then
+		opkg-cl ${IPKG_ARGS_POST} status | opkg-query-helper.py -f | while read pkg pkgfile
+		do
+			fullpath=`find ${DEPLOY_DIR_IPK} -name "$pkgfile" || true`
+			if [ "$fullpath" = "" ] ; then
+				echo "$pkg $pkgfile"
+			else
+				echo "$pkg $fullpath"
+			fi
+		done
+	else
+		opkg-cl ${IPKG_ARGS_POST} list_installed | awk '{ print $1 }'
+	fi
+}
+
+rootfs_list_installed_depends() {
+	opkg-cl ${IPKG_ARGS_POST} status | opkg-query-helper.py
+}
+
+rootfs_install_packages() {
+	opkg-cl ${IPKG_ARGS_POST} install `cat $1`
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 ipk_insert_feed_uris () {

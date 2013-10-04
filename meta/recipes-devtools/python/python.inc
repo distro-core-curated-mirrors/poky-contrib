@@ -19,7 +19,11 @@ inherit autotools
 PYTHONLSBOPTS = "--with-wctype-functions"
 PYTHONLSBOPTS_linuxstdbase = "ac_cv_sizeof_off_t=8"
 
+<<<<<<< HEAD
 EXTRA_OECONF = "\
+=======
+EXTRA_OECONF_linuxstdbase = "\
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
   --with-threads \
   --with-pymalloc \
   --with-cyclic-gc \

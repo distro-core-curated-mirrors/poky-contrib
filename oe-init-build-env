@@ -30,8 +30,11 @@ if [ -z "$ZSH_NAME" ] && [ "x$0" = "x./oe-init-build-env" ]; then
 else
    if [ -n "$BASH_SOURCE" ]; then
       OEROOT="`dirname $BASH_SOURCE`"
+<<<<<<< HEAD
    elif [ -n "$ZSH_NAME" ]; then
       OEROOT="`dirname $0`"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
    else
       OEROOT="`pwd`"
    fi

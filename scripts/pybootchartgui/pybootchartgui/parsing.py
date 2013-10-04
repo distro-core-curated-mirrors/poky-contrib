@@ -170,7 +170,11 @@ class ParserState:
 
 _relevant_files = set(["header", "proc_diskstats.log", "proc_ps.log", "proc_stat.log"])
 
+<<<<<<< HEAD
 def _do_parse(state, filename, file, mintime):
+=======
+def _do_parse(state, filename, file):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     #print filename
     #writer.status("parsing '%s'" % filename)
     paths = filename.split("/")
@@ -183,6 +187,7 @@ def _do_parse(state, filename, file, mintime):
             start = int(float(line.split()[-1]))
         elif line.startswith("Ended:"):
             end = int(float(line.split()[-1]))
+<<<<<<< HEAD
     if start and end and (end - start) >= mintime:
         k = pn + ":" + task
         state.processes[pn + ":" + task] = [start, end]
@@ -202,6 +207,20 @@ def parse_file(state, filename, mintime):
         return _do_parse(state, filename, file, mintime)
 
 def parse_paths(state, paths, mintime):
+=======
+    if start and end and (end - start) > 8:
+        state.processes[pn + ":" + task] = [start, end]
+        state.start[start] = pn + ":" + task
+        state.end[end] = pn + ":" + task
+    return state
+
+def parse_file(state, filename):
+    basename = os.path.basename(filename)
+    with open(filename, "rb") as file:
+        return _do_parse(state, filename, file)
+
+def parse_paths(state, paths):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     for path in paths:
         root,extension = os.path.splitext(path)
         if not(os.path.exists(path)):
@@ -210,7 +229,11 @@ def parse_paths(state, paths, mintime):
         if os.path.isdir(path):
             files = [ f for f in [os.path.join(path, f) for f in os.listdir(path)] ]
             files.sort()
+<<<<<<< HEAD
             state = parse_paths(state, files, mintime)
+=======
+            state = parse_paths(state, files)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         elif extension in [".tar", ".tgz", ".tar.gz"]:
             tf = None
             try:
@@ -223,11 +246,19 @@ def parse_paths(state, paths, mintime):
                 if tf != None:
                     tf.close()
         else:
+<<<<<<< HEAD
             state = parse_file(state, path, mintime)
     return state
 
 def parse(paths, prune, mintime):   
     state = parse_paths(ParserState(), paths, mintime)
+=======
+            state = parse_file(state, path)
+    return state
+
+def parse(paths, prune):   
+    state = parse_paths(ParserState(), paths)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     if not state.valid():
         raise ParseError("empty state: '%s' does not contain a valid bootchart" % ", ".join(paths))
     #monitored_app = state.headers.get("profile.process")
@@ -255,6 +286,7 @@ def split_res(res, n):
                 #state.processes[pn + ":" + task] = [start, end]
                 #state.start[start] = pn + ":" + task
                 #state.end[end] = pn + ":" + task
+<<<<<<< HEAD
                 for p in res.start[s_list[i]]:
                     s = s_list[i]
                     e = res.processes[p][1]
@@ -267,6 +299,14 @@ def split_res(res, n):
                         state.end[e] = []
                     if p not in state.end[e]:
                         state.end[e].append(p)
+=======
+                p = res.start[s_list[i]]
+                s = s_list[i]
+                e = res.processes[p][1]
+                state.processes[p] = [s, e]
+                state.start[s] = p
+                state.end[e] = p
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             start = end
             end = end + frag_size
             if end > len(s_list):

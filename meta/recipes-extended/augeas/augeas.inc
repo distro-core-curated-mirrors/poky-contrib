@@ -5,9 +5,14 @@ BUGTRACKER = "https://fedorahosted.org/augeas/report/1"
 LICENSE = "LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=bbb461211a33b134d42ed5ee802b37ff"
 
+<<<<<<< HEAD
 SRC_URI = "http://download.augeas.net/${BP}.tar.gz \
            file://add-missing-argz-conditional.patch \
            file://sepbuildfix.patch \
+=======
+SRC_URI = "http://augeas.net/download/${BP}.tar.gz \
+           file://0001-Add-missing-argument-to-escape.patch \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
           "
 
 DEPENDS = "readline libxml2"

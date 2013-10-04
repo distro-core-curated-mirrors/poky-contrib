@@ -22,8 +22,11 @@ S = "${WORKDIR}/libiconv-${PV}"
 inherit autotools pkgconfig gettext
 
 python __anonymous() {
+<<<<<<< HEAD
     if d.getVar("TARGET_OS", True) != "linux":
         return
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     if d.getVar("TCLIBC", True) == "eglibc":
         raise bb.parse.SkipPackage("libiconv is provided for use with uClibc only - eglibc already provides iconv")
 }
@@ -36,15 +39,21 @@ do_configure_prepend () {
 	rm -f m4/libtool.m4 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4 m4/lt~obsolete.m4 libcharset/m4/libtool.m4 libcharset/m4/ltoptions.m4 libcharset/m4/ltsugar.m4 libcharset/m4/ltversion.m4 libcharset/m4/lt~obsolete.m4
 }
 
+<<<<<<< HEAD
 do_configure_append () {
         # forcibly remove RPATH from libtool
         sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' *libtool
         sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=_NO_RPATH_|g' *libtool
 }
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_install_append () {
 	rm -rf ${D}${libdir}/preloadable_libiconv.so
 	rm -rf ${D}${libdir}/charset.alias
 }
+<<<<<<< HEAD
 
 BBCLASSEXTEND = "nativesdk"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

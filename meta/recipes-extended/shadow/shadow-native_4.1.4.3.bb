@@ -5,7 +5,11 @@ BUGTRACKER = "https://alioth.debian.org/tracker/?group_id=30580"
 SECTION = "base utils"
 LICENSE = "BSD | Artistic-1.0"
 LIC_FILES_CHKSUM = "file://COPYING;md5=08c553a87d4e51bbed50b20e0adcaede \
+<<<<<<< HEAD
                     file://src/passwd.c;beginline=8;endline=30;md5=d83888ea14ae61951982d77125947661"
+=======
+                    file://src/passwd.c;firstline=8;endline=30;md5=2899a045e90511d0e043b85a7db7e2fe"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 PR = "r8"
 
@@ -17,7 +21,10 @@ SRC_URI = "http://pkg-shadow.alioth.debian.org/releases/${BPN}-${PV}.tar.bz2 \
            file://disable-syslog.patch \
            file://useradd.patch \
            file://shadow_fix_for_automake-1.12.patch \
+<<<<<<< HEAD
            file://add_root_cmd_groupmems.patch \
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            "
 
 SRC_URI[md5sum] = "b8608d8294ac88974f27b20f991c0e79"

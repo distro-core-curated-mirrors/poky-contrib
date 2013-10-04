@@ -5,15 +5,23 @@ python multilib_virtclass_handler_global () {
     if isinstance(e, bb.event.RecipePreFinalise):
         for v in e.data.getVar("MULTILIB_VARIANTS", True).split():
             if e.data.getVar("TARGET_VENDOR_virtclass-multilib-" + v, False) is None:
+<<<<<<< HEAD
                 e.data.setVar("TARGET_VENDOR_virtclass-multilib-" + v, e.data.getVar("TARGET_VENDOR", False) + "ml" + v)
+=======
+	       e.data.setVar("TARGET_VENDOR_virtclass-multilib-" + v, e.data.getVar("TARGET_VENDOR", False) + "ml" + v)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     variant = e.data.getVar("BBEXTENDVARIANT", True)
 
     if isinstance(e, bb.event.RecipeParsed) and not variant:
+<<<<<<< HEAD
         if bb.data.inherits_class('kernel', e.data) or \
             bb.data.inherits_class('module-base', e.data) or \
             (bb.data.inherits_class('allarch', e.data) and\
              not bb.data.inherits_class('packagegroup', e.data)):
+=======
+        if bb.data.inherits_class('kernel', e.data) or bb.data.inherits_class('module-base', e.data):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             variants = (e.data.getVar("MULTILIB_VARIANTS", True) or "").split()
 
             import oe.classextend
@@ -43,5 +51,8 @@ python multilib_virtclass_handler_global () {
 }
 
 addhandler multilib_virtclass_handler_global
+<<<<<<< HEAD
 multilib_virtclass_handler_global[eventmask] = "bb.event.RecipePreFinalise bb.event.RecipeParsed"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 

@@ -1,6 +1,7 @@
 Upstream-Status: Inappropriate [configuration]
 
 Signed-off-by: Xiaofeng Yan <xiaofeng.yan@windriver.com>
+<<<<<<< HEAD
 Signed-off-by: Saul Wold <sgw@linux.intel.com>
 
 Index: initscripts-9.43/rc.d/init.d/functions
@@ -24,3 +25,16 @@ Index: initscripts-9.43/rc.d/init.d/functions
      CONSOLETYPE="$(/sbin/consoletype < /dev/stderr 2>/dev/null)"
    else
      CONSOLETYPE="serial"
+=======
+--- a/rc.d/init.d/functions	2009-12-10 05:24:11.000000000 +0800
++++ b/rc.d/init.d/functions.new	2012-06-01 16:57:12.651229387 +0800
+@@ -16,7 +16,7 @@
+ # Get a sane screen width
+ [ -z "${COLUMNS:-}" ] && COLUMNS=80
+ 
+-[ -z "${CONSOLETYPE:-}" ] && CONSOLETYPE="$(/sbin/consoletype)"
++[ -z "${CONSOLETYPE:-}" ] && [ -e /sbin/consoletype ] && CONSOLETYPE="$(/sbin/consoletype)"
+ 
+ if [ -f /etc/sysconfig/i18n -a -z "${NOLOCALE:-}" -a -z "${LANGSH_SOURCED:-}" ] ; then
+   . /etc/profile.d/lang.sh 2>/dev/null
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

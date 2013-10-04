@@ -8,8 +8,17 @@ POPULATE_SDK_POST_TARGET_COMMAND += "rootfs_install_complementary populate_sdk; 
 
 inherit gzipnative
 
+inherit populate_sdk_base
+
+TOOLCHAIN_TARGET_TASK += "${PACKAGE_INSTALL}"
+TOOLCHAIN_TARGET_TASK_ATTEMPTONLY += "${PACKAGE_INSTALL_ATTEMPTONLY}"
+POPULATE_SDK_POST_TARGET_COMMAND += "rootfs_install_complementary populate_sdk; "
+
+inherit gzipnative
+
 LICENSE = "MIT"
 PACKAGES = ""
+<<<<<<< HEAD
 DEPENDS += "${MLPREFIX}qemuwrapper-cross ${MLPREFIX}depmodwrapper-cross"
 RDEPENDS += "${PACKAGE_INSTALL} ${LINGUAS_INSTALL}"
 RRECOMMENDS += "${PACKAGE_INSTALL_ATTEMPTONLY}"
@@ -23,6 +32,16 @@ inherit ${TESTIMAGECLASS}
 IMAGE_FEATURES ?= ""
 IMAGE_FEATURES[type] = "list"
 IMAGE_FEATURES[validitems] += "debug-tweaks read-only-rootfs package-management"
+=======
+RDEPENDS += "${IMAGE_INSTALL} ${LINGUAS_INSTALL} ${NORMAL_FEATURE_INSTALL} ${ROOTFS_BOOTSTRAP_INSTALL}"
+RRECOMMENDS += "${NORMAL_FEATURE_INSTALL_OPTIONAL}"
+
+INHIBIT_DEFAULT_DEPS = "1"
+
+# IMAGE_FEATURES may contain any available package group
+IMAGE_FEATURES ?= ""
+IMAGE_FEATURES[type] = "list"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # rootfs bootstrap install
 ROOTFS_BOOTSTRAP_INSTALL = "${@base_contains("IMAGE_FEATURES", "package-management", "", "${ROOTFS_PKGMANAGE_BOOTSTRAP}",d)}"
@@ -31,12 +50,26 @@ ROOTFS_BOOTSTRAP_INSTALL = "${@base_contains("IMAGE_FEATURES", "package-manageme
 FEATURE_INSTALL = "${@' '.join(oe.packagegroup.required_packages(oe.data.typed_value('IMAGE_FEATURES', d), d))}"
 FEATURE_INSTALL_OPTIONAL = "${@' '.join(oe.packagegroup.optional_packages(oe.data.typed_value('IMAGE_FEATURES', d), d))}"
 
+<<<<<<< HEAD
+=======
+# packages to install from features, excluding dev/dbg/doc
+NORMAL_FEATURE_INSTALL = "${@' '.join(oe.packagegroup.required_packages(normal_groups(d), d))}"
+NORMAL_FEATURE_INSTALL_OPTIONAL = "${@' '.join(oe.packagegroup.optional_packages(normal_groups(d), d))}"
+
+def normal_groups(d):
+    """Return all the IMAGE_FEATURES, with the exception of our special package groups"""
+    extras = set(['dev-pkgs', 'staticdev-pkgs', 'doc-pkgs', 'dbg-pkgs'])
+    features = set(oe.data.typed_value('IMAGE_FEATURES', d))
+    return features.difference(extras)
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # Define some very basic feature package groups
 SPLASH ?= "psplash"
 PACKAGE_GROUP_splash = "${SPLASH}"
 
 # Wildcards specifying complementary packages to install for every package that has been explicitly
 # installed into the rootfs
+<<<<<<< HEAD
 COMPLEMENTARY_GLOB[dev-pkgs] = '*-dev'
 COMPLEMENTARY_GLOB[staticdev-pkgs] = '*-staticdev'
 COMPLEMENTARY_GLOB[doc-pkgs] = '*-doc'
@@ -50,12 +83,27 @@ def complementary_globs(featurevar, d):
     for name, glob in all_globs.items():
         if name in features:
             globs.append(glob)
+=======
+def complementary_globs(featurevar, d):
+    globs = []
+    features = set((d.getVar(featurevar, True) or '').split())
+    for feature in features:
+        if feature == 'dev-pkgs':
+            globs.append('*-dev')
+        elif feature == 'staticdev-pkgs':
+            globs.append('*-staticdev')
+        elif feature == 'doc-pkgs':
+            globs.append('*-doc')
+        elif feature == 'dbg-pkgs':
+            globs.append('*-dbg')
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     return ' '.join(globs)
 
 IMAGE_INSTALL_COMPLEMENTARY = '${@complementary_globs("IMAGE_FEATURES", d)}'
 SDKIMAGE_FEATURES ??= "dev-pkgs dbg-pkgs"
 SDKIMAGE_INSTALL_COMPLEMENTARY = '${@complementary_globs("SDKIMAGE_FEATURES", d)}'
 
+<<<<<<< HEAD
 def check_image_features(d):
     valid_features = (d.getVarFlag('IMAGE_FEATURES', 'validitems', True) or "").split()
     valid_features += d.getVarFlags('COMPLEMENTARY_GLOB').keys()
@@ -71,6 +119,12 @@ def check_image_features(d):
 
 IMAGE_INSTALL ?= ""
 IMAGE_INSTALL[type] = "list"
+=======
+# "export IMAGE_BASENAME" not supported at this time
+IMAGE_INSTALL ?= ""
+IMAGE_INSTALL[type] = "list"
+IMAGE_BASENAME[export] = "1"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 export PACKAGE_INSTALL ?= "${IMAGE_INSTALL} ${ROOTFS_BOOTSTRAP_INSTALL} ${FEATURE_INSTALL}"
 PACKAGE_INSTALL_ATTEMPTONLY ?= "${FEATURE_INSTALL_OPTIONAL}"
 
@@ -88,7 +142,10 @@ LDCONFIGDEPEND_libc-uclibc = ""
 
 do_rootfs[depends] += "makedevs-native:do_populate_sysroot virtual/fakeroot-native:do_populate_sysroot ${LDCONFIGDEPEND}"
 do_rootfs[depends] += "virtual/update-alternatives-native:do_populate_sysroot update-rc.d-native:do_populate_sysroot"
+<<<<<<< HEAD
 do_rootfs[recrdeptask] += "do_packagedata"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 IMAGE_TYPE_live = '${@base_contains("IMAGE_FSTYPES", "live", "live", "empty", d)}'
 inherit image-${IMAGE_TYPE_live}
@@ -98,6 +155,7 @@ inherit image-${IMAGE_TYPE_vmdk}
 python () {
     deps = " " + imagetypes_getdepends(d)
     d.appendVarFlag('do_rootfs', 'depends', deps)
+<<<<<<< HEAD
 
     deps = ""
     for dep in (d.getVar('EXTRA_IMAGEDEPENDS', True) or "").split():
@@ -137,7 +195,44 @@ python () {
     if initramfs_image != "":
         d.appendVarFlag('do_build', 'depends', " %s:do_bundle_initramfs" %  d.getVar('PN', True))
         d.appendVarFlag('do_bundle_initramfs', 'depends', " %s:do_rootfs" % initramfs_image)
+=======
+
+    deps = ""
+    for dep in (d.getVar('EXTRA_IMAGEDEPENDS', True) or "").split():
+        deps += " %s:do_populate_sysroot" % dep
+    d.appendVarFlag('do_build', 'depends', deps)
+
+    #process IMAGE_FEATURES, we must do this before runtime_mapping_rename
+    #Check for replaces image features
+    features = set(oe.data.typed_value('IMAGE_FEATURES', d))
+    remain_features = features.copy()
+    for feature in features:
+        replaces = set((d.getVar("IMAGE_FEATURES_REPLACES_%s" % feature, True) or "").split())
+        remain_features -= replaces
+
+    #Check for conflict image features
+    for feature in remain_features:
+        conflicts = set((d.getVar("IMAGE_FEATURES_CONFLICTS_%s" % feature, True) or "").split())
+        temp = conflicts & remain_features
+        if temp:
+            bb.fatal("%s contains conflicting IMAGE_FEATURES %s %s" % (d.getVar('PN', True), feature, ' '.join(list(temp))))
+
+    d.setVar('IMAGE_FEATURES', ' '.join(list(remain_features)))
 }
+
+python image_handler () {
+    if not isinstance(e, bb.event.RecipeParsed):
+        return
+
+    # If we don't do this we try and run the mapping hooks while parsing which is slow
+    # bitbake should really provide something to let us know this...
+    if e.data.getVar('BB_WORKERCONTEXT', True) is not None:
+        runtime_mapping_rename("PACKAGE_INSTALL", e.data)
+        runtime_mapping_rename("PACKAGE_INSTALL_ATTEMPTONLY", e.data)
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
+}
+addhandler image_handler
 
 #
 # Get a list of files containing device tables to create.
@@ -156,7 +251,11 @@ def get_devtable_list(d):
     if devtables == None:
         devtables = 'files/device_table-minimal.txt'
     for devtable in devtables.split():
+<<<<<<< HEAD
         str += " %s" % bb.utils.which(d.getVar('BBPATH', True), devtable)
+=======
+        str += " %s" % bb.which(d.getVar('BBPATH', True), devtable)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     return str
 
 IMAGE_CLASSES ?= "image_types"
@@ -181,12 +280,18 @@ PSEUDO_PASSWD = "${IMAGE_ROOTFS}"
 
 do_rootfs[dirs] = "${TOPDIR} ${WORKDIR}/intercept_scripts"
 do_rootfs[lockfiles] += "${IMAGE_ROOTFS}.lock"
+<<<<<<< HEAD
 do_rootfs[cleandirs] += "${S} ${WORKDIR}/intercept_scripts"
+=======
+do_rootfs[cleandirs] += "${S}"
+do_build[nostamp] = "1"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Must call real_do_rootfs() from inside here, rather than as a separate
 # task, so that we have a single fakeroot context for the whole process.
 do_rootfs[umask] = "022"
 
+<<<<<<< HEAD
 
 run_intercept_scriptlets () {
 	if [ -d ${WORKDIR}/intercept_scripts ]; then
@@ -310,6 +415,8 @@ python rootfs_runtime_mapping() {
 }
 do_rootfs[prefuncs] += "rootfs_runtime_mapping"
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 fakeroot do_rootfs () {
 	#set -x
 	# When use the rpm incremental image generation, don't remove the rootfs
@@ -328,12 +435,18 @@ fakeroot do_rootfs () {
 
 	cp ${COREBASE}/meta/files/deploydir_readme.txt ${DEPLOY_DIR_IMAGE}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt || true
 
+<<<<<<< HEAD
 	# copy the intercept scripts
 	cp ${COREBASE}/scripts/postinst-intercepts/* ${WORKDIR}/intercept_scripts/
 
 	rootfs_${IMAGE_PKGTYPE}_do_rootfs
 
 	if [ "${USE_DEVFS}" != "1" ]; then
+=======
+	# If "${IMAGE_ROOTFS}/dev" exists, then the device had been made by
+	# the previous build
+	if [ "${USE_DEVFS}" != "1" -a ! -r "${IMAGE_ROOTFS}/dev" ]; then
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 		for devtable in ${@get_devtable_list(d)}; do
 			# Always return ture since there maybe already one when use the
 			# incremental image generation
@@ -361,7 +474,11 @@ fakeroot do_rootfs () {
 		KERNEL_VERSION=`cat ${STAGING_KERNEL_DIR}/kernel-abiversion`
 
 		mkdir -p ${IMAGE_ROOTFS}/lib/modules/$KERNEL_VERSION
+<<<<<<< HEAD
 		depmodwrapper -a -b ${IMAGE_ROOTFS} $KERNEL_VERSION
+=======
+		depmod -a -b ${IMAGE_ROOTFS} -F ${STAGING_KERNEL_DIR}/System.map-$KERNEL_VERSION $KERNEL_VERSION
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	fi
 
 	${IMAGE_PREPROCESS_COMMAND}
@@ -429,7 +546,11 @@ for dir in dirs.split():
       key=str(os.path.join("/",os.path.relpath(item,dir)))
 
       valid=True;
+<<<<<<< HEAD
       if key in files:
+=======
+      if files.has_key(key):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         #check whether the file is allow to replace
         if allow_rep.match(key):
           valid=True
@@ -457,6 +578,7 @@ get_split_linguas() {
         echo ${translation_split}
     done | sort | uniq
 }
+<<<<<<< HEAD
 
 rootfs_install_complementary() {
     # Install complementary packages based upon the list of currently installed packages
@@ -534,6 +656,52 @@ rootfs_uninstall_unneeded () {
 	fi
 }
 
+=======
+
+rootfs_install_complementary() {
+    # Install complementary packages based upon the list of currently installed packages
+    # e.g. locales, *-dev, *-dbg, etc. This will only attempt to install these packages,
+    # if they don't exist then no error will occur.
+    # Note: every backend needs to call this function explicitly after the normal
+    # package installation
+
+    # Get list of installed packages
+    list_installed_packages arch > ${WORKDIR}/installed_pkgs.txt
+
+    # Apply the globs to all the packages currently installed
+    if [ -n "$1" -a "$1" = "populate_sdk" ] ; then
+        GLOBS="${SDKIMAGE_INSTALL_COMPLEMENTARY}"
+    elif [ -n "$1" ]; then
+        GLOBS="$@"
+    else
+        GLOBS="${IMAGE_INSTALL_COMPLEMENTARY}"
+        # Add locales
+        SPLIT_LINGUAS=`get_split_linguas`
+        PACKAGES_TO_INSTALL=""
+        for lang in $SPLIT_LINGUAS ; do
+            GLOBS="$GLOBS *-locale-$lang"
+        done
+    fi
+
+    if [ "$GLOBS" != "" ] ; then
+        # Use the magic script to do all the work for us :)
+        oe-pkgdata-util glob ${TMPDIR}/pkgdata ${TARGET_VENDOR}-${TARGET_OS} ${WORKDIR}/installed_pkgs.txt "$GLOBS" > ${WORKDIR}/complementary_pkgs.txt
+
+        # Install the packages, if any
+        sed -i '/^$/d' ${WORKDIR}/complementary_pkgs.txt
+        if [ -s ${WORKDIR}/complementary_pkgs.txt ]; then
+            echo "Installing complementary packages"
+            rootfs_install_packages ${WORKDIR}/complementary_pkgs.txt
+        fi
+    fi
+
+    # Workaround for broken shell function dependencies
+    if false ; then
+        get_split_linguas
+    fi
+}
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # set '*' as the root password so the images
 # can decide if they want it or not
 zap_root_password () {
@@ -541,12 +709,18 @@ zap_root_password () {
 	mv ${IMAGE_ROOTFS}/etc/passwd.new ${IMAGE_ROOTFS}/etc/passwd
 } 
 
+<<<<<<< HEAD
 # allow dropbear/openssh to accept root logins and logins from accounts with an empty password string
 ssh_allow_empty_password () {
+=======
+# allow openssh accept login with empty password string
+openssh_allow_empty_password () {
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	if [ -e ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config ]; then
 		sed -i 's#.*PermitRootLogin.*#PermitRootLogin yes#' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
 		sed -i 's#.*PermitEmptyPasswords.*#PermitEmptyPasswords yes#' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
 	fi
+<<<<<<< HEAD
 
 	if [ -e ${IMAGE_ROOTFS}${sbindir}/dropbear ] ; then
 		if grep -q DROPBEAR_EXTRA_ARGS ${IMAGE_ROOTFS}${sysconfdir}/default/dropbear 2>/dev/null ; then
@@ -564,6 +738,8 @@ postinst_enable_logging () {
 	mkdir -p ${IMAGE_ROOTFS}${sysconfdir}/default
 	echo "POSTINST_LOGGING=1" >> ${IMAGE_ROOTFS}${sysconfdir}/default/postinst
 	echo "LOGFILE=${POSTINST_LOGFILE}" >> ${IMAGE_ROOTFS}${sysconfdir}/default/postinst
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 # Turn any symbolic /sbin/init link into a file
@@ -620,11 +796,14 @@ rootfs_trim_schemas () {
 	done
 }
 
+<<<<<<< HEAD
 # Make any absolute links in a sysroot relative
 rootfs_sysroot_relativelinks () {
 	sysroot-relativelinks.py ${SDK_OUTPUT}/${SDKTARGETSYSROOT}
 }
 
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 EXPORT_FUNCTIONS zap_root_password remove_init_link do_rootfs make_zimage_symlink_relative set_image_autologin rootfs_update_timestamp rootfs_no_x_startup
 
 do_fetch[noexec] = "1"
@@ -635,12 +814,16 @@ do_compile[noexec] = "1"
 do_install[noexec] = "1"
 do_populate_sysroot[noexec] = "1"
 do_package[noexec] = "1"
+<<<<<<< HEAD
 do_packagedata[noexec] = "1"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 do_package_write_ipk[noexec] = "1"
 do_package_write_deb[noexec] = "1"
 do_package_write_rpm[noexec] = "1"
 
 addtask rootfs before do_build
+<<<<<<< HEAD
 # Allow the kernel to be repacked with the initramfs and boot image file as a single file
 do_bundle_initramfs[depends] += "virtual/kernel:do_bundle_initramfs"
 do_bundle_initramfs[nostamp] = "1"
@@ -649,3 +832,5 @@ do_bundle_initramfs () {
 	:
 }
 addtask bundle_initramfs after do_rootfs
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc

@@ -1,5 +1,6 @@
 include eglibc-collateral.inc
 
+<<<<<<< HEAD
 SUMMARY = "Locale data from eglibc"
 
 BPN = "eglibc"
@@ -9,6 +10,10 @@ LOCALEBASEPN = "${MLPREFIX}eglibc"
 # ERROR: objcopy failed with exit code 127 (cmd was 'i586-webos-linux-objcopy' --only-keep-debug 'eglibc-locale/2.17-r0/package/usr/lib/gconv/IBM1166.so' 'eglibc-locale/2.17-r0/package/usr/lib/gconv/.debug/IBM1166.so')
 # ERROR: Function failed: split_and_strip_files
 DEPENDS_class-target = "virtual/${TARGET_PREFIX}binutils"
+=======
+BPN = "eglibc"
+LOCALEBASEPN = "eglibc"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Binary locales are generated at build time if ENABLE_BINARY_LOCALE_GENERATION
 # is set. The idea is to avoid running localedef on the target (at first boot)
@@ -27,6 +32,11 @@ BINARY_LOCALE_ARCHES ?= "arm.* i[3-6]86 x86_64 powerpc mips mips64"
 # set "0" for qemu emulation of native localedef for locale generation
 LOCALE_GENERATION_WITH_CROSS-LOCALEDEF = "1"
 
+<<<<<<< HEAD
+=======
+PR = "r22"
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PROVIDES = "virtual/libc-locale"
 
 PACKAGES = "localedef ${PN}-dbg"
@@ -83,7 +93,10 @@ do_install () {
 	if [ -e ${LOCALETREESRC}/${datadir}/locale ]; then
 		cp -fpPR ${LOCALETREESRC}/${datadir}/locale ${D}${datadir}
 	fi
+<<<<<<< HEAD
 	chown root.root -R ${D}
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	cp -fpPR ${LOCALETREESRC}/SUPPORTED ${WORKDIR}
 }
 

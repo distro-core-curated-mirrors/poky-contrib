@@ -1,7 +1,12 @@
 SSTATE_VERSION = "3"
 
 SSTATE_MANIFESTS ?= "${TMPDIR}/sstate-control"
+<<<<<<< HEAD
 SSTATE_MANFILEPREFIX = "${SSTATE_MANIFESTS}/manifest-${SSTATE_MANMACH}-${PN}"
+=======
+SSTATE_MANFILEBASE = "${SSTATE_MANIFESTS}/manifest-${SSTATE_MANMACH}-"
+SSTATE_MANFILEPREFIX = "${SSTATE_MANFILEBASE}${PN}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 def generate_sstatefn(spec, hash, d):
     if not hash:
@@ -20,6 +25,11 @@ SSTATE_DUPWHITELIST = "${DEPLOY_DIR_IMAGE}/ ${DEPLOY_DIR}/licenses/"
 # Also need to make cross recipes append to ${PN} and install once for any given PACAGE_ARCH so
 # can avoid multiple installs (e.g. routerstationpro+qemumips both using mips32)
 SSTATE_DUPWHITELIST += "${STAGING_LIBDIR_NATIVE}/${MULTIMACH_TARGET_SYS} ${STAGING_DIR_NATIVE}/usr/libexec/${MULTIMACH_TARGET_SYS} ${STAGING_BINDIR_NATIVE}/${MULTIMACH_TARGET_SYS} ${STAGING_DIR_NATIVE}${includedir_native}/gcc-build-internal-${MULTIMACH_TARGET_SYS}"
+<<<<<<< HEAD
+=======
+# Also avoid python issues until we fix the python recipe
+SSTATE_DUPWHITELIST += "${STAGING_LIBDIR}/python2.7/config/Makefile ${STAGING_LIBDIR}/libpython2.7 ${STAGING_INCDIR}/python2.7/pyconfig.h"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 # Avoid docbook/sgml catalog warnings for now
 SSTATE_DUPWHITELIST += "${STAGING_ETCDIR_NATIVE}/sgml ${STAGING_DATADIR_NATIVE}/sgml"
 
@@ -51,7 +61,11 @@ python () {
         d.setVar('SSTATE_PKGARCH', d.expand("${SDK_ARCH}"))
     elif bb.data.inherits_class('cross-canadian', d):
         d.setVar('SSTATE_PKGARCH', d.expand("${SDK_ARCH}_${PACKAGE_ARCH}"))
+<<<<<<< HEAD
     elif bb.data.inherits_class('allarch', d) and d.getVar("PACKAGE_ARCH", True) == "all":
+=======
+    elif bb.data.inherits_class('allarch', d):
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         d.setVar('SSTATE_PKGARCH', "allarch")
     else:
         d.setVar('SSTATE_MANMACH', d.expand("${PACKAGE_ARCH}"))
@@ -129,6 +143,7 @@ def sstate_install(ss, d):
 
     sharedfiles = []
     shareddirs = []
+<<<<<<< HEAD
     bb.utils.mkdirhier(d.expand("${SSTATE_MANIFESTS}"))
 
     d2 = d.createCopy()
@@ -136,6 +151,13 @@ def sstate_install(ss, d):
     if extrainf:
         d2.setVar("SSTATE_MANMACH", extrainf)
     manifest = d2.expand("${SSTATE_MANFILEPREFIX}.%s" % ss['name'])
+=======
+    bb.mkdirhier(d.expand("${SSTATE_MANIFESTS}"))
+    manifest = d.expand("${SSTATE_MANFILEPREFIX}.%s" % ss['name'])
+    extrainf = d.getVarFlag("do_" + ss['task'], 'stamp-extra-info', True)
+    if extrainf:
+        manifest = manifest + "." + extrainf
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     if os.access(manifest, os.R_OK):
         bb.fatal("Package already staged (%s)?!" % manifest)
@@ -147,8 +169,12 @@ def sstate_install(ss, d):
         locks.append(bb.utils.lockfile(lock))
 
     for state in ss['dirs']:
+<<<<<<< HEAD
         bb.debug(2, "Staging files from %s to %s" % (state[1], state[2]))
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         for walkroot, dirs, files in os.walk(state[1]):
+            bb.debug(2, "Staging files from %s to %s" % (state[1], state[2]))
             for file in files:
                 srcpath = os.path.join(walkroot, file)
                 dstpath = srcpath.replace(state[1], state[2])
@@ -175,12 +201,17 @@ def sstate_install(ss, d):
                     break
             if realmatch:
                 match.append(f)
+<<<<<<< HEAD
                 sstate_search_cmd = "grep -rl '%s' %s --exclude=master.list | sed -e 's:^.*/::' -e 's:\.populate-sysroot::'" % (f, d.expand("${SSTATE_MANIFESTS}"))
                 search_output = subprocess.Popen(sstate_search_cmd, shell=True, stdout=subprocess.PIPE).communicate()[0]
                 if search_output != "":
                     match.append("Matched in %s" % search_output.rstrip())
     if match:
         bb.warn("The recipe %s is trying to install files into a shared area when those files already exist. Those files and their manifest location are:\n   %s\nPlease verify which package should provide the above files." % (d.getVar('PN', True), "\n   ".join(match)))
+=======
+    if match:
+        bb.warn("The recipe %s is trying to install files into a shared area when those files already exist. Those files are:\n   %s" % (d.getVar("PN", True), "\n   ".join(match)))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     # Write out the manifest
     f = open(manifest, "w")
@@ -198,8 +229,12 @@ def sstate_install(ss, d):
 
     # Run the actual file install
     for state in ss['dirs']:
+<<<<<<< HEAD
         if os.path.exists(state[1]):
             oe.path.copyhardlinktree(state[1], state[2])
+=======
+        oe.path.copytree(state[1], state[2])
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     for postinst in (d.getVar('SSTATEPOSTINSTFUNCS', True) or '').split():
         bb.build.exec_func(postinst, d)
@@ -215,7 +250,11 @@ def sstate_installpkg(ss, d):
         # remove dir if it exists, ensure any parent directories do exist
         if os.path.exists(dir):
             oe.path.remove(dir)
+<<<<<<< HEAD
         bb.utils.mkdirhier(dir)
+=======
+        bb.mkdirhier(dir)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         oe.path.remove(dir)
 
     sstateinst = d.expand("${WORKDIR}/sstate-install-%s/" % ss['name'])
@@ -257,6 +296,7 @@ def sstate_installpkg(ss, d):
         else:
             sstate_sed_cmd = "sed -i -e 's:FIXMESTAGINGDIRHOST:%s:g'" % (staging_host)
 
+<<<<<<< HEAD
         extra_staging_fixmes = d.getVar('EXTRA_STAGING_FIXMES', True) or ''
         for fixmevar in extra_staging_fixmes.split():
             fixme_path = d.getVar(fixmevar, True)
@@ -266,6 +306,12 @@ def sstate_installpkg(ss, d):
         sstate_hardcode_cmd = "sed -e 's:^:%s:g' %s | xargs %s" % (sstateinst, fixmefn, sstate_sed_cmd)
 
         bb.note("Replacing fixme paths in sstate package: %s" % (sstate_hardcode_cmd))
+=======
+        # Add sstateinst to each filename in fixmepath, use xargs to efficiently call sed
+        sstate_hardcode_cmd = "sed -e 's:^:%s:g' %s | xargs %s" % (sstateinst, fixmefn, sstate_sed_cmd)
+
+        print "Replacing fixme paths in sstate package: %s" % (sstate_hardcode_cmd)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         subprocess.call(sstate_hardcode_cmd, shell=True)
 
         # Need to remove this or we'd copy it into the target directory and may 
@@ -281,7 +327,11 @@ def sstate_installpkg(ss, d):
         workdir = d.getVar('WORKDIR', True)
         src = sstateinst + "/" + plain.replace(workdir, '')
         dest = plain
+<<<<<<< HEAD
         bb.utils.mkdirhier(src)
+=======
+        bb.mkdirhier(src)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         prepdir(dest)
         os.rename(src, dest)
 
@@ -327,11 +377,18 @@ def sstate_clean_manifest(manifest, d):
 def sstate_clean(ss, d):
     import oe.path
 
+<<<<<<< HEAD
     d2 = d.createCopy()
     extrainf = d.getVarFlag("do_" + ss['task'], 'stamp-extra-info', True)
     if extrainf:
         d2.setVar("SSTATE_MANMACH", extrainf)
     manifest = d2.expand("${SSTATE_MANFILEPREFIX}.%s" % ss['name'])
+=======
+    manifest = d.expand("${SSTATE_MANFILEPREFIX}.%s" % ss['name'])
+    extrainf = d.getVarFlag("do_" + ss['task'], 'stamp-extra-info', True)
+    if extrainf:
+        manifest = manifest + "." + extrainf
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     if os.path.exists(manifest):
         locks = []
@@ -354,6 +411,7 @@ def sstate_clean(ss, d):
     else:
         oe.path.remove(stfile + ".*")
         oe.path.remove(stfile + "_setscene" + ".*")
+<<<<<<< HEAD
 
 CLEANFUNCS += "sstate_cleanall"
 
@@ -395,6 +453,8 @@ def sstate_hardcode_path(d):
     else:
         sstate_grep_cmd = "grep -l -e '%s'" % (staging_host)
         sstate_sed_cmd = "sed -i -e 's:%s:FIXMESTAGINGDIRHOST:g'" % (staging_host)
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     extra_staging_fixmes = d.getVar('EXTRA_STAGING_FIXMES', True) or ''
     for fixmevar in extra_staging_fixmes.split():
@@ -403,28 +463,92 @@ def sstate_hardcode_path(d):
 
     fixmefn =  sstate_builddir + "fixmepath"
 
+<<<<<<< HEAD
+    sstate_scan_cmd = d.getVar('SSTATE_SCAN_CMD', True)
+    sstate_filelist_cmd = "tee %s" % (fixmefn)
+
+    # fixmepath file needs relative paths, drop sstate_builddir prefix
+    sstate_filelist_relative_cmd = "sed -i -e 's:^%s::g' %s" % (sstate_builddir, fixmefn)
+=======
+    bb.note("Removing shared state for package %s" % d.getVar('PN', True))
+
+    manifest_dir = d.getVar('SSTATE_MANIFESTS', True)
+    manifest_prefix = d.getVar("SSTATE_MANFILEPREFIX", True)
+    manifest_pattern = os.path.basename(manifest_prefix) + ".*"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
+
+    xargs_no_empty_run_cmd = '--no-run-if-empty'
+    if platform.system() == 'Darwin':
+        xargs_no_empty_run_cmd = ''
+
+<<<<<<< HEAD
+    # Limit the fixpaths and sed operations based on the initial grep search
+    # This has the side effect of making sure the vfs cache is hot
+    sstate_hardcode_cmd = "%s | xargs %s | %s | xargs %s %s" % (sstate_scan_cmd, sstate_grep_cmd, sstate_filelist_cmd, xargs_no_empty_run_cmd, sstate_sed_cmd)
+
+    bb.note("Removing hardcoded paths from sstate package: '%s'" % (sstate_hardcode_cmd))
+=======
+    for manifest in (os.listdir(manifest_dir)):
+        if fnmatch.fnmatch(manifest, manifest_pattern):
+            name = manifest.replace(manifest_pattern[:-1], "")
+            namemap = d.getVar('SSTATETASKNAMES', True).split()
+            tasks = d.getVar('SSTATETASKS', True).split()
+            if name not in namemap:
+                continue
+            taskname = tasks[namemap.index(name)]
+            shared_state = sstate_state_fromvars(d, taskname[3:])
+            sstate_clean(shared_state, d)
+}
+
+def sstate_hardcode_path(d):
+    import subprocess
+
+    # Need to remove hardcoded paths and fix these when we install the
+    # staging packages.
+    #
+    # Note: the logic in this function needs to match the reverse logic
+    # in sstate_installpkg(ss, d)
+
+    staging = d.getVar('STAGING_DIR', True)
+    staging_target = d.getVar('STAGING_DIR_TARGET', True)
+    staging_host = d.getVar('STAGING_DIR_HOST', True)
+    sstate_builddir = d.getVar('SSTATE_BUILDDIR', True)
+
+    if bb.data.inherits_class('native', d) or bb.data.inherits_class('nativesdk', d) or bb.data.inherits_class('crosssdk', d) or bb.data.inherits_class('cross-canadian', d):
+        sstate_grep_cmd = "grep -l -e '%s'" % (staging)
+        sstate_sed_cmd = "sed -i -e 's:%s:FIXMESTAGINGDIR:g'" % (staging)
+    elif bb.data.inherits_class('cross', d):
+        sstate_grep_cmd = "grep -l -e '(%s|%s)'" % (staging_target, staging)
+        sstate_sed_cmd = "sed -i -e 's:%s:FIXMESTAGINGDIRTARGET:g; s:%s:FIXMESTAGINGDIR:g'" % (staging_target, staging)
+    else:
+        sstate_grep_cmd = "grep -l -e '%s'" % (staging_host)
+        sstate_sed_cmd = "sed -i -e 's:%s:FIXMESTAGINGDIRHOST:g'" % (staging_host)
+    
+    fixmefn =  sstate_builddir + "fixmepath"
+
     sstate_scan_cmd = d.getVar('SSTATE_SCAN_CMD', True)
     sstate_filelist_cmd = "tee %s" % (fixmefn)
 
     # fixmepath file needs relative paths, drop sstate_builddir prefix
     sstate_filelist_relative_cmd = "sed -i -e 's:^%s::g' %s" % (sstate_builddir, fixmefn)
 
-    xargs_no_empty_run_cmd = '--no-run-if-empty'
-    if platform.system() == 'Darwin':
-        xargs_no_empty_run_cmd = ''
-
     # Limit the fixpaths and sed operations based on the initial grep search
     # This has the side effect of making sure the vfs cache is hot
-    sstate_hardcode_cmd = "%s | xargs %s | %s | xargs %s %s" % (sstate_scan_cmd, sstate_grep_cmd, sstate_filelist_cmd, xargs_no_empty_run_cmd, sstate_sed_cmd)
+    sstate_hardcode_cmd = "%s | xargs %s | %s | xargs --no-run-if-empty %s" % (sstate_scan_cmd, sstate_grep_cmd, sstate_filelist_cmd, sstate_sed_cmd)
 
-    bb.note("Removing hardcoded paths from sstate package: '%s'" % (sstate_hardcode_cmd))
+    print "Removing hardcoded paths from sstate package: '%s'" % (sstate_hardcode_cmd)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     subprocess.call(sstate_hardcode_cmd, shell=True)
 
         # If the fixmefn is empty, remove it..
     if os.stat(fixmefn).st_size == 0:
         os.remove(fixmefn)
     else:
+<<<<<<< HEAD
         bb.note("Replacing absolute paths in fixmepath file: '%s'" % (sstate_filelist_relative_cmd))
+=======
+        print "Replacing absolute paths in fixmepath file: '%s'" % (sstate_filelist_relative_cmd)
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         subprocess.call(sstate_filelist_relative_cmd, shell=True)
 
 def sstate_package(ss, d):
@@ -440,6 +564,7 @@ def sstate_package(ss, d):
         if not link.startswith(tmpdir):
             return
 
+<<<<<<< HEAD
         depth = outputpath.rpartition(tmpdir)[2].count('/')
         base = link.partition(tmpdir)[2].strip()
         while depth > 1:
@@ -448,6 +573,15 @@ def sstate_package(ss, d):
         base = "." + base
 
         bb.debug(2, "Replacing absolute path %s with relative path %s for %s" % (link, base, outputpath))
+=======
+        depth = link.rpartition(tmpdir)[2].count('/')
+        base = link.partition(tmpdir)[2].strip()
+        while depth > 1:
+            base = "../" + base
+            depth -= 1
+
+        bb.debug(2, "Replacing absolute path %s with relative path %s" % (link, base))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
         os.remove(path)
         os.symlink(base, path)
 
@@ -455,9 +589,14 @@ def sstate_package(ss, d):
 
     sstatebuild = d.expand("${WORKDIR}/sstate-build-%s/" % ss['name'])
     sstatepkg = d.getVar('SSTATE_PKG', True) + '_'+ ss['name'] + ".tgz"
+<<<<<<< HEAD
     bb.utils.remove(sstatebuild, recurse=True)
     bb.utils.mkdirhier(sstatebuild)
     bb.utils.mkdirhier(os.path.dirname(sstatepkg))
+=======
+    bb.mkdirhier(sstatebuild)
+    bb.mkdirhier(os.path.dirname(sstatepkg))
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     for state in ss['dirs']:
         if not os.path.exists(state[1]):
             continue
@@ -465,6 +604,7 @@ def sstate_package(ss, d):
         for walkroot, dirs, files in os.walk(state[1]):
             for file in files:
                 srcpath = os.path.join(walkroot, file)
+<<<<<<< HEAD
                 dstpath = srcpath.replace(state[1], state[2])
                 make_relative_symlink(srcpath, dstpath, d)
             for dir in dirs:
@@ -473,6 +613,16 @@ def sstate_package(ss, d):
                 make_relative_symlink(srcpath, dstpath, d)
         bb.debug(2, "Preparing tree %s for packaging at %s" % (state[1], sstatebuild + state[0]))
         oe.path.copyhardlinktree(state[1], sstatebuild + state[0])
+=======
+                dstpath = srcpath.replace(state[1], sstatebuild + state[0])
+                make_relative_symlink(srcpath, dstpath, d)
+            for dir in dirs:
+                srcpath = os.path.join(walkroot, dir)
+                dstpath = srcpath.replace(state[1], sstatebuild + state[0])
+                make_relative_symlink(srcpath, dstpath, d)
+        bb.debug(2, "Preparing tree %s for packaging at %s" % (state[1], sstatebuild + state[0]))
+        oe.path.copytree(state[1], sstatebuild + state[0])
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     workdir = d.getVar('WORKDIR', True)
     for plain in ss['plaindirs']:
@@ -503,13 +653,18 @@ def pstaging_fetch(sstatefetch, sstatepkg, d):
     bb.data.update_data(localdata)
 
     dldir = localdata.expand("${SSTATE_DIR}")
+<<<<<<< HEAD
     bb.utils.mkdirhier(dldir)
+=======
+    srcuri = "file://" + sstatefetch
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     localdata.delVar('MIRRORS')
     localdata.delVar('FILESPATH')
     localdata.setVar('DL_DIR', dldir)
     localdata.setVar('PREMIRRORS', mirrors)
 
+<<<<<<< HEAD
     # if BB_NO_NETWORK is set but we also have SSTATE_MIRROR_ALLOW_NETWORK,
     # we'll want to allow network access for the current set of fetches.
     if localdata.getVar('BB_NO_NETWORK', True) == "1" and localdata.getVar('SSTATE_MIRROR_ALLOW_NETWORK', True) == "1":
@@ -523,6 +678,17 @@ def pstaging_fetch(sstatefetch, sstatepkg, d):
         try:
             fetcher = bb.fetch2.Fetch([srcuri], localdata, cache=False)
             fetcher.download()
+=======
+    localdata.setVar('DL_DIR', dldir)
+    localdata.setVar('PREMIRRORS', mirrors)
+    localdata.setVar('SRC_URI', srcuri)
+
+    # Try a fetch from the sstate mirror, if it fails just return and
+    # we will build the package
+    try:
+        fetcher = bb.fetch2.Fetch([srcuri], localdata, cache=False)
+        fetcher.download()        
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
             # Need to optimise this, if using file:// urls, the fetcher just changes the local path
             # For now work around by symlinking
@@ -566,12 +732,20 @@ sstate_create_package () {
 	TFILE=`mktemp ${SSTATE_PKG}.XXXXXXXX`
 	# Need to handle empty directories
 	if [ "$(ls -A)" ]; then
+<<<<<<< HEAD
 		tar --ignore-failed-read -czf $TFILE *
+=======
+		tar -czf $TFILE *
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 	else
 		tar -cz --file=$TFILE --files-from=/dev/null
 	fi
 	chmod 0664 $TFILE 
+<<<<<<< HEAD
 	mv -f $TFILE ${SSTATE_PKG}
+=======
+	mv $TFILE ${SSTATE_PKG}
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 	cd ${WORKDIR}
 	rm -rf ${SSTATE_BUILDDIR}
@@ -624,11 +798,14 @@ def sstate_checkhashes(sq_fn, sq_task, sq_hash, sq_hashfn, d):
         localdata.setVar('PREMIRRORS', mirrors)
 
         bb.debug(2, "SState using premirror of: %s" % mirrors)
+<<<<<<< HEAD
 
         # if BB_NO_NETWORK is set but we also have SSTATE_MIRROR_ALLOW_NETWORK,
         # we'll want to allow network access for the current set of fetches.
         if localdata.getVar('BB_NO_NETWORK', True) == "1" and localdata.getVar('SSTATE_MIRROR_ALLOW_NETWORK', True) == "1":
             localdata.delVar('BB_NO_NETWORK')
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
         for task in range(len(sq_fn)):
             if task in ret:

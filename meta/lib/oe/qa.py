@@ -72,7 +72,11 @@ class ELFFile:
         return ord(self.data[ELFFile.EI_ABIVERSION])
 
     def abiSize(self):
+<<<<<<< HEAD
         return self.bits
+=======
+	return self.bits
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
     def isLittleEndian(self):
         return self.sex == "<"
@@ -93,6 +97,7 @@ class ELFFile:
         import bb.process
         import sys
 
+<<<<<<< HEAD
         if cmd in self.objdump_output:
             return self.objdump_output[cmd]
 
@@ -107,5 +112,21 @@ class ELFFile:
             self.objdump_output[cmd] = bb.process.run([objdump, cmd, self.name], env=env, shell=False)[0]
             return self.objdump_output[cmd]
         except Exception as e:
+=======
+        if self.objdump_output.has_key(cmd):
+            return self.objdump_output[cmd]
+
+        objdump = d.getVar('OBJDUMP', True)
+        staging_dir = d.getVar('STAGING_BINDIR_TOOLCHAIN', True)
+
+        env = os.environ
+        env["LC_ALL"] = "C"
+
+        try:
+            bb.note("%s %s %s" % (objdump, cmd, self.name))
+            self.objdump_output[cmd] = bb.process.run([ os.path.join(staging_dir, objdump), cmd, self.name ], env=env, shell=False)[0]
+            return self.objdump_output[cmd]
+        except Exception, e:
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
             bb.note("%s %s %s failed: %s" % (objdump, cmd, self.name, e))
             return ""

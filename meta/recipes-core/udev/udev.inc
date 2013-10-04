@@ -6,6 +6,7 @@ LICENSE = "GPLv2.0+ & LGPLv2.1+"
 LICENSE_${PN} = "GPLv2.0+"
 LICENSE_libudev = "LGPLv2.1+"
 LICENSE_libgudev = "LGPLv2.1+"
+<<<<<<< HEAD
 LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263 \
                     file://src/COPYING;md5=17c4e5fb495e6707ac92a3864926f979 \
                     file://src/gudev/COPYING;md5=fb494485a7d0505308cb68e4997cc266"
@@ -18,6 +19,18 @@ RPROVIDES_${PN} = "hotplug"
 SRC_URI = "${KERNELORG_MIRROR}/linux/utils/kernel/hotplug/udev-${PV}.tar.gz \
            file://0001-Fixing-keyboard_force_release.sh-shell-script-path.patch \
            file://avoid-mouse-autosuspend.patch \
+=======
+LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe \
+                    file://libudev/COPYING;md5=a6f89e2100d9b6cdffcea4f398e37343 \
+                    file://extras/gudev/COPYING;md5=a6f89e2100d9b6cdffcea4f398e37343"
+
+DEPENDS = "acl glib-2.0 libusb usbutils pciutils gperf-native libxslt-native"
+RPROVIDES_${PN} = "hotplug"
+RRECOMMENDS_${PN} += "udev-extraconf usbutils-ids pciutils-ids"
+RDEPENDS_libudev = "${PN} (= ${EXTENDPKGV})"
+
+SRC_URI = "${KERNELORG_MIRROR}/linux/utils/kernel/hotplug/udev-${PV}.tar.gz \
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
            file://run.rules \
            file://udev.rules \
            file://devfs-udev.rules \
@@ -29,6 +42,7 @@ SRC_URI = "${KERNELORG_MIRROR}/linux/utils/kernel/hotplug/udev-${PV}.tar.gz \
            file://init"
 
 inherit autotools pkgconfig update-rc.d
+<<<<<<< HEAD
 
 libexecdir = "${base_libdir}"
 EXTRA_OECONF = "--disable-introspection \
@@ -46,6 +60,17 @@ EXTRA_OECONF = "--disable-introspection \
 
 PACKAGES =+ "udev-utils udev-cache"
 PACKAGES =+ "libudev libudev-dev libudev-dbg"
+=======
+
+# udevd/udevadm -> /sbin/, libudev.so.* -> /lib/
+sbindir = "${base_sbindir}"
+libexecdir = "${base_libdir}/udev"
+EXTRA_OECONF = "--disable-introspection --with-rootlibdir=${base_libdir} \
+                --with-pci-ids-path=${datadir}/pci.ids"
+
+PACKAGES =+ "udev-acl udev-consolekit udev-utils"
+PACKAGES =+ "udev-cache libudev libudev-dev libudev-dbg"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PACKAGES =+ "libgudev libgudev-dev libgudev-dbg"
 
 INITSCRIPT_PACKAGES = "udev udev-cache"
@@ -54,6 +79,7 @@ INITSCRIPT_PARAMS_udev = "start 03 S ."
 INITSCRIPT_NAME_udev-cache = "udev-cache"
 INITSCRIPT_PARAMS_udev-cache = "start 36 S ."
 
+<<<<<<< HEAD
 FILES_${PN} += "${libexecdir} ${libdir}/ConsoleKit ${nonarch_base_libdir}/udev"
 RRECOMMENDS_${PN} += "udev-utils udev-cache"
 
@@ -61,6 +87,12 @@ FILES_${PN}-dbg += "${libexecdir}/.debug"
 FILES_${PN}-dbg += "${base_libdir}/udev/.debug/"
 FILES_${PN}-dbg += "${base_libdir}/udev/.debug/*"
 FILES_${PN}-dbg += "${nonarch_base_libdir}/udev/.debug/*"
+=======
+FILES_${PN} += "${libexecdir} ${libdir}/ConsoleKit"
+RRECOMMENDS_${PN} += "udev-utils"
+
+FILES_${PN}-dbg += "${libexecdir}/.debug"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 FILES_${PN}-dev = "${datadir}/pkgconfig/udev.pc"
 FILES_libudev = "${base_libdir}/libudev.so.*"
 FILES_libudev-dbg = "${base_libdir}/.debug/libudev.so.*"
@@ -72,7 +104,16 @@ FILES_libgudev-dev = "${includedir}/gudev* ${libdir}/libgudev*.so ${libdir}/libg
                      ${libdir}/libgudev*.a ${libdir}/pkgconfig/gudev*.pc"
 FILES_udev-cache = "${sysconfdir}/init.d/udev-cache ${sysconfdir}/default/udev-cache"
 
+<<<<<<< HEAD
 FILES_udev-utils = "${bindir}/udevadm"
+=======
+FILES_udev-acl = "${base_libdir}/udev/udev-acl ${base_libdir}/udev/rules.d/70-acl.rules"
+
+FILES_udev-utils = "${bindir}/udevinfo ${bindir}/udevtest ${base_sbindir}/udevadm"
+
+RDEPENDS_udev-consolekit += "udev-acl"
+FILES_udev-consolekit = "${libdir}/ConsoleKit"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 do_install_append () {
 	install -d ${D}${sysconfdir}/init.d
@@ -86,9 +127,15 @@ do_install_append () {
 
 	touch ${D}${sysconfdir}/udev/cache.data
 
+	install -d ${D}${sysconfdir}/default
+	install -m 0755 ${WORKDIR}/udev-cache.default ${D}${sysconfdir}/default/udev-cache
+
+	touch ${D}${sysconfdir}/udev/cache.data
+
 	install -d ${D}${sysconfdir}/udev/rules.d/
 
 	install -m 0644 ${WORKDIR}/local.rules         ${D}${sysconfdir}/udev/rules.d/local.rules
+<<<<<<< HEAD
 
 	# hid2hci has moved to bluez4. removed in udev as of version 169
 	rm -f ${D}${base_libdir}/udev/hid2hci
@@ -100,4 +147,9 @@ do_install_append () {
 python () {
     if oe.utils.contains ('DISTRO_FEATURES', 'systemd', True, False, d):
         raise bb.parse.SkipPackage("'systemd' in DISTRO_FEATURES")
+=======
+
+	# hid2hci has moved to bluez4. removed in udev as of version 169
+	rm -f ${D}${base_libdir}/udev/hid2hci
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 SUMMARY = "A collection of documentation utilities for the Gnome project."
 DESCRIPTION = "The GNOME Documentation Build Utilities (gnome-doc- \
 utils) were created to make it easier for application developers to \
@@ -7,6 +8,11 @@ translations of documentation."
 LICENSE = "GPLv2 & LGPLv2.1"
 DEPENDS = "libxml2 libxslt libxslt-native gnome-doc-utils-native glib-2.0"
 DEPENDS_class-native = "libxml2-native libxslt-native intltool-native glib-2.0-native"
+=======
+LICENSE = "GPLv2 & LGPLv2.1"
+DEPENDS = "libxml2 libxslt libxslt-native gnome-doc-utils-native glib-2.0"
+DEPENDS_virtclass-native = "libxml2-native libxslt-native intltool-native glib-2.0-native"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 inherit gnome gettext python-dir pythonnative
 
@@ -20,12 +26,20 @@ do_install_append() {
 }
 
 do_install_append_class-native () {
+<<<<<<< HEAD
 	sed -i -e 's|^#!.*/usr/bin/env python|#! /usr/bin/env nativepython|' ${D}${bindir}/xml2po
+=======
+	create_wrapper ${D}${bindir}/xml2po ${STAGING_BINDIR_NATIVE}/python-native/python
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 }
 
 FILES_${PN} += "${datadir}/xml* ${PYTHON_SITEPACKAGES_DIR}/*"
 
 RDEPENDS_${PN} = "bash"
+<<<<<<< HEAD
 RDEPENDS_${PN}_class-native = ""
+=======
+RDEPENDS_${PN}_virtclass-native = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 BBCLASSEXTEND = "native"

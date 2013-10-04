@@ -14,7 +14,11 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=21fd154ee757813632ada871a34113fb"
 
 DEPENDS += "libxext scrnsaverproto"
 PROVIDES = "libxss"
+<<<<<<< HEAD
 RREPLACES_${PN} = "libxss"
+=======
+RREPLACES = "libxss"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PR = "r0"
 PE = "1"
 

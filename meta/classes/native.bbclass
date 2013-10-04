@@ -6,14 +6,24 @@ inherit relocatable
 EXCLUDE_FROM_WORLD = "1"
 
 PACKAGES = ""
+<<<<<<< HEAD
 PACKAGES_class-native = ""
 PACKAGES_DYNAMIC = ""
 PACKAGES_DYNAMIC_class-native = ""
+=======
+PACKAGES_virtclass-native = ""
+PACKAGES_DYNAMIC = ""
+PACKAGES_DYNAMIC_virtclass-native = ""
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 PACKAGE_ARCH = "${BUILD_ARCH}"
 
 # used by cmake class
 OECMAKE_RPATH = "${libdir}"
+<<<<<<< HEAD
 OECMAKE_RPATH_class-native = "${libdir}"
+=======
+OECMAKE_RPATH_virtclass-native = "${libdir}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # When this class has packaging enabled, setting 
 # RPROVIDES becomes unnecessary.
@@ -85,8 +95,13 @@ bindir .= "${NATIVE_PACKAGE_PATH_SUFFIX}"
 libdir .= "${NATIVE_PACKAGE_PATH_SUFFIX}"
 libexecdir .= "${NATIVE_PACKAGE_PATH_SUFFIX}"
 
+<<<<<<< HEAD
 do_populate_sysroot[sstate-inputdirs] = "${SYSROOT_DESTDIR}/${STAGING_DIR_NATIVE}/"
 do_populate_sysroot[sstate-outputdirs] = "${STAGING_DIR_NATIVE}/"
+=======
+do_populate_sysroot[sstate-inputdirs] = "${SYSROOT_DESTDIR}/${STAGING_DIR_NATIVE}"
+do_populate_sysroot[sstate-outputdirs] = "${STAGING_DIR_NATIVE}"
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 # Since we actually install these into situ there is no staging prefix
 STAGING_DIR_HOST = ""
@@ -102,6 +117,7 @@ LIBCOVERRIDE = ""
 CLASSOVERRIDE = "class-native"
 
 PATH_prepend = "${COREBASE}/scripts/native-intercept:"
+<<<<<<< HEAD
 
 python native_virtclass_handler () {
     classextend = e.data.getVar('BBCLASSEXTEND', True) or ""
@@ -112,6 +128,21 @@ python native_virtclass_handler () {
     if not pn.endswith("-native"):
         return
 
+=======
+
+python native_virtclass_handler () {
+    if not isinstance(e, bb.event.RecipePreFinalise):
+        return
+
+    classextend = e.data.getVar('BBCLASSEXTEND', True) or ""
+    if "native" not in classextend:
+        return
+
+    pn = e.data.getVar("PN", True)
+    if not pn.endswith("-native"):
+        return
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
     def map_dependencies(varname, d, suffix = ""):
         if suffix:
             varname = varname + "_" + suffix
@@ -149,7 +180,10 @@ python native_virtclass_handler () {
 }
 
 addhandler native_virtclass_handler
+<<<<<<< HEAD
 native_virtclass_handler[eventmask] = "bb.event.RecipePreFinalise"
+=======
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
 
 do_package[noexec] = "1"
 do_packagedata[noexec] = "1"

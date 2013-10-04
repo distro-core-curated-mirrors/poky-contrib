@@ -1,6 +1,7 @@
-Poky
-====
+OpenEmbedded-Core
+=================
 
+<<<<<<< HEAD
 Poky is an integration of various components to form a complete prepackaged
 build system and development environment. It features support for building
 customised embedded device style images. There are reference demo images
@@ -47,3 +48,17 @@ repository.
 
 Note: The scripts directory should be treated with extra care as it is a mix
       of oe-core and poky-specific files.
+=======
+OpenEmbedded-Core is a layer containing the core metadata for current versions
+of OpenEmbedded. It is distro-less (can build a functional image with
+DISTRO = "") and contains only emulated machine support.
+
+For information about OpenEmbedded, see the OpenEmbedded website:
+    http://www.openembedded.org/
+
+The Yocto Project has extensive documentation about OE including a reference manual
+which can be found at:
+    http://yoctoproject.org/community/documentation
+
+
+>>>>>>> cb9658cf8ab6cf009030dcadde9dc6c54b72bddc
