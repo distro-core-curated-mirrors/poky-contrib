@@ -75,6 +75,7 @@ CONFIGUREOPTS = " --build=${BUILD_SYS} \
 		  --infodir=${infodir} \
 		  --mandir=${mandir} \
 		  --disable-silent-rules \
+                  --cache-file ${B}/configure-${PN}.cache \
 		  ${CONFIGUREOPT_DEPTRACK} \
 		  ${@append_libtool_sysroot(d)}"
 CONFIGUREOPT_DEPTRACK ?= "--disable-dependency-tracking"
@@ -129,6 +130,29 @@ autotools_postconfigure(){
 		echo ${BB_TASKHASH} > ${CONFIGURESTAMPFILE}
 	fi
 }
+
+SYSROOT_PREPROCESS_FUNCS += "autotools_sysroot_preprocess"
+
+autotools_sysroot_preprocess () {
+        if [ -e ${B}/configure-${PN}.cache -a "${PN}" != "eglibc" -a "${PN}" != "gcc-runtime" ]; then
+		install -d ${SYSROOT_DESTDIR}${datadir}/${TARGET_SYS}_config_site.d/
+		sed ${B}/configure-${PN}.cache \
+			-e '/ac_cv_env_CFLAGS.*/d' \
+			-e '/ac_cv_env_CXXFLAGS.*/d' \
+			-e '/ac_cv_path_PYTHON.*/d' \
+			-e '/ac_cv_env_PYTHON.*/d' \
+			-e '/.*am_cv_python_pythondir.*/d' \
+			-e '/.*am_cv_python_pyexecdir.*/d' \
+			-e '/ac_cv_env_CPPFLAGS.*/d' \
+			-e '/ac_cv_env_LDFLAGS.*/d' \
+			-e '/lt_cv_path_LDCXX.*/d' \
+			-e '/ac_cv_prog_STRIP.*/d' \
+			-e '/lt_cv_prog_gnu_ldcxx.*/d' \
+			-e '/lt_cv_prog_compiler_pic_CXX.*/d' \
+			> ${SYSROOT_DESTDIR}${datadir}/${TARGET_SYS}_config_site.d/configure-${PN}.cache
+	fi
+}
+
 
 EXTRACONFFUNCS ??= ""
 
