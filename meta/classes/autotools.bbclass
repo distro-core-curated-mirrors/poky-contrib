@@ -135,7 +135,7 @@ SYSROOT_PREPROCESS_FUNCS += "autotools_sysroot_preprocess"
 
 autotools_sysroot_preprocess () {
         if [ -e ${B}/configure-${PN}.cache -a "${PN}" != "eglibc" -a "${PN}" != "gcc-runtime" ]; then
-		install -d ${SYSROOT_DESTDIR}${datadir}/${TARGET_SYS}_config_site.d/
+		install -d ${SYSROOT_DESTDIR}${datadir}/oesitecache/
 		sed ${B}/configure-${PN}.cache \
 			-e '/ac_cv_env_CFLAGS.*/d' \
 			-e '/ac_cv_env_CXXFLAGS.*/d' \
@@ -149,9 +149,22 @@ autotools_sysroot_preprocess () {
 			-e '/ac_cv_prog_STRIP.*/d' \
 			-e '/lt_cv_prog_gnu_ldcxx.*/d' \
 			-e '/lt_cv_prog_compiler_pic_CXX.*/d' \
-			> ${SYSROOT_DESTDIR}${datadir}/${TARGET_SYS}_config_site.d/configure-${PN}.cache
+			-e '/#.*/d' \
+			| sort > ${SYSROOT_DESTDIR}${datadir}/oesitecache/configure-${PN}.cache
 	fi
 }
+
+SSTATEPOSTINSTFUNCS += "autotools_sstate_postinst"
+autotools_sstate_postinst () {
+	if [ "${BB_CURRENTTASK}" = "populate_sysroot" -o "${BB_CURRENTTASK}" = "populate_sysroot_setscene" ]; then
+		if [ -e ${STAGING_DATADIR}/oesitecache/configure-${PN}.cache ]; then
+			install -d ${STAGING_DATADIR}/${TARGET_SYS}_config_site.d2/
+			sort ${@siteinfo_get_files(d, False)} > ${WORKDIR}/sitecache
+			comm -13 ${WORKDIR}/sitecache ${STAGING_DATADIR}/oesitecache/configure-${PN}.cache > ${STAGING_DATADIR}/${TARGET_SYS}_config_site.d2/configure-${PN}.cache
+		fi
+	fi
+}
+
 
 
 EXTRACONFFUNCS ??= ""
