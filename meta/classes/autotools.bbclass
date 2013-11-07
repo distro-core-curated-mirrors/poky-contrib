@@ -158,9 +158,9 @@ SSTATEPOSTINSTFUNCS += "autotools_sstate_postinst"
 autotools_sstate_postinst () {
 	if [ "${BB_CURRENTTASK}" = "populate_sysroot" -o "${BB_CURRENTTASK}" = "populate_sysroot_setscene" ]; then
 		if [ -e ${STAGING_DATADIR}/oesitecache/configure-${PN}.cache ]; then
-			install -d ${STAGING_DATADIR}/${TARGET_SYS}_config_site.d2/
+			install -d ${STAGING_DATADIR}/${TARGET_SYS}_config_site.d/
 			sort ${@siteinfo_get_files(d, False)} > ${WORKDIR}/sitecache
-			comm -13 ${WORKDIR}/sitecache ${STAGING_DATADIR}/oesitecache/configure-${PN}.cache > ${STAGING_DATADIR}/${TARGET_SYS}_config_site.d2/configure-${PN}.cache
+			comm -13 ${WORKDIR}/sitecache ${STAGING_DATADIR}/oesitecache/configure-${PN}.cache > ${STAGING_DATADIR}/${TARGET_SYS}_config_site.d/configure-${PN}.cache
 		fi
 	fi
 }
