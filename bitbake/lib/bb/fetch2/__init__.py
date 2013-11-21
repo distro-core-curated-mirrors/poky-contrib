@@ -1053,6 +1053,7 @@ def srcrev_internal_helper(ud, d, name):
     if name != '' and pn:
         attempts.append("SRCREV_%s_pn-%s" % (name, pn))
     if name != '':
+<<<<<<< HEAD
         attempts.append("SRCREV_%s" % name)
     if pn:
         attempts.append("SRCREV_pn-%s" % pn)
@@ -1081,6 +1082,12 @@ def srcrev_internal_helper(ud, d, name):
         raise FetchError("Please set a valid SRCREV for url %s (possible key names are %s, or use a ;rev=X URL parameter)" % (str(attempts), ud.url), ud.url)
     if srcrev == "AUTOINC":
         srcrev = ud.method.latest_revision(ud, d, name)
+
+    if pn != "xf86-video-omapfb":
+        ld = d.createCopy()        
+        ld.setVar("SRCPV", srcrev)
+        bb.warn("Latest revision for %s\n%s compared to %s\n%s compared to %s" % (ud.url, srcrev, ud.method.latest_revision(ud, d, name), ld.getVar("PV", True), ud.method.latest_fullversion(ud, d, name)))
+
 
     return srcrev
 
@@ -1504,6 +1511,22 @@ class FetchMethod(object):
             return revs[key]
         except KeyError:
             revs[key] = rev = self._latest_revision(ud, d, name)
+            return rev
+
+    def latest_fullversion(self, ud, d, name):
+        """
+        Look in the cache for the latest full version string, if not present ask the SCM.
+        """
+        if not hasattr(self, "_latest_fullversion"):
+            #raise ParameterError("The fetcher for this URL does not support _latest_fullversion", url)
+            return "x"
+
+        revs = bb.persist_data.persist('BB_URI_FULLVERS', d)
+        key = self.generate_revision_key(ud, d, name)
+        try:
+            return revs[key]
+        except KeyError:
+            revs[key] = rev = self._latest_fullversion(ud, d, name)
             return rev
 
     def sortable_revision(self, ud, d, name):
