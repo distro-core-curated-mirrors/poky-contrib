@@ -1,0 +1,26 @@
+Index: gettext-0.18.3.1/gettext-tools/Makefile.am
+===================================================================
+--- gettext-0.18.3.1.orig/gettext-tools/Makefile.am	2013-07-29 11:35:59.000000000 +0000
++++ gettext-0.18.3.1/gettext-tools/Makefile.am	2013-11-26 10:52:21.879150181 +0000
+@@ -19,7 +19,7 @@
+ AUTOMAKE_OPTIONS = 1.5 gnu no-dependencies
+ ACLOCAL_AMFLAGS = -I m4 -I ../gettext-runtime/m4 -I ../m4 -I gnulib-m4 -I libgrep/gnulib-m4 -I libgettextpo/gnulib-m4
+ 
+-SUBDIRS = doc intl gnulib-lib libgrep src libgettextpo po projects styles misc man m4 tests gnulib-tests examples
++SUBDIRS = doc intl gnulib-lib libgrep src libgettextpo po projects styles misc man m4 tests gnulib-tests
+ 
+ EXTRA_DIST = misc/DISCLAIM
+ MOSTLYCLEANFILES = core *.stackdump
+Index: gettext-0.18.3.1/gettext-tools/configure.ac
+===================================================================
+--- gettext-0.18.3.1.orig/gettext-tools/configure.ac	2013-08-15 16:15:56.000000000 +0000
++++ gettext-0.18.3.1/gettext-tools/configure.ac	2013-11-26 10:52:29.895152078 +0000
+@@ -506,8 +506,6 @@
+ 
+ EOF
+ 
+-AC_CONFIG_SUBDIRS([examples])
+-
+ AC_CONFIG_FILES([Makefile])
+ 
+ AC_CONFIG_FILES([doc/Makefile])

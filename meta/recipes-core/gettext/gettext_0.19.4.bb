@@ -14,6 +14,8 @@ SRC_URI = "${GNU_MIRROR}/gettext/gettext-${PV}.tar.gz \
 	   file://parallel.patch \
           "
 
+SRC_URI_append_class-native = " file://noexamples.patch"
+
 PACKAGECONFIG[msgcat-curses] = "--with-libncurses-prefix=${STAGING_LIBDIR}/..,--disable-curses,ncurses,"
 
 LDFLAGS_prepend_libc-uclibc = " -lrt -lpthread "
