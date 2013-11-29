@@ -74,8 +74,8 @@ logger.setLevel(logging.DEBUG - 2)
 # can result in construction of the various loggers.
 import bb.msg
 
-from bb import fetch2 as fetch
-sys.modules['bb.fetch'] = sys.modules['bb.fetch2']
+#from bb import fetch2 as fetch
+#sys.modules['bb.fetch'] = sys.modules['bb.fetch2']
 
 # Messaging convenience functions
 def plain(*args):

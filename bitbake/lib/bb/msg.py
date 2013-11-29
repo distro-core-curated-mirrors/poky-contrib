@@ -25,11 +25,8 @@ Message handling infrastructure for bitbake
 import sys
 import copy
 import logging
-import collections
 from itertools import groupby
-import warnings
 import bb
-import bb.event
 
 class BBLogFormatter(logging.Formatter):
     """Formatter which ensures that our 'plain' messages (logging.INFO + 1) are used as is"""

@@ -30,18 +30,17 @@ BitBake build tools.
 
 import copy, re, sys, traceback
 from collections import MutableMapping
-import logging
-import hashlib
-import bb, bb.codeparser
-from bb   import utils
+from logging import getLogger
+from hashlib import md5
+import bb
+from bb.utils import better_eval
 from bb.COW  import COWDictBase
+from bb.codeparser import PythonParser
 
-logger = logging.getLogger("BitBake.Data")
+logger = getLogger("BitBake.Data")
 
 __setvar_keyword__ = ["_append", "_prepend", "_remove"]
 __setvar_regexp__ = re.compile('(?P<base>.*?)(?P<keyword>_append|_prepend|_remove)(_(?P<add>.*))?$')
-#__expand_var_regexp__ = re.compile(r"(?<!\\)\${[^{}@\n\t ]+}")
-#__expand_python_regexp__ = re.compile(r"(?<!\\)\${@.+?}")
 __expand_var_regexp__ = re.compile(r"\${[^{}@\n\t ]+}")
 __expand_python_regexp__ = re.compile(r"\${@.+?}")
 
@@ -104,7 +103,8 @@ class VariableParse:
         self.foundpython = False
 
     def var_sub(self, match):
-            key = match.group()[2:-1]
+            m = match.group()
+            key = m[2:-1]
             if self.varname and key:
                 if self.varname == key:
                     raise Exception("variable %s references itself!" % self.varname)
@@ -117,7 +117,7 @@ class VariableParse:
             if var is not None:
                 return var
             else:
-                return match.group()
+                return m
 
     def python_sub(self, match):
             self.foundpython = True
@@ -140,7 +140,7 @@ class VariableParse:
                     self.contains[k] = parser.contains[k].copy()
                 else:
                     self.contains[k].update(parser.contains[k])
-            value = utils.better_eval(codeobj, DataContext(self.d))
+            value = bb.utils.better_eval(codeobj, DataContext(self.d))
             return str(value)
 
 
@@ -200,7 +200,7 @@ class IncludeHistory(object):
         if self.current.parent:
             self.current = self.current.parent
         else:
-            bb.warn("Include log: Tried to finish '%s' at top level." % filename)
+            logger.warn("Include log: Tried to finish '%s' at top level." % filename)
         return False
 
     def emit(self, o, level = 0):
@@ -1019,4 +1019,4 @@ class DataSmart(MutableMapping):
                     data.update({i:value})
 
         data_str = str([(k, data[k]) for k in sorted(data.keys())])
-        return hashlib.md5(data_str).hexdigest()
+        return md5(data_str).hexdigest()
