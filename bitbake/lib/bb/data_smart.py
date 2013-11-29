@@ -30,14 +30,13 @@ BitBake build tools.
 
 import copy, re, sys, traceback
 from collections import MutableMapping
-from logging import getLogger
-from hashlib import md5
-import bb
-from bb.utils import better_eval
+import logging
+import hashlib
+import bb, bb.codeparser
+from bb   import utils
 from bb.COW  import COWDictBase
-from bb.codeparser import PythonParser
 
-logger = getLogger("BitBake.Data")
+logger = logging.getLogger("BitBake.Data")
 
 __setvar_keyword__ = ["_append", "_prepend", "_remove"]
 __setvar_regexp__ = re.compile('(?P<base>.*?)(?P<keyword>_append|_prepend|_remove)(_(?P<add>.*))?$')
@@ -103,8 +102,7 @@ class VariableParse:
         self.foundpython = False
 
     def var_sub(self, match):
-            m = match.group()
-            key = m[2:-1]
+            key = match.group()[2:-1]
             if self.varname and key:
                 if self.varname == key:
                     raise Exception("variable %s references itself!" % self.varname)
@@ -117,7 +115,7 @@ class VariableParse:
             if var is not None:
                 return var
             else:
-                return m
+                return match.group()
 
     def python_sub(self, match):
             self.foundpython = True
@@ -140,7 +138,7 @@ class VariableParse:
                     self.contains[k] = parser.contains[k].copy()
                 else:
                     self.contains[k].update(parser.contains[k])
-            value = bb.utils.better_eval(codeobj, DataContext(self.d))
+            value = utils.better_eval(codeobj, DataContext(self.d))
             return str(value)
 
 
@@ -200,7 +198,7 @@ class IncludeHistory(object):
         if self.current.parent:
             self.current = self.current.parent
         else:
-            logger.warn("Include log: Tried to finish '%s' at top level." % filename)
+            bb.warn("Include log: Tried to finish '%s' at top level." % filename)
         return False
 
     def emit(self, o, level = 0):
@@ -1019,4 +1017,4 @@ class DataSmart(MutableMapping):
                     data.update({i:value})
 
         data_str = str([(k, data[k]) for k in sorted(data.keys())])
-        return md5(data_str).hexdigest()
+        return hashlib.md5(data_str).hexdigest()

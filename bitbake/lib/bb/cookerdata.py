@@ -27,7 +27,6 @@ from functools import wraps
 import logging
 import bb
 from bb import data
-from bb.fetch2 import fetcher_init
 import bb.parse
 
 logger      = logging.getLogger("BitBake")
@@ -323,7 +322,7 @@ class CookerDataBuilder(object):
             bb.event.register(var, data.getVar(var, False),  (data.getVarFlag(var, "eventmask", True) or "").split(), handlerfn, handlerln)
 
         if data.getVar("BB_WORKERCONTEXT", False) is None:
-            bb.fetch2.fetcher_init(data)
+            bb.fetch.fetcher_init(data)
         bb.codeparser.parser_cache_init(data)
         bb.event.fire(bb.event.ConfigParsed(), data)
 

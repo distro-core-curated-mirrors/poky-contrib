@@ -19,11 +19,12 @@ BitBake Utility Functions
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import re, os, string, stat, shutil, time
+import re, fcntl, os, string, stat, shutil, time
 import sys
 import errno
 import logging
 import bb
+import bb.msg
 import multiprocessing
 import fcntl
 import subprocess
@@ -253,7 +254,7 @@ def explode_dep_versions(s):
             r[d] = None
             continue
         if len(r[d]) > 1:
-            logger.warn("explode_dep_versions(): Item %s appeared in dependency string '%s' multiple times with different values.  explode_dep_versions cannot cope with this." % (d, s))
+            bb.warn("explode_dep_versions(): Item %s appeared in dependency string '%s' multiple times with different values.  explode_dep_versions cannot cope with this." % (d, s))
         r[d] = r[d][0]
     return r
 
@@ -380,9 +381,6 @@ def better_exec(code, context, text = None, realfile = "<code>"):
     print the lines that are responsible for the
     error.
     """
-    from bb.parse import SkipRecipe
-    from bb.build import FuncFailed
-
     if not text:
         text = code
     if not hasattr(code, "co_filename"):
@@ -419,12 +417,12 @@ def fileslocked(files):
     locks = []
     if files:
         for lockfile in files:
-            locks.append(lockfile(lockfile))
+            locks.append(bb.utils.lockfile(lockfile))
 
     yield
 
     for lock in locks:
-        unlockfile(lock)
+        bb.utils.unlockfile(lock)
 
 @contextmanager
 def timeout(seconds):
@@ -629,7 +627,8 @@ def build_environment(d):
     """
     Build an environment from all exported variables.
     """
-    for var in d.keys():
+    import bb.data
+    for var in bb.data.keys(d):
         export = d.getVarFlag(var, "export")
         if export:
             os.environ[var] = d.getVar(var, True) or ""

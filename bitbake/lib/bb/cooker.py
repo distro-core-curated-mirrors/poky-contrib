@@ -2008,7 +2008,7 @@ class CookerParser(object):
             def init():
                 Parser.cfg = self.cfgdata
                 multiprocessing.util.Finalize(None, bb.codeparser.parser_cache_save, args=(self.cfgdata,), exitpriority=1)
-                multiprocessing.util.Finalize(None, bb.fetch2.fetcher_parse_save, args=(self.cfgdata,), exitpriority=1)
+                multiprocessing.util.Finalize(None, bb.fetch.fetcher_parse_save, args=(self.cfgdata,), exitpriority=1)
 
             self.feeder_quit = multiprocessing.Queue(maxsize=1)
             self.parser_quit = multiprocessing.Queue(maxsize=self.num_processes)
