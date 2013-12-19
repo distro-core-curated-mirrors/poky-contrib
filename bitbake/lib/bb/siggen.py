@@ -330,6 +330,7 @@ def clean_basepaths_list(a):
 
 def compare_sigfiles(a, b, recursecb = None):
     output = []
+    level = 1
 
     p1 = pickle.Unpickler(open(a, "rb"))
     a_data = p1.load()
@@ -473,16 +474,17 @@ def compare_sigfiles(a, b, recursecb = None):
                 if callable(recursecb):
                     # If a dependent hash changed, might as well print the line above and then defer to the changes in 
                     # that hash since in all likelyhood, they're the same changes this task also saw.
-                    recout = recursecb(dep, a[dep], b[dep])
+                    recout, newlevel = recursecb(dep, a[dep], b[dep])
                     if recout:
                         output = [output[-1]] + recout
+                        level = newlevel + 1
 
     a_taint = a_data.get('taint', None)
     b_taint = b_data.get('taint', None)
     if a_taint != b_taint:
         output.append("Taint (by forced/invalidated task) changed from %s to %s" % (a_taint, b_taint))
 
-    return output
+    return output, level
 
 
 def dump_sigfile(a):
