@@ -1273,6 +1273,19 @@ class RunQueue:
             matches = {k : v for k, v in matches.iteritems() if h not in k}
             if matches:
                 latestmatches = sorted(matches.keys(), key=lambda f: matches[f])
+                #prevh = __find_md5__.search(m).group(0)
+                #output, level = bb.siggen.compare_sigfiles(m, match, recursecb)
+                #bb.plain("\nTask %s:%s couldn't be used from the cache because:\n  We need hash %s, closest matching task was %s\n  " % (pn, taskname, h, prevh) + '\n  '.join(output))
+
+                #seen = {}
+                #for m in latestmatches:
+                #    prevh = __find_md5__.search(m).group(0)
+                #    if prevh in seen:
+                #        continue
+                #    output, level = bb.siggen.compare_sigfiles(m, match, recursecb)
+                #    seen[prevh] = output, level
+                #    bb.plain("\nTask %s:%s couldn't be used from the cache because:\n  We need hash %s, closest matching task was %s %s\n  " % (pn, taskname, h, prevh, level) + '\n  '.join(output))
+
                 seen = {}
                 bestlevel = 999
                 best = None
@@ -1285,7 +1298,9 @@ class RunQueue:
                     if level <= bestlevel:
                         bestlevel = level
                         best = prevh
-                output, level = seen[prevh]
+                if best:
+                    output, level = seen[best]
+
                 bb.plain("\nTask %s:%s couldn't be used from the cache because:\n  We need hash %s, closest matching task was %s %s\n  " % (pn, taskname, h, prevh, level) + '\n  '.join(output))
              
 
