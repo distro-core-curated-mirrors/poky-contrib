@@ -1,0 +1,14 @@
+Index: git/config_subdir.m4
+===================================================================
+--- git.orig/config_subdir.m4	2014-01-30 12:55:18.666597825 +0000
++++ git/config_subdir.m4	2014-01-30 12:55:30.454597409 +0000
+@@ -21,6 +21,8 @@
+ AC_CONFIG_SUBDIRS([$1])
+ 
+ m4_ifblank([$2], [rm -f $srcdir/$1/configure.gnu],
+-[echo -e '#!/bin/sh\nexec "`dirname "'\$'0"`/configure" $2 "'\$'@"' > "$srcdir/$1/configure.gnu"
++[echo -e '#!/bin/sh\nexec "`dirname "'\$'0"`/configure.sh" $2 "'\$'@"' > "$srcdir/$1/configure.gnu"
++printf \#\!"/bin/sh\ndir="\"\`"dirname "\"\$"0"\"\`"/autosetup"\""\nWRAPPER="\"\$"0"\""; export WRAPPER; exec "\"\`\$"dir/find-tclsh"\`\"" "\"\$"dir/autosetup"\"" "\"\$"@"\""\n" > "$srcdir/$1/configure.sh"
++chmod a+x "$srcdir/$1/configure.sh"
+ ])
+ ])

@@ -1,0 +1,3169 @@
+From c43825241ad887b6a49d3a33e1220aff27878f1b Mon Sep 17 00:00:00 2001
+From: Adrian Burns <adrian.burns@intel.com>
+Date: Thu, 5 Dec 2013 01:51:53 +0000
+Subject: [PATCH] quark_x10xx: add new target quark_x10xx
+
+Intel Quark X10XX SoC debug support added
+Lakemont version 1 (LMT1) is the x86 core in Quark X10XX SoC
+Generic x86 32 bit code is in x86_32_common.c/h
+
+Change-Id: If2bf77275cd0277a82558cd9895b4c66155cf368
+Signed-off-by: adrian.burns@intel.com
+---
+ src/target/Makefile.am          |    9 +-
+ src/target/lakemont.c           | 1058 ++++++++++++++++++++++++++++
+ src/target/lakemont.h           |   96 +++
+ src/target/quark_x10xx.c        |   86 +++
+ src/target/target.c             |    2 +
+ src/target/x86_32_common.c      | 1439 +++++++++++++++++++++++++++++++++++++++
+ src/target/x86_32_common.h      |  299 ++++++++
+ tcl/board/quark_x10xx_board.cfg |    9 +
+ tcl/target/quark_x10xx.cfg      |   53 ++
+ 9 files changed, 3050 insertions(+), 1 deletion(-)
+ create mode 100644 src/target/lakemont.c
+ create mode 100644 src/target/lakemont.h
+ create mode 100644 src/target/quark_x10xx.c
+ create mode 100644 src/target/x86_32_common.c
+ create mode 100644 src/target/x86_32_common.h
+ create mode 100644 tcl/board/quark_x10xx_board.cfg
+ create mode 100644 tcl/target/quark_x10xx.cfg
+
+diff --git a/src/target/Makefile.am b/src/target/Makefile.am
+index 1560753..4ccca5d 100644
+--- a/src/target/Makefile.am
++++ b/src/target/Makefile.am
+@@ -35,6 +35,7 @@ libtarget_la_SOURCES = \
+ 	$(AVR32_SRC) \
+ 	$(MIPS32_SRC) \
+ 	$(NDS32_SRC) \
++	$(INTEL_IA32_SRC) \
+ 	avrt.c \
+ 	dsp563xx.c \
+ 	dsp563xx_once.c \
+@@ -123,6 +124,10 @@ NDS32_SRC = \
+ 	nds32_v3m.c \
+ 	nds32_aice.c
+ 
++INTEL_IA32_SRC = \
++	quark_x10xx.c \
++	lakemont.c \
++	x86_32_common.c
+ 
+ noinst_HEADERS = \
+ 	algorithm.h \
+@@ -190,7 +195,9 @@ noinst_HEADERS = \
+ 	nds32_v3_common.h \
+ 	nds32_v3.h \
+ 	nds32_v3m.h \
+-	nds32_aice.h
++	nds32_aice.h \
++	lakemont.h \
++	x86_32_common.h
+ 
+ ocddatadir = $(pkglibdir)
+ nobase_dist_ocddata_DATA =
+diff --git a/src/target/lakemont.c b/src/target/lakemont.c
+new file mode 100644
+index 0000000..4c5b00a
+--- /dev/null
++++ b/src/target/lakemont.c
+@@ -0,0 +1,1058 @@
++/*
++ * Copyright(c) 2013 Intel Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Contact Information:
++ * Intel Corporation
++ */
++
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
++#include <helper/log.h>
++
++#include "target.h"
++#include "target_type.h"
++#include "lakemont.h"
++#include "register.h"
++#include "breakpoints.h"
++#include "x86_32_common.h"
++
++static int irscan(struct target *t, uint8_t *out,
++			uint8_t *in, uint8_t ir_len);
++static int drscan(struct target *t, uint8_t *out, uint8_t *in, uint8_t len);
++static int save_context(struct target *target);
++static int restore_context(struct target *target);
++static uint32_t get_tapstatus(struct target *t);
++static int enter_probemode(struct target *t);
++static int exit_probemode(struct target *t);
++static int halt_prep(struct target *t);
++static int do_halt(struct target *t);
++static int do_resume(struct target *t);
++static int read_all_core_hw_regs(struct target *t);
++static int write_all_core_hw_regs(struct target *t);
++static int read_hw_reg(struct target *t,
++			int reg, uint32_t *regval, uint8_t cache);
++static int write_hw_reg(struct target *t,
++			int reg, uint32_t regval, uint8_t cache);
++static struct reg_cache *lakemont_build_reg_cache
++			(struct target *target);
++static int submit_reg_op_pir(struct target *t, int num);
++static int submit_instruction_pir(struct target *t, int num);
++static int submit_pir(struct target *t, uint8_t *op);
++static int lakemont_get_core_reg(struct reg *reg);
++static int lakemont_set_core_reg(struct reg *reg, uint8_t *buf);
++
++static struct scan_blk scan;
++
++/* registers and opcodes for register access, pm_idx is used to identify the
++ * registers that are modified for lakemont probemode specific operations
++ */
++const struct {
++	uint8_t id;
++	char *name;
++	uint64_t op;
++	uint8_t pm_idx;
++} regs[] = {
++	/* general purpose registers */
++	{ EAX, "EAX", 0x000000D01D660000, 0 },
++	{ ECX, "ECX", 0x000000501D660000, 1 },
++	{ EDX, "EDX", 0x000000901D660000, 2 },
++	{ EBX, "EBX", 0x000000101D660000, NOT_PM_REG },
++	{ ESP, "ESP", 0x000000E01D660000, NOT_PM_REG },
++	{ EBP, "EBP", 0x000000601D660000, NOT_PM_REG },
++	{ ESI, "ESI", 0x000000A01D660000, NOT_PM_REG },
++	{ EDI, "EDI", 0x000000201D660000, NOT_PM_REG },
++
++	/* instruction pointer & flags */
++	{ EIP, "EIP", 0x000000C01D660000, 3 },
++	{ EFLAGS, "EFLAGS", 0x000000401D660000, 4 },
++
++	/* segment registers */
++	{ CS, "CS", 0x000000281D660000, 5 },
++	{ DS, "DS", 0x000000481D660000, NOT_PM_REG },
++	{ SS, "SS", 0x000000C81D660000, NOT_PM_REG },
++	{ ES, "ES", 0x000000A81D660000, NOT_PM_REG },
++	{ FS, "FS", 0x000000881D660000, NOT_PM_REG },
++	{ GS, "GS", 0x000000081D660000, NOT_PM_REG },
++
++	/* control registers */
++	{ CR0, "CR0", 0x000000001D660000, 6 },
++	{ CR2, "CR2", 0x000000BC1D660000, 7 },
++	{ CR3, "CR3", 0x000000801D660000, 8 },
++	{ CR4, "CR4", 0x0000002C1D660000, 9 },
++
++	/* debug registers */
++	{ DR0, "DR0", 0x0000007C1D660000, NOT_PM_REG },
++	{ DR1, "DR1", 0x000000FC1D660000, NOT_PM_REG },
++	{ DR2, "DR2", 0x000000021D660000, NOT_PM_REG },
++	{ DR3, "DR3", 0x000000821D660000, NOT_PM_REG },
++	{ DR6, "DR6", 0x000000301D660000, 10 },
++	{ DR7, "DR7", 0x000000B01D660000, 11 },
++
++	/* segment registers needed for PM */
++	{ CSAR, "CSAR", 0x000000741D660000, 12 },
++	{ DSAR, "DSAR", 0x000000141D660000, 13 },
++	{ SSAR, "SSAR", 0x000000D41D660000, 14 },
++	{ DSB, "DSB", 0x000000941D660000, 15 },
++	{ DSL, "DSL", 0x000000541D660000, 16 },
++
++	/* probemode opcodes */
++	{ PMCR, "PMCR", 0x000000421D660000, 17 },
++	{ SRAMACCESS, "SRAMACCESS", 0x0000000E9D660000, NOT_PM_REG },
++	{ SRAM2PDR, "SRAM2PDR", 0x4CF0000000000000, NOT_PM_REG },
++	{ PDR2SRAM, "PDR2SRAM", 0x0CF0000000000000, NOT_PM_REG },
++	{ WBINVD, "WBINVD", 0x09090909090990F0, NOT_PM_REG },
++};
++
++const struct {
++	uint8_t id;
++	char *name;
++	uint64_t op;
++} instructions[] = {
++	/* memory read/write */
++	{ OP_MEMRDB32, "MEMRDB32", 0x0909090909090851 },
++	{ OP_MEMRDB16, "MEMRDB16", 0x09090909090851E6 },
++	{ OP_MEMRDH32, "MEMRDH32", 0x090909090908D166 },
++	{ OP_MEMRDH16, "MEMRDH16", 0x090909090908D1E6 },
++	{ OP_MEMRDW32, "MEMRDW32", 0x09090909090908D1 },
++	{ OP_MEMRDW16, "MEMRDW16", 0x0909090908D1E666 },
++	{ OP_MEMWRB32, "MEMWRB32", 0x0909090909090811 },
++	{ OP_MEMWRB16, "MEMWRB16", 0x09090909090811E6 },
++	{ OP_MEMWRH32, "MEMWRH32", 0x0909090909089166 },
++	{ OP_MEMWRH16, "MEMWRH16", 0x09090909090891E6 },
++	{ OP_MEMWRW32, "MEMWRW32", 0x0909090909090891 },
++	{ OP_MEMWRW16, "MEMWRW16", 0x090909090891E666 },
++	/* IO read/write */
++	{ OP_IORDB32, "IORDB32", 0x0909090909090937 },
++	{ OP_IORDB16, "IORDB16", 0x09090909090937E6 },
++	{ OP_IORDH32, "IORDH32", 0x090909090909B766 },
++	{ OP_IORDH16, "IORDH16", 0x090909090909B7E6 },
++	{ OP_IORDW32, "IORDW32", 0x09090909090909B7 },
++	{ OP_IORDW16, "IORDW16", 0x0909090909B7E666 },
++	{ OP_IOWRB32, "IOWRB32", 0x0909090909090977 },
++	{ OP_IOWRB16, "IOWRB16", 0x09090909090977E6 },
++	{ OP_IOWRH32, "IOWRH32", 0x090909090909F766 },
++	{ OP_IOWRH16, "IOWRH16", 0x090909090909F7E6 },
++	{ OP_IOWRW32, "IOWRW32", 0x09090909090909F7 },
++	{ OP_IOWRW16, "IOWRW16", 0x0909090909F7E666 },
++};
++
++static int irscan(struct target *t, uint8_t *out,
++			uint8_t *in, uint8_t ir_len)
++{
++	int retval = ERROR_OK;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	LOG_DEBUG("%s irlen=%d, out=%d, in=%d", __func__, ir_len, *out, *in);
++	if (NULL == t->tap) {
++		retval = ERROR_FAIL;
++		LOG_ERROR("%s invalid target tap", __func__);
++		return retval;
++	}
++	if (ir_len != t->tap->ir_length) {
++		retval = ERROR_FAIL;
++		if (t->tap->enabled)
++			LOG_ERROR("%s tap enabled but tap irlen=%d",
++					__func__, t->tap->ir_length);
++		else
++			LOG_ERROR("%s tap not enabled and irlen=%d",
++					__func__, t->tap->ir_length);
++		return retval;
++	}
++	struct scan_field *fields = &scan.field;
++	fields->num_bits = ir_len;
++	fields->out_value = out;
++	fields->in_value = in;
++	jtag_add_ir_scan(x86_32->curr_tap, fields, TAP_IDLE);
++	if (x86_32->flush) {
++		retval = jtag_execute_queue();
++		if (retval != ERROR_OK)
++				LOG_ERROR("%s failed to execute queue", __func__);
++	}
++	return retval;
++}
++
++static int drscan(struct target *t, uint8_t *out, uint8_t *in, uint8_t len)
++{
++	int retval = ERROR_OK;
++	uint64_t data = 0;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	if (len == PIR_SIZE) {
++		LOG_DEBUG("%s out=0x%08x%08x, in=0x%X, len=%d",
++				__func__, target_buffer_get_u32(t, (uint8_t *)out+4),
++				target_buffer_get_u32(t, (uint8_t *)out), *in, len);
++	} else if (len == PDR_SIZE)
++		LOG_DEBUG("%s out=0x%08x, in=0x%X, len=%d",
++				__func__, target_buffer_get_u32(t, (uint8_t *)out), *in, len);
++	else
++		LOG_DEBUG("%s out=0x%X, in=0x%X, len=%d", __func__, *out, *in, len);
++
++	if (NULL == t->tap) {
++		retval = ERROR_FAIL;
++		LOG_ERROR("invalid target tap");
++		return retval;
++	}
++	if (len > MAX_SCAN_SIZE || 0 == len) {
++		retval = ERROR_FAIL;
++		LOG_ERROR("data len is %d bits, max is %d bits", len, MAX_SCAN_SIZE);
++		return retval;
++	}
++
++	struct scan_field *fields = &scan.field;
++	fields->out_value = out;
++	fields->in_value = in;
++	fields->num_bits = len;
++	jtag_add_dr_scan(x86_32->curr_tap, 1, fields, TAP_IDLE);
++	if (x86_32->flush) {
++		retval = jtag_execute_queue();
++		if (retval != ERROR_OK) {
++			LOG_ERROR("drscan failed to execute queue");
++			return retval;
++		}
++	}
++	if (in != NULL) {
++		if (len >= 8) {
++			for (int n = (len / 8) - 1 ; n >= 0; n--)
++				data = (data << 8) + *(in+n);
++			if (len == PIR_SIZE)
++				LOG_DEBUG("dr in 0x%016lX", (long unsigned int)data);
++			else
++				LOG_DEBUG("dr in 0x%08x", (uint32_t)data);
++		} else
++			LOG_DEBUG("dr in 0x%02X", *in);
++	} else {
++		LOG_ERROR("no drscan data");
++		retval = ERROR_FAIL;
++	}
++	return retval;
++}
++
++static int save_context(struct target *t)
++{
++	int err;
++	/* read core registers from lakemont sram */
++	err = read_all_core_hw_regs(t);
++	if (err != ERROR_OK) {
++		LOG_ERROR("%s error reading regs", __func__);
++		return err;
++	}
++	return ERROR_OK;
++}
++
++static int restore_context(struct target *t)
++{
++	int err = ERROR_OK;
++	uint32_t i;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++
++	/* write core regs into the core PM SRAM from the reg_cache */
++	err = write_all_core_hw_regs(t);
++	if (err != ERROR_OK) {
++		LOG_ERROR("%s error writing regs", __func__);
++		return err;
++	}
++
++	for (i = 0; i < (x86_32->cache->num_regs-NUM_DUMMY_REGS); i++) {
++		x86_32->cache->reg_list[i].dirty = 0;
++		x86_32->cache->reg_list[i].valid = 0;
++	}
++	return err;
++}
++
++static int lakemont_get_core_reg(struct reg *reg)
++{
++	int retval = ERROR_OK;
++	struct lakemont_core_reg *lakemont_reg = reg->arch_info;
++	struct target *t = lakemont_reg->target;
++	CHECK_HALTED;
++	LOG_DEBUG("%s reg=%s, value=%08x", __func__, reg->name,
++			buf_get_u32(reg->value, 0, 32));
++	return retval;
++}
++
++static int lakemont_set_core_reg(struct reg *reg, uint8_t *buf)
++{
++	struct lakemont_core_reg *lakemont_reg = reg->arch_info;
++	struct target *t = lakemont_reg->target;
++	uint32_t value = buf_get_u32(buf, 0, 32);
++	LOG_DEBUG("%s reg=%s, newval=%08x", __func__, reg->name, value);
++	CHECK_HALTED;
++	buf_set_u32(reg->value, 0, 32, value);
++	reg->dirty = 1;
++	reg->valid = 1;
++	return ERROR_OK;
++}
++
++static const struct reg_arch_type lakemont_reg_type = {
++	/* these get called if reg_cache doesnt have a "valid" value
++	 * of an individual reg eg "reg EIP" but not for "reg" block
++	 */
++	.get = lakemont_get_core_reg,
++	.set = lakemont_set_core_reg,
++};
++
++/* TODO - agree on GDB register implementation */
++static uint8_t lakemont_gdb_dummy_fp_value[] = {0, 0, 0, 0};
++
++static struct reg lakemont_gdb_dummy_fp_reg = {
++	.name = "GDB dummy floating-point register",
++	.value = lakemont_gdb_dummy_fp_value,
++	.dirty = 0,
++	.valid = 1,
++	.size = 32,
++	.arch_info = NULL,
++};
++
++struct reg_cache *lakemont_build_reg_cache(struct target *t)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	int num_regs = (sizeof(regs)/sizeof(regs[0])+NUM_BLANK_REGS);
++	struct reg_cache **cache_p = register_get_last_cache_p(&t->reg_cache);
++	struct reg_cache *cache = malloc(sizeof(struct reg_cache));
++	struct reg *reg_list = malloc(sizeof(struct reg) * num_regs);
++	struct lakemont_core_reg *arch_info = malloc(sizeof(struct lakemont_core_reg) * num_regs);
++	int i;
++
++	if (cache == NULL || reg_list == NULL || arch_info == NULL) {
++		free(cache);
++		free(reg_list);
++		free(arch_info);
++		LOG_ERROR("%s out of memory", __func__);
++		return NULL;
++	}
++	register_init_dummy(&lakemont_gdb_dummy_fp_reg);
++
++	/* Build the process context cache */
++	cache->name = "lakemont registers";
++	cache->next = NULL;
++	cache->reg_list = reg_list;
++	cache->num_regs = num_regs;
++	(*cache_p) = cache;
++	x86_32->cache = cache;
++
++	for (i = 0; i < (num_regs-NUM_BLANK_REGS); i++) {
++		arch_info[i].target = t;
++		arch_info[i].x86_32_common = x86_32;
++		arch_info[i].op = regs[i].op;
++		arch_info[i].pm_idx = regs[i].pm_idx;
++		reg_list[i].name = regs[i].name;
++		reg_list[i].size = 32;
++		reg_list[i].value = calloc(1, 4);
++		reg_list[i].dirty = 0;
++		reg_list[i].valid = 0;
++		reg_list[i].type = &lakemont_reg_type;
++		reg_list[i].arch_info = &arch_info[i];
++	}
++
++	/* TODO - cleanup
++	 * dummy regs needed to satisfy GDB 32bit-core.xml, eventually remove
++	 * NUM_BLANK_REGS from block above and remove complete block below
++	 */
++	for (i = (num_regs-NUM_BLANK_REGS); i < num_regs; i++) {
++		arch_info[i].target = t;
++		arch_info[i].x86_32_common = x86_32;
++		arch_info[i].op = 0;
++		arch_info[i].pm_idx = 0;
++		reg_list[i].name = "TEMP";
++		reg_list[i].size = 32;
++		reg_list[i].value = calloc(1, 4);
++		reg_list[i].dirty = 0;
++		reg_list[i].valid = 0;
++		reg_list[i].type = &lakemont_reg_type;
++		reg_list[i].arch_info = &arch_info[i];
++	}
++	return cache;
++}
++
++static uint32_t get_tapstatus(struct target *t)
++{
++	LOG_DEBUG("%s", __func__);
++	scan.out[0] = OP_TAPSTATUS;
++	if (irscan(t, scan.out, NULL, LMT_IRLEN) != ERROR_OK)
++		return 0;
++	if (drscan(t, NULL, scan.out, TS_SIZE) != ERROR_OK)
++		return 0;
++	return target_buffer_get_u32(t, (uint8_t *)scan.out);
++}
++
++static int enter_probemode(struct target *t)
++{
++	uint32_t tapstatus = 0;
++	tapstatus = get_tapstatus(t);
++	LOG_DEBUG("%s TS before PM enter = %08x", __func__, tapstatus);
++	if (tapstatus & TS_PM_BIT) {
++		LOG_DEBUG("core already in probemode");
++		return ERROR_OK;
++	}
++	scan.out[0] = OP_PROBEMODE;
++	if (irscan(t, scan.out, NULL, LMT_IRLEN) != ERROR_OK)
++		return ERROR_FAIL;
++	scan.out[0] = 1;
++	if (drscan(t, scan.out, scan.in, 1) != ERROR_OK)
++		return ERROR_FAIL;
++	tapstatus = get_tapstatus(t);
++	LOG_DEBUG("TS after PM enter = %08x", tapstatus);
++	if ((tapstatus & TS_PM_BIT) && (!(tapstatus & TS_EN_PM_BIT)))
++		return ERROR_OK;
++	else {
++		LOG_ERROR("PM enter error, tapstatus = %08x", tapstatus);
++		return ERROR_FAIL;
++	}
++}
++
++static int exit_probemode(struct target *t)
++{
++	uint32_t tapstatus = get_tapstatus(t);
++	LOG_DEBUG("%s TS before PM exit = %08x", __func__, tapstatus);
++
++	if (!(tapstatus & TS_PM_BIT)) {
++		LOG_USER("core not in PM");
++		return ERROR_OK;
++	}
++	scan.out[0] = OP_PROBEMODE;
++	if (irscan(t, scan.out, NULL, LMT_IRLEN) != ERROR_OK)
++		return ERROR_FAIL;
++	scan.out[0] = 0;
++	if (drscan(t, scan.out, scan.in, 1) != ERROR_OK)
++		return ERROR_FAIL;
++	return ERROR_OK;
++}
++
++/* do whats needed to properly enter probemode for debug on lakemont */
++static int halt_prep(struct target *t)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	if (write_hw_reg(t, DSB, PM_DSB, 0) != ERROR_OK)
++		return ERROR_FAIL;
++	LOG_DEBUG("write DSB %08x", PM_DSB);
++	if (write_hw_reg(t, DSL, PM_DSL, 0) != ERROR_OK)
++		return ERROR_FAIL;
++	LOG_DEBUG("write DSL %08x", PM_DSL);
++	if (write_hw_reg(t, DSAR, PM_DSAR, 0) != ERROR_OK)
++		return ERROR_FAIL;
++	LOG_DEBUG("write DSAR %08x", PM_DSAR);
++	if (write_hw_reg(t, DR7, PM_DR7, 0) != ERROR_OK)
++		return ERROR_FAIL;
++	LOG_DEBUG("write DR7 %08x", PM_DR7);
++
++	uint32_t eflags = buf_get_u32(x86_32->cache->reg_list[EFLAGS].value, 0, 32);
++	uint32_t csar = buf_get_u32(x86_32->cache->reg_list[CSAR].value, 0, 32);
++	uint32_t ssar = buf_get_u32(x86_32->cache->reg_list[SSAR].value, 0, 32);
++	uint32_t cr0 = buf_get_u32(x86_32->cache->reg_list[CR0].value, 0, 32);
++
++	/* clear VM86 and IF bits if they are set */
++	LOG_DEBUG("EFLAGS = %08x, VM86 = %d, IF = %d", eflags,
++			eflags & EFLAGS_VM86 ? 1 : 0,
++			eflags & EFLAGS_IF ? 1 : 0);
++	if (eflags & EFLAGS_VM86
++		|| eflags & EFLAGS_IF) {
++		x86_32->pm_regs[I(EFLAGS)] = eflags & ~(EFLAGS_VM86 | EFLAGS_IF);
++		if (write_hw_reg(t, EFLAGS, x86_32->pm_regs[I(EFLAGS)], 0) != ERROR_OK)
++			return ERROR_FAIL;
++		LOG_DEBUG("EFLAGS now = %08x, VM86 = %d, IF = %d",
++				x86_32->pm_regs[I(EFLAGS)],
++				x86_32->pm_regs[I(EFLAGS)] & EFLAGS_VM86 ? 1 : 0,
++				x86_32->pm_regs[I(EFLAGS)] & EFLAGS_IF ? 1 : 0);
++	}
++
++	/* set CPL to 0 for memory access */
++	if (csar & CSAR_DPL) {
++		x86_32->pm_regs[I(CSAR)] = csar & ~CSAR_DPL;
++		if (write_hw_reg(t, CSAR, x86_32->pm_regs[I(CSAR)], 0) != ERROR_OK)
++			return ERROR_FAIL;
++		LOG_DEBUG("write CSAR_CPL to 0 %08x", x86_32->pm_regs[I(CSAR)]);
++	}
++	if (ssar & SSAR_DPL) {
++		x86_32->pm_regs[I(SSAR)] = ssar & ~CSAR_DPL;
++		if (write_hw_reg(t, SSAR, x86_32->pm_regs[I(SSAR)], 0) != ERROR_OK)
++			return ERROR_FAIL;
++		LOG_DEBUG("write SSAR_CPL to 0 %08x", x86_32->pm_regs[I(SSAR)]);
++	}
++
++	/* if cache's are enabled, disable and flush */
++	if (!(cr0 & CR0_CD)) {
++		LOG_DEBUG("caching enabled CR0 = %08x", cr0);
++		if (cr0 & CR0_PG) {
++			x86_32->pm_regs[I(CR0)] = cr0 & ~CR0_PG;
++			if (write_hw_reg(t, CR0, x86_32->pm_regs[I(CR0)], 0) != ERROR_OK)
++				return ERROR_FAIL;
++			LOG_DEBUG("cleared paging CR0_PG = %08x", x86_32->pm_regs[I(CR0)]);
++			/* submit wbinvd to flush cache */
++			if (submit_reg_op_pir(t, WBINVD) != ERROR_OK)
++				return ERROR_FAIL;
++			x86_32->pm_regs[I(CR0)] =
++				x86_32->pm_regs[I(CR0)] | (CR0_CD | CR0_NW | CR0_PG);
++			if (write_hw_reg(t, CR0, x86_32->pm_regs[I(CR0)], 0) != ERROR_OK)
++				return ERROR_FAIL;
++			LOG_DEBUG("set CD, NW and PG, CR0 = %08x", x86_32->pm_regs[I(CR0)]);
++		}
++	}
++	return ERROR_OK;
++}
++
++static int do_halt(struct target *t)
++{
++	/* needs proper handling later if doing a halt errors out */
++	t->state = TARGET_DEBUG_RUNNING;
++	if (enter_probemode(t) != ERROR_OK)
++		return ERROR_FAIL;
++	if (save_context(t) != ERROR_OK)
++		return ERROR_FAIL;
++	if (halt_prep(t) != ERROR_OK)
++		return ERROR_FAIL;
++	t->state = TARGET_HALTED;
++
++	return target_call_event_callbacks(t, TARGET_EVENT_HALTED);
++}
++
++static int do_resume(struct target *t)
++{
++	/* needs proper handling later */
++	t->state = TARGET_DEBUG_RUNNING;
++	if (restore_context(t) != ERROR_OK)
++		return ERROR_FAIL;
++	if (exit_probemode(t) != ERROR_OK)
++		return ERROR_FAIL;
++	t->state = TARGET_RUNNING;
++
++	t->debug_reason = DBG_REASON_NOTHALTED;
++	LOG_USER("target running");
++
++	return target_call_event_callbacks(t, TARGET_EVENT_RESUMED);
++}
++
++static int read_all_core_hw_regs(struct target *t)
++{
++	int err;
++	uint32_t regval, i;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	for (i = 0 ; i < (x86_32->cache->num_regs-NUM_DUMMY_REGS); i++) {
++		err = read_hw_reg(t, regs[i].id, &regval, 1);
++		if (err != ERROR_OK) {
++			LOG_ERROR("error saving reg %s",
++					x86_32->cache->reg_list[i].name);
++			return err;
++		}
++	}
++	LOG_DEBUG("read_all_core_hw_regs read %d registers ok", i);
++	return ERROR_OK;
++}
++
++static int write_all_core_hw_regs(struct target *t)
++{
++	int err;
++	uint32_t i;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	for (i = 0 ; i < (x86_32->cache->num_regs-NUM_DUMMY_REGS); i++) {
++		err = write_hw_reg(t, i, 0, 1);
++		if (err != ERROR_OK) {
++			LOG_ERROR("error restoring reg %s",
++					x86_32->cache->reg_list[i].name);
++			return err;
++		}
++	}
++	LOG_DEBUG("write_all_core_hw_regs wrote %d registers ok", i);
++	return ERROR_OK;
++}
++
++/* read reg from lakemont shadow ram, update reg cache if needed */
++static int read_hw_reg(struct target *t, int reg, uint32_t *regval, uint8_t cache)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	struct lakemont_core_reg *arch_info;
++	arch_info = x86_32->cache->reg_list[reg].arch_info;
++	x86_32->flush = 0; /* dont flush scans till we have a batch */
++	if (submit_reg_op_pir(t, reg) != ERROR_OK)
++		return ERROR_FAIL;
++	if (submit_reg_op_pir(t, SRAMACCESS) != ERROR_OK)
++		return ERROR_FAIL;
++	if (submit_reg_op_pir(t, SRAM2PDR) != ERROR_OK)
++		return ERROR_FAIL;
++	x86_32->flush = 1;
++	scan.out[0] = OP_RDWRPDR;
++	if (irscan(t, scan.out, NULL, LMT_IRLEN) != ERROR_OK)
++		return ERROR_FAIL;
++	if (drscan(t, NULL, scan.out, PDR_SIZE) != ERROR_OK)
++		return ERROR_FAIL;
++
++	jtag_add_sleep(DELAY_SUBMITPIR);
++	*regval = target_buffer_get_u32(t, (uint8_t *)scan.out);
++	if (cache) {
++		buf_set_u32(x86_32->cache->reg_list[reg].value, 0, 32, *regval);
++		x86_32->cache->reg_list[reg].valid = 1;
++		x86_32->cache->reg_list[reg].dirty = 0;
++	}
++	LOG_DEBUG("%s reg=%s, op=0x%016lX, val=%08x",
++			__func__, x86_32->cache->reg_list[reg].name,
++			(long unsigned int)arch_info->op,
++			*regval);
++	return ERROR_OK;
++}
++
++/* write lakemont shadow ram reg, update reg cache if needed */
++static int write_hw_reg(struct target *t, int reg, uint32_t regval, uint8_t cache)
++{
++	uint8_t *p_val;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	struct lakemont_core_reg *arch_info;
++	arch_info = x86_32->cache->reg_list[reg].arch_info;
++
++	if (cache)
++		regval = buf_get_u32(x86_32->cache->reg_list[reg].value, 0, 32);
++	p_val = (uint8_t *)&regval;
++
++	LOG_DEBUG("%s reg=%s, op=0x%016lX, val=%08x", __func__,
++			x86_32->cache->reg_list[reg].name,
++			(long unsigned int)arch_info->op,
++			regval);
++
++	scan.out[0] = OP_RDWRPDR;
++	x86_32->flush = 0; /* dont flush scans till we have a batch */
++	if (irscan(t, scan.out, NULL, LMT_IRLEN) != ERROR_OK)
++		return ERROR_FAIL;
++	if (drscan(t, p_val, scan.out, PDR_SIZE) != ERROR_OK)
++		return ERROR_FAIL;
++	if (submit_reg_op_pir(t, reg) != ERROR_OK)
++		return ERROR_FAIL;
++	if (submit_reg_op_pir(t, SRAMACCESS) != ERROR_OK)
++		return ERROR_FAIL;
++	x86_32->flush = 1;
++	if (submit_reg_op_pir(t, PDR2SRAM) != ERROR_OK)
++		return ERROR_FAIL;
++
++	/* we are writing from the cache so ensure we reset flags */
++	if (cache) {
++		x86_32->cache->reg_list[reg].dirty = 0;
++		x86_32->cache->reg_list[reg].valid = 0;
++	}
++	return ERROR_OK;
++}
++
++static bool is_paging_enabled(struct target *t)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	if (x86_32->pm_regs[I(CR0)] & CR0_PG)
++		return true;
++	else
++		return false;
++}
++
++static uint8_t get_num_user_regs(struct target *t)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	return x86_32->cache->num_regs-NUM_DUMMY_REGS;
++}
++
++static int disable_paging(struct target *t)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	x86_32->pm_regs[I(CR0)] = x86_32->pm_regs[I(CR0)] & ~CR0_PG;
++	int err = x86_32->write_hw_reg(t, CR0, x86_32->pm_regs[I(CR0)], 0);
++	if (err != ERROR_OK) {
++		LOG_ERROR("%s error disabling paging", __func__);
++		return err;
++	}
++	return err;
++}
++
++static int enable_paging(struct target *t)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	x86_32->pm_regs[I(CR0)] = (x86_32->pm_regs[I(CR0)] | CR0_PG);
++	int err = x86_32->write_hw_reg(t, CR0, x86_32->pm_regs[I(CR0)], 0);
++	if (err != ERROR_OK) {
++		LOG_ERROR("%s error enabling paging", __func__);
++		return err;
++	}
++	return err;
++}
++
++static bool sw_bpts_supported(struct target *t)
++{
++	uint32_t tapstatus = get_tapstatus(t);
++	if (tapstatus & TS_SBP_BIT)
++		return true;
++	else
++		return false;
++}
++
++static int transaction_status(struct target *t)
++{
++	uint32_t tapstatus = get_tapstatus(t);
++	if ((TS_EN_PM_BIT | TS_PRDY_BIT) & tapstatus) {
++		LOG_ERROR("transaction error tapstatus = %08x", tapstatus);
++		return ERROR_FAIL;
++	} else {
++		return ERROR_OK;
++	}
++}
++
++static int submit_instruction(struct target *t, int num)
++{
++	int err = submit_instruction_pir(t, num);
++	if (err != ERROR_OK) {
++		LOG_ERROR("%s error submitting pir", __func__);
++		return err;
++	}
++	return err;
++
++}
++
++static int submit_reg_op_pir(struct target *t, int num)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	struct lakemont_core_reg *arch_info;
++	arch_info = x86_32->cache->reg_list[num].arch_info;
++
++	uint8_t *p_reg = (uint8_t *)&arch_info->op;
++	LOG_DEBUG("submit_pir reg %s op=0x%016lX",
++			regs[num].name, (long unsigned int)regs[num].op);
++	int err = submit_pir(t, p_reg);
++	if (err != ERROR_OK) {
++		LOG_ERROR("%s error submitting pir", __func__);
++		return err;
++	}
++	return err;
++}
++
++static int submit_instruction_pir(struct target *t, int num)
++{
++	uint8_t *p_instr = (uint8_t *)&instructions[num].op;
++	LOG_DEBUG("%s %s op=0x%016lX", __func__, instructions[num].name,
++			(long unsigned int)instructions[num].op);
++
++	int err = submit_pir(t, p_instr);
++	if (err != ERROR_OK) {
++		LOG_ERROR("%s error submitting pir", __func__);
++		return err;
++	}
++	return err;
++}
++
++static int submit_pir(struct target *t, uint8_t *op)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++
++	int flush = x86_32->flush;
++	x86_32->flush = 0;
++	scan.out[0] = OP_WRPIR;
++	if (irscan(t, scan.out, NULL, LMT_IRLEN) != ERROR_OK)
++		return ERROR_FAIL;
++	if (drscan(t, op, scan.out, PIR_SIZE) != ERROR_OK)
++		return ERROR_FAIL;
++	scan.out[0] = OP_SUBMITPIR;
++	x86_32->flush = flush;
++	if (irscan(t, scan.out, NULL, LMT_IRLEN) != ERROR_OK)
++		return ERROR_FAIL;
++	jtag_add_sleep(DELAY_SUBMITPIR);
++	return ERROR_OK;
++}
++
++int lakemont_init_target(struct command_context *cmd_ctx, struct target *t)
++{
++	lakemont_build_reg_cache(t);
++	t->state = TARGET_RUNNING;
++	t->debug_reason = DBG_REASON_NOTHALTED;
++	return ERROR_OK;
++}
++
++int lakemont_init_arch_info(struct target *t, struct x86_32_common *x86_32)
++{
++	x86_32->submit_instruction = submit_instruction;
++	x86_32->transaction_status = transaction_status;
++	x86_32->read_hw_reg = read_hw_reg;
++	x86_32->write_hw_reg = write_hw_reg;
++	x86_32->sw_bpts_supported = sw_bpts_supported;
++	x86_32->get_num_user_regs = get_num_user_regs;
++	x86_32->is_paging_enabled = is_paging_enabled;
++	x86_32->disable_paging = disable_paging;
++	x86_32->enable_paging = enable_paging;
++	return ERROR_OK;
++}
++
++int lakemont_poll(struct target *t)
++{
++	/* LMT1 PMCR register currently allows code breakpoints, data breakpoints,
++	 * single stepping and shutdowns to be redirected to PM but does not allow
++	 * redirecting into PM as a result of SMM enter and SMM exit
++	 */
++	uint32_t ts = get_tapstatus(t);
++
++	if (ts == 0xFFFFFFFF && t->state != TARGET_DEBUG_RUNNING) {
++		/* something is wrong here */
++		LOG_ERROR("tapstatus invalid - scan_chain serialization or locked JTAG access issues");
++		/* TODO: Give a hint that unlocking is wrong or maybe a
++		 * 'jtag arp_init' helps
++		 */
++		t->state = TARGET_DEBUG_RUNNING;
++		return ERROR_OK;
++	}
++
++	if (t->state == TARGET_HALTED && (!(ts & TS_PM_BIT))) {
++		LOG_INFO("target running for unknown reason");
++		t->state = TARGET_RUNNING;
++	}
++
++	if (t->state == TARGET_RUNNING &&
++		t->state != TARGET_DEBUG_RUNNING) {
++
++		if ((ts & TS_PM_BIT) && (ts & TS_PMCR_BIT)) {
++
++			LOG_DEBUG("redirect to PM, tapstatus=%08x", get_tapstatus(t));
++
++			t->state = TARGET_DEBUG_RUNNING;
++			if (save_context(t) != ERROR_OK)
++				return ERROR_FAIL;
++			if (halt_prep(t) != ERROR_OK)
++				return ERROR_FAIL;
++			t->state = TARGET_HALTED;
++			t->debug_reason = DBG_REASON_UNDEFINED;
++
++			struct x86_32_common *x86_32 = target_to_x86_32(t);
++			uint32_t eip = buf_get_u32(x86_32->cache->reg_list[EIP].value, 0, 32);
++			uint32_t dr6 = buf_get_u32(x86_32->cache->reg_list[DR6].value, 0, 32);
++			uint32_t hwbreakpoint = (uint32_t)-1;
++
++			if (dr6 & DR6_BRKDETECT_0)
++				hwbreakpoint = 0;
++			if (dr6 & DR6_BRKDETECT_1)
++				hwbreakpoint = 1;
++			if (dr6 & DR6_BRKDETECT_2)
++				hwbreakpoint = 2;
++			if (dr6 & DR6_BRKDETECT_3)
++				hwbreakpoint = 3;
++
++			if (hwbreakpoint != (uint32_t)-1) {
++				uint32_t dr7 = buf_get_u32(x86_32->cache->reg_list[DR7].value, 0, 32);
++				uint32_t type = dr7 & (0x03 << (DR7_RW_SHIFT + hwbreakpoint*DR7_RW_LEN_SIZE));
++				if (type == DR7_BP_EXECUTE) {
++					LOG_USER("hit hardware breakpoint (hwreg=%d) at 0x%08x", hwbreakpoint, eip);
++				} else {
++					uint32_t address = 0;
++					switch (hwbreakpoint) {
++					default:
++					case 0:
++						address = buf_get_u32(x86_32->cache->reg_list[DR0].value, 0, 32);
++					break;
++					case 1:
++						address = buf_get_u32(x86_32->cache->reg_list[DR1].value, 0, 32);
++					break;
++					case 2:
++						address = buf_get_u32(x86_32->cache->reg_list[DR2].value, 0, 32);
++					break;
++					case 3:
++						address = buf_get_u32(x86_32->cache->reg_list[DR3].value, 0, 32);
++					break;
++					}
++					LOG_USER("hit '%s' watchpoint for 0x%08x (hwreg=%d) at 0x%08x",
++								type == DR7_BP_WRITE ? "write" : "access", address,
++								hwbreakpoint, eip);
++				}
++				t->debug_reason = DBG_REASON_BREAKPOINT;
++			} else {
++				/* Check if the target hit a software breakpoint.
++				 * ! Watch out: EIP is currently pointing after the breakpoint opcode
++				 */
++				struct breakpoint *bp = NULL;
++				bp = breakpoint_find(t, eip-1);
++				if (bp != NULL) {
++					t->debug_reason = DBG_REASON_BREAKPOINT;
++					if (bp->type == BKPT_SOFT) {
++						/* The EIP is now pointing the the next byte after the
++						 * breakpoint instruction. This needs to be corrected.
++						 */
++						buf_set_u32(x86_32->cache->reg_list[EIP].value, 0, 32, eip-1);
++						x86_32->cache->reg_list[EIP].dirty = 1;
++						x86_32->cache->reg_list[EIP].valid = 1;
++						LOG_USER("hit software breakpoint at 0x%08x", eip-1);
++					} else {
++						/* it's not a hardware breakpoint (checked already in DR6 state)
++						 * and it's also not a software breakpoint ...
++						 */
++						LOG_USER("hit unknown breakpoint at 0x%08x", eip);
++					}
++				} else {
++
++					/* There is also the case that we hit an breakpoint instruction,
++					 * which was not set by us. This needs to be handled be the
++					 * application that introduced the breakpoint.
++					 */
++
++					LOG_USER("unknown break reason at 0x%08x", eip);
++				}
++			}
++
++			return target_call_event_callbacks(t, TARGET_EVENT_HALTED);
++		}
++	}
++	return ERROR_OK;
++}
++
++int lakemont_arch_state(struct target *t)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++
++	LOG_USER("target halted due to %s at 0x%08x in %s mode",
++			debug_reason_name(t),
++			buf_get_u32(x86_32->cache->reg_list[EIP].value, 0, 32),
++			(buf_get_u32(x86_32->cache->reg_list[CR0].value, 0, 32) & CR0_PE) ? "protected" : "real");
++
++	return ERROR_OK;
++}
++
++int lakemont_halt(struct target *t)
++{
++	LOG_DEBUG("lakemont_halt()");
++	if (t->state == TARGET_RUNNING) {
++		t->debug_reason = DBG_REASON_DBGRQ;
++		if (do_halt(t) != ERROR_OK)
++			return ERROR_FAIL;
++		return ERROR_OK;
++	} else {
++		LOG_USER("target not running");
++		return ERROR_FAIL;
++	}
++}
++
++int lakemont_resume(struct target *t, int current, uint32_t address,
++			int handle_breakpoints, int debug_execution)
++{
++	struct breakpoint *bp = NULL;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++
++	CHECK_HALTED;
++	/* TODO lakemont_enable_breakpoints(t); */
++	if (t->state == TARGET_HALTED) {
++
++		/* running away for a software breakpoint needs some special handling */
++		uint32_t eip = buf_get_u32(x86_32->cache->reg_list[EIP].value, 0, 32);
++		bp = breakpoint_find(t, eip);
++		if (bp != NULL /*&& bp->type == BKPT_SOFT*/) {
++			/* the step will step over the breakpoint */
++			if (lakemont_step(t, 0, 0, 1) != ERROR_OK) {
++				LOG_ERROR("stepping over a software breakpoint at 0x%08x "
++						"failed to resume the target", eip);
++				return ERROR_FAIL;
++			}
++		}
++
++		/* if breakpoints are enabled, we need to redirect these into probe mode */
++		struct breakpoint *activeswbp = t->breakpoints;
++		while (activeswbp != NULL && activeswbp->set == 0)
++			activeswbp = activeswbp->next;
++		struct watchpoint *activehwbp = t->watchpoints;
++		while (activehwbp != NULL && activehwbp->set == 0)
++			activehwbp = activehwbp->next;
++		if (activeswbp != NULL || activehwbp != NULL)
++			buf_set_u32(x86_32->cache->reg_list[PMCR].value, 0, 32, 1);
++		if (do_resume(t) != ERROR_OK)
++			return ERROR_FAIL;
++	} else {
++		LOG_USER("target not halted");
++		return ERROR_FAIL;
++	}
++	return ERROR_OK;
++}
++
++int lakemont_step(struct target *t, int current,
++			uint32_t address, int handle_breakpoints)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	uint32_t eflags = buf_get_u32(x86_32->cache->reg_list[EFLAGS].value, 0, 32);
++	uint32_t eip = buf_get_u32(x86_32->cache->reg_list[EIP].value, 0, 32);
++	uint32_t pmcr = buf_get_u32(x86_32->cache->reg_list[PMCR].value, 0, 32);
++	struct breakpoint *bp = NULL;
++	int retval = ERROR_OK;
++	uint32_t tapstatus = 0;
++
++	LOG_DEBUG("lakemont_step()");
++	CHECK_HALTED;
++
++	bp = breakpoint_find(t, eip);
++	if (retval == ERROR_OK && bp != NULL/*&& bp->type == BKPT_SOFT*/) {
++		/* TODO: This should only be done for software breakpoints.
++		 * Stepping from hardware breakpoints should be possible with the resume flag
++		 * Needs testing.
++		 */
++		retval = x86_32_common_remove_breakpoint(t, bp);
++	}
++
++	/* Set EFLAGS[TF] and PMCR[IR], exit pm and wait for PRDY# */
++	LOG_DEBUG("modifying PMCR = %d and EFLAGS = %08x", pmcr, eflags);
++	eflags = eflags | (EFLAGS_TF | EFLAGS_RF);
++	buf_set_u32(x86_32->cache->reg_list[EFLAGS].value, 0, 32, eflags);
++	buf_set_u32(x86_32->cache->reg_list[PMCR].value, 0, 32, 1);
++	LOG_DEBUG("EFLAGS [TF] [RF] bits set=%08x, PMCR=%d, EIP=%08x",
++			eflags, pmcr, eip);
++
++	tapstatus = get_tapstatus(t);
++
++	t->debug_reason = DBG_REASON_SINGLESTEP;
++	t->state = TARGET_DEBUG_RUNNING;
++	if (restore_context(t) != ERROR_OK)
++		return ERROR_FAIL;
++	if (exit_probemode(t) != ERROR_OK)
++		return ERROR_FAIL;
++
++	target_call_event_callbacks(t, TARGET_EVENT_RESUMED);
++
++	tapstatus = get_tapstatus(t);
++	if (tapstatus & (TS_PM_BIT | TS_EN_PM_BIT | TS_PRDY_BIT | TS_PMCR_BIT)) {
++		/* target has stopped */
++		if (save_context(t) != ERROR_OK)
++			return ERROR_FAIL;
++		if (halt_prep(t) != ERROR_OK)
++			return ERROR_FAIL;
++		t->state = TARGET_HALTED;
++
++		LOG_USER("step done from EIP 0x%08x to 0x%08x", eip,
++				buf_get_u32(x86_32->cache->reg_list[EIP].value, 0, 32));
++		target_call_event_callbacks(t, TARGET_EVENT_HALTED);
++	} else {
++		/* target didn't stop
++		 * I hope the poll() will catch it, but the deleted breakpoint is gone
++		 */
++		LOG_ERROR("target didn't stop after executing a single step");
++		t->state = TARGET_RUNNING;
++		return ERROR_FAIL;
++	}
++
++	/* try to re-apply the breakpoint, even of step failed
++	 * TODO: When a bp was set, we should try to stop the target - fix the return above
++	 */
++	if (bp != NULL/*&& bp->type == BKPT_SOFT*/) {
++		/* TODO: This should only be done for software breakpoints.
++		 * Stepping from hardware breakpoints should be possible with the resume flag
++		 * Needs testing.
++		 */
++		retval = x86_32_common_add_breakpoint(t, bp);
++	}
++
++	return retval;
++}
++
++/* TODO - implement resetbreak fully through CLTAP registers */
++int lakemont_reset_assert(struct target *t)
++{
++	LOG_DEBUG("%s", __func__);
++	return ERROR_OK;
++}
++
++int lakemont_reset_deassert(struct target *t)
++{
++	LOG_DEBUG("%s", __func__);
++	return ERROR_OK;
++}
+diff --git a/src/target/lakemont.h b/src/target/lakemont.h
+new file mode 100644
+index 0000000..00b2463
+--- /dev/null
++++ b/src/target/lakemont.h
+@@ -0,0 +1,96 @@
++/*
++ * Copyright(c) 2013 Intel Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Contact Information:
++ * Intel Corporation
++ */
++
++#ifndef LAKEMONT_H
++#define LAKEMONT_H
++#include <jtag/jtag.h>
++
++/* The Intel Quark SoC X1000 Core is codenamed lakemont */
++
++#define LMT_IRLEN		8
++
++/* lakemont tap instruction opcodes */
++#define OP_IDCODE		2
++#define OP_SUBMITPIR		3
++#define OP_PROBEMODE		4
++#define OP_WRPIR		6
++#define OP_RDWRPDR		8
++#define OP_TAPSTATUS		11
++#define OP_BYPASS		255
++#define OP_NOT_NULL		2
++
++/* DR sizes */
++#define ID_SIZE			32
++#define PM_SIZE			1
++#define PIR_SIZE		64
++#define PDR_SIZE		32
++#define TS_SIZE			32
++#define BP_SIZE			1
++#define MAX_SCAN_SIZE	PIR_SIZE
++
++/* needed during lakemont probemode */
++#define NOT_PM_REG		0xff
++#define PM_DSB			0x00000000
++#define PM_DSL			0xFFFFFFFF
++#define PM_DSAR			0x004F9300
++#define PM_DR7			0x00000400
++#define DELAY_SUBMITPIR		0 /* for now 0 is working */
++
++/* lakemont tapstatus bits */
++#define TS_PRDY_BIT		0x00000001
++#define TS_EN_PM_BIT		0x00000002
++#define TS_PM_BIT		0x00000004
++#define TS_PMCR_BIT		0x00000008
++#define TS_SBP_BIT		0x00000010
++
++#define NUM_DUMMY_REGS		10 /* will be 4 GDB 32bit-core.xml cleanup */
++#define NUM_BLANK_REGS		6  /* remove for GDB 32bit-core.xml cleanup */
++
++#define NUM_PIR_OPCODES		(IOWRW16 + 1)
++
++struct lakemont_core_reg {
++	uint32_t num;
++	struct target *target;
++	struct x86_32_common *x86_32_common;
++	uint64_t op;
++	uint8_t pm_idx;
++};
++
++struct scan_blk {
++	uint8_t out[MAX_SCAN_SIZE]; /* scanned out to the tap */
++	uint8_t in[MAX_SCAN_SIZE]; /* in to our capture buf */
++	struct scan_field field;
++};
++
++#define I(name) (((struct lakemont_core_reg *)x86_32->cache->reg_list[name].arch_info)->pm_idx)
++
++int lakemont_init_target(struct command_context *cmd_ctx, struct target *t);
++int lakemont_init_arch_info(struct target *t, struct x86_32_common *x86_32);
++int lakemont_poll(struct target *t);
++int lakemont_arch_state(struct target *t);
++int lakemont_halt(struct target *t);
++int lakemont_resume(struct target *t, int current, uint32_t address,
++			int handle_breakpoints, int debug_execution);
++int lakemont_step(struct target *t, int current,
++			uint32_t address, int handle_breakpoints);
++int lakemont_reset_assert(struct target *t);
++int lakemont_reset_deassert(struct target *t);
++
++#endif /* LAKEMONT_H */
+diff --git a/src/target/quark_x10xx.c b/src/target/quark_x10xx.c
+new file mode 100644
+index 0000000..3cdea4e
+--- /dev/null
++++ b/src/target/quark_x10xx.c
+@@ -0,0 +1,86 @@
++/*
++ * Copyright(c) 2013 Intel Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Contact Information:
++ * Intel Corporation
++ */
++
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
++#include <helper/log.h>
++
++#include "target.h"
++#include "target_type.h"
++#include "lakemont.h"
++#include "x86_32_common.h"
++
++/* The Intel Quark SoC X1000 Core is codenamed lakemont.
++ * Lakemont version 1 (LMT1) was used in Intel Quark SoC X1000.
++ * This file implements any SoC specific features such as resetbreak (TODO)
++ * Lakemont probemode is done in lakemont.c
++ * Generic x86 32 bit memory and breakpoint operations are in x86_32_common.c
++ *
++ * See Quark Debug Operations User Guide (on the web) Doc number 329866
++ */
++int quark_x10xx_target_create(struct target *t, Jim_Interp *interp)
++{
++	LOG_DEBUG("%s", __func__);
++	struct x86_32_common *x86_32 = calloc(1, sizeof(struct x86_32_common));
++	if (x86_32 == NULL) {
++		LOG_ERROR("%s out of memory", __func__);
++		return ERROR_FAIL;
++	}
++	x86_32_common_init_arch_info(t, x86_32);
++	lakemont_init_arch_info(t, x86_32);
++	return ERROR_OK;
++}
++
++int quark_x10xx_init_target(struct command_context *cmd_ctx, struct target *t)
++{
++	LOG_DEBUG("%s", __func__);
++	return lakemont_init_target(cmd_ctx, t);
++}
++
++struct target_type quark_x10xx_target = {
++	.name = "quark_x10xx",
++	/* Quark X1000 SoC */
++	.target_create = quark_x10xx_target_create,
++	.init_target = quark_x10xx_init_target,
++	/* lakemont probemode specific code */
++	.poll = lakemont_poll,
++	.arch_state = lakemont_arch_state,
++	.halt = lakemont_halt,
++	.resume = lakemont_resume,
++	.step = lakemont_step,
++	.assert_reset = lakemont_reset_assert,
++	.deassert_reset = lakemont_reset_deassert,
++	/* common x86 code */
++	.commands = x86_32_command_handlers,
++	.get_gdb_reg_list = x86_32_get_gdb_reg_list,
++	.read_memory = x86_32_common_read_memory,
++	.write_memory = x86_32_common_write_memory,
++	.add_breakpoint = x86_32_common_add_breakpoint,
++	.remove_breakpoint = x86_32_common_remove_breakpoint,
++	.add_watchpoint = x86_32_common_add_watchpoint,
++	.remove_watchpoint = x86_32_common_remove_watchpoint,
++	.virt2phys = x86_32_common_virt2phys,
++	.read_phys_memory = x86_32_common_read_phys_mem,
++	.write_phys_memory = x86_32_common_write_phys_mem,
++	.mmu = x86_32_common_mmu,
++
++};
+diff --git a/src/target/target.c b/src/target/target.c
+index cb54ced..49c7858 100644
+--- a/src/target/target.c
++++ b/src/target/target.c
+@@ -102,6 +102,7 @@ extern struct target_type nds32_v2_target;
+ extern struct target_type nds32_v3_target;
+ extern struct target_type nds32_v3m_target;
+ extern struct target_type or1k_target;
++extern struct target_type quark_x10xx_target;
+ 
+ static struct target_type *target_types[] = {
+ 	&arm7tdmi_target,
+@@ -130,6 +131,7 @@ static struct target_type *target_types[] = {
+ 	&nds32_v3_target,
+ 	&nds32_v3m_target,
+ 	&or1k_target,
++	&quark_x10xx_target,
+ 	NULL,
+ };
+ 
+diff --git a/src/target/x86_32_common.c b/src/target/x86_32_common.c
+new file mode 100644
+index 0000000..a42005d
+--- /dev/null
++++ b/src/target/x86_32_common.c
+@@ -0,0 +1,1439 @@
++/*
++ * Copyright(c) 2013 Intel Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Contact Information:
++ * Intel Corporation
++ */
++
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
++#include <helper/log.h>
++
++#include "target.h"
++#include "target_type.h"
++#include "register.h"
++#include "breakpoints.h"
++#include "x86_32_common.h"
++
++static int set_debug_regs(struct target *t, uint32_t address,
++			uint8_t bp_num, uint8_t bp_type, uint8_t bp_length);
++static int unset_debug_regs(struct target *t, uint8_t bp_num);
++static int read_mem(struct target *t, uint32_t size,
++			uint32_t addr, uint8_t *buf);
++static int write_mem(struct target *t, uint32_t size,
++			uint32_t addr, const uint8_t *buf);
++static int calcaddr_pyhsfromlin(struct target *t, uint32_t addr,
++			uint32_t *physaddr);
++static int read_phys_mem(struct target *t, uint32_t phys_address,
++			uint32_t size, uint32_t count, uint8_t *buffer);
++static int write_phys_mem(struct target *t, uint32_t phys_address,
++			uint32_t size, uint32_t count, const uint8_t *buffer);
++static int set_breakpoint(struct target *target,
++			struct breakpoint *breakpoint);
++static int unset_breakpoint(struct target *target,
++			struct breakpoint *breakpoint);
++static int set_watchpoint(struct target *target,
++			struct watchpoint *watchpoint);
++static int unset_watchpoint(struct target *target,
++			struct watchpoint *watchpoint);
++static int read_hw_reg_to_cache(struct target *t, int num);
++static int write_hw_reg_from_cache(struct target *t, int num);
++
++int x86_32_get_gdb_reg_list(struct target *t,
++			struct reg **reg_list[], int *reg_list_size,
++			enum target_register_class reg_class)
++{
++
++	LOG_DEBUG("%s", __func__);
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	int i;
++
++	/* TODO workaround for now - needs solid implementation */
++	*reg_list_size = NUM_IA32_GDB_REGS;
++	*reg_list = malloc(sizeof(struct reg *) * (*reg_list_size));
++	if (*reg_list == NULL) {
++		LOG_ERROR("%s out of memory", __func__);
++		return ERROR_FAIL;
++	}
++
++	/* this will copy the values from our reg list to gdbs ? */
++	for (i = 0; i < NUM_IA32_GDB_REGS; i++) {
++		(*reg_list)[i] = &x86_32->cache->reg_list[i];
++		LOG_DEBUG("value %s = %08x", (char *)x86_32->cache->reg_list[i].name,
++				buf_get_u32(x86_32->cache->reg_list[i].value, 0, 32));
++	}
++	return ERROR_OK;
++}
++
++int x86_32_common_init_arch_info(struct target *t, struct x86_32_common *x86_32)
++{
++	t->arch_info = x86_32;
++	x86_32->common_magic = X86_32_COMMON_MAGIC;
++	x86_32->num_hw_bpoints = MAX_DEBUG_REGS;
++	x86_32->hw_break_list = calloc(x86_32->num_hw_bpoints,
++				sizeof(struct x86_32_dbg_reg));
++	if (x86_32->hw_break_list == NULL) {
++		LOG_ERROR("%s out of memory", __func__);
++		return ERROR_FAIL;
++	}
++	x86_32->curr_tap = t->tap;
++	x86_32->fast_data_area = NULL;
++	x86_32->flush = 1;
++	x86_32->read_hw_reg_to_cache = read_hw_reg_to_cache;
++	x86_32->write_hw_reg_from_cache = write_hw_reg_from_cache;
++	return ERROR_OK;
++}
++
++int x86_32_common_mmu(struct target *t, int *enabled)
++{
++	*enabled = true;
++	return ERROR_OK;
++}
++
++int x86_32_common_virt2phys(struct target *t, uint32_t address, uint32_t *physical)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++
++	/*
++	 * We need to ignore 'segmentation' for now, as OpenOCD can't handle
++	 * segmented addresses.
++	 * In protected mode that is almost OK, as (almost) any known OS is using
++	 * flat segmentation. In real mode we use use the base of the DS segment,
++	 * as we don't know better ...
++	 */
++
++	uint32_t cr0 = buf_get_u32(x86_32->cache->reg_list[CR0].value, 0, 32);
++	if (!(cr0 & CR0_PG)) {
++		/* target halted in real mode */
++		/* TODO: needs validation !!! */
++		uint32_t dsb = buf_get_u32(x86_32->cache->reg_list[DSB].value, 0, 32);
++		*physical = dsb + address;
++
++	} else {
++		/* target halted in protected mode */
++		if (calcaddr_pyhsfromlin(t, address, physical) != ERROR_OK) {
++			LOG_ERROR("failed to calculate physical address from 0x%08x", address);
++			return ERROR_FAIL;
++		}
++	}
++	return ERROR_OK;
++}
++
++int x86_32_common_read_phys_mem(struct target *t, uint32_t phys_address,
++			uint32_t size, uint32_t count, uint8_t *buffer)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	int error;
++
++	error = read_phys_mem(t, phys_address, size, count, buffer);
++	if (error != ERROR_OK)
++		return error;
++
++	/* After reading memory from target, we must replace software breakpoints
++	 * with the original instructions again.
++	 */
++	struct swbp_mem_patch *iter = x86_32->swbbp_mem_patch_list;
++	while (iter != NULL) {
++		if (iter->physaddr >= phys_address && iter->physaddr < phys_address+(size*count)) {
++			uint32_t offset = iter->physaddr - phys_address;
++			buffer[offset] = iter->orig_byte;
++		}
++		iter = iter->next;
++	}
++	return ERROR_OK;
++}
++
++static int read_phys_mem(struct target *t, uint32_t phys_address,
++			uint32_t size, uint32_t count, uint8_t *buffer)
++{
++	int retval = ERROR_OK;
++	bool pg_disabled = false;
++	LOG_DEBUG("%s, addr=%08x, size=%d, count=%d, buf=%p",
++			__func__, phys_address, size, count, buffer);
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++
++	CHECK_HALTED;
++	if (!count || !buffer || !phys_address) {
++		LOG_ERROR("invalid params count=%d, buf=%p, addr=%08x",
++				count, buffer, phys_address);
++		return ERROR_COMMAND_ARGUMENT_INVALID;
++	}
++
++	/* to access physical memory, switch off the CR0.PG bit */
++	if (x86_32->is_paging_enabled(t)) {
++		retval = x86_32->disable_paging(t);
++		if (retval != ERROR_OK)
++			return retval;
++		pg_disabled = true;
++	}
++
++	for (uint32_t i = 0; i < count; i++) {
++		switch (size) {
++		case BYTE:
++			retval = read_mem(t, size, phys_address + i, buffer + i);
++			break;
++		case WORD:
++			retval = read_mem(t, size, phys_address + i * 2, buffer + i * 2);
++			break;
++		case DWORD:
++			retval = read_mem(t, size, phys_address + i * 4, buffer + i * 4);
++			break;
++		default:
++			LOG_USER("%s: invalid read size.", __func__);
++			break;
++		}
++	}
++	/* restore CR0.PG bit if needed (regardless of retval) */
++	if (pg_disabled) {
++		retval = x86_32->enable_paging(t);
++		if (retval != ERROR_OK)
++			return retval;
++		pg_disabled = true;
++	}
++	/* TODO: After reading memory from target, we must replace
++	 * software breakpoints with the original instructions again.
++	 * Solve this with the breakpoint fix
++	 */
++	return retval;
++}
++
++int x86_32_common_write_phys_mem(struct target *t, uint32_t phys_address,
++			uint32_t size, uint32_t count, const uint8_t *buffer)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	int error = ERROR_OK;
++	uint8_t *newbuffer = NULL;
++
++	CHECK_HALTED;
++	if (!count || !buffer || !phys_address) {
++		LOG_ERROR("invalid params count=%d, buf=%p, addr=%08x",
++				count, buffer, phys_address);
++		return ERROR_COMMAND_ARGUMENT_INVALID;
++	}
++	/* Before writing memory to target, we must update software breakpoints
++	 * with the new instructions and patch the memory buffer with the
++	 * breakpoint instruction.
++	 */
++	newbuffer = malloc(size*count);
++	if (newbuffer == NULL) {
++		LOG_ERROR("%s out of memory", __func__);
++		return ERROR_FAIL;
++	}
++	memcpy(newbuffer, buffer, size*count);
++	struct swbp_mem_patch *iter = x86_32->swbbp_mem_patch_list;
++	while (iter != NULL) {
++		if (iter->physaddr >= phys_address && iter->physaddr < phys_address+(size*count)) {
++			uint32_t offset = iter->physaddr - phys_address;
++			newbuffer[offset] = SW_BP_OPCODE;
++
++			/* update the breakpoint */
++			struct breakpoint *pbiter = t->breakpoints;
++			while (pbiter != NULL && pbiter->unique_id != iter->swbp_unique_id)
++				pbiter = pbiter->next;
++			if (pbiter)
++				pbiter->orig_instr[0] = buffer[offset];
++		}
++		iter = iter->next;
++	}
++
++	error = write_phys_mem(t, phys_address, size, count, newbuffer);
++	free(newbuffer);
++	return error;
++}
++
++static int write_phys_mem(struct target *t, uint32_t phys_address,
++			uint32_t size, uint32_t count, const uint8_t *buffer)
++{
++	int retval = ERROR_OK;
++	bool pg_disabled = false;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	LOG_DEBUG("%s addr=%08x, size=%d, count=%d, buf=%p",
++			__func__, phys_address, size, count, buffer);
++
++	CHECK_HALTED;
++	if (!count || !buffer || !phys_address) {
++		LOG_ERROR("invalid params count=%d, buf=%p, addr=%08x",
++				count, buffer, phys_address);
++		return ERROR_COMMAND_ARGUMENT_INVALID;
++	}
++	/* TODO: Before writing memory to target, we must update
++	 * software breakpoints with the new instructions and
++	 * patch the memory buffer with the breakpoint instruction.
++	 * Solve this with the breakpoint fix
++	 */
++
++	/* to access physical memory, switch off the CR0.PG bit */
++	if (x86_32->is_paging_enabled(t)) {
++		retval = x86_32->disable_paging(t);
++		if (retval != ERROR_OK)
++			return retval;
++		pg_disabled = true;
++	}
++	for (uint32_t i = 0; i < count; i++) {
++		switch (size) {
++		case BYTE:
++			retval = write_mem(t, size, phys_address + i, buffer + i);
++			break;
++		case WORD:
++			retval = write_mem(t, size, phys_address + i * 2, buffer + i * 2);
++			break;
++		case DWORD:
++			retval = write_mem(t, size, phys_address + i * 4, buffer + i * 4);
++			break;
++		default:
++			LOG_USER("%s: invalid read size.", __func__);
++			break;
++		}
++	}
++	/* restore CR0.PG bit if needed (regardless of retval) */
++	if (pg_disabled) {
++		retval = x86_32->enable_paging(t);
++		if (retval != ERROR_OK)
++			return retval;
++	}
++	return retval;
++}
++
++static int read_mem(struct target *t, uint32_t size,
++			uint32_t addr, uint8_t *buf)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++
++	/* if CS.D bit=1 then its a 32 bit code segment, else 16 */
++	bool use32 = (buf_get_u32(x86_32->cache->reg_list[CSAR].value, 0, 32)) & CSAR_D;
++	int retval = x86_32->write_hw_reg(t, EAX, addr, 0);
++	if (retval != ERROR_OK) {
++		LOG_ERROR("%s error write EAX", __func__);
++		return retval;
++	}
++
++	switch (size) {
++		case BYTE:
++			if (use32)
++				retval = x86_32->submit_instruction(t, MEMRDB32);
++			else
++				retval = x86_32->submit_instruction(t, MEMRDB16);
++			break;
++		case WORD:
++			if (use32)
++				retval = x86_32->submit_instruction(t, MEMRDH32);
++			else
++				retval = x86_32->submit_instruction(t, MEMRDH16);
++			break;
++		case DWORD:
++			if (use32)
++				retval = x86_32->submit_instruction(t, MEMRDW32);
++			else
++				retval = x86_32->submit_instruction(t, MEMRDW16);
++			break;
++		default:
++			LOG_USER("%s: invalid read mem size.", __func__);
++			break;
++	}
++
++	/* read_hw_reg() will write to 4 bytes (uint32_t)
++	 * Watch out, the buffer passed into read_mem() might be 1 or 2 bytes.
++	 */
++	uint32_t regval;
++	retval = x86_32->read_hw_reg(t, EDX, &regval, 0);
++
++	if (retval != ERROR_OK) {
++		LOG_ERROR("%s error read EDX", __func__);
++		return retval;
++	}
++	for (uint8_t i = 0; i < size; i++)
++		buf[i] = (regval >> (i*8)) & 0x000000FF;
++
++	retval = x86_32->transaction_status(t);
++	if (retval != ERROR_OK) {
++		LOG_ERROR("%s error on mem read", __func__);
++		return retval;
++	}
++	return retval;
++}
++
++static int write_mem(struct target *t, uint32_t size,
++			uint32_t addr, const uint8_t *buf)
++{
++	uint32_t i = 0;
++	uint32_t buf4bytes = 0;
++	int retval = ERROR_OK;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++
++	for (i = 0; i < size; ++i) {
++		buf4bytes = buf4bytes << 8; /* first time we only shift 0s */
++		buf4bytes += buf[(size-1)-i]; /* it was hard to write, should be hard to read! */
++	}
++	/* if CS.D bit=1 then its a 32 bit code segment, else 16 */
++	bool use32 = (buf_get_u32(x86_32->cache->reg_list[CSAR].value, 0, 32)) & CSAR_D;
++	retval = x86_32->write_hw_reg(t, EAX, addr, 0);
++	if (retval != ERROR_OK) {
++		LOG_ERROR("%s error write EAX", __func__);
++		return retval;
++	}
++
++	/* write_hw_reg() will write to 4 bytes (uint32_t)
++	 * Watch out, the buffer passed into write_mem() might be 1 or 2 bytes.
++	 */
++	retval = x86_32->write_hw_reg(t, EDX, buf4bytes, 0);
++	if (retval != ERROR_OK) {
++		LOG_ERROR("%s error write EDX", __func__);
++		return retval;
++	}
++	switch (size) {
++		case BYTE:
++			if (use32)
++				retval = x86_32->submit_instruction(t, MEMWRB32);
++			else
++				retval = x86_32->submit_instruction(t, MEMWRB16);
++			break;
++		case WORD:
++			if (use32)
++				retval = x86_32->submit_instruction(t, MEMWRH32);
++			else
++				retval = x86_32->submit_instruction(t, MEMWRH16);
++			break;
++		case DWORD:
++			if (use32)
++				retval = x86_32->submit_instruction(t, MEMWRW32);
++			else
++				retval = x86_32->submit_instruction(t, MEMWRW16);
++			break;
++		default:
++			LOG_ERROR("%s: invalid write mem size.", __func__);
++			return ERROR_FAIL;
++	}
++	retval = x86_32->transaction_status(t);
++	if (retval != ERROR_OK) {
++		LOG_ERROR("%s error on mem write", __func__);
++		return retval;
++	}
++	return retval;
++}
++
++int calcaddr_pyhsfromlin(struct target *t, uint32_t addr, uint32_t *physaddr)
++{
++	if (physaddr == NULL || t == NULL)
++		return ERROR_FAIL;
++
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++
++	/* The 'user-visible' CR0.PG should be set - otherwise the function shouldn't be called
++	 * (Don't check the CR0.PG on the target, this might be temporally disabled at this point)
++	 */
++	uint32_t cr0 = buf_get_u32(x86_32->cache->reg_list[CR0].value, 0, 32);
++	if (!(cr0 & CR0_PG)) {
++		/* you are wrong in this function, never mind */
++		*physaddr = addr;
++		return ERROR_OK;
++	}
++
++	uint32_t cr4 = buf_get_u32(x86_32->cache->reg_list[CR4].value, 0, 32);
++	bool isPAE = cr4 & 0x00000020; /* PAE - Physical Address Extension */
++
++	uint32_t cr3 = buf_get_u32(x86_32->cache->reg_list[CR3].value, 0, 32);
++	if (isPAE) {
++		uint32_t pdpt_base = cr3 & 0xFFFFF000; /* lower 12 bits of CR3 must always be 0 */
++		uint32_t pdpt_index = (addr & 0xC0000000) >> 30; /* A[31:30] index to PDPT */
++		uint32_t pdpt_addr = pdpt_base + (8 * pdpt_index);
++		uint64_t pdpt_entry = 0;
++		if (x86_32_common_read_phys_mem(t, pdpt_addr, 4, 2, (uint8_t *)&pdpt_entry)  != ERROR_OK) {
++			LOG_ERROR("couldn't read page directory pointer table entry at 0x%08x", pdpt_addr);
++			return ERROR_FAIL;
++		}
++		if (!(pdpt_entry & 0x0000000000000001)) {
++			LOG_ERROR("page directory pointer table entry at 0x%08x is not present", pdpt_addr);
++			return ERROR_FAIL;
++		}
++
++		uint32_t pd_base = pdpt_entry & 0xFFFFF000; /* A[31:12] is PageTable/Page Base Address */
++		uint32_t pd_index = (addr & 0x3FE00000) >> 21; /* A[29:21] index to PD entry with PAE */
++		uint32_t pd_addr = pd_base + (8 * pd_index);
++		uint64_t pd_entry = 0;
++		if (x86_32_common_read_phys_mem(t, pd_addr, 4, 2, (uint8_t *)&pd_entry)  != ERROR_OK) {
++			LOG_ERROR("couldn't read page directory entry at 0x%08x", pd_addr);
++			return ERROR_FAIL;
++		}
++		if (!(pd_entry & 0x0000000000000001)) {
++			LOG_ERROR("page directory entry at 0x%08x is not present", pd_addr);
++			return ERROR_FAIL;
++		}
++
++		/* PS bit in PD entry is indicating 4KB or 2MB page size */
++		if (pd_entry & 0x0000000000000080) {
++
++			uint32_t page_base = (uint32_t)(pd_entry & 0x00000000FFE00000); /* [31:21] */
++			uint32_t offset = addr & 0x001FFFFF; /* [20:0] */
++			*physaddr = page_base + offset;
++			return ERROR_OK;
++
++		} else {
++
++			uint32_t pt_base = (uint32_t)(pd_entry & 0x00000000FFFFF000); /*[31:12]*/
++			uint32_t pt_index = (addr & 0x001FF000) >> 12; /*[20:12]*/
++			uint32_t pt_addr = pt_base + (8 * pt_index);
++			uint64_t pt_entry = 0;
++			if (x86_32_common_read_phys_mem(t, pt_addr, 4, 2, (uint8_t *)&pt_entry)  != ERROR_OK) {
++				LOG_ERROR("couldn't read page table entry at 0x%08x", pt_addr);
++				return ERROR_FAIL;
++			}
++			if (!(pt_entry & 0x0000000000000001)) {
++				LOG_ERROR("page table entry at 0x%08x is not present", pt_addr);
++				return ERROR_FAIL;
++			}
++
++			uint32_t page_base = (uint32_t)(pt_entry & 0x00000000FFFFF000); /*[31:12]*/
++			uint32_t offset =  addr & 0x00000FFF; /*[11:0]*/
++			*physaddr = page_base + offset;
++			return ERROR_OK;
++		}
++	} else {
++		uint32_t pd_base = cr3 & 0xFFFFF000; /* lower 12 bits of CR3 must always be 0 */
++		uint32_t pd_index = (addr & 0xFFC00000) >> 22; /* A[31:22] index to PD entry */
++		uint32_t pd_addr = pd_base + (4 * pd_index);
++
++		uint32_t pd_entry = 0;
++		if (x86_32_common_read_phys_mem(t, pd_addr, 4, 1, (uint8_t *)&pd_entry)  != ERROR_OK) {
++			LOG_ERROR("couldn't read page directory entry at 0x%08x", pd_addr);
++			return ERROR_FAIL;
++		}
++		if (!(pd_entry & 0x00000001)) {
++			LOG_ERROR("page directory entry at 0x%08x is not present", pd_addr);
++			return ERROR_FAIL;
++		}
++
++		/* Bit 7 in page directory entry is page size.
++		 */
++		if (pd_entry & 0x00000080) {
++			/* 4MB pages */
++			uint32_t page_base = pd_entry & 0xFFC00000;
++			*physaddr = page_base + (addr & 0x003FFFFF);
++
++		} else {
++			/* 4KB pages */
++			uint32_t pt_base = pd_entry & 0xFFFFF000; /* A[31:12] is PageTable/Page Base Address */
++			uint32_t pt_index = (addr & 0x003FF000) >> 12; /* A[21:12] index to page table entry */
++			uint32_t pt_addr = pt_base + (4 * pt_index);
++
++			uint32_t pt_entry = 0;
++			if (x86_32_common_read_phys_mem(t, pt_addr, 4, 1, (uint8_t *)&pt_entry)  != ERROR_OK) {
++				LOG_ERROR("couldn't read page table entry at 0x%08x", pt_addr);
++				return ERROR_FAIL;
++			}
++			if (!(pt_entry & 0x00000001)) {
++				LOG_ERROR("page table entry at 0x%08x is not present", pt_addr);
++				return ERROR_FAIL;
++			}
++			uint32_t page_base = pt_entry & 0xFFFFF000; /* A[31:12] is PageTable/Page Base Address */
++			*physaddr = page_base + (addr & 0x00000FFF); /* A[11:0] offset to 4KB page in linear address */
++		}
++	}
++	return ERROR_OK;
++}
++
++int x86_32_common_read_memory(struct target *t, uint32_t addr,
++			uint32_t size, uint32_t count, uint8_t *buf)
++{
++	int retval = ERROR_OK;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	LOG_DEBUG("%s addr=%08x, size=%d, count=%d, buf=%p",
++			__func__, addr, size, count, buf);
++	CHECK_HALTED;
++	if (!count || !buf || !addr) {
++		LOG_ERROR("invalid params count=%d, buf=%p, addr=%08x",
++				count, buf, addr);
++		return ERROR_COMMAND_ARGUMENT_INVALID;
++	}
++
++	if (x86_32->is_paging_enabled(t)) {
++		/* all memory accesses from debugger must be physical (CR0.PG == 0)
++		 * conversion to physical address space needed
++		 */
++		retval = x86_32->disable_paging(t);
++		if (retval != ERROR_OK)
++			return retval;
++		uint32_t physaddr = 0;
++		if (calcaddr_pyhsfromlin(t, addr, &physaddr) != ERROR_OK) {
++			LOG_ERROR("failed to calculate physical address from 0x%08x", addr);
++			retval = ERROR_FAIL;
++		}
++		/* TODO: !!! Watch out for page boundaries
++		 * for every 4kB, the physical address has to be re-calculated
++		 * This should be fixed together with bulk memory reads
++		 */
++
++		if (retval == ERROR_OK
++			&& x86_32_common_read_phys_mem(t, physaddr, size, count, buf) != ERROR_OK) {
++			LOG_ERROR("failed to read memory from physical address 0x%08x", physaddr);
++			retval = ERROR_FAIL;
++		}
++		/* restore PG bit if it was cleared prior (regardless of retval) */
++		retval = x86_32->enable_paging(t);
++		if (retval != ERROR_OK)
++			return retval;
++	} else {
++		/* paging is off - linear address is physical address */
++		if (x86_32_common_read_phys_mem(t, addr, size, count, buf) != ERROR_OK) {
++			LOG_ERROR("failed to read memory from address 0%08x", addr);
++			retval = ERROR_FAIL;
++		}
++	}
++
++	return retval;
++}
++
++int x86_32_common_write_memory(struct target *t, uint32_t addr,
++			uint32_t size, uint32_t count, const uint8_t *buf)
++{
++	int retval = ERROR_OK;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	LOG_DEBUG("%s addr=%08x, size=%d, count=%d, buf=%p",
++			__func__, addr, size, count, buf);
++	CHECK_HALTED;
++	if (!count || !buf || !addr) {
++		LOG_ERROR("invalid params count=%d, buf=%p, addr=%08x",
++					count, buf, addr);
++		return ERROR_COMMAND_ARGUMENT_INVALID;
++	}
++	if (x86_32->is_paging_enabled(t)) {
++		/* all memory accesses from debugger must be physical (CR0.PG == 0)
++		 * conversion to physical address space needed
++		 */
++		retval = x86_32->disable_paging(t);
++		if (retval != ERROR_OK)
++			return retval;
++		uint32_t physaddr = 0;
++		if (calcaddr_pyhsfromlin(t, addr, &physaddr) != ERROR_OK) {
++			LOG_ERROR("failed to calculate physical address from 0x%08x", addr);
++			retval = ERROR_FAIL;
++		}
++		/* TODO: !!! Watch out for page boundaries
++		 * for every 4kB, the physical address has to be re-calculated
++		 * This should be fixed together with bulk memory reads
++		 */
++		if (retval == ERROR_OK
++			&& x86_32_common_write_phys_mem(t, physaddr, size, count, buf) != ERROR_OK) {
++			LOG_ERROR("failed to write memory to physical address 0x%08x", physaddr);
++			retval = ERROR_FAIL;
++		}
++		/* restore PG bit if it was cleared prior (regardless of retval) */
++		retval = x86_32->enable_paging(t);
++		if (retval != ERROR_OK)
++			return retval;
++	} else {
++
++		/* paging is off - linear address is physical address */
++		if (x86_32_common_write_phys_mem(t, addr, size, count, buf) != ERROR_OK) {
++			LOG_ERROR("failed to write memory to address 0x%08x", addr);
++			retval = ERROR_FAIL;
++		}
++	}
++	return retval;
++}
++
++int x86_32_common_read_io(struct target *t, uint32_t addr,
++			uint32_t size, uint8_t *buf)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	/* if CS.D bit=1 then its a 32 bit code segment, else 16 */
++	bool use32 = (buf_get_u32(x86_32->cache->reg_list[CSAR].value, 0, 32)) & CSAR_D;
++	int retval = ERROR_FAIL;
++	LOG_DEBUG("%s addr=%08x, size=%d, buf=%p", __func__, addr, size, buf);
++	CHECK_HALTED;
++	if (!buf || !addr) {
++		LOG_ERROR("invalid params buf=%p, addr=%08x", buf, addr);
++		return retval;
++	}
++	retval = x86_32->write_hw_reg(t, EDX, addr, 0);
++	if (retval != ERROR_OK) {
++		LOG_ERROR("%s error EDX write", __func__);
++		return retval;
++	}
++	switch (size) {
++		case BYTE:
++			if (use32)
++				retval = x86_32->submit_instruction(t, IORDB32);
++			else
++				retval = x86_32->submit_instruction(t, IORDB16);
++			break;
++		case WORD:
++			if (use32)
++				retval = x86_32->submit_instruction(t, IORDH32);
++			else
++				retval = x86_32->submit_instruction(t, IORDH16);
++			break;
++		case DWORD:
++			if (use32)
++				retval = x86_32->submit_instruction(t, IORDW32);
++			else
++				retval = x86_32->submit_instruction(t, IORDW16);
++			break;
++		default:
++			LOG_ERROR("%s: invalid read io size.", __func__);
++			return ERROR_FAIL;
++	}
++	uint32_t regval = 0;
++	retval = x86_32->read_hw_reg(t, EAX, &regval, 0);
++	if (retval != ERROR_OK) {
++		LOG_ERROR("%s error on read EAX", __func__);
++		return retval;
++	}
++	for (uint8_t i = 0; i < size; i++)
++		buf[i] = (regval >> (i*8)) & 0x000000FF;
++	retval = x86_32->transaction_status(t);
++	if (retval != ERROR_OK) {
++		LOG_ERROR("%s error on io read", __func__);
++		return retval;
++	}
++	return retval;
++}
++
++int x86_32_common_write_io(struct target *t, uint32_t addr,
++			uint32_t size, const uint8_t *buf)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	/* if CS.D bit=1 then its a 32 bit code segment, else 16 */
++	bool use32 = (buf_get_u32(x86_32->cache->reg_list[CSAR].value, 0, 32)) & CSAR_D;
++	LOG_DEBUG("%s addr=%08x, size=%d, buf=%p", __func__, addr, size, buf);
++	CHECK_HALTED;
++	int retval = ERROR_FAIL;
++	if (!buf || !addr) {
++		LOG_ERROR("invalid params buf=%p, addr=%08x", buf, addr);
++		return retval;
++	}
++	/* no do the write */
++	retval = x86_32->write_hw_reg(t, EDX, addr, 0);
++	if (retval != ERROR_OK) {
++		LOG_ERROR("%s error on EDX write", __func__);
++		return retval;
++	}
++	uint32_t regval = 0;
++	for (uint8_t i = 0; i < size; i++)
++		regval += (buf[i] << (i*8));
++	retval = x86_32->write_hw_reg(t, EAX, regval, 0);
++	if (retval != ERROR_OK) {
++		LOG_ERROR("%s error on EAX write", __func__);
++		return retval;
++	}
++	switch (size) {
++		case BYTE:
++			if (use32)
++				retval = x86_32->submit_instruction(t, IOWRB32);
++			else
++				retval = x86_32->submit_instruction(t, IOWRB16);
++			break;
++		case WORD:
++			if (use32)
++				retval = x86_32->submit_instruction(t, IOWRH32);
++			else
++				retval = x86_32->submit_instruction(t, IOWRH16);
++			break;
++		case DWORD:
++			if (use32)
++				retval = x86_32->submit_instruction(t, IOWRW32);
++			else
++				retval = x86_32->submit_instruction(t, IOWRW16);
++			break;
++		default:
++			LOG_ERROR("%s: invalid write io size.", __func__);
++			return ERROR_FAIL;
++	}
++	retval = x86_32->transaction_status(t);
++	if (retval != ERROR_OK) {
++		LOG_ERROR("%s error on io write", __func__);
++		return retval;
++	}
++	return retval;
++}
++
++int x86_32_common_add_watchpoint(struct target *t, struct watchpoint *wp)
++{
++	CHECK_HALTED;
++
++	/* set_watchpoint() will return ERROR_TARGET_RESOURCE_NOT_AVAILABLE if all
++	 * hardware registers are gone
++	 */
++
++	return set_watchpoint(t, wp);
++}
++
++int x86_32_common_remove_watchpoint(struct target *t, struct watchpoint *wp)
++{
++	CHECK_HALTED;
++	if (wp->set)
++		unset_watchpoint(t, wp);
++	return ERROR_OK;
++}
++
++int x86_32_common_add_breakpoint(struct target *t, struct breakpoint *bp)
++{
++	LOG_DEBUG("%s type=%d, addr=%08x", __func__, bp->type, bp->address);
++	CHECK_HALTED;
++	/* set_breakpoint() will return ERROR_TARGET_RESOURCE_NOT_AVAILABLE if all
++	 * hardware registers are gone (for hardware breakpoints)
++	 */
++	return set_breakpoint(t, bp);
++}
++
++int x86_32_common_remove_breakpoint(struct target *t, struct breakpoint *bp)
++{
++	LOG_DEBUG("%s type=%d, addr=%08x", __func__, bp->type, bp->address);
++	CHECK_HALTED;
++	if (bp->set)
++		unset_breakpoint(t, bp);
++
++	return ERROR_OK;
++}
++
++static int set_debug_regs(struct target *t, uint32_t address,
++			uint8_t bp_num, uint8_t bp_type, uint8_t bp_length)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	LOG_DEBUG("%s addr=%08x, bp_num=%d, bp_type=%d, pb_length=%d",
++			__func__, address, bp_num, bp_type, bp_length);
++
++	/* DR7 - set global enable */
++	uint32_t dr7 = buf_get_u32(x86_32->cache->reg_list[DR7].value, 0, 32);
++
++	if (bp_length != 1 && bp_length != 2 && bp_length != 4)
++		return ERROR_FAIL;
++
++	if (DR7_BP_FREE(dr7, bp_num))
++		DR7_GLOBAL_ENABLE(dr7, bp_num);
++	else {
++		LOG_ERROR("dr7 error, already enabled, val=%08x", dr7);
++		return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
++	}
++
++	switch (bp_type) {
++		case 0:
++			/* 00 - only on instruction execution */
++			DR7_SET_EXE(dr7, bp_num);
++			DR7_SET_LENGTH(dr7, bp_num, bp_length);
++		break;
++		case 1:
++			/* 01 - only on data writes */
++			DR7_SET_WRITE(dr7, bp_num);
++			DR7_SET_LENGTH(dr7, bp_num, bp_length);
++		break;
++		case 2:
++			/* 10 UNSUPPORTED - an I/O read and I/O write */
++			LOG_ERROR("unsupported feature bp_type=%d", bp_type);
++			return ERROR_FAIL;
++		break;
++		case 3:
++			/* on data read or data write */
++			DR7_SET_ACCESS(dr7, bp_num);
++			DR7_SET_LENGTH(dr7, bp_num, bp_length);
++		break;
++		default:
++			LOG_ERROR("invalid request [only 0-3] bp_type=%d", bp_type);
++			return ERROR_FAIL;
++	}
++
++	/* update regs in the reg cache ready to be written to hardware
++	 * when we exit PM
++	*/
++	buf_set_u32(x86_32->cache->reg_list[bp_num+DR0].value, 0, 32, address);
++	x86_32->cache->reg_list[bp_num+DR0].dirty = 1;
++	x86_32->cache->reg_list[bp_num+DR0].valid = 1;
++	buf_set_u32(x86_32->cache->reg_list[DR6].value, 0, 32, PM_DR6);
++	x86_32->cache->reg_list[DR6].dirty = 1;
++	x86_32->cache->reg_list[DR6].valid = 1;
++	buf_set_u32(x86_32->cache->reg_list[DR7].value, 0, 32, dr7);
++	x86_32->cache->reg_list[DR7].dirty = 1;
++	x86_32->cache->reg_list[DR7].valid = 1;
++	return ERROR_OK;
++}
++
++static int unset_debug_regs(struct target *t, uint8_t bp_num)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	LOG_DEBUG("%s bp_num=%d", __func__, bp_num);
++
++	uint32_t dr7 = buf_get_u32(x86_32->cache->reg_list[DR7].value, 0, 32);
++
++	if (!(DR7_BP_FREE(dr7, bp_num))) {
++		DR7_GLOBAL_DISABLE(dr7, bp_num);
++	} else {
++		LOG_ERROR("dr7 error, not enabled, val=%08x", dr7);
++		return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
++	}
++	/* this will clear rw and len bits */
++	DR7_RESET_RWLEN_BITS(dr7, bp_num);
++
++	/* update regs in the reg cache ready to be written to hardware
++	 * when we exit PM
++	*/
++	buf_set_u32(x86_32->cache->reg_list[bp_num+DR0].value, 0, 32, 0);
++	x86_32->cache->reg_list[bp_num+DR0].dirty = 1;
++	x86_32->cache->reg_list[bp_num+DR0].valid = 1;
++	buf_set_u32(x86_32->cache->reg_list[DR6].value, 0, 32, PM_DR6);
++	x86_32->cache->reg_list[DR6].dirty = 1;
++	x86_32->cache->reg_list[DR6].valid = 1;
++	buf_set_u32(x86_32->cache->reg_list[DR7].value, 0, 32, dr7);
++	x86_32->cache->reg_list[DR7].dirty = 1;
++	x86_32->cache->reg_list[DR7].valid = 1;
++	return ERROR_OK;
++}
++
++static int set_hwbp(struct target *t, struct breakpoint *bp)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	struct x86_32_dbg_reg *debug_reg_list = x86_32->hw_break_list;
++	uint8_t hwbp_num = 0;
++
++	while (debug_reg_list[hwbp_num].used && (hwbp_num < x86_32->num_hw_bpoints))
++		hwbp_num++;
++	if (hwbp_num >= x86_32->num_hw_bpoints) {
++		LOG_ERROR("no free hw breakpoint bpid=%d", bp->unique_id);
++		return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
++	}
++	if (set_debug_regs(t, bp->address, hwbp_num, DR7_BP_EXECUTE, 1) != ERROR_OK)
++		return ERROR_FAIL;
++	bp->set = hwbp_num + 1;
++	debug_reg_list[hwbp_num].used = 1;
++	debug_reg_list[hwbp_num].bp_value = bp->address;
++	LOG_USER("hardware breakpoint %d set at 0x%08x (hwreg=%d)",
++				bp->unique_id, debug_reg_list[hwbp_num].bp_value, hwbp_num);
++	return ERROR_OK;
++}
++
++static int unset_hwbp(struct target *t, struct breakpoint *bp)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	struct x86_32_dbg_reg *debug_reg_list = x86_32->hw_break_list;
++	int hwbp_num = bp->set - 1;
++
++	if ((hwbp_num < 0) || (hwbp_num >= x86_32->num_hw_bpoints)) {
++		LOG_ERROR("invalid breakpoint number=%d, bpid=%d",
++				hwbp_num, bp->unique_id);
++		return ERROR_OK;
++	}
++
++	if (unset_debug_regs(t, hwbp_num) != ERROR_OK)
++		return ERROR_FAIL;
++	debug_reg_list[hwbp_num].used = 0;
++	debug_reg_list[hwbp_num].bp_value = 0;
++
++	LOG_USER("hardware breakpoint %d removed from 0x%08x (hwreg=%d)",
++			bp->unique_id, bp->address, hwbp_num);
++	return ERROR_OK;
++}
++
++static int set_swbp(struct target *t, struct breakpoint *bp)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	LOG_DEBUG("%s id %d", __func__, bp->unique_id);
++	uint32_t physaddr;
++	uint8_t opcode = SW_BP_OPCODE;
++	uint8_t readback;
++
++	if (calcaddr_pyhsfromlin(t, bp->address, &physaddr) != ERROR_OK)
++		return ERROR_FAIL;
++	if (read_phys_mem(t, physaddr, 1, 1, bp->orig_instr))
++		return ERROR_FAIL;
++
++	LOG_DEBUG("set software breakpoint - orig byte=%02x", *bp->orig_instr);
++
++	/* just write the instruction trap byte */
++	if (write_phys_mem(t, physaddr, 1, 1, &opcode))
++		return ERROR_FAIL;
++
++	/* verify that this is not invalid/read-only memory */
++	if (read_phys_mem(t, physaddr, 1, 1, &readback))
++		return ERROR_FAIL;
++
++	if (readback != SW_BP_OPCODE) {
++		LOG_ERROR("software breakpoint error at 0x%08x, check memory", bp->address);
++		LOG_ERROR("readback=%02x orig=%02x", readback, *bp->orig_instr);
++		return ERROR_FAIL;
++	}
++	bp->set = SW_BP_OPCODE; /* just non 0 */
++
++	/* add the memory patch */
++	struct swbp_mem_patch *new_patch = malloc(sizeof(struct swbp_mem_patch));
++	if (new_patch == NULL) {
++		LOG_ERROR("%s out of memory", __func__);
++		return ERROR_FAIL;
++	}
++	new_patch->next = NULL;
++	new_patch->orig_byte = *bp->orig_instr;
++	new_patch->physaddr = physaddr;
++	new_patch->swbp_unique_id = bp->unique_id;
++
++	struct swbp_mem_patch *addto = x86_32->swbbp_mem_patch_list;
++	if (addto == NULL)
++		x86_32->swbbp_mem_patch_list = new_patch;
++	else {
++		while (addto->next != NULL)
++			addto = addto->next;
++		addto->next = new_patch;
++	}
++	LOG_USER("software breakpoint %d set at 0x%08x",
++				bp->unique_id, bp->address);
++	return ERROR_OK;
++}
++
++static int unset_swbp(struct target *t, struct breakpoint *bp)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	LOG_DEBUG("%s id %d", __func__, bp->unique_id);
++	uint32_t physaddr;
++	uint8_t current_instr;
++
++	/* check that user program has not modified breakpoint instruction */
++	if (calcaddr_pyhsfromlin(t, bp->address, &physaddr) != ERROR_OK)
++		return ERROR_FAIL;
++	if (read_phys_mem(t, physaddr, 1, 1, &current_instr))
++		return ERROR_FAIL;
++
++	if (current_instr == SW_BP_OPCODE) {
++		if (write_phys_mem(t, physaddr, 1, 1, bp->orig_instr))
++			return ERROR_FAIL;
++	} else {
++		LOG_ERROR("software breakpoint remove error at 0x%08x, check memory", bp->address);
++		LOG_ERROR("current=%02x orig=%02x", current_instr, *bp->orig_instr);
++		return ERROR_FAIL;
++	}
++
++	/* remove from patch */
++	struct swbp_mem_patch *iter = x86_32->swbbp_mem_patch_list;
++	if (iter != NULL) {
++		if (iter->swbp_unique_id == bp->unique_id) {
++			/* it's the first item */
++			x86_32->swbbp_mem_patch_list = iter->next;
++			free(iter);
++		} else {
++			while (iter->next != NULL && iter->next->swbp_unique_id != bp->unique_id)
++				iter = iter->next;
++			if (iter->next != NULL) {
++				/* it's the next one */
++				struct swbp_mem_patch *freeme = iter->next;
++				iter->next = iter->next->next;
++				free(freeme);
++			}
++		}
++	}
++
++	LOG_USER("software breakpoint %d removed from 0x%08x",
++			bp->unique_id, bp->address);
++	return ERROR_OK;
++}
++
++static int set_breakpoint(struct target *t, struct breakpoint *bp)
++{
++	int error = ERROR_OK;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	LOG_DEBUG("%s type=%d, addr=%08x", __func__, bp->type, bp->address);
++	if (bp->set) {
++		LOG_ERROR("breakpoint already set");
++		return error;
++	}
++	if (bp->type == BKPT_HARD) {
++		error = set_hwbp(t, bp);
++		if (error != ERROR_OK) {
++			LOG_ERROR("error setting hardware breakpoint at 0x%08x", bp->address);
++			return error;
++		}
++	} else {
++		if (x86_32->sw_bpts_supported(t)) {
++			error = set_swbp(t, bp);
++			if (error != ERROR_OK) {
++				LOG_ERROR("error setting software breakpoint at 0x%08x", bp->address);
++				return error;
++			}
++		} else {
++			LOG_ERROR("core doesn't support SW breakpoints");
++			error = ERROR_FAIL;
++			return ERROR_FAIL;
++		}
++	}
++	return error;
++}
++
++static int unset_breakpoint(struct target *t, struct breakpoint *bp)
++{
++	LOG_DEBUG("%s type=%d, addr=%08x", __func__, bp->type, bp->address);
++	if (!bp->set) {
++		LOG_WARNING("breakpoint not set");
++		return ERROR_OK;
++	}
++
++	if (bp->type == BKPT_HARD) {
++		if (unset_hwbp(t, bp) != ERROR_OK) {
++			LOG_ERROR("error removing hardware breakpoint at 0x%08x", bp->address);
++			return ERROR_FAIL;
++		}
++	} else {
++		if (unset_swbp(t, bp) != ERROR_OK) {
++			LOG_ERROR("error removing software breakpoint at 0x%08x", bp->address);
++			return ERROR_FAIL;
++		}
++	}
++	bp->set = 0;
++	return ERROR_OK;
++}
++
++static int set_watchpoint(struct target *t, struct watchpoint *wp)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	struct x86_32_dbg_reg *debug_reg_list = x86_32->hw_break_list;
++	int wp_num = 0;
++	LOG_DEBUG("%s type=%d, addr=%08x", __func__, wp->rw, wp->address);
++
++	if (wp->set) {
++		LOG_ERROR("watchpoint already set");
++		return ERROR_OK;
++	}
++
++	if (wp->rw == WPT_READ) {
++		LOG_ERROR("no support for 'read' watchpoints, use 'access' or 'write'");
++		return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
++	}
++
++	while (debug_reg_list[wp_num].used && (wp_num < x86_32->num_hw_bpoints))
++		wp_num++;
++	if (wp_num >= x86_32->num_hw_bpoints) {
++		LOG_ERROR("no debug registers left");
++		return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
++	}
++
++	if (wp->length != 4 && wp->length != 2 && wp->length != 1) {
++		LOG_ERROR("only watchpoints of length 1, 2 or 4 are supported");
++		return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
++	}
++
++	switch (wp->rw) {
++		case WPT_WRITE:
++			if (set_debug_regs(t, wp->address, wp_num,
++						DR7_BP_WRITE, wp->length) != ERROR_OK) {
++				return ERROR_FAIL;
++			}
++			break;
++		case WPT_ACCESS:
++			if (set_debug_regs(t, wp->address, wp_num, DR7_BP_READWRITE,
++						wp->length) != ERROR_OK) {
++				return ERROR_FAIL;
++			}
++			break;
++		default:
++			LOG_ERROR("only watchpoints of type 'access' or 'write' are supported");
++			break;
++	}
++	wp->set = wp_num + 1;
++	debug_reg_list[wp_num].used = 1;
++	debug_reg_list[wp_num].bp_value = wp->address;
++	LOG_USER("'%s' watchpoint %d set at 0x%08x with length %d (hwreg=%d)",
++			wp->rw == WPT_READ ? "read" : wp->rw == WPT_WRITE ?
++			"write" : wp->rw == WPT_ACCESS ? "access" : "?",
++			wp->unique_id, wp->address, wp->length, wp_num);
++	return ERROR_OK;
++}
++
++static int unset_watchpoint(struct target *t, struct watchpoint *wp)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	struct x86_32_dbg_reg *debug_reg_list = x86_32->hw_break_list;
++	LOG_DEBUG("%s type=%d, addr=%08x", __func__, wp->rw, wp->address);
++	if (!wp->set) {
++		LOG_WARNING("watchpoint not set");
++		return ERROR_OK;
++	}
++
++	int wp_num = wp->set - 1;
++	if ((wp_num < 0) || (wp_num >= x86_32->num_hw_bpoints)) {
++		LOG_DEBUG("Invalid FP Comparator number in watchpoint");
++		return ERROR_OK;
++	}
++	if (unset_debug_regs(t, wp_num) != ERROR_OK)
++		return ERROR_FAIL;
++
++	debug_reg_list[wp_num].used = 0;
++	debug_reg_list[wp_num].bp_value = 0;
++	wp->set = 0;
++
++	LOG_USER("'%s' watchpoint %d removed from 0x%08x with length %d (hwreg=%d)",
++			wp->rw == WPT_READ ? "read" : wp->rw == WPT_WRITE ?
++			"write" : wp->rw == WPT_ACCESS ? "access" : "?",
++			wp->unique_id, wp->address, wp->length, wp_num);
++
++	return ERROR_OK;
++}
++
++static int read_hw_reg_to_cache(struct target *t, int num)
++{
++	uint32_t reg_value;
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	CHECK_HALTED;
++
++	if ((num < 0) || (num >= x86_32->get_num_user_regs(t)))
++		return ERROR_COMMAND_SYNTAX_ERROR;
++
++	if (x86_32->read_hw_reg(t, num, &reg_value, 1) != ERROR_OK) {
++		LOG_ERROR("%s fail for %s", __func__,
++				x86_32->cache->reg_list[num].name);
++		return ERROR_FAIL;
++	}
++	LOG_DEBUG("%s reg %s value 0x%08x", __func__,
++			x86_32->cache->reg_list[num].name,
++			reg_value);
++	return ERROR_OK;
++}
++
++static int write_hw_reg_from_cache(struct target *t, int num)
++{
++	struct x86_32_common *x86_32 = target_to_x86_32(t);
++	CHECK_HALTED;
++
++	if ((num < 0) || (num >= x86_32->get_num_user_regs(t)))
++		return ERROR_COMMAND_SYNTAX_ERROR;
++
++	if (x86_32->write_hw_reg(t, num, 0, 1) != ERROR_OK) {
++		LOG_ERROR("%s fail for %s", __func__,
++				x86_32->cache->reg_list[num].name);
++		return ERROR_FAIL;
++	}
++	LOG_DEBUG("%s reg %s value 0x%08x", __func__,
++			x86_32->cache->reg_list[num].name,
++			buf_get_u32(x86_32->cache->reg_list[num].value, 0, 32));
++	return ERROR_OK;
++}
++
++/* x86 32 commands */
++/* write a uint8_t to a buffer in target memory endianness */
++static void target_buffer_set_u8(struct target *target, uint8_t *buffer, uint8_t value)
++{
++	*buffer = value;
++}
++
++static void handle_iod_output(struct command_context *cmd_ctx,
++		struct target *target, uint32_t address, unsigned size,
++		unsigned count, const uint8_t *buffer)
++{
++	LOG_DEBUG("%s", __func__);
++	const unsigned line_bytecnt = 32;
++	unsigned line_modulo = line_bytecnt / size;
++
++	char output[line_bytecnt * 4 + 1];
++	unsigned output_len = 0;
++
++	const char *value_fmt;
++	switch (size) {
++	case 4:
++		value_fmt = "%8.8x ";
++		break;
++	case 2:
++		value_fmt = "%4.4x ";
++		break;
++	case 1:
++		value_fmt = "%2.2x ";
++		break;
++	default:
++		/* "can't happen", caller checked */
++		LOG_ERROR("invalid memory read size: %u", size);
++		return;
++	}
++
++	for (unsigned i = 0; i < count; i++) {
++		if (i % line_modulo == 0) {
++			output_len += snprintf(output + output_len,
++					sizeof(output) - output_len,
++					"0x%8.8x: ",
++					(unsigned)(address + (i*size)));
++		}
++
++		uint32_t value = 0;
++		const uint8_t *value_ptr = buffer + i * size;
++		switch (size) {
++		case 4:
++			value = target_buffer_get_u32(target, value_ptr);
++			break;
++		case 2:
++			value = target_buffer_get_u16(target, value_ptr);
++			break;
++		case 1:
++			value = *value_ptr;
++		}
++		output_len += snprintf(output + output_len,
++				sizeof(output) - output_len,
++				value_fmt, value);
++
++		if ((i % line_modulo == line_modulo - 1) || (i == count - 1)) {
++			command_print(cmd_ctx, "%s", output);
++			output_len = 0;
++		}
++	}
++}
++
++COMMAND_HANDLER(handle_iod_command)
++{
++	LOG_DEBUG("%s", __func__);
++	if (CMD_ARGC != 1)
++		return ERROR_COMMAND_SYNTAX_ERROR;
++
++	uint32_t address;
++	COMMAND_PARSE_NUMBER(u32, CMD_ARGV[0], address);
++	if (address > 0xffff) {
++		LOG_ERROR("%s IA-32 I/O space is 2^16, %08x exceeds max",
++				__func__, address);
++		return ERROR_COMMAND_SYNTAX_ERROR;
++	}
++
++	unsigned size = 0;
++	switch (CMD_NAME[2]) {
++	case 'w':
++		size = 4;
++		break;
++	case 'h':
++		size = 2;
++		break;
++	case 'b':
++		size = 1;
++		break;
++	default:
++		return ERROR_COMMAND_SYNTAX_ERROR;
++	}
++	unsigned count = 1;
++	uint8_t *buffer = calloc(count, size);
++	struct target *target = get_current_target(CMD_CTX);
++	int retval = x86_32_common_read_io(target, address, size, buffer);
++	if (ERROR_OK == retval)
++		handle_iod_output(CMD_CTX, target, address, size, count, buffer);
++	free(buffer);
++	return retval;
++}
++
++static int target_fill_io(struct target *target,
++		uint32_t address,
++		unsigned data_size,
++		/* value */
++		uint32_t b)
++{
++	LOG_DEBUG("%s address=%08X, data_size=%d, b=%08X",
++			__func__, address, data_size, b);
++	uint8_t *target_buf = malloc(data_size);
++	if (target_buf == NULL) {
++		LOG_ERROR("Out of memory");
++		return ERROR_FAIL;
++	}
++
++	switch (data_size) {
++	case 4:
++		target_buffer_set_u32(target, target_buf, b);
++		break;
++	case 2:
++		target_buffer_set_u16(target, target_buf, b);
++		break;
++	case 1:
++		target_buffer_set_u8(target, target_buf, b);
++		break;
++	default:
++		exit(-1);
++	}
++
++	int retval = ERROR_OK;
++	retval = x86_32_common_write_io(target, address, data_size, target_buf);
++	free(target_buf);
++	return retval;
++}
++
++COMMAND_HANDLER(handle_iow_command)
++{
++	if (CMD_ARGC != 2)
++		return ERROR_COMMAND_SYNTAX_ERROR;
++	uint32_t address;
++	COMMAND_PARSE_NUMBER(u32, CMD_ARGV[0], address);
++	uint32_t value;
++	COMMAND_PARSE_NUMBER(u32, CMD_ARGV[1], value);
++	struct target *target = get_current_target(CMD_CTX);
++
++	unsigned wordsize;
++	switch (CMD_NAME[2]) {
++		case 'w':
++			wordsize = 4;
++			break;
++		case 'h':
++			wordsize = 2;
++			break;
++		case 'b':
++			wordsize = 1;
++			break;
++		default:
++			return ERROR_COMMAND_SYNTAX_ERROR;
++	}
++	return target_fill_io(target, address, wordsize, value);
++}
++
++static const struct command_registration x86_32_exec_command_handlers[] = {
++	{
++		.name = "iww",
++		.mode = COMMAND_EXEC,
++		.handler = handle_iow_command,
++		.help = "write I/O port word",
++		.usage = "port data[word]",
++	},
++	{
++		.name = "iwh",
++		.mode = COMMAND_EXEC,
++		.handler = handle_iow_command,
++		.help = "write I/O port halfword",
++		.usage = "port data[halfword]",
++	},
++	{
++		.name = "iwb",
++		.mode = COMMAND_EXEC,
++		.handler = handle_iow_command,
++		.help = "write I/O port byte",
++		.usage = "port data[byte]",
++	},
++	{
++		.name = "idw",
++		.mode = COMMAND_EXEC,
++		.handler = handle_iod_command,
++		.help = "display I/O port word",
++		.usage = "port",
++	},
++	{
++		.name = "idh",
++		.mode = COMMAND_EXEC,
++		.handler = handle_iod_command,
++		.help = "display I/O port halfword",
++		.usage = "port",
++	},
++	{
++		.name = "idb",
++		.mode = COMMAND_EXEC,
++		.handler = handle_iod_command,
++		.help = "display I/O port byte",
++		.usage = "port",
++	},
++
++	COMMAND_REGISTRATION_DONE
++};
++
++const struct command_registration x86_32_command_handlers[] = {
++	{
++		.name = "x86_32",
++		.mode = COMMAND_ANY,
++		.help = "x86_32 target commands",
++		.usage = "",
++		.chain = x86_32_exec_command_handlers,
++	},
++	COMMAND_REGISTRATION_DONE
++};
+diff --git a/src/target/x86_32_common.h b/src/target/x86_32_common.h
+new file mode 100644
+index 0000000..70663a0
+--- /dev/null
++++ b/src/target/x86_32_common.h
+@@ -0,0 +1,299 @@
++/*
++ * Copyright(c) 2013 Intel Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Contact Information:
++ * Intel Corporation
++ */
++
++#ifndef X86_32_COMMON_H
++#define X86_32_COMMON_H
++
++#include <jtag/jtag.h>
++#include <helper/command.h>
++
++extern const struct command_registration x86_32_command_handlers[];
++
++#define NUM_IA32_GDB_REGS	42
++
++/* for memory access */
++#define BYTE			1
++#define WORD			2
++#define DWORD			4
++
++#define EFLAGS_TF		0x00000100 /* Trap Flag */
++#define EFLAGS_IF		0x00000200 /* Interrupt Flag */
++#define EFLAGS_RF		0x00010000 /* Resume Flag */
++#define EFLAGS_VM86		0x00020000 /* Virtual 8086 Mode */
++
++#define CSAR_DPL		0x00006000
++#define CSAR_D			0x00400000
++#define SSAR_DPL		0x00006000
++
++#define CR0_PE			0x00000001 /* Protected Mode Enable */
++#define CR0_NW			0x20000000 /* Non Write-Through */
++#define CR0_CD			0x40000000 /* Cache Disable */
++#define CR0_PG			0x80000000 /* Paging Enable */
++
++/* TODO - move back to PM specific file */
++#define PM_DR6			0xFFFF0FF0
++
++#define DR6_BRKDETECT_0		0x00000001 /* B0 through B3 */
++#define DR6_BRKDETECT_1		0x00000002 /* breakpoint condition detected */
++#define DR6_BRKDETECT_2		0x00000004
++#define DR6_BRKDETECT_3		0x00000008
++
++#define CHECK_HALTED \
++do { \
++	if (t->state != TARGET_HALTED) { \
++		LOG_ERROR("target running, halt it first"); \
++		return ERROR_TARGET_NOT_HALTED; \
++	} \
++} while (0)
++
++enum {
++	/* general purpose registers */
++	EAX = 0,
++	ECX,
++	EDX,
++	EBX,
++	ESP,
++	EBP,
++	ESI,
++	EDI,
++	/* instruction pointer & flags */
++	EIP,
++	EFLAGS,
++
++	/* segment registers */
++	CS,
++	DS,
++	SS,
++	ES,
++	FS,
++	GS,
++
++	/* control registers */
++	CR0,
++	CR2,
++	CR3,
++	CR4,
++
++	/* debug registers */
++	DR0,
++	DR1,
++	DR2,
++	DR3,
++	DR6,
++	DR7,
++	/* segment registers needed for PM */
++	CSAR,
++	DSAR,
++	SSAR,
++	DSB,
++	DSL,
++	/* PM control reg */
++	PMCR, /* 28 */
++
++	SRAMACCESS,
++	SRAM2PDR,
++	PDR2SRAM,
++	WBINVD,
++	/* memory read/write */
++	OP_MEMRDB32,
++	OP_MEMRDB16,
++	OP_MEMRDH32,
++	OP_MEMRDH16,
++	OP_MEMRDW32,
++	OP_MEMRDW16,
++	OP_MEMWRB32,
++	OP_MEMWRB16,
++	OP_MEMWRH32,
++	OP_MEMWRH16,
++	OP_MEMWRW32,
++	OP_MEMWRW16,
++	/* IO read/write */
++	OP_IORDB32,
++	OP_IORDB16,
++	OP_IORDH32,
++	OP_IORDH16,
++	OP_IORDW32,
++	OP_IORDW16,
++	OP_IOWRB32,
++	OP_IOWRB16,
++	OP_IOWRH32,
++	OP_IOWRH16,
++	OP_IOWRW32,
++	OP_IOWRW16,
++};
++
++#define X86_32_COMMON_MAGIC 0x86328632
++
++enum {
++	/* memory read/write */
++	MEMRDB32 = 0,
++	MEMRDB16,
++	MEMRDH32,
++	MEMRDH16,
++	MEMRDW32,
++	MEMRDW16,
++	MEMWRB32,
++	MEMWRB16,
++	MEMWRH32,
++	MEMWRH16,
++	MEMWRW32,
++	MEMWRW16,
++	/* IO read/write */
++	IORDB32,
++	IORDB16,
++	IORDH32,
++	IORDH16,
++	IORDW32,
++	IORDW16,
++	IOWRB32,
++	IOWRB16,
++	IOWRH32,
++	IOWRH16,
++	IOWRW32,
++	IOWRW16,
++};
++
++struct swbp_mem_patch {
++	uint8_t orig_byte;
++	uint32_t swbp_unique_id;
++	uint32_t physaddr;
++	struct swbp_mem_patch *next;
++};
++
++/* TODO - probemode specific - consider removing */
++#define NUM_PM_REGS		18 /* regs used in save/restore */
++
++struct x86_32_common {
++	uint32_t common_magic;
++	void *arch_info;
++	struct reg_cache *cache;
++	struct jtag_tap *curr_tap;
++	uint32_t stored_pc;
++	int flush;
++
++	/* pm_regs are for probemode save/restore state */
++	uint32_t pm_regs[NUM_PM_REGS];
++
++	/* working area for fastdata access */
++	struct working_area *fast_data_area;
++
++	int num_hw_bpoints;
++	struct x86_32_dbg_reg *hw_break_list;
++	struct swbp_mem_patch *swbbp_mem_patch_list;
++
++	/* core probemode implementation dependent functions */
++	uint8_t (*get_num_user_regs)(struct target *t);
++	bool (*is_paging_enabled)(struct target *t);
++	int (*disable_paging)(struct target *t);
++	int (*enable_paging)(struct target *t);
++	bool (*sw_bpts_supported)(struct target *t);
++	int (*transaction_status)(struct target *t);
++	int (*submit_instruction)(struct target *t, int num);
++	int (*read_hw_reg)(struct target *t, int reg, uint32_t *regval, uint8_t cache);
++	int (*write_hw_reg)(struct target *t, int reg,
++				uint32_t regval, uint8_t cache);
++
++	/* register cache to processor synchronization */
++	int (*read_hw_reg_to_cache)(struct target *target, int num);
++	int (*write_hw_reg_from_cache)(struct target *target, int num);
++};
++
++static inline struct x86_32_common *
++target_to_x86_32(struct target *target)
++{
++	return target->arch_info;
++}
++
++
++/* breakpoint defines */
++#define MAX_DEBUG_REGS		4
++#define SW_BP_OPCODE		0xf1
++#define MAX_SW_BPTS		20
++
++struct x86_32_dbg_reg {
++	int used;
++	uint32_t bp_value;
++};
++
++#define DR7_G_ENABLE_SHIFT		1
++#define DR7_ENABLE_SIZE			2 /* 2 bits per debug reg */
++#define DR7_RW_SHIFT			16
++#define DR7_LENGTH_SHIFT		18
++#define DR7_RW_LEN_SIZE			4
++#define DR7_BP_EXECUTE			0 /* 00 - only on instruction execution*/
++#define DR7_BP_WRITE			1 /* 01 - only on data writes */
++/*#define DR7_RW_IORW			2 UNSUPPORTED 10 - an I/O read and I/O write */
++#define DR7_BP_READWRITE		3 /* on data read or data write */
++#define DR7_BP_LENGTH_1			0 /* 00 - 1 byte length */
++#define DR7_BP_LENGTH_2			1 /* 01 - 2 byte length */
++#define DR7_BP_LENGTH_4			3 /* 11 - 4 byte length */
++
++#define DR7_GLOBAL_ENABLE(val, regnum) \
++	(val |= (1 << (DR7_G_ENABLE_SHIFT + (DR7_ENABLE_SIZE * (regnum)))))
++
++#define DR7_GLOBAL_DISABLE(val, regnum) \
++	(val &= ~(3 << (DR7_ENABLE_SIZE * (regnum))))
++
++#define DR7_BP_FREE(val, regnum) \
++	((val & (3 << (DR7_ENABLE_SIZE * (regnum)))) == 0)
++
++#define DR7_RESET_RWLEN_BITS(val, regnum) \
++	(val &= ~(0x0f << (DR7_RW_SHIFT + DR7_RW_LEN_SIZE * (regnum))))
++
++#define DR7_SET_EXE(val, regnum) \
++	(val &= ~(0x0f << (DR7_RW_SHIFT + DR7_RW_LEN_SIZE * (regnum))))
++
++#define DR7_SET_WRITE(val, regnum) \
++	(val |= (DR7_BP_WRITE << (DR7_RW_SHIFT + DR7_RW_LEN_SIZE * (regnum))))
++
++#define DR7_SET_ACCESS(val, regnum) \
++	(val |= (DR7_BP_READWRITE << (DR7_RW_SHIFT + DR7_RW_LEN_SIZE * (regnum))))
++
++#define DR7_SET_LENGTH(val, regnum, len) \
++	(val |= (len == 1) ? (DR7_BP_LENGTH_1 << (DR7_LENGTH_SHIFT + DR7_RW_LEN_SIZE * (regnum))) : \
++	(len == 2) ? (DR7_BP_LENGTH_2 << (DR7_LENGTH_SHIFT + DR7_RW_LEN_SIZE * (regnum))) : \
++	(DR7_BP_LENGTH_4 << (DR7_LENGTH_SHIFT + DR7_RW_LEN_SIZE * (regnum))))
++
++/* public interface */
++int x86_32_get_gdb_reg_list(struct target *t,
++			struct reg **reg_list[], int *reg_list_size,
++			enum target_register_class reg_class);
++int x86_32_common_init_arch_info(struct target *target,
++			struct x86_32_common *x86_32);
++int x86_32_common_mmu(struct target *t, int *enabled);
++int x86_32_common_virt2phys(struct target *t, uint32_t address, uint32_t *physical);
++int x86_32_common_read_phys_mem(struct target *t, uint32_t phys_address,
++			uint32_t size, uint32_t count, uint8_t *buffer);
++int x86_32_common_write_phys_mem(struct target *t, uint32_t phys_address,
++			uint32_t size, uint32_t count, const uint8_t *buffer);
++int x86_32_common_read_memory(struct target *t, uint32_t addr,
++			uint32_t size, uint32_t count, uint8_t *buf);
++int x86_32_common_write_memory(struct target *t, uint32_t addr,
++			uint32_t size, uint32_t count, const uint8_t *buf);
++int x86_32_common_read_io(struct target *t, uint32_t addr,
++			uint32_t size, uint8_t *buf);
++int x86_32_common_write_io(struct target *t, uint32_t addr,
++			uint32_t size, const uint8_t *buf);
++int x86_32_common_add_breakpoint(struct target *t, struct breakpoint *bp);
++int x86_32_common_remove_breakpoint(struct target *t, struct breakpoint *bp);
++int x86_32_common_add_watchpoint(struct target *t, struct watchpoint *wp);
++int x86_32_common_remove_watchpoint(struct target *t, struct watchpoint *wp);
++
++#endif /* X86_32_COMMON_H */
+diff --git a/tcl/board/quark_x10xx_board.cfg b/tcl/board/quark_x10xx_board.cfg
+new file mode 100644
+index 0000000..3fae1f8
+--- /dev/null
++++ b/tcl/board/quark_x10xx_board.cfg
+@@ -0,0 +1,9 @@
++# There are many Quark boards that can host the quark_x10xx SoC
++# Galileo is an example board
++
++source [find target/quark_x10xx.cfg]
++
++#default frequency but this can be adjusted at runtime
++adapter_khz 4000
++
++reset_config srst_only srst_pulls_trst
+diff --git a/tcl/target/quark_x10xx.cfg b/tcl/target/quark_x10xx.cfg
+new file mode 100644
+index 0000000..0613ad8
+--- /dev/null
++++ b/tcl/target/quark_x10xx.cfg
+@@ -0,0 +1,53 @@
++if { [info exists CHIPNAME] } {
++   set _CHIPNAME $CHIPNAME
++} else {
++   set _CHIPNAME quark_x10xx
++}
++
++if { [info exists ENDIAN] } {
++   set _ENDIAN $ENDIAN
++} else {
++   set _ENDIAN little
++}
++
++
++if { [info exists CPUTAPID] } {
++   set _CPUTAPID $CPUTAPID
++} else {
++   set _CPUTAPID 0x18289013
++}
++
++jtag newtap quark_x10xx cpu   -irlen 8  -irmask 0xff  -expected-id   $_CPUTAPID  -disable
++jtag newtap quark_x10xx cltap -irlen 8  -irmask 0xff  -expected-id   0x0e681013  -enable
++
++#openocd puts tap at front of chain not end of chain
++proc quark_x10xx_tapenable {} {
++	echo "enabling core tap"
++	irscan quark_x10xx.cltap 0x11
++	drscan quark_x10xx.cltap 64 1
++	runtest 10
++}
++
++proc quark_x10xx_tapdisable {} {
++	echo "disabling core tap"
++	irscan quark_x10xx.cltap 0x11
++	drscan quark_x10xx.cltap 64 0
++	runtest 10
++}
++
++proc quark_x10xx_setup {} {
++	jtag tapenable quark_x10xx.cpu
++}
++
++jtag configure $_CHIPNAME.cpu -event tap-enable \
++   "quark_x10xx_tapenable"
++
++jtag configure $_CHIPNAME.cpu -event tap-disable \
++   "quark_x10xx_tapdisable"
++
++set _TARGETNAME $_CHIPNAME.cpu
++target create quark_x10xx.cpu quark_x10xx -endian $_ENDIAN -chain-position quark_x10xx.cpu
++
++jtag configure $_CHIPNAME.cpu -event setup \
++   "quark_x10xx_setup"
++
+-- 
+1.8.3.2
+
