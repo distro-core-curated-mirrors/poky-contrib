@@ -1,0 +1,101 @@
+From e763ac3409893a2678debf1399e432a97268e577 Mon Sep 17 00:00:00 2001
+From: David Woodhouse <David.Woodhouse@intel.com>
+Date: Fri, 25 Jan 2013 19:39:07 -0600
+Subject: [PATCH] Update EFI_COMPATIBILITY16_TABLE to match 0.98 spec update
+
+We expect to use the space between the top of option ROMs and the bottom
+of our own BIOS code as a stack. OVMF was previously marking the whole
+region from 0xC0000 to 0xFFFFF read-only before invoking our Legacy16Boot
+method. Read-only stack considered harmful.
+
+Version 0.98 of the CSM spec adds the UmaAddress and UmaSize fields, which
+allow the CSM to specify a memory region that needs to be writable.
+
+There exists CONFIG_MALLOC_UPPERMEMORY which we could turn off to use
+the 9-segment, but that isn't particularly useful for the CSM case
+either because that memory isn't ours to play with until the final
+Legacy16Boot call. There's a LowPmmMemory given to use by UEFI to play
+with, but that's right in the *middle* of low memory and using that for
+persistent allocations would be painful. So just require
+CONFIG_MALLOC_UPPERMEMORY when building a CSM.
+
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+---
+ src/Kconfig          |  2 +-
+ src/fw/csm.c         |  6 +++++-
+ src/std/LegacyBios.h | 20 ++++++++++++++++++++
+ 3 files changed, 26 insertions(+), 2 deletions(-)
+
+diff --git a/src/Kconfig b/src/Kconfig
+index a42ab2d..093075c 100644
+--- a/src/Kconfig
++++ b/src/Kconfig
+@@ -114,7 +114,7 @@ endchoice
+             the BIOS in 16bit protected mode.
+ 
+     config MALLOC_UPPERMEMORY
+-        bool "Allocate memory that needs to be in first Meg above 0xc0000"
++        bool "Allocate memory that needs to be in first Meg above 0xc0000" if !CSM
+         default y
+         help
+             Use the "Upper Memory Block" area (0xc0000-0xf0000) for
+diff --git a/src/fw/csm.c b/src/fw/csm.c
+index dfb0d12..4e4b688 100644
+--- a/src/fw/csm.c
++++ b/src/fw/csm.c
+@@ -34,6 +34,8 @@ EFI_COMPATIBILITY16_TABLE csm_compat_table VARFSEG __aligned(16) = {
+     .Compatibility16CallOffset = 0 /* Filled in by checkrom.py */,
+     .OemIdStringPointer = (u32)"SeaBIOS",
+     .AcpiRsdPtrPointer = (u32)&csm_rsdp,
++    .UmaAddress = (u32)&zonelow_base,
++    .UmaSize = 0x10000,
+ };
+ 
+ EFI_TO_COMPATIBILITY16_INIT_TABLE *csm_init_table;
+@@ -46,9 +48,11 @@ extern void __csm_return(struct bregs *regs) __noreturn;
+ static void
+ csm_return(struct bregs *regs)
+ {
+-    dprintf(3, "handle_csm returning AX=%04x\n", regs->ax);
++    u32 top = rom_get_max();
+ 
+     PICMask = pic_irqmask_read();
++    csm_compat_table.UmaAddress = top;
++    csm_compat_table.UmaSize = 0xf0000 - top;
+     __csm_return(regs);
+ }
+ 
+diff --git a/src/std/LegacyBios.h b/src/std/LegacyBios.h
+index cf0c3c5..5170c37 100644
+--- a/src/std/LegacyBios.h
++++ b/src/std/LegacyBios.h
+@@ -228,6 +228,26 @@ typedef struct {
+   /// Maximum PCI bus number assigned.
+   ///
+   UINT8                             LastPciBus;
++
++  ///
++  /// Start address of UMB RAM
++  ///
++  UINT32                            UmaAddress;
++
++  ///
++  /// Size of UMB RAM
++  ///
++  UINT32                            UmaSize;
++
++  ///
++  /// Start address of persistent allocation in high (>1MiB) memory
++  ///
++  UINT32                            HiPermanentMemoryAddress;
++
++  ///
++  /// Size of persistent allocation in high (>1MiB) memory
++  ///
++  UINT32                            HiPermanentMemorySize;
+ } EFI_COMPATIBILITY16_TABLE;
+ 
+ ///
+-- 
+1.8.1.4
+
