@@ -1,0 +1,29 @@
+From b06b0bf999a339ea094c932432fd8f8f86b4edd9 Mon Sep 17 00:00:00 2001
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Fri, 25 Jan 2013 22:04:25 +0100
+Subject: [PATCH] LegacyBios: set NumberBbsEntries to the size of BbsTable
+
+Contributed-under: TianoCore Contribution Agreement 1.0
+
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Signed-off-by: Laszlo Ersek <lersek@redhat.com>
+---
+ IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyBios.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyBios.c b/IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyBios.c
+index 2f48186..f4c91a4 100644
+--- a/IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyBios.c
++++ b/IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyBios.c
+@@ -555,7 +555,7 @@ ShadowAndStartLegacy16 (
+   //
+   // Skip Floppy and possible onboard IDE drives
+   //
+-  EfiToLegacy16BootTable->NumberBbsEntries = 1 + 2 * MAX_IDE_CONTROLLER;
++  EfiToLegacy16BootTable->NumberBbsEntries = sizeof(Private->IntThunk->BbsTable) / sizeof(BBS_TABLE);
+ 
+   for (Index = 0; Index < (sizeof (Private->IntThunk->BbsTable) / sizeof (BBS_TABLE)); Index++) {
+     BbsTable[Index].BootPriority = BBS_IGNORE_ENTRY;
+-- 
+1.8.1.4
+

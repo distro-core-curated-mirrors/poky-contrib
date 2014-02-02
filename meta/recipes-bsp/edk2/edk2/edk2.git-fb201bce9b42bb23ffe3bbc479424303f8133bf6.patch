@@ -1,0 +1,129 @@
+From fb201bce9b42bb23ffe3bbc479424303f8133bf6 Mon Sep 17 00:00:00 2001
+From: David Woodhouse <David.Woodhouse@intel.com>
+Date: Thu, 24 Jan 2013 13:31:45 -0600
+Subject: [PATCH] LegacyBios: Update EFI_COMPATIBILITY16_TABLE to match 0.98
+ CSM spec update
+
+The addition of UmaAddress/UmaSize fields allows the CSM to have
+writable memory between the top of the option ROMs and the start of
+its read-only code segment.
+
+The HiPermanentMemoryAddress/HiPermanentMemorySize fields added in the
+new spec are also added to the table, but not yet supported.
+
+Contributed-under: TianoCore Contribution Agreement 1.0
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+---
+ .../Csm/LegacyBiosDxe/LegacyBootSupport.c            | 18 ++++++++++++++++++
+ .../Csm/LegacyBiosDxe/LegacyPci.c                    | 12 ++++++++++--
+ IntelFrameworkPkg/Include/Protocol/LegacyBios.h      | 20 ++++++++++++++++++++
+ 3 files changed, 48 insertions(+), 2 deletions(-)
+
+diff --git a/IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyBootSupport.c b/IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyBootSupport.c
+index bf27605..cb15f7a 100644
+--- a/IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyBootSupport.c
++++ b/IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyBootSupport.c
+@@ -1238,6 +1238,24 @@ GenericLegacyBoot (
+                            0x40000,
+                            &Granularity
+                            );
++  if (Private->Legacy16Table->TableLength >= OFFSET_OF(EFI_COMPATIBILITY16_TABLE,
++						       HiPermanentMemoryAddress) &&
++      Private->Legacy16Table->UmaAddress != 0 && Private->Legacy16Table->UmaSize != 0) {
++
++    // Here we could reduce UmaAddress down as far as Private->OptionRom, taking into
++    // account the granularity of the access control.
++
++    DEBUG((EFI_D_INFO, "Unlocking UMB RAM region %x-%x\n",
++      Private->Legacy16Table->UmaAddress,
++      Private->Legacy16Table->UmaAddress + Private->Legacy16Table->UmaSize));
++
++    Private->LegacyRegion->UnLock (
++                             Private->LegacyRegion,
++                             Private->Legacy16Table->UmaAddress,
++                             Private->Legacy16Table->UmaSize,
++                             &Granularity
++                             );
++  }
+   //
+   // Lock attributes of the Legacy Region if chipset supports
+   //
+diff --git a/IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyPci.c b/IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyPci.c
+index fd5641a..fee93d9 100644
+--- a/IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyPci.c
++++ b/IntelFrameworkModulePkg/Csm/LegacyBiosDxe/LegacyPci.c
+@@ -2283,6 +2283,7 @@ LegacyBiosInstallRom (
+   UINT32                LocalTime;
+   UINT32                StartBbsIndex;
+   UINT32                EndBbsIndex;
++  UINT32                MaxRomAddr;
+   UINTN                 TempData;
+   UINTN                 InitAddress;
+   UINTN                 RuntimeAddress;
+@@ -2298,7 +2299,14 @@ LegacyBiosInstallRom (
+   Function        = 0;
+   VideoMode       = 0;
+   PhysicalAddress = 0;
++  MaxRomAddr      = PcdGet32 (PcdEndOpromShadowAddress);
+ 
++  if (Private->Legacy16Table->TableLength >= OFFSET_OF(EFI_COMPATIBILITY16_TABLE,
++						       HiPermanentMemoryAddress) &&
++      Private->Legacy16Table->UmaAddress != 0 && Private->Legacy16Table->UmaSize != 0 &&
++      MaxRomAddr > (Private->Legacy16Table->UmaAddress)) {
++    MaxRomAddr = Private->Legacy16Table->UmaAddress;
++  }
+   PciProgramAllInterruptLineRegisters (Private);
+ 
+   if ((OpromRevision >= 3) && (Private->Csm16PciInterfaceVersion >= 0x0300)) {
+@@ -2330,7 +2338,7 @@ LegacyBiosInstallRom (
+     //   then test if there is enough space for its RT code
+     //
+     RuntimeAddress = Private->OptionRom;
+-    if (RuntimeAddress + *RuntimeImageLength > PcdGet32 (PcdEndOpromShadowAddress)) {
++    if (RuntimeAddress + *RuntimeImageLength > MaxRomAddr) {
+       DEBUG ((EFI_D_ERROR, "return LegacyBiosInstallRom(%d): EFI_OUT_OF_RESOURCES (no more space for OpROM)\n", __LINE__));
+       gBS->FreePages (PhysicalAddress, EFI_SIZE_TO_PAGES (ImageSize));
+       //
+@@ -2348,7 +2356,7 @@ LegacyBiosInstallRom (
+     //   test if there is enough space for its INIT code
+     //
+     InitAddress    = PCI_START_ADDRESS (Private->OptionRom);
+-    if (InitAddress + ImageSize > PcdGet32 (PcdEndOpromShadowAddress)) {
++    if (InitAddress + ImageSize > MaxRomAddr) {
+       DEBUG ((EFI_D_ERROR, "return LegacyBiosInstallRom(%d): EFI_OUT_OF_RESOURCES (no more space for OpROM)\n", __LINE__));
+       //
+       // Report Status Code to indicate that there is no enough space for OpROM
+diff --git a/IntelFrameworkPkg/Include/Protocol/LegacyBios.h b/IntelFrameworkPkg/Include/Protocol/LegacyBios.h
+index 88f5980..7fe4816 100644
+--- a/IntelFrameworkPkg/Include/Protocol/LegacyBios.h
++++ b/IntelFrameworkPkg/Include/Protocol/LegacyBios.h
+@@ -228,6 +228,26 @@ typedef struct {
+   /// Maximum PCI bus number assigned.
+   ///
+   UINT8                             LastPciBus;
++
++  ///
++  /// Start address of UMB RAM
++  ///
++  UINT32                            UmaAddress;
++
++  ///
++  /// Size of UMB RAM
++  ///
++  UINT32                            UmaSize;
++
++  ///
++  /// Start address of persistent allocation in high (>1MiB) memory
++  ///
++  UINT32                            HiPermanentMemoryAddress;
++
++  ///
++  /// Size of persistent allocation in high (>1MiB) memory
++  ///
++  UINT32                            HiPermanentMemorySize;
+ } EFI_COMPATIBILITY16_TABLE;
+ 
+ ///
+-- 
+1.8.1.4
+

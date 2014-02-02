@@ -1,0 +1,98 @@
+From 70a3c7b64a263b57cec0ab7e93a60c8aa5397de0 Mon Sep 17 00:00:00 2001
+From: David Woodhouse <David.Woodhouse@intel.com>
+Date: Thu, 24 Jan 2013 21:27:08 -0600
+Subject: [PATCH] GenericBdsLib: Detect VirtIO disks and make them appear in
+ the boot menu
+
+Contributed-under: TianoCore Contribution Agreement 1.0
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+---
+ .../Include/Library/GenericBdsLib.h                 |   1 +
+ .../Library/GenericBdsLib/BdsBoot.c                 |  20 ++++++++++++++++++++
+ .../Library/GenericBdsLib/GenericBdsStrings.uni     | Bin 3852 -> 4174 bytes
+ 3 files changed, 21 insertions(+)
+
+diff --git a/IntelFrameworkModulePkg/Include/Library/GenericBdsLib.h b/IntelFrameworkModulePkg/Include/Library/GenericBdsLib.h
+index ecd68a0..b0f9723 100644
+--- a/IntelFrameworkModulePkg/Include/Library/GenericBdsLib.h
++++ b/IntelFrameworkModulePkg/Include/Library/GenericBdsLib.h
+@@ -821,6 +821,7 @@ SetupResetReminder (
+ #define  BDS_EFI_MESSAGE_USB_DEVICE_BOOT  0x0305 // Type 03; Sub-Type 05
+ #define  BDS_EFI_MESSAGE_SATA_BOOT        0x0312 // Type 03; Sub-Type 18
+ #define  BDS_EFI_MESSAGE_MAC_BOOT         0x030b // Type 03; Sub-Type 11
++#define  BDS_EFI_MESSAGE_VIRTIO_BOOT      0x03FE // Type 03; Sub-Type WTF
+ #define  BDS_EFI_MESSAGE_MISC_BOOT        0x03FF
+ 
+ ///
+diff --git a/IntelFrameworkModulePkg/Library/GenericBdsLib/BdsBoot.c b/IntelFrameworkModulePkg/Library/GenericBdsLib/BdsBoot.c
+index 3701434..95a037e 100644
+--- a/IntelFrameworkModulePkg/Library/GenericBdsLib/BdsBoot.c
++++ b/IntelFrameworkModulePkg/Library/GenericBdsLib/BdsBoot.c
+@@ -3074,6 +3074,7 @@ BdsLibEnumerateAllBootOption (
+   UINT16                        HarddriveNumber;
+   UINT16                        CdromNumber;
+   UINT16                        UsbNumber;
++  UINT16                        VirtioNumber;
+   UINT16                        MiscNumber;
+   UINT16                        ScsiNumber;
+   UINT16                        NonBlockNumber;
+@@ -3108,6 +3109,7 @@ BdsLibEnumerateAllBootOption (
+   HarddriveNumber = 0;
+   CdromNumber     = 0;
+   UsbNumber       = 0;
++  VirtioNumber    = 0;
+   MiscNumber      = 0;
+   ScsiNumber      = 0;
+   PlatLang        = NULL;
+@@ -3243,6 +3245,16 @@ BdsLibEnumerateAllBootOption (
+         ScsiNumber++;
+         break;
+ 
++      case BDS_EFI_MESSAGE_VIRTIO_BOOT:
++        if (VirtioNumber != 0) {
++          UnicodeSPrint (Buffer, sizeof (Buffer), L"%s %d", BdsLibGetStringById (STRING_TOKEN (STR_DESCRIPTION_VIRTIO)), VirtioNumber);
++        } else {
++          UnicodeSPrint (Buffer, sizeof (Buffer), L"%s", BdsLibGetStringById (STRING_TOKEN (STR_DESCRIPTION_VIRTIO)));
++        }
++        BdsLibBuildOptionFromHandle (BlockIoHandles[Index], BdsBootOptionList, Buffer);
++        VirtioNumber++;
++	break;
++
+       case BDS_EFI_MESSAGE_MISC_BOOT:
+         if (MiscNumber != 0) {
+           UnicodeSPrint (Buffer, sizeof (Buffer), L"%s %d", BdsLibGetStringById (STRING_TOKEN (STR_DESCRIPTION_MISC)), MiscNumber);
+@@ -3809,6 +3821,8 @@ BdsLibNetworkBootWithMediaPresent (
+                                           and its last device path node's subtype is MSG_SCSI_DP.
+   @retval BDS_EFI_MESSAGE_USB_DEVICE_BOOT If given device path contains MESSAGING_DEVICE_PATH type device path node
+                                           and its last device path node's subtype is MSG_USB_DP.
++  @retval BDS_EFI_MESSAGE_VIRTIO_BOOT     If the device path not contains any media device path node,  and
++                                          its last device path node point to a PCI device path node.
+   @retval BDS_EFI_MESSAGE_MISC_BOOT       If the device path not contains any media device path node,  and
+                                           its last device path node point to a message device path node.
+   @retval BDS_LEGACY_BBS_BOOT             If given device path contains BBS_DEVICE_PATH type device path node.
+@@ -3849,6 +3863,12 @@ BdsGetBootTypeFromDevicePath (
+           return BDS_EFI_ACPI_FLOPPY_BOOT;
+         }
+         break;
++      case HARDWARE_DEVICE_PATH:
++        // Virtio disks will be a plain PCI device
++        if (DevicePathSubType (TempDevicePath) == HW_PCI_DP &&
++	    IsDevicePathEndType (NextDevicePathNode (TempDevicePath)))
++          return BDS_EFI_MESSAGE_VIRTIO_BOOT;
++	break;
+       case MESSAGING_DEVICE_PATH:
+         //
+         // Get the last device path node
+diff --git a/IntelFrameworkModulePkg/Library/GenericBdsLib/GenericBdsStrings.uni b/IntelFrameworkModulePkg/Library/GenericBdsLib/GenericBdsStrings.uni
+index 7c3b4f96900c0d36ad9c272b5a6372afb1a3a788..b3eb07719733ec7504b20a789e4a2f9a9c81a231 100644
+GIT binary patch
+delta 60
+zcmeB?JEyRrjGH@*!IL3~Ap}VJPZs2~2l6u+iWo|OWd3ABZqdnixI2)=HXCx^W(EMv
+CH4k9`
+
+delta 12
+TcmX@7&?C2@jC=DAo@vYgB1i<<
+
+-- 
+1.8.1.4
+
