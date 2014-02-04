@@ -14,7 +14,7 @@ DEPENDS = "libusb1"
 # Besides, libusb-0.1 uses a per 1ms polling that hurts a lot to power
 # consumption.
 PROVIDES = "libusb virtual/libusb0"
-PROVIDES_class-native = "libusb-native virtual/libusb0-native"
+#PROVIDES_class-native = "libusb-native virtual/libusb0-native"
 BBCLASSEXTEND = "native nativesdk"
 
 PE = "1"
