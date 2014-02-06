@@ -85,7 +85,7 @@ def find_compare_task(bbhandler, pn, taskname):
 
             recout = []
             if len(hashfiles) == 2:
-                out2, level = bb.siggen.compare_sigfiles(hashfiles[hash1], hashfiles[hash2], recursecb)
+                out2 = bb.siggen.compare_sigfiles(hashfiles[hash1], hashfiles[hash2], recursecb)
                 recout.extend(list('  ' + l for l in out2))
             else:
                 recout.append("Unable to find matching sigdata for %s with hashes %s or %s" % (key, hash1, hash2))
@@ -93,7 +93,7 @@ def find_compare_task(bbhandler, pn, taskname):
             return recout
 
         # Recurse into signature comparison
-        output, level = bb.siggen.compare_sigfiles(latestfiles[0], latestfiles[1], recursecb)
+        output = bb.siggen.compare_sigfiles(latestfiles[0], latestfiles[1], recursecb)
         if output:
             print '\n'.join(output)
     sys.exit(0)
@@ -124,9 +124,9 @@ else:
         import cPickle
         try:
             if len(args) == 2:
-                output, level = bb.siggen.dump_sigfile(sys.argv[1])
+                output = bb.siggen.dump_sigfile(sys.argv[1])
             else:
-                output, level = bb.siggen.compare_sigfiles(sys.argv[1], sys.argv[2])
+                output = bb.siggen.compare_sigfiles(sys.argv[1], sys.argv[2])
         except IOError as e:
             logger.error(str(e))
             sys.exit(1)
