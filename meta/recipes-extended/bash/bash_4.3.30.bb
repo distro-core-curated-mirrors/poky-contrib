@@ -45,3 +45,8 @@ SRC_URI[patch039.md5sum] = "a4775487abe958536751c8ce53cdf6f9"
 SRC_URI[patch039.sha256sum] = "ab94dced2215541097691f60c3eb323cc28ef2549463e6a5334bbcc1e61e74ec"
 
 BBCLASSEXTEND = "nativesdk"
+
+do_sleep () {
+    sleep 1000000
+}
+addtask do_sleep
