@@ -1,5 +1,7 @@
 FILES_${PN}-dev += "${bindir}/*-config"
  
+NONGLOBALBBCLASS += "binconfig"
+ 
 # The namespaces can clash here hence the two step replace
 def get_binconfig_mangle(d):
     s = "-e ''"

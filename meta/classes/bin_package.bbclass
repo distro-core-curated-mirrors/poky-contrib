@@ -18,6 +18,8 @@
 # they would be in ${WORKDIR}.
 #
 
+NONGLOBALBBCLASS += "bin_package"
+
 # Skip the unwanted steps
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"

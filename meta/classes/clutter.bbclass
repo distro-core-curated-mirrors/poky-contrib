@@ -1,4 +1,6 @@
 
+NONGLOBALBBCLASS += "clutter"
+
 def get_minor_dir(v):
     import re
     m = re.match("^([0-9]+)\.([0-9]+)", v)

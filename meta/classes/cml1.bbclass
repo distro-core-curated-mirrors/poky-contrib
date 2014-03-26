@@ -1,3 +1,5 @@
+NONGLOBALBBCLASS += "cml1"
+
 cml1_do_configure() {
 	set -e
 	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS

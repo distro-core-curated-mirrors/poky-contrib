@@ -215,6 +215,9 @@ python base_eventhandler() {
         pkgarch_mapping(e.data)
         oe.utils.features_backfill("DISTRO_FEATURES", e.data)
         oe.utils.features_backfill("MACHINE_FEATURES", e.data)
+        nonglobalclasses = e.data.getVar("NONGLOBALBBCLASS", True)
+        if nonglobalclasses:
+            bb.error("The following classes were inserted into the global namespace but are not designed for use like this. Please inherit them in the appropriate recipe instead: %s" % nonglobalclasses)
 
     if isinstance(e, bb.event.BuildStarted):
         localdata = bb.data.createCopy(e.data)

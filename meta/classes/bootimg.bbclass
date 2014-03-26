@@ -4,6 +4,8 @@
 # Creates a bootable image using syslinux, your kernel and an optional
 # initrd
 
+NONGLOBALBBCLASS += "bootimg"
+
 #
 # End result is two things:
 #

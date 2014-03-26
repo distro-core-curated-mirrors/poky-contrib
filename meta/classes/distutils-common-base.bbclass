@@ -1,5 +1,7 @@
 inherit python-dir
 
+NONGLOBALBBCLASS += "distutils-common-base"
+
 EXTRA_OEMAKE = ""
 
 export STAGING_INCDIR

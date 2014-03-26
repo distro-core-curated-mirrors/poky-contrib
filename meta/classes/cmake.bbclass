@@ -1,3 +1,5 @@
+NONGLOBALBBCLASS += "cmake"
+
 # Path to the CMake file to process.
 OECMAKE_SOURCEPATH ?= "${S}"
 

@@ -8,6 +8,8 @@ STAGING_DIR_HOST := "${STAGING_DIR_HOST}"
 
 PACKAGE_ARCH = "all"
 
+NONGLOBALBBCLASS += "allarch"
+
 python () {
     # Allow this class to be included but overridden - only set
     # the values if we're still "all" package arch.

@@ -1,3 +1,5 @@
+NONGLOBALBBCLASS += "autotools"
+
 def autotools_dep_prepend(d):
     if d.getVar('INHIBIT_AUTOTOOLS_DEPS', True):
         return ''

@@ -7,6 +7,8 @@ BINCONFIG ?= ""
 
 FILES_${PN}-dev += "${bindir}/*-config"
 
+NONGLOBALBBCLASS += "binconfig-disabled"
+
 do_install_append () {
 	for x in ${BINCONFIG}; do
 		# Make the disabled script emit invalid parameters for those configure

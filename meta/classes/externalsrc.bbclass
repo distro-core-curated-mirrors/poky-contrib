@@ -26,6 +26,8 @@
 
 SRCTREECOVEREDTASKS ?= "do_patch do_unpack do_fetch"
 
+NONGLOBALBBCLASS += "externalsrc"
+
 python () {
     externalsrc = d.getVar('EXTERNALSRC', True)
     if externalsrc:

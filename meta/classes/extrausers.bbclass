@@ -12,6 +12,7 @@
 # usermod -s /bin/sh tester; \
 # "
 
+NONGLOBALBBCLASS += "extrausers"
 
 inherit useradd_base
 

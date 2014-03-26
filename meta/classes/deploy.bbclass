@@ -1,3 +1,5 @@
+NONGLOBALBBCLASS += "deploy"
+
 DEPLOYDIR = "${WORKDIR}/deploy-${PN}"
 SSTATETASKS += "do_deploy"
 do_deploy[sstate-inputdirs] = "${DEPLOYDIR}"

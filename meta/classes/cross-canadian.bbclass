@@ -4,6 +4,7 @@
 # is changed, another nativesdk xxx-canadian-cross can be installed
 #
 
+NONGLOBALBBCLASS += "cross-canadian"
 
 # SDK packages are built either explicitly by the user,
 # or indirectly via dependency.  No need to be in 'world'.

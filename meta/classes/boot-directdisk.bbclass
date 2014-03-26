@@ -19,6 +19,8 @@
 
 # ${ROOTFS} - the rootfs image to incorporate
 
+NONGLOBALBBCLASS += "boot-directdisk"
+
 do_bootdirectdisk[depends] += "dosfstools-native:do_populate_sysroot \
                                virtual/kernel:do_deploy \
                                syslinux:do_populate_sysroot \

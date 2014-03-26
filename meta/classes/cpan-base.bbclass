@@ -9,6 +9,8 @@ RDEPENDS_${PN} += "${@["perl", ""][(bb.data.inherits_class('native', d))]}"
 
 PERL_OWN_DIR = "${@["", "/perl-native"][(bb.data.inherits_class('native', d))]}"
 
+NONGLOBALBBCLASS += "cpan-base"
+
 # Determine the staged version of perl from the perl configuration file
 # Assign vardepvalue, because otherwise signature is changed before and after
 # perl is built (from None to real version in config.sh).
