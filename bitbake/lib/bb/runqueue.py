@@ -134,8 +134,6 @@ class RunQueueScheduler(object):
             self.rev_prio_map = range(self.numTasks)
             for taskid in xrange(self.numTasks):
                 self.rev_prio_map[self.prio_map[taskid]] = taskid
-            for i in self.prio_map:
-                bb.warn(self.rqdata.get_user_idstring(i) + str(self.rqdata.runq_weight[i]))
 
         best = None
         bestprio = None
@@ -148,7 +146,6 @@ class RunQueueScheduler(object):
                 bestprio = prio
                 best = taskid
 
-        bb.warn("Best prio is %s" % bestprio)
         return best
 
     def next(self):
@@ -174,10 +171,6 @@ class RunQueueSchedulerSpeed(RunQueueScheduler):
         """
         RunQueueScheduler.__init__(self, runqueue, rqdata)
 
-#        for taskid in self.rqdata.runq_weight:
-#            bb.warn(self.rqdata.get_user_idstring(taskid))
-
-
         sortweight = sorted(copy.deepcopy(self.rqdata.runq_weight))
         copyweight = copy.deepcopy(self.rqdata.runq_weight)
         self.prio_map = []
@@ -188,7 +181,6 @@ class RunQueueSchedulerSpeed(RunQueueScheduler):
             copyweight[idx] = -1
 
         self.prio_map.reverse()
-        bb.warn("Speed Scheduler")
 
 class RunQueueSchedulerCompletion(RunQueueSchedulerSpeed):
     """
@@ -1402,7 +1394,7 @@ class RunQueueExecuteTasks(RunQueueExecute):
         for task in xrange(self.stats.total):
             self.runq_running.append(0)
             self.runq_complete.append(0)
-            if 1 or len(self.rqdata.runq_depends[task]) == 0:
+            if len(self.rqdata.runq_depends[task]) == 0:
                 self.runq_buildable.append(1)
             else:
                 self.runq_buildable.append(0)
