@@ -1270,7 +1270,7 @@ python () {
         package_qa_handle_error("pn-overrides", msg, d)
 
     issues = []
-    if (d.getVar('PACKAGES', True) or "").split() and d.getVar("CLASSOVERRIDE") == "class-target":    
+    if (d.getVar('PACKAGES', True) or "").split():
         for dep in (d.getVar('QADEPENDS', True) or "").split():
             d.appendVarFlag('do_package_qa', 'depends', " %s:do_populate_sysroot" % dep)
         for var in 'RDEPENDS', 'RRECOMMENDS', 'RSUGGESTS', 'RCONFLICTS', 'RPROVIDES', 'RREPLACES', 'FILES', 'pkg_preinst', 'pkg_postinst', 'pkg_prerm', 'pkg_postrm', 'ALLOW_EMPTY':
