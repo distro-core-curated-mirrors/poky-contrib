@@ -5,8 +5,8 @@ inherit relocatable
 # no need for them to be a direct target of 'world'
 EXCLUDE_FROM_WORLD = "1"
 
-PACKAGES = ""
-PACKAGES_class-native = ""
+#PACKAGES = ""
+#PACKAGES_class-native = ""
 PACKAGES_DYNAMIC = ""
 PACKAGES_DYNAMIC_class-native = ""
 PACKAGE_ARCH = "${BUILD_ARCH}"
