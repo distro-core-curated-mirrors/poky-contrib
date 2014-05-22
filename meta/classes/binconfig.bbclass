@@ -59,15 +59,7 @@ binconfig_sysroot_preprocess () {
 	for config in `find ${S} -name '${BINCONFIG_GLOB}'` `find ${B} -name '${BINCONFIG_GLOB}'`; do
 		configname=`basename $config`
 		install -d ${SYSROOT_DESTDIR}${bindir_crossscripts}
-		case "${configname}" in
-			apr-1-config|apu-1-config|curl-config|cups-config)
-				sed ${@get_binconfig_mangle(d)} $config > ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
-				;;
-			*)
-				echo "#!/bin/sh" > ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
-				echo "exit 1" >> ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
-				;;
-		esac
+		sed ${@get_binconfig_mangle(d)} $config > ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
 		chmod u+x ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
 	done
 }
