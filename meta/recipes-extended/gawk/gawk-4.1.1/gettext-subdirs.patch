@@ -1,0 +1,7 @@
+diff --git a/extension/Makefile.am b/extension/Makefile.am
+index b6beaee..d803ef2 100644
+--- a/extension/Makefile.am
++++ b/extension/Makefile.am
+@@ -124 +124 @@ dist_man_MANS = \
+-SUBDIRS =
++SUBDIRS = po
