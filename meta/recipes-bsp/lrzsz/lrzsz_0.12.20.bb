@@ -28,6 +28,10 @@ UPSTREAM_CHECK_URI = "http://ohse.de/uwe/software/lrzsz.html"
 
 inherit autotools gettext
 
+do_configure_prepend() {
+	touch ${S}/config.rpath
+}
+
 do_install() {
 	install -d ${D}${bindir}/
 	install -m 0755 src/lrz src/lsz ${D}${bindir}/
