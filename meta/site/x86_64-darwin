@@ -1,0 +1,1 @@
+glib_cv_stack_grows=${glib_cv_stack_grows=no}
