@@ -23,6 +23,7 @@ TOOLCHAIN_HOST_TASK ?= "\
     nativesdk-make \
     nativesdk-wget \
     nativesdk-ca-certificates \
+    nativesdk-pseudo \
     "
 
 SDK_PACKAGE_ARCHS =+ "buildtools-dummy-${SDKPKGSUFFIX}"
