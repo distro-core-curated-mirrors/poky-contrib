@@ -1,0 +1,103 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import warnings
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.argv[0])), 'lib'))
+from bb import fetch2
+import logging
+import bb
+import select
+import errno
+import signal
+
+import bb.tinfoil
+
+# Enable verbose/debugging for now
+bb.msg.init_msgconfig(True,3, [])
+
+tinfoil = bb.tinfoil.Tinfoil()
+tinfoil.prepare(config_only = True)
+
+logger = logging.getLogger("BitBake")
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+    bb.msg.note(1, bb.msg.domain.Cache, "Importing cPickle failed. Falling back to a very slow implementation.")
+
+def fork_off_task(data, workerdata, fn, taskname, appends, quieterrors=False):
+    # We need to setup the environment BEFORE the fork, since
+    # a fork() or exec*() activates PSEUDO...
+
+    fakeenv = {}
+    umask = None
+
+   # taskdep = workerdata["taskdeps"][fn]
+   # if 'umask' in taskdep and taskname in taskdep['umask']:
+   #     # umask might come in as a number or text string..
+   #     try:
+   #          umask = int(taskdep['umask'][taskname],8)
+   #     except TypeError:
+   #          umask = taskdep['umask'][taskname]
+
+    # We can't use the fakeroot environment in a dry run as it possibly hasn't been built
+  #  if 'fakeroot' in taskdep and taskname in taskdep['fakeroot']:
+  #      envvars = (workerdata["fakerootenv"][fn] or "").split()
+  #      for key, value in (var.split('=') for var in envvars):
+  #          envbackup[key] = os.#environ.get(key)
+  #          os.environ[key] = value
+  #          fakeenv[key] = value
+
+  #      fakedirs = (workerdata["fakerootdirs"][fn] or "").split()
+  #      for p in fakedirs:
+  #          bb.utils.mkdirhier(p)
+  #      logger.debug(2, 'Running %s:%s under fakeroot, fakedirs: %s' %
+  #                      (fn, taskname, ', '.join(fakedirs)))
+  #  else:
+  #      envvars = (workerdata["fakerootnoenv"][fn] or "").split()
+  #      for key, value in (var.split('=') for var in envvars):
+  #          envbackup[key] = os.environ.get(key)
+  #          os.environ[key] = value
+  #          fakeenv[key] = value
+
+    if umask:
+        os.umask(umask)
+
+    data.setVar("BB_WORKERCONTEXT", "1")
+    ret = 0
+    try:
+        the_data = bb.cache.Cache.loadDataFull(fn, appends, data)
+
+        # exported_vars() returns a generator which *cannot* be passed to os.environ.update() 
+        # successfully. We also need to unset anything from the environment which shouldn't be there 
+        exports = bb.data.exported_vars(the_data)
+        bb.utils.empty_environment()
+        for e, v in exports:
+            os.environ[e] = v
+        for e in fakeenv:
+            os.environ[e] = fakeenv[e]
+            the_data.setVar(e, fakeenv[e])
+            the_data.setVarFlag(e, 'export', "1")
+
+        if quieterrors:
+            the_data.setVarFlag(taskname, "quieterrors", "1")
+
+    except Exception as exc:
+        if not quieterrors:
+            logger.critical(str(exc))
+    try:
+        ret = bb.build.exec_task(fn, taskname, the_data, False)
+        sys.exit(ret)
+    except:
+        sys.exit(1)
+    return
+
+# Set variables using the environment
+for var in ("IMAGE_PKGTYPE", "DEPLOY_DIR_IPK", "DEPLOY_DIR_RPM",
+            "PACKAGE_ARCHS", "ALL_MULTILIB_PACKAGE_ARCHS", "COREBASE",
+            "BUILDNAME", "RPM_CHECK_SIGNATURES"):
+    tinfoil.config_data.setVar(var, os.getenv(var))
+
+fork_off_task(tinfoil.config_data, None, os.path.abspath(sys.argv[1]), "do_rootfs", None)

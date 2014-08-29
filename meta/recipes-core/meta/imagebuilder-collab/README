@@ -1,0 +1,51 @@
+To use the proof of concept, execute a command like:
+
+NATIVESYSROOT=/media/build1/poky/build1/tmp/sysroots/x86_64-linux/usr
+PATH=$NATIVESYSROOT/bin:$NATIVESYSROOT/sbin:$PATH \
+BBPATH=meta \
+PSEUDO_PREFIX=$NATIVESYSROOT \
+PSEUDO_LOCALSTATEDIR=`pwd`/tmp/work/-oe-linux/core-image-minimal/1.0-r0/pseudo/ \
+PSEUDO_PASSWD=`pwd`/tmp/work/-oe-linux/core-image-minimal/1.0-r0/rootfs \
+PSEUDO_NOSYMLINKEXP=1 \
+PSEUDO_BINDIR=$NATIVESYSROOT/bin \
+PSEUDO_LIBDIR=$NATIVESYSROOT/bin/../lib/pseudo/lib 
+pseudo \
+./bitbake/bin/build-rootfs
+
+Needs:
+
+"mkdir tmp/sysroots/\${MACHINE}/pkgdata -p" to avoid an error due to missing pkgdata
+
+Add $NATIVESYSROOT/bin/python-native to path if building rpm and using a Yocto native 
+sysroot. We need the python native version to match the smartpm python modules.
+
+Generated image ends up in tmp/deploy/images/
+
+The directory in PATH needs to contain the tools the system needs like opkg-utils-native, pseudo-native and
+so on that Yocto would usually build before running the rootfs generation code.
+
+As a proof of concept, it executes the do_rootfs task of the single 
+included image recipe, core-image-minimal.bb.
+
+Known issues:
+
+* The native sysroot is needed in PATH for tools
+* There are hardcoded paths in bitbake/bin/build-rootfs to find the directory of 
+  packages (DEPLOY_DIR_IMAGE), the postinst intecept scritps (found using COREBASE).
+* The list of package architectres is hardcoded in bitbake/bin/build-rootfs
+* To work properly, pseudo needs to be load in advance of the tool since 
+  the fakeroot/pseudo code in build-rootfs is disabled right now
+* The package type is set to ipk in base.bbclass at present
+
+Needs:
+
+"mkdir tmp/sysroots/\${MACHINE}/pkgdata -p" to avoid an error due to missing pkgdata
+
+Example set of rpms for core-image-minimal: http://www.rpsys.net/wp/rp/rpm.tar.bz2 to 
+extract in tmp/deploy/rpm
+
+If using a Yocto native sysroot for the build tools, the setup is (roughly):
+
+git clone git://git.yoctoproject.org/poky; cd poky; source oe-init-build-env; bitbake pseudo-native python-smartpm-native createrepo-native update-rc.d-native
+
+
