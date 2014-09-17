@@ -176,15 +176,19 @@ class SignatureGeneratorOEBasicHash(bb.siggen.SignatureGeneratorBasicHash):
 
         with open(sigfile, "w") as f:
             for t in types:
-                f.write('SIGGEN_LOCKEDSIGS_%s = "\\\n' % t)
+                f.write('SIGGEN_LOCKEDSIGS_%s += "\\\n' % t)
                 types[t].sort()
                 sortedk = sorted(types[t], key=lambda k: self.lockedpnmap[k.rsplit(".",1)[0]])
                 for k in sortedk:
                     fn = k.rsplit(".",1)[0]
+                    pn = self.lockedpnmap[fn]
                     task = k.rsplit(".",1)[1]
                     if k not in self.taskhash:
                         continue
-                    f.write("    " + self.lockedpnmap[fn] + ":" + task + ":" + self.taskhash[k] + " \\\n")
+                    if pn in self.lockedsigs and task in self.lockedsigs[pn] and self.hashtask[k] == self.lockedsigs[pn][task]:
+                        continue
+                    sigentry = pn + ":" + task + ":" + self.taskhash[k]
+                    f.write("    " + sigentry + " \\\n")
                 f.write('    "\n')
             f.write('SIGGEN_LOCKEDSIGS_TYPES_%s = "%s"' % (self.machine, " ".join(types.keys())))
 
