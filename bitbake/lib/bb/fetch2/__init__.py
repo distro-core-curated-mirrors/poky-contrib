@@ -774,6 +774,32 @@ def get_srcrev(d, method_name='sortable_revision'):
 
     return format
 
+def get_versionstring(d, baseversion = ""):
+    """
+    Return a version string for the current package which can be used as PV
+    Currently only supports recipes which use only one SCM.
+    *NOTE* this function may require the source data was already fetched so
+    should only be used in tasks after this has happend (e.g. PKGV in OE).
+    """
+
+    fetcher = Fetch(d.getVar('SRC_URI', True).split(), d)
+    urldata = fetcher.ud
+
+    if len(urldata) != 1:
+        raise FetchError("get_versionstring only supports a single entry in SRC_URI")
+
+    u = urldata.keys()[0]
+    ud = urldata[u]
+
+    ver = ud.method.findversion(ud, d, ud.names[0])
+    delimit = ud.method.delimitor(ud, d, ud.names[0])
+    return baseversion + ver + get_srcrev(d)
+
+    #
+    # Mutiple SCMs are in SRC_URI
+    #
+    raise FetchError("get_versionstring doesn't support SRC_URIs with multiple SCMs.")
+
 def localpath(url, d):
     fetcher = bb.fetch2.Fetch([url], d)
     return fetcher.localpath(url)
