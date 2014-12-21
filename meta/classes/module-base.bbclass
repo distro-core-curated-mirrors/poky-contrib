@@ -21,8 +21,7 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 # Function to ensure the kernel scripts are created. Expected to
 # be called before do_compile. See module.bbclass for an example.
 do_make_scripts() {
-	# left for compatibility, no longer required
-	:
+	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS 
+	make CC="${KERNEL_CC}" LD="${KERNEL_LD}" AR="${KERNEL_AR}" \
+	           -C ${STAGING_KERNEL_DIR} scripts
 }
-
-do_compile[depends] += "virtual/kernel:do_kernel_sysroot_scripts"

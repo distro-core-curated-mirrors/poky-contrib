@@ -328,13 +328,6 @@ sysroot_stage_all () {
 	:
 }
 
-do_kernel_sysroot_scripts () {
-	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS MACHINE
-	# Finally "make scripts" to support external modules which need this
-	oe_runmake CC="${KERNEL_CC}" LD="${KERNEL_LD}" AR="${KERNEL_AR}" -C ${STAGING_KERNEL_DIR} scripts
-}
-addtask do_kernel_sysroot_scripts after do_populate_sysroot do_configure
-
 KERNEL_CONFIG_COMMAND ?= "oe_runmake_call -C ${S} O=${B} oldnoconfig || yes '' | oe_runmake -C ${S} O=${B} oldconfig"
 
 kernel_do_configure() {
