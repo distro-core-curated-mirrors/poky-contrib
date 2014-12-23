@@ -13,7 +13,7 @@ SECTION = "devel"
 
 DEPENDS = "popt binutils"
 RDEPENDS_${PN} = "binutils-symlinks"
-RRECOMMENDS_${PN} = "kernel-vmlinux"
+RRECOMMENDS_${PN} = "kernel-vmlinux kernel-module-oprofile"
 
 FILES_${PN} = "${bindir} ${libdir}/${BPN}/lib*${SOLIBS} ${datadir}/${BPN}"
 FILES_${PN}-dev += "${libdir}/${BPN}/lib*${SOLIBSDEV} ${libdir}/${BPN}/lib*.la"
