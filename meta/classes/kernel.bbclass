@@ -232,12 +232,12 @@ kernel_do_install() {
 	# dir. This ensures the original Makefiles are used and not the
 	# redirecting Makefiles in the build directory.
 	#
-	find . -depth -not -name "*.cmd" -not -name "*.o" -not -path "./Documentation*" -not -path "./.*" -print0 | cpio --null -pdlu $kerneldir
+	#find . -depth -not -name "*.cmd" -not -name "*.o" -not -path "./Documentation*" -not -path "./.*" -print0 | cpio --null -pdlu $kerneldir
 	cp .config $kerneldir
 	if [ "${S}" != "${B}" ]; then
 		pwd="$PWD"
 		cd "${S}"
-		find . -depth -not -path "./Documentation*" -not -path "./.*" -print0 | cpio --null -pdlu $kerneldir
+		#find . -depth -not -path "./Documentation*" -not -path "./.*" -print0 | cpio --null -pdlu $kerneldir
 		cd "$pwd"
 	fi
 
@@ -260,21 +260,21 @@ kernel_do_install() {
 	# we clean the scripts dir while leaving the generated config
 	# and include files.
 	#
-	oe_runmake -C $kerneldir CC="${KERNEL_CC}" LD="${KERNEL_LD}" clean _mrproper_scripts 
+	#oe_runmake -C $kerneldir CC="${KERNEL_CC}" LD="${KERNEL_LD}" clean _mrproper_scripts 
 
 	# hide directories that shouldn't have their .c, s and S files deleted
-	for d in tools scripts lib; do
-		mv $kerneldir/$d $kerneldir/.$d
-	done
+	#for d in tools scripts lib; do
+	#	mv $kerneldir/$d $kerneldir/.$d
+	#done
 
 	# delete .c, .s and .S files, unless we hid a directory as .<dir>. This technique is 
 	# much faster than find -prune and -exec
-	find $kerneldir -not -path '*/\.*' -type f -name "*.[csS]" -delete
+	#find $kerneldir -not -path '*/\.*' -type f -name "*.[csS]" -delete
 
 	# put the hidden dirs back
-	for d in tools scripts lib; do
-		mv $kerneldir/.$d $kerneldir/$d
-	done
+	#for d in tools scripts lib; do
+	#	mv $kerneldir/.$d $kerneldir/$d
+	#done
 
 	# As of Linux kernel version 3.0.1, the clean target removes
 	# arch/powerpc/lib/crtsavres.o which is present in
@@ -284,13 +284,13 @@ kernel_do_install() {
 	fi
 
 	# Necessary for building modules like compat-wireless.
-	if [ -f include/generated/bounds.h ]; then
-		cp -l include/generated/bounds.h $kerneldir/include/generated/bounds.h
-	fi
-	if [ -d arch/${ARCH}/include/generated ]; then
-		mkdir -p $kerneldir/arch/${ARCH}/include/generated/
-		cp -flR arch/${ARCH}/include/generated/* $kerneldir/arch/${ARCH}/include/generated/
-	fi
+	#if [ -f include/generated/bounds.h ]; then
+	#	cp -l include/generated/bounds.h $kerneldir/include/generated/bounds.h
+	#fi
+	#if [ -d arch/${ARCH}/include/generated ]; then
+#		mkdir -p $kerneldir/arch/${ARCH}/include/generated/
+#		cp -flR arch/${ARCH}/include/generated/* $kerneldir/arch/${ARCH}/include/generated/
+	#fi
 
 	# Remove the following binaries which cause strip or arch QA errors
 	# during do_package for cross-compiled platforms
