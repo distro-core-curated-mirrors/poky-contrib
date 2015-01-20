@@ -197,9 +197,11 @@ class Rootfs(object):
 
         execute_pre_post_process(self.d, post_process_cmds)
 
+        delayed_postinsts = self._get_delayed_postinsts()
+        bb.warn(str(delayed_postinsts))
+
         if bb.utils.contains("IMAGE_FEATURES", "read-only-rootfs",
                          True, False, self.d):
-            delayed_postinsts = self._get_delayed_postinsts()
             if delayed_postinsts is not None:
                 bb.fatal("The following packages could not be configured "
                          "offline and rootfs is read-only: %s" %
