@@ -140,8 +140,12 @@ python base_do_unpack() {
 
     rootdir = d.getVar('WORKDIR', True)
 
+    # Ensure that we cleanup ${S}/patches
+    # TODO: Investigate if we can remove
+    # the entire ${S} in this case.
     s_dir = d.getVar('S', True)
-    bb.utils.remove(s_dir, True)
+    p_dir = os.path.join(s_dir, 'patches')
+    bb.utils.remove(p_dir, True)
 
     try:
         fetcher = bb.fetch2.Fetch(src_uri, d)
