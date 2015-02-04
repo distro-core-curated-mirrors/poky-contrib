@@ -281,7 +281,8 @@ def package_qa_check_staticdev(path, name, d, elf, messages):
         messages["staticdev"] = "non -staticdev package contains static .a library: %s path '%s'" % \
                  (name, package_qa_clean_path(path,d))
 
-def package_qa_check_libdir(d):
+QAPKGTEST[libdir] = "package_qa_check_libdir"
+def package_qa_check_libdir(pkg, d, messages):
     """
     Check for wrong library installation paths. For instance, catch
     recipes installing /lib/bar.so when ${base_libdir}="lib32" or
@@ -289,26 +290,15 @@ def package_qa_check_libdir(d):
     """
     import re
 
-    pkgdest = d.getVar('PKGDEST', True)
+    pkgdest = os.path.join(d.getVar('PKGDEST', True), pkg)
     base_libdir = d.getVar("base_libdir",True) + os.sep
     libdir = d.getVar("libdir", True) + os.sep
     exec_prefix = d.getVar("exec_prefix", True) + os.sep
-
-    messages = []
 
     lib_re = re.compile("^/lib.+\.so(\..+)?$")
     exec_re = re.compile("^%s.*/lib.+\.so(\..+)?$" % exec_prefix)
 
     for root, dirs, files in os.walk(pkgdest):
-        if root == pkgdest:
-            # Skip subdirectories for any packages with libdir in INSANE_SKIP
-            skippackages = []
-            for package in dirs:
-                if 'libdir' in (d.getVar('INSANE_SKIP_' + package, True) or "").split():
-                    bb.note("Package %s skipping libdir QA test" % (package))
-                    skippackages.append(package)
-            for package in skippackages:
-                dirs.remove(package)
         for file in files:
             full_path = os.path.join(root, file)
             rel_path = os.path.relpath(full_path, pkgdest)
@@ -317,13 +307,10 @@ def package_qa_check_libdir(d):
                 rel_path = os.sep + rel_path
                 if lib_re.match(rel_path):
                     if base_libdir not in rel_path:
-                        messages.append("%s: found library in wrong location: %s" % (package, rel_path))
+                        messages["libdir"] = "%s: found library in wrong location: %s" % (pkg, rel_path)
                 if exec_re.match(rel_path):
                     if libdir not in rel_path:
-                        messages.append("%s: found library in wrong location: %s" % (package, rel_path))
-
-    if messages:
-        package_qa_handle_error("libdir", "\n".join(messages), d)
+                        messages["libdir"] = "%s: found library in wrong location: %s" % (pkg, rel_path)
 
 QAPATHTEST[debug-files] = "package_qa_check_dbg"
 def package_qa_check_dbg(path, name, d, elf, messages):
@@ -1101,10 +1088,6 @@ python do_package_qa () {
             rdepends_sane = False
         if not package_qa_check_deps(package, pkgdest, skip, d):
             deps_sane = False
-
-
-    if 'libdir' in d.getVar("ALL_QA", True).split():
-        package_qa_check_libdir(d)
 
     qa_sane = d.getVar("QA_SANE", True)
     if not walk_sane or not rdepends_sane or not deps_sane or not qa_sane:
