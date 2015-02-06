@@ -202,6 +202,7 @@ def fork_off_task(worker, cfg, data, workerdata, fn, task, taskname, appends, ta
             data.setVar("BUILDNAME", workerdata["buildname"])
             data.setVar("DATE", workerdata["date"])
             data.setVar("TIME", workerdata["time"])
+            data.setVar("BB_MAKEFIFO", workerdata["makefifo"])
             bb.parse.siggen.set_taskdata(workerdata["sigdata"])
             ret = 0
             try:

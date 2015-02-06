@@ -924,6 +924,7 @@ class RunQueue:
             "buildname" : self.cfgData.getVar("BUILDNAME", True),
             "date" : self.cfgData.getVar("DATE", True),
             "time" : self.cfgData.getVar("TIME", True),
+            "makefifo" : self.cfgData.getVar("BB_MAKEFIFO", True),
         }
 
         worker.stdin.write("<cookerconfig>" + pickle.dumps(self.cooker.configuration) + "</cookerconfig>")
@@ -1050,6 +1051,27 @@ class RunQueue:
             cache[task] = iscurrent
         return iscurrent
 
+    def setup_make_fifo(self):
+        fifoname = "/tmp/makefifo"
+        self.cfgData.setVar("BB_MAKEFIFO", fifoname)
+        m = re.search(r'-j (\d+)', self.cfgData.getVar("PARALLEL_MAKE", True))
+        if m:
+            threads = int(m.group(1))
+        else:
+            threads = 1
+
+        if os.path.exists(fifoname):
+            os.remove(fifoname)
+        os.mkfifo(fifoname)
+ 
+        # Has to be open for read and writing
+        self.makereadfd = os.open(fifoname, os.O_RDONLY|os.O_NONBLOCK)
+        self.makewritefd = os.open(fifoname, os.O_WRONLY)
+        wfd = os.fdopen(self.makewritefd, 'w')
+
+        for x in range(0, threads):
+            wfd.write('+')
+
     def _execute_runqueue(self):
         """
         Run the tasks in a queue prepared by rqdata.prepare()
@@ -1070,6 +1092,8 @@ class RunQueue:
                 if bb.cooker.CookerFeatures.SEND_DEPENDS_TREE in self.cooker.featureset:
                     depgraph = self.cooker.buildDependTree(self, self.rqdata.taskData)
                     bb.event.fire(bb.event.DepTreeGenerated(depgraph), self.cooker.data)
+
+                self.setup_make_fifo()
 
         if self.state is runQueueSceneInit:
             dump = self.cooker.configuration.dump_signatures
