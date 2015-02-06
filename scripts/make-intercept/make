@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+import sys
+import os
+import subprocess
+
+fifoname = "/tmp/makefifo"
+
+r = os.open(fifoname, os.O_RDONLY|os.O_NONBLOCK)
+w = os.open(fifoname, os.O_WRONLY)
+os.close(r)
+r = os.open(fifoname, os.O_RDONLY)
+
+newpath = []
+origpath = os.environ["PATH"].split(":")
+for p in origpath:
+    if "make-intercept" in p:
+         continue
+    newpath.append(p)
+os.environ["PATH"] = ":".join(newpath)
+os.environ["MAKEFLAGS"] = "-j --jobserver-fds=" + str(r) + "," + str(w)
+
+sys.argv[0] = "make"
+
+subprocess.call(sys.argv, shell=False)
