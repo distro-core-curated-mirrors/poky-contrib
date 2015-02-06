@@ -97,6 +97,7 @@ class RpmSdk(Sdk):
 
         target_providename = ['/bin/sh',
                               '/bin/bash',
+                              '/bin/dash',
                               '/usr/bin/env',
                               '/usr/bin/perl',
                               'pkgconfig'
@@ -111,6 +112,7 @@ class RpmSdk(Sdk):
 
         sdk_providename = ['/bin/sh',
                            '/bin/bash',
+                           '/bin/dash',
                            '/usr/bin/env',
                            '/usr/bin/perl',
                            'pkgconfig',

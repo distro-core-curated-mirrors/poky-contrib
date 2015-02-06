@@ -19,7 +19,7 @@ Index: autoconf-2.69/lib/m4sugar/m4sh.m4
        [case $as_dir in @%:@(
  	 /*)
 -	   for as_base in sh bash ksh sh5; do
-+	   for as_base in bash sh ksh sh5; do
++	   for as_base in dash bash sh ksh sh5; do
  	     # Try only shells that exist, to save several forks.
  	     as_shell=$as_dir/$as_base
  	     AS_IF([{ test -f "$as_shell" || test -f "$as_shell.exe"; } &&

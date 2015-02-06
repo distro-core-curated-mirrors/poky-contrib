@@ -46,6 +46,7 @@ do_install_append () {
 do_install_append_class-target () {
 	# Clean host path in bashbug
 	sed -i -e "s,${STAGING_DIR_TARGET},,g" ${D}${bindir}/bashbug
+	ln -s /bin/bash ${D}/bin/dash
 }
 
 do_install_ptest () {

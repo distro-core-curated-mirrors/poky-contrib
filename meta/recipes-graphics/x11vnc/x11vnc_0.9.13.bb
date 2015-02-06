@@ -26,3 +26,5 @@ REQUIRED_DISTRO_FEATURES = "x11"
 PACKAGECONFIG ??= "${@bb.utils.contains('DISTRO_FEATURES', 'zeroconf', 'avahi', '', d)}"
 PACKAGECONFIG[avahi] = "--with-avahi,--without-avahi,avahi"
 PACKAGECONFIG[xinerama] = "--with-xinerama,--without-xinerama,libxinerama"
+
+export CONFIG_SHELL = "/bin/bash"
