@@ -388,16 +388,16 @@ buildhistory_get_installed() {
 	rm $1/depends.tmp
 
 	# Produce installed package sizes list
-	printf "" > $1/installed-package-sizes.tmp
-	cat $pkgcache | while read pkg pkgfile pkgarch
-	do
-		size=`oe-pkgdata-util -p ${PKGDATA_DIR} read-value "PKGSIZE" ${pkg}_${pkgarch}`
-		if [ "$size" != "" ] ; then
-			echo "$size $pkg" >> $1/installed-package-sizes.tmp
-		fi
-	done
-	cat $1/installed-package-sizes.tmp | sort -n -r | awk '{print $1 "\tKiB " $2}' > $1/installed-package-sizes.txt
-	rm $1/installed-package-sizes.tmp
+	#printf "" > $1/installed-package-sizes.tmp
+	#cat $pkgcache | while read pkg pkgfile pkgarch
+	#do
+	#	size=`oe-pkgdata-util -p ${PKGDATA_DIR} read-value "PKGSIZE" ${pkg}_${pkgarch}`
+	#	if [ "$size" != "" ] ; then
+	#		echo "$size $pkg" >> $1/installed-package-sizes.tmp
+	#	fi
+	#done
+	#cat $1/installed-package-sizes.tmp | sort -n -r | awk '{print $1 "\tKiB " $2}' > $1/installed-package-sizes.txt
+	#rm $1/installed-package-sizes.tmp
 
 	# We're now done with the cache, delete it
 	rm $pkgcache

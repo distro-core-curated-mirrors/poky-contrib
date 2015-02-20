@@ -10,6 +10,10 @@ def generate_image(arg):
     bb.note("Running image creation script for %s: %s ..." %
             (type, create_img_cmd))
 
+
+    bb.warn("Running image creation script for %s: %s ..." %
+            (type, create_img_cmd))
+
     try:
         output = subprocess.check_output(create_img_cmd,
                                          stderr=subprocess.STDOUT)
@@ -18,6 +22,9 @@ def generate_image(arg):
                (e.cmd, e.returncode, e.output))
 
     bb.note("Script output:\n%s" % output)
+
+    bb.warn("Completed image creation script for %s: %s ..." %
+            (type, create_img_cmd))
 
     return None
 

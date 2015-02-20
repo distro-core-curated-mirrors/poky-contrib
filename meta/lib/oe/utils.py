@@ -172,8 +172,10 @@ def execute_pre_post_process(d, cmds):
     for cmd in cmds.strip().split(';'):
         cmd = cmd.strip()
         if cmd != '':
+            bb.warn("Executing %s ..." % cmd)
             bb.note("Executing %s ..." % cmd)
             bb.build.exec_func(cmd, d)
+            bb.warn("Finished Executing %s ..." % cmd)
 
 def multiprocess_exec(commands, function):
     import signal
