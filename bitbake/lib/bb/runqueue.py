@@ -388,9 +388,22 @@ class RunQueueData:
             deps_left.append(len(self.runq_revdeps[listid]))
 
         for listid in endpoints:
-            weight[listid] = 10
+            weight[listid] = 100
             task_done[listid] = True
 
+        heavy = (self.rq.cfgData.getVar("BB_HEAVYTASKS", True) or "").split()
+        if heavy:
+            for ht in heavy:
+                dep, taskname = ht.split(":")
+                try:
+                    taskid = self.get_task_id(self.taskData.get_provider(dep)[0], taskname)
+                except KeyError:
+                    continue
+                if taskid is None:
+                    continue
+                weight[taskid] = 100
+                bb.warn("Making task %s heavy" % taskid)
+ 
         while True:
             next_points = []
             for listid in endpoints:
