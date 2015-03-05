@@ -79,17 +79,17 @@ def execute_handler(name, handler, event, d):
         addedd = True
     try:
         ret = handler(event)
-    except (bb.parse.SkipRecipe, bb.BBHandledException):
+    except bb.parse.SkipRecipe:
         raise
+    except bb.BBHandledException:
+        pass
     except Exception:
         etype, value, tb = sys.exc_info()
         logger.error("Execution of event handler '%s' failed" % name,
                         exc_info=(etype, value, tb.tb_next))
-        raise
     except SystemExit as exc:
         if exc.code != 0:
-            logger.error("Execution of event handler '%s' failed" % name)
-        raise
+            logger.error("Execution of event handler '%s' failed (exit code %s)" % (name, exc.code))
     finally:
         del event.data
         if addedd:
