@@ -1625,7 +1625,10 @@ class RunQueueExecuteTasks(RunQueueExecute):
             if task in self.rq.scenequeue_covered:
                 logger.debug(2, "Setscene covered task %s (%s)", task,
                                 self.rqdata.get_user_idstring(task))
-                self.task_skip(task, "covered")
+                if self.rq.check_stamp_task(task, taskname + "_setscene", cache=self.stampcache):
+                    self.task_skip(task, "existing")
+                else:
+                    self.task_skip(task, "covered")
                 return True
 
             if self.rq.check_stamp_task(task, taskname, cache=self.stampcache):

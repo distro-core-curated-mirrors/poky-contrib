@@ -528,16 +528,16 @@ class Task(models.Model):
     TASK_OUTCOME = (
         (OUTCOME_NA, 'Not Available'),
         (OUTCOME_SUCCESS, 'Succeeded'),
-        (OUTCOME_COVERED, 'Covered'),
+        (OUTCOME_COVERED, 'Not Needed'),
         (OUTCOME_CACHED, 'Cached'),
-        (OUTCOME_PREBUILT, 'Prebuilt'),
+        (OUTCOME_PREBUILT, 'Previous Build'),
         (OUTCOME_FAILED, 'Failed'),
         (OUTCOME_EMPTY, 'Empty'),
     )
 
     TASK_OUTCOME_HELP = (
         (OUTCOME_SUCCESS, 'This task successfully completed'),
-        (OUTCOME_COVERED, 'This task did not run because its output is provided by another task'),
+        (OUTCOME_COVERED, 'This task did not run because everything depending on it came from the cache'),
         (OUTCOME_CACHED, 'This task restored output from the sstate-cache directory or mirrors'),
         (OUTCOME_PREBUILT, 'This task did not run because its outcome was reused from a previous build'),
         (OUTCOME_FAILED, 'This task did not complete'),
