@@ -1,0 +1,21 @@
+Add support for an x86_64 baremetal target for gdb, useful for work
+on baremetal systems/binaries.
+
+Upstream-Status: Pending
+RP 2015/7/28
+
+Index: gdb/gdb/configure.tgt
+===================================================================
+--- gdb/gdb.orig/configure.tgt
++++ gdb/gdb/configure.tgt
+@@ -663,6 +663,10 @@ x86_64-*-linux*)
+ 			solib-svr4.o symfile-mem.o linux-tdep.o linux-record.o"
+ 	build_gdbserver=yes
+ 	;;
++x86_64-*-elf*)
++	# Target: x86-64
++	gdb_target_obs="amd64-tdep.o i386-tdep.o i387-tdep.o"
++	;;
+ x86_64-*-freebsd* | x86_64-*-kfreebsd*-gnu)
+ 	# Target: FreeBSD/amd64
+ 	gdb_target_obs="amd64-tdep.o amd64fbsd-tdep.o i386-tdep.o \
