@@ -62,6 +62,7 @@ def package_qa_get_machine_dict():
                         "arm" :       (40,     0,    0,          True,          32),
                       },
             "elf" : {
+                        "arc" :       (195,    0,    0,          True,          32),
                         "i586" :      (3,      0,    0,          True,          32),
                         "x86_64":     (62,     0,    0,          True,          64),
                         "epiphany":   (4643,   0,    0,          True,          32),
