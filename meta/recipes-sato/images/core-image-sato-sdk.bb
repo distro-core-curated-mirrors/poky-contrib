@@ -5,6 +5,7 @@ core-image-sato plus meta-toolchain, development headers and libraries to \
 form a standalone SDK."
 
 QT4PKG = "qt4-pkgs"
+QT4PKG = ""
 QT4PKG_mips64 = ""
 QT4PKG_mips64n32 = ""
 QT4PKG = ""
