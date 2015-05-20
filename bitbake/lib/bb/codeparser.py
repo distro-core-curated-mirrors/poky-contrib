@@ -74,8 +74,7 @@ class SetCache(object):
 codecache = SetCache()
 
 class pythonCacheLine(object):
-    def __init__(self, name, refs, execs, contains):
-        self.name = intern(name)
+    def __init__(self, refs, execs, contains):
         self.refs = codecache.internSet(refs)
         self.execs = codecache.internSet(execs)
         self.contains = {}
@@ -83,35 +82,34 @@ class pythonCacheLine(object):
             self.contains[c] = codecache.internSet(contains[c])
 
     def __getstate__(self):
-        return (self.name, self.refs, self.execs, self.contains)
+        return (self.refs, self.execs, self.contains)
 
     def __setstate__(self, state):
-        (name, refs, execs, contains) = state
-        self.__init__(name, refs, execs, contains)
+        (refs, execs, contains) = state
+        self.__init__(refs, execs, contains)
     def __hash__(self):
-        l = (hash(self.name), hash(self.refs), hash(self.execs))
+        l = (hash(self.refs), hash(self.execs))
         for c in sorted(self.contains.keys()):
             l = l + (c, hash(self.contains[c]))
         return hash(l)
     def __repr__(self):
-        return " ".join([self.name, str(self.refs), str(self.execs), str(self.contains)]) 
+        return " ".join([str(self.refs), str(self.execs), str(self.contains)]) 
 
 
 class shellCacheLine(object):
-    def __init__(self, name, execs):
-        self.name = intern(name)
+    def __init__(self, execs):
         self.execs = codecache.internSet(execs)
 
     def __getstate__(self):
-        return (self.name, self.execs)
+        return (self.execs)
 
     def __setstate__(self, state):
-        (name, execs) = state
-        self.__init__(name, execs)
+        (execs) = state
+        self.__init__(execs)
     def __hash__(self):
-        return hash(hash(self.name) + hash(self.execs))
+        return hash(self.execs)
     def __repr__(self):
-        return " ".join([self.name, str(self.execs)])
+        return str(self.execs)
 
 class CodeParserCache(MultiProcessCache):
     cache_file_name = "bb_codeparser.dat"
@@ -129,16 +127,16 @@ class CodeParserCache(MultiProcessCache):
         self.pythoncachelines = {}
         self.shellcachelines = {}
 
-    def newPythonCacheLine(self, name, refs, execs, contains):
-        cacheline = pythonCacheLine(name, refs, execs, contains)
+    def newPythonCacheLine(self, refs, execs, contains):
+        cacheline = pythonCacheLine(refs, execs, contains)
         h = hash(cacheline)
         if h in self.pythoncachelines:
             return self.pythoncachelines[h]
         self.pythoncachelines[h] = cacheline
         return cacheline
 
-    def newShellCacheLine(self, name, execs):
-        cacheline = shellCacheLine(name, execs)
+    def newShellCacheLine(self, execs):
+        cacheline = shellCacheLine(execs)
         h = hash(cacheline)
         if h in self.shellcachelines:
             return self.shellcachelines[h]
@@ -255,11 +253,8 @@ class PythonParser():
             return
 
         h = hash(str(node))
-        #bb.warn("%s: %s" % (h, str(node)))
 
         if h in codeparsercache.pythoncache:
-            if str(node) != codeparsercache.pythoncache[h].name:
-                bb.error("Here1 %s %s %s" % (h, str(node), codeparsercache.pythoncache[h].name))
             self.references = set(codeparsercache.pythoncache[h].refs)
             self.execs = set(codeparsercache.pythoncache[h].execs)
             self.contains = {}
@@ -268,8 +263,6 @@ class PythonParser():
             return
 
         if h in codeparsercache.pythoncacheextras:
-            if str(node) != codeparsercache.pythoncacheextras[h].name:
-                bb.error("Here2 %s %s %s" % (h, str(node), codeparsercache.pythoncacheextras[h].name))
             self.references = set(codeparsercache.pythoncacheextras[h].refs)
             self.execs = set(codeparsercache.pythoncacheextras[h].execs)
             self.contains = {}
@@ -286,7 +279,7 @@ class PythonParser():
 
         self.execs.update(self.var_execs)
 
-        codeparsercache.pythoncacheextras[h] = codeparsercache.newPythonCacheLine(str(node), self.references, self.execs, self.contains)
+        codeparsercache.pythoncacheextras[h] = codeparsercache.newPythonCacheLine(self.references, self.execs, self.contains)
 
 class ShellParser():
     def __init__(self, name, log):
@@ -305,22 +298,17 @@ class ShellParser():
         h = hash(str(value))
 
         if h in codeparsercache.shellcache:
-            if str(value) != codeparsercache.shellcache[h].name:
-                bb.error("Here3")
             self.execs = set(codeparsercache.shellcache[h].execs)
             return self.execs
 
         if h in codeparsercache.shellcacheextras:
-            if str(value) != codeparsercache.shellcacheextras[h].name:
-                bb.error("Here4")
-
             self.execs = set(codeparsercache.shellcacheextras[h].execs)
             return self.execs
 
         self._parse_shell(value)
         self.execs = set(cmd for cmd in self.allexecs if cmd not in self.funcdefs)
 
-        codeparsercache.shellcacheextras[h] = codeparsercache.newShellCacheLine(str(value), self.execs)
+        codeparsercache.shellcacheextras[h] = codeparsercache.newShellCacheLine(self.execs)
 
         return self.execs
 
