@@ -263,6 +263,8 @@ class VariableHistory(object):
         return varhistory
 
     def emit(self, var, oval, val, o, d):
+        #if var == 'copy':
+        #    return
         history = self.variable(var)
 
         # Append override history
@@ -407,10 +409,15 @@ class DataSmart(MutableMapping):
                 if s == olds:
                     break
             except ExpansionError:
+                #bb.warn(str(olds))
                 raise
             except bb.parse.SkipRecipe:
                 raise
             except Exception as exc:
+                #import traceback
+                #traceback.print_stack()
+                #bb.error(self.getVarFlag("SRC_URI", "_content", False, debug=True))
+                #bb.error(self.getVarFlag("FILE", "_content", False, debug=True))
                 exc_class, exc, tb = sys.exc_info()
                 raise ExpansionError, ExpansionError(varname, s, exc), tb
         #if s.find('\${') != -1:
