@@ -439,3 +439,32 @@ class Contains(unittest.TestCase):
 
         self.assertFalse(bb.utils.contains_any("SOMEFLAG", "x", True, False, self.d))
         self.assertFalse(bb.utils.contains_any("SOMEFLAG", "x y z", True, False, self.d))
+
+
+class Remote(unittest.TestCase):
+    def test_remote(self):
+        class TestConnector:
+            d = None
+            def __init__(self, d):
+                self.d = d
+            def getVar(self, name):
+                return self.d._findVar(name)
+            def getKeys(self):
+                return self.d.localkeys()
+            def getVarHistory(self, name):
+                return self.d.varhistory.variable(name)
+
+        d1 = bb.data.init()
+        d1.enableTracking()
+        d2 = bb.data.init()
+        d2.enableTracking()
+        connector = TestConnector(d1)
+
+        d2.setVar('_remote_data', connector)
+
+        d1.setVar('HELLO', 'world')
+        d1.setVarFlag('OTHER', 'flagname', 'flagvalue')
+        self.assertEqual(d2.getVar('HELLO'), 'world')
+        self.assertIn('flagname', d2.getVarFlags('OTHER'))
+        self.assertEqual(d2.getVarFlag('OTHER', 'flagname'), 'flagvalue')
+        self.assertEqual(d1.varhistory.variable('HELLO'), d2.varhistory.variable('HELLO'))
