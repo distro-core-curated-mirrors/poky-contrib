@@ -27,15 +27,16 @@ python () {
 python debian_package_name_hook () {
     import glob, copy, stat, errno, re
 
-    pkgdest = d.getVar('PKGDEST', True)
     packages = d.getVar('PACKAGES', True)
     bin_re = re.compile(".*/s?" + os.path.basename(d.getVar("bindir", True)) + "$")
     lib_re = re.compile(".*/" + os.path.basename(d.getVar("libdir", True)) + "$")
     so_re = re.compile("lib.*\.so")
+    so_nameline_re = re.compile("\s+SONAME\s+([^\s]*)")
+    so_crunch_re = re.compile("^(.*)(.)\.so\.(.*)$")
 
     def socrunch(s):
         s = s.lower().replace('_', '-')
-        m = re.match("^(.*)(.)\.so\.(.*)$", s)
+        m = so_crunch_re.match(s)
         if m is None:
             return None
         if m.group(2) in '0123456789':
@@ -75,7 +76,7 @@ python debian_package_name_hook () {
                     lines = fd.readlines()
                     fd.close()
                     for l in lines:
-                        m = re.match("\s+SONAME\s+([^\s]*)", l)
+                        m = so_nameline_re.match(l)
                         if m and not m.group(1) in sonames:
                             sonames.append(m.group(1))
 
