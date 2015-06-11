@@ -7,6 +7,7 @@ form a standalone SDK."
 QT4PKG = "qt4-pkgs"
 QT4PKG_mips64 = ""
 QT4PKG_mips64n32 = ""
+QT4PKG = ""
 
 IMAGE_FEATURES += "dev-pkgs tools-sdk ${QT4PKG} \
 	tools-debug eclipse-debug tools-profile tools-testapps debug-tweaks ssh-server-openssh"
