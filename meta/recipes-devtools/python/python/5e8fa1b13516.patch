@@ -1,0 +1,41 @@
+
+# HG changeset patch
+# User Benjamin Peterson <benjamin@python.org>
+# Date 1433201071 18000
+# Node ID 5e8fa1b13516ae3c809e95264387b90aa2c2e89d
+# Parent  cf6e782a7f94bb12645b9c704afabbc55ad13803
+sync opcode prediction code with python 3
+
+Upstream-Status: Backport
+RP 2015/6/17
+
+Index: Python-2.7.9/Python/ceval.c
+===================================================================
+--- Python-2.7.9.orig/Python/ceval.c
++++ Python-2.7.9/Python/ceval.c
+@@ -898,21 +898,15 @@ PyEval_EvalFrameEx(PyFrameObject *f, int
+ */
+ 
+ 
+-// Next opcode prediction is also enabled for Computed Gotos as well.
+-#ifdef DYNAMIC_EXECUTION_PROFILE
+-#define PREDICT(op)             //if (0) goto PRED_##op
+-#define PREDICTED(op)
+-#define PREDICTED_WITH_ARG(op)
++#if defined(DYNAMIC_EXECUTION_PROFILE) || USE_COMPUTED_GOTOS
++#define PREDICT(op)             if (0) goto PRED_##op
++#define PREDICTED(op)           PRED_##op:
++#define PREDICTED_WITH_ARG(op)  PRED_##op:
+ #else
+ #define PREDICT(op)             if (*next_instr == op) goto PRED_##op
+ #define PREDICTED(op)           PRED_##op: next_instr++
+-#ifdef USE_COMPUTED_GOTOS
+-#define PREDICTED_WITH_ARG(op)  PRED_##op: next_instr++
+-#else
+ #define PREDICTED_WITH_ARG(op)  PRED_##op: oparg = PEEKARG(); next_instr += 3
+ #endif
+-#endif
+-
+ 
+ 
+ /* Stack manipulation macros */

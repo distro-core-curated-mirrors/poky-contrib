@@ -27,13 +27,15 @@ SRC_URI += "\
   file://use_sysroot_ncurses_instead_of_host.patch \
   file://avoid_parallel_make_races_on_pgen.patch \
   file://add-CROSSPYTHONPATH-for-PYTHON_FOR_BUILD.patch \
+  file://17d3bbde60d2.patch \
+  file://5e8fa1b13516.patch \
 "
 
 S = "${WORKDIR}/Python-${PV}"
 
 inherit autotools multilib_header python-dir pythonnative
 
-CONFIGUREOPTS += " --with-system-ffi "
+CONFIGUREOPTS += " --with-system-ffi --with-computed-gotos "
 
 # The following is a hack until we drop ac_cv_sizeof_off_t from site files
 EXTRA_OECONF += "${@bb.utils.contains('DISTRO_FEATURES', 'largefile', 'ac_cv_sizeof_off_t=8', '', d)} ac_cv_file__dev_ptmx=yes ac_cv_file__dev_ptc=no"
