@@ -35,6 +35,8 @@ S = "${WORKDIR}/Python-${PV}"
 
 inherit autotools multilib_header python-dir pythonnative
 
+CACHED_CONFIGUREVARS += "ac_cv_broken_sem_getvalue=no"
+
 CONFIGUREOPTS += " --with-system-ffi --with-computed-gotos "
 
 # The following is a hack until we drop ac_cv_sizeof_off_t from site files
