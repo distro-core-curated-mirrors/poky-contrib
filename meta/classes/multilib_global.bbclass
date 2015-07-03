@@ -30,7 +30,13 @@ def preferred_ml_updates(d):
                 override = ":virtclass-multilib-" + p
                 localdata.setVar("OVERRIDES", localdata.getVar("OVERRIDES", False) + override)
                 bb.data.update_data(localdata)
-                if "-canadian-" in pkg:
+                # Because multilib_virtclass_handler() doesn't reset PN such as
+                # gcc-cross-canadian to lib32-gcc-cross-canadian, so don't
+                # reset PREFERRED_VERSION_gcc-cross-canadian to
+                # PREFERRED_VERSION_lib32-gcc-cross-canadian, just expand v
+                # (need expand TRANSLATED_TARGET_ARCH) and set
+                # PREFERRED_VERSION_gcc-cross-canadian again.
+                if '-cross-canadian-' in pkg:
                     newname = localdata.expand(v)
                 else:
                     newname = localdata.expand(v).replace("PREFERRED_VERSION_", "PREFERRED_VERSION_" + p + '-')
@@ -52,7 +58,7 @@ def preferred_ml_updates(d):
         pkg = prov.replace("PREFERRED_PROVIDER_", "")
         if pkg.endswith("-native") or "-crosssdk-" in pkg or pkg.startswith(("nativesdk-", "virtual/nativesdk-")):
             continue
-        if 'cross-canadian' in pkg:
+        if '-cross-canadian-' in pkg:
             for p in prefixes:
                 localdata = bb.data.createCopy(d)
                 override = ":virtclass-multilib-" + p
@@ -104,7 +110,7 @@ def preferred_ml_updates(d):
     mp = (d.getVar("MULTI_PROVIDER_WHITELIST", True) or "").split()
     extramp = []
     for p in mp:
-        if p.endswith("-native") or "-crosssdk-" in p or p.startswith(("nativesdk-", "virtual/nativesdk-")) or 'cross-canadian' in p:
+        if p.endswith("-native") or "-crosssdk-" in p or p.startswith(("nativesdk-", "virtual/nativesdk-")) or '-cross-canadian-' in p:
             continue
         for pref in prefixes:
             extramp.append(translate_provide(pref, p))
