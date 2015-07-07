@@ -35,6 +35,7 @@ import stat
 import bb
 import bb.msg
 import bb.process
+import re
 from contextlib import nested
 from bb import event, utils
 
@@ -138,6 +139,13 @@ class TaskInvalid(TaskBase):
         super(TaskInvalid, self).__init__(task, None, metadata)
         self._message = "No such task '%s'" % task
 
+class TaskProgress(event.Event):
+    def __init__(self, task, progress, rate=None):
+        self.task = task
+        self.progress = progress
+        self.rate = rate
+        event.Event.__init__(self)
+
 
 class LogTee(object):
     def __init__(self, logger, outfile):
@@ -160,6 +168,96 @@ class LogTee(object):
         return '<LogTee {0}>'.format(self.name)
     def flush(self):
         self.outfile.flush()
+
+
+class ProgressHandler(object):
+    """
+    Base class that can pretend to be a file object well enough to be
+    used to build objects to intercept console output and determine the
+    progress of some operation.
+    """
+    def __init__(self, d, outfile=None):
+        self._progress = 0
+        self._data = d
+        self._lastevent = 0
+        if outfile:
+            self._outfile = outfile
+        else:
+            self._outfile = sys.stdout
+
+    def write(self, string):
+        self._outfile.write(string)
+
+    def flush(self):
+        self._outfile.flush()
+
+    def update(self, progress, rate=None):
+        ts = time.time()
+        if progress > 100:
+            progress = 100
+        if progress != self._progress or self._lastevent + 1 < ts:
+            bb.event.fire(bb.build.TaskProgress(0, progress, rate), self._data)
+            self._lastevent = ts
+            self._progress = progress
+
+class BasicProgressHandler(ProgressHandler):
+    def __init__(self, d, regex=r'(\d+)%', outfile=None):
+        super(BasicProgressHandler, self).__init__(d, outfile)
+        self._regex = re.compile(regex)
+        # Send an initial progress event so the bar gets shown
+        bb.event.fire(bb.build.TaskProgress(0, 0), self._data)
+
+    def write(self, string):
+        percs = self._regex.findall(string)
+        if percs:
+            progress = int(percs[-1])
+            self.update(progress)
+        super(BasicProgressHandler, self).write(string)
+
+class OutOfProgressHandler(ProgressHandler):
+    def __init__(self, d, regex, outfile=None):
+        super(OutOfProgressHandler, self).__init__(d, outfile)
+        self._regex = re.compile(regex)
+        # Send an initial progress event so the bar gets shown
+        bb.event.fire(bb.build.TaskProgress(0, 0), self._data)
+
+    def write(self, string):
+        nums = self._regex.findall(string)
+        if nums:
+            progress = (float(nums[-1][0]) / float(nums[-1][1])) * 100
+            self.update(progress)
+        super(OutOfProgressHandler, self).write(string)
+
+class MultiStageProgressReporter(object):
+    """
+    Class which allows reporting progress without the caller
+    having to know where they are in the overall sequence. Useful
+    for tasks made up of python code spread across multiple
+    classes / functions.
+    """
+    def __init__(self, d, stage_weights):
+        self._data = d
+        self._stage_weights = stage_weights
+        self._stage = 0
+        self._base_progress = 0
+        # Send an initial progress event so the bar gets shown
+        bb.event.fire(bb.build.TaskProgress(0, 0), self._data)
+
+    def next_stage(self):
+        self._stage += 1
+        if self._stage < len(self._stage_weights):
+            self._base_progress = sum(self._stage_weights[:self._stage]) * 100
+        else:
+            bb.warn('ProgressReporter: current stage beyond declared number of stages')
+            self._base_progress = 100
+        bb.event.fire(bb.build.TaskProgress(0, self._base_progress), self._data)
+
+    def update(self, stageprogress):
+        progress = self._base_progress + (stageprogress * self._stage_weights[self._stage])
+        if progress > 100:
+            progress = 100
+        bb.event.fire(bb.build.TaskProgress(0, progress), self._data)
+
 
 #
 # pythonexception allows the python exceptions generated to be raised
@@ -340,6 +438,20 @@ exit $ret
         logfile = LogTee(logger, sys.stdout)
     else:
         logfile = sys.stdout
+
+    progress = d.getVarFlag(func, 'progress', True)
+    if progress:
+        if progress == 'percent':
+            # Use default regex
+            logfile = BasicProgressHandler(d, outfile=logfile)
+        elif progress.startswith('percent:'):
+            # Use specified regex
+            logfile = BasicProgressHandler(d, regex=progress.split(':', 1)[1], outfile=logfile)
+        elif progress.startswith('outof:'):
+            # Use specified regex
+            logfile = OutOfProgressHandler(d, regex=progress.split(':', 1)[1], outfile=logfile)
+        else:
+            bb.warn('%s: invalid task progress varflag value "%s", ignoring' % (func, progress))
 
     def readfifo(data):
         lines = data.split('\0')
