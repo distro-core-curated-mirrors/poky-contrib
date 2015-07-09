@@ -295,6 +295,8 @@ python write_specfile () {
     srcdescription = d.getVar('DESCRIPTION', True) or "."
     srccustomtagschunk = get_package_additional_metadata("rpm", d)
 
+    srcpkgarch = d.getVar('PACKAGE_ARCH', True)
+
     srcdepends     = strip_multilib_deps(d.getVar('DEPENDS', True), d)
     srcrdepends    = []
     srcrrecommends = []
@@ -344,6 +346,7 @@ python write_specfile () {
 
         splitname    = strip_multilib(pkgname, d)
 
+        splitpkgarch = (localdata.getVar('PACKAGE_ARCH', True) or ".")
         splitsummary = (localdata.getVar('SUMMARY', True) or localdata.getVar('DESCRIPTION', True) or ".")
         splitversion = (localdata.getVar('PKGV', True) or "").replace('-', '+')
         splitrelease = (localdata.getVar('PKGR', True) or "")
@@ -553,6 +556,8 @@ python write_specfile () {
 
     print_deps(srcdepends, "BuildRequires", spec_preamble_top, d)
     print_deps(srcrdepends, "Requires", spec_preamble_top, d)
+    if splitpkgarch != srcpkgarch:
+        spec_preamble_top.append('BuildArch: %s' % splitpkgarch)
     if srcrpreinst:
         print_deps(srcrdepends, "Requires(pre)", spec_preamble_top, d)
     if srcrpostinst:
