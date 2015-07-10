@@ -31,6 +31,7 @@ import subprocess
 import os
 import logging
 import bb
+import bb.build
 import urllib
 from   bb import data
 from   bb.fetch2 import FetchMethod
@@ -40,6 +41,27 @@ from   bb.fetch2 import runfetchcmd
 from   bb.utils import export_proxies
 from   bs4 import BeautifulSoup
 from   bs4 import SoupStrainer
+
+class WgetProgressHandler(bb.build.LineFilterProgressHandler):
+    """
+    Extract progress information from wget output.
+    Note: relies on --progress=dot --show-progress being specified on the
+    wget command line.
+    """
+    def __init__(self, d):
+        super(WgetProgressHandler, self).__init__(d)
+        # Send an initial progress event so the bar gets shown
+        bb.event.fire(bb.build.TaskProgress(0, 0), self._data)
+
+    def writeline(self, line):
+        percs = re.findall(r'(\d+)%\s+([\d.]+[A-Z])', line)
+        if percs:
+            progress = int(percs[-1][0])
+            rate = percs[-1][1] + '/s'
+            self.update(progress, rate)
+            return False
+        return True
+
 
 class Wget(FetchMethod):
     """Class to fetch urls via 'wget'"""
@@ -70,9 +92,11 @@ class Wget(FetchMethod):
 
     def _runwget(self, ud, d, command, quiet):
 
+        progresshandler = WgetProgressHandler(d)
+
         logger.debug(2, "Fetching %s using command '%s'" % (ud.url, command))
         bb.fetch2.check_network_access(d, command)
-        runfetchcmd(command, d, quiet)
+        runfetchcmd(command + ' --progress=dot --show-progress', d, quiet, log=progresshandler)
 
     def download(self, ud, d):
         """Fetch urls"""
