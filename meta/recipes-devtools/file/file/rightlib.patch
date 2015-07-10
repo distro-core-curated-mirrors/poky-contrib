@@ -1,0 +1,11 @@
+Index: file-5.23/magic/Makefile.am
+===================================================================
+--- file-5.23.orig/magic/Makefile.am
++++ file-5.23/magic/Makefile.am
+@@ -299,5 +299,5 @@ ${MAGIC}: $(EXTRA_DIST) $(FILE_COMPILE_D
+ 		exit 1; \
+ 	    fi; \
+ 	  fi)
+-	$(FILE_COMPILE) -C -m magic
++	LD_LIBRARY_PATH=$(top_builddir)/src/.libs $(FILE_COMPILE) -C -m magic
+ 	@rm -fr magic

@@ -18,6 +18,7 @@ SRC_URI = "git://github.com/file/file.git \
         file://debian-742262.patch \
         file://0001-Add-P-prompt-into-Usage-info.patch \
         file://host-file.patch \
+        file://rightlib.patch \
         "
 
 SRCREV = "3c0874be4d3232d672b20f513451a39cfd7c585a"
