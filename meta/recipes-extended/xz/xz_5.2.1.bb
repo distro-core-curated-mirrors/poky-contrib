@@ -33,4 +33,4 @@ FILES_liblzma = "${libdir}/liblzma*${SOLIBS}"
 
 BBCLASSEXTEND = "native nativesdk"
 
-export CONFIG_SHELL="/bin/dash"
+export CONFIG_SHELL="/bin/sh"

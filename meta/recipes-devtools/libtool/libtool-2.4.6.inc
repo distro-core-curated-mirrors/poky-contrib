@@ -43,4 +43,4 @@ FILES_${PN} += "${datadir}/aclocal"
 FILES_${PN}-dev_remove = "${datadir}/aclocal"
 FILES_libltdl = "${libdir}/libltdl${SOLIBS}"
 
-export CONFIG_SHELL="/bin/dash"
+export CONFIG_SHELL="/bin/bash"

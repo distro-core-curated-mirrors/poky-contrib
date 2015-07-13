@@ -74,5 +74,3 @@ do_install_ptest () {
 	sed -e "s:ini_config:\.libs\/ini_config:" \
 	-i ${D}${PTEST_PATH}/tests/unit/ini_config/test_ini_config
 }
-
-CONFIG_SHELL = "/bin/bash"
