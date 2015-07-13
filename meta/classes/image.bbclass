@@ -198,6 +198,9 @@ fakeroot python do_rootfs () {
     from oe.rootfs import create_rootfs
     from oe.manifest import create_manifest
 
+    stage_weights = [0.01, 0.1, 0.18, 0.1, 0.03, 0.5, 0, 0.01, 0.02, 0.02, 0.02, 0.01, 0]
+    progress_reporter = bb.build.MultiStageProgressReporter(d, stage_weights)
+
     # Handle package exclusions
     excl_pkgs = d.getVar("PACKAGE_EXCLUDE", True).split()
     inst_pkgs = d.getVar("PACKAGE_INSTALL", True).split()
@@ -230,8 +233,10 @@ fakeroot python do_rootfs () {
     # Generate the initial manifest
     create_manifest(d)
 
-    # Generate rootfs
-    create_rootfs(d)
+    progress_reporter.next_stage()
+
+    # generate rootfs
+    create_rootfs(d, progress_reporter=progress_reporter)
 }
 do_rootfs[dirs] = "${TOPDIR}"
 do_rootfs[cleandirs] += "${S}"
