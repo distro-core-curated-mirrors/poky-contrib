@@ -404,7 +404,7 @@ if [ "$MACHINE" = "qemux86" ]; then
     if [ "$KVM_ACTIVE" = "yes" ]; then
         CPU_SUBTYPE=kvm32
     else
-        CPU_SUBTYPE=core2duo
+        CPU_SUBTYPE=qemu32
     fi
     if [ ! -z "$vga_option" ]; then
         QEMU_UI_OPTIONS="$QEMU_UI_OPTIONS"
