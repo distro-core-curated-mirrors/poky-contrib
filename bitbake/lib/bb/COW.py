@@ -137,9 +137,6 @@ class COWDictMeta(COWMeta):
             if key.endswith(MUTABLE):
                 key = key[:-len(MUTABLE)]
 
-            if type == "keys":
-                yield key
-
             try:
                 if readonly:
                     value = cls.__getreadonly__(key)
@@ -147,6 +144,12 @@ class COWDictMeta(COWMeta):
                     value = cls[key]
             except KeyError:
                 continue
+            if value is cls.__marker__:
+                continue  
+
+            if type == "keys":
+                yield key
+
 
             if type == "values":
                 yield value
