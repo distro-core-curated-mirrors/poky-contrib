@@ -259,6 +259,21 @@ class OutOfProgressHandler(ProgressHandler):
             self.update(progress)
         super(OutOfProgressHandler, self).write(string)
 
+class LineCountHandler(ProgressHandler):
+    """
+    Counts the number of lines in the output to get the
+    percentage complete.
+    """
+    def __init__(self, d, total, outfile=None):
+        self._total = total
+        self._linecount = 0
+        super(LineCountHandler, self).__init__(d, outfile)
+
+    def write(self, string):
+        self._linecount += string.count('\n')
+        progress = int((self._linecount / float(self._total)) * 100)
+        self.update(progress)
+
 class MultiStageProgressReporter(object):
     """
     Class which allows reporting progress without the caller
@@ -481,6 +496,10 @@ exit $ret
         elif progress.startswith('outof:'):
             # Use specified regex
             logfile = OutOfProgressHandler(d, regex=progress.split(':', 1)[1], outfile=logfile)
+        elif progress.startswith('linecount:'):
+            total = int(progress.split(':', 1)[1])
+            if total > 0:
+                logfile = LineCountHandler(d, total=total, outfile=logfile)
         else:
             bb.warn('%s: invalid task progress varflag value "%s", ignoring' % (func, progress))
 
