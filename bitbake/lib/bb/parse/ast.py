@@ -465,7 +465,7 @@ def multi_finalize(fn, d):
                 d.setVar("BBEXTENDCURR", extendedmap[name])
                 d.setVar("BBEXTENDVARIANT", variantmap[name])
             else:
-                d.setVar("PN", "%s-%s" % (pn, name))
+                d.setVar("PN", "%s-%s" % (pn, name), parsing=True)
             bb.parse.BBHandler.inherit(extendedmap[name], fn, 0, d)
 
         safe_d.setVar("BBCLASSEXTEND", extended)
