@@ -183,7 +183,8 @@ def runqemu(pn, test):
     import bb.build
 
     tinfoil = bb.tinfoil.Tinfoil()
-    tinfoil.prepare(False)
+    configparams = bb.tinfoil.TinfoilConfigParameters(config_only=False, quiet=True)
+    tinfoil.prepare(False, configparams)
     try:
         tinfoil.logger.setLevel(logging.WARNING)
         import oeqa.targetcontrol
