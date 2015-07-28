@@ -1661,6 +1661,7 @@ class BBCooker:
     def unlockBitbake(self):
         if hasattr(self, 'lock') and self.lock:
             bb.utils.unlockfile(self.lock)
+            self.lock = None
 
 def server_main(cooker, func, *args):
     cooker.pre_serve()
