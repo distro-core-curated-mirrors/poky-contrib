@@ -24,6 +24,15 @@ RDEPENDS_${PN} = "\
     nativesdk-makedevs \
     nativesdk-smartpm \
     nativesdk-postinst-intercept \
+    nativesdk-binutils \
+    nativesdk-gcc \
+    nativesdk-gcc-symlinks \
+    nativesdk-g++ \
+    nativesdk-g++-symlinks \
+    nativesdk-libgcc \
+    nativesdk-libgcc-dev \
+    nativesdk-libstdc++ \
+    nativesdk-libstdc++-dev \
     "
 
 RDEPENDS_${PN}_darwin = "\
