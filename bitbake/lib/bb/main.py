@@ -167,6 +167,9 @@ class BitBakeConfigParameters(cookerdata.ConfigParameters):
         parser.add_option("-D", "--debug", help = "Increase the debug level. You can specify this more than once.",
                    action = "count", dest="debug", default = 0)
 
+        parser.add_option("-q", "--quiet", help = "Output less log message data to the terminal.",
+                   action = "store_true", dest = "quiet", default = False)
+
         parser.add_option("-n", "--dry-run", help = "Don't execute, just go through the motions.",
                    action = "store_true", dest = "dry_run", default = False)
 
@@ -235,6 +238,12 @@ class BitBakeConfigParameters(cookerdata.ConfigParameters):
                    action = "store", dest = "writeeventlog")
 
         options, targets = parser.parse_args(argv)
+
+        if options.quiet and options.verbose:
+            parser.error("options --quiet and --verbose are mutually exclusive")
+
+        if options.quiet and options.debug:
+            parser.error("options --quiet and --debug are mutually exclusive")
 
         # some environmental variables set also configuration options
         if "BBSERVER" in os.environ:
@@ -366,7 +375,7 @@ def bitbake_main(configParams, configuration):
         if level > configuration.debug:
             configuration.debug = level
 
-    bb.msg.init_msgconfig(configParams.verbose, configuration.debug,
+    bb.msg.init_msgconfig(configParams.verbose, configuration.debug, configParams.quiet,
                          configuration.debug_domains)
 
     # Ensure logging messages get sent to the UI as events

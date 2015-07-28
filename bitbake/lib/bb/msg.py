@@ -148,14 +148,16 @@ class BBLogFilterStdOut(BBLogFilter):
 loggerDefaultDebugLevel = 0
 loggerDefaultVerbose = False
 loggerVerboseLogs = False
+loggerDefaultQuiet = False
 loggerDefaultDomains = []
 
-def init_msgconfig(verbose, debug, debug_domains=None):
+def init_msgconfig(verbose, debug, quiet, debug_domains=None):
     """
     Set default verbosity and debug levels config the logger
     """
     bb.msg.loggerDefaultDebugLevel = debug
     bb.msg.loggerDefaultVerbose = verbose
+    bb.msg.loggerDefaultQuiet = quiet
     if verbose:
         bb.msg.loggerVerboseLogs = True
     if debug_domains:
@@ -167,11 +169,14 @@ def constructLogOptions():
     debug = loggerDefaultDebugLevel
     verbose = loggerDefaultVerbose
     domains = loggerDefaultDomains
+    quiet = loggerDefaultQuiet
 
     if debug:
         level = BBLogFormatter.DEBUG - debug + 1
     elif verbose:
         level = BBLogFormatter.VERBOSE
+    elif quiet:
+        level = BBLogFormatter.ERROR
     else:
         level = BBLogFormatter.NOTE
 

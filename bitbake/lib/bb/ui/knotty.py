@@ -79,8 +79,24 @@ class NonInteractiveProgress(object):
         self.fobj.write("done.\n")
         self.fobj.flush()
 
-def new_progress(msg, maxval):
-    if interactive:
+class DummyProgress(object):
+    def __init__(self, msg, maxval):
+        pass
+
+    def start(self):
+        return self
+
+    def update(self, value):
+        pass
+
+    def finish(self):
+        pass
+
+
+def new_progress(msg, maxval, quiet):
+    if quiet:
+        return DummyProgress(msg, maxval)
+    elif interactive:
         return BBProgress(msg, maxval)
     else:
         return NonInteractiveProgress(msg, maxval)
@@ -392,7 +408,7 @@ def main(server, eventHandler, params, tf = TerminalFilter):
             if isinstance(event, bb.event.ParseStarted):
                 if event.total == 0:
                     continue
-                parseprogress = new_progress("Parsing recipes", event.total).start()
+                parseprogress = new_progress("Parsing recipes", event.total, params.options.quiet).start()
                 continue
             if isinstance(event, bb.event.ParseProgress):
                 parseprogress.update(event.current)
@@ -402,19 +418,21 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                     continue
 
                 parseprogress.finish()
-                print(("Parsing of %d .bb files complete (%d cached, %d parsed). %d targets, %d skipped, %d masked, %d errors."
-                    % ( event.total, event.cached, event.parsed, event.virtuals, event.skipped, event.masked, event.errors)))
+                if not params.options.quiet:
+                    print(("Parsing of %d .bb files complete (%d cached, %d parsed). %d targets, %d skipped, %d masked, %d errors."
+                        % ( event.total, event.cached, event.parsed, event.virtuals, event.skipped, event.masked, event.errors)))
                 continue
 
             if isinstance(event, bb.event.CacheLoadStarted):
-                cacheprogress = new_progress("Loading cache", event.total).start()
+                cacheprogress = new_progress("Loading cache", event.total, params.options.quiet).start()
                 continue
             if isinstance(event, bb.event.CacheLoadProgress):
                 cacheprogress.update(event.current)
                 continue
             if isinstance(event, bb.event.CacheLoadCompleted):
                 cacheprogress.finish()
-                print("Loaded %d entries from dependency cache." % event.num_entries)
+                if not params.options.quiet:
+                    print("Loaded %d entries from dependency cache." % event.num_entries)
                 continue
 
             if isinstance(event, bb.command.CommandFailed):
@@ -550,7 +568,7 @@ def main(server, eventHandler, params, tf = TerminalFilter):
         if return_value and errors:
             summary += pluralise("\nSummary: There was %s ERROR message shown, returning a non-zero exit code.",
                                  "\nSummary: There were %s ERROR messages shown, returning a non-zero exit code.", errors)
-        if summary:
+        if summary and not params.options.quiet:
             print(summary)
 
         if interrupted:
