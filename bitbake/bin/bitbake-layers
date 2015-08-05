@@ -1059,6 +1059,9 @@ def main():
         logger.error(str(err))
         ret = 1
 
+    if cmds.bbhandler:
+        cmds.bbhandler.shutdown()
+
     return ret
 
 
