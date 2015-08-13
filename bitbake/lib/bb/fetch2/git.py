@@ -341,7 +341,6 @@ class Git(FetchMethod):
         """
         Compute the HEAD revision for the url
         """
-        output = self._lsremote(ud, d, "")
         # Tags of the form ^{} may not work, need to fallback to other form
         if ud.unresolvedrev[name][:5] == "refs/":
             head = ud.unresolvedrev[name]
@@ -349,6 +348,12 @@ class Git(FetchMethod):
         else:
             head = "refs/heads/%s" % ud.unresolvedrev[name]
             tag = "refs/tags/%s" % ud.unresolvedrev[name]
+        # Only ls-remote when url is "file://" or BB_NO_NETWORK != "1",
+        # this makes local mirror works.
+        if ud.proto.lower() == 'file' or d.getVar("BB_NO_NETWORK", True) != "1":
+            output = self._lsremote(ud, d, "")
+        else:
+            output = "%s %s" % (name, head)
         for s in [head, tag + "^{}", tag]:
             for l in output.split('\n'):
                 if s in l:
