@@ -1370,7 +1370,6 @@ class BBCooker:
         """
         Attempt to build the targets specified
         """
-
         def buildTargetsIdle(server, rq, abort):
             msg = None
             interrupted = 0

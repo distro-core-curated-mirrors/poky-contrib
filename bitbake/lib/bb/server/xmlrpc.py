@@ -44,6 +44,9 @@ try:
 except ImportError:
     import pickle
 
+import logging
+logger = logging.getLogger('BitBake')
+
 DEBUG = False
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
@@ -97,6 +100,8 @@ class BitBakeServerCommands():
 
         # we don't allow connections if the cooker is running
         if (self.cooker.state in [bb.cooker.state.parsing, bb.cooker.state.running]):
+            print("foo")
+            logger.warn("Denying connection as cooker not in state for new connection")
             return None
 
         self.event_handle = bb.event.register_UIHhandler(s, True)

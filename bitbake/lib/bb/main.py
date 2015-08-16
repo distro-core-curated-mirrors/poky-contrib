@@ -302,7 +302,12 @@ def start_server(servermodule, configParams, configuration, features):
         cooker = bb.cooker.BBCooker(configuration, features)
 
         server.addcooker(cooker)
+
         server.saveConnectionDetails()
+        #print("here 1")
+        #cooker.updateCache()
+        #print("here 2")
+
     except Exception as e:
         exc_info = sys.exc_info()
         while hasattr(server, "event_queue"):

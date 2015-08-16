@@ -40,8 +40,11 @@ logger = logging.getLogger("BitBake.Data")
 
 __setvar_keyword__ = ["_append", "_prepend", "_remove"]
 __setvar_regexp__ = re.compile('(?P<base>.*?)(?P<keyword>_append|_prepend|_remove)(_(?P<add>.*))?$')
+#__expand_var_regexp__ = re.compile(r"(?<!\\)\${[^{}@\n\t ]+}")
+#__expand_python_regexp__ = re.compile(r"(?<!\\)\${@.+?}")
 __expand_var_regexp__ = re.compile(r"\${[^{}@\n\t ]+}")
 __expand_python_regexp__ = re.compile(r"\${@.+?}")
+
 
 def infer_caller_details(loginfo, parent = False, varval = True):
     """Save the caller the trouble of specifying everything."""
@@ -410,6 +413,10 @@ class DataSmart(MutableMapping):
             except Exception as exc:
                 exc_class, exc, tb = sys.exc_info()
                 raise ExpansionError, ExpansionError(varname, s, exc), tb
+        #if s.find('\${') != -1:
+        #    bb.warn(s)
+        #    s = s.replace("\${", '${')
+        #    bb.warn(s)
 
         #if not varparse.foundpython:
         #    if h in gblexp:
