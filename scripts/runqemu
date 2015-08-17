@@ -28,6 +28,8 @@ usage() {
     echo "  RAMFS - boot a ramfs-based image"
     echo "  ISO - boot an ISO image"
     echo "  VM - boot a virtual machine image (= a file representing a full disk with boot loader)"
+    echo "  RAWDISK - boot a raw disk image"
+    echo "  RAWDISK image is built using wic tool"
     echo "  Simplified QEMU command-line options can be passed with:"
     echo "    nographic - disables video console"
     echo "    serial - enables a serial console on /dev/ttyS0"
@@ -46,6 +48,7 @@ usage() {
     echo "  $MYNAME qemux86 qemuparams=\"-m 256\""
     echo "  $MYNAME qemux86 bootparams=\"psplash=false\""
     echo "  $MYNAME path/to/<image>-<machine>.vmdk"
+    echo "  $MYNAME path/to/<machine>-<disk>.direct"
     exit 1
 }
 
@@ -62,6 +65,7 @@ MACHINE=${MACHINE:=""}
 KERNEL=${KERNEL:=""}
 ROOTFS=${ROOTFS:=""}
 VM=${VM:=""}
+RAWDIDK=${RAWDISK:=""}
 FSTYPE=${FSTYPE:=""}
 LAZY_ROOTFS=""
 SCRIPT_QEMU_OPT=""
@@ -99,6 +103,10 @@ process_filename() {
 	/hddimg/|/hdddirect/|/vmdk/)
 		FSTYPE=$EXT
 		VM=$filename
+		;;
+	/direct/)
+		FSTYPE=$EXT
+		RAWDISK=$filename
 		;;
 	*)
 		error "unknown file arg [$filename]"
@@ -234,8 +242,8 @@ elif [ ! -w /dev/net/tun ] ; then
 fi
 
 # Report errors for missing combinations of options
-if [ -z "$MACHINE" -a -z "$KERNEL" -a -z "$VM" ]; then
-    error "you must specify at least a MACHINE, VM, or KERNEL argument"
+if [ -z "$MACHINE" -a -z "$KERNEL" -a -z "$VM" -a -z "$RAWDISK" ]; then
+    error "you must specify at least a MACHINE, VM, RAWDISK or KERNEL argument"
 fi
 if [ "$FSTYPE" = "nfs" -a -z "$ROOTFS" ]; then
     error "NFS booting without an explicit ROOTFS path is not yet supported"
@@ -248,6 +256,12 @@ if [ -z "$MACHINE" ]; then
             error "Unable to set MACHINE from image filename [$VM]"
         fi
         echo "Set MACHINE to [$MACHINE] based on image [$VM]"
+    elif [ "x$FSTYPE" = "xdirect" ]; then
+          MACHINE=`basename $RAWDISK | sed -n 's/.*\(qemux86-64\|qemux86\|qemuarm64\|qemuarm\|qemumips64\|qemumips\|qemuppc\|qemush4\).*/\1/p'`
+          if [ -z "$MACHINE" ]; then
+              error "Unable to set MACHINE from raw disk filename [$RAWDISK]"
+          fi
+          echo "Set MACHINE to [$MACHINE] based on raw disk [$RAWDISK]"
     else
         MACHINE=`basename $KERNEL | sed -n 's/.*\(qemux86-64\|qemux86\|qemuarm64\|qemuarm\|qemumips64\|qemumips\|qemuppc\|qemush4\).*/\1/p'`
         if [ -z "$MACHINE" ]; then
@@ -453,7 +467,7 @@ if [ -e "$ROOTFS" -a -z "$FSTYPE" ]; then
     fi
 fi
 
-if [ -z "$KERNEL" -a "x$FSTYPE" != "xvmdk" -a "x$FSTYPE" != "xhddimg" -a "x$FSTYPE" != "xhdddirect" ]; then
+if [ -z "$KERNEL" -a "x$FSTYPE" != "xvmdk" -a "x$FSTYPE" != "xhddimg" -a "x$FSTYPE" != "xhdddirect" -a "x$FSTYPE" != "xdirect" ]; then
     setup_path_vars 1
     eval kernel_file=\$${machine2}_DEFAULT_KERNEL
     KERNEL=$DEPLOY_DIR_IMAGE/$kernel_file
@@ -486,7 +500,7 @@ if [ "$LAZY_ROOTFS" = "true" ]; then
     fi
 fi
 
-if [ -z "$ROOTFS" -a "x$FSTYPE" != "xvmdk" -a "x$FSTYPE" != "xhddimg" -a "x$FSTYPE" != "xhdddirect" ]; then
+if [ -z "$ROOTFS" -a "x$FSTYPE" != "xvmdk" -a "x$FSTYPE" != "xhddimg" -a "x$FSTYPE" != "xhdddirect" -a "x$FSTYPE" != "xdirect" ]; then
     setup_path_vars 1
     T=$DEPLOY_DIR_IMAGE
     eval rootfs_list=\$${machine2}_DEFAULT_ROOTFS
@@ -502,11 +516,13 @@ ROOTFS=`readlink -f $ROOTFS`
 
 echo ""
 echo "Continuing with the following parameters:"
-if [ "x$FSTYPE" != "xvmdk" -a "x$FSTYPE" != "xhddimg" -a "x$FSTYPE" != "xhdddirect" ]; then
+if [ "x$FSTYPE" != "xvmdk" -a "x$FSTYPE" != "xhddimg" -a "x$FSTYPE" != "xhdddirect" -a "x$FSTYPE" != "xdirect" ]; then
     echo "KERNEL: [$KERNEL]"
     echo "ROOTFS: [$ROOTFS]"
-else
+elif [ "x$FSTYPE" = "xvmdk" ]; then
     echo "VMDK:   [$VM]"
+elif [ "x$FSTYPE" = "xdirect" ]; then
+    echo "RAWDISK:   [$RAWDISK]"
 fi
 echo "FSTYPE: [$FSTYPE]"
 
