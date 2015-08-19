@@ -133,7 +133,7 @@ class ToasterTests(BaseToasterTestCase):
         # steps 4-7
         self.log_test_step_number(4, 5, 6, 7)
         self.failUnless(tasks_page.get_nr_of_rows_in_select() ==
-                        self.toaster_driver.get_table_row_nr(tasks_page.otable_id))
+                        tasks_page.get_table_row_nr(tasks_page.otable_id))
         tasks_page.search_for_task("busybox")
         self.toaster_driver.browser_delay()
         self.screenshooter.take_screenshot(screenshot_type='selenium', append_name='step5')
@@ -186,7 +186,7 @@ class ToasterTests(BaseToasterTestCase):
         for navigator in tasks_page.get_performance_page_navigators():
             perf_page = navigator()
             self.log.info("testing performance page %s" % perf_page.page_type)
-            table_header_values = self.toaster_driver.get_table_head_text(perf_page.otable_id)
+            table_header_values = perf_page.get_table_head_text(perf_page.otable_id)
             self.log.info("table on current page has header: %s" % str(table_header_values))
             for value in perf_page.check_head_list:
                 self.failUnless(value in table_header_values)
@@ -196,6 +196,61 @@ class ToasterTests(BaseToasterTestCase):
             for column_id in perf_page.check_column_list:
                 perf_page.add_single_column_to_display_by_id(column_id)
             self.screenshooter.take_screenshot(screenshot_type='selenium', append_name='step11_%s' % perf_page.page_type)
+
+        ##############
+        #  CASE 906  #
+        ##############
+    def test_906(self):
+        # steps 1-3
+        self.log_test_step_number(1, 2, 3)
+        self.toaster_driver.go_to_base_url()
+        home_page = toaster_pages.HomePage(self.toaster_driver.driver)
+        build_page = home_page.select_core_image_minimal_build()
+        packages_page = build_page.select_packages_option()
+        packages_page.search_for_package(packages_page.test_package_name)
+        package_view_page = packages_page.select_package(packages_page.test_package_name)
+
+        # step 4
+        self.log_test_step_number(4)
+        self.log.info("there are %s breadcrumbs on the current page" % package_view_page.get_nr_of_breadcrumbs())
+        self.failUnless(package_view_page.get_nr_of_breadcrumbs() == 4)
+        self.failUnless(package_view_page.check_first_n_crumbs_links(len(package_view_page.breadcrumbs_ref_text),
+                                                                 package_view_page.breadcrumbs_ref_text))
+        self.failUnless(package_view_page.check_last_breadcrumb_contains_string(packages_page.test_package_name))
+
+        # step 5
+        self.log_test_step_number(5)
+        self.screenshooter.take_screenshot(screenshot_type='selenium', append_name='step5')
+        self.failUnless(package_view_page.is_element_present(By.XPATH, package_view_page.right_info_box_xpath))
+        self.failIf(package_view_page.is_element_present(By.ID, package_view_page.left_nav_box_id))
+
+        # step 6
+        self.log_test_step_number(6)
+        package_view_page.check_mandatory_page_elements()
+
+        # steps 7
+        self.log_test_step_number(7)
+        package_view_page.open_generated_files_tab()
+        header_text = package_view_page.get_table_head_text(package_view_page.otable_id)
+        for name in package_view_page.generated_files_table_column_names:
+            self.failUnless(name in header_text)
+        path_values = package_view_page.get_toaster_table_column_values_by_class(package_view_page.path_values_class)
+        self.failUnless(ToasterValueList.is_list_ascending(path_values))
+
+        #step 8
+        self.log_test_step_number(8)
+        package_view_page.open_runtime_dependencies_tab()
+        header_text = package_view_page.get_table_head_text(package_view_page.runtime_dependencies_table_id)
+        for name in package_view_page.runtime_dependencies_table_column_names:
+            self.failUnless(name in header_text)
+        dependency_values = package_view_page\
+            .get_table_values_in_column_nr(package_view_page.runtime_dependencies_table_id,
+                                           package_view_page.dependency_column_nr)
+        ToasterValueList.is_list_ascending(dependency_values)
+
+        #step 9
+        self.log_test_step_number(9)
+        package_view_page.is_text_present(package_view_page.mandatory_package_information_text)
 
         ##############
         #  CASE 946  #

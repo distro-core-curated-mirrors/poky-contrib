@@ -64,14 +64,3 @@ class ToasterDriver(object):
                 self.log.error("didn't find text item '%s' in popup" % str(text_item))
         # any better way to close this pop-up? ... TBD
         element.send_keys(webdriver.common.keys.Keys.ESCAPE)
-
-    def get_table_row_nr(self, table_id):
-        table = self.driver.find_element_by_id(table_id)
-        rows = table.find_elements_by_tag_name("tr")
-        return len(rows) - 1  # first row represents the table header
-
-    def get_table_head_text(self, table_id):
-        table = self.driver.find_element_by_id(table_id)
-        first_row = table.find_element_by_tag_name("tr")
-        head_cells = first_row.find_elements_by_tag_name("th")
-        return [str(cell.text) for cell in head_cells if len(cell.text) > 0]

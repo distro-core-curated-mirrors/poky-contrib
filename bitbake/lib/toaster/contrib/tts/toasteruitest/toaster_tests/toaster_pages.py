@@ -24,6 +24,7 @@ class ToasterPage(PageObject):
     otable_id = "otable"
     otable_table = PageElement(id_=otable_id)
     table_item_of_class_xpath = "//td[@class='%s']/a"
+    table_cell_text_xpath = "//a[contains(.,'%s')]"
     search_text_field = PageElement(id_="search")
     search_submit_button = PageElement(xpath="//button[@value='Search']")
     clear_search_results_button = PageElement(xpath="//i[@class='icon-remove']")
@@ -70,6 +71,28 @@ class ToasterPage(PageObject):
         else:
             elements = self.w.find_elements_by_xpath("//td[@class='%s']" % columns[column_name])
             values = [element.text for element in elements]
+        return values
+
+    def get_table_row_nr(self, table_id):
+        table = self.w.find_element_by_id(table_id)
+        rows = table.find_elements_by_tag_name("tr")
+        return len(rows) - 1  # first row represents the table header
+
+    def get_table_head_text(self, table_id):
+        table = self.w.find_element_by_id(table_id)
+        first_row = table.find_element_by_tag_name("tr")
+        head_cells = first_row.find_elements_by_tag_name("th")
+        return [str(cell.text) for cell in head_cells if len(cell.text) > 0]
+
+    def get_table_values_in_column_nr(self, table_id, column_nr):
+        column_index = column_nr - 1
+        table = self.w.find_element_by_id(table_id)
+        rows = table.find_elements_by_tag_name("tr")
+        values = []
+        for row in rows:
+            columns = row.find_elements_by_tag_name("td")
+            if len(columns) > column_index:
+                values.append(str(columns[column_index].text))
         return values
 
     def get_toaster_table_column_values_by_class(self, column_class):
@@ -134,6 +157,9 @@ class ToasterPage(PageObject):
 
     def select_table_cell_by_class(self, class_name):
         self.otable_table.find_element_by_xpath(self.table_item_of_class_xpath % class_name).click()
+
+    def is_element_present(self, selector_type, select_string):
+        return len(self.w.find_elements(selector_type, select_string)) > 0
 
 
 class HomePage(ToasterPage):
@@ -207,11 +233,33 @@ class HomePage(ToasterPage):
 
 
 class BuildPage(ToasterPage):
+    breadcrumbs = PageElement(id_="breadcrumb")
     build_configuration_option = PageElement(link_text="Configuration")
     tasks_option = PageElement(link_text="Tasks")
     time_option = PageElement(link_text="Time")
     cpu_usage_option = PageElement(link_text="CPU usage")
     disk_io_option = PageElement(link_text="Disk I/O")
+    packages_option = PageElement(link_text="Packages")
+    left_nav_box_id = "nav"
+
+    def get_nr_of_breadcrumbs(self):
+        return len(self.breadcrumbs.find_elements_by_tag_name('li'))
+
+    def get_breadcrumb_as_text_list(self):
+        crumbs = self.breadcrumbs.find_elements_by_tag_name('li')
+        return [crumb.get_attribute('innerHTML') for crumb in crumbs]
+
+    def check_first_n_crumbs_links(self, n, link_substrings):
+        crumbs = self.breadcrumbs.find_elements_by_tag_name('li')
+        check = True
+        for i in range(n):
+            href = crumbs[i].find_element_by_tag_name('a').get_attribute('href')
+            if link_substrings[i] not in href:
+                check = False
+        return check
+
+    def check_last_breadcrumb_contains_string(self, string):
+        return string in self. get_breadcrumb_as_text_list()[-1]
 
     def select_configuration_option(self):
         self.build_configuration_option.click()
@@ -233,8 +281,49 @@ class BuildPage(ToasterPage):
         self.disk_io_option.click()
         return DiskIoPage(self.w)
 
+    def select_packages_option(self):
+        self.packages_option.click()
+        return PackagesPage(self.w)
+
     def get_performance_page_navigators(self):
         return [self.select_time_option, self.select_cpu_usage_option, self.select_disk_io_option]
+
+
+class PackagesPage(BuildPage):
+    test_package_name = "bash"
+    package_class = "package_name"
+    breadcrumbs_ref_text = ['project', 'build', 'packages']
+
+    def search_for_package(self, package_name):
+        self.basic_search(package_name)
+
+    def select_package(self, package_name):
+        self.w.find_element_by_xpath(self.table_cell_text_xpath % package_name).click()
+        return PackageViewPage(self.w)
+
+
+class PackageViewPage(BuildPage):
+    breadcrumbs_ref_text = PackagesPage.breadcrumbs_ref_text
+    right_info_box_xpath = "//dl[@class='item-info']"
+    path_values_class = "path"
+    generated_files_tab = PageElement(xpath="//a[contains(.,'Generated files')]")
+    runtime_dependencies_tab = PageElement(xpath="//a[contains(.,'Runtime dependencies')]")
+    runtime_dependencies_table_id = "dependencies"
+    dependency_column_nr = 1
+    generated_files_table_column_names = ['File', 'Size']
+    runtime_dependencies_table_column_names = ['Package', 'Version', 'Size']
+    mandatory_package_information_text = ['Size', 'License', 'Recipe', 'Recipe version',
+                                          'Layer', 'Layer branch', 'Layer commit']
+
+    def check_mandatory_page_elements(self):
+        self.generated_files_tab.is_displayed()
+        self.runtime_dependencies_tab.is_displayed()
+
+    def open_generated_files_tab(self):
+        self.generated_files_tab.click()
+
+    def open_runtime_dependencies_tab(self):
+        self.runtime_dependencies_tab.click()
 
 
 class TasksPage(BuildPage):
