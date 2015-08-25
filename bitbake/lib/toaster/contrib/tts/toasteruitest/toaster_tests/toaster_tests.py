@@ -133,7 +133,7 @@ class ToasterTests(BaseToasterTestCase):
         # steps 4-7
         self.log_test_step_number(4, 5, 6, 7)
         self.failUnless(tasks_page.get_nr_of_rows_in_select() ==
-                        tasks_page.get_table_row_nr(tasks_page.otable_id))
+                        tasks_page.table.get_table_row_nr(tasks_page.otable_id))
         tasks_page.search_for_task("busybox")
         self.toaster_driver.browser_delay()
         self.screenshooter.take_screenshot(screenshot_type='selenium', append_name='step5')
@@ -173,7 +173,7 @@ class ToasterTests(BaseToasterTestCase):
             self.log.info("testing items in table column %s" % column_name)
             tasks_page.ensure_column_displayed(column_name)
             try:
-                tasks_page.select_table_cell_by_class(tasks_page.columns_with_link_items[column_name])
+                tasks_page.table.select_table_cell_by_class(tasks_page.columns_with_link_items[column_name])
             except Exception as e:
                 self.log.error("could not find item of class %s in column %s"
                                % (tasks_page.columns_with_link_items[column_name], column_name))
@@ -186,12 +186,12 @@ class ToasterTests(BaseToasterTestCase):
         for navigator in tasks_page.get_performance_page_navigators():
             perf_page = navigator()
             self.log.info("testing performance page %s" % perf_page.page_type)
-            table_header_values = perf_page.get_table_head_text(perf_page.otable_id)
+            table_header_values = perf_page.table.get_table_head_text(perf_page.otable_id)
             self.log.info("table on current page has header: %s" % str(table_header_values))
             for value in perf_page.check_head_list:
                 self.failUnless(value in table_header_values)
             time.sleep(2)
-            main_column_values = perf_page.get_toaster_table_column_values_by_class(perf_page.column_class)
+            main_column_values = perf_page.table.get_toaster_table_column_values_by_class(perf_page.column_class)
             self.failUnless(ToasterValueList.is_list_descending(main_column_values))
             for column_id in perf_page.check_column_list:
                 perf_page.add_single_column_to_display_by_id(column_id)
@@ -231,19 +231,19 @@ class ToasterTests(BaseToasterTestCase):
         # steps 7
         self.log_test_step_number(7)
         package_view_page.open_generated_files_tab()
-        header_text = package_view_page.get_table_head_text(package_view_page.otable_id)
+        header_text = package_view_page.table.get_table_head_text(package_view_page.otable_id)
         for name in package_view_page.generated_files_table_column_names:
             self.failUnless(name in header_text)
-        path_values = package_view_page.get_toaster_table_column_values_by_class(package_view_page.path_values_class)
+        path_values = package_view_page.table.get_toaster_table_column_values_by_class(package_view_page.path_values_class)
         self.failUnless(ToasterValueList.is_list_ascending(path_values))
 
         #step 8
         self.log_test_step_number(8)
         package_view_page.open_runtime_dependencies_tab()
-        header_text = package_view_page.get_table_head_text(package_view_page.runtime_dependencies_table_id)
+        header_text = package_view_page.table.get_table_head_text(package_view_page.runtime_dependencies_table_id)
         for name in package_view_page.runtime_dependencies_table_column_names:
             self.failUnless(name in header_text)
-        dependency_values = package_view_page\
+        dependency_values = package_view_page.table\
             .get_table_values_in_column_nr(package_view_page.runtime_dependencies_table_id,
                                            package_view_page.dependency_column_nr)
         ToasterValueList.is_list_ascending(dependency_values)

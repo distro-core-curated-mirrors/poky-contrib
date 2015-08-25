@@ -15,48 +15,14 @@ from toaster_driver import *
 from page_objects import PageObject, PageElement
 
 
-class ToasterPage(PageObject):
-    # elements that appear on all Toaster pages
-    all_builds_tab = PageElement(xpath="//a[@href='/toastergui/builds/']")
-    edit_columns_button = PageElement(xpath="//button[contains(.,'Edit columns')]")
-    apply_filter_button = PageElement(xpath="//button[@type='submit' and text()='Apply'"
-                                      " and not(ancestor::form[@aria-hidden='true'])]")
-    otable_id = "otable"
-    otable_table = PageElement(id_=otable_id)
+class ToasterTable(PageObject):
     table_item_of_class_xpath = "//td[@class='%s']/a"
     table_cell_text_xpath = "//a[contains(.,'%s')]"
-    search_text_field = PageElement(id_="search")
-    search_submit_button = PageElement(xpath="//button[@value='Search']")
-    clear_search_results_button = PageElement(xpath="//i[@class='icon-remove']")
-    column_text_xpath = "//label[contains(.,'%s')]"
-    visible_column_text_xpath = "//a[contains(.,'%s') and not(ancestor::th[@style='display: none;'])] | " \
-                                "//span[contains(.,'%s') and not(ancestor::th[@style='display: none;'])]"
-    filter_option_xpath = "//label[@class='radio' and not(ancestor::form[@aria-hidden='true'])]"
-    nth_filter_option_xpath = "(//label[@class='radio' and not(ancestor::form[@aria-hidden='true'])])[%s]"
+    table_column_class_xpath = "//td[@class='%s']"
 
     def __init__(self, webdriver):
-        super(ToasterPage, self).__init__(webdriver)
+        super(ToasterTable, self).__init__(webdriver)
         self.log = LOG
-
-    def is_text_present(self, patterns):
-        not_found = []
-        for pattern in patterns:
-            if str(pattern) not in self.w.page_source:
-                not_found.append(str(pattern))
-                self.log.error("didn't find text pattern '%s'" % str(pattern))
-        if len(not_found) == 0:
-            return True, not_found
-        else:
-            return False, not_found
-
-    def check_presence_of_page_elements(self, *elements):
-        for element in elements:
-            if element is None:
-                self.log.error("page element is not displayed")
-
-    def select_all_builds(self):
-        self.all_builds_tab.click()
-        return HomePage(self.w)
 
     def order_toaster_table_by_column(self, column_name, columns):
         if column_name not in columns:
@@ -69,7 +35,7 @@ class ToasterPage(PageObject):
         if column_name not in columns:
             self.log.error("invalid column name %s" % column_name)
         else:
-            elements = self.w.find_elements_by_xpath("//td[@class='%s']" % columns[column_name])
+            elements = self.w.find_elements_by_xpath(self.table_column_class_xpath % columns[column_name])
             values = [element.text for element in elements]
         return values
 
@@ -99,6 +65,52 @@ class ToasterPage(PageObject):
         elements = self.w.find_elements_by_xpath("//td[@class='%s']" % column_class)
         values = [element.text for element in elements if len(element.text) > 0]
         return values
+
+    def select_table_cell_by_class(self, class_name):
+        self.otable_table.find_element_by_xpath(self.table_item_of_class_xpath % class_name).click()
+
+
+class ToasterPage(PageObject):
+    # elements that appear on all Toaster pages
+    all_builds_tab = PageElement(xpath="//a[@href='/toastergui/builds/']")
+    edit_columns_button = PageElement(xpath="//button[contains(.,'Edit columns')]")
+    apply_filter_button = PageElement(xpath="//button[@type='submit' and text()='Apply'"
+                                      " and not(ancestor::form[@aria-hidden='true'])]")
+    otable_id = "otable"
+    otable_table = PageElement(id_=otable_id)
+    search_text_field = PageElement(id_="search")
+    search_submit_button = PageElement(xpath="//button[@value='Search']")
+    clear_search_results_button = PageElement(xpath="//i[@class='icon-remove']")
+    column_text_xpath = "//label[contains(.,'%s')]"
+    visible_column_text_xpath = "//a[contains(.,'%s') and not(ancestor::th[@style='display: none;'])] | " \
+                                "//span[contains(.,'%s') and not(ancestor::th[@style='display: none;'])]"
+    filter_option_xpath = "//label[@class='radio' and not(ancestor::form[@aria-hidden='true'])]"
+    nth_filter_option_xpath = "(//label[@class='radio' and not(ancestor::form[@aria-hidden='true'])])[%s]"
+
+    def __init__(self, webdriver):
+        super(ToasterPage, self).__init__(webdriver)
+        self.table = ToasterTable(webdriver)
+        self.log = LOG
+
+    def is_text_present(self, patterns):
+        not_found = []
+        for pattern in patterns:
+            if str(pattern) not in self.w.page_source:
+                not_found.append(str(pattern))
+                self.log.error("didn't find text pattern '%s'" % str(pattern))
+        if len(not_found) == 0:
+            return True, not_found
+        else:
+            return False, not_found
+
+    def check_presence_of_page_elements(self, *elements):
+        for element in elements:
+            if element is None:
+                self.log.error("page element is not displayed")
+
+    def select_all_builds(self):
+        self.all_builds_tab.click()
+        return HomePage(self.w)
 
     def basic_search(self, search_string):
         self.search_text_field.clear()
@@ -154,9 +166,6 @@ class ToasterPage(PageObject):
         self.log.info("there are %s options for the current filter" % nr_of_options)
         self.apply_filter_button.click()
         return nr_of_options
-
-    def select_table_cell_by_class(self, class_name):
-        self.otable_table.find_element_by_xpath(self.table_item_of_class_xpath % class_name).click()
 
     def is_element_present(self, selector_type, select_string):
         return len(self.w.find_elements(selector_type, select_string)) > 0
@@ -218,10 +227,10 @@ class HomePage(ToasterPage):
         self.add_columns_to_display(["Started on", "Log", "Time"])
 
     def order_builds_by_column(self, column_name):
-        self.order_toaster_table_by_column(column_name, self.column_name_class_map)
+        self.table.order_toaster_table_by_column(column_name, self.column_name_class_map)
 
     def get_build_column_values(self, column_name):
-        return self.get_toaster_table_column_values(column_name, self.column_name_class_map)
+        return self.table.get_toaster_table_column_values(column_name, self.column_name_class_map)
 
     def search_for_build(self, search_string):
         self.basic_search(search_string)
@@ -372,10 +381,10 @@ class TasksPage(BuildPage):
         except Exception as e:
             self.log.error("could not find column %s" % column_name)
             self.add_single_column_to_display(column_name)
-        self.order_toaster_table_by_column(column_name, self.column_name_class_map)
+        self.table.order_toaster_table_by_column(column_name, self.column_name_class_map)
 
     def get_tasks_column_values(self, column_name):
-        return self.get_toaster_table_column_values(column_name, self.column_name_class_map)
+        return self.table.get_toaster_table_column_values(column_name, self.column_name_class_map)
 
     def filter_tasks(self, task_filter, filter_form, filter_option_xpath):
         self.basic_filter(task_filter, filter_form, filter_option_xpath)
