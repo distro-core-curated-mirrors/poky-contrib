@@ -359,6 +359,8 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
 
         if "vardepvalue" in varflags:
            value = varflags.get("vardepvalue")
+        elif varflags.get("noexec"):
+           pass
         elif varflags.get("func"):
             if varflags.get("python"):
                 parsedvar = d.expandWithRefs(value, key)
