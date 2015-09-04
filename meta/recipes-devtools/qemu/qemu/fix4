@@ -1,0 +1,22 @@
+Add some debugging to try and get more info about a segfault we're seeing
+through some asserts.
+
+Upstream-Status: Inappropriate [debug for segfault]
+
+Index: qemu-2.4.0/hw/net/smc91c111.c
+===================================================================
+--- qemu-2.4.0.orig/hw/net/smc91c111.c
++++ qemu-2.4.0/hw/net/smc91c111.c
+@@ -671,9 +671,12 @@ static ssize_t smc91c111_receive(NetClie
+     /* TODO: Flag overrun and receive errors.  */
+     if (packetsize > 2048)
+         return -1;
++    if  (s->rx_fifo_len == NUM_PACKETS)
++        return -1;    
+     packetnum = smc91c111_allocate_packet(s);
+     if (packetnum == 0x80)
+         return -1;
++
+     s->rx_fifo[s->rx_fifo_len++] = packetnum;
+ 
+     p = &s->data[packetnum][0];
