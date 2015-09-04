@@ -84,11 +84,12 @@ class SSHProcess(object):
         try:
             self._run(command, timeout, logfile)
         except:
+          
             # Need to guard against a SystemExit or other exception occuring whilst running
             # and ensure we don't leave a process behind.
             if self.process.poll() is None:
                 self.process.kill()
-                self.status = self.process.wait()
+                #self.status = self.process.wait()
             raise
         return (self.status, self.output)
 

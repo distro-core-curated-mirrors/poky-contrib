@@ -86,7 +86,6 @@ class QemuRunner:
         if self.runqemu and self.runqemu.poll():
             if self.runqemu.returncode:
                 logger.info('runqemu exited with code %d' % self.runqemu.returncode)
-                logger.info("Output from runqemu:\n%s" % self.getOutput(self.runqemu.stdout))
                 self.stop()
                 self._dump_host()
                 raise SystemExit
@@ -277,6 +276,7 @@ class QemuRunner:
             signal.signal(signal.SIGCHLD, self.origchldhandler)
         if self.runqemu:
             os.kill(self.monitorpid, signal.SIGKILL)
+            logger.info("Output from runqemu:\n%s" % self.getOutput(self.runqemu.stdout))
             logger.info("Sending SIGTERM to runqemu")
             try:
                 os.killpg(os.getpgid(self.runqemu.pid), signal.SIGTERM)
