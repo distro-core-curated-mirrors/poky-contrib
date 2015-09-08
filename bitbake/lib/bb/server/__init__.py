@@ -71,7 +71,7 @@ class BitBakeBaseServerConnection():
 
 """
 class BitBakeBaseServer(object):
-    def initServer(self):
+    def initServer(self, bindUI=False):
         self.serverImpl = None  # we ensure a runtime crash if not overloaded
         self.connection = None
         return
@@ -94,3 +94,6 @@ class BitBakeBaseServer(object):
 
     def endSession(self):
         self.connection.terminate()
+
+    def bindUIProcess(self):
+        return

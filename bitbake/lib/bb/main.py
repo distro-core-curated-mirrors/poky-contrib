@@ -288,13 +288,20 @@ class BitBakeConfigParameters(cookerdata.ConfigParameters):
 
 def start_server(servermodule, configParams, configuration, features):
     server = servermodule.BitBakeServer()
+    bindUI = False
+    if not configParams.server_only:
+        bindUI = True
+
     if configParams.bind:
         (host, port) = configParams.bind.split(':')
-        server.initServer((host, int(port)))
+        server.initServer((host, int(port)), bindUI=bindUI)
         configuration.interface = [ server.serverImpl.host, server.serverImpl.port ]
     else:
-        server.initServer()
+        server.initServer(bindUI=bindUI)
         configuration.interface = []
+
+    if not configParams.server_only:
+        server.bindUIProcess()
 
     try:
         configuration.setServerRegIdleCallback(server.getServerIdleCB())

@@ -339,7 +339,7 @@ class BitBakeXMLRPCServerConnection(BitBakeBaseServerConnection):
             pass
 
 class BitBakeServer(BitBakeBaseServer):
-    def initServer(self, interface = ("localhost", 0)):
+    def initServer(self, interface = ("localhost", 0), bindUI=False):
         self.interface = interface
         self.serverImpl = XMLRPCServer(interface)
 

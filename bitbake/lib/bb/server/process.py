@@ -82,7 +82,7 @@ class ProcessServer(Process, BaseImplServer):
     profile_filename = "profile.log"
     profile_processed_filename = "profile.log.processed"
 
-    def __init__(self, command_channel, event_queue, featurelist):
+    def __init__(self, command_channel, event_queue, featurelist, bindUI):
         BaseImplServer.__init__(self)
         Process.__init__(self)
         self.command_channel = command_channel
@@ -90,6 +90,7 @@ class ProcessServer(Process, BaseImplServer):
         self.event = EventAdapter(event_queue)
         self.featurelist = featurelist
         self.quit = False
+        self.bindUI = bindUI
 
         self.quitin, self.quitout = Pipe()
         self.event_handle = multiprocessing.Value("i")
@@ -98,6 +99,9 @@ class ProcessServer(Process, BaseImplServer):
         for event in bb.event.ui_queue:
             self.event_queue.put(event)
         self.event_handle.value = bb.event.register_UIHhandler(self, True)
+
+        print "regisdter in %s" % os.getpid()
+        bb.utils.signal_on_parent_exit("SIGTERM")
 
         bb.cooker.server_main(self.cooker, self.main)
 
@@ -238,14 +242,14 @@ class ProcessEventQueue(multiprocessing.queues.Queue):
 
 
 class BitBakeServer(BitBakeBaseServer):
-    def initServer(self):
+    def initServer(self, bindUI = False):
         # establish communication channels.  We use bidirectional pipes for
         # ui <--> server command/response pairs
         # and a queue for server -> ui event notifications
         #
         self.ui_channel, self.server_channel = Pipe()
         self.event_queue = ProcessEventQueue(0)
-        self.serverImpl = ProcessServer(self.server_channel, self.event_queue, None)
+        self.serverImpl = ProcessServer(self.server_channel, self.event_queue, None, bindUI)
         self.event_queue.server = self.serverImpl
 
     def detach(self):
