@@ -254,6 +254,7 @@ class BitBakeServer(BitBakeBaseServer):
 
     def detach(self):
         self.serverImpl.start()
+        self.serverImpl.quitout.close()
         return
 
     def establishConnection(self, featureset):
