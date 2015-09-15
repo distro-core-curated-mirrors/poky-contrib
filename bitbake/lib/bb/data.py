@@ -185,6 +185,10 @@ def emit_var(var, o=sys.__stdout__, d = init(), all=False):
     if d.getVarFlag(var, "python"):
         return False
 
+    if var == "CONFIGFILESURI":
+        o.write("Here2A")
+        bb.warn("Here2B")
+
     export = d.getVarFlag(var, "export")
     unexport = d.getVarFlag(var, "unexport")
     func = d.getVarFlag(var, "func")

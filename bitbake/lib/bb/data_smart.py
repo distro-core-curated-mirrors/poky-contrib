@@ -711,6 +711,7 @@ class DataSmart(MutableMapping):
             self.dict["__exportlist"]["_content"].add(var)
 
     def getVarFlag(self, var, flag, expand=False, noweakdefault=False, parsing=False):
+
         local_var = self._findVar(var)
         value = None
         if flag == "_content" and var in self.overridedata and not parsing:
@@ -725,10 +726,19 @@ class DataSmart(MutableMapping):
                     if set(o.split("_")).issubset(self.overridesset):
                         active[o] = r
 
+            if var == "CONFIGFILESURI":
+                    bb.warn(str(active))
+                    bb.warn(str(self.overridedata[var]))
+                    bb.warn(str(self.overrides))
+                    bb.warn(str(self.overridesset))
+                    bb.warn(str(self.overridevars))
+                    bb.warn(str(self.getVar("TARGET_ARCH", False)))
+                    bb.warn(str(self.getVar("TARGET_ARCH", True)))
             mod = True
             while mod:
                 mod = False
                 for o in self.overrides:
+
                     for a in active.copy():
                         if a.endswith("_" + o):
                             t = active[a]
@@ -739,6 +749,8 @@ class DataSmart(MutableMapping):
                             match = active[a]
                             del active[a]
             if match:
+                if var == "CONFIGFILESURI":
+                    bb.warn(match)
                 value = self.getVar(match, False)
 
         if local_var is not None and value is None:
