@@ -1,0 +1,32 @@
+From 264f73df1b098030685d64f716c1f8a7bf201db5 Mon Sep 17 00:00:00 2001
+From: Richard Purdie <richard.purdie@linuxfoundation.org>
+Date: Mon, 14 Sep 2015 14:43:07 +0000
+Subject: [PATCH] hid-core: Avoid uninitialised buffer access
+
+hid_connect adds various strings to the buffer but they're all
+conditional. You can find circumstances where nothing would be written
+to it but the kernel will still print the supposedly empty buffer with
+printk. This leads to corruption on the console/in the logs.
+
+The fix is to put a NULL character into the buffer to start with.
+
+Signed-off-by: Richard Purdie <richard.purdie@linuxfoundation.org>
+---
+ drivers/hid/hid-core.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 722a925..170bd27 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -1629,6 +1629,7 @@ int hid_connect(struct hid_device *hdev, unsigned int connect_mask)
+ 		hdev->ff_init(hdev);
+ 
+ 	len = 0;
++	buf[0] = NULL;
+ 	if (hdev->claimed & HID_CLAIMED_INPUT)
+ 		len += sprintf(buf + len, "input");
+ 	if (hdev->claimed & HID_CLAIMED_HIDDEV)
+-- 
+2.5.0
+
