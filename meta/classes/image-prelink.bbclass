@@ -2,6 +2,8 @@ do_rootfs[depends] += "prelink-native:do_populate_sysroot"
 
 IMAGE_PREPROCESS_COMMAND += "prelink_image; "
 
+inherit linuxloader
+
 prelink_image () {
 #	export PSEUDO_DEBUG=4
 #	/bin/env | /bin/grep PSEUDO
@@ -20,8 +22,11 @@ prelink_image () {
 		dummy_prelink_conf=false;
 	fi
 
+	# Set $dynamic_loader
+	linuxloader
+
 	# prelink!
-	${STAGING_DIR_NATIVE}${sbindir_native}/prelink --root ${IMAGE_ROOTFS} -amR -N -c ${sysconfdir}/prelink.conf
+	${STAGING_DIR_NATIVE}${sbindir_native}/prelink --root ${IMAGE_ROOTFS} -amR -N -c ${sysconfdir}/prelink.conf --dynamic-linker $dynamic_loader
 
 	# Remove the prelink.conf if we had to add it.
 	if [ "$dummy_prelink_conf" = "true" ]; then
