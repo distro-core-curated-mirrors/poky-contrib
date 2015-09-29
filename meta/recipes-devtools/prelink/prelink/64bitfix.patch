@@ -1,0 +1,35 @@
+These checks force 64 bit binaries into lib64 and n32 binaries into lib32. We
+load prelink.conf with all combinations but this code then defeats it for us
+and means /lib is ignored.
+
+Comment out this code to disable it and allow our settings to work. This
+allows 64 bit binaries in /lib to work. We pass in the correct dyanamic 
+loader path anyhow and our binaries don't contain ld.so so this should be
+safe for us.
+
+Upstream-Status: Inappropriate
+RP 2015/9/23
+
+
+Index: trunk/src/rtld/rtld.c
+===================================================================
+--- trunk.orig/src/rtld/rtld.c
++++ trunk/src/rtld/rtld.c
+@@ -334,7 +334,7 @@ load_ld_so_conf (int use_64bit, int use_
+ 
+   /* Only use the correct machine, to prevent mismatches if we
+      have both /lib/ld.so and /lib64/ld.so on x86-64.  */
+-  if (use_64bit)
++  /*if (use_64bit)
+     {
+       dst_LIB = "lib64";
+       add_dir (&ld_dirs, "/lib64/tls", strlen ("/lib64/tls"));
+@@ -350,7 +350,7 @@ load_ld_so_conf (int use_64bit, int use_
+       add_dir (&ld_dirs, "/usr/lib32/tls", strlen ("/usr/lib32/tls"));
+       add_dir (&ld_dirs, "/usr/lib32", strlen ("/usr/lib32"));
+     }
+-  else
++  else*/
+     {
+       dst_LIB = "lib";
+       add_dir (&ld_dirs, "/lib/tls", strlen ("/lib/tls"));
