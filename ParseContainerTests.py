@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# import cProfile
+
 # to generate random numbers
 import random
 # useful operating system functions
@@ -17,6 +19,7 @@ It generates some useful(?) statistics
 '''
 # Verbosity level. raised by passing in -v or -v -v 
 gVerbose=0
+gDoTimes=False
 # usually need random numbers for simulation
 random.seed(os.urandom(24))
 
@@ -30,6 +33,7 @@ def usage():
      -v --verbose                                - verbose, can specify multiple -v -v -v 
            1 -v -> more data info
            2 -v or more -> debugging
+     -t                                          - also does times, takes longer
      -h --help                                   - prints this
 
     I analyze the container testing results in a given directory.
@@ -225,7 +229,7 @@ def HandleTests(tests,rootDir):
                     if t['test'](rootDir,sub):
                         t['count']+=1
                         t['dirlist'].append(sub)
-                        if t.has_key('startupTime'):
+                        if t.has_key('startupTime') and gDoTimes:
                             t['startupTime'][sub]=getStartupTime(rootDir,sub)
         break
     return 
@@ -236,7 +240,7 @@ def PrintStats(tests):
     for t in tests:
         if "Total" in t['name']:
             totalRuns=t['count']
-            fullTimeList = t['startupTime']
+            fullTimeList = t['startupTime'] 
         if "Failures" in t['name']:
             totalFailures=t['count']
             uncharacterizedDirs=t['dirlist']
@@ -255,8 +259,9 @@ def PrintStats(tests):
 
         # get some time info
         timeList = []
-        for d in t['dirlist']:
-            timeList.append(fullTimeList[d])
+        if len(fullTimeList)>0:
+            for d in t['dirlist']:
+                timeList.append(fullTimeList[d])
         # 0.0 means we don't know anything so don't mix it into the stats
         timeListStat=[x for x in timeList if x > 0]
         try:
@@ -316,6 +321,8 @@ if __name__ == "__main__":
             usage()
         elif k in ('-v', '--verbose'):
             gVerbose += 1
+        elif k in ('-t'):
+            gDoTimes = True
         elif k in ('-d', '--dir'):
             rootDir = v
         else:
@@ -354,6 +361,23 @@ if __name__ == "__main__":
               "dataByDir":{},
               "count":0
           },             
+
+             {"name":"SshFails",
+             "test":isSimpleRegex,
+              "regex":'^\| FAIL\: test_ssh \(oeqa\.runtime\.ssh\.SshTest\)$',
+              "dirlist":[],
+              "dataByDir":{},
+              "count":0
+          },             
+
+             {"name":"SystemdFailsBasic",
+             "test":isSimpleRegex,
+              "regex":'^\| FAIL\: test_systemd_status \(oeqa\.runtime\.systemd\.SystemdServiceTests\)$',
+              "dirlist":[],
+              "dataByDir":{},
+              "count":0
+          },             
+
 
              # summation tests
              {"name":"Failures",
