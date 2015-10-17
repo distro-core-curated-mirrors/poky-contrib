@@ -37,28 +37,6 @@ def usage():
     """
     sys.exit(0)
 
-# naa just do a series of functions.
-class ErrorType(object):
-    def __init__(self,rootDir="."):
-        self.errorPresent=False
-        self.rootDir=rootDir
-        self.patterns=[]
-        self.count=0
-    def AddErrorPair(self,errorStr,filename='stdout'):
-        p=re.compile(errorStr)
-        self.patterns.append({'pattern':p,'filename':filename})
-    def RecursiveWalk(self,folder):
-        for folderName, subfolders, filenames in os.walk(folder):
-            if subfolders:
-                for subfolder in subfolders:
-                    self.RecursiveWalk(subfolder)
-                print('\nFolder: ' + folderName + '\n')
-                for filename in filenames:
-                    for p in self.patterns:
-                        if p['filename'] in filename:
-                            print (" I care about this file=%s\n" % (filename))
-                        else:
-                            print (" I DO NOT care about this file=%s\n" % (filename))
 
 # This allows me to extract the kernel boot time. on reflection
 # I think the total time is fine to start with. We can use this 
@@ -169,45 +147,80 @@ def isSimpleRegex(rootDir,dir,regex=".*"):
         return False
 
 
-# This needs 3 separate patterns to appear to be true
-def isBlutoothWpaAvahiTimeout(rootDir,dir):
-            
 
+# generic avahi failure handler. grabs the sad systemd guys and then
+# uses the passed in regex to determine why avahi failed
+def isServicesFailAvahi(rootDir,dir,whichAvahis,data={}):
+            
+    patternGeneric=re.compile('^\|\W+(\w+)\.service.*loaded failed failed .*',re.MULTILINE)
     pattern1 =re.compile('^\|.*bluetooth.*loaded failed failed Bluetooth service$',re.MULTILINE)
     pattern2 =re.compile('^\|.*wpa_supplicant.*loaded failed failed WPA supplicant$',re.MULTILINE)
-    pattern3 =re.compile('^\|.*Job for avahi-daemon.*failed because a timeout was exceeded.*for details\.$',re.MULTILINE)
+    patternAvahi=[]
+    for reg in whichAvahis:
+        patternAvahi.append(re.compile(reg,re.MULTILINE))
+    #patternAvahi2 =re.compile('.*systemd.*avahi-daemon\.service\: Failed with result.*timeout.*',re.MULTILINE)
 
     if "-failure" in dir:
         filename = rootDir+"/"+dir+"/stdout"
         if gVerbose>=3:
-            print "isBlutoothWpaAvahiTimeout:%s"%filename
+            print "isServicesFailAvahiTimeout:%s"%filename
         f=open(filename,'r')
         txt = f.read()
         f.close()
-        m1 = pattern1.search(txt)
-        m2 = pattern2.search(txt)
-        m3 = pattern3.search(txt)
-        if m1 and m2 and m3:
+
+        iter = patternGeneric.finditer(txt)
+        l=[]
+        for q in iter:
+            l.append(q.group(1))
+
+            
+        #if len(l)>0 and (mAvahi or mAvahi2):
+        found=False
+        if len(l)>0:
+            # you can pass in a set of regexs for the avahi part, 
+            # return false if none of them match
+            for p in patternAvahi:
+                if p.search(txt):
+                    found=True
+            if not found:
+                return False
+            data[dir]=l
             if gVerbose>=3:
-                print "M1Group0 = [%s]"%m1.group(0)
-                print "M2Group0 = [%s]"%m2.group(0)
-                print "M3Group0 = [%s]"%m3.group(0)
+                print "the following systemd services failed: ",l
             return True
         else:
             return False
     else:
         return False
 
+# avahi fails for a timeout
+def isServicesFailAvahiTimeout(rootDir,dir,data={}):
+    return isServicesFailAvahi(rootDir,dir,['^\|.*Job for avahi-daemon.*failed because a timeout was exceeded.*for details\.$',
+                                            '.*systemd.*avahi-daemon\.service\: Failed with result.*timeout.*'],data)
+# avahi fails for an exit
+def isServicesFailAvahiExit(rootDir,dir,data={}):
+    return isServicesFailAvahi(rootDir,dir,['.*systemd.*avahi-daemon\.service\: Failed with result.*exit-code.*'],data)
 
 def HandleTests(tests,rootDir):
     for dirName,subdirList,fileList in os.walk(rootDir):
         print "dirname=",dirName
+        dirCount=0
         for sub in subdirList:
+            percentDone=100*dirCount/len(subdirList)
+            sys.stdout.write("Processing progress: %d%%   \r" % percentDone)
+            sys.stdout.flush()
+            dirCount+=1
             for t in tests:
+                # generic simple regex to match failure
                 if t.has_key('regex'):
                     if t['test'](rootDir,sub,regex=t['regex']):
                         t['count']+=1
                         t['dirlist'].append(sub)
+                # pass back data since a list of things may have failed!
+                elif t.has_key('dataByDir'):
+                    if t['test'](rootDir,sub,data=t['dataByDir']):
+                        t['count']+=1
+                        t['dirlist'].append(sub) 
                 else:
                     if t['test'](rootDir,sub):
                         t['count']+=1
@@ -219,6 +232,7 @@ def HandleTests(tests,rootDir):
 
 
 def PrintStats(tests):
+    print ""
     for t in tests:
         if "Total" in t['name']:
             totalRuns=t['count']
@@ -234,6 +248,11 @@ def PrintStats(tests):
             continue
         print "test %s has a count of %d for a percentage of %02.2f%%" % (t['name'],t['count'],per)
 
+        # handle additional data if any
+        if t.has_key('dataByDir'):
+            for k in t['dataByDir'].keys():
+                print "\t dir=%s  data matches:[%s]" %(k,t['dataByDir'][k])
+
         # get some time info
         timeList = []
         for d in t['dirlist']:
@@ -245,7 +264,7 @@ def PrintStats(tests):
         except ValueError:
             pass
         if len(timeListStat):
-            print ("\tStartup Time Information (0.0 sec entries removed):\n")
+            print ("\tStartup Time Information (Number of  0.0 sec entries removed = %d):\n" % (len(timeList) - len(timeListStat)))
             print("\t\t Min Startup Time: %f" % min(timeListStat))
             print("\t\t Max Startup Time: %f" % max(timeListStat))
             print("\t\t Avg Startup Time: %f" % (sum(timeListStat)/float(len(timeListStat))))
@@ -322,12 +341,19 @@ if __name__ == "__main__":
               "dirlist":[],
               "count":0
           },             
-             {"name":"BluetoothWpaFail-AvahiTimeout",
-             "test":isBlutoothWpaAvahiTimeout,
+             {"name":"ServicesFail-AvahiTimeout",
+             "test":isServicesFailAvahiTimeout,
               "dirlist":[],
+              "dataByDir":{},
               "count":0
           },             
 
+             {"name":"ServicesFail-AvahiExits",
+             "test":isServicesFailAvahiExit,
+              "dirlist":[],
+              "dataByDir":{},
+              "count":0
+          },             
 
              # summation tests
              {"name":"Failures",
