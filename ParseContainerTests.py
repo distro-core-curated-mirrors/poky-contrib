@@ -339,7 +339,9 @@ if __name__ == "__main__":
     # test definitions
     tests = [{"name":"kernelPanic",
              "test":isSimpleRegex,
-              "regex":'^Kernel panic.*Attempted.*$',
+#              "regex":'^\[?\s*\d*\]\s?Kernel panic.*Attempted.*$',
+              # deals with new timecodes.
+              "regex":'.*Kernel panic.*Attempted.*kill.*idle task\!.*$',
               "dirlist":[],
               "count":0
           },
