@@ -249,6 +249,9 @@ def PrintStats(tests):
             fullTimeList = t['startupTime']
         if "Failures" in t['name']:
             totalFailures=t['count']
+            print "########"
+            print "Total Failure Count = ",totalFailures
+            print "########"
             uncharacterizedDirs=t['dirlist']
     for t in tests:
         per = t['count']*100.0/totalRuns
