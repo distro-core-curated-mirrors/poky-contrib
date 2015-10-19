@@ -13,11 +13,11 @@ import re
 
 import copy
 '''
-This parses the output of the container based tester. 
+This parses the output of the container based tester.
 It generates some useful(?) statistics
 
 '''
-# Verbosity level. raised by passing in -v or -v -v 
+# Verbosity level. raised by passing in -v or -v -v
 gVerbose=0
 gDoTimes=False
 # usually need random numbers for simulation
@@ -30,7 +30,7 @@ def usage():
     Usage: ParseContainers.py  <Options>
     Options:
      -d --dir=<directory>                        - defaults to .
-     -v --verbose                                - verbose, can specify multiple -v -v -v 
+     -v --verbose                                - verbose, can specify multiple -v -v -v
            1 -v -> more data info
            2 -v or more -> debugging
      -t                                          - also does times, takes longer
@@ -43,7 +43,7 @@ def usage():
 
 
 # This allows me to extract the kernel boot time. on reflection
-# I think the total time is fine to start with. We can use this 
+# I think the total time is fine to start with. We can use this
 # as a guide if I want to break it up later.
 # unused!
 def getKernelBootTime(rootDir,dir):
@@ -107,25 +107,29 @@ def getTotalBootTime(rootDir,dir):
                             totalBootTime = (float)(mBootSec.group(1)) + (float)(mBootSec.group(2))/1000.0
                             if gVerbose >=3:
                                 print "total time as float = %f" % totalBootTime
-                    
+
     #try:
     return totalBootTime
     #except NameError:
     #    return 0.0
-    
-        
+
+
 
 def getStartupTime(rootDir,dir):
     #    bootTime = getTotalBootTime(rootDir,dir)
     bootTime = getTotalBootTime(rootDir,dir)
     return bootTime
-    
+
 
 def isTestDir(rootDir,dir):
     return True if "testrun" in dir else False
 
 def isFailDir(rootDir,dir):
     return True if "-failure" in dir else False
+
+def isSuccessDir(rootDir,dir):
+    return False if "-failure" in dir else True
+
 
 
 
@@ -155,7 +159,7 @@ def isSimpleRegex(rootDir,dir,regex=".*"):
 # generic avahi failure handler. grabs the sad systemd guys and then
 # uses the passed in regex to determine why avahi failed
 def isServicesFailAvahi(rootDir,dir,whichAvahis,data={}):
-            
+
     patternGeneric=re.compile('^\|\W+(\w+)\.service.*loaded failed failed .*',re.MULTILINE)
     pattern1 =re.compile('^\|.*bluetooth.*loaded failed failed Bluetooth service$',re.MULTILINE)
     pattern2 =re.compile('^\|.*wpa_supplicant.*loaded failed failed WPA supplicant$',re.MULTILINE)
@@ -177,11 +181,11 @@ def isServicesFailAvahi(rootDir,dir,whichAvahis,data={}):
         for q in iter:
             l.append(q.group(1))
 
-            
+
         #if len(l)>0 and (mAvahi or mAvahi2):
         found=False
         if len(l)>0:
-            # you can pass in a set of regexs for the avahi part, 
+            # you can pass in a set of regexs for the avahi part,
             # return false if none of them match
             for p in patternAvahi:
                 if p.search(txt):
@@ -210,6 +214,8 @@ def HandleTests(tests,rootDir):
         print "dirname=",dirName
         dirCount=0
         for sub in subdirList:
+            if not "testrun" in sub:
+                continue
             percentDone=100*dirCount/len(subdirList)
             sys.stdout.write("Processing progress: %d%%   \r" % percentDone)
             sys.stdout.flush()
@@ -224,7 +230,7 @@ def HandleTests(tests,rootDir):
                 elif t.has_key('dataByDir'):
                     if t['test'](rootDir,sub,data=t['dataByDir']):
                         t['count']+=1
-                        t['dirlist'].append(sub) 
+                        t['dirlist'].append(sub)
                 else:
                     if t['test'](rootDir,sub):
                         t['count']+=1
@@ -232,7 +238,7 @@ def HandleTests(tests,rootDir):
                         if t.has_key('startupTime') and gDoTimes:
                             t['startupTime'][sub]=getStartupTime(rootDir,sub)
         break
-    return 
+    return
 
 
 def PrintStats(tests):
@@ -240,7 +246,7 @@ def PrintStats(tests):
     for t in tests:
         if "Total" in t['name']:
             totalRuns=t['count']
-            fullTimeList = t['startupTime'] 
+            fullTimeList = t['startupTime']
         if "Failures" in t['name']:
             totalFailures=t['count']
             uncharacterizedDirs=t['dirlist']
@@ -253,7 +259,7 @@ def PrintStats(tests):
         print "test %s has a count of %d for a percentage of %02.2f%%" % (t['name'],t['count'],per)
 
         # handle additional data if any
-        if t.has_key('dataByDir'):
+        if t.has_key('dataByDir') and not "Success" in t['name']:
             for k in t['dataByDir'].keys():
                 print "\t dir=%s  data matches:[%s]" %(k,t['dataByDir'][k])
 
@@ -282,7 +288,8 @@ def PrintStats(tests):
 
 
         # figure out how many failures do not have matching tests yet
-        totalFailures-=t['count']
+        if "Success" not in t['name']:
+            totalFailures-=t['count']
         u=[x for x in uncharacterizedDirs if x not in t['dirlist']]
         uncharacterizedDirs=u
 
@@ -308,11 +315,11 @@ if __name__ == "__main__":
     import getopt
     try:
         (options, argv) = getopt.getopt(sys.argv[1:],
-                                        'hvd:', ["help", "verbose", "dir="])
+                                        'hvtd:', ["help", "verbose", "dir="])
     except Exception, e:
         print e
         usage()
-    
+
     # default values
     rootDir="."
 
@@ -341,26 +348,26 @@ if __name__ == "__main__":
               "regex":'^\|.*xserver-nodm.*loaded failed failed Xserver.*display manager$',
               "dirlist":[],
               "count":0
-          },             
+          },
              {"name":"SystemdListUnitTimeout",
              "test":isSimpleRegex,
               "regex":'^\|.*Failed to list unit files: Connection timed out$',
               "dirlist":[],
               "count":0
-          },             
+          },
              {"name":"ServicesFail-AvahiTimeout",
              "test":isServicesFailAvahiTimeout,
               "dirlist":[],
               "dataByDir":{},
               "count":0
-          },             
+          },
 
              {"name":"ServicesFail-AvahiExits",
              "test":isServicesFailAvahiExit,
               "dirlist":[],
               "dataByDir":{},
               "count":0
-          },             
+          },
 
              {"name":"SshFails",
              "test":isSimpleRegex,
@@ -368,7 +375,7 @@ if __name__ == "__main__":
               "dirlist":[],
               "dataByDir":{},
               "count":0
-          },             
+          },
 
              {"name":"SystemdFailsBasic",
              "test":isSimpleRegex,
@@ -376,12 +383,17 @@ if __name__ == "__main__":
               "dirlist":[],
               "dataByDir":{},
               "count":0
-          },             
+          },
 
 
              # summation tests
              {"name":"Failures",
              "test":isFailDir,
+              "dirlist":[],
+              "count":0
+          },
+             {"name":"Successes",
+             "test":isSuccessDir,
               "dirlist":[],
               "count":0
           },
@@ -395,7 +407,7 @@ if __name__ == "__main__":
           }
          ]
 
-             
+
 
     HandleTests(tests,rootDir)
     PrintStats(tests)
