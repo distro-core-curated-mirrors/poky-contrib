@@ -249,10 +249,11 @@ def PrintStats(tests):
             fullTimeList = t['startupTime']
         if "Failures" in t['name']:
             totalFailures=t['count']
-            print "########"
-            print "Total Failure Count = ",totalFailures
-            print "########"
             uncharacterizedDirs=t['dirlist']
+    print "########"
+    print "Total Failure Count =%d for a %02.2f%% failure rate"%(totalFailures,100.0*totalFailures/totalRuns)
+    print "########"
+
     for t in tests:
         per = t['count']*100.0/totalRuns
         if "Total" in t['name']:
@@ -262,10 +263,12 @@ def PrintStats(tests):
         print "test %s has a count of %d for a percentage of %02.2f%%" % (t['name'],t['count'],per)
 
         # handle additional data if any
-        if t.has_key('dataByDir') and not "Success" in t['name']:
+        if t.has_key('dataByDir') and not "Success" in t['name'] and gVerbose>0:
             for k in t['dataByDir'].keys():
                 print "\t dir=%s  data matches:[%s]" %(k,t['dataByDir'][k])
-
+        elif not "Success" in t['name'] and gVerbose>0:
+            for k in t['dirlist']:
+                print "\t dir=%s"%(k)
         # get some time info
         timeList = []
         if len(fullTimeList)>0:
