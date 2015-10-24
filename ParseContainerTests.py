@@ -10,8 +10,9 @@ import os
 import sys
 # for searching
 import re
-
 import copy
+# so it is not sooo slow that Randy gives up
+import Queue
 '''
 This parses the output of the container based tester.
 It generates some useful(?) statistics
@@ -31,8 +32,9 @@ def usage():
     Options:
      -d --dir=<directory>                        - defaults to .
      -v --verbose                                - verbose, can specify multiple -v -v -v
-           1 -v -> more data info
+           1 -v -> more data info  like directories
            2 -v or more -> debugging
+     -c --cores=#                                - num threads to use defaults to #cores
      -t                                          - also does times, takes longer
      -h --help                                   - prints this
 
@@ -251,7 +253,7 @@ def PrintStats(tests):
             totalFailures=t['count']
             uncharacterizedDirs=t['dirlist']
     print "########"
-    print "Total Failure Count =%d for a %02.2f%% failure rate"%(totalFailures,100.0*totalFailures/totalRuns)
+    print "Total Failure Count =%d for a %02.2f%% failure rate out of %d Total Tests"%(totalFailures,100.0*totalFailures/totalRuns,totalRuns)
     print "########"
 
     for t in tests:
@@ -299,8 +301,8 @@ def PrintStats(tests):
         u=[x for x in uncharacterizedDirs if x not in t['dirlist']]
         uncharacterizedDirs=u
 
-    print "Had %d uncharacterized Failures!"%totalFailures
-    print "len=%d for uncharacterizedDirs=%s!"%(len(uncharacterizedDirs),uncharacterizedDirs)
+    print "Had %d uncharacterized Failures!"%len(uncharacterizedDirs)
+    print "uncharacterizedDirs=%s!"%(uncharacterizedDirs)
     return
 
 
@@ -321,13 +323,15 @@ if __name__ == "__main__":
     import getopt
     try:
         (options, argv) = getopt.getopt(sys.argv[1:],
-                                        'hvtd:', ["help", "verbose", "dir="])
+                                        'hvtd:c:', ["help", "verbose", "dir=","cores="])
     except Exception, e:
         print e
         usage()
 
     # default values
     rootDir="."
+    import multiprocessing
+    maxQSize = multiprocessing.cpu_count()
 
     for (k,v) in options:
         if k in ('-h', '--help'):
@@ -338,6 +342,8 @@ if __name__ == "__main__":
             gDoTimes = True
         elif k in ('-d', '--dir'):
             rootDir = v
+        elif k in ('-c', '--cores'):
+            maxQSize = v
         else:
             print "I didn't understand that"
             usage()
@@ -357,6 +363,13 @@ if __name__ == "__main__":
               "dirlist":[],
               "count":0
           },
+             {"name":"Qemu PID didn't appear, complete fail to start qemu",
+             "test":isSimpleRegex,
+              "regex":'^\|.* NOTE: Qemu pid didn\'t appeared in 60 seconds$',
+              "dirlist":[],
+              "count":0
+          },
+
              {"name":"SystemdListUnitTimeout",
              "test":isSimpleRegex,
               "regex":'^\|.*Failed to list unit files: Connection timed out$',
