@@ -454,6 +454,13 @@ function tableInit(ctx){
     });
   }
 
+  /* Allow pages to trigger reload event */
+  table.on('reload', function(e, newTableParams){
+    if (newTableParams)
+      loadData(newTableParams);
+    else
+      loadData(tableParams)
+  });
 
   $(".get-help").tooltip({container:'body', html:true, delay:{show:300}});
 
