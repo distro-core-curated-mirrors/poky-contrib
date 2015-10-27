@@ -113,7 +113,8 @@ class ToasterTable(TemplateView):
                               cls=DjangoJSONEncoder)
         else:
             for actions in self.filters[name]['filter_actions']:
-                actions['count'] = self.filter_actions[actions['name']](count_only=True)
+                actions['count'] = \
+                        self.filter_actions[actions['name']]().count()
 
             # Add the "All" items filter action
             self.filters[name]['filter_actions'].insert(0, {
@@ -222,7 +223,7 @@ class ToasterTable(TemplateView):
             return
 
         try:
-            self.filter_actions[filter_action]()
+            self.queryset = self.filter_actions[filter_action]()
         except KeyError:
             # pass it to the user - programming error here
             raise
