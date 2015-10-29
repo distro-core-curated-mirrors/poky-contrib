@@ -15,11 +15,14 @@ SRC_URI = "\
   file://clang.patch \
   file://0001-Enable-backtrace-on-linux-when-using-glibc.patch \
   file://0001-Fix-build-with-non-glibc-libraries-on-linux.patch \
+  file://0001-FindGObjectIntrospection.cmake-prefix-variables-obta.patch \
+  file://0001-When-building-introspection-files-add-CMAKE_C_FLAGS-.patch \
+  file://0001-OptionsGTK.cmake-drop-the-hardcoded-introspection-gt.patch \
   "
 SRC_URI[md5sum] = "84832b9d8329413b4f1d87df5f7e8efe"
 SRC_URI[sha256sum] = "990d62c82ed6dede31a6ff0a82d847f16b812842ff3e1093d17113627652864e"
 
-inherit cmake lib_package pkgconfig perlnative pythonnative distro_features_check upstream-version-is-even
+inherit cmake lib_package pkgconfig perlnative pythonnative distro_features_check upstream-version-is-even gobject-introspection
 
 # depends on libxt
 REQUIRED_DISTRO_FEATURES = "x11"
@@ -51,7 +54,7 @@ PACKAGECONFIG[libhyphen] = "-DUSE_LIBHYPHEN=ON,-DUSE_LIBHYPHEN=OFF,libhyphen"
 EXTRA_OECMAKE = " \
 		-DPORT=GTK \
 		-DCMAKE_BUILD_TYPE=Release \
-		-DENABLE_INTROSPECTION=OFF \
+		${@bb.utils.contains('COMBINED_FEATURES', 'gobject-introspection-data', '-DENABLE_INTROSPECTION=ON', '-DENABLE_INTROSPECTION=OFF', d)} \
 		-DENABLE_GTKDOC=OFF \
 		-DENABLE_MINIBROWSER=ON \
 		"
