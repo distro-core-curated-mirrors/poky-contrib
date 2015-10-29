@@ -18,4 +18,4 @@ SRC_URI[archive.sha256sum] = "ce6c48d77bf951083029d5a396dd552d836fff3c1715d3a702
 BBCLASSEXTEND = "native"
 
 EXTRA_OECONF = "--disable-glibtest \
-                --disable-introspection"
+               "

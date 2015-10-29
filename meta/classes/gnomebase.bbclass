@@ -20,7 +20,7 @@ FILES_${PN} += "${datadir}/application-registry  \
 
 FILES_${PN}-doc += "${datadir}/devhelp"
 
-inherit autotools pkgconfig
+inherit autotools pkgconfig gobject-introspection
 
 do_install_append() {
 	rm -rf ${D}${localstatedir}/lib/scrollkeeper/*
@@ -28,6 +28,3 @@ do_install_append() {
 	rm -f ${D}${datadir}/applications/*.cache
 }
 
-EXTRA_OECONF += "--disable-introspection"
-
-UNKNOWN_CONFIGURE_WHITELIST += "--disable-introspection"

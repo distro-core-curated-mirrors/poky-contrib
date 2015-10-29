@@ -19,8 +19,6 @@ SRC_URI[archive.sha256sum] = "4d6ea93ec05f5dabe7262d711d246a0a99b2311e215360dd3d
 
 CACHED_CONFIGUREVARS = "ac_cv_path_GDK_PIXBUF_QUERYLOADERS=${STAGING_LIBDIR_NATIVE}/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders"
 
-EXTRA_OECONF = "--disable-introspection --disable-vala"
-
 # The older ld (2.22) on the host (Centos 6.5) doesn't have the
 # -Bsymbolic-functions option, we can disable it for native.
 EXTRA_OECONF_append_class-native = " --enable-Bsymbolic=auto"
@@ -37,7 +35,6 @@ do_install_append() {
 }
 
 PACKAGES =+ "librsvg-gtk rsvg"
-FILES_${PN} = "${libdir}/*.so.*"
 FILES_rsvg = "${bindir}/rsvg* \
 	      ${datadir}/pixmaps/svg-viewer.svg \
 	      ${datadir}/themes"
