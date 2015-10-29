@@ -5,9 +5,9 @@ BUGTRACKER = "https://bugzilla.gnome.org/"
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=55ca817ccb7d5b5b66355690e9abc605"
 
-DEPENDS = "gtk+3 p11-kit glib-2.0 libgcrypt vala"
+DEPENDS = "gtk+3 p11-kit glib-2.0 libgcrypt"
 
-inherit autotools gnomebase gtk-icon-cache gtk-doc distro_features_check upstream-version-is-even
+inherit autotools gnomebase gtk-icon-cache gtk-doc distro_features_check upstream-version-is-even vala
 # depends on gtk+3, but also x11 through gtk+-x11
 REQUIRED_DISTRO_FEATURES = "x11"
 
