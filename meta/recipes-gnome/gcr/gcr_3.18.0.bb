@@ -21,3 +21,16 @@ FILES_${PN} += " \
 
 # http://errors.yoctoproject.org/Errors/Details/20229/
 ARM_INSTRUCTION_SET = "arm"
+
+# on x86-64 the introspection binary goes into 
+# an infinite loop under qemu during compilation, 
+# printing the following:
+# 
+# gcrypt-Message: select() error: Bad address
+#
+# gcrypt-Message: select() error: Bad address
+#
+# gcrypt-Message: select() error: Bad address
+#
+# This will be investigated later.
+EXTRA_OECONF_append_x86-64 = " --disable-introspection"
