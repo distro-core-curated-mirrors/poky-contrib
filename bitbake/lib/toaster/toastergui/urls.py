@@ -134,6 +134,9 @@ urlpatterns = patterns('toastergui.views',
             'customrecipe',
             name="customrecipe"),
 
+        url(r'^project/(?P<pid>\d+)/customrecipe/(?P<recipe_id>\d+)/download$',
+            'customrecipe_download',
+            name="customrecipedownload"),
 
 
         # typeahead api end points
