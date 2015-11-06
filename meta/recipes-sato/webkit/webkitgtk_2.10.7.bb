@@ -79,3 +79,10 @@ FILES_${PN} += "${libdir}/webkit2gtk-4.0/injected-bundle/libwebkit2gtkinjectedbu
 
 # http://errors.yoctoproject.org/Errors/Details/20370/
 ARM_INSTRUCTION_SET = "arm"
+
+# Invalid data memory access: 0x00000000
+# ...
+# qemu: uncaught target signal 11 (Segmentation fault) - core dumped
+# Segmentation fault
+EXTRA_OECMAKE_append_powerpc = " -DENABLE_INTROSPECTION=OFF "
+
