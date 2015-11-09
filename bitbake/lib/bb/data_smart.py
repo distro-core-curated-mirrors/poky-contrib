@@ -372,7 +372,10 @@ class DataSmart(MutableMapping):
 
     def expandWithRefs(self, s, varname):
 
+        if s is None:
+            return VariableParse(varname, self)
         if not isinstance(s, basestring): # sanity check
+            bb.error("String expansion on a non-string: %s, %s" % (varname, str(s)))
             return VariableParse(varname, self, s)
 
         if varname and varname in self.expand_cache:
