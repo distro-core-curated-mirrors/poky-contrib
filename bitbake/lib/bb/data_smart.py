@@ -375,6 +375,8 @@ class DataSmart(MutableMapping):
         if s is None:
             return VariableParse(varname, self)
         if not isinstance(s, basestring): # sanity check
+            import traceback
+            bb.error(str(traceback.extract_stack()))
             bb.error("String expansion on a non-string: %s, %s" % (varname, str(s)))
             return VariableParse(varname, self, s)
 
