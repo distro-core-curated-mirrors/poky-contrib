@@ -11,7 +11,7 @@ XSERVER ?= "xserver-xorg \
             xf86-video-fbdev \
             xf86-input-keyboard"
 
-MACHINE_FEATURES = "alsa bluetooth usbgadget screen"
+MACHINE_FEATURES = "alsa bluetooth usbhost usbgadget screen"
 
 MACHINEOVERRIDES =. "qemuall:"
 
