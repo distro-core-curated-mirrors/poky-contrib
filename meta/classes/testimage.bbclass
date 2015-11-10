@@ -108,6 +108,82 @@ do_testimage[nostamp] = "1"
 do_testimage[depends] += "${TESTIMAGEDEPENDS}"
 do_testimage[lockfiles] += "${TESTIMAGELOCK}"
 
+# get testcase list from specified file
+# if path is a relative path, then relative to build/conf/
+def read_testlist(d, fpath):
+    if not os.path.isabs(fpath):
+        builddir = d.getVar("TOPDIR", True)
+        fpath = os.path.join(builddir, "conf", fpath)
+    if not os.path.exists(fpath):
+        bb.fatal("No such manifest file: ", fpath)
+    tcs = []
+    for line in open(fpath).readlines():
+        line = line.strip()
+        if line and not line.startswith("#"):
+            tcs.append(line)
+    return " ".join(tcs)
+
+def get_tests_list(d, type="runtime"):
+    testsuites = []
+    testslist = []
+    manifests = d.getVar("TEST_SUITES_MANIFEST", True)
+    if manifests is not None:
+        manifests = manifests.split()
+        for manifest in manifests:
+            testsuites.extend(read_testlist(d, manifest).split())
+    else:
+        testsuites = d.getVar("TEST_SUITES", True).split()
+    if type == "sdk":
+        testsuites = (d.getVar("TEST_SUITES_SDK", True) or "auto").split()
+    bbpath = d.getVar("BBPATH", True).split(':')
+
+    # This relies on lib/ under each directory in BBPATH being added to sys.path
+    # (as done by default in base.bbclass)
+    for testname in testsuites:
+        if testname != "auto":
+            if testname.startswith("oeqa."):
+                for p in bbpath:
+                    test_location = os.path.join(p, 'lib', os.sep.join(testname.split('.')))
+                    if os.path.isfile(test_location+".py") or \
+                        (os.path.isfile(test_location.rsplit(os.sep, 1)[0]+".py")) or \
+                        (os.path.isfile(test_location.rsplit(os.sep, 2)[0]+".py")):
+                        testslist.append(testname)
+                    elif os.path.isdir(test_location):
+                        for files in os.listdir(test_location):
+                            if (files.endswith(".py")) and not files.startswith("_"):
+                                testslist.append(testname+'.'+files.split('.')[0])
+                continue
+            found = False
+            for p in bbpath:
+                if os.path.exists(os.path.join(p, 'lib', 'oeqa', type, testname + '.py')):
+                    testslist.append("oeqa." + type + "." + testname)
+                    found = True
+                    break
+                elif os.path.exists(os.path.join(p, 'lib', 'oeqa', type, testname.split(".")[0] + '.py')):
+                    testslist.append("oeqa." + type + "." + testname)
+                    found = True
+                    break
+            if not found:
+                bb.fatal('Test %s specified in TEST_SUITES could not be found in lib/oeqa/runtime under BBPATH' % testname)
+
+    if "auto" in testsuites:
+        def add_auto_list(path):
+            if not os.path.exists(os.path.join(path, '__init__.py')):
+                bb.fatal('Tests directory %s exists but is missing __init__.py' % path)
+            files = sorted([f for f in os.listdir(path) if f.endswith('.py') and not f.startswith('_')])
+            for f in files:
+                module = 'oeqa.' + type + '.' + f[:-3]
+                if module not in testslist:
+                    testslist.append(module)
+
+        for p in bbpath:
+            testpath = os.path.join(p, 'lib', 'oeqa', type)
+            bb.debug(2, 'Searching for tests in %s' % testpath)
+            if os.path.exists(testpath):
+                add_auto_list(testpath)
+
+    return testslist
+
 def exportTests(d,tc):
     import json
     import shutil
