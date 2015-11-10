@@ -95,8 +95,8 @@ PACKAGECONFIG ??= " \
 	${@bb.utils.contains('DISTRO_FEATURES', 'alsa', 'alsa', '', d)} \
 	${@bb.utils.contains('DISTRO_FEATURES', 'xen', 'xen', '', d)} \
 	"
-PACKAGECONFIG_class-native ??= "fdt alsa uuid"
-PACKAGECONFIG_class-nativesdk ??= "fdt sdl"
+PACKAGECONFIG_class-native ??= "fdt alsa uuid libusb"
+PACKAGECONFIG_class-nativesdk ??= "fdt sdl libusb"
 NATIVEDEPS = ""
 NATIVEDEPS_class-native = "${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'libxext-native', '',d)}"
 PACKAGECONFIG[sdl] = "--enable-sdl,--disable-sdl,libsdl ${NATIVEDEPS},"
