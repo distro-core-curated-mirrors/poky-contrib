@@ -22,7 +22,8 @@ SRCREV_machine ?= "788dfc9859321c09f1c58696bf8998f90ccb4f51"
 SRCREV_meta ?= "46bb64d605fd336d99fa05bab566b9553b40b4b4"
 
 SRC_URI = "git://git.yoctoproject.org/linux-yocto-4.1.git;name=machine;branch=${KBRANCH}; \
-           git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=yocto-4.1;destsuffix=${KMETA}"
+           git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=yocto-4.1;destsuffix=${KMETA} \
+           file://bt.cfg"
 
 LINUX_VERSION ?= "4.1.15"
 
