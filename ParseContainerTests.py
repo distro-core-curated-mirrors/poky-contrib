@@ -124,7 +124,12 @@ def getStartupTime(rootDir,dir):
 
 
 def isTestDir(rootDir,dir):
-    return True if "testrun" in dir else False
+
+    if "testrun" in dir or "container-" in dir:
+        return True
+    else:
+        print "dir NOT testrun = ",dir
+        False
 
 def isFailDir(rootDir,dir):
     return True if "-failure" in dir else False
@@ -213,10 +218,9 @@ def isServicesFailAvahiExit(rootDir,dir,data={}):
 
 def HandleTests(tests,rootDir):
     for dirName,subdirList,fileList in os.walk(rootDir):
-        print "dirname=",dirName
         dirCount=0
         for sub in subdirList:
-            if not "testrun" in sub:
+            if not ("testrun" in sub or "container-" in sub):
                 continue
             percentDone=100*dirCount/len(subdirList)
             sys.stdout.write("Processing progress: %d%%   \r" % percentDone)
