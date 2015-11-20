@@ -3,6 +3,7 @@ import signal
 import subprocess
 import errno
 import select
+import time
 
 logger = logging.getLogger('BitBake.Process')
 
@@ -64,7 +65,7 @@ class Popen(subprocess.Popen):
         options.update(kwargs)
         subprocess.Popen.__init__(self, *args, **options)
 
-def _logged_communicate(pipe, log, input, extrafiles):
+def _logged_communicate(pipe, log, input, extrafiles, timestamp=False):
     if pipe.stdin:
         if input is not None:
             pipe.stdin.write(input)
@@ -107,12 +108,16 @@ def _logged_communicate(pipe, log, input, extrafiles):
                 data = pipe.stdout.read()
                 if data is not None:
                     outdata.append(data)
+                    if timestamp:
+                        data = data.replace("\n", "\n" + str(time.time()) + ": ")
                     log.write(data)
 
             if pipe.stderr in r:
                 data = pipe.stderr.read()
                 if data is not None:
                     errdata.append(data)
+                    if timestamp:
+                        data = data.replace("\n", "\n" + str(time.time()) + ": ")
                     log.write(data)
 
             readextras(r)
@@ -128,7 +133,7 @@ def _logged_communicate(pipe, log, input, extrafiles):
         pipe.stderr.close()
     return ''.join(outdata), ''.join(errdata)
 
-def run(cmd, input=None, log=None, extrafiles=None, **options):
+def run(cmd, input=None, log=None, extrafiles=None, timestamp=False, **options):
     """Convenience function to run a command and return its output, raising an
     exception when the command fails"""
 
@@ -147,7 +152,7 @@ def run(cmd, input=None, log=None, extrafiles=None, **options):
             raise CmdError(cmd, exc)
 
     if log:
-        stdout, stderr = _logged_communicate(pipe, log, input, extrafiles)
+        stdout, stderr = _logged_communicate(pipe, log, input, extrafiles, timestamp)
     else:
         stdout, stderr = pipe.communicate(input)
 
