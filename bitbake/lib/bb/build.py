@@ -440,7 +440,7 @@ exit $ret
 
             try:
                 with open(os.devnull, 'r+') as stdin:
-                    bb.process.run(cmd, shell=False, stdin=stdin, log=logfile, extrafiles=[(fifo,readfifo)])
+                    bb.process.run(cmd, shell=False, stdin=stdin, log=logfile, extrafiles=[(fifo,readfifo)], timestamp=True)
             except bb.process.CmdError:
                 logfn = d.getVar('BB_LOGFILE', True)
                 raise FuncFailed(func, logfn)
