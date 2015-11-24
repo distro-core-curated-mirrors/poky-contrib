@@ -779,12 +779,15 @@ def sstate_checkhashes(sq_fn, sq_task, sq_hash, sq_hashfn, d, siginfo=False):
             (task, sstatefile) = arg
 
             localdata2 = bb.data.createCopy(localdata)
-            srcuri = "file://" + sstatefile
+            uris = ['file://{0}'.format(sstatefile),
+                    'file://{0}.siginfo'.format(sstatefile)]
+            srcuri = '\t'.join(uris)
+
             localdata.setVar('SRC_URI', srcuri)
             bb.debug(2, "SState: Attempting to fetch %s" % srcuri)
 
             try:
-                fetcher = bb.fetch2.Fetch(srcuri.split(), localdata2,
+                fetcher = bb.fetch2.Fetch(uris, localdata2,
                             connection_cache=thread_worker.connection_cache)
                 fetcher.checkstatus()
                 bb.debug(2, "SState: Successful fetch test for %s" % srcuri)
