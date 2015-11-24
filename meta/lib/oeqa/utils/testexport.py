@@ -54,7 +54,7 @@ def get_dest_folder(tune_features, folder_list):
 
 
 def process_binaries(d, params):
-    param_list = params
+    param_list = params.split("_")
     export_env = d.getVar("TEST_EXPORT_ONLY")
 
     def extract_binary(pth_to_pkg, dest_pth=None):
@@ -204,7 +204,7 @@ def files_to_copy(base_dir):
 
 def send_bin_to_DUT(d,params):
     from oeqa.oetest import oeRuntimeTest
-    param_list = params
+    param_list = params.split("_")
     cleanup_list = list()
     bins_dir = os.path.join(d.getVar("TEST_EXPORT_DIR", True), "binaries") if determine_if_poky_env() \
                     else os.getenv("bin_dir")
@@ -237,7 +237,7 @@ def send_bin_to_DUT(d,params):
                 break
         else:
             bb.warn("No rpm package found for %s %s in .rpm files dir %s. Skipping deployment." %
-                    (param_list[0], "ver. " + param_list[1] if param_list[1] else "", rpms_file_dir) )
+                    (param_list[0], "ver. " + param_list[1] if param_list[1] else "", arch_rpms_dir) )
             return
         (status, output) = oeRuntimeTest.tc.target.copy_to(os.path.join(arch_rpms_dir, rpm_to_send), remote_path)
         if status != 0:
