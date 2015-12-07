@@ -217,6 +217,9 @@ def isServicesFailAvahiExit(rootDir,dir,data={}):
     return isServicesFailAvahi(rootDir,dir,['.*systemd.*avahi-daemon\.service\: Failed with result.*exit-code.*'],data)
 
 def HandleTests(tests,rootDir):
+    if not os.path.isdir(rootDir):
+        print "need a rood dir to work from,",rootDir," is not a directory"
+        sys.exit(0);
     for dirName,subdirList,fileList in os.walk(rootDir):
         dirCount=0
         for sub in subdirList:
@@ -266,6 +269,9 @@ def PrintStats(tests):
             continue
         if "Failures" in t['name']:
             continue
+        if t['count'] == 0:
+            continue
+
         print "test %s has a count of %d for a percentage of %02.2f%%" % (t['name'],t['count'],per)
 
         # handle additional data if any
@@ -291,12 +297,11 @@ def PrintStats(tests):
             print("\t\t Min Startup Time: %f" % min(timeListStat))
             print("\t\t Max Startup Time: %f" % max(timeListStat))
             print("\t\t Avg Startup Time: %f" % (sum(timeListStat)/float(len(timeListStat))))
-            if gVerbose:
+            if gVerbose > 1:
                 print("\t In case you want to dive deeper,here are the dir:times -- ")
                 for time,dir in zip(timeList,t['dirlist']):
                     print "\t\tdir:%s took %f sec"%(dir,time)
-        else:
-            print "\tNo Time information for this test :("
+
 
 
         # figure out how many failures do not have matching tests yet
