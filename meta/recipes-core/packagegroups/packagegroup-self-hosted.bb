@@ -193,8 +193,6 @@ RDEPENDS_packagegroup-self-hosted-graphics = "\
     libx11-dev \
     gtk-theme-clearlooks \
     xdg-utils \
-    epiphany \
     leafpad \
-    pcmanfm \
     vte \
     "
