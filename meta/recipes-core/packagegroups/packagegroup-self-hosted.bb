@@ -193,9 +193,7 @@ RDEPENDS_packagegroup-self-hosted-graphics = "\
     python-pygtk \
     gtk-theme-clearlooks \
     xdg-utils \
-    epiphany \
     leafpad \
-    pcmanfm \
     vte \
     "
 PTH = "pth"
