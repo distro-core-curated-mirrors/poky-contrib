@@ -150,14 +150,42 @@ python run_buildstats () {
                     f.write("CPU usage: %0.1f%% \n" % cpu)
 
     if isinstance(e, bb.build.TaskStarted):
+        pn = d.getVar("PN", True)
+        if False and pn in ["gettext", "gettext-native"] and e.task == "do_configure":
+            parentpid = os.getpid()
+            #bb.warn("perf record -e sched:sched_stat_sleep -e sched:sched_switch -e sched:sched_process_exit -g -t --inherit -o")
+            bb.warn("sudo perf record L1-dcache-loads,LLC-loads,LLC-load-misses,L1-dcache-stores,LLC-stores,LLC-store-misses,cache-misses,cache-references -g -o /tmp/configureperf.%s -t %s --inherit" % (parentpid, parentpid))
+            bb.warn("Starting on pid %s" % parentpid)
+            pid = os.fork() 
+            if pid == 0:
+                os.setsid()
+                pid2 = os.fork()
+                if pid2 > 0:
+                    os._exit(os.EX_OK)
+                #output = subprocess.check_output("perf record -g -t %s --inherit -o /tmp/configureperf.%s" % (parentpid, parentpid), shell=True)
+                #output = subprocess.check_output("sudo perf record -e sched:sched_stat_sleep -e sched:sched_switch -e sched:sched_process_exit -g -t %s --inherit -o /tmp/configureperf.%s" % (parentpid, parentpid), shell=True)
+                #print("sudo perf record -e sched:sched_stat_sleep -e sched:sched_switch -e sched:sched_process_exit -g -o /tmp/configureperf.%s sleep 100000" % (parentpid))
+                try:
+                    output = subprocess.check_output("sudo strace -f -T -s 2048 -o /tmp/strace-%s.%s -p %s" % (pn, parentpid, parentpid), shell=True)
+                    #output = subprocess.check_output("sudo perf record -e sched:sched_stat_sleep -e sched:sched_switch -e sched:sched_process_exit -g -o /tmp/configureperf.%s -a" % (parentpid), shell=True)
+                    #output = subprocess.check_output("sudo perf record -e L1-dcache-loads,LLC-loads,LLC-load-misses,L1-dcache-stores,LLC-stores,LLC-store-misses,cache-misses,cache-references -g -o /tmp/perf-%s-configure.%s -t %s --inherit" % (pn, parentpid, parentpid), shell=True)
+                except:
+                    pass
+                os._exit(os.EX_OK)
+            import time
+            time.sleep(2)
         set_timedata("__timedata_task", d, e.time)
         bb.utils.mkdirhier(taskdir)
         # write into the task event file the name and start time
         with open(os.path.join(taskdir, e.task), "a") as f:
-            f.write("Event: %s \n" % bb.event.getName(e))
             f.write("Started: %0.2f \n" % e.time)
 
     elif isinstance(e, bb.build.TaskSucceeded):
+        pn = d.getVar("PN", True)
+        if False and pn in ["gettext", "gettext-native"] and e.task == "do_configure":
+            bb.warn("sudo killall -s SIGINT perf")
+            #subprocess.check_output("sudo /usr/bin/killall -s SIGINT perf", shell=True)
+            subprocess.check_output("sudo /usr/bin/killall -s SIGINT strace", shell=True)
         write_task_data("passed", os.path.join(taskdir, e.task), e, d)
         if e.task == "do_rootfs":
             bs = os.path.join(bsdir, "build_stats")
