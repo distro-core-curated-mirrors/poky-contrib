@@ -41,11 +41,11 @@ fakeroot do_populate_poky_src () {
 	cp -Rp ${WORKDIR}/git ${IMAGE_ROOTFS}/home/builder/poky
 
 	mkdir -p ${IMAGE_ROOTFS}/home/builder/poky/build/conf
-	mkdir -p ${IMAGE_ROOTFS}/home/builder/poky/build/downloads
-	cp -RpL ${DL_DIR}/* ${IMAGE_ROOTFS}/home/builder/poky/build/downloads/
+	#mkdir -p ${IMAGE_ROOTFS}/home/builder/poky/build/downloads
+	#cp -RpL ${DL_DIR}/* ${IMAGE_ROOTFS}/home/builder/poky/build/downloads/
 
 	# Remove the git2_* tarballs -- this is ok since we still have the git2/.
-	rm -rf ${IMAGE_ROOTFS}/home/builder/poky/build/downloads/git2_*
+	#rm -rf ${IMAGE_ROOTFS}/home/builder/poky/build/downloads/git2_*
 
 	echo "/usr/bin" > ${IMAGE_ROOTFS}/home/builder/poky/build/pseudodone
 	echo "INHERIT += \"rm_work\"" >> ${IMAGE_ROOTFS}/home/builder/poky/build/conf/auto.conf
