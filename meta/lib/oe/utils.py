@@ -253,6 +253,10 @@ def cpu_count(at_least=1):
     cpus = multiprocessing.cpu_count()
     return max(cpus, at_least)
 
+def pick_cpu():
+    import random
+    return random.randint(0, cpu_count() - 1)
+
 def execute_pre_post_process(d, cmds):
     if cmds is None:
         return
