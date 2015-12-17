@@ -1,0 +1,214 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import unittest
+import argparse
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
+
+from base import PatchTestBase
+from repo import RepoPatchException
+import utils
+
+class Log(dict):
+
+    def __init__(self, series, revision, pw_url, log_dir):
+        self.series = series
+        self.revision = revision
+        self.pw_url = pw_url
+        self.mbox_url = utils.get_mbox_url(self.pw_url,
+                                           self.series,
+                                           self.revision)
+        self.log_dir = log_dir
+        self.fn = "%s/summary.%s-%s" % (os.path.abspath(self.log_dir),
+                                        self.series, self.revision)
+        self.error = list()
+        self.failure = list()
+        self.success = list()
+
+    def addError(self, test, err):
+        self.error.append((test,err))
+
+    def addFailure(self, test, err):
+        self.failure.append((test,err))
+
+    def addSuccess(self, test):
+        self.success.append(test)
+
+    def generateSummary(self, store=True):
+        """ Generate and store the summary """
+        self._summary  = "Tested mbox: %s\n" % self.mbox_url
+
+        self._summary += "\nPass:\n"
+        for test in self.success:
+            self._summary += "\t%s\n" % test
+
+        if self.failure:
+            self._summary += "\nFail:\n"
+            for test, err in self.failure:
+                (ty, va, trace) = err
+                self._summary += "\t%s : %s\n" % (test, va)
+
+        if self.error:
+            self._summary += "\nError:\n"
+            for test, err in self.error:
+                (ty, va, trace) = err
+                self._summary += "\t%s : %s\n" % (test, va)
+
+        if store:
+            if not os.path.exists(self.log_dir):
+                os.makedirs(self.log_dir)
+
+            with open(self.fn, 'w') as fd:
+                fd.write(self._summary)
+
+            self._summary += "\nLog stored on %s" % self.fn
+
+        return self._summary
+
+def get_result(args):
+
+    class Result(unittest.TextTestResult):
+        """ Formats the summary and post result at the end """
+
+        def startTestRun(self):
+            log_dir = utils.get_temp_dir(args.temp_base_dir, args.series, args.revision)
+            self.log = Log(args.series, args.revision, args.pw_url, log_dir)
+            self.success = True
+
+        def addError(self, test, err):
+            if self.success:
+                self.success = False
+            print test
+            print err
+            if isinstance(err[1], RepoPatchException):
+                self.log.addFailure(test, err)
+            else:
+                # something really wrong went here, some assertion raised during runtime
+                self.log.addError(test, err)
+
+        def addFailure(self, test, err):
+            if self.success:
+                self.success = False
+            self.log.addFailure(test, err)
+
+        def addSuccess(self, test):
+            self.log.addSuccess(test)
+
+        def stopTestRun(self):
+            state = 'success' if self.success else 'failure'
+            summary = self.log.generateSummary()
+            url = ''
+
+            if args.pw_no_post:
+                # print the summary into stdout
+                print summary
+            else:
+                # POST results into the PW instance
+                utils.post(args.series, args.revision, args.pw_test_name,
+                           state, summary, url,
+                           args.repo_dir)
+
+    return Result
+
+def get_parser():
+    parser = argparse.ArgumentParser()
+
+    # positional
+    parser.add_argument('series',
+                        type=int,
+                        help='Series number')
+
+    parser.add_argument('revision',
+                        type=int,
+                        help='Revision number')
+
+    #optional: PW related
+    parser.add_argument('--pw-url',
+                        dest='pw_url',
+                        default="http://patchworkgdc.amr.corp.intel.com:8000",
+                        help="Patchwork web instance")
+
+    parser.add_argument('--pw-project',
+                        dest='pw_project',
+                        default='oe-core',
+                        help="Patchwork project")
+
+    parser.add_argument('--pw-user',
+                        dest='pw_user',
+                        default='none',
+                        help="PW User with POST permission")
+
+    parser.add_argument('--pw-pass',
+                        dest='pw_pass',
+                        default='none',
+                        help="PW user password with POST permission")
+
+    parser.add_argument('--pw-test-name',
+                        dest='pw_test_name',
+                        default=None,
+                        help="Test name to be used if results are POSTed")
+
+    parser.add_argument('--pw-no-post',
+                        dest='pw_no_post',
+                        action='store_true',
+                        help="Do not POST the results to the PW instance")
+
+    #optional: patchtest related
+    parser.add_argument('--temp-base-dir',
+                        dest='temp_base_dir',
+                        default='/tmp/pt',
+                        help="Name of the directory where all log is created")
+
+    #optional: repo related
+    parser.add_argument('--repo-dir',
+                        dest='repo_dir',
+                        default='/tmp/repo',
+                        help="Name of the repository where mboxs are applied")
+
+    patchtest_tests_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'tests')
+    parser.add_argument('--test-dir',
+                        dest='test_dir',
+                        default=patchtest_tests_dir,
+                        help="Directory where tests are located")
+
+    parser.add_argument('--remote',
+                        dest='remote',
+                        default='origin',
+                        help="Repository's remote name containing the stable branch")
+
+    parser.add_argument('--stable-branch',
+                        dest='stable_branch',
+                        default='master',
+                        help="Name of the stable branch where branching is done")
+    return parser
+
+def main():
+    args = get_parser().parse_args(namespace=PatchTestBase)
+
+    loader = unittest.TestLoader()
+    suite = loader.discover(os.path.abspath(args.test_dir))
+
+    # Get the result class and install the control-c handler
+    resultklass = get_result(args)
+    unittest.installHandler()
+    unittest.registerResult(resultklass)
+
+    runner = unittest.TextTestRunner(resultclass=resultklass)
+    result = runner.run(suite)
+
+    if result.wasSuccessful():
+        return 0
+    else:
+        return 1
+
+if __name__ == '__main__':
+    try:
+        ret = main()
+    except Exception:
+        ret = 1
+        import traceback
+        traceback.print_exc(5)
+    sys.exit(ret)

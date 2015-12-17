@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+
+import fileinput
+import json
+import subprocess
+
+for line in fileinput.input():
+    event = json.loads(line)
+    series = event['series']
+    revision = event['parameters']['revision']
+    cmd = 'pts %s %s --pw-no-post' % (series, revision)
+    print 'Testing %s' % cmd
+    p = subprocess.Popen(cmd.split())
+    p.communicate()
+    if p.returncode:
+        print 'ERROR on %s' % cmd
+        break
