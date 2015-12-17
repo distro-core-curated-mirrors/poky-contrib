@@ -390,3 +390,12 @@ class BitBakeXMLRPCClient(BitBakeBaseServer):
 
     def endSession(self):
         self.connection.removeClient()
+
+class BitbakeServerInfo():
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+
+class BitBakeServerConnection():
+    def __init__(self, serverinfo, clientinfo=("localhost", 0)):
+        self.connection, self.transport = _create_server(serverinfo.host, serverinfo.port)
