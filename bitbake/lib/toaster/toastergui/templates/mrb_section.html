@@ -154,6 +154,14 @@ $(document).ready(function(){
   });
 });
 
+function cancelBuild(url, projectName, projectUrl, buildlist, buildId) {
+  console.log("cancelBuild");
+  libtoaster.cancelABuild(url, buildId, function(){
+    console.log("reloading page");
+    window.location.reload();
+  }, null);
+}
+
 </script>
 
 {%endif%}
