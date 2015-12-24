@@ -46,6 +46,10 @@ class BitbakeController(object):
             raise Exception(error)
         return result
 
+    def connectBBServer(self, host, port):
+        connection = bb.server.xmlrpc._create_server(host, port)[0]
+        return connection
+
     def disconnect(self):
         return self.connection.removeClient()
 
