@@ -123,7 +123,18 @@
                     <div style="width: {{build.completeper}}%;" class="bar"></div>
                 </div>
             </div>
-            <div class="lead pull-right">{{build.completeper}}% of tasks complete</div>
+            <div class="lead ">{{build.completeper}}% of tasks complete</div>
+	    {%if not build.project.name == "Command line builds" %}
+	         {%if build.get_tasks.0 %}
+                         <button id="cancel-build-btn" class="btn btn-info pull-right"
+                                 onclick='cancelBuild({% url 'projectbuilds' build.project.id as bpi %}{{bpi|json}},
+                                 {{build.project.name|json}},
+                                 {% url 'project' build.project.id as purl %}{{purl|json}},
+                                 {{build.target_set.all|get_tasks|json}}, {{build.id|json}})'>
+                          Cancel
+                         </button>
+                 {%endif%}
+            {%endif%}
     {%endif%}
         </div>
     </div>
@@ -140,19 +151,6 @@ function scheduleBuild(url, projectName, projectUrl, buildlist) {
     window.location.reload();
   }, null);
 }
-
-$(document).ready(function(){
-
-  $(".cancel-build-btn").click(function (){
-    var url = $(this).data('request-url');
-    var buildIds = $(this).data('build-id');
-    var btn = $(this);
-
-    libtoaster.cancelABuild(url, buildIds, function(){
-      btn.parents(".alert").fadeOut();
-    }, null);
-  });
-});
 
 function cancelBuild(url, projectName, projectUrl, buildlist, buildId) {
   console.log("cancelBuild");
