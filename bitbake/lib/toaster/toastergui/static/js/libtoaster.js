@@ -132,11 +132,12 @@ var libtoaster = (function (){
         data: { 'buildCancel': build_ids },
         headers: { 'X-CSRFToken' : $.cookie('csrftoken')},
         success: function (_data) {
+	  /* No proper reponse YOCTO #7995
           if (_data.error !== "ok") {
             console.warn(_data.error);
-          } else {
+            } else {*/
             if (onsuccess !== undefined) onsuccess(_data);
-          }
+          //}
         },
         error: function (_data) {
           console.warn("Call failed");
