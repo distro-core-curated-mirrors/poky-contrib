@@ -15,6 +15,7 @@ import unittest
 import shutil
 from optparse import OptionParser, make_option
 from util.log import LogHandler
+from util.tag import filter_tagexp
 
 class TestContext(object):
     '''test context which inject into testcase'''
@@ -30,6 +31,7 @@ class TestRunnerBase(object):
         self.context = None
         self.manifest = None
         self.log_handler = None
+        self.tag_exp = None
 
     @staticmethod
     def __get_tc_from_manifest(fname):
@@ -66,6 +68,8 @@ class TestRunnerBase(object):
                     help="Output result path of in xUnit XML format"),
             make_option("-l", "--log-dir", dest="logdir",
                     help="Set log dir."),
+            make_option("-a", "--tag-expression", dest="tag",
+                    help="Set tag expression to filter test cases."),
         ]
 
     def configure(self, options):
@@ -96,6 +100,7 @@ class TestRunnerBase(object):
             self.log_handler = LogHandler(logdir)
 
         self.context = TestContext()
+        self.tag_exp = options.tag
 
     def result(self):
         '''output test result '''
@@ -109,6 +114,8 @@ class TestRunnerBase(object):
         testloader.sortTestMethodsUsing = None
         tnames = [tc["id"] for tc in self.tclist]
         suite = testloader.loadTestsFromNames(tnames)
+        if self.tag_exp:
+            suite = filter_tagexp(suite, self.tag_exp)
         print "Found %s tests" % suite.countTestCases()
         self.runner.run(suite)
 
