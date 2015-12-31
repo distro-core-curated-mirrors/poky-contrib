@@ -1,6 +1,7 @@
 import unittest
 import time
 from util.tag import tag
+from util.timeout import timeout
 
 @tag(type="audio")
 class TestAudio(unittest.TestCase):
@@ -11,6 +12,7 @@ class TestAudio(unittest.TestCase):
 		print "cleanup audio test"
 
         @tag("sanity")
+        @timeout(2) 
 	def test_Playback(self):
  		print "playback audio"
 		time.sleep(3)
@@ -18,6 +20,7 @@ class TestAudio(unittest.TestCase):
 	def test_Capture(self):
 		print "capture audio"
 
+        @timeout(5) 
 	def test_Sync(self):
 		print "Sync audio"
 		time.sleep(2)
