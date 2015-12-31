@@ -16,11 +16,13 @@ import shutil
 from optparse import OptionParser, make_option
 from util.log import LogHandler
 from util.tag import filter_tagexp
+from util.timeout import set_timeout
 
 class TestContext(object):
     '''test context which inject into testcase'''
     def __init__(self):
         self.target = None
+        self.def_timeout = None
 
 class TestRunnerBase(object):
     '''test runner base '''
@@ -70,6 +72,8 @@ class TestRunnerBase(object):
                     help="Set log dir."),
             make_option("-a", "--tag-expression", dest="tag",
                     help="Set tag expression to filter test cases."),
+            make_option("-T", "--timeout", dest="timeout", default=60,
+                    help="Set timeout for each test case."),
         ]
 
     def configure(self, options):
@@ -100,6 +104,12 @@ class TestRunnerBase(object):
             self.log_handler = LogHandler(logdir)
 
         self.context = TestContext()
+
+        try:
+            self.context.def_timeout = int(options.timeout)
+        except ValueError:
+            print "timeout need an integer value"
+            raise
         self.tag_exp = options.tag
 
     def result(self):
@@ -116,6 +126,7 @@ class TestRunnerBase(object):
         suite = testloader.loadTestsFromNames(tnames)
         if self.tag_exp:
             suite = filter_tagexp(suite, self.tag_exp)
+        set_timeout(suite, self.context.def_timeout)
         print "Found %s tests" % suite.countTestCases()
         self.runner.run(suite)
 

@@ -11,6 +11,7 @@
 import sys
 import signal
 from functools import wraps
+import unittest
 
 class TimeOut(BaseException):
     """timeout expection"""
@@ -37,3 +38,38 @@ def timeout(seconds):
         else:
             return fn
     return decorator
+
+## get reference of wrapped_f code object
+__TIMEOUT_CODE = timeout(1)(lambda: None).__code__
+def hastimeout(func):
+    """Return True if this func had added timeout decorator"""
+    if hasattr(func, "__code__") and \
+            getattr(func, "__code__") is __TIMEOUT_CODE:
+        return True
+    return False
+
+def set_timeout(testsuite, seconds=None):
+    """
+    add timout to test case if it didn't have one,
+    @param testsuite testsuite form loader()
+    @param seconds: timeout seconds
+    @return: updated testsuite
+    """
+    def _testset(testsuite):
+        """interate tcs in testsuite"""
+        for each in testsuite:
+            if not isinstance(each, unittest.BaseTestSuite):
+                yield each
+            else:
+                for each2 in _testset(each):
+                    yield  each2
+
+    if seconds:
+        for tc in _testset(testsuite):
+            assert hasattr(tc, "_testMethodName"), \
+                "%s is not an unittest.TestCase object"
+            testMethod = getattr(tc, tc._testMethodName)
+            test_func = testMethod.im_func
+            if not hastimeout(test_func):
+                tc.run = timeout(seconds)(tc.run)
+    return testsuite

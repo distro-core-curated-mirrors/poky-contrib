@@ -18,6 +18,7 @@ class TestAudio(unittest.TestCase):
 		time.sleep(3)
 
 	def test_Capture(self):
+		time.sleep(3)
 		print "capture audio"
 
         @timeout(5) 
