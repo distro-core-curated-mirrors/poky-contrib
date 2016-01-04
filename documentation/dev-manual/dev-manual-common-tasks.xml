@@ -4561,7 +4561,12 @@
                             Exactly what those contents and
 			                filesystem type end up being are dependent
 			                on the given plugin implementation.
-                            </para></listitem>
+                            </para>
+                            <para>If <filename>--source</filename>option is not used, the <filename>wic</filename>
+                            command will create empty partition. <filename>--size</filename> parameter has
+                            to be used to specify size of empty partition.
+                            </para>
+                            </listitem>
                         <listitem><para><emphasis><filename>--ondisk</filename> or <filename>--ondrive</filename>:</emphasis>
                             Forces the partition to be created on a particular
                             disk.</para></listitem>
