@@ -4609,6 +4609,10 @@
                             This option is a <filename>wic</filename>-specific
                             option that says to start a partition on an
                             x KBytes boundary.</para></listitem>
+                        <listitem><para><emphasis><filename>--no-table</filename>:</emphasis>
+                            This option is a <filename>wic</filename>-specific option.
+                            Space will be reserved for the partition and it will be
+                            populated but it will not be added to the partition table.</para></listitem>
                     </itemizedlist>
                 </para>
             </section>
