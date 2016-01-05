@@ -4613,6 +4613,11 @@
                             This option is a <filename>wic</filename>-specific option.
                             Space will be reserved for the partition and it will be
                             populated but it will not be added to the partition table.</para></listitem>
+                        <listitem><para><emphasis><filename>--extra-space</filename>:</emphasis>
+                            This option is a <filename>wic</filename>-specific option that
+                            adds extra space after the space filled by the content
+                            of the partition. The final size can go beyond the size specified
+                            by <filename>--size</filename>. Default value is 10MB.</para></listitem>
                     </itemizedlist>
                 </para>
             </section>
