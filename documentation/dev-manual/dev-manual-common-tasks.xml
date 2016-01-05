@@ -4622,6 +4622,20 @@
                             This option is a <filename>wic</filename>-specific.
                             The size of the partition is multiplied by this factor. It has to be
                             greater than or equal to 1. The default value is 1.3.</para></listitem>
+                        <listitem><para><emphasis><filename>--part-type</filename>:</emphasis>
+                            This option is specific to <filename>wic</filename>.
+                            It specifies partition type GUID for GPT partitions.
+                            List of partition type GUIDS can be found here:
+                            <ulink url='http://en.wikipedia.org/wiki/GUID_Partition_Table#Partition_type_GUIDs'>
+                            </ulink></para></listitem>
+                        <listitem><para><emphasis><filename>--use-uuid</filename>:</emphasis>
+                            This option is specific to <filename>wic</filename>.
+                            It makes <filename>wic</filename> to generate random globally unique
+                            identifier (GUID) for the partition and use it in bootloader configuration
+                            to specify root partition.</para></listitem>
+                        <listitem><para><emphasis><filename>--uuid</filename>:</emphasis>
+                            This option is specific to <filename>wic</filename>.
+                            It specifies partition UUID.</para></listitem>
                     </itemizedlist>
                 </para>
             </section>
