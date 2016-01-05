@@ -91,10 +91,10 @@ class TestRunnerBase(object):
 
         self.tclist = []
         if options.manifest:
-            self.manifest = options.manifest
-            fext = os.path.splitext(options.manifest)[1]
-            assert fext == ".manifest", "Please use specify a manifest file \
-                                      with .manifest postfix"
+            self.manifest = options.manifest 
+            fbname, fext = os.path.splitext(os.path.basename(options.manifest))
+            assert fbname == "manifest" or fext == ".manifest", \
+                  "Please specify file name like xxx.manifest or manifest.xxx"
             self.tclist = self.__get_tc_from_manifest(options.manifest)
         else:
             raise Exception("please specify a manifest file by -f")
