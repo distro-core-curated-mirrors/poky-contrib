@@ -415,6 +415,13 @@ if __name__ == "__main__":
               "count":0
           },
 
+             {"name":"test_systemd_boot_time: invalid literal for float",
+             "test":isSimpleRegex,
+             "regex":'^\| ValueError: invalid literal for float',
+              "dirlist":[],
+              "count":0
+          },
+
 
              # summation tests
              {"name":"Failures",
