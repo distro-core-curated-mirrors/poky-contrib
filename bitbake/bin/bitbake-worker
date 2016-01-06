@@ -371,6 +371,12 @@ class BitbakeWorker(object):
         fn, task, taskname, quieterrors, appends, taskdepdata = pickle.loads(data)
         workerlog_write("Handling runtask %s %s %s\n" % (task, fn, taskname))
 
+        try:
+            import setproctitle
+            setproctitle.setproctitle("bitbake-worker: %s:%s" % (os.path.basename(fn), taskname))
+        except ImportError:
+            pass
+
         pid, pipein, pipeout = fork_off_task(self.cookercfg, self.data, self.workerdata, fn, task, taskname, appends, taskdepdata, quieterrors)
 
         self.build_pids[pid] = task
