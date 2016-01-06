@@ -369,6 +369,9 @@ class Build(models.Model):
             completeper = 0
         return completeper
 
+    def get_build_tasks(self):
+        return Task.objects.filter(build = self).exclude(order__isnull=True).count()
+
     def eta(self):
         eta = timezone.now()
         completeper = self.completeper()
