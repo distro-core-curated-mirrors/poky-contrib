@@ -356,7 +356,10 @@ class Git(FetchMethod):
         """
         Compute the HEAD revision for the url
         """
-        output = self._lsremote(ud, d, "")
+        if d.getVar("BB_FETCH_PREMIRRORONLY", True) and ud.proto != "file":
+            return "HEAD"
+        else:
+            output = self._lsremote(ud, d, "")
         # Tags of the form ^{} may not work, need to fallback to other form
         if ud.unresolvedrev[name][:5] == "refs/":
             head = ud.unresolvedrev[name]
