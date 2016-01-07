@@ -1,0 +1,306 @@
+#!/usr/bin/env python
+
+# Copyright (c) 2016, Intel Corporation.
+# All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# DESCRIPTION: Will run recipe tests on each provided recipe.
+#
+# USAGE: recipe-test --recipes <recipe1 recipe2> --tests all
+#
+# OPTIONS: --recipes <recipe1>
+#          --run-tests <test1 test2>| all
+#          --list-tests
+#
+# NOTE: tests are located in lib/oeqa/recipetests
+#
+# AUTHOR: Daniel Istrate <daniel.alexandrux.istrate@intel.com>
+#
+
+
+import argparse
+import logging
+import sys
+import os
+import time
+import unittest
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/lib')
+import scriptpath
+scriptpath.add_bitbake_lib_path()
+scriptpath.add_oe_lib_path()
+
+import oeqa.recipetests
+from oeqa.utils.commands import get_test_layer, get_bb_var, bitbake, is_recipe_valid
+from oeqa.selftest.base import oeSelfTest
+import oeqa.utils.ftools as ftools
+from oeqa.recipetests.base import RecipeTests
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-r', '--recipes', nargs='+', default=False, dest='recipes',
+                    help='recipe(s) to run tests against.')
+parser.add_argument('-t', '--run-tests', dest='run_tests', default='all', nargs='*',
+                    help='Run specified tests.')
+parser.add_argument('-l', '--list-tests', required=False,  action='store_true', dest="list_tests", default=False,
+                    help='List all available tests.')
+
+if len(sys.argv) < 2:
+    parser.print_usage()
+    parser.exit(1)
+
+args = parser.parse_args()
+
+
+def logger_create():
+    log_file = 'test-recipe-' + time.strftime("%Y%m%d%H%M%S") + '.log'
+    if os.path.exists('test-recipe.log'):
+        os.remove('test-recipe.log')
+    os.symlink(log_file, 'test-recipe.log')
+
+    log = logging.getLogger("test-recipe")
+    log.setLevel(logging.DEBUG)
+
+    fh = logging.FileHandler(filename=log_file, mode='w')
+    fh.setLevel(logging.DEBUG)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', "%Y-%m-%d %H:%M:%S")
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+
+    log.addHandler(fh)
+    log.addHandler(ch)
+
+    return log
+
+log = logger_create()
+
+
+def preflight_check():
+
+    log.info("Checking that everything is in order before running the tests")
+
+    if not os.environ.get("BUILDDIR"):
+        log.error("BUILDDIR isn't set. Did you forget to source your build environment setup script?")
+        return False
+
+    builddir = os.environ.get("BUILDDIR")
+    if os.getcwd() != builddir:
+        log.info("Changing cwd to %s" % builddir)
+        os.chdir(builddir)
+
+    if not "meta-selftest" in get_bb_var("BBLAYERS"):
+        log.error("You don't seem to have the meta-selftest layer in BBLAYERS")
+        return False
+
+    log.info("Running bitbake -p")
+    bitbake("-p")
+
+    return True
+
+
+def add_include():
+    builddir = os.environ.get("BUILDDIR")
+    if "#include added by test-recipe" \
+        not in ftools.read_file(os.path.join(builddir, "conf/local.conf")):
+            log.info("Adding: \"include testrecipe.inc\" in local.conf")
+            ftools.append_file(os.path.join(builddir, "conf/local.conf"), \
+                    "\n#include added by test-recipe\ninclude required.inc\ninclude testrecipe.inc")
+
+    if "#include added by test-recipe" \
+        not in ftools.read_file(os.path.join(builddir, "conf/bblayers.conf")):
+            log.info("Adding: \"include bblayers.inc\" in bblayers.conf")
+            ftools.append_file(os.path.join(builddir, "conf/bblayers.conf"), \
+                    "\n#include added by test-recipe\ninclude bblayers.inc")
+
+
+def remove_include():
+    builddir = os.environ.get("BUILDDIR")
+    if builddir is None:
+        return
+    if "#include added by test-recipe" \
+        in ftools.read_file(os.path.join(builddir, "conf/local.conf")):
+            log.info("Removing the include from local.conf")
+            ftools.remove_from_file(os.path.join(builddir, "conf/local.conf"), \
+                    "\n#include added by test-recipe\ninclude required.inc\ninclude testrecipe.inc")
+
+    if "#include added by test-recipe" \
+        in ftools.read_file(os.path.join(builddir, "conf/bblayers.conf")):
+            log.info("Removing the include from bblayers.conf")
+            ftools.remove_from_file(os.path.join(builddir, "conf/bblayers.conf"), \
+                    "\n#include added by test-recipe\ninclude bblayers.inc")
+
+
+def remove_inc_files():
+    try:
+        os.remove(os.path.join(os.environ.get("BUILDDIR"), "conf/testrecipe.inc"))
+        for root, _, files in os.walk(get_test_layer()):
+            for f in files:
+                if f == 'test_recipe.inc':
+                    os.remove(os.path.join(root, f))
+    except (AttributeError, OSError,) as e:    # AttributeError may happen if BUILDDIR is not set
+        pass
+
+    for incl_file in ['conf/bblayers.inc', 'conf/required.inc']:
+        try:
+            os.remove(os.path.join(os.environ.get("BUILDDIR"), incl_file))
+        except:
+            pass
+
+
+def get_tests_from_module(tmod):
+    tlist = []
+
+    try:
+        import importlib
+        modlib = importlib.import_module(tmod)
+        for mod in vars(modlib).values():
+            if isinstance(mod, type(RecipeTests)) and issubclass(mod, RecipeTests) and mod is not RecipeTests:
+                for test in dir(mod):
+                    if test.startswith('test_') and callable(vars(mod)[test]):
+                        try:
+                            test_description = vars(mod)[test].__doc__.split('\n')[0][:60].strip() + '...'
+                        except:
+                            test_description = None
+                        tlist.append((mod.__module__.split('.')[-1], mod.__name__, test, test_description))
+
+    except:
+        pass
+
+    return tlist
+
+
+def list_recipe_tests():
+    tmodules = set()
+    testlist = []
+    prefix = 'oeqa.recipetests.'
+
+    for tpath in oeqa.recipetests.__path__:
+        files = sorted([f for f in os.listdir(tpath) if f.endswith('.py') and not
+                        f.startswith(('_', '__')) and f != 'base.py'])
+        for f in files:
+            tmodules.add(prefix + f.rstrip('.py'))
+
+    # Get all the tests from modules
+    tmodules = sorted(list(tmodules))
+
+    for tmod in tmodules:
+        testlist += get_tests_from_module(tmod)
+
+    print '%-10s\t%-20s\t%-50s\t%-80s' % ('module', 'class', 'name', 'description')
+    print '_' * 160
+    for t in testlist:
+        print '%-10s\t%-20s\t%-50s\t%-80s' % t
+    print '_' * 160
+    print 'Total found:\t %s' % len(testlist)
+
+
+def get_recipe_tests(exclusive_modules=[]):
+    testslist = []
+    prefix = 'oeqa.recipetests.'
+
+    if exclusive_modules != ['all']:
+        for mod in exclusive_modules:
+            testslist.append(prefix + mod)
+
+    if not testslist:
+        for testpath in oeqa.recipetests.__path__:
+            files = sorted([f for f in os.listdir(testpath) if f.endswith('.py') and not f.startswith('__') and f != 'base.py'])
+            for f in files:
+                module = prefix + f[:-3]
+                if module not in testslist:
+                    testslist.append(module)
+
+    return testslist
+
+
+def main():
+
+    if args.list_tests:
+        list_recipe_tests()
+        return 0
+
+    if args.run_tests != 'all' and not args.recipes:
+        print 'Please specify the recipe(s) to tests against ( -r or --recipes).'
+        return 1
+
+    # Do we want to be able to test multiple recipes?
+    if not is_recipe_valid(args.recipes[0]):
+        print '"%s" is not a valid recipe. Make sure it shows up in "bitbake -s". Check your spelling.' % args.recipes[0]
+        return 1
+
+    if args.run_tests:
+        if not preflight_check():
+            return 1
+
+        testslist = get_recipe_tests(exclusive_modules=(args.run_tests or []))
+
+        os.environ['TESTRECIPE'] = args.recipes[0]
+        log.info('Running tests for recipe "%s" ...' % args.recipes[0])
+
+        suite = unittest.TestSuite()
+        loader = unittest.TestLoader()
+        loader.sortTestMethodsUsing = None
+        runner = unittest.TextTestRunner(verbosity=2, resultclass=StampedResult)
+        # we need to do this here, otherwise just loading the tests
+        # will take 2 minutes (bitbake -e calls)
+        oeSelfTest.testlayer_path = get_test_layer()
+
+        for test in testslist:
+            log.info("Loading tests from: %s" % test)
+            try:
+                suite.addTests(loader.loadTestsFromName(test))
+            except AttributeError as e:
+                log.error("Failed to import %s" % test)
+                log.error(e)
+                return 1
+        add_include()
+
+        result = runner.run(suite)
+
+        log.info("Finished")
+
+        if result.wasSuccessful():
+            return 0
+        else:
+            return 1
+
+
+class StampedResult(unittest.TextTestResult):
+    """
+    Custom TestResult that prints the time when a test starts.  As test-recipe
+    can take a long time (ie a few hours) to run, timestamps help us understand
+    what tests are taking a long time to execute.
+    """
+    def startTest(self, test):
+        import time
+        self.stream.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + " - ")
+        super(StampedResult, self).startTest(test)
+
+if __name__ == '__main__':
+
+    try:
+        ret = main()
+    except Exception:
+        ret = 1
+        import traceback
+        traceback.print_exc(5)
+    finally:
+        remove_include()
+        remove_inc_files()
+    sys.exit(ret)
