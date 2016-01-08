@@ -77,7 +77,7 @@ def get_args_parser():
     group.add_argument('--run-all-tests', required=False, action="store_true", dest="run_all_tests", default=False, help='Run all (unhidden) tests')
     group.add_argument('--list-modules', required=False, action="store_true", dest="list_modules", default=False, help='List all available test modules.')
     group.add_argument('--list-classes', required=False, action="store_true", dest="list_allclasses", default=False, help='List all available test classes.')
-    parser.add_argument('--coverage', action="store_true", help="Run code coverage when testing")
+    parser.add_argument('--coverage', action="store_false", help="Run code coverage when testing")
     group.add_argument('--run-tests-by', required=False, dest='run_tests_by', default=False, nargs='*',
                        help='run-tests-by <name|class|module|id|tag> <list of tests|classes|modules|ids|tags>')
     group.add_argument('--list-tests-by', required=False, dest='list_tests_by', default=False, nargs='*',
