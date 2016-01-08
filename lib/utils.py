@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import requests
 
 def store_log(results, temp_dir, task_name):
 
@@ -86,25 +87,6 @@ def exec_cmds(cmds, cwd, temp_dir=None, task_name=None):
 
     return results
 
-def get_mbox_url(pw_url, series, revision):
-    return  "%s/api/1.0/series/%s/revisions/%s/mbox/" % (pw_url, series, revision)
-
-def get_commit_id(commit, cwd):
-    cmds = [
-        {'cmd':['git', 'rev-parse', commit]}
-    ]
-    return exec_cmds(cmds, cwd)[0]['stdout']
-
-def get_scm_url(pw_url, pw_project):
-    # TODO: we should generalize to any other repository
-    return  "http://git.yoctoproject.org/git/poky"
-
-def get_temp_dir(base_dir, series, revision):
-    return "%s/%s-%s" % (base_dir, series, revision)
-
-def branch_name(series, revision):
-    return "series-%s-revision-%s" % (series, revision)
-
 def all_succeed(results):
     def _succeed(res):
         if res['ignore_error']:
@@ -114,22 +96,4 @@ def all_succeed(results):
 
     boolean_returncodes = map(_succeed, results)
     return all(boolean_returncodes)
-
-def post(series, revision, test_name, state, summary, url, cwd):
-    """ Post results """
-    cmds = [
-        {'cmd':['git', 'pw', 'post-result',
-                series,
-                test_name,
-                state,
-                '--summary', summary,
-                '--revision', revision,
-                '--url', url]},
-    ]
-
-    ret = exec_cmds(cmds, cwd)
-    if not all_succeed(ret):
-        msg =  "Results for test %s could not be POSTed (check PW user's credentials)" % test_name
-        msg += " for series/revision: %s/%s" %  (series, revision)
-        raise Exception, msg
 

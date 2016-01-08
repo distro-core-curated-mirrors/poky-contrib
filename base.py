@@ -1,6 +1,6 @@
 import os
 import unittest
-from repo import Repo, RepoException
+from repo import Repo, PatchException
 
 class PatchTestBase(unittest.TestCase):
 
@@ -9,20 +9,22 @@ class PatchTestBase(unittest.TestCase):
         """Get the series and prepared repository"""
 
         cls.repo = Repo(cls.series, cls.revision,
-                        cls.pw_url, cls.pw_project,
-                        cls.pw_user, cls.pw_pass,
-                        cls.repo_dir, cls.temp_base_dir,
-                        cls.remote, cls.stable_branch)
+                        cls.repodir, cls.tempbasedir)
+
+        # TODO: cleaning the repo should not be neccessary because
+        # the tearDownClass is doing it, but when the tests are 
+        # interrupted, the repo may remain dirty. We should handle
+        # the control+c correctly
+        cls.repo.clean()
+        cls.repo.fetch()
+        cls.repo.branch()
 
         try:
-            cls.repo.create()
-            cls.repo.config()
-            cls.repo.fetch()
-            cls.repo.branch()
             cls.repo.patch()
-        except RepoException:
+        except PatchException as pe:
             # catch the exception, so we clean the repository
-            cls.repo.clean(remove_branch=True)
+            cls.repo.clean(removebranch=True)
+            raise pe
 
     @classmethod
     def tearDownClass(cls):

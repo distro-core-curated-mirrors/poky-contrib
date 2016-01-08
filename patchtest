@@ -1,0 +1,157 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import unittest
+import argparse
+import fileinput
+import json
+
+# Include current path and lib
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
+
+from base import PatchTestBase
+from repo import Repo, PatchException
+from summary import BasicSummary
+import utils
+
+
+def get_result(args):
+
+    class Result(unittest.TextTestResult):
+        """ Formats the summary and post result at the end """
+
+        shouldStop = True
+
+        def startTestRun(self):
+            self.repo = Repo(args.series, args.revision,
+                        args.repodir, args.tempbasedir)
+            self.summary = BasicSummary(args.series, args.revision,
+                                        self.repo.mboxurl, self.repo.tempdir)
+            self.success = True
+
+        def addError(self, test, err):
+            if self.success:
+                self.success = False
+            # if mbox cannot be applied, just stop all testing
+            if isinstance(err[1], PatchException):
+                self.summary.patchFailure(err)
+                self.stop()
+            else:
+                # TODO: something really wrong went here, we should indicate
+                # patchwork to send the log to the mantainer, not the submitter
+                self.summary.addError(test, err)
+
+        def addFailure(self, test, err):
+            if self.success:
+                self.success = False
+            self.summary.addFailure(test, err)
+
+        def addSuccess(self, test):
+            self.summary.addSuccess(test)
+
+        def stopTestRun(self):
+            state = 'success' if self.success else 'failure'
+            summary = self.summary.generateSummary()
+
+            print summary
+
+            if not args.nopost:
+                self.repo.post(args.testname, state, summary)
+
+    return Result
+
+def get_parser():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--series', '-s',
+                        dest='series',
+                        help='Series number')
+
+    parser.add_argument('--revision', '-r',
+                        dest='revision',
+                        help='Revision number')
+
+    parser.add_argument('-C',
+                        dest='repodir',
+                        default=os.getcwd(),
+                        help="Name of the repository where mboxs are applied")
+
+    parser.add_argument('--temp-base-dir',
+                        dest='tempbasedir',
+                        default='/tmp/patchtest',
+                        help="Name of the directory where logs are created")
+
+    parser.add_argument('--test-name',
+                        dest='testname',
+                        default='patchtest',
+                        help="Test name to be used if results are POSTed")
+
+    parser.add_argument('--no-post',
+                        dest='nopost',
+                        action='store_true',
+                        help="Do not POST the results to the PW instance")
+
+    patchtest_tests_dir = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'tests')
+    parser.add_argument('--test-dir',
+                        dest='testdir',
+                        default=patchtest_tests_dir,
+                        help="Directory where tests are located")
+
+    return parser
+
+def main():
+    # parse the arguments and set PatchTestBase as target namespace.
+    # this is a simple approach to pass arguments to the test case.
+    # If series/revisions are coming from stdin, then these are
+    # manually updated for each one. We need to find a better way
+    # to do this
+    get_parser().parse_args(namespace=PatchTestBase)
+
+    listseries = []
+
+    # read the stdin if series/revision are passed this way
+    if not sys.stdin.isatty():
+        for line in fileinput.input('-'):
+            event = json.loads(line)
+            series = event['series']
+            parameters = event['parameters']
+            revision = 1
+            if parameters:
+                revision = parameters['revision']
+            listseries.append((series, revision))
+    else:
+        if not (PatchTestBase.series and PatchTestBase.revision):
+            print 'you need to specify the series/revision through -s and -r, respectively'
+            return 1
+        listseries = [(PatchTestBase.series, PatchTestBase.revision)]
+
+    for series, revision in listseries:
+
+        PatchTestBase.series = series
+        PatchTestBase.revision = revision
+
+        loader = unittest.TestLoader()
+        suite = loader.discover(os.path.abspath(PatchTestBase.testdir))
+
+        # Get the result class and install the control-c handler
+        resultklass = get_result(PatchTestBase)
+        unittest.installHandler()
+        unittest.registerResult(resultklass)
+
+        runner = unittest.TextTestRunner(resultclass=resultklass)
+        result = runner.run(suite)
+
+    return 0
+
+if __name__ == '__main__':
+    try:
+        ret = main()
+    except Exception:
+        ret = 1
+        import traceback
+        traceback.print_exc(5)
+    sys.exit(ret)
