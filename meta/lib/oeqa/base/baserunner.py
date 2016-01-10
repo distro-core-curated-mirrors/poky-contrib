@@ -74,6 +74,8 @@ class TestRunnerBase(object):
                     help="Set tag expression to filter test cases."),
             make_option("-T", "--timeout", dest="timeout", default=60,
                     help="Set timeout for each test case."),
+            make_option("-e", "--tests", dest="tests", action="append",
+                    help="Run tests by dot separated module path")
         ]
 
     def configure(self, options):
@@ -91,13 +93,13 @@ class TestRunnerBase(object):
 
         self.tclist = []
         if options.manifest:
-            self.manifest = options.manifest 
+            self.manifest = options.manifest
             fbname, fext = os.path.splitext(os.path.basename(options.manifest))
             assert fbname == "manifest" or fext == ".manifest", \
                   "Please specify file name like xxx.manifest or manifest.xxx"
             self.tclist = self.__get_tc_from_manifest(options.manifest)
-        else:
-            raise Exception("please specify a manifest file by -f")
+        if options.tests:
+            self.tclist.extend([{"id":x} for x in options.tests])
 
         if options.logdir:
             logdir = self._get_log_dir(options.logdir)
@@ -117,13 +119,24 @@ class TestRunnerBase(object):
         print "output test result..."
         print self.tclist
 
+    @staticmethod
+    def loadtest(names):
+        '''load test suite'''
+        testloader = unittest.TestLoader()
+        tclist = []
+        for name in names:
+            tset = testloader.loadTestsFromName(name)
+            if tset.countTestCases() > 0:
+                tclist.append(tset)
+            elif tset._tests == []:
+                tclist.append(testloader.discover(name, "*.py"))
+        return testloader.suiteClass(tclist)
+
     def start(self):
         '''start execution'''
         setattr(unittest.TestCase, "tc", self.context)
-        testloader = unittest.TestLoader()
-        testloader.sortTestMethodsUsing = None
         tnames = [tc["id"] for tc in self.tclist]
-        suite = testloader.loadTestsFromNames(tnames)
+        suite = self.loadtest(tnames)
         if self.tag_exp:
             suite = filter_tagexp(suite, self.tag_exp)
         set_timeout(suite, self.context.def_timeout)
