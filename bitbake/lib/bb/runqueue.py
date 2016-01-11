@@ -1876,7 +1876,8 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
 
         self.rqdata.init_progress_reporter.next_stage()
 
-        # First process the chains up to the first setscene task.
+        # Build a lits of non-setscene task endpoints
+        # Also populate sq_revdeps{,_new}
         endpoints = {}
         for tid in self.rqdata.runtaskentries:
             sq_revdeps[tid] = copy.copy(self.rqdata.runtaskentries[tid].revdeps)
@@ -1887,7 +1888,7 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
 
         self.rqdata.init_progress_reporter.next_stage()
 
-        # Secondly process the chains between setscene tasks.
+        # Add in setscene task endpoints to process the chains between setscene tasks
         for tid in self.rqdata.runq_setscene_tids:
             #bb.warn("Added endpoint 2 %s" % (tid))
             for dep in self.rqdata.runtaskentries[tid].depends:
@@ -1901,6 +1902,10 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
         def process_endpoints(endpoints):
             newendpoints = {}
             for point, task in endpoints.items():
+                #data = ""
+                #for t in task:
+                #      data = data + "\n %s" % t + self.rqdata.get_user_idstring(t)
+                #bb.warn("Processing endpoint %s:%s with tasks %s " % (point, self.rqdata.get_user_idstring(point), data))
                 tasks = set()
                 if task:
                     tasks |= task
@@ -1923,6 +1928,12 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
         process_endpoints(endpoints)
 
         self.rqdata.init_progress_reporter.next_stage()
+
+        #for realtask in range(len(sq_revdeps_new)):
+        #    data = ""
+        #    for realdep in sq_revdeps_new[realtask]:
+        #        data = data + "\n   %s" % self.rqdata.get_user_idstring(realdep)
+        #    bb.warn("Task1 %s: %s_setscene is %s " % (realtask, self.rqdata.get_user_idstring(realtask), data))
 
         # Build a list of setscene tasks which are "unskippable"
         # These are direct endpoints referenced by the build
@@ -1973,6 +1984,8 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
             self.rqdata.init_progress_reporter.update(taskcounter)
 
         self.rqdata.init_progress_reporter.next_stage()
+
+
 
         # Resolve setscene inter-task dependencies
         # e.g. do_sometask_setscene[depends] = "targetname:do_someothertask_setscene"
