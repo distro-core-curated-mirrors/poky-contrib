@@ -1765,24 +1765,33 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
             self.runq_complete.append(0)
             self.runq_buildable.append(0)
 
-        # First process the chains up to the first setscene task.
+        # Build a lits of non-setscene task endpoints
+        # Also populate sq_revdeps{,_new}
         endpoints = {}
         for task in xrange(len(self.rqdata.runq_fnid)):
             sq_revdeps.append(copy.copy(self.rqdata.runq_revdeps[task]))
             sq_revdeps_new.append(set())
             if (len(self.rqdata.runq_revdeps[task]) == 0) and task not in self.rqdata.runq_setscene:
+                #bb.warn("Added endpoint %s:%s" % (task, self.rqdata.get_user_idstring(task)))
                 endpoints[task] = set()
 
-        # Secondly process the chains between setscene tasks.
+        # Add in setscene task endpoints to process the chains between setscene tasks
         for task in self.rqdata.runq_setscene:
+            #bb.warn("Added endpoint 2 %s:%s" % (task, self.rqdata.get_user_idstring(task)))
             for dep in self.rqdata.runq_depends[task]:
                     if dep not in endpoints:
                         endpoints[dep] = set()
+                    #bb.warn("  Added endpoint 3 %s:%s" % (dep, self.rqdata.get_user_idstring(dep)))
+
                     endpoints[dep].add(task)
 
         def process_endpoints(endpoints):
             newendpoints = {}
             for point, task in endpoints.items():
+                #data = ""
+                #for t in task:
+                #      data = data + "\n %s" % t + self.rqdata.get_user_idstring(t)
+                #bb.warn("Processing endpoint %s:%s with tasks %s " % (point, self.rqdata.get_user_idstring(point), data))
                 tasks = set()
                 if task:
                     tasks |= task
@@ -1795,7 +1804,7 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
                 for dep in self.rqdata.runq_depends[point]:
                     if point in sq_revdeps[dep]:
                         sq_revdeps[dep].remove(point)
-                    if tasks:
+                    if tasks:# and dep not in self.rqdata.runq_setscene:
                         sq_revdeps_new[dep] |= tasks
                     if (len(sq_revdeps[dep]) == 0 or len(sq_revdeps_new[dep]) != 0) and dep not in self.rqdata.runq_setscene:
                         newendpoints[dep] = task
@@ -1803,6 +1812,13 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
                 process_endpoints(newendpoints)
 
         process_endpoints(endpoints)
+
+        #for realtask in xrange(len(sq_revdeps_new)):
+        #    data = ""
+        #    for realdep in sq_revdeps_new[realtask]:
+        #        data = data + "\n   %s" % self.rqdata.get_user_idstring(realdep)
+        #    bb.warn("Task1 %s: %s_setscene is %s " % (realtask, self.rqdata.get_user_idstring(realtask), data))
+
 
         # Build a list of setscene tasks which are "unskippable"
         # These are direct endpoints referenced by the build
@@ -1840,6 +1856,8 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
             if sq_revdeps_new2[task]:
                 self.unskippable.append(self.rqdata.runq_setscene.index(task))
 
+
+
         for task in xrange(len(self.rqdata.runq_fnid)):
             if task in self.rqdata.runq_setscene:
                 deps = set()
@@ -1848,6 +1866,8 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
                 sq_revdeps_squash.append(deps)
             elif len(sq_revdeps_new[task]) != 0:
                 bb.msg.fatal("RunQueue", "Something went badly wrong during scenequeue generation, aborting. Please report this problem.")
+
+
 
         # Resolve setscene inter-task dependencies
         # e.g. do_sometask_setscene[depends] = "targetname:do_someothertask_setscene"
@@ -1881,7 +1901,13 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
 
         #for task in xrange(len(sq_revdeps_squash)):
         #    realtask = self.rqdata.runq_setscene[task]
-        #    bb.warn("Task %s: %s_setscene is %s " % (task, self.rqdata.get_user_idstring(realtask) , sq_revdeps_squash[task]))
+        #    data = ""
+        #    for dep in sq_revdeps_squash[task]:
+        #        realdep = self.rqdata.runq_setscene[dep]
+        #        data = data + "\n   %s" % self.rqdata.get_user_idstring(realdep)
+        #    bb.warn("Task %s: %s_setscene is %s " % (task, self.rqdata.get_user_idstring(realtask), data))
+        #    bb.warn("Task %s: %s_setscene is %s " % (task, self.rqdata.get_user_idstring(realtask), sq_revdeps_squash[task]))
+
 
         self.sq_deps = []
         self.sq_revdeps = sq_revdeps_squash
