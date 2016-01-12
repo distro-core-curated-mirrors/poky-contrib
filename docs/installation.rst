@@ -4,7 +4,7 @@ Installation
 ============
 
 patchwork and ``git-pw``
-----------------------
+------------------------
 
 To be useful, patchtest requires a patchwork instance running. In case you
 want to launch a patchwork instance, please check the `patchwork documentation
