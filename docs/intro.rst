@@ -2,7 +2,7 @@ Patchtest
 =========
 
 **patchtest** is a simple test framework which takes a series/revision from a
-`**patchwork** <https://github.com/dlespiau/patchwork>` instance, apply it
+`**patchwork** <https://github.com/dlespiau/patchwork>`__ instance, apply it
 into  the corresponding repository, then execute
 any tests discovered in a folder indicated through an argument. Results may be
 posted to patchwork, which in turn can send notifications to the

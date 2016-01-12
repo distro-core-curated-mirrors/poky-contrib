@@ -18,6 +18,7 @@ running somewhere else, you will need to clone it locally and follow the
 dependencies
 
 ::
+
     $ pip install -r $PWD/git-pw/requirements.txt
     $ ln -s $PWD/git-pw/git-pw ~/.local/bin/
 
@@ -26,7 +27,7 @@ where ``PWD`` corresponds to the directory where patchwork source code resides.
 patchtest
 ---------
 
-The ``patchtest``script is install in the same way as ``git-pw``
+The ``patchtest`` script is install in the same way as ``git-pw``
 
 ::
 
@@ -43,12 +44,14 @@ to be tested must be configured, and this is done in the same way as `git-pw
 <http://patchwork-freedesktop.readthedocs.org/en/latest/manual.html#setup>`__
 
 ::
+
     $ git config patchwork.default.url https://patchwork.freedesktop.org
     $ git config patchwork.default.project intel-gfx
 
 In case results need to be posted, credentials must be set
 
 ::
+
     $ git config patchwork.default.user <pathcwork user>
     $ git config patchwork.default.password <patchwork password>
 
@@ -57,6 +60,7 @@ usually the name of the stable branch, but for some upstream repostories this
 is not the case, thus we can change it through
 
 ::
+
     $ git config patchtest.default.stable origin/stable
 
 Because this is a patchtest related configuration, ``patchtest.*`` is used

@@ -9,6 +9,7 @@ Quick start
 ``patchtest`` can be used to test a single series/revision
 
 ::
+
     $ patchtest --series 919 --revision 1
 
 This command assumes that the command is executed being inside the repository
@@ -28,6 +29,7 @@ running the set of tests for each event (series/revision) found by the
 the ``--help`` command:
 
 ::
+
     $ patchtest --help
       usage: patchtest [-h] [--series SERIES] [--revision REVISION] [-C REPODIR]
                        [--temp-base-dir TEMPBASEDIR] [--test-name TESTNAME]
