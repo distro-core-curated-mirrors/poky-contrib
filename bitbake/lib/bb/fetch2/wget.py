@@ -540,3 +540,10 @@ class Wget(FetchMethod):
 
         return (self._check_latest_version(uri, package, package_regex,
                 current_version, ud, d), '')
+
+    def try_premirror(self, urldata, d):
+        """
+        Should premirrors be used?
+        """
+        return True
+
