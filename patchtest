@@ -125,7 +125,7 @@ def main():
             listseries.append((series, revision))
     else:
         if not (PatchTestBase.series and PatchTestBase.revision):
-            print 'you need to specify the series/revision through -s and -r, respectively'
+            print 'you need to specify the series/revision through --series and --revision, respectively'
             return 1
         listseries = [(PatchTestBase.series, PatchTestBase.revision)]
 
