@@ -1,0 +1,2 @@
+lucian   21872  0.0  0.0   4444   644 pts/1    S+   07:33   0:00 sh -c ps aux |grep -i hob > stopHob.txt
+lucian   21874  0.0  0.0  12224   948 pts/1    S+   07:33   0:00 grep -i hob
