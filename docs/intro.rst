@@ -2,9 +2,9 @@ Patchtest
 =========
 
 **patchtest** is a test framework which takes a single series/revision from a
-`**patchwork** <https://github.com/dlespiau/patchwork>`__ instance, apply it
+`patchwork <https://github.com/dlespiau/patchwork>`__ instance, apply it
 into the corresponding repository, then execute any tests discovered in a
-specific folder. Results may be posted to patchwork, which in turn can send
+specific folder. Results may be posted to **patchwork**, which in turn can send
 notifications  to the submitter/maintainer. It is important to notice that the test
 cases to be created for a particular repo are not part of patchtest itself:
 these should be kept in a **separate repository**.

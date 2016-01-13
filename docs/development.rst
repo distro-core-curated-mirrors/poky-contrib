@@ -12,9 +12,9 @@ Quick start
 
     $ patchtest --series 919 --revision 1
 
-This command assumes that the command is executed being inside the repository
-folder but one can run it somewhere else except that the ``-C`` parameter must
-be used. By default, the tests executed are the ones from the
+This command assumes that the command is executed inside the repo
+folder but one can run it somewhere but using the ``-C`` to indicate where the
+repository resides. By default, the tests executed are the ones from the
 ``patchtest\tests`` directory, consisting of a simple (and useless) sample
 test case.  The latter at least tell us if the series applies to the repository cleanly.
 ``patchtest`` also gets its input from ``git pw poll-events``, which can be
@@ -51,11 +51,11 @@ the ``--help`` command:
 Writing Tests
 -------------
 
-As mentioned before, ``patchtest`` is test case **agnostic**: it tests whatever it
+As mentioned before, ``patchtest`` is test case and project **agnostic**: it tests whatever it
 discovers under the indicated test folder and for any project being monitored
-by patchwork. With this in mind, the only restriction is that test cases must
-be written using the ``unittest`` python
-framework and test cases (class) should inherit from ``PatchTestBase``
+by patchwork. This feature implies that any project can use ``patchtest`` and just
+focus on the tests, not on the testing framework. The only **restriction** is that test cases must
+be written using the ``unittest`` python framework and test cases (class) should inherit from ``PatchTestBase``
 (defined on ``base.py``). The latter inheritance can be ommited in case the mbox should be tested without
 being merged to the stable branch. The base class ``PatchTestBase`` is a test
 fixture, with the only purpose of patching the mbox on a new branch (named

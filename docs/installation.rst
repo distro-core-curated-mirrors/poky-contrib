@@ -10,9 +10,9 @@ To be useful, patchtest requires a patchwork instance running. In case you
 want to launch a patchwork instance, please check the `patchwork documentation
 <http://patchwork-freedesktop.readthedocs.org/en/latest/>`__. In the other
 hand, patchtest requires **git-pw** tool which comes
-in the patchwork repository, so even if you already have a patchwork instance
+in patchwork, so even if you already have a patchwork instance
 running somewhere else, you will need to clone it locally and follow the
-`git-pw setup
+``git-pw`` `setup
 <http://patchwork-freedesktop.readthedocs.org/en/latest/manual.html#git-pw>`__. The
 ``git-pw`` basically consists of setting up a soft link and install
 dependencies
