@@ -74,8 +74,10 @@ class Repo(object):
         return utils.exec_cmds(cmds, self.repodir, self.tempdir, taskname)
 
     def clean(self, removebranch=False):
+        git_pw_poll = '.git-pw.%s.poll.timestamp' % self.project
+        print git_pw_poll
         cmds = [
-            {'cmd':['git', 'clean', '-df', '-e .git-pw.%s.poll.timestamp' % self.project]},
+            {'cmd':['git', 'clean', '-df', '-e', '.git-pw.%s.poll.timestamp' % self.project]},
             {'cmd':['git', 'am', '--abort'], 'ignore_error':True},
             {'cmd':['git', 'reset', '--hard']},
             {'cmd':['git', 'checkout', self.stable]},
