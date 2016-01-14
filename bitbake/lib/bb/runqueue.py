@@ -911,6 +911,7 @@ class RunQueue:
             "buildname" : self.cfgData.getVar("BUILDNAME", True),
             "date" : self.cfgData.getVar("DATE", True),
             "time" : self.cfgData.getVar("TIME", True),
+            "imagefstypes" : self.cfgData.getVar("IMAGE_FSTYPES", True),
         }
 
         worker.stdin.write("<cookerconfig>" + pickle.dumps(self.cooker.configuration) + "</cookerconfig>")
