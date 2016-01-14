@@ -15,6 +15,10 @@ class BaseTarget(object):
     def __init__(self):
         self.connection = None
 
+    def deploy(self):
+        """deploy workload"""
+        pass
+
     @abstractmethod
     def start(self, params=None):
         """setup the bridge connection to target"""

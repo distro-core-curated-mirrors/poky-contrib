@@ -58,6 +58,7 @@ class TargetTestRunner(TestRunnerBase):
     def runtest(self, suite):
         '''run test suite with target'''
         if self.context.target:
+            self.context.target.deploy()
             self.context.target.start()
         try:
             super(TargetTestRunner, self).runtest(suite)
