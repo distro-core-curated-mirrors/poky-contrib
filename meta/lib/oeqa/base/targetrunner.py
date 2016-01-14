@@ -54,7 +54,16 @@ class TargetTestRunner(TestRunnerBase):
                 from controller.SSHTarget import SshRemoteTarget
                 ssh_target = SshRemoteTarget(ip=options.ip)
                 self.context.target = ssh_target
-                ssh_target.start()
+
+    def runtest(self, suite):
+        '''run test suite with target'''
+        if self.context.target:
+            self.context.target.start()
+        try:
+            super(TargetTestRunner, self).runtest(suite)
+        finally:
+            if self.context.target:
+                self.context.target.stop()
 
 if __name__ == "__main__":
     TargetTestRunner().run()

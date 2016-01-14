@@ -11,6 +11,7 @@
 
 import os
 import sys
+import time
 import unittest
 import shutil
 from optparse import OptionParser, make_option
@@ -33,7 +34,8 @@ class TestRunnerBase(object):
         self.context = None
         self.manifest = None
         self.log_handler = None
-        self.tag_exp = None
+        self.test_result = None
+        self.run_time = None
 
     @staticmethod
     def __get_tc_from_manifest(fname):
@@ -112,7 +114,6 @@ class TestRunnerBase(object):
         except ValueError:
             print "timeout need an integer value"
             raise
-        self.tag_exp = options.tag
 
     def result(self):
         '''output test result '''
@@ -132,19 +133,14 @@ class TestRunnerBase(object):
                 tclist.append(testloader.discover(name, "*.py"))
         return testloader.suiteClass(tclist)
 
-    def start(self):
-        '''start execution'''
-        setattr(unittest.TestCase, "tc", self.context)
-        tnames = [tc["id"] for tc in self.tclist]
-        suite = self.loadtest(tnames)
-        if self.tag_exp:
-            suite = filter_tagexp(suite, self.tag_exp)
-        set_timeout(suite, self.context.def_timeout)
-        print "Found %s tests" % suite.countTestCases()
-        self.runner.run(suite)
+    def runtest(self, suite):
+        '''run test suite'''
+        starttime = time.time()
+        self.test_result = self.runner.run(suite)
+        self.run_time = time.time() - starttime
 
     def run(self):
-        '''run test suite'''
+        '''start testing'''
         self.options()
         usage = "usage: %prog [options]"
         parser = OptionParser(option_list=self.option_list, usage=usage)
@@ -153,7 +149,16 @@ class TestRunnerBase(object):
         print options
         if self.log_handler:
             self.log_handler.start()
-        self.start()
+
+        setattr(unittest.TestCase, "tc", self.context)
+        tnames = [tc["id"] for tc in self.tclist]
+        suite = self.loadtest(tnames)
+        if options.tag:
+            suite = filter_tagexp(suite, options.tag)
+        set_timeout(suite, self.context.def_timeout)
+        print "Found %s tests" % suite.countTestCases()
+        self.runtest(suite)
+
         self.result()
         if self.log_handler:
             self.log_handler.end()
