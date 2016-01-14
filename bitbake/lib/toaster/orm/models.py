@@ -630,13 +630,15 @@ class Package(models.Model):
 
 class CustomImagePackage(Package):
     # CustomImageRecipe fields to track pacakges appended,
-    # included and excluded from a CustomImageRecipe
+    # included and excluded or depends from a CustomImageRecipe
     recipe_includes = models.ManyToManyField('CustomImageRecipe',
                                              related_name='includes_set')
     recipe_excludes = models.ManyToManyField('CustomImageRecipe',
                                              related_name='excludes_set')
     recipe_appends = models.ManyToManyField('CustomImageRecipe',
                                             related_name='appends_set')
+    recipe_depends = models.ManyToManyField('CustomImageRecipe',
+                                            related_name='depends_set')
 
 
 
@@ -1308,10 +1310,12 @@ class CustomImageRecipe(Recipe):
     project = models.ForeignKey(Project)
 
     def get_all_packages(self):
-        """Get the included packages and any appended packages"""
+        """Get the included packages and any appended packages and any
+        packages added as a dependencies"""
         return CustomImagePackage.objects.filter((Q(recipe_appends=self) |
-                                              Q(recipe_includes=self)) &
-                                             ~Q(recipe_excludes=self))
+                                                  Q(recipe_includes=self) |
+                                                  Q(recipe_depends=self)) &
+                                                 ~Q(recipe_excludes=self))
 
     def generate_recipe_file_contents(self):
         """Generate the contents for the recipe file."""

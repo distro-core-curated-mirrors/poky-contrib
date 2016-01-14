@@ -2841,6 +2841,7 @@ if True:
                         "packages" : list(packages),
                         "total" : len(packages)
                        }
+            # GET package_id
             else:
                 all_current_packages = recipe.get_all_packages()
                 # TODO Django 1.8 will allow us to map these to nicer keys
@@ -2912,15 +2913,39 @@ if True:
 
             else:
                 recipe.appends_set.add(package)
+                # Add the dependencies we think will be added to the recipe
+                # as a result of appending this package.
+                # TODO this should recurse down the entire deps tree
+                for dep in package.package_dependencies_source.all():
+                    try:
+                        cust_package =\
+                                CustomImagePackage.objects.get(
+                                    name=dep.depends_on.name)
+
+                        logger.info("adding %s", cust_package.name)
+                        recipe.depends_set.add(cust_package)
+                    except:
+                        logger.warning("Could not add package's suggested"
+                                       "dependencies to the list")
+
+
+
+
 
             return {"error": "ok"}
 
         elif request.method == 'DELETE':
             try:
+                depends_packages = recipe.depends_set.values_list('pk',
+                                                                  flat=True)
                 # If we're deleting a package which is included we need to
                 # Add it to the excludes list.
                 if package.pk in included_packages:
                     recipe.excludes_set.add(package)
+                # The package we're removing was added to indicate
+                # a package dependency
+                elif package.pk in depends_packages:
+                    recipe.depends_set.remove(package)
                 else:
                     recipe.appends_set.remove(package)
                 return {"error": "ok"}
