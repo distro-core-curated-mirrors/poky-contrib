@@ -196,6 +196,7 @@ def fork_off_task(cfg, data, workerdata, fn, task, taskname, appends, taskdepdat
             data.setVar("BUILDNAME", workerdata["buildname"])
             data.setVar("DATE", workerdata["date"])
             data.setVar("TIME", workerdata["time"])
+            data.setVar("IMAGE_FSTYPES", workerdata["imagefstypes"])
             bb.parse.siggen.set_taskdata(workerdata["sigdata"])
             ret = 0
             try:
