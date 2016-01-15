@@ -202,7 +202,7 @@ def exportTests(d,tc):
 
 def testimage_main(d):
     import unittest
-    import os
+    import os, sys
     import oeqa.runtime
     import time
     from oeqa.oetest import loadTests, runTests
@@ -221,16 +221,15 @@ def testimage_main(d):
     testslist = get_tests_list(d)
     testsrequired = [t for t in d.getVar("TEST_SUITES", True).split() if t != "auto"]
 
-    # the robot dance
-    target = get_target_controller(d)
-
-    class TestContext(object):
+    from oeqa.base.baserunner import TestContext as TC
+    class TestContext(TC):
         def __init__(self):
+            super(TestContext, self).__init__()
             self.d = d
             self.testslist = testslist
             self.testsrequired = testsrequired
             self.filesdir = os.path.join(os.path.dirname(os.path.abspath(oeqa.runtime.__file__)),"files")
-            self.target = target
+            self.target = get_target_controller(d)
             self.imagefeatures = d.getVar("IMAGE_FEATURES", True).split()
             self.distrofeatures = d.getVar("DISTRO_FEATURES", True).split()
             manifest = os.path.join(d.getVar("DEPLOY_DIR_IMAGE", True), d.getVar("IMAGE_LINK_NAME", True) + ".manifest")
@@ -243,36 +242,32 @@ def testimage_main(d):
     # test context
     tc = TestContext()
 
-    # this is a dummy load of tests
-    # we are doing that to find compile errors in the tests themselves
-    # before booting the image
-    try:
-        loadTests(tc)
-    except Exception as e:
-        import traceback
-        bb.fatal("Loading tests failed:\n%s" % traceback.format_exc())
-
-    target.deploy()
-
-    target.start()
-    try:
-        if export:
-            exportTests(d,tc)
-        else:
-            starttime = time.time()
-            result = runTests(tc)
-            stoptime = time.time()
-            if result.wasSuccessful():
-                bb.plain("%s - Ran %d test%s in %.3fs" % (pn, result.testsRun, result.testsRun != 1 and "s" or "", stoptime - starttime))
+    from oeqa.oetest import FatalException, OETestRunner
+    class TestImageRunner(OETestRunner):
+        def runtests(self):
+            bb.note("Test modules  %s" % self.tc.testslist)
+            bb.note("Found %s tests" % self.suite.countTestCases())
+            return super(OETestRunner, self).runtests()
+        @staticmethod
+        def loadtest(names):
+            try:
+                return OETestRunner.loadtest(names)
+            except FatalException, e:
+                bb.fatal(str(e))
+        def result(self):
+            if self.test_result.wasSuccessful():
+                bb.plain("%s - Ran %d test%s in %.3fs" % (pn, self.test_result.testsRun, self.test_result.testsRun != 1 and "s" or "", self.run_time))
                 msg = "%s - OK - All required tests passed" % pn
-                skipped = len(result.skipped)
+                skipped = len(self.test_result.skipped)
                 if skipped:
                     msg += " (skipped=%d)" % skipped
                 bb.plain(msg)
             else:
                 raise bb.build.FuncFailed("%s - FAILED - check the task log and the ssh log" % pn )
-    finally:
-        target.stop()
+    if export:
+        exportTests(d,tc)
+    else:
+        TestImageRunner(tc).run()
 
 testimage_main[vardepsexclude] =+ "BB_ORIGENV"
 
@@ -300,8 +295,10 @@ def testsdk_main(d):
     if not os.path.exists(tcname):
         bb.fatal("The toolchain is not built. Build it before running the tests: 'bitbake <image> -c populate_sdk' .")
 
-    class TestContext(object):
+    from oeqa.base.baserunner import TestContext as TC
+    class TestContext(TC):
         def __init__(self):
+            super(TestContext, self).__init__()
             self.d = d
             self.testslist = testslist
             self.testsrequired = testsrequired
@@ -323,6 +320,31 @@ def testsdk_main(d):
             except IOError as e:
                 bb.fatal("No host package manifest file found. Did you build the sdk image?\n%s" % e)
 
+    from oeqa.oetest import FatalException, OETestRunner
+    class TestSDKRunner(OETestRunner):
+        def runtests(self):
+            bb.note("Test modules  %s" % self.tc.testslist)
+            bb.note("Found %s tests" % self.suite.countTestCases())
+            return super(OETestRunner, self).runtests()
+        @staticmethod
+        def loadtest(names):
+            try:
+                return OETestRunner.loadtest(names)
+            except FatalException, e:
+                bb.fatal(str(e))
+        def result(self):
+            if self.test_result.wasSuccessful():
+                tcname = self.tc. d.expand("${SDK_DEPLOY}/${TOOLCHAIN_OUTPUTNAME}.sh")
+                sdkenv = self.tc.sdkenv
+                bb.plain("%s SDK(%s):%s - Ran %d test%s in %.3fs" % (pn, os.path.basename(tcname), os.path.basename(sdkenv),self.test_result.testsRun, self.test_result.testsRun != 1 and "s" or "", self.run_time))
+                msg = "%s - OK - All required tests passed" % pn
+                skipped = len(self.test_result.skipped)
+                if skipped:
+                    msg += " (skipped=%d)" % skipped
+                bb.plain(msg)
+            else:
+                raise bb.build.FuncFailed("%s - FAILED - check the task log and the ssh log" % pn )
+
     sdktestdir = d.expand("${WORKDIR}/testimage-sdk/")
     bb.utils.remove(sdktestdir, True)
     bb.utils.mkdirhier(sdktestdir)
@@ -335,29 +357,7 @@ def testsdk_main(d):
             bb.plain("Testing %s" % sdkenv)
             # test context
             tc = TestContext()
-
-            # this is a dummy load of tests
-            # we are doing that to find compile errors in the tests themselves
-            # before booting the image
-            try:
-                loadTests(tc, "sdk")
-            except Exception as e:
-                import traceback
-                bb.fatal("Loading tests failed:\n%s" % traceback.format_exc())
-
-    
-            starttime = time.time()
-            result = runTests(tc, "sdk")
-            stoptime = time.time()
-            if result.wasSuccessful():
-                bb.plain("%s SDK(%s):%s - Ran %d test%s in %.3fs" % (pn, os.path.basename(tcname), os.path.basename(sdkenv),result.testsRun, result.testsRun != 1 and "s" or "", stoptime - starttime))
-                msg = "%s - OK - All required tests passed" % pn
-                skipped = len(result.skipped)
-                if skipped:
-                    msg += " (skipped=%d)" % skipped
-                bb.plain(msg)
-            else:
-                raise bb.build.FuncFailed("%s - FAILED - check the task log and the commands log" % pn )
+            result = TestSDKRunner(tc, "sdk").run()
     finally:
         bb.utils.remove(sdktestdir, True)
 
