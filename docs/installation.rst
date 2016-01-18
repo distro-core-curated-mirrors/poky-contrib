@@ -9,10 +9,10 @@ patchwork and ``git-pw``
 To be useful, patchtest requires a patchwork instance running. In case you
 want to launch a patchwork instance, please check the `patchwork documentation
 <http://patchwork-freedesktop.readthedocs.org/en/latest/>`__. In the other
-hand, patchtest requires the **git-pw** tool which comes
-in  the patchwork repository, so even if you already have a patchwork instance
+hand, patchtest requires **git-pw** tool which comes
+in patchwork, so even if you already have a patchwork instance
 running somewhere else, you will need to clone it locally and follow the
-`git-pw setup
+``git-pw`` `setup
 <http://patchwork-freedesktop.readthedocs.org/en/latest/manual.html#git-pw>`__. The
 ``git-pw`` basically consists of setting up a soft link and install
 dependencies
@@ -57,7 +57,7 @@ In case results need to be posted, credentials must be set
 
 Currently, patches are applied on top of the ``origin/master`` which is
 usually the name of the stable branch, but for some upstream repostories this
-is not the case, thus we can change it through
+is not the case and one can change it through
 
 ::
 
