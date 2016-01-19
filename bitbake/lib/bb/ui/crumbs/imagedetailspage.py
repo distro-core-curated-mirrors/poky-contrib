@@ -284,6 +284,8 @@ class ImageDetailsPage (HobPage):
             if not self.toggled_image:
                 if i == (len(image_names) - 1):
                     is_toggled = True
+                    # if there was no qemu runable image, let one image be custom run
+                    image_attr = "run_custom"
                 if is_toggled:
                     default_image_size = image_size
                     self.toggled_image = image_name
@@ -303,7 +305,7 @@ class ImageDetailsPage (HobPage):
             i = i + 1
             self.num_toggled += is_toggled
 
-        is_runnable = self.create_bottom_buttons(self.buttonlist, self.toggled_image)
+        self.is_runnable = self.create_bottom_buttons(self.buttonlist, self.toggled_image)
 
         # Generated image files info
         varlist = ["Name: ", "Files created: ", "Directory: "]
@@ -324,10 +326,23 @@ class ImageDetailsPage (HobPage):
         self.image_detail = self.DetailBox(varlist=varlist, vallist=vallist, button=view_files_button, button2=open_log_button)
         self.box_group_area.pack_start(self.image_detail, expand=False, fill=True)
 
+        # The default script path to run the image (runqemu)
+        self.run_script_path = os.path.join(self.builder.parameters.core_base, "scripts/runqemu")
+        self.run_script_detail = None
+        varlist = ["Run script: "]
+        vallist = []
+        vallist.append(self.run_script_path)
+
+        change_run_script_button = HobAltButton("Change")
+        change_run_script_button.connect("clicked", self.change_run_script_cb)
+        change_run_script_button.set_tooltip_text("Change run script")
+        self.run_script_detail = self.DetailBox(varlist=varlist, vallist=vallist, button=change_run_script_button)
+        self.box_group_area.pack_start(self.run_script_detail, expand=False, fill=True)
+
         # The default kernel box for the qemu images
         self.sel_kernel = ""
         self.kernel_detail = None
-        if 'qemu' in image_name:
+        if self.test_mach_runnable(image_name):
             self.sel_kernel = self.get_kernel_file_name()
 
         #    varlist = ["Kernel: "]
@@ -401,8 +416,10 @@ class ImageDetailsPage (HobPage):
             self.box_group_area.pack_start(self.details_bottom_buttons, expand=False, fill=False)
 
         self.show_all()
-        if self.kernel_detail and (not is_runnable):
+        if self.kernel_detail and (not self.is_runnable):
             self.kernel_detail.hide()
+        if self.run_script_detail and self.is_runnable:
+            self.run_script_detail.hide()
         self.image_saved = False
 
     def view_files_clicked_cb(self, button, image_addr):
@@ -528,6 +545,8 @@ class ImageDetailsPage (HobPage):
             if fileitem['is_toggled']:
                 if fileitem['action_attr'] == 'run':
                     self.builder.runqemu_image(fileitem['name'], self.sel_kernel)
+                elif fileitem['action_attr'] == 'run_custom':
+                    self.builder.run_custom_image(fileitem['name'], self.run_script_path)
                 elif fileitem['action_attr'] == 'deploy':
                     self.builder.deploy_image(fileitem['name'])
 
@@ -541,9 +560,14 @@ class ImageDetailsPage (HobPage):
         if kernel_path and self.kernel_detail:
             import os.path
             self.sel_kernel = os.path.basename(kernel_path)
-            markup = self.kernel_detail.format_line("Kernel: ", self.sel_kernel)
-            label = ((self.kernel_detail.get_children()[0]).get_children()[0]).get_children()[0]
-            label.set_markup(markup)
+            self.kernel_detail.update_line_widgets("Kernel: ", self.sel_kernel);
+
+    def change_run_script_cb(self, widget):
+        self.run_script_path = self.builder.show_load_run_script_dialog()
+        if self.run_script_path and self.run_script_detail:
+            import os.path
+            self.sel_run_script = os.path.basename(self.run_script_path)
+            self.run_script_detail.update_line_widgets("Run script: ", self.run_script_path)
 
     def create_bottom_buttons(self, buttonlist, image_name):
         # Create the buttons at the bottom
@@ -566,26 +590,33 @@ class ImageDetailsPage (HobPage):
             packed = True
 
         name = "Run image"
-        if name in buttonlist and self.test_type_runnable(image_name) and self.test_mach_runnable(image_name):
+        if name in buttonlist:
+            name = "Run qemu image"
+            is_runnable = True
+            if not (self.test_type_runnable(image_name) and self.test_mach_runnable(image_name)):
+                name = "Run custom image"
+                is_runnable = False
             if created == True:
                 # separator
                 #label = gtk.Label(" or ")
                 #self.details_bottom_buttons.pack_end(label, expand=False, fill=False)
 
                 # create button "Run image"
-                run_button = HobAltButton("Run image")
+                run_button = HobAltButton(name)
             else:
                 # create button "Run image" as the primary button
-                run_button = HobButton("Run image")
+                run_button = HobButton(name)
                 #run_button.set_size_request(205, 49)
                 run_button.set_flags(gtk.CAN_DEFAULT)
                 packed = True
-            run_button.set_tooltip_text("Start up an image with qemu emulator")
+            if is_runnable:
+                run_button.set_tooltip_text("Start up an image with qemu emulator")
+            else:
+                run_button.set_tooltip_text("Start up an image with custom simulator")
             button_id = run_button.connect("clicked", self.run_button_clicked_cb)
             self.button_ids[button_id] = run_button
             self.details_bottom_buttons.pack_end(run_button, expand=False, fill=False)
             created = True
-            is_runnable = True
 
         name = "Save image recipe"
         if name in buttonlist and self.builder.recipe_model.is_custom_image():
@@ -628,7 +659,10 @@ class ImageDetailsPage (HobPage):
                 self.show_builded_images_dialog(None, "Run image")
                 self.set_sensitive(True)
             else:
-                self.builder.runqemu_image(self.toggled_image, self.sel_kernel)
+                if self.is_runnable:
+                    self.builder.runqemu_image(self.toggled_image, self.sel_kernel)
+                else:
+                    self.builder.run_custom_image(self.toggled_image, self.run_script_path)
 
     def save_button_clicked_cb(self, button):
         topdir = self.builder.get_topdir()
