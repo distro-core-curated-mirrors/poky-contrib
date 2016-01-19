@@ -77,6 +77,15 @@ def get_parser():
                         dest='revision',
                         help='Revision number')
 
+    parser.add_argument('--no-post',
+                        dest='nopost',
+                        action='store_true',
+                        help="Do not POST the results to the PW instance")
+
+    parser.add_argument('--mbox', '-m',
+                        dest='mbox',
+                        help='An mbox file, to apply before testing')
+
     parser.add_argument('-C',
                         dest='repodir',
                         default=os.getcwd(),
@@ -92,11 +101,6 @@ def get_parser():
                         default='patchtest',
                         help="Test name to be used if results are POSTed")
 
-    parser.add_argument('--no-post',
-                        dest='nopost',
-                        action='store_true',
-                        help="Do not POST the results to the PW instance")
-
     patchtest_tests_dir = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
         'tests')
@@ -104,6 +108,16 @@ def get_parser():
                         dest='testdir',
                         default=patchtest_tests_dir,
                         help="Directory where tests are located")
+
+    parser.add_argument('--branch', '-b',
+                        dest='branch',
+                        default='master',
+                        help="Branch to work on, default is master. Must be available in repo")
+
+    parser.add_argument('--commit', '-c',
+                        dest='commit',
+                        default='HEAD',
+                        help="Commit to work on, default is HEAD. Must be visible from branch")
 
     return parser
 
@@ -116,20 +130,34 @@ def main():
     get_parser().parse_args(namespace=PatchTestBase)
 
     listseries = []
+    listmbox = []
 
     # read the stdin if series/revision are passed this way
     if not sys.stdin.isatty():
+        print 'Info: using stdin, ignoring parameters'
         for line in fileinput.input('-'):
-            event = json.loads(line)
-            series = event['series']
-            parameters = event['parameters']
-            revision = 1
-            if parameters:
-                revision = parameters['revision']
-            listseries.append((series, revision))
+            try:
+                event = json.loads(line)
+                series = event['series']
+                parameters = event['parameters']
+                revision = 1
+                if parameters:
+                    revision = parameters['revision']
+                listseries.append((series, revision))
+            except ValueError:
+                listmbox.append(line)
+        if listmbox and listseries:
+            print 'Warning: received both mbox and series/revision'
+
+    elif PatchTestBase.mbox:
+        if (PatchTestBase.series or PatchTestBase.revision or PatchTestBase.nopost):
+            print 'patchwork-related parameters (--series, --revision, --no-post) cannot be used with --mbox'
+            return 1
+        listmbox = [PatchTestBase.mbox]
+
     else:
         if not (PatchTestBase.series and PatchTestBase.revision):
-            print 'you need to specify the series/revision through --series and --revision, respectively'
+            print 'you need to specify the series/revision through --series and --revision, respectively\nor alternatively, specify the mbox through --mbox'
             return 1
         listseries = [(PatchTestBase.series, PatchTestBase.revision)]
 
@@ -137,19 +165,27 @@ def main():
 
         PatchTestBase.series = series
         PatchTestBase.revision = revision
+        run()
 
-        loader = unittest.TestLoader()
-        suite = loader.discover(os.path.abspath(PatchTestBase.testdir))
+    for mbox in listmbox:
 
-        # Get the result class and install the control-c handler
-        resultklass = get_result(PatchTestBase)
-        unittest.installHandler()
-        unittest.registerResult(resultklass)
-
-        runner = unittest.TextTestRunner(resultclass=resultklass)
-        result = runner.run(suite)
+        PatchTestBase.mbox = mbox
+        run()
 
     return 0
+
+def run():
+    """ Load, setup and run tests, this is run for each item in listseries and/or listmbox"""
+    loader = unittest.TestLoader()
+    suite = loader.discover(os.path.abspath(PatchTestBase.testdir))
+
+    # Get the result class and install the control-c handler
+    resultklass = get_result(PatchTestBase)
+    unittest.installHandler()
+    unittest.registerResult(resultklass)
+
+    runner = unittest.TextTestRunner(resultclass=resultklass)
+    result = runner.run(suite)
 
 if __name__ == '__main__':
     try:
