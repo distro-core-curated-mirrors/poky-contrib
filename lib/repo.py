@@ -69,7 +69,7 @@ class Repo(object):
     def _exec(self, cmds):
         stack = inspect.stack()
         taskname = stack[1][3]
-        return utils.exec_cmds(cmds, self._repodir, self.tempdir, taskname)
+        return utils.exec_cmds(cmds, self._repodir)
 
     def _get_current_branch_commit(self):
         branch = None
