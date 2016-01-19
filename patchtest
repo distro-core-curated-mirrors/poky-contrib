@@ -60,6 +60,10 @@ def get_result(args):
             if not args.nopost:
                 self.repo.post(args.testname, state, summary)
 
+        @classmethod
+        def stop(cls):
+            pass
+
     return Result
 
 def get_parser():
