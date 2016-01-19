@@ -7,16 +7,22 @@ import argparse
 import fileinput
 import json
 
-# Include current path and lib
+# Include current path so test cases can see it
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+
+# Include patchtest library
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
 
-from base import PatchTestBase
 from repo import Repo, PatchException
 from summary import BasicSummary
 import utils
 
-
+# When parsing the arguments, the following class (PatchTestArgs)
+# would be used as target namespace. This is a simple approach to
+# pass arguments to the test case.
+class PatchTestArgs:
+    pass
+ 
 def get_result(args):
 
     class Result(unittest.TextTestResult):
@@ -25,23 +31,23 @@ def get_result(args):
         shouldStop = True
 
         def startTestRun(self):
-            self.repo = Repo(args.series, args.revision,
-                        args.repodir, args.tempbasedir)
-            self.summary = BasicSummary(args.series, args.revision,
-                                        self.repo.mboxurl, self.repo.tempdir)
+            self.repo = Repo(args.commit, args.branch, args.mbox, args.series, args.revision, args.repodir, args.tempbasedir)
+            self.summary = BasicSummary(args.series, args.revision, self.repo.mboxurl, self.repo.tempdir)
             self.success = True
+
+            try:
+                self.repo.setup()
+            except PatchException as pe:
+                self.repo.clean(keepbranch=False)
 
         def addError(self, test, err):
             if self.success:
                 self.success = False
-            # if mbox cannot be applied, just stop all testing
-            if isinstance(err[1], PatchException):
-                self.summary.patchFailure(err)
-                self.stop()
-            else:
-                # TODO: something really wrong went here, we should indicate
-                # patchwork to send the log to the mantainer, not the submitter
-                self.summary.addError(test, err)
+
+            (ty, va, trace) = err
+            import traceback
+            traceback.print_tb(trace)
+            self.stop()
 
         def addFailure(self, test, err):
             if self.success:
@@ -59,6 +65,8 @@ def get_result(args):
 
             if not args.nopost:
                 self.repo.post(args.testname, state, summary)
+
+            self.repo.clean(keepbranch=args.keepbranch)
 
         @classmethod
         def stop(cls):
@@ -101,6 +109,11 @@ def get_parser():
                         default='patchtest',
                         help="Test name to be used if results are POSTed")
 
+    parser.add_argument('--keep-branch',
+                        dest='keepbranch',
+                        action='store_true',
+                        help="Do not POST the results to the PW instance")
+
     patchtest_tests_dir = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
         'tests')
@@ -122,12 +135,7 @@ def get_parser():
     return parser
 
 def main():
-    # parse the arguments and set PatchTestBase as target namespace.
-    # this is a simple approach to pass arguments to the test case.
-    # If series/revisions are coming from stdin, then these are
-    # manually updated for each one. We need to find a better way
-    # to do this
-    get_parser().parse_args(namespace=PatchTestBase)
+    get_parser().parse_args(namespace=PatchTestArgs)
 
     listseries = []
     listmbox = []
@@ -149,27 +157,27 @@ def main():
         if listmbox and listseries:
             print 'Warning: received both mbox and series/revision'
 
-    elif PatchTestBase.mbox:
-        if (PatchTestBase.series or PatchTestBase.revision or PatchTestBase.nopost):
+    elif PatchTestArgs.mbox:
+        if (PatchTestArgs.series or PatchTestArgs.revision or PatchTestArgs.nopost):
             print 'patchwork-related parameters (--series, --revision, --no-post) cannot be used with --mbox'
             return 1
-        listmbox = [PatchTestBase.mbox]
+        listmbox = [PatchTestArgs.mbox]
 
     else:
-        if not (PatchTestBase.series and PatchTestBase.revision):
+        if not (PatchTestArgs.series and PatchTestArgs.revision):
             print 'you need to specify the series/revision through --series and --revision, respectively\nor alternatively, specify the mbox through --mbox'
             return 1
-        listseries = [(PatchTestBase.series, PatchTestBase.revision)]
+        listseries = [(PatchTestArgs.series, PatchTestArgs.revision)]
 
     for series, revision in listseries:
 
-        PatchTestBase.series = series
-        PatchTestBase.revision = revision
+        PatchTestArgs.series = series
+        PatchTestArgs.revision = revision
         run()
 
     for mbox in listmbox:
 
-        PatchTestBase.mbox = mbox
+        PatchTestArgs.mbox = mbox
         run()
 
     return 0
@@ -177,10 +185,10 @@ def main():
 def run():
     """ Load, setup and run tests, this is run for each item in listseries and/or listmbox"""
     loader = unittest.TestLoader()
-    suite = loader.discover(os.path.abspath(PatchTestBase.testdir))
+    suite = loader.discover(os.path.abspath(PatchTestArgs.testdir))
 
     # Get the result class and install the control-c handler
-    resultklass = get_result(PatchTestBase)
+    resultklass = get_result(PatchTestArgs)
     unittest.installHandler()
     unittest.registerResult(resultklass)
 

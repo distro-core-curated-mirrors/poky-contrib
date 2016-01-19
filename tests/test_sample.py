@@ -1,6 +1,6 @@
-from base import PatchTestBase
+import unittest
 
-class TestSample(PatchTestBase):
+class TestSample(unittest.TestCase):
     def test_sample(self):
         self.assertTrue(True)
 

@@ -76,8 +76,8 @@ def exec_cmds(cmds, cwd, temp_dir=None, task_name=None):
         result = {
             'cmd':_cmd,
             'ignore_error': ignore_error,
-            'stdout':stdout,
-            'stderr':stderr,
+            'stdout':stdout.strip(),
+            'stderr':stderr.strip(),
             'returncode':p.returncode
         }
         results.append(result)

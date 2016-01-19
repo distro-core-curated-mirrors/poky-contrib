@@ -15,17 +15,14 @@ class BasicSummary(dict):
         self.success = list()
         self.patcherror = None
         
-    def addError(self, test, err):
-        self.error.append((test,err))
+    def patchFailure(self, err):
+        self.patcherror = err
 
     def addFailure(self, test, err):
         self.failure.append((test,err))
 
     def addSuccess(self, test):
         self.success.append(test)
-
-    def patchFailure(self, err):
-        self.patcherror = err
 
     def generateSummary(self, store=True):
         """ Generate and store the summary """
@@ -43,12 +40,6 @@ class BasicSummary(dict):
             if self.failure:
                 self._summary += "\nFail:\n"
                 for test, err in self.failure:
-                    (ty, va, trace) = err
-                    self._summary += "\t%s : %s\n" % (test, va)
-
-            if self.error:
-                self._summary += "\nError:\n"
-                for test, err in self.error:
                     (ty, va, trace) = err
                     self._summary += "\t%s : %s\n" % (test, va)
 
