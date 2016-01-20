@@ -39,6 +39,7 @@ class PatchTestResult(unittest.TextTestResult):
         try:
             self.repo.setup()
         except PatchException as pe:
+            self.summary.addPatchFailure(str(pe))
             self.stop()
 
     def addError(self, test, err):

@@ -11,10 +11,10 @@ class BasicSummary(dict):
         self.error = list()
         self.failure = list()
         self.success = list()
-        self.patcherror = None
+        self.patchmsg = None
 
-    def patchFailure(self, err):
-        self.patcherror = err
+    def addPatchFailure(self, msg):
+        self.patchmsg = msg
 
     def addFailure(self, test, err):
         self.failure.append((test,err))
@@ -24,21 +24,21 @@ class BasicSummary(dict):
 
     def generateSummary(self):
         """ Generate and store the summary """
-        self._summary  = "Tested mbox: %s\n" % self.mbox
-        
-        if self.patcherror:
-            (_, exception, _) = self.patcherror
-            self._summary += "\n\t%s" % exception
+        summary = ""
+
+        if self.patchmsg:
+            summary += "%s" % self.patchmsg
         else:
+            summary  += "Tested mbox: %s\n" % self.mbox
             if self.success:
-                self._summary += "\nPass:\n"
+                summary += "\nPass:\n"
                 for test in self.success:
-                    self._summary += "\t%s\n" % test
+                    summary += "\t%s\n" % test
 
             if self.failure:
-                self._summary += "\nFail:\n"
+                summary += "\nFail:\n"
                 for test, err in self.failure:
                     (ty, va, trace) = err
-                    self._summary += "\t%s : %s\n" % (test, va)
+                    summary += "\t%s : %s\n" % (test, va)
 
-        return self._summary
+        return summary

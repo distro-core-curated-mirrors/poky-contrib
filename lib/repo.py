@@ -148,7 +148,7 @@ class Repo(object):
             try:
                 self._exec(cmd)
             except RepoException:
-                msg = "The series/revision cannot be applied on top of %s/%s" % (self.branch, self.commit)
+                msg = "\nThe mbox \n\n\t%s\n\ncannot be applied on top of %s/%s" % (self.mbox, self.branch, self.commit)
                 raise PatchException, msg
 
     def setup(self):
