@@ -107,6 +107,9 @@ class Repo(object):
 
         return (branch, commit)
 
+    def _apply_abort(self):
+        self._exec({'cmd':['git', 'am', '--abort'], 'ignore_error':True})
+
     def _stash(self):
         # check first if repository is dirty
         dirty = self._exec({'cmd':['git', 'diff', '--shortstat']}) [0]['stdout']
@@ -154,6 +157,10 @@ class Repo(object):
         self._apply()
 
     def clean(self, keepbranch=False):
+        # calling _apply_abort is neccessary in case the mbox did not apply,
+        # so the working directory would be dirty
+        self._apply_abort()
+
         self._destash()
         self._removebranch(keepbranch)
 

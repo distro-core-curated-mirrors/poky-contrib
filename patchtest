@@ -39,7 +39,7 @@ class PatchTestResult(unittest.TextTestResult):
         try:
             self.repo.setup()
         except PatchException as pe:
-            self.repo.clean(keepbranch=False)
+            self.stop()
 
     def addError(self, test, err):
         if self.success:
@@ -67,7 +67,9 @@ class PatchTestResult(unittest.TextTestResult):
         if not PatchTestArgs.nopost:
             self.repo.post(PatchTestArgs.testname, state, summary)
 
-        self.repo.clean(keepbranch=PatchTestArgs.keepbranch)
+        # in case of failure, remove the branch, else respect user input
+        keepbranch = False if not self.success else PatchTestArgs.keepbranch
+        self.repo.clean(keepbranch=keepbranch)
 
     @classmethod
     def stop(cls):
