@@ -65,7 +65,7 @@ class PatchTestResult(unittest.TextTestResult):
 
         logger.info(summary)
 
-        if not PatchTestArgs.nopost:
+        if PatchTestArgs.post:
             self.repo.post(PatchTestArgs.testname, state, summary)
 
         # in case of failure, remove the branch, else respect user input
@@ -83,10 +83,10 @@ def get_parser():
                         dest='revision',
                         help='Revision number')
 
-    parser.add_argument('--no-post',
-                        dest='nopost',
+    parser.add_argument('--post',
+                        dest='post',
                         action='store_true',
-                        help="Do not POST the results to the PW instance")
+                        help="Post results to patchwork")
 
     parser.add_argument('--mbox', '-m',
                         dest='mbox',
