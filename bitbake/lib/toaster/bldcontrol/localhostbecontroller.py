@@ -32,7 +32,7 @@ import subprocess
 
 from toastermain import settings
 
-from bbcontroller import BuildEnvironmentController, ShellCmdException, BuildSetupException
+from bbcontroller import BuildEnvironmentController, ShellCmdException, BuildSetupException, BitbakeController
 
 import logging
 logger = logging.getLogger("toaster")
@@ -100,6 +100,7 @@ class LocalhostBEController(BuildEnvironmentController):
 
         self.be.bbaddress = "localhost"
         self.be.bbstate = BuildEnvironment.SERVER_STARTED
+        self.be.lock = BuildEnvironment.LOCK_RUNNING
         self.be.save()
 
     def getGitCloneDirectory(self, url, branch):
@@ -288,7 +289,8 @@ class LocalhostBEController(BuildEnvironmentController):
             conf.write('INHERIT+="toaster buildhistory"')
 
         # get the bb server running with the build req id and build env id
-        bbctrl = self.getBBController()
+        self.startBBServer()
+        bbctrl = BitbakeController(self.be)
 
         # set variables
         for var in variables:
