@@ -23,11 +23,13 @@ from toastergui.widgets import ToasterTable
 from orm.models import Recipe, ProjectLayer, Layer_Version, Machine, Project
 from orm.models import CustomImageRecipe, Package, Build, LogMessage, Task
 from orm.models import ProjectTarget
+from bldcontrol.models import BuildRequest
 from django.db.models import Q, Max, Count, When, Case, Value, IntegerField
 from django.conf.urls import url
 from django.core.urlresolvers import reverse, resolve
 from django.http import HttpResponse
 from django.views.generic import TemplateView
+from bldcontrol import bbcontroller
 import itertools
 
 from toastergui.tablefilter import TableFilter
@@ -916,7 +918,7 @@ class BuildsTable(ToasterTable):
         # for the latest builds section
         builds = self.get_builds()
 
-        finished_criteria = Q(outcome=Build.SUCCEEDED) | Q(outcome=Build.FAILED)
+        finished_criteria = Q(outcome=Build.SUCCEEDED) | Q(outcome=Build.FAILED) | Q(outcome=Build.CANCELLED)
 
         latest_builds = itertools.chain(
             builds.filter(outcome=Build.IN_PROGRESS).order_by("-started_on"),
@@ -938,8 +940,9 @@ class BuildsTable(ToasterTable):
         """
         queryset = self.get_builds()
 
-        # don't include in progress builds
+        # don't include in progress builds and cancelled builds
         queryset = queryset.exclude(outcome=Build.IN_PROGRESS)
+        queryset = queryset.exclude(outcome=Build.CANCELLED)
 
         # sort
         queryset = queryset.order_by(self.default_orderby)
@@ -1264,11 +1267,21 @@ class BuildsTable(ToasterTable):
         project = Project.objects.get(pk=kwargs['pid'])
 
         if 'buildCancel' in request.POST:
-            for i in request.POST['buildCancel'].strip().split(" "):
+            for i in range(int(request.POST['buildCancel']) + 1):
                 try:
-                    br = BuildRequest.objects.select_for_update().get(project = project, pk = i, state__lte = BuildRequest.REQ_QUEUED)
-                    br.state = BuildRequest.REQ_DELETED
-                    br.save()
+                    br = BuildRequest.objects.select_for_update().get(project = project, pk = i, state__lte = BuildRequest.REQ_INPROGRESS)
+                    bbctrl = bbcontroller.BitbakeController(br.environment)
+                    bbctrl.forceShutDown()
+                    while True:
+                        import time
+                        time.sleep(2)
+                        build = BuildRequest.objects.get(pk = i).build
+                        if build.outcome == 0:
+                            br.state = BuildRequest.REQ_DELETED
+                            build.outcome = 3
+                            build.save()
+                            br.save()
+                            break
                 except BuildRequest.DoesNotExist:
                     pass
 
