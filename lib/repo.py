@@ -81,15 +81,15 @@ class Repo(object):
             logger.error('Unknown cmd format')
             raise RepoException
 
-        results = utils.exec_cmds(_cmds, self._repodir)
+        try:
+            results = utils.exec_cmds(_cmds, self._repodir)
+        except utils.CmdException as ce:
+            logger.error(ce)
+            raise RepoException
 
         if logger.getEffectiveLevel() == logging.DEBUG:
             for result in results:
                 logger.debug(result)
-
-        if not utils.all_succeed(results):
-            logger.error('cmd exception')
-            raise RepoException
 
         return results
 
