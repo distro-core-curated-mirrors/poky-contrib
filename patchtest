@@ -71,10 +71,6 @@ class PatchTestResult(unittest.TextTestResult):
         keepbranch = False if not self.success else PatchTestArgs.keepbranch
         self.repo.clean(keepbranch=keepbranch)
 
-    @classmethod
-    def stop(cls):
-        pass
-
 def get_parser():
     parser = argparse.ArgumentParser()
 
