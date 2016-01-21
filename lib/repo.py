@@ -33,8 +33,7 @@ class Repo(object):
         try:
             self.repo = git.Repo(self._repodir)
         except git.exc.InvalidGitRepositoryError:
-            logger.error('Not a git repository')
-            raise RepoException
+            raise RepoException, 'Not a git repository'
 
         config = self.repo.config_reader()
 
@@ -43,8 +42,7 @@ class Repo(object):
             self._url = config.get(patchwork_section, 'url')
             self._project = config.get(patchwork_section, 'project')
         except:
-            logger.error('patchwork url/project configuration is not available')
-            raise RepoException
+            raise RepoException, 'patchwork url/project configuration is not available'
 
     @property
     def mbox(self):
@@ -78,14 +76,9 @@ class Repo(object):
         elif isinstance(cmds, list):
             _cmds = cmds
         else:
-            logger.error('Unknown cmd format')
-            raise RepoException
+            raise utils.CmdException(**{'cmd':str(cmds)})
 
-        try:
-            results = utils.exec_cmds(_cmds, self._repodir)
-        except utils.CmdException as ce:
-            logger.error(ce)
-            raise RepoException
+        results = utils.exec_cmds(_cmds, self._repodir)
 
         if logger.getEffectiveLevel() == logging.DEBUG:
             for result in results:
@@ -147,8 +140,10 @@ class Repo(object):
         if cmd:
             try:
                 self._exec(cmd)
-            except RepoException:
-                msg = "\nThe mbox \n\n\t%s\n\ncannot be applied on top of %s/%s" % (self.mbox, self.branch, self.commit)
+            except utils.CmdException as ce:
+                mbox = "The mbox %s\n\ncannot be applied on top of %s/%s" % (self.mbox, self.branch, self.commit)
+                reason = "Reason:\n\n%s" % ce.stderr
+                msg = "\n%s\n\n%s" % (mbox,reason)
                 raise PatchException, msg
 
     def setup(self):
@@ -173,7 +168,6 @@ class Repo(object):
                       '--revision', self._revision]}
         try:
             self._exec(cmd)
-        except RepoException:
-            logger.error('POST requests cannot be done to %s' % self._url)
-            raise RepoException
+        except utils.CmdException:
+            raise RepoException, 'POST requests cannot be done to %s' % self._url
 

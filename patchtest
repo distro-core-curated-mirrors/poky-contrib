@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'li
 import utils
 logger = utils.logger_create('patchtest')
 
-from repo import Repo, PatchException
+import repo
 from summary import BasicSummary
 
 # When parsing the arguments, the following class (PatchTestArgs)
@@ -32,14 +32,20 @@ class PatchTestResult(unittest.TextTestResult):
     shouldStop = True
 
     def startTestRun(self):
-        self.repo = Repo(PatchTestArgs.commit, PatchTestArgs.branch, PatchTestArgs.mbox, PatchTestArgs.series, PatchTestArgs.revision, PatchTestArgs.repodir)
+        self.repo = repo.Repo(PatchTestArgs.commit, PatchTestArgs.branch, PatchTestArgs.mbox, PatchTestArgs.series, PatchTestArgs.revision, PatchTestArgs.repodir)
         self.summary = BasicSummary(PatchTestArgs.series, PatchTestArgs.revision, self.repo.mbox)
         self.success = True
 
         try:
             self.repo.setup()
-        except PatchException as pe:
+        except repo.PatchException as pe:
             self.summary.addPatchFailure(str(pe))
+            self.stop()
+        except repo.RepoException as re:
+            logger.error(rp)
+            self.stop()
+        except utils.CmdException as ce:
+            logger.error("Command failed: %s %s %s" % (ce.cmd, ce.stdout, ce.stderr))
             self.stop()
 
     def addError(self, test, err):

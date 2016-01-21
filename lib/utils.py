@@ -5,7 +5,28 @@ import subprocess
 import logging
 
 class CmdException(Exception):
-    pass
+    def __init__(self, cmd, stdout=None, stderr=None, returncode=None, ignore_error=None):
+        self._cmd = cmd
+        self._stdout = stdout
+        self._stderr = stderr
+        self._returncode = returncode
+        self._ignore_error = ignore_error
+
+    @property
+    def cmd(self):
+        return self._cmd
+
+    @property
+    def stdout(self):
+        return self._stdout
+
+    @property
+    def stderr(self):
+        return self._stderr
+
+    @property
+    def returncode(self):
+        return self._returncode
 
 def exec_cmd(cmd, cwd, ignore_error=False):
     """
@@ -37,14 +58,16 @@ def exec_cmd(cmd, cwd, ignore_error=False):
     if cmd.has_key('ignore_error'):
         _ignore_error = cmd['ignore_error']
 
-    if not _ignore_error and p.returncode:
-        raise CmdException, 'Command failed to execute: %s' % ' '.join(_cmd)
+    result = {'cmd':_cmd,
+              'ignore_error': ignore_error,
+              'stdout':stdout.strip(),
+              'stderr':stderr.strip(),
+              'returncode':p.returncode}
 
-    return {'cmd':_cmd,
-            'ignore_error': ignore_error,
-            'stdout':stdout.strip(),
-            'stderr':stderr.strip(),
-            'returncode':p.returncode}
+    if not _ignore_error and p.returncode:
+        raise CmdException(**result)
+
+    return result
 
 def exec_cmds(cmds, cwd):
     """ Executes commands
