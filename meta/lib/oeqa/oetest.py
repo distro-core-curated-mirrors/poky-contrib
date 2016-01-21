@@ -7,89 +7,106 @@
 
 # It also has some helper functions and it's responsible for actually starting the tests
 
-import os, re, mmap
+import os, sys, re, mmap
+import time
 import unittest
 import inspect
 import subprocess
 import bb
 from oeqa.utils.decorators import LogResults
 
+from oeqa.base.baserunner import TestRunnerBase
+class FatalException(Exception):
+    pass
+
+class OETestRunner(TestRunnerBase):
+    def __init__(self, tc, type="runtime"):
+        super(OETestRunner, self).__init__(tc)
+        self.type = type
+
+    def configure(self, options=None):
+        super(OETestRunner, self).configure(options)
+        self.runner = unittest.TextTestRunner(stream=sys.stderr, verbosity=2)
+        self.tclist = self.context.testslist
+        setattr(oeTest, "tc", self.context)
+        if self.type == "runtime":
+            setattr(oeRuntimeTest, "pscmd", "ps -ef" if oeTest.hasPackage("procps") else "ps")
+
+    def loadtest(self, names=None):
+        # this is a dummy load of tests
+        # we are doing that to find compile errors in the tests themselves
+        # before booting the image
+        try:
+            suites = super(OETestRunner, self).loadtest(names)
+        except Exception as e:
+            import traceback
+            raise FatalException("Loading tests failed:\n%s" % traceback.format_exc())
+        suiteClass = suites.__class__
+        suites = getattr(suites, "_tests")
+        def getTests(test):
+            '''Return all individual tests executed when running the suite.'''
+            # Unfortunately unittest does not have an API for this, so we have
+            # to rely on implementation details. This only needs to work
+            # for TestSuite containing TestCase.
+            method = getattr(test, '_testMethodName', None)
+            if method:
+                # leaf case: a TestCase
+                yield test
+            else:
+                # Look into TestSuite.
+                tests = getattr(test, '_tests', [])
+                for t1 in tests:
+                    for t2 in getTests(t1):
+                        yield t2
+        # Determine dependencies between suites by looking for @skipUnlessPassed
+        # method annotations. Suite A depends on suite B if any method in A
+        # depends on a method on B.
+        for suite in suites:
+            suite.dependencies = []
+            suite.depth = 0
+            for test in getTests(suite):
+                methodname = getattr(test, '_testMethodName', None)
+                if methodname:
+                    method = getattr(test, methodname)
+                    depends_on = getattr(method, '_depends_on', None)
+                    if depends_on:
+                        for dep_suite in suites:
+                            if depends_on in [getattr(t, '_testMethodName', None) for t in getTests(dep_suite)]:
+                                if dep_suite not in suite.dependencies and \
+                                   dep_suite is not suite:
+                                    suite.dependencies.append(dep_suite)
+                                break
+                        else:
+                            bb.warn("Test %s was declared as @skipUnlessPassed('%s') but that test is either not defined or not active. Will run the test anyway." %
+                                    (test, depends_on))
+        # Use brute-force topological sort to determine ordering. Sort by
+        # depth (higher depth = must run later), with original ordering to
+        # break ties.
+        def set_suite_depth(suite):
+            for dep in suite.dependencies:
+                new_depth = set_suite_depth(dep) + 1
+                if new_depth > suite.depth:
+                    suite.depth = new_depth
+            return suite.depth
+        for index, suite in enumerate(suites):
+            set_suite_depth(suite)
+            suite.index = index
+        suites.sort(cmp=lambda a,b: cmp((a.depth, a.index), (b.depth, b.index)))
+        return suiteClass(suites)
+
 def loadTests(tc, type="runtime"):
-    if type == "runtime":
-        # set the context object passed from the test class
-        setattr(oeTest, "tc", tc)
-        # set ps command to use
-        setattr(oeRuntimeTest, "pscmd", "ps -ef" if oeTest.hasPackage("procps") else "ps")
-        # prepare test suite, loader and runner
-        suite = unittest.TestSuite()
-    elif type == "sdk":
-        # set the context object passed from the test class
-        setattr(oeTest, "tc", tc)
-    testloader = unittest.TestLoader()
-    testloader.sortTestMethodsUsing = None
-    suites = [testloader.loadTestsFromName(name) for name in tc.testslist]
-
-    def getTests(test):
-        '''Return all individual tests executed when running the suite.'''
-        # Unfortunately unittest does not have an API for this, so we have
-        # to rely on implementation details. This only needs to work
-        # for TestSuite containing TestCase.
-        method = getattr(test, '_testMethodName', None)
-        if method:
-            # leaf case: a TestCase
-            yield test
-        else:
-            # Look into TestSuite.
-            tests = getattr(test, '_tests', [])
-            for t1 in tests:
-                for t2 in getTests(t1):
-                    yield t2
-
-    # Determine dependencies between suites by looking for @skipUnlessPassed
-    # method annotations. Suite A depends on suite B if any method in A
-    # depends on a method on B.
-    for suite in suites:
-        suite.dependencies = []
-        suite.depth = 0
-        for test in getTests(suite):
-            methodname = getattr(test, '_testMethodName', None)
-            if methodname:
-                method = getattr(test, methodname)
-                depends_on = getattr(method, '_depends_on', None)
-                if depends_on:
-                    for dep_suite in suites:
-                        if depends_on in [getattr(t, '_testMethodName', None) for t in getTests(dep_suite)]:
-                            if dep_suite not in suite.dependencies and \
-                               dep_suite is not suite:
-                                suite.dependencies.append(dep_suite)
-                            break
-                    else:
-                        bb.warn("Test %s was declared as @skipUnlessPassed('%s') but that test is either not defined or not active. Will run the test anyway." %
-                                (test, depends_on))
-    # Use brute-force topological sort to determine ordering. Sort by
-    # depth (higher depth = must run later), with original ordering to
-    # break ties.
-    def set_suite_depth(suite):
-        for dep in suite.dependencies:
-            new_depth = set_suite_depth(dep) + 1
-            if new_depth > suite.depth:
-                suite.depth = new_depth
-        return suite.depth
-    for index, suite in enumerate(suites):
-        set_suite_depth(suite)
-        suite.index = index
-    suites.sort(cmp=lambda a,b: cmp((a.depth, a.index), (b.depth, b.index)))
-    return testloader.suiteClass(suites)
+    runner = OETestRunner(tc, type)
+    runner.configure()
+    return runner.loadtest()
 
 def runTests(tc, type="runtime"):
-
-    suite = loadTests(tc, type)
-    bb.note("Test modules  %s" % tc.testslist)
+    runner = OETestRunner(tc, type)
+    runner.configure()
+    suite = runner.loadtest()
+    bb.note("Test modules  %s" % runner.context.testslist)
     bb.note("Found %s tests" % suite.countTestCases())
-    runner = unittest.TextTestRunner(verbosity=2)
-    result = runner.run(suite)
-
-    return result
+    runner.start(suite)
+    return runner.test_result
 
 @LogResults
 class oeTest(unittest.TestCase):
