@@ -27,44 +27,14 @@ class TestContext(object):
 
 class TestRunnerBase(object):
     '''test runner base '''
-    def __init__(self):
-        self.option_list = []
+    def __init__(self, context=None):
         self.tclist = []
         self.runner = None
-        self.context = None
-        self.manifest = None
+        self.context = context if context else TestContext()
+        self.test_options = None
         self.log_handler = None
         self.test_result = None
         self.run_time = None
-
-    @staticmethod
-    def __get_tc_from_manifest(fname):
-        '''get tc list from manifest format '''
-        with open(fname, "r") as f:
-            tclist = [{"id":n.strip()} for n in f.readlines() \
-                                if n.strip() and not n.strip().startswith('#')]
-        return tclist
-
-    def _get_log_dir(self, logdir=None):
-        '''get the log directory'''
-        if not logdir:
-            logdir = os.path.abspath(os.path.join(".", "log"))
-            if not os.path.exists(logdir):
-                os.makedirs(logdir)
-            prefix = self.manifest[:self.manifest.rindex(".")]+"%03d"
-            names = set(os.listdir(logdir))
-            index = len(names)
-            while prefix % index not in names and index >= 1:
-                index -= 1
-            logdir = os.path.join(logdir, prefix % (index + 1))
-        else:
-            if os.path.exists(logdir):
-                shutil.rmtree(logdir)
-        os.makedirs(logdir)
-        return logdir
-
-    def options(self):
-        '''handle testrunner options'''
         self.option_list = [
             make_option("-f", "--manifest", dest="manifest",
                     help="The test list file"),
@@ -80,8 +50,33 @@ class TestRunnerBase(object):
                     help="Run tests by dot separated module path")
         ]
 
+    @staticmethod
+    def __get_tc_from_manifest(fname):
+        '''get tc list from manifest format '''
+        with open(fname, "r") as f:
+            tclist = [n.strip() for n in f.readlines() \
+                                if n.strip() and not n.strip().startswith('#')]
+        return tclist
+
+    @staticmethod
+    def _get_log_dir(logdir):
+        '''get the log directory'''
+        if os.path.exists(logdir):
+            shutil.rmtree(logdir)
+        os.makedirs(logdir)
+        return logdir
+
+    def get_options(self, default=False):
+        '''handle testrunner options'''
+        parser = OptionParser(option_list=self.option_list, \
+                                usage="usage: %prog [options]")
+        if default:
+            return parser.parse_args(args=[])[0]
+        return parser.parse_args()[0]
+
     def configure(self, options):
         '''configure before testing'''
+        self.test_options = options
         if options.xunit:
             try:
                 from xmlrunner import XMLTestRunner
@@ -93,21 +88,18 @@ class TestRunnerBase(object):
             self.runner = unittest.TextTestRunner(stream=sys.stderr, \
                                                   verbosity=2)
 
-        self.tclist = []
         if options.manifest:
-            self.manifest = options.manifest
             fbname, fext = os.path.splitext(os.path.basename(options.manifest))
             assert fbname == "manifest" or fext == ".manifest", \
                   "Please specify file name like xxx.manifest or manifest.xxx"
             self.tclist = self.__get_tc_from_manifest(options.manifest)
+
         if options.tests:
-            self.tclist.extend([{"id":x} for x in options.tests])
+            self.tclist.extend(options.tests)
 
         if options.logdir:
             logdir = self._get_log_dir(options.logdir)
             self.log_handler = LogHandler(logdir)
-
-        self.context = TestContext()
 
         try:
             self.context.def_timeout = int(options.timeout)
@@ -118,11 +110,12 @@ class TestRunnerBase(object):
     def result(self):
         '''output test result '''
         print "output test result..."
-        print self.tclist
 
-    @staticmethod
-    def loadtest(names):
+    def loadtest(self, names=None):
         '''load test suite'''
+        if not names:
+            names = self.tclist
+        print names
         testloader = unittest.TestLoader()
         tclist = []
         for name in names:
@@ -133,35 +126,32 @@ class TestRunnerBase(object):
                 tclist.append(testloader.discover(name, "*.py"))
         return testloader.suiteClass(tclist)
 
-    def runtest(self, suite):
+    def filtertest(self, testsuite):
+        '''filter test set'''
+        if self.test_options.tag:
+            return filter_tagexp(testsuite, self.test_options.tag)
+        return testsuite
+
+    def runtest(self, testsuite):
         '''run test suite'''
         starttime = time.time()
-        self.test_result = self.runner.run(suite)
+        self.test_result = self.runner.run(testsuite)
         self.run_time = time.time() - starttime
 
-    def run(self):
+    def start(self, testsuite):
         '''start testing'''
-        self.options()
-        usage = "usage: %prog [options]"
-        parser = OptionParser(option_list=self.option_list, usage=usage)
-        options = parser.parse_args()[0]
-        self.configure(options)
-        print options
         if self.log_handler:
             self.log_handler.start()
-
+        set_timeout(testsuite, self.context.def_timeout)
         setattr(unittest.TestCase, "tc", self.context)
-        tnames = [tc["id"] for tc in self.tclist]
-        suite = self.loadtest(tnames)
-        if options.tag:
-            suite = filter_tagexp(suite, options.tag)
-        set_timeout(suite, self.context.def_timeout)
-        print "Found %s tests" % suite.countTestCases()
-        self.runtest(suite)
-
+        self.runtest(testsuite)
         self.result()
         if self.log_handler:
             self.log_handler.end()
 
 if __name__ == "__main__":
-    TestRunnerBase().run()
+    runner = TestRunnerBase()
+    runner.configure(runner.get_options())
+    suite = runner.filtertest(runner.loadtest())
+    print "Found %s tests" % suite.countTestCases()
+    runner.start(suite)

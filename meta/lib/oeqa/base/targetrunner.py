@@ -12,8 +12,11 @@ from baserunner import TestRunnerBase
 
 class TargetTestRunner(TestRunnerBase):
     '''test runner which support target DUT access'''
-    def __init__(self):
-        super(TargetTestRunner, self).__init__()
+    def __init__(self, context=None):
+        super(TargetTestRunner, self).__init__(context)
+        self.option_list.extend([
+            make_option("-c", "--controller", dest="controller",
+                    help="the target controller to bridge host and target")])
 
     def _get_arg_val(self, dest_name, store_val=True):
         '''get arg value from testrunner args'''
@@ -33,38 +36,14 @@ class TargetTestRunner(TestRunnerBase):
                 pass
         return None
 
-    def options(self):
-        '''expand extra options'''
-        super(TargetTestRunner, self).options()
-        ext_opts = [
-            make_option("-c", "--controller", dest="controller",
-                    help="the target controller to bridge host and target")
-        ]
-        self.option_list.extend(ext_opts)
-        if self._get_arg_val("controller") == "ssh":
-            self.option_list.append(
-                   make_option("-t", "--target-ip", dest="ip",
-                       help="The IP address of the target machine."))
-
     def configure(self, options):
         '''configure before testing'''
         super(TargetTestRunner, self).configure(options)
-        if options.controller:
-            if options.controller.lower() == "ssh":
-                from controller.SSHTarget import SshRemoteTarget
-                ssh_target = SshRemoteTarget(ip=options.ip)
-                self.context.target = ssh_target
-
-    def runtest(self, suite):
-        '''run test suite with target'''
-        if self.context.target:
-            self.context.target.deploy()
-            self.context.target.start()
-        try:
-            super(TargetTestRunner, self).runtest(suite)
-        finally:
-            if self.context.target:
-                self.context.target.stop()
+        print "configure target test runner"
 
 if __name__ == "__main__":
-    TargetTestRunner().run()
+    runner = TargetTestRunner()
+    runner.configure(runner.get_options())
+    suite = runner.filtertest(runner.loadtest())
+    print "Found %s tests" % suite.countTestCases()
+    runner.start(suite)
