@@ -557,7 +557,8 @@ class ORMWrapper(object):
                 recipe = built_recipe
             else:
                 packagedict[p]['object'], created = \
-                        CustomImagePackage.objects.get_or_create(name=searchname)
+                        CustomImagePackage.objects.get_or_create(name=searchname,
+                                                                 project=build_obj.project)
                 try:
                     recipe = self._cached_get(Recipe,
                                               name=built_recipe.name,
@@ -692,7 +693,8 @@ class ORMWrapper(object):
             recipe = built_recipe
         else:
             bp_object, created = \
-                    CustomImagePackage.objects.get_or_create(name=pname)
+                    CustomImagePackage.objects.get_or_create(name=pname,
+                                                             project=build_obj.project)
             try:
                 recipe = self._cached_get(Recipe,
                                           name=built_recipe.name,

@@ -749,7 +749,7 @@ class CustomImagePackage(Package):
                                              related_name='excludes_set')
     recipe_appends = models.ManyToManyField('CustomImageRecipe',
                                             related_name='appends_set')
-
+    project = models.ForeignKey('Project', null=True)
 
 
 class Package_DependencyManager(models.Manager):
