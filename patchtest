@@ -39,12 +39,15 @@ class PatchTestResult(unittest.TextTestResult):
         try:
             self.repo.setup()
         except repo.PatchException as pe:
+            self.success = False
             self.summary.addPatchFailure(str(pe))
             self.stop()
         except repo.RepoException as re:
+            self.success = False
             logger.error(rp)
             self.stop()
         except utils.CmdException as ce:
+            self.success = False
             logger.error("Command failed: %s %s %s" % (ce.cmd, ce.stdout, ce.stderr))
             self.stop()
 
@@ -69,7 +72,8 @@ class PatchTestResult(unittest.TextTestResult):
         state = 'success' if self.success else 'failure'
         summary = self.summary.generateSummary()
 
-        logger.info(summary)
+        f = logger.info if self.success else logger.error
+        f(summary)
 
         if PatchTestArgs.post:
             self.repo.post(PatchTestArgs.testname, state, summary)
@@ -163,8 +167,8 @@ def main():
         if listmbox and listseries:
             logger.warning('received both mbox and series/revision')
     elif PatchTestArgs.mbox:
-        if (PatchTestArgs.series or PatchTestArgs.revision or PatchTestArgs.nopost):
-            logger.error('patchwork-related parameters (--series, --revision, --no-post) cannot be used with --mbox')
+        if PatchTestArgs.series:
+            logger.error('patchwork-related parameters (--series) cannot be used with --mbox')
             return 1
         listmbox = [PatchTestArgs.mbox]
     elif (PatchTestArgs.series and PatchTestArgs.revision):
