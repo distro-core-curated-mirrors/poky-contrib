@@ -18,22 +18,30 @@ class Repo(object):
     branchnameprefix = 'patchtest'
     tempdirprefix = 'patchtest'
 
-    def __init__(self, commit, branch, mbox, series, revision, repodir):
-
+    def __init__(self, repodir, commit=None, branch=None, mbox=None, series=None, revision=None):
+        self._repodir = repodir
         self._commit = commit
         self._branch = branch
         self._mbox = mbox
         self._series = series
         self._revision = revision
-        self._repodir = repodir
 
         self._stashed = False
 
-        # get current branch name and commit id
-        self._current_branch, self._current_commitid = self._get_branch_commitid('HEAD')
+        # get current branch name, so we can checkout at the end
+        self._current_branch = self._get_branch()
 
         # get user branch name and commit id
-        self._branch, self._commit = self._get_branch_commitid(commit)
+        self._branch = branch or self._current_branch
+        self._commit = self._get_commitid(commit or 'HEAD')
+
+        logger.debug("Parameters")
+        logger.debug("\tRepository: %s" % self._repodir)
+        logger.debug("\tCommit: %s" % self._commit)
+        logger.debug("\tBranch: %s" % self._branch)
+        logger.debug("\tMBOX: %s" % self._mbox)
+        logger.debug("\tSeries: %s" % self._series)
+        logger.debug("\tRevision: %s" % self._revision)
 
         try:
             self.repo = git.Repo(self._repodir)
@@ -85,27 +93,17 @@ class Repo(object):
         finally:
             if logger.getEffectiveLevel() == logging.DEBUG:
                 for result in results:
-                    logger.debug("CMD: %s" % result)
+                    logger.debug("CMD: %s" % ' '.join(result['cmd']))
 
         return results
 
-    def _get_branch_commitid(self, commit):
-        _commit = 'HEAD'
-        if commit:
-            _commit = commit
+    def _get_branch(self, commit='HEAD'):
+        cmd = {'cmd':['git', 'rev-parse', '--abbrev-ref', commit]}
+        return self._exec(cmd)[0]['stdout']
 
-        cmds = [ {'cmd':['git', 'rev-parse', '--abbrev-ref', _commit]},
-                 {'cmd':['git', 'rev-parse', _commit]},
-             ]
-
-        _branch, _commitid = None, None
-
-        results = self._exec(cmds)
-        if results:
-            _branch = results[0]['stdout']
-            _commitid = results[1]['stdout']
-
-        return (_branch, _commitid)
+    def _get_commitid(self, commit='HEAD'):
+        cmd = {'cmd':['git', 'rev-parse', '--short', commit]}
+        return self._exec(cmd)[0]['stdout']
 
     def _stash(self):
         # check first if repository is dirty
@@ -131,7 +129,7 @@ class Repo(object):
     def _checkout(self):
         cmds = [
             {'cmd':['git', 'checkout', self.branch]},
-            {'cmd':['git', 'checkout', '-b', self.branchname, self.commit], 'ignore_error':True},
+            {'cmd':['git', 'checkout', '-b', self.branchname, self.commit]},
         ]
         self._exec(cmds)
 
@@ -150,8 +148,6 @@ class Repo(object):
         else:
             # nothing to apply, return
             return True
-
-        logger.debug(mbox_data)
 
         # check if applies
         apply_check_cmd = {'cmd':['git', 'apply', '--check'], 'input':mbox_data}
