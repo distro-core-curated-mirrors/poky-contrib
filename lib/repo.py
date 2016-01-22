@@ -28,7 +28,12 @@ class Repo(object):
         self._repodir = repodir
 
         self._stashed = False
-        self._current_branch, self._current_commit = self._get_current_branch_commit()
+
+        # get current branch name and commit id
+        self._current_branch, self._current_commitid = self._get_branch_commitid('HEAD')
+
+        # get user branch name and commit id
+        self._branch, self._commit = self._get_branch_commitid(commit)
 
         try:
             self.repo = git.Repo(self._repodir)
@@ -55,14 +60,10 @@ class Repo(object):
 
     @property
     def branch(self):
-        if not self._branch:
-            self._branch = self._current_branch
         return self._branch
 
     @property
     def commit(self):
-        if not self._commit:
-            self._commit = self._current_commit
         return self._commit
 
     @property
@@ -88,19 +89,23 @@ class Repo(object):
 
         return results
 
-    def _get_current_branch_commit(self):
-        branch = None
-        commit = None
-        # before branching, save current branch/commit
-        cmds = [ {'cmd':['git', 'rev-parse', '--abbrev-ref', 'HEAD']},
-                 {'cmd':['git', 'rev-parse', 'HEAD']},
-        ]
+    def _get_branch_commitid(self, commit):
+        _commit = 'HEAD'
+        if commit:
+            _commit = commit
+
+        cmds = [ {'cmd':['git', 'rev-parse', '--abbrev-ref', _commit]},
+                 {'cmd':['git', 'rev-parse', _commit]},
+             ]
+
+        _branch, _commitid = None, None
+
         results = self._exec(cmds)
         if results:
-            branch = results[0]['stdout']
-            commit = results[1]['stdout']
+            _branch = results[0]['stdout']
+            _commitid = results[1]['stdout']
 
-        return (branch, commit)
+        return (_branch, _commitid)
 
     def _stash(self):
         # check first if repository is dirty
