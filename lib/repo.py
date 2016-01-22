@@ -121,6 +121,7 @@ class Repo(object):
 
         if self._stashed:
             cmds.append({'cmd':['git', 'stash', 'apply', self.stashname]})
+            cmds.append({'cmd':['git', 'stash', 'drop', self.stashname]})
             self._stashed = False
 
         self._exec(cmds)
