@@ -35,10 +35,10 @@ class Manifest(object, metaclass=ABCMeta):
     }
 
     INSTALL_ORDER = [
+        PKG_TYPE_MULTILIB,
         PKG_TYPE_LANGUAGE,
         PKG_TYPE_MUST_INSTALL,
-        PKG_TYPE_ATTEMPT_ONLY,
-        PKG_TYPE_MULTILIB
+        PKG_TYPE_ATTEMPT_ONLY
     ]
 
     initial_manifest_file_header = \
