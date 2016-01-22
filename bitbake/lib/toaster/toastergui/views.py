@@ -2553,17 +2553,13 @@ if True:
                 # TODO Django 1.8 will allow us to map these to nicer keys
                 # using annotate(myfieldname=F(field__name
 
-                # TODO currently we ignore packgegroups as we don't have a
-                # way to deal with them yet.
-
                 # Dependencies for package which aren't satisfied by the
                 # current packages in the custom image recipe
                 deps = package.package_dependencies_source.values(
                     "depends_on__name",
                     "depends_on__pk",
                     "depends_on__size").exclude(
-                        Q(depends_on__in=all_current_packages) |
-                        Q(package__name__icontains="packagegroup")
+                        Q(depends_on__in=all_current_packages)
                     )
 
                 # Reverse dependencies which are needed by packages that are
@@ -2572,8 +2568,7 @@ if True:
                     "package__name",
                     "package__pk",
                     "package__size").exclude(
-                        ~Q(package__pk__in=all_current_packages) |
-                        Q(package__name__icontains="packagegroup")
+                        ~Q(package__pk__in=all_current_packages)
                     )
 
                 total_size_deps = 0
