@@ -14,9 +14,8 @@ class PatchException(Exception):
 
 class Repo(object):
 
-    # prefixes used for branches and temp directory
-    branchnameprefix = 'patchtest'
-    tempdirprefix = 'patchtest'
+    # prefixes used for temporal branches/stashes
+    prefix = 'patchtest'
 
     def __init__(self, repodir, commit=None, branch=None, mbox=None, series=None, revision=None):
         self._repodir = repodir
@@ -35,9 +34,6 @@ class Repo(object):
         # current branch and HEAD is take
         self._branch = branch or self._current_branch
         self._commit = self._get_commitid(commit or 'HEAD')
-
-        # this variable would be useful when stashing is desired
-        self._branch_commit_provided = (branch or commit)
 
         logger.debug("Parameters")
         logger.debug("\tRepository: %s" % self._repodir)
@@ -80,7 +76,11 @@ class Repo(object):
 
     @property
     def branchname(self):
-        return "%s-%s-%s" % (Repo.branchnameprefix, self.branch, self.commit)
+        return "%s-%s-%s" % (Repo.prefix, self.branch, self.commit)
+
+    @property
+    def stashname(self):
+        return "%s-%s-%s" % (Repo.prefix, self.branch, self.commit)
 
     def _exec(self, cmds):
         _cmds = []
@@ -113,14 +113,14 @@ class Repo(object):
         # stash just when working dir is dirty
         dirty = self._exec({'cmd':['git', 'diff', '--shortstat']}) [0]['stdout']
         if dirty:
-            self._exec({'cmd':['git', 'stash']})
+            self._exec({'cmd':['git', 'stash', 'save', self.stashname]})
             self._stashed = True
 
     def _destash(self):
         cmds = [{'cmd':['git', 'checkout', '%s' % self._current_branch]}]
 
         if self._stashed:
-            cmds.append({'cmd':['git', 'stash', 'apply']})
+            cmds.append({'cmd':['git', 'stash', 'apply', self.stashname]})
             self._stashed = False
 
         self._exec(cmds)
@@ -164,6 +164,11 @@ class Repo(object):
         if not (self._mbox or self._series):
             return
 
+        # if stashed, then apply these changes before applying
+        if self._stashed:
+            logger.warning('Applying mbox with stashed data')
+            self._exec({'cmd':['git', 'stash', 'apply', self.stashname]})
+
         # check if mbox applies
         try:
             self._check_apply()
@@ -182,18 +187,13 @@ class Repo(object):
         self._exec(cmd)
 
     def setup(self):
-        # branch when either --commit or --branch is given
-        if self._branch_commit_provided:
-            self._stash()
-            self._checkout()
-
+        self._stash()
+        self._checkout()
         self._apply()
 
     def clean(self, keepbranch=False):
-        # remove branch when either --commit or --branch is given and keepbrach is False
-        if self._branch_commit_provided:
-            self._destash()
-            self._removebranch(keepbranch)
+        self._destash()
+        self._removebranch(keepbranch)
 
     def post(self, testname, state, summary):
         cmd = {'cmd':['git', 'pw', 'post-result',
