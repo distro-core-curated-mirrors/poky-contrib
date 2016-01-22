@@ -3,9 +3,9 @@ import utils
 
 class BasicSummary(dict):
 
-    def __init__(self, series, revision, mbox):
-        self.series = series
-        self.revision = revision
+    def __init__(self, commit, branch, mbox):
+        self.commit = commit
+        self.branch = branch
         self.mbox = mbox
 
         self.error = list()
@@ -29,7 +29,10 @@ class BasicSummary(dict):
         if self.patchmsg:
             summary += "%s" % self.patchmsg
         else:
-            summary  += "Tested mbox: %s\n" % self.mbox
+            if self.mbox:
+                summary += "Tested mbox: %s\n" % self.mbox
+            else:
+                summary += "Tested branch/commit: %s/%s\n" % (self.branch, self.commit)
             if self.success:
                 summary += "\nPass:\n"
                 for test in self.success:

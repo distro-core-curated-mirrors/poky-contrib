@@ -32,8 +32,18 @@ class PatchTestResult(unittest.TextTestResult):
     shouldStop = True
 
     def startTestRun(self):
-        self.repo = repo.Repo(PatchTestArgs.commit, PatchTestArgs.branch, PatchTestArgs.mbox, PatchTestArgs.series, PatchTestArgs.revision, PatchTestArgs.repodir)
-        self.summary = BasicSummary(PatchTestArgs.series, PatchTestArgs.revision, self.repo.mbox)
+        repoargs = {
+            'repodir':PatchTestArgs.repodir,
+            'commit':PatchTestArgs.commit,
+            'branch':PatchTestArgs.branch,
+            'mbox':PatchTestArgs.mbox,
+            'series':PatchTestArgs.series,
+            'revision':PatchTestArgs.revision,
+        }
+        self.repo = repo.Repo(**repoargs)
+        self.summary = BasicSummary(commit=self.repo.commit,
+                                    branch=self.repo.branch,
+                                    mbox=self.repo.mbox)
         self.success = True
 
         try:
