@@ -5,67 +5,79 @@ import subprocess
 import logging
 
 class CmdException(Exception):
-    def __init__(self, cmd, stdout=None, stderr=None, returncode=None, ignore_error=None):
+    """ Simple exception class where its attributes are the ones passed when instantiated """
+    def __init__(self, cmd):
         self._cmd = cmd
-        self._stdout = stdout
-        self._stderr = stderr
-        self._returncode = returncode
-        self._ignore_error = ignore_error
+    def __getattr__(self, name):
+        value = None
+        if self._cmd.has_key(name):
+            value = self._cmd[name]
+        return value
 
-    @property
-    def cmd(self):
-        return self._cmd
-
-    @property
-    def stdout(self):
-        return self._stdout
-
-    @property
-    def stderr(self):
-        return self._stderr
-
-    @property
-    def returncode(self):
-        return self._returncode
-
-def exec_cmd(cmd, cwd, ignore_error=False):
+def exec_cmd(cmd, cwd, ignore_error=False, input=None, strip=True):
     """
          Input:
-            cmd: dict containing 'cmd' and 'ignore_error' as keys:
-                       {'cmd':[<cmd>], 'ignore_error':True}
 
-             NOTE: the key 'ignore_error' is optional; if not included, the
-             default is the one specify in the corresponding argument
+            cmd: dict containing the following keys:
 
-             cwd: directory where commands are executed
+                cmd : the command itself as an array of strings
+                ignore_error: if False, no exception is raised
+                strip: indicates if strip is done on the output (stdout and stderr)
+                input: input data to the command (stdin)
 
-         Output: dict containing the following key/values
-             {'cmd':<cmd>,
-              'ignore_error':<True|False>,
-              'stdout':<stdout>,
-              'stderr':<stderr>,
-              'returncode':<returncode>}
+            NOTE: keys 'ignore_error' and 'input' are optional; if not included,
+            the defaults are the ones specify in the arguments
+            cwd: directory where commands are executed
+            ignore_error: raise CmdException if command fails to execute and
+            this value is False
+            input: input data (stdin) for the command
+
+         Output: dict containing the following keys:
+
+             cmd: the same as input
+             ignore_error: the same as input
+             strip: the same as input
+             input: the same as input
+             stdout: Standard output after command's execution
+             stderr: Standard error after command's execution
+             returncode: Return code after command's execution
+
     """
-    _cmd = map(str, cmd['cmd'])
-    p = subprocess.Popen(_cmd,
+    cmddefaults = {
+        'cmd':'',
+        'ignore_error':ignore_error,
+        'strip':strip,
+        'input':input
+    }
+
+    # update input values if necessary
+    cmddefaults.update(cmd)
+
+    _cmd = cmddefaults
+
+    if not _cmd['cmd']:
+        raise CmdException({'cmd':None, 'stderr':'no command given'})
+
+    _command = map(str, _cmd['cmd'])
+    p = subprocess.Popen(_command,
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE,
                          cwd=cwd)
-    (stdout, stderr) = p.communicate()
 
-    _ignore_error = ignore_error
-    if cmd.has_key('ignore_error'):
-        _ignore_error = cmd['ignore_error']
 
-    result = {'cmd':_cmd,
-              'ignore_error': ignore_error,
-              'stdout':stdout.strip(),
-              'stderr':stderr.strip(),
-              'returncode':p.returncode}
+    # execute the command and strip output
+    (_stdout, _stderr) = p.communicate(_cmd['input'])
+    if _cmd['strip']:
+        _stdout, _stderr = map(str.strip, [_stdout, _stderr])
 
-    if not _ignore_error and p.returncode:
-        raise CmdException(**result)
+    # generate the result
+    result = _cmd
+    result.update({'stdout':_stdout,'stderr':_stderr,'returncode':p.returncode})
+
+    # launch exception if necessary
+    if not _cmd['ignore_error'] and p.returncode:
+        raise CmdException(result)
 
     return result
 
