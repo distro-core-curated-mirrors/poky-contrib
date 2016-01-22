@@ -44,53 +44,67 @@ class PatchTestResult(unittest.TextTestResult):
         self.summary = BasicSummary(commit=self.repo.commit,
                                     branch=self.repo.branch,
                                     mbox=self.repo.mbox)
-        self.success = True
+
+        # these variables turn to True if either pathing or any test failed
+        # in these case, the test's status would be 'failure'
+        self.patch_error = False
+        self.test_failure = False
+
+        # these variables turn to True on any exception (RepoException, CmdException and any other
+        # exception coming from the tests)
+        self.repo_error = False
+        self.cmd_error = False
+        self.test_error = False
 
         try:
             self.repo.setup()
         except repo.PatchException as pe:
-            self.success = False
+            self.patch_error = True
             self.summary.addPatchFailure(str(pe))
             self.stop()
         except repo.RepoException as re:
-            self.success = False
+            self.repo_error = True
             logger.error(rp)
             self.stop()
         except utils.CmdException as ce:
-            self.success = False
+            self.cmd_error = True
             logger.error("Command failed: %s %s %s" % (ce.cmd, ce.stdout, ce.stderr))
             self.stop()
 
     def addError(self, test, err):
-        if self.success:
-            self.success = False
-
+        self.test_error = True
         (ty, va, trace) = err
         import traceback
         traceback.print_tb(trace)
         self.stop()
 
     def addFailure(self, test, err):
-        if self.success:
-            self.success = False
+        self.test_failure = True
         self.summary.addFailure(test, err)
 
     def addSuccess(self, test):
         self.summary.addSuccess(test)
 
     def stopTestRun(self):
-        state = 'success' if self.success else 'failure'
-        summary = self.summary.generateSummary()
+        # leave the working directory as it was, and remove branch if desired
+        self.repo.clean(keepbranch=PatchTestArgs.keepbranch)
 
-        f = logger.info if self.success else logger.error
-        f(summary)
+        # just post when there are no repository, commands and test exceptions
+        if not (self.repo_error or self.cmd_error or self.test_error):
+            # generate the summary
+            summary = self.summary.generateSummary()
+            logger.info(summary)
 
-        if PatchTestArgs.post:
-            self.repo.post(PatchTestArgs.testname, state, summary)
+            # set the test status
+            state = None
+            if self.patch_error or self.test_failure:
+                state = 'failure'
+            else:
+                state = 'success'
 
-        # in case of failure, remove the branch, else respect user input
-        keepbranch = False if not self.success else PatchTestArgs.keepbranch
-        self.repo.clean(keepbranch=keepbranch)
+            # POST just if --post argument is present
+            if PatchTestArgs.post:
+                self.repo.post(PatchTestArgs.testname, state, summary)
 
 def get_parser():
     parser = argparse.ArgumentParser()
