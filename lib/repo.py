@@ -31,9 +31,13 @@ class Repo(object):
         # get current branch name, so we can checkout at the end
         self._current_branch = self._get_branch()
 
-        # get user branch name and commit id
+        # get user branch name and commit id, if not given
+        # current branch and HEAD is take
         self._branch = branch or self._current_branch
         self._commit = self._get_commitid(commit or 'HEAD')
+
+        # this variable would be useful when stashing is desired
+        self._branch_commit_provided = (branch or commit)
 
         logger.debug("Parameters")
         logger.debug("\tRepository: %s" % self._repodir)
@@ -106,7 +110,7 @@ class Repo(object):
         return self._exec(cmd)[0]['stdout']
 
     def _stash(self):
-        # check first if repository is dirty
+        # stash just when working dir is dirty
         dirty = self._exec({'cmd':['git', 'diff', '--shortstat']}) [0]['stdout']
         if dirty:
             self._exec({'cmd':['git', 'stash']})
@@ -127,10 +131,11 @@ class Repo(object):
             self._exec({'cmd':['git', 'branch', '-D', self.branchname], 'ignore_error':True})
 
     def _checkout(self):
-        cmds = [
-            {'cmd':['git', 'checkout', self.branch]},
-            {'cmd':['git', 'checkout', '-b', self.branchname, self.commit]},
-        ]
+        cmds = [{'cmd':['git', 'checkout', '-b', self.branchname, self.commit]}]
+
+        # move to the branch if user specified a branch different that current one
+        if self._branch != self._current_branch:
+            cmds.insert(0, {'cmd':['git', 'checkout', self.branch]})
         self._exec(cmds)
 
     def _check_apply(self):
@@ -177,13 +182,18 @@ class Repo(object):
         self._exec(cmd)
 
     def setup(self):
-        self._stash()
-        self._checkout()
+        # branch when either --commit or --branch is given
+        if self._branch_commit_provided:
+            self._stash()
+            self._checkout()
+
         self._apply()
 
     def clean(self, keepbranch=False):
-        self._destash()
-        self._removebranch(keepbranch)
+        # remove branch when either --commit or --branch is given and keepbrach is False
+        if self._branch_commit_provided:
+            self._destash()
+            self._removebranch(keepbranch)
 
     def post(self, testname, state, summary):
         cmd = {'cmd':['git', 'pw', 'post-result',
