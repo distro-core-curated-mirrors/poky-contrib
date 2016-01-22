@@ -76,13 +76,15 @@ class Repo(object):
         elif isinstance(cmds, list):
             _cmds = cmds
         else:
-            raise utils.CmdException(**{'cmd':str(cmds)})
+            raise utils.CmdException({'cmd':str(cmds)})
 
-        results = utils.exec_cmds(_cmds, self._repodir)
-
-        if logger.getEffectiveLevel() == logging.DEBUG:
-            for result in results:
-                logger.debug(result)
+        results = []
+        try:
+            results = utils.exec_cmds(_cmds, self._repodir)
+        finally:
+            if logger.getEffectiveLevel() == logging.DEBUG:
+                for result in results:
+                    logger.debug("CMD: %s" % result)
 
         return results
 
@@ -130,21 +132,50 @@ class Repo(object):
         ]
         self._exec(cmds)
 
+    def _check_apply(self):
+        mbox_data = None
+        # get the mbox
+        if self._series:
+            mbox_cmd = {'cmd':['git', 'pw', 'mbox', self._series, '-r', self._revision], 'strip':False}
+            mbox = self._exec(mbox_cmd)[0]
+            mbox_data = mbox['stdout']
+        elif self._mbox:
+            if not os.path.isfile(self._mbox):
+                raise PatchException, 'mbox %s does not exist'
+            with open(self._mbox) as mbox_fd:
+                mbox_data = mbox_fd.read()
+        else:
+            # nothing to apply, return
+            return True
+
+        logger.debug(mbox_data)
+
+        # check if applies
+        apply_check_cmd = {'cmd':['git', 'apply', '--check'], 'input':mbox_data}
+        self._exec(apply_check_cmd)
+
     def _apply(self):
+
+        # in case there is neither mbox or series, just return
+        if not (self._mbox or self._series):
+            return
+
+        # check if mbox applies
+        try:
+            self._check_apply()
+        except utils.CmdException as ce:
+            mbox = "The mbox %s\n\ncannot be applied on top of %s/%s" % (self.mbox, self.branch, self.commit)
+            reason = "Reason:\n\n%s" % ce.stderr
+            msg = "\n%s\n\n%s" % (mbox, reason)
+            raise PatchException, msg
+
+        # apply the patch
         cmd = None
         if self._mbox:
             cmd = {'cmd':['git', 'am', self._mbox]}
         elif self._series:
             cmd = {'cmd':['git', 'pw', 'apply', self._series, '-r', self._revision]}
-
-        if cmd:
-            try:
-                self._exec(cmd)
-            except utils.CmdException as ce:
-                mbox = "The mbox %s\n\ncannot be applied on top of %s/%s" % (self.mbox, self.branch, self.commit)
-                reason = "Reason:\n\n%s" % ce.stderr
-                msg = "\n%s\n\n%s" % (mbox,reason)
-                raise PatchException, msg
+        self._exec(cmd)
 
     def setup(self):
         self._stash()
