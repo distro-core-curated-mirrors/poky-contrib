@@ -73,7 +73,7 @@ def exec_cmd(cmd, cwd, ignore_error=False, input=None, strip=True):
 
     # generate the result
     result = _cmd
-    result.update({'stdout':_stdout,'stderr':_stderr,'returncode':p.returncode})
+    result.update({'cmd':_command,'stdout':_stdout,'stderr':_stderr,'returncode':p.returncode})
 
     # launch exception if necessary
     if not _cmd['ignore_error'] and p.returncode:
