@@ -79,6 +79,9 @@ CCFLAGS_append = " -fPIC "
 CXXFLAGS_append = " -fPIC "
 CFLAGS_append = " -fPIC -DRPM_VENDOR_WINDRIVER -DRPM_VENDOR_POKY -DRPM_VENDOR_OE "
 
+BUILD_CFLAGS_append_class-native = " -L${STAGING_DIR_HOST}${libdir}/xz-native/"
+BUILD_LDFLAGS_append_class-native = " -Wl,-rpath,${STAGING_DIR_HOST}${libdir}/xz-native/ -Wl,-rpath-link,${STAGING_DIR_HOST}${libdir}/xz-native/"
+
 do_configure_prepend() {
     rm -rf sqlite
     rm -f m4/libtool.m4
@@ -101,8 +104,7 @@ do_install_append() {
 }
 
 pkg_postinst_${PN}() {
-
-    [ "x\$D" == "x" ] && ldconfig
+    [ "x\$D" = "x" ] && ldconfig
     test -f ${localstatedir}/lib/rpm/Packages || rpm --initdb
     rm -f ${localstatedir}/lib/rpm/Filemd5s \
           ${localstatedir}/lib/rpm/Filedigests \
@@ -112,7 +114,7 @@ pkg_postinst_${PN}() {
 }
 
 pkg_postrm_${PN}() {
-    [ "x\$D" == "x" ] && ldconfig
+    [ "x\$D" = "x" ] && ldconfig
 
 }
 

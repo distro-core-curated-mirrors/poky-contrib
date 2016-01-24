@@ -18,12 +18,11 @@ PACKAGECONFIG[experimental] = "--enable-experimental,--disable-experimental,"
 
 SRC_URI = "\
     ${KERNELORG_MIRROR}/linux/bluetooth/bluez-${PV}.tar.xz \
-    file://core-profile-Fix-possible-crash-when-registering-pro.patch \
     file://init \
 "
 S = "${WORKDIR}/bluez-${PV}"
 
-inherit autotools-brokensep pkgconfig systemd update-rc.d
+inherit autotools-brokensep pkgconfig systemd update-rc.d distro_features_check
 
 EXTRA_OECONF = "\
   --enable-tools \

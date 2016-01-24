@@ -39,6 +39,12 @@ COMPATIBLE_HOST = ".*-uclibc.*"
 
 INHIBIT_DEFAULT_DEPS = "1"
 
+# There appears to be a parallel race in uclibc:
+# GEN /extra/locale/locale_collate.h
+# xargs: ../..//extra/locale/gen_collate: Text file busy
+# make[1]: *** [../..//extra/locale/locale_collate.h] Error 126
+PARALLEL_MAKE = ""
+
 # do_stage barfs on a CC with whitespace, therefore put the 'HOST_CC_ARCH' in
 # the CFLAGS (when building the utils).
 OEMAKE_NO_CC = "'STRIPTOOL=true' 'LD=${LD}'"
@@ -56,7 +62,7 @@ export V="2"
 # -O<n> -fno-omit-frame-pointer ends up with GCC ICE on thumb as reported
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=44860
 #
-CFLAGS_arm := "${@oe_filter_out('-fno-omit-frame-pointer', '${CFLAGS}', d)}"
+CFLAGS_remove_arm = "-fno-omit-frame-pointer"
 UCLIBC_EXTRA_CFLAGS  := "${@oe_filter_out('(-I\S+|-i\S+)', '${CFLAGS}', d)}"
 
 configmangle = '/^KERNEL_HEADERS/d; \

@@ -18,6 +18,7 @@ BOOST_LIBS = "\
 	serialization \
 	signals \
 	system \
+	timer \
 	test \
 	thread \
 	"
@@ -59,6 +60,7 @@ FILES_boost-test = "${libdir}/libboost_prg_exec_monitor*.so.* \
 
 # -dev last to pick up the remaining stuff
 PACKAGES += "${PN}-dev ${PN}-staticdev"
+FILES_${PN} = ""
 FILES_${PN}-dev = "${includedir} ${libdir}/libboost_*.so"
 FILES_${PN}-staticdev = "${libdir}/libboost_*.a"
 
