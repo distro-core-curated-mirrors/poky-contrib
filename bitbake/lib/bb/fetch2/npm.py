@@ -16,6 +16,8 @@ import os
 import sys
 import urllib
 import json
+import subprocess
+import signal
 import bb
 from   bb import data
 from   bb.fetch2 import FetchMethod
@@ -23,6 +25,12 @@ from   bb.fetch2 import FetchError
 from   bb.fetch2 import runfetchcmd
 from   bb.fetch2 import logger
 from   distutils import spawn
+
+def subprocess_setup():
+    # Python installs a SIGPIPE handler by default. This is usually not what
+    # non-Python subprocesses expect.
+    # SIGPIPE errors are known issues with gzip/bash
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 class Npm(FetchMethod):
     jsondeps = dict()
@@ -70,8 +78,8 @@ class Npm(FetchMethod):
         bb.fetch2.check_network_access(d, command)
         runfetchcmd(command, d, quiet)
 
-    def ___unpack_crap_unused(self, ud, destdir, d):
-        file = urldata.localpath
+    def unpack(self, ud, destdir, d):
+        file = ud.localpath
         if file.endswith('.tgz') or file.endswith('.tar.gz') or file.endswith('.tar.Z'):
             cmd = 'tar xz --no-same-owner -f %s' % file
         else:
@@ -79,13 +87,13 @@ class Npm(FetchMethod):
 
         # Change to subdir before executing command
         save_cwd = os.getcwd();
-        os.chdir(rootdir)
-        if 'subdir' in urldata.parm:
-            newdir = ("%s/%s" % (rootdir, urldata.parm.get('subdir')))
+        os.chdir(destdir)
+        if 'subdir' in ud.parm:
+            newdir = ("%s/%s" % (destdir, ud.parm.get('subdir')))
             bb.utils.mkdirhier(newdir)
             os.chdir(newdir)
 
-        path = data.getVar('PATH', True)
+        path = d.getVar('PATH', True)
         if path:
             cmd = "PATH=\"%s\" %s" % (path, cmd)
         bb.note("Unpacking %s to %s/" % (file, os.getcwd()))
@@ -94,7 +102,7 @@ class Npm(FetchMethod):
         os.chdir(save_cwd)
 
         if ret != 0:
-            raise UnpackError("Unpack command %s failed with return value %s" % (cmd, ret), urldata.url)
+            raise UnpackError("Unpack command %s failed with return value %s" % (cmd, ret), ud.url)
 
     def download(self, ud, d):
         """Fetch url"""
