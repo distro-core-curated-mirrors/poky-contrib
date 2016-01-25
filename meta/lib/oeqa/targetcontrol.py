@@ -16,6 +16,7 @@ from oeqa.utils.qemurunner import QemuRunner
 from oeqa.utils.qemutinyrunner import QemuTinyRunner
 from oeqa.controllers.testtargetloader import TestTargetLoader
 from abc import ABCMeta, abstractmethod
+from oeqa.base.controller.base_target import BaseTarget as BT
 
 def get_target_controller(d):
     testtarget = d.getVar("TEST_TARGET", True)
@@ -42,9 +43,7 @@ def get_target_controller(d):
         return controller(d)
 
 
-class BaseTarget(object):
-
-    __metaclass__ = ABCMeta
+class BaseTarget(BT):
 
     supported_image_fstypes = []
 
@@ -66,14 +65,6 @@ class BaseTarget(object):
         os.symlink(self.sshlog, sshloglink)
         bb.note("SSH log file: %s" %  self.sshlog)
 
-    @abstractmethod
-    def start(self, params=None):
-        pass
-
-    @abstractmethod
-    def stop(self):
-        pass
-
     @classmethod
     def get_extra_files(self):
         return None
@@ -94,20 +85,6 @@ class BaseTarget(object):
             return image_fstype
         else:
             bb.fatal("IMAGE_FSTYPES should contain a Target Controller supported image fstype: %s " % ', '.join(map(str, self.supported_image_fstypes)))
-
-    def restart(self, params=None):
-        self.stop()
-        self.start(params)
-
-    def run(self, cmd, timeout=None):
-        return self.connection.run(cmd, timeout)
-
-    def copy_to(self, localpath, remotepath):
-        return self.connection.copy_to(localpath, remotepath)
-
-    def copy_from(self, remotepath, localpath):
-        return self.connection.copy_from(remotepath, localpath)
-
 
 
 class QemuTarget(BaseTarget):
