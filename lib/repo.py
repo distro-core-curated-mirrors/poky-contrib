@@ -76,7 +76,14 @@ class Repo(object):
 
     @property
     def branchname(self):
-        return "%s-%s-%s" % (Repo.prefix, self.branch, self.commit)
+        _name = Repo.prefix
+        if self._mbox:
+            # patchtest-local-mbox
+            _name += "-local-mbox"
+        elif self._series:
+            # patchtest-series-<series>-rev-<revision>
+            _name += "-series-%s-rev-%s" % (self._series, self._revision)
+        return _name
 
     @property
     def stashname(self):
