@@ -3,7 +3,6 @@
 import sys
 import os
 import unittest
-import argparse
 import fileinput
 import json
 import logging
@@ -14,17 +13,13 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 # Include patchtest library
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
 
+from patchtestargs import PatchTestArgs
+
 import utils
 logger = utils.logger_create('patchtest')
 
 import repo
 from summary import BasicSummary
-
-# When parsing the arguments, the following class (PatchTestArgs)
-# would be used as target namespace. This is a simple approach to
-# pass arguments to the test case.
-class PatchTestArgs:
-    pass
 
 class PatchTestResult(unittest.TextTestResult):
     """ Formats the summary and post result at the end """
@@ -106,64 +101,9 @@ class PatchTestResult(unittest.TextTestResult):
             if PatchTestArgs.post:
                 self.repo.post(PatchTestArgs.testname, state, summary)
 
-def get_parser():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--series', '-s',
-                        dest='series',
-                        help='Series number')
-
-    parser.add_argument('--revision', '-r',
-                        dest='revision',
-                        help='Revision number')
-
-    parser.add_argument('--post',
-                        dest='post',
-                        action='store_true',
-                        help="Post results to patchwork")
-
-    parser.add_argument('--mbox', '-m',
-                        dest='mbox',
-                        help='An mbox file, to apply before testing')
-
-    parser.add_argument('-C',
-                        dest='repodir',
-                        default=os.getcwd(),
-                        help="Name of the repository where mboxs are applied")
-
-    parser.add_argument('--test-name',
-                        dest='testname',
-                        default='patchtest',
-                        help="Test name to be used if results are POSTed")
-
-    parser.add_argument('--keep-branch',
-                        dest='keepbranch',
-                        action='store_true',
-                        help="Do not POST the results to the PW instance")
-
-    patchtest_tests_dir = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'tests')
-    parser.add_argument('--test-dir',
-                        dest='testdir',
-                        default=patchtest_tests_dir,
-                        help="Directory where tests are located")
-
-    parser.add_argument('--branch', '-b',
-                        dest='branch',
-                        help="Branch to work on, default is master. Must be available in repo")
-
-    parser.add_argument('--commit', '-c',
-                        dest='commit',
-                        help="Commit to work on, default is HEAD. Must be visible from branch")
-
-    parser.add_argument('-d', '--debug', help='Enable debug output', action='store_true')
-    parser.add_argument('-q', '--quiet', help='Print only errors', action='store_true')
-
-    return parser
-
 def main():
-    get_parser().parse_args(namespace=PatchTestArgs)
+    # Parse the command line arguments and store it on the PatchTestArgs namespace
+    PatchTestArgs.set_namespace()
 
     if PatchTestArgs.debug:
         logger.setLevel(logging.DEBUG)
