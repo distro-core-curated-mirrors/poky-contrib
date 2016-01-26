@@ -243,36 +243,26 @@ def testimage_main(d):
     # test context
     tc = TestContext()
 
-    # this is a dummy load of tests
-    # we are doing that to find compile errors in the tests themselves
-    # before booting the image
-    try:
-        loadTests(tc)
-    except Exception as e:
-        import traceback
-        bb.fatal("Loading tests failed:\n%s" % traceback.format_exc())
-
-    target.deploy()
-
-    target.start()
-    try:
-        if export:
-            exportTests(d,tc)
-        else:
+    from oeqa.oetest import FatalException
+    if export:
+        exportTests(d, tc)
+    else:
+        try:
             starttime = time.time()
             result = runTests(tc)
             stoptime = time.time()
-            if result.wasSuccessful():
-                bb.plain("%s - Ran %d test%s in %.3fs" % (pn, result.testsRun, result.testsRun != 1 and "s" or "", stoptime - starttime))
-                msg = "%s - OK - All required tests passed" % pn
-                skipped = len(result.skipped)
-                if skipped:
-                    msg += " (skipped=%d)" % skipped
-                bb.plain(msg)
-            else:
-                raise bb.build.FuncFailed("%s - FAILED - check the task log and the ssh log" % pn )
-    finally:
-        target.stop()
+        except FatalException as e:
+            bb.fatal(str(e))
+        if result.wasSuccessful():
+            bb.plain("%s - Ran %d test%s in %.3fs" % (pn, result.testsRun, result.testsRun != 1 and "s" or "", stoptime - starttime))
+            msg = "%s - OK - All required tests passed" % pn
+            skipped = len(result.skipped)
+            if skipped:
+                msg += " (skipped=%d)" % skipped
+            bb.plain(msg)
+        else:
+            raise bb.build.FuncFailed("%s - FAILED - check the task log and the ssh log" % pn )
+        
 
 testimage_main[vardepsexclude] =+ "BB_ORIGENV"
 
@@ -328,6 +318,7 @@ def testsdk_main(d):
     bb.utils.mkdirhier(sdktestdir)
     subprocess.call("cd %s; %s <<EOF\n./tc\nY\nEOF" % (sdktestdir, tcname), shell=True)
 
+    from oeqa.oetest import FatalException
     try:
         targets = glob.glob(d.expand(sdktestdir + "/tc/environment-setup-*"))
         bb.warn(str(targets))
@@ -335,20 +326,12 @@ def testsdk_main(d):
             bb.plain("Testing %s" % sdkenv)
             # test context
             tc = TestContext()
-
-            # this is a dummy load of tests
-            # we are doing that to find compile errors in the tests themselves
-            # before booting the image
             try:
-                loadTests(tc, "sdk")
-            except Exception as e:
-                import traceback
-                bb.fatal("Loading tests failed:\n%s" % traceback.format_exc())
-
-    
-            starttime = time.time()
-            result = runTests(tc, "sdk")
-            stoptime = time.time()
+                starttime = time.time()
+                result = runTests(tc, "sdk")
+                stoptime = time.time()
+            except FatalException as e:
+                bb.fatal(str(e))
             if result.wasSuccessful():
                 bb.plain("%s SDK(%s):%s - Ran %d test%s in %.3fs" % (pn, os.path.basename(tcname), os.path.basename(sdkenv),result.testsRun, result.testsRun != 1 and "s" or "", stoptime - starttime))
                 msg = "%s - OK - All required tests passed" % pn
