@@ -58,6 +58,14 @@ class Repo(object):
             raise RepoException, 'patchwork url/project configuration is not available'
 
     @property
+    def url(self):
+        return self._url
+
+    @property
+    def project(self):
+        return self._project
+
+    @property
     def mbox(self):
         mbox = ''
         if self._mbox:
