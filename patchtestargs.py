@@ -68,6 +68,11 @@ class PatchTestArgs:
                             dest='commit',
                             help="Commit to work on, default is HEAD. Must be visible from branch")
 
+        parser.add_argument('--no-patch',
+                            dest='nopatch',
+                            action='store_true',
+                            help="Do not patch the mbox or series/revision")
+
         parser.add_argument('-d', '--debug', help='Enable debug output', action='store_true')
         parser.add_argument('-q', '--quiet', help='Print only errors', action='store_true')
 

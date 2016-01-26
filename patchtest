@@ -52,7 +52,7 @@ class PatchTestResult(unittest.TextTestResult):
         self.test_error = False
 
         try:
-            self.repo.setup()
+            self.repo.setup(PatchTestArgs.nopatch)
         except repo.PatchException as pe:
             self.patch_error = True
             self.summary.addPatchFailure(str(pe))
@@ -82,7 +82,7 @@ class PatchTestResult(unittest.TextTestResult):
 
     def stopTestRun(self):
         # leave the working directory as it was, and remove branch if desired
-        self.repo.clean(keepbranch=PatchTestArgs.keepbranch)
+        self.repo.clean(keepbranch=PatchTestArgs.keepbranch, nopatch=PatchTestArgs.nopatch)
 
         # just post when there are no repository, commands and test exceptions
         if not (self.repo_error or self.cmd_error or self.test_error):
@@ -127,7 +127,7 @@ def main():
                     revision = parameters['revision']
                 listseries.append((series, revision))
             except ValueError:
-                listmbox.append(line)
+                listmbox.append(line.strip())
         if listmbox and listseries:
             logger.warning('received both mbox and series/revision')
     elif PatchTestArgs.mbox:

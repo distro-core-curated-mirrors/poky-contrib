@@ -202,12 +202,18 @@ class Repo(object):
             cmd = {'cmd':['git', 'pw', 'apply', self._series, '-r', self._revision]}
         self._exec(cmd)
 
-    def setup(self):
+    def setup(self, nopatch=False):
+        if nopatch:
+            return
+
         self._stash()
         self._checkout()
         self._apply()
 
-    def clean(self, keepbranch=False):
+    def clean(self, keepbranch=False, nopatch=False):
+        if nopatch:
+            return
+
         self._destash()
         self._removebranch(keepbranch)
 
