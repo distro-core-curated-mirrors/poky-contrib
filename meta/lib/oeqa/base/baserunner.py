@@ -28,7 +28,6 @@ class TestRunnerBase(object):
         self.runner = None
         self.context = context if context else TestContext()
         self.test_result = None
-        self.run_time = None
 
     def configure(self, options=None):
         '''configure before testing'''
@@ -50,9 +49,7 @@ class TestRunnerBase(object):
 
     def runtest(self, testsuite):
         '''run test suite'''
-        starttime = time.time()
         self.test_result = self.runner.run(testsuite)
-        self.run_time = time.time() - starttime
 
     def start(self, testsuite):
         '''start testing'''
