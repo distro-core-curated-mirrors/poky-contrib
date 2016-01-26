@@ -205,7 +205,7 @@ def testimage_main(d):
     import os
     import oeqa.runtime
     import time
-    from oeqa.oetest import loadTests, runTests
+    from oeqa.oetest import loadTests, runTests, FatalException
     from oeqa.targetcontrol import get_target_controller
 
     pn = d.getVar("PN", True)
@@ -243,7 +243,6 @@ def testimage_main(d):
     # test context
     tc = TestContext()
 
-    from oeqa.oetest import FatalException
     if export:
         exportTests(d, tc)
     else:
@@ -275,7 +274,7 @@ def testsdk_main(d):
     import oeqa.sdk
     import time
     import subprocess
-    from oeqa.oetest import loadTests, runTests
+    from oeqa.oetest import loadTests, runTests, FatalException
 
     pn = d.getVar("PN", True)
     bb.utils.mkdirhier(d.getVar("TEST_LOG_DIR", True))
@@ -318,7 +317,6 @@ def testsdk_main(d):
     bb.utils.mkdirhier(sdktestdir)
     subprocess.call("cd %s; %s <<EOF\n./tc\nY\nEOF" % (sdktestdir, tcname), shell=True)
 
-    from oeqa.oetest import FatalException
     try:
         targets = glob.glob(d.expand(sdktestdir + "/tc/environment-setup-*"))
         bb.warn(str(targets))
