@@ -5,7 +5,7 @@ from patchtestargs import PatchTestArgs as pta
 class TestRepository(unittest.TestCase):
     def test_repo_existance(self):
         """ Test existance of the repository folder """
-        self.assertTrue(os.path.isdir(pta.repodir), 'The repository does not exist')
+        self.assertTrue(os.path.isdir(pta.repodir), 'repository directory does not exist')
 
     def test_git_repo(self):
         """ Test existance of of the .git folder """
