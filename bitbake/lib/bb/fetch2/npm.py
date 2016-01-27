@@ -127,8 +127,9 @@ class Npm(FetchMethod):
         # we just take the latest version npm resolved
         outputurl = outputarray[len(outputarray)-1].rstrip()
         if (len(outputarray) > 1):
-            # remove the preceding version/name from npm output
-            outputurl = outputurl.split(" ")[1]
+            # remove the preceding version/name from npm output and then the
+            # first and last quotes
+            outputurl = outputurl.split(" ")[1][1:-1]
         data[pkg] = {}
         data[pkg]['tgz'] = os.path.basename(outputurl)
         self._runwget(ud, d, "%s %s" % (self.basecmd, outputurl), False)
