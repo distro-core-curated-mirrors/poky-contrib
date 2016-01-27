@@ -22,11 +22,11 @@ class PatchTestArgs:
 
         parser.add_argument('--series', '-s',
                             dest='series',
-                            help='Series number')
+                            help='The series id to patch and test. Add --no-patch if no patching is done into the repository')
 
         parser.add_argument('--revision', '-r',
                             dest='revision',
-                            help='Revision number')
+                            help='The revision to patch and test, latest if omitted. Add --no-patch if no patching is done into the repository')
 
         parser.add_argument('--post',
                             dest='post',
@@ -35,22 +35,22 @@ class PatchTestArgs:
 
         parser.add_argument('--mbox', '-m',
                             dest='mbox',
-                            help='An mbox file, to apply before testing')
+                            help='A mbox file to patch and test. Add --no-patch if no patching is done into the repository')
 
         parser.add_argument('-C',
                             dest='repodir',
                             default=os.getcwd(),
-                            help="Name of the repository where mboxs are applied")
+                            help="Name of the repository where testing is done")
 
         parser.add_argument('--test-name',
                             dest='testname',
                             default='patchtest',
-                            help="Test name to be used if results are POSTed")
+                            help="Test name to be used if results are posted")
 
         parser.add_argument('--keep-branch',
                             dest='keepbranch',
                             action='store_true',
-                            help="Do not POST the results to the PW instance")
+                            help="Do not post results")
 
         patchtest_tests_dir = os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
@@ -73,7 +73,12 @@ class PatchTestArgs:
                             action='store_true',
                             help="Do not patch the mbox or series/revision")
 
-        parser.add_argument('-d', '--debug', help='Enable debug output', action='store_true')
-        parser.add_argument('-q', '--quiet', help='Print only errors', action='store_true')
+        parser.add_argument('--debug', '-d',
+                            action='store_true',
+                            help='Enable debug output')
+
+        parser.add_argument('--quiet', '-q',
+                            action='store_true',
+                            help='Print only errors')
 
         return parser
