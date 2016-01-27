@@ -70,12 +70,6 @@ class Npm(FetchMethod):
             return False
         return True
 
-    def supports_srcrev(self):
-        return False
-
-    def sortable_revision(self, ud, d, name):
-        return False
-
     def _runwget(self, ud, d, command, quiet):
         logger.debug(2, "Fetching %s using command '%s'" % (ud.url, command))
         bb.fetch2.check_network_access(d, command)
