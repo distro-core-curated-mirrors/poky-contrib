@@ -1,5 +1,6 @@
 import os
 import utils
+from tabulate import tabulate
 
 class BasicSummary(dict):
 
@@ -8,19 +9,18 @@ class BasicSummary(dict):
         self.branch = branch
         self.mbox = mbox
 
-        self.error = list()
-        self.failure = list()
-        self.success = list()
+        self.results= list()
         self.patchmsg = None
 
     def addPatchFailure(self, msg):
         self.patchmsg = msg
 
     def addFailure(self, test, err):
-        self.failure.append((test,err))
+        _, va, _ = err
+        self.results.append(['FAIL: ', test.id(), test.shortDescription(), va])
 
     def addSuccess(self, test):
-        self.success.append(test)
+        self.results.append(['PASS: ', test.id(), test.shortDescription(), None])
 
     def generateSummary(self):
         """ Generate and store the summary """
@@ -30,18 +30,9 @@ class BasicSummary(dict):
             summary += "%s" % self.patchmsg
         else:
             if self.mbox:
-                summary += "Tested mbox: %s\n" % self.mbox
+                summary += "Tested mbox: %s\n\n" % self.mbox
             else:
-                summary += "Tested branch/commit: %s/%s\n" % (self.branch, self.commit)
-            if self.success:
-                summary += "\nPass:\n"
-                for test in self.success:
-                    summary += "\t%s\n" % test
-
-            if self.failure:
-                summary += "\nFail:\n"
-                for test, err in self.failure:
-                    (ty, va, trace) = err
-                    summary += "\t%s : %s\n" % (test, va)
+                summary += "Tested branch/commit: %s/%s\n\n" % (self.branch, self.commit)
+            summary += tabulate(self.results)
 
         return summary
