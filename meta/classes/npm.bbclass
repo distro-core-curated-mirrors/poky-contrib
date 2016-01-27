@@ -1,5 +1,5 @@
 DEPENDS_prepend = "nodejs-native "
-S = "${WORKDIR}/npmpkg/package"
+S = "${WORKDIR}/npmpkg"
 
 npm_do_compile() {
 	# changing the home directory to the working directory, the .npmrc will
