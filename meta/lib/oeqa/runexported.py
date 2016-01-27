@@ -32,11 +32,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "oeqa"))
 
 from oeqa.oetest import runTests
 from oeqa.utils.sshcontrol import SSHControl
+from oeqa.base.controller.base_target import BaseTarget
 
 # this isn't pretty but we need a fake target object
 # for running the tests externally as we don't care
 # about deploy/start we only care about the connection methods (run, copy)
-class FakeTarget(object):
+class FakeTarget(BaseTarget):
     def __init__(self, d):
         self.connection = None
         self.ip = None
@@ -45,7 +46,8 @@ class FakeTarget(object):
         self.testdir = d.getVar("TEST_LOG_DIR", True)
         self.pn = d.getVar("PN", True)
 
-    def exportStart(self):
+    def start(self):
+        super(FakeTarget, self).start()
         self.sshlog = os.path.join(self.testdir, "ssh_target_log.%s" % self.datetime)
         sshloglink = os.path.join(self.testdir, "ssh_target_log")
         if os.path.islink(sshloglink):
@@ -54,14 +56,8 @@ class FakeTarget(object):
         print("SSH log file: %s" %  self.sshlog)
         self.connection = SSHControl(self.ip, logfile=self.sshlog)
 
-    def run(self, cmd, timeout=None):
-        return self.connection.run(cmd, timeout)
-
-    def copy_to(self, localpath, remotepath):
-        return self.connection.copy_to(localpath, remotepath)
-
-    def copy_from(self, remotepath, localpath):
-        return self.connection.copy_from(remotepath, localpath)
+    def stop(self):
+        return super(FakeTarget, self).stop()
 
 
 class MyDataDict(dict):
@@ -125,7 +121,6 @@ def main():
         if key != "d" and key != "target":
             setattr(tc, key, loaded[key])
 
-    target.exportStart()
     runTests(tc)
 
     return 0
