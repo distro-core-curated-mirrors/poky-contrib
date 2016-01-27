@@ -10,7 +10,7 @@ npm_do_compile() {
 	# clear cache before every build
 	npm cache clear
 	# Install pkg into ${S} without going to the registry
-	npm --arch=${TARGET_ARCH} --no-registry install
+	npm --arch=${TARGET_ARCH} --production --no-registry install
 }
 
 npm_do_install() {

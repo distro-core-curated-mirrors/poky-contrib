@@ -115,23 +115,34 @@ class Npm(FetchMethod):
 
         self._unpackdep(pn, workobj,  "%s/npmpkg" % destdir, dldir, d)
 
-    def _getdependencies(self, pkg, data, d, ud):
-        fetchcmd = "npm view %s dist.tarball" % pkg
+    def _getdependencies(self, pkg, data, version, d, ud):
+        pkgfullname = pkg
+        if version:
+            pkgfullname += "@%s" % version
         logger.debug(2, "Calling getdeps on %s" % pkg)
+        fetchcmd = "npm view %s dist.tarball" % pkgfullname
         output = runfetchcmd(fetchcmd, d, True)
+        # npm may resolve multiple versions
+        outputarray = output.splitlines()
+        # we just take the latest version npm resolved
+        outputurl = outputarray[len(outputarray)-1].rstrip()
+        if (len(outputarray) > 1):
+            # remove the preceding version/name from npm output
+            outputurl = outputurl.split(" ")[1]
         data[pkg] = {}
-        data[pkg]['tgz'] = os.path.basename(output).rstrip()
-        self._runwget(ud, d, "%s %s" % (self.basecmd, output.rstrip()), False)
+        data[pkg]['tgz'] = os.path.basename(outputurl)
+        self._runwget(ud, d, "%s %s" % (self.basecmd, outputurl), False)
         #fetchcmd = "npm view %s@%s dependencies --json" % (pkg, version)
-        fetchcmd = "npm view %s dependencies --json" % (pkg)
+        fetchcmd = "npm view %s dependencies --json" % (pkgfullname)
         output = runfetchcmd(fetchcmd, d, True)
-        if output == "{}\n" or len(output) ==  1:
-            logger.debug(2, "no deps found for %s" % pkg)
+        try:
+          depsfound = json.loads(output)
+        except:
+            # just assume there is no deps to be loaded here
             return
-        depsfound = json.loads(output)
         data[pkg]['deps'] = {}
-        for dep in depsfound:
-            self._getdependencies(dep, data[pkg]['deps'], d, ud)
+        for dep, version in depsfound.iteritems():
+            self._getdependencies(dep, data[pkg]['deps'], version, d, ud)
 
     def download(self, ud, d):
         """Fetch url"""
@@ -143,7 +154,7 @@ class Npm(FetchMethod):
         pv = d.getVar("PV", True)
         pn = d.getVar("PN", True)
 
-        self._getdependencies(pn, jsondepobj, d, ud)
+        self._getdependencies(pn, jsondepobj, pv, d, ud)
 
         depdumpfile = "%s-%s.deps.json" % (pn, pv)
         with open(depdumpfile, 'w') as outfile:
