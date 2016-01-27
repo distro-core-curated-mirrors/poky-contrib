@@ -122,7 +122,7 @@ def main():
                 event = json.loads(line)
                 series = event['series']
                 parameters = event['parameters']
-                revision = 1
+                revision = None
                 if parameters:
                     revision = parameters['revision']
                 listseries.append((series, revision))
@@ -135,7 +135,7 @@ def main():
             logger.error('patchwork-related parameters (--series) cannot be used with --mbox')
             return 1
         listmbox = [PatchTestArgs.mbox]
-    elif (PatchTestArgs.series and PatchTestArgs.revision):
+    elif PatchTestArgs.series:
         listseries = [(PatchTestArgs.series, PatchTestArgs.revision)]
     else:
         # no arguments given, thus branch from current branch/commit and start testing

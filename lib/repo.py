@@ -1,8 +1,8 @@
-import inspect
 import os
 import utils
 import git
 import logging
+import requests
 
 logger = logging.getLogger('patchtest')
 
@@ -23,7 +23,6 @@ class Repo(object):
         self._branch = branch
         self._mbox = mbox
         self._series = series
-        self._revision = revision
 
         self._stashed = False
 
@@ -34,14 +33,6 @@ class Repo(object):
         # current branch and HEAD is take
         self._branch = branch or self._current_branch
         self._commit = self._get_commitid(commit or 'HEAD')
-
-        logger.debug("Parameters")
-        logger.debug("\tRepository: %s" % self._repodir)
-        logger.debug("\tCommit: %s" % self._commit)
-        logger.debug("\tBranch: %s" % self._branch)
-        logger.debug("\tMBOX: %s" % self._mbox)
-        logger.debug("\tSeries: %s" % self._series)
-        logger.debug("\tRevision: %s" % self._revision)
 
         try:
             self.repo = git.Repo(self._repodir)
@@ -56,6 +47,18 @@ class Repo(object):
             self._project = config.get(patchwork_section, 'project')
         except:
             raise RepoException, 'patchwork url/project configuration is not available'
+
+        # Revision is optional. If not present, get the latest from patchwork
+        self._revision = series and (revision or self._get_latest_rev(series))
+
+        # for debugging purposes, print all repo parameters
+        logger.debug("Parameters")
+        logger.debug("\tRepository: %s" % self._repodir)
+        logger.debug("\tCommit: %s" % self._commit)
+        logger.debug("\tBranch: %s" % self._branch)
+        logger.debug("\tMBOX: %s" % self._mbox)
+        logger.debug("\tSeries: %s" % self._series)
+        logger.debug("\tRevision: %s" % self._revision)
 
     @property
     def url(self):
@@ -123,6 +126,19 @@ class Repo(object):
     def _get_commitid(self, commit='HEAD'):
         cmd = {'cmd':['git', 'rev-parse', '--short', commit]}
         return self._exec(cmd)[0]['stdout']
+
+    def _get_latest_rev(self, series):
+        revision = 1
+        if series:
+            url = "%s/api/1.0/series/%s" % (self._url, self._series)
+            logger.debug(url)
+            try:
+                r = requests.get(url)
+                rjson = r.json()
+                revision = rjson['version']
+            except Exception:
+                logger.warn("latest series' revision could not be obtained from patchwork, using rev 1")
+        return revision
 
     def _stash(self):
         # stash just when working dir is dirty
