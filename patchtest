@@ -25,6 +25,7 @@ class PatchTestResult(unittest.TextTestResult):
     """ Formats the summary and post result at the end """
 
     shouldStop = True
+    longMessage = True
 
     def startTestRun(self):
         repoargs = {
@@ -36,9 +37,7 @@ class PatchTestResult(unittest.TextTestResult):
             'revision':PatchTestArgs.revision,
         }
         self.repo = repo.Repo(**repoargs)
-        self.summary = BasicSummary(commit=self.repo.commit,
-                                    branch=self.repo.branch,
-                                    mbox=self.repo.mbox)
+        self.summary = BasicSummary(self.repo.item)
 
         # these variables turn to True if either pathing or any test failed
         # in these case, the test's status would be 'failure'
@@ -88,7 +87,7 @@ class PatchTestResult(unittest.TextTestResult):
         if not (self.repo_error or self.cmd_error or self.test_error):
             # generate the summary
             summary = self.summary.generateSummary()
-            logger.info(summary)
+            logger.info("\n%s" % summary)
 
             # set the test status
             state = None

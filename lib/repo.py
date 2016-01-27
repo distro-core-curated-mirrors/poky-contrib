@@ -69,13 +69,16 @@ class Repo(object):
         return self._project
 
     @property
-    def mbox(self):
-        mbox = ''
+    def item(self):
+        """ Item to be tested """
+        _item = ''
         if self._mbox:
-            mbox = self._mbox
-        elif self._series and self._revision:
-            mbox = "%s/api/1.0/series/%s/revisions/%s/mbox/" % (self._url, self._series, self._revision)
-        return mbox
+            _item = self._mbox
+        elif self._series:
+            _item = "%s/api/1.0/series/%s/revisions/%s/mbox/" % (self._url, self._series, self._revision)
+        else:
+            _item = "%s/%s" % (self._branch, self._commit)
+        return _item
 
     @property
     def branch(self):

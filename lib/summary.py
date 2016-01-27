@@ -3,36 +3,31 @@ import utils
 from tabulate import tabulate
 
 class BasicSummary(dict):
+    header = ['Result', 'Item', 'Test Description', 'Assertion Description']
+    tablefmt = 'simple'
 
-    def __init__(self, commit, branch, mbox):
-        self.commit = commit
-        self.branch = branch
-        self.mbox = mbox
+    def __init__(self, item):
+        self._item = item
 
-        self.results= list()
-        self.patchmsg = None
+        self._results = list()
+        self._patchmsg = None
 
     def addPatchFailure(self, msg):
-        self.patchmsg = msg
+        self._patchmsg = msg
 
     def addFailure(self, test, err):
-        _, va, _ = err
-        self.results.append(['FAIL: ', test.id(), test.shortDescription(), va])
+        _, assertionDescription, _ = err
+        self._results.append(['FAIL: ', self._item, test.shortDescription(), assertionDescription])
 
     def addSuccess(self, test):
-        self.results.append(['PASS: ', test.id(), test.shortDescription(), None])
+        self._results.append(['PASS: ', self._item, test.shortDescription(), ''])
 
     def generateSummary(self):
         """ Generate and store the summary """
         summary = ""
 
-        if self.patchmsg:
-            summary += "%s" % self.patchmsg
+        if self._patchmsg:
+            summary += "%s" % self._patchmsg
         else:
-            if self.mbox:
-                summary += "Tested mbox: %s\n\n" % self.mbox
-            else:
-                summary += "Tested branch/commit: %s/%s\n\n" % (self.branch, self.commit)
-            summary += tabulate(self.results)
-
+            summary += "%s\n" % tabulate(self._results, BasicSummary.header, tablefmt=BasicSummary.tablefmt)
         return summary
