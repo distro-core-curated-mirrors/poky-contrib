@@ -135,6 +135,27 @@ def get_tests_list(d, type="runtime"):
 
     return testslist
 
+#overwrite copy src dir to dest
+def recursive_overwrite(src, dest, notOverWrite=[r'__init__\.py'], ignores=[r".+\.pyc"]):
+    import shutil, re
+    notOverWrite = map(re.compile, notOverWrite)
+    ignores = map(re.compile, ignores)
+    if os.path.isdir(src):
+        if not os.path.isdir(dest):
+            os.makedirs(dest)
+        files = os.listdir(src)
+        for f in files:
+            fsrc = os.path.join(src, f)
+            fdest = os.path.join(dest, f)
+            if filter(lambda x:x.match(f), notOverWrite) and os.path.exists(fdest) or\
+               filter(lambda x:x.match(f), ignores):
+                continue
+            recursive_overwrite(fsrc, fdest)
+    else:
+        try:
+            shutil.copy2(src, dest)
+        except IOError, e :
+            bb.warn(str(e))
 
 def exportTests(d,tc):
     import json
@@ -165,37 +186,17 @@ def exportTests(d,tc):
     with open(os.path.join(exportpath, "testdata.json"), "w") as f:
             json.dump(savedata, f, skipkeys=True, indent=4, sort_keys=True)
 
-    # now start copying files
-    # we'll basically copy everything under meta/lib/oeqa, with these exceptions
-    #  - oeqa/targetcontrol.py - not needed
-    #  - oeqa/selftest - something else
-    # That means:
-    #   - all tests from oeqa/runtime defined in TEST_SUITES (including from other layers)
-    #   - the contents of oeqa/utils and oeqa/runtime/files
-    #   - oeqa/oetest.py and oeqa/runexport.py (this will get copied to exportpath not exportpath/oeqa)
-    #   - __init__.py files
-    bb.utils.mkdirhier(os.path.join(exportpath, "oeqa/runtime/files"))
-    bb.utils.mkdirhier(os.path.join(exportpath, "oeqa/utils"))
-    # copy test modules, this should cover tests in other layers too
-    for t in tc.testslist:
-        mod = pkgutil.get_loader(t)
-        shutil.copy2(mod.filename, os.path.join(exportpath, "oeqa/runtime"))
-    # copy __init__.py files
     oeqadir = pkgutil.get_loader("oeqa").filename
-    shutil.copy2(os.path.join(oeqadir, "__init__.py"), os.path.join(exportpath, "oeqa"))
-    shutil.copy2(os.path.join(oeqadir, "runtime/__init__.py"), os.path.join(exportpath, "oeqa/runtime"))
-    # copy oeqa/oetest.py and oeqa/runexported.py
-    shutil.copy2(os.path.join(oeqadir, "oetest.py"), os.path.join(exportpath, "oeqa"))
-    shutil.copy2(os.path.join(oeqadir, "runexported.py"), exportpath)
-    # copy oeqa/utils/*.py
-    for root, dirs, files in os.walk(os.path.join(oeqadir, "utils")):
-        for f in files:
-            if f.endswith(".py"):
-                shutil.copy2(os.path.join(root, f), os.path.join(exportpath, "oeqa/utils"))
-    # copy oeqa/runtime/files/*
-    for root, dirs, files in os.walk(os.path.join(oeqadir, "runtime/files")):
-        for f in files:
-            shutil.copy2(os.path.join(root, f), os.path.join(exportpath, "oeqa/runtime/files"))
+    recursive_overwrite(oeqadir, os.path.join(exportpath, "oeqa"))
+
+    bbpath = d.getVar("BBPATH", True).split(':')
+    for p in bbpath:
+        if os.path.exists(os.path.join(p, "lib", "oeqa")):
+            recursive_overwrite(src=os.path.join(p, "lib"),
+                        dest=os.path.join(exportpath))
+            bb.plain("Exported tests from %s to: %s" % \
+                     (os.path.join(p, "lib"), exportpath) )
+    shutil.copy2(os.path.join(oeqadir, "runexported.py"), os.path.join(exportpath))
 
     bb.plain("Exported tests to: %s" % exportpath)
 
