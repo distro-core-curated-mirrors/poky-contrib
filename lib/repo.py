@@ -179,7 +179,7 @@ class Repo(object):
             mbox_data = mbox['stdout']
         elif self._mbox:
             if not os.path.isfile(self._mbox):
-                raise PatchException, 'mbox %s does not exist'
+                raise PatchException, 'mbox %s does not exist' % self._mbox
             with open(self._mbox) as mbox_fd:
                 mbox_data = mbox_fd.read()
         else:
