@@ -39,7 +39,6 @@
     <field type="DateTimeField" name="completed_on">2016-02-14T18:46:20.114530+00:00</field>
     <field type="IntegerField" name="outcome">0</field>
     <field type="CharField" name="cooker_log_path"></field>
-    <field type="CharField" name="build_name">a</field>
     <field type="CharField" name="bitbake_version"></field>
   </object>
   <object pk="2" model="orm.build">
@@ -51,7 +50,6 @@
     <field type="DateTimeField" name="completed_on">2016-02-13T18:46:20.114530+00:00</field>
     <field type="IntegerField" name="outcome">0</field>
     <field type="CharField" name="cooker_log_path"></field>
-    <field type="CharField" name="build_name">b</field>
     <field type="CharField" name="bitbake_version"></field>
   </object>
   <object pk="3" model="orm.build">
@@ -63,7 +61,6 @@
     <field type="DateTimeField" name="completed_on">2016-02-12T18:46:20.114530+00:00</field>
     <field type="IntegerField" name="outcome">1</field>
     <field type="CharField" name="cooker_log_path"></field>
-    <field type="CharField" name="build_name">c</field>
     <field type="CharField" name="bitbake_version"></field>
   </object>
   <object pk="4" model="orm.build">
@@ -75,7 +72,6 @@
     <field type="DateTimeField" name="completed_on">2016-02-11T18:46:20.114530+00:00</field>
     <field type="IntegerField" name="outcome">0</field>
     <field type="CharField" name="cooker_log_path"></field>
-    <field type="CharField" name="build_name">d</field>
     <field type="CharField" name="bitbake_version"></field>
   </object>
   <object pk="1" model="orm.target">
