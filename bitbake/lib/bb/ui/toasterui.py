@@ -119,6 +119,7 @@ _evt_list = [
     "bb.event.RecipeParsed",
     "bb.event.SanityCheck",
     "bb.event.SanityCheckPassed",
+    "bb.event.TargetsAcquired",
     "bb.event.TreeDataPreparationCompleted",
     "bb.event.TreeDataPreparationStarted",
     "bb.runqueue.runQueueTaskCompleted",
@@ -231,19 +232,19 @@ def main(server, eventHandler, params):
             # pylint: disable=protected-access
             # the code will look into the protected variables of the event; no easy way around this
 
-            # we treat ParseStarted as the first event of toaster-triggered
-            # builds; that way we get the Build Configuration included in the log
-            # and any errors that occur before BuildStarted is fired
-            if isinstance(event, bb.event.ParseStarted):
+            # start of build: this event is fired just before the buildTargets()
+            # command is invoked on the XMLRPC server
+            if isinstance(event, bb.event.TargetsAcquired):
                 if not (build_log and build_log_file_path):
                     build_log, build_log_file_path = _open_build_log(log_dir)
+                buildinfohelper.store_new_build(build_log_file_path)
+                buildinfohelper.store_targets(event)
                 continue
 
+            # when the build proper starts, we extract information about
+            # any layers and config data
             if isinstance(event, bb.event.BuildStarted):
-                if not (build_log and build_log_file_path):
-                    build_log, build_log_file_path = _open_build_log(log_dir)
-
-                buildinfohelper.store_started_build(event, build_log_file_path)
+                buildinfohelper.update_build(event)
                 continue
 
             if isinstance(event, (bb.build.TaskStarted, bb.build.TaskSucceeded, bb.build.TaskFailedSilent)):
