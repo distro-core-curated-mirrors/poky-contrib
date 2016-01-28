@@ -375,7 +375,6 @@ class Build(models.Model):
     completed_on = models.DateTimeField()
     outcome = models.IntegerField(choices=BUILD_OUTCOME, default=IN_PROGRESS)
     cooker_log_path = models.CharField(max_length=500)
-    build_name = models.CharField(max_length=100)
     bitbake_version = models.CharField(max_length=50)
 
     @staticmethod

@@ -444,6 +444,13 @@ class MultipleProviders(Event):
         """
         return self._candidates
 
+class TargetsAcquired(Event):
+    """Target we are aiming at known"""
+    def __init__(self, task, targetsList):
+        Event.__init__(self)
+        self.task = task
+        self.targetsList = targetsList
+
 class ParseStarted(OperationStarted):
     """Recipe parsing for the runqueue has begun"""
     def __init__(self, total):

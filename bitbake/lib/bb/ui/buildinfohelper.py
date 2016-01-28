@@ -134,13 +134,12 @@ class ORMWrapper(object):
     # pylint: disable=bad-continuation
     # we do not follow the python conventions for continuation indentation due to long lines here
 
-    def create_build_object(self, build_info, brbe, project_id):
+    def create_build_object(self, build_info, brbe, project_id = None):
         assert 'machine' in build_info
         assert 'distro' in build_info
         assert 'distro_version' in build_info
         assert 'started_on' in build_info
         assert 'cooker_log_path' in build_info
-        assert 'build_name' in build_info
         assert 'bitbake_version' in build_info
 
         prj = None
@@ -168,7 +167,6 @@ class ORMWrapper(object):
             build.distro=build_info['distro']
             build.distro_version=build_info['distro_version']
             build.cooker_log_path=build_info['cooker_log_path']
-            build.build_name=build_info['build_name']
             build.bitbake_version=build_info['bitbake_version']
             build.save()
 
@@ -181,7 +179,6 @@ class ORMWrapper(object):
                                     started_on=build_info['started_on'],
                                     completed_on=build_info['started_on'],
                                     cooker_log_path=build_info['cooker_log_path'],
-                                    build_name=build_info['build_name'],
                                     bitbake_version=build_info['bitbake_version'])
 
         logger.debug(1, "buildinfohelper: build is created %s" % build)
@@ -875,7 +872,6 @@ class BuildInfoHelper(object):
         build_info['started_on'] = timezone.now()
         build_info['completed_on'] = timezone.now()
         build_info['cooker_log_path'] = build_log_path
-        build_info['build_name'] = self.server.runCommand(["getVariable", "BUILDNAME"])[0]
         build_info['bitbake_version'] = self.server.runCommand(["getVariable", "BB_VERSION"])[0]
         build_info['project'] = self.project = self.server.runCommand(["getVariable", "TOASTER_PROJECT"])[0]
         return build_info
@@ -940,26 +936,6 @@ class BuildInfoHelper(object):
 
         return recipe_info
 
-    def _get_path_information(self, task_object):
-        assert isinstance(task_object, Task)
-        build_stats_format = "{tmpdir}/buildstats/{buildname}/{package}/"
-        build_stats_path = []
-
-        for t in self.internal_state['targets']:
-            buildname = self.internal_state['build'].build_name
-            pe, pv = task_object.recipe.version.split(":",1)
-            if len(pe) > 0:
-                package = task_object.recipe.name + "-" + pe + "_" + pv
-            else:
-                package = task_object.recipe.name + "-" + pv
-
-            build_stats_path.append(build_stats_format.format(tmpdir=self.tmp_dir,
-                                                     buildname=buildname,
-                                                     package=package))
-
-        return build_stats_path
-
-
     ################################
     ## external available methods to store information
     @staticmethod
@@ -983,17 +959,43 @@ class BuildInfoHelper(object):
             except NotExisting as nee:
                 logger.warn("buildinfohelper: cannot identify layer exception:%s ", nee)
 
-
-    def store_started_build(self, event, build_log_path):
-        assert '_pkgs' in vars(event)
+    def store_new_build(self, build_log_path):
+        """
+        create a skeletal build object (or retrieve an existing one) as soon as
+        bitbake starts trying to do the build; we use the buildTargets()
+        command on the XMLRPC server as the indicator of a build start
+        """
         build_information = self._get_build_information(build_log_path)
+        self.internal_state['build'] = self.orm_wrapper.create_build_object(build_information, self.brbe)
 
-        # Update brbe and project as they can be changed for every build
-        self.project = build_information['project']
+    def store_targets(self, event):
+        """
+        store targets for the current build, if that build was started from
+        the command line; targets for non-cli builds are irrelevant, as we
+        create them from the BuildRequest anyway
 
-        build_obj = self.orm_wrapper.create_build_object(build_information, self.brbe, self.project)
+        event: a TargetsAcquired event with a task property (e.g. "build")
+        and a targetsList property (e.g. ["zlib", "dropbear"])
+        """
+        if self.internal_state['build'].project.is_default:
+            targets = map(lambda target: target + ':' + event.task, event.targetsList)
 
-        self.internal_state['build'] = build_obj
+            target_information = {
+              'targets': targets,
+              'build': self.internal_state['build']
+            }
+
+            self.internal_state['targets'] = self.orm_wrapper.get_or_create_targets(target_information)
+
+    def update_build(self, event):
+        """
+        update the current build with layer and config data once it
+        actually starts
+
+        event: a BuildStarted event
+        """
+
+        build_obj = self.internal_state['build']
 
         # save layer version information for this build
         if not 'lvs' in self.internal_state:
@@ -1003,13 +1005,6 @@ class BuildInfoHelper(object):
                 self.orm_wrapper.get_update_layer_version_object(build_obj, layer_obj, self.internal_state['lvs'][layer_obj])
 
             del self.internal_state['lvs']
-
-        # create target information
-        target_information = {}
-        target_information['targets'] = event._pkgs
-        target_information['build'] = build_obj
-
-        self.internal_state['targets'] = self.orm_wrapper.get_or_create_targets(target_information)
 
         # Save build configuration
         data = self.server.runCommand(["getAllKeysWithFlags", ["doc", "func"]])[0]
