@@ -15,9 +15,9 @@ import subprocess
 import bb
 from oeqa.utils.decorators import LogResults
 
-from oeqa.base.baserunner import TestRunnerBase
+from oeqa.base.targetrunner import TargetTestRunner
 
-class OETestRunner(TestRunnerBase):
+class OETestRunner(TargetTestRunner):
     def __init__(self, tc, type="runtime"):
         super(OETestRunner, self).__init__(tc)
         self.type = type
