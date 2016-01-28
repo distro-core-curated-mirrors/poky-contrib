@@ -8,7 +8,10 @@ The NPM fetcher is used to retrieve files from the npmjs repository
 Usage in the recipe:
 
     SRC_URI = "npm://www.npmjs.com/package/colors"
-    SRCREV = "0.0.0"
+    Suported SRC_URI options are:
+
+    - name
+    - version
 
     npm://registry.npmjs.org/${PN}/-/${PN}-${PV}.tgz  would become npm://registry.npmjs.org;name=${PN};ver=${PV}
     The fetcher all triggers off the existence of ud.localpath. If that exists and has the ".done" stamp, its assumed the fetch is good/done
@@ -60,13 +63,21 @@ class Npm(FetchMethod):
         else:
             ud.basename = os.path.basename(ud.path)
 
-        ud.localfile = data.expand(urllib.unquote(ud.basename), d)
-        ud.parm['subdir'] = "npmpkg"
+        # can't call it ud.name otherwise fetcher base class will start doing md5stuff
+        # TODO: find a way to get an md5/sha256 manifest of pkg & all deps
+        ud.pkgname = ud.parm.get("name", None)
+        if not ud.pkgname:
+            raise ParameterError("NPM fetcher requires a name parameter")
+        ud.version = ud.parm.get("version", None)
+        if not ud.version:
+            raise ParameterError("NPM fetcher requires a version parameter")
+        ud.bbnpmmanifest = "%s-%s.deps.json" % (ud.pkgname, ud.version)
+        ud.registry = "http://%s" % ud.basename
 
         self.basecmd = d.getVar("FETCHCMD_wget", True) or "/usr/bin/env wget -t 2 -T 30 -nv --passive-ftp --no-check-certificate"
 
     def need_update(self, ud, d):
-        if os.path.exists(ud.localpath):
+        if os.path.exists(ud.bbnpmmanifest):
             return False
         return True
 
@@ -106,25 +117,24 @@ class Npm(FetchMethod):
 
     def unpack(self, ud, destdir, d):
         dldir = d.getVar("DL_DIR", True)
-        pv = d.getVar("PV", True)
-        pn = d.getVar("PN", True)
-        depdumpfile = "%s-%s.deps.json" % (pn, pv)
+        depdumpfile = "%s-%s.deps.json" % (ud.pkgname, ud.version)
         with open("%s/%s" % (dldir, depdumpfile)) as datafile:
             workobj = json.load(datafile)
         dldir = os.path.dirname(ud.localpath)
 
-        self._unpackdep(pn, workobj,  "%s/npmpkg" % destdir, dldir, d)
+        self._unpackdep(ud.pkgname, workobj,  "%s/npmpkg" % destdir, dldir, d)
 
     def _getdependencies(self, pkg, data, version, d, ud):
         pkgfullname = pkg
         if version:
             pkgfullname += "@%s" % version
         logger.debug(2, "Calling getdeps on %s" % pkg)
-        fetchcmd = "npm view %s dist.tarball" % pkgfullname
+        fetchcmd = "npm view %s dist.tarball --registry %s" % (pkgfullname, ud.registry)
         output = runfetchcmd(fetchcmd, d, True)
         # npm may resolve multiple versions
         outputarray = output.splitlines()
         # we just take the latest version npm resolved
+        #logger.debug(2, "Output URL is %s - %s - %s" % (ud.basepath, ud.basename, ud.localfile))
         outputurl = outputarray[len(outputarray)-1].rstrip()
         if (len(outputarray) > 1):
             # remove the preceding version/name from npm output and then the
@@ -134,7 +144,7 @@ class Npm(FetchMethod):
         data[pkg]['tgz'] = os.path.basename(outputurl)
         self._runwget(ud, d, "%s %s" % (self.basecmd, outputurl), False)
         #fetchcmd = "npm view %s@%s dependencies --json" % (pkg, version)
-        fetchcmd = "npm view %s dependencies --json" % (pkgfullname)
+        fetchcmd = "npm view %s dependencies --json --registry %s" % (pkgfullname, ud.registry)
         output = runfetchcmd(fetchcmd, d, True)
         try:
           depsfound = json.loads(output)
@@ -148,15 +158,8 @@ class Npm(FetchMethod):
     def download(self, ud, d):
         """Fetch url"""
         jsondepobj = {}
-        #fetchcmd = self.basecmd
-        # NPM registry uses http
-        #fetchcmd += " " + ud.url.replace("npm://", "http://")
-        #self._runwget(ud, d, fetchcmd, False)
-        pv = d.getVar("PV", True)
-        pn = d.getVar("PN", True)
 
-        self._getdependencies(pn, jsondepobj, pv, d, ud)
+        self._getdependencies(ud.pkgname, jsondepobj, ud.version, d, ud)
 
-        depdumpfile = "%s-%s.deps.json" % (pn, pv)
-        with open(depdumpfile, 'w') as outfile:
+        with open(ud.bbnpmmanifest, 'w') as outfile:
             json.dump(jsondepobj, outfile)
