@@ -29,7 +29,7 @@ from django.utils import timezone
 from orm.models import Project, Release, BitbakeVersion, Package, LogMessage
 from orm.models import ReleaseLayerSourcePriority, LayerSource, Layer, Build
 from orm.models import Layer_Version, Recipe, Machine, ProjectLayer, Target
-from orm.models import CustomImageRecipe, ProjectVariable
+from orm.models import CustomImageRecipe, ProjectVariable, Variable
 from orm.models import Branch, CustomImagePackage
 
 import toastermain
@@ -1052,7 +1052,19 @@ class BuildDashboardTests(TestCase):
 
         self.build1 = Build.objects.create(project=project,
                                            started_on=now,
-                                           completed_on=now)
+                                           completed_on=now,
+                                           outcome=Build.FAILED)
+
+        self.build2 = Build.objects.create(project=project,
+                                           started_on=now,
+                                           completed_on=now,
+                                           outcome=Build.SUCCEEDED)
+
+        # add Variable objects to the successful build, as this is the criterion
+        # used to determine whether the left-hand panel should be displayed
+        Variable.objects.create(build=self.build2,
+                                variable_name='Foo',
+                                variable_value='Bar')
 
         # exception
         msg1 = 'an exception was thrown'
@@ -1070,22 +1082,21 @@ class BuildDashboardTests(TestCase):
             message=msg2
         )
 
-    def _get_build_dashboard_errors(self):
+    def _get_build_dashboard(self, build):
         """
-        Get a list of HTML fragments representing the errors on the
-        build dashboard
+        Get the HTML representing the build dashboard for a Build
         """
-        url = reverse('builddashboard', args=(self.build1.id,))
+        url = reverse('builddashboard', args=(build.id,))
         response = self.client.get(url)
-        soup = BeautifulSoup(response.content)
-        return soup.select('#errors div.alert-error')
+        return BeautifulSoup(response.content)
 
-    def _check_for_log_message(self, log_message):
+    def _check_for_log_message(self, build, log_message):
         """
         Check whether the LogMessage instance <log_message> is
         represented as an HTML error in the build dashboard page
         """
-        errors = self._get_build_dashboard_errors()
+        soup = self._get_build_dashboard(build)
+        errors = soup.select('#errors div.alert-error')
         self.assertEqual(len(errors), 2)
 
         expected_text = log_message.message
@@ -1115,11 +1126,27 @@ class BuildDashboardTests(TestCase):
         LogMessages with level EXCEPTION should display in the errors
         section of the page
         """
-        self._check_for_log_message(self.exception_message)
+        self._check_for_log_message(self.build1, self.exception_message)
 
     def test_criticals_show_as_errors(self):
         """
         LogMessages with level CRITICAL should display in the errors
         section of the page
         """
-        self._check_for_log_message(self.critical_message)
+        self._check_for_log_message(self.build1, self.critical_message)
+
+    def test_left_panel(self):
+        """
+        Builds which succeed should have a left panel
+        """
+        soup = self._get_build_dashboard(self.build2)
+        left_panel = soup.select('#nav')
+        self.assertEqual(len(left_panel), 1)
+
+    def test_failed_no_left_panel(self):
+        """
+        Builds which fail should have no left panel
+        """
+        soup = self._get_build_dashboard(self.build1)
+        left_panel = soup.select('#nav')
+        self.assertEqual(len(left_panel), 0)
