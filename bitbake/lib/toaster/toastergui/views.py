@@ -506,6 +506,7 @@ def builddashboard( request, build_id ):
 
     context = {
             'build'           : build,
+            'Build'           : Build,
             'hasImages'       : hasImages,
             'ntargets'        : ntargets,
             'targets'         : targets,
