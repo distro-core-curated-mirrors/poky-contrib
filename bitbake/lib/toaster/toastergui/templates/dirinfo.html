@@ -168,10 +168,10 @@
     $.fn.isOffScreen = function(){
         var win = $(window);
         viewportBottom = win.scrollTop() + win.height();
-        
+
         var bounds = this.offset();
         bounds.bottom = bounds.top + this.outerHeight();
-        
+
         return (bounds.bottom > viewportBottom);
     };
 
@@ -184,58 +184,55 @@
     }
 </script>
 
-<div class="span10">
+<div class="page-header">
+    <h1> {{target.target}} </h1>
+</div>
 
-    <div class="page-header">
-        <h1> {{target.target}} </h1>
-    </div>
+<ul class="nav nav-pills">
+    <li class="">
+        <a href="{% url 'target' build.id target.id %}">
+        <i class="icon-question-sign get-help" title="Of all the packages built, the subset installed in the root file system of this image"></i>
+            Packages included ({{target.package_count}} - {{packages_sum|filtered_filesizeformat}})
+        </a>
+    </li>
+    <li class="active">
+        <a href="{% url 'dirinfo' build.id target.id %}">
+            <i class="icon-question-sign get-help" title="The directories and files in the root file system of this image"></i>
+            Directory structure
+        </a>
+    </li>
+</ul>
 
-    <ul class="nav nav-pills">
-        <li class="">
-            <a href="{% url 'target' build.id target.id %}">
-            <i class="icon-question-sign get-help" title="Of all the packages built, the subset installed in the root file system of this image"></i>
-                Packages included ({{target.package_count}} - {{packages_sum|filtered_filesizeformat}})
-            </a>
-        </li>
-        <li class="active">
-            <a href="{% url 'dirinfo' build.id target.id %}">
-                <i class="icon-question-sign get-help" title="The directories and files in the root file system of this image"></i>
-                Directory structure
-            </a>
-        </li>
-    </ul>
-
-    <div id="directory-structure" class="tab-pane active">
-        <table id="dirtable" class="table table-bordered table-hover treetable">
-            <thead>
-                <tr>
-                    <th>Directory / File</th>
-                    <th>Symbolic link to</th>
-                    <th>Source package</th>
-                    <th class="narrow-col">Size</th>
-                    <th class="medium-col">Permissions</th>
-                    <th class="narrow-col">Owner</th>
-                    <th class="narrow-col">Group</th>
-                </tr>
-            </thead>
-            <tbody>
-            <script type='text/javascript'>
-                setupTreetable();
-                addRows(null, {{ objects|safe }} );
-                {% if file_path %}
-                    {% comment %}
-                        link from package_included_detail specifies file path
-                    {% endcomment %}
-                    {% for dir_elem in dir_list %}
-                        $("#dirtable").treetable("expandNode", "{{dir_elem}}");
-                    {% endfor %}
-                    selectRow("{{file_path}}");
-                {% endif %}
-            </script>
-            </tbody>
-        </table>
-    </div> <!-- directory-structure -->
-</div> <!-- span10 -->
+<div id="directory-structure" class="tab-pane active">
+    <table id="dirtable" class="table table-bordered table-hover treetable">
+        <thead>
+            <tr>
+                <th>Directory / File</th>
+                <th>Symbolic link to</th>
+                <th>Source package</th>
+                <th class="narrow-col">Size</th>
+                <th class="medium-col">Permissions</th>
+                <th class="narrow-col">Owner</th>
+                <th class="narrow-col">Group</th>
+            </tr>
+        </thead>
+        <tbody>
+        <script type='text/javascript'>
+            setupTreetable();
+            addRows(null, {{ objects|safe }} );
+            {% if file_path %}
+                {% comment %}
+                    link from package_included_detail specifies file path
+                {% endcomment %}
+                {% for dir_elem in dir_list %}
+                    $("#dirtable").treetable("expandNode", "{{dir_elem}}");
+                {% endfor %}
+                selectRow("{{file_path}}");
+            {% endif %}
+        </script>
+        </tbody>
+    </table>
+</div> <!-- directory-structure -->
 
 {% endblock buildinfomain %}
 

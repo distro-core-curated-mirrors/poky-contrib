@@ -12,7 +12,6 @@
 {% endblock %}
 
 {% block buildinfomain %}
-<div class="span10">
 <div class="page-header">
 <h1>
   {% if request.GET.search and objects.paginator.count > 0  %}
@@ -109,5 +108,4 @@
 
 {% include "basetable_bottom.html" %}
 {% endif %}
-</div>
 {% endblock %}

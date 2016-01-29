@@ -18,7 +18,7 @@
 
 {% block buildinfomain %}
 
-<div class="row-fluid span10">
+<div class="row-fluid">
     <div class="page-header">
         <h1>
             {% if request.GET.search and objects.paginator.count > 0 %}
@@ -32,7 +32,7 @@
     </div>
 </div>
 
-<div class="row-fluid pull-right span10" id="navTab">
+<div class="row-fluid pull-right" id="navTab">
     <ul class="nav nav-pills">
         <li class="active">
             <a href="#target">
@@ -159,5 +159,5 @@
     {% include "basetable_bottom.html" %}
     {% endif %}
     </div> <!-- tabpane -->
-</div> <!--span 10-->
+</div>
 {% endblock buildinfomain %}

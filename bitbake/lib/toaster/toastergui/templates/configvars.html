@@ -12,7 +12,7 @@
 
 {% block buildinfomain %}
 <!-- page title -->
-<div class="row-fluid span10">
+<div class="row-fluid">
  <div class="page-header">
  <h1>
   {% if request.GET.filter and objects.paginator.count > 0 or request.GET.search and objects.paginator.count > 0 %}
@@ -27,7 +27,7 @@
 </div>
 
 <!-- configuration table -->
-<div class="row-fluid pull-right span10" id="navTab">
+<div class="row-fluid" id="navTab">
   <ul class="nav nav-pills">
     <li class=""><a href="{% url 'configuration' build.id %}">Summary</a></li>
     <li class="active"><a href="#" >BitBake variables</a></li>
