@@ -85,7 +85,12 @@
             </div>
             <div class="lead ">
               <span class="lead">
-                  Build time: <a href="{% url 'buildtime' build.pk %}">{{ build.timespent_seconds|sectohms }}</a>
+                  Build time:
+                  {% if build.outcome == build.SUCCEEDED %}
+                    <a href="{% url 'buildtime' build.pk %}">{{ build.timespent_seconds|sectohms }}</a>
+                  {% else %}
+                    {{ build.timespent_seconds|sectohms }}
+                  {% endif %}
               </span>
               {% if build.project.is_default %}
                   <i class="pull-right icon-question-sign get-help
