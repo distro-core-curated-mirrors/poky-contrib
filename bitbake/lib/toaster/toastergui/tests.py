@@ -924,6 +924,13 @@ class AllBuildsPageTests(TestCase):
             "outcome": Build.SUCCEEDED
         }
 
+        self.project1_build_failure = {
+            "project": self.project1,
+            "started_on": now,
+            "completed_on": now,
+            "outcome": Build.FAILED
+        }
+
         self.default_project_build_success = {
             "project": self.default_project,
             "started_on": now,
@@ -932,7 +939,7 @@ class AllBuildsPageTests(TestCase):
         }
 
     def _get_row_for_build(self, data, build_id):
-        """ Get the object representing the table data for a project """
+        """ Get the object representing the table data for a build """
         return [row for row in data['rows']
                     if row['id'] == build_id][0]
 
@@ -986,10 +993,10 @@ class AllBuildsPageTests(TestCase):
         data = json.loads(response.content)
 
         # get the data row for the non-command-line builds project
-        other_project_row = self._get_row_for_build(data, build1.id)
+        other_build_row = self._get_row_for_build(data, build1.id)
 
         # make sure there is some HTML
-        soup = BeautifulSoup(other_project_row['static:project'])
+        soup = BeautifulSoup(other_build_row['static:project'])
         self.assertEqual(len(soup.select('a')), 1,
                          'should be a project name link')
 
@@ -999,13 +1006,53 @@ class AllBuildsPageTests(TestCase):
                          'should not be a help icon for non-cli builds name')
 
         # get the data row for the command-line builds project
-        default_project_row = self._get_row_for_build(data, default_build.id)
+        default_build_row = self._get_row_for_build(data, default_build.id)
 
         # help icon on default project name
-        soup = BeautifulSoup(default_project_row['static:project'])
+        soup = BeautifulSoup(default_build_row['static:project'])
         icons = soup.select('i.get-help')
         self.assertEqual(len(icons), 1,
                          'should be a help icon for cli builds name')
+
+    def test_builds_time_links(self):
+        """
+        Successful builds should have links on the time column and in the
+        recent builds area; failed builds should not have links on the time column,
+        or in the recent builds area
+        """
+        build1 = Build.objects.create(**self.project1_build_success)
+        build2 = Build.objects.create(**self.project1_build_failure)
+        url = reverse('all-builds')
+
+        # get the page
+        response = self.client.get(url, follow=True)
+        page = BeautifulSoup(response.content)
+
+        # test recent builds area for successful build
+        attrs = {'data-latest-build-result': build1.id}
+        result = page.find('div', attrs=attrs)
+        soup = result.find(text=re.compile('Build time')).parent
+        self.assertNotEquals(soup.find('a'), None)
+
+        # test recent builds area for failed build
+        attrs = {'data-latest-build-result': build2.id}
+        result = page.find('div', attrs=attrs)
+        soup = result.find(text=re.compile('Build time')).parent
+        self.assertEquals(soup.find('a'), None)
+
+        # get the JSON for the builds table
+        response = self.client.get(url, {'format': 'json'}, follow=True)
+        data = json.loads(response.content)
+
+        # test the time column for successful build
+        build1_row = self._get_row_for_build(data, build1.id)
+        soup = BeautifulSoup(build1_row['static:time'])
+        self.assertNotEquals(soup.find('a'), None)
+
+        # test the time column for failed build
+        build2_row = self._get_row_for_build(data, build2.id)
+        soup = BeautifulSoup(build2_row['static:time'])
+        self.assertEquals(soup.find('a'), None)
 
 class ProjectPageTests(TestCase):
     """ Test project data at /project/X/ is displayed correctly """
@@ -1138,15 +1185,29 @@ class BuildDashboardTests(TestCase):
     def test_left_panel(self):
         """
         Builds which succeed should have a left panel
+        and a link on the build time
         """
         soup = self._get_build_dashboard(self.build2)
+
         left_panel = soup.select('#nav')
         self.assertEqual(len(left_panel), 1)
+
+        attrs = {'data-build-field': 'buildtime'}
+        build_time_span = soup.find('span', attrs)
+        build_time_link = build_time_span.select('a')
+        self.assertEqual(len(build_time_link), 1)
 
     def test_failed_no_left_panel(self):
         """
         Builds which fail should have no left panel
+        and no link on the build time
         """
         soup = self._get_build_dashboard(self.build1)
+
         left_panel = soup.select('#nav')
         self.assertEqual(len(left_panel), 0)
+
+        attrs = {'data-build-field': 'buildtime'}
+        build_time_span = soup.find('span', attrs)
+        build_time_link = build_time_span.select('a')
+        self.assertEqual(len(build_time_link), 0)
