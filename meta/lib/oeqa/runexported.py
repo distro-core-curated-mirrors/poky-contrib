@@ -21,7 +21,7 @@
 import sys
 import os
 import time
-from optparse import OptionParser
+from optparse import OptionParser, make_option
 
 try:
     import simplejson as json
@@ -30,7 +30,8 @@ except ImportError:
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "oeqa")))
 
-from oeqa.oetest import runTests
+from oeqa.base.targetrunner import TargetTestRunner, TestProgram
+from oeqa.oetest import OETestRunner
 from oeqa.utils.sshcontrol import SSHControl
 from oeqa.base.controller.base_target import BaseTarget
 
@@ -59,77 +60,66 @@ class FakeTarget(BaseTarget):
     def stop(self):
         return super(FakeTarget, self).stop()
 
-
 class MyDataDict(dict):
     def getVar(self, key, unused = None):
         return self.get(key, "")
 
-class TestContext(object):
-    def __init__(self):
-        self.d = None
-        self.target = None
-
-def main():
-
-    usage = "usage: %prog [options] <json file>"
-    parser = OptionParser(usage=usage)
-    parser.add_option("-t", "--target-ip", dest="ip", help="The IP address of the target machine. Use this to \
-            overwrite the value determined from TEST_TARGET_IP at build time")
-    parser.add_option("-s", "--server-ip", dest="server_ip", help="The IP address of this machine. Use this to \
-            overwrite the value determined from TEST_SERVER_IP at build time.")
-    parser.add_option("-d", "--deploy-dir", dest="deploy_dir", help="Full path to the package feeds, that this \
+class TestProgramExport(TestProgram):
+    runner_class = OETestRunner
+    def options(self):
+        super(TestProgramExport, self).options()
+        self.option_list.extend([
+            make_option("-t", "--target-ip", dest="ip", help="The IP address of the target machine. Use this to \
+            overwrite the value determined from TEST_TARGET_IP at build time"),
+            make_option("-s", "--server-ip", dest="server_ip", help="The IP address of this machine. Use this to \
+            overwrite the value determined from TEST_SERVER_IP at build time."),
+            make_option("-d", "--deploy-dir", dest="deploy_dir", help="Full path to the package feeds, that this \
             the contents of what used to be DEPLOY_DIR on the build machine. If not specified it will use the value \
             specified in the json if that directory actually exists or it will error out.")
-    parser.add_option("-l", "--log-dir", dest="log_dir", help="This sets the path for TEST_LOG_DIR. If not specified \
-            the current dir is used. This is used for usually creating a ssh log file and a scp test file.")
+        ])
 
-    (options, args) = parser.parse_args()
-    if len(args) != 1:
-        parser.error("Incorrect number of arguments. The one and only argument should be a json file exported by the build system")
+    def configure(self, options=None):
+        super(TestProgramExport, self).configure(options)
+        options, args = options if isinstance(options, tuple) else (options, None)
+        if not args:
+            self.parser.error("Incorrect number of arguments. The one and only argument should be a json file exported by the build system")
+        with open(args[0], "r") as f:
+            loaded = json.load(f)
+        if options.ip:
+            loaded["target"]["ip"] = options.ip
+        if options.server_ip:
+            loaded["target"]["server_ip"] = options.server_ip
 
-    with open(args[0], "r") as f:
-        loaded = json.load(f)
+        d = MyDataDict()
+        for key in loaded["d"].keys():
+            d[key] = loaded["d"][key]
 
-    if options.ip:
-        loaded["target"]["ip"] = options.ip
-    if options.server_ip:
-        loaded["target"]["server_ip"] = options.server_ip
+        if options.logdir:
+            d["TEST_LOG_DIR"] = options.logdir
+        else:
+            d["TEST_LOG_DIR"] = os.path.abspath(os.path.dirname(__file__))
+        if options.deploy_dir:
+            d["DEPLOY_DIR"] = options.deploy_dir
+        else:
+            if not os.path.isdir(d["DEPLOY_DIR"]):
+                raise Exception("The path to DEPLOY_DIR does not exists: %s" % d["DEPLOY_DIR"])
 
-    d = MyDataDict()
-    for key in loaded["d"].keys():
-        d[key] = loaded["d"][key]
+        target = FakeTarget(d)
+        for key in loaded["target"].keys():
+            setattr(target, key, loaded["target"][key])
 
-    if options.log_dir:
-        d["TEST_LOG_DIR"] = options.log_dir
-    else:
-        d["TEST_LOG_DIR"] = os.path.abspath(os.path.dirname(__file__))
-    if options.deploy_dir:
-        d["DEPLOY_DIR"] = options.deploy_dir
-    else:
-        if not os.path.isdir(d["DEPLOY_DIR"]):
-            raise Exception("The path to DEPLOY_DIR does not exists: %s" % d["DEPLOY_DIR"])
+        setattr(self.context, "d", d)
+        setattr(self.context, "target", target)
+        for key in loaded.keys():
+            if key != "d" and key != "target":
+                setattr(self.context, key, loaded[key])
 
-
-    target = FakeTarget(d)
-    for key in loaded["target"].keys():
-        setattr(target, key, loaded["target"][key])
-
-    tc = TestContext()
-    setattr(tc, "d", d)
-    setattr(tc, "target", target)
-    for key in loaded.keys():
-        if key != "d" and key != "target":
-            setattr(tc, key, loaded[key])
-
-    runTests(tc)
-
-    return 0
+main = TestProgramExport
 
 if __name__ == "__main__":
     try:
-        ret = main()
+        main()
     except Exception:
         ret = 1
         import traceback
         traceback.print_exc(5)
-    sys.exit(ret)
