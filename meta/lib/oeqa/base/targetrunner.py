@@ -8,7 +8,7 @@
 """test runner for target device"""
 import sys
 from optparse import make_option
-from baserunner import TestRunnerBase
+from baserunner import TestRunnerBase, TestProgram
 
 class TargetTestRunner(TestRunnerBase):
     '''test runner which support target DUT access'''
@@ -27,3 +27,8 @@ class TargetTestRunner(TestRunnerBase):
             if target:
                 target.stop()
         return ret
+
+TestProgram.runner_class = TargetTestRunner
+
+if __name__ == "__main__":
+    TestProgram()
