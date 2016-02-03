@@ -131,11 +131,16 @@ var libtoaster = (function (){
         url: url,
         data: { 'buildCancel': build_ids },
         headers: { 'X-CSRFToken' : $.cookie('csrftoken')},
+        beforeSend: function() {
+          $('#loading-notification').html("Build cancellation is in process. Please wait");
+        },
         success: function (_data) {
 	  /* No proper reponse YOCTO #7995
           if (_data.error !== "ok") {
             console.warn(_data.error);
             } else {*/
+            $('#loading-notification').html("Build cancellation successful");
+            setTimeout(function() {}, 2000)
             if (onsuccess !== undefined) onsuccess(_data);
           //}
         },

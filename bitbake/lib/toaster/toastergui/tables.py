@@ -1272,8 +1272,13 @@ class BuildsTable(ToasterTable):
                     bbctrl = bbcontroller.BitbakeController(br.environment)
                     bbctrl.forceShutDown()
                     while True:
-                        if BuildRequest.objects.get(pk = i).build.outcome == 0:
+                        import time
+                        time.sleep(2)
+                        build = BuildRequest.objects.get(pk = i).build
+                        if build.outcome == 0:
                             br.state = BuildRequest.REQ_DELETED
+                            build.outcome = 3
+                            build.save()
                             br.save()
                             break
                 except BuildRequest.DoesNotExist:
