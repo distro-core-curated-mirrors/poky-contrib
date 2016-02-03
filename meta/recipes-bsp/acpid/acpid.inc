@@ -7,6 +7,8 @@ LICENSE = "GPLv2+"
 SRC_URI = "${SOURCEFORGE_MIRROR}/acpid2/acpid-${PV}.tar.xz \
            file://init \
            file://acpid.service \
+           file://power.sh \
+           file://power \
           "
 
 inherit autotools update-rc.d systemd
@@ -23,8 +25,11 @@ do_install_append () {
 
 	install -d ${D}${sysconfdir}/acpi
 	install -d ${D}${sysconfdir}/acpi/events
+	install -d ${D}${sysconfdir}/acpi/actions
 
 	install -d ${D}${systemd_unitdir}/system
 	install -m 0644 ${WORKDIR}/acpid.service ${D}${systemd_unitdir}/system
 	sed -i -e 's,@SBINDIR@,${sbindir},g' ${D}${systemd_unitdir}/system/acpid.service
+	install -m 0755 ${WORKDIR}/power.sh ${D}${sysconfdir}/acpi/actions/
+	install -m 0644 ${WORKDIR}/power ${D}${sysconfdir}/acpi/events/
 }

@@ -16,7 +16,7 @@ if [ "$HOME" = "ROOTHOME" ]; then
 fi
 if [ "$PS1" ]; then
 # works for bash and ash (no other shells known to be in use here)
-   PS1='\u@\h:\w\$ '
+   PS1='[\u@zstack]# '
 fi
 
 if [ -d /etc/profile.d ]; then

@@ -16,5 +16,10 @@ if test -f /etc/nologin.boot
 then
 	rm -f /etc/nologin /etc/nologin.boot
 fi
+echo "
+Welcome to try ZStack image which is based on Yocto 2.1.
+Built by Robert Yang <yocto_zs@sina.com>.
 
+Please login as root without passwd.
+"
 : exit 0
