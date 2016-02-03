@@ -21,12 +21,16 @@ class PatchTestArgs:
         parser = argparse.ArgumentParser()
 
         parser.add_argument('--series', '-s',
+                            nargs='*',
                             dest='series',
-                            help='The series id to patch and test. Add --no-patch if no patching is done into the repository')
+                            default=[],
+                            help='The series ids to patch and test. Add --no-patch if no patching is done into the repository')
 
         parser.add_argument('--revision', '-r',
+                            nargs='*',
                             dest='revision',
-                            help='The revision to patch and test, latest if omitted. Add --no-patch if no patching is done into the repository')
+                            default=[],
+                            help='The revisions to patch and test, latest if omitted. Add --no-patch if no patching is done into the repository')
 
         parser.add_argument('--post',
                             dest='post',
@@ -34,8 +38,10 @@ class PatchTestArgs:
                             help="Post results to patchwork")
 
         parser.add_argument('--mbox', '-m',
+                            nargs='*',
                             dest='mbox',
-                            help='A mbox file to patch and test. Add --no-patch if no patching is done into the repository')
+                            default=[],
+                            help='mbox files to patch and test. Add --no-patch if no patching is done into the repository')
 
         parser.add_argument('-C',
                             dest='repodir',
@@ -72,6 +78,16 @@ class PatchTestArgs:
                             dest='nopatch',
                             action='store_true',
                             help="Do not patch the mbox or series/revision")
+
+        parser.add_argument('--force-patch',
+                            dest='forcepatch',
+                            action='store_true',
+                            help="Tests are executed if ALL input is patched correctly")
+
+        parser.add_argument('--single-branch',
+                            dest='singlebranch',
+                            action='store_true',
+                            help="Merge all mbox/series into a single branch")
 
         parser.add_argument('--debug', '-d',
                             action='store_true',

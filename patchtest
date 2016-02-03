@@ -51,7 +51,7 @@ class PatchTestResult(unittest.TextTestResult):
         self.test_error = False
 
         try:
-            self.repo.setup(PatchTestArgs.nopatch)
+            self.repo.setup(PatchTestArgs.nopatch, PatchTestArgs.forcepatch)
         except repo.PatchException as pe:
             self.patch_error = True
             self.summary.addPatchFailure(str(pe))
@@ -81,7 +81,7 @@ class PatchTestResult(unittest.TextTestResult):
 
     def stopTestRun(self):
         # leave the working directory as it was, and remove branch if desired
-        self.repo.clean(keepbranch=PatchTestArgs.keepbranch, nopatch=PatchTestArgs.nopatch)
+        self.repo.clean(PatchTestArgs.nopatch, PatchTestArgs.keepbranch)
 
         # just post when there are no repository, commands and test exceptions
         if not (self.repo_error or self.cmd_error or self.test_error):
@@ -110,12 +110,8 @@ def main():
     elif PatchTestArgs.quiet:
         logger.setLevel(logging.ERROR)
 
-    listseries = []
-    listmbox = []
-
     # read the stdin if series/revision are passed this way
     if not sys.stdin.isatty():
-        logger.info('using stdin, ignoring parameters')
         for line in fileinput.input('-'):
             try:
                 event = json.loads(line)
@@ -124,30 +120,37 @@ def main():
                 revision = None
                 if parameters:
                     revision = parameters['revision']
-                listseries.append((series, revision))
+                PatchTestArgs.series.append(series)
+                PatchTestArgs.revision.append(revision)
             except ValueError:
-                listmbox.append(line.strip())
-        if listmbox and listseries:
-            logger.warning('received both mbox and series/revision')
-    elif PatchTestArgs.mbox:
-        if PatchTestArgs.series:
-            logger.error('patchwork-related parameters (--series) cannot be used with --mbox')
-            return 1
-        listmbox = [PatchTestArgs.mbox]
-    elif PatchTestArgs.series:
-        listseries = [(PatchTestArgs.series, PatchTestArgs.revision)]
+                # we try the input as a mbox path
+                PatchTestArgs.mbox.append(line.strip())
+
+    if PatchTestArgs.singlebranch:
+        # run tests on top of all input patches (mbox or series)
+        run()
     else:
-        # no arguments given, thus branch from current branch/commit and start testing
-        run()
+        # run tests for each input patch (mbox or series)
+        if PatchTestArgs.series:
+            listseries = PatchTestArgs.series
+            listrevision = PatchTestArgs.revision
 
-    for series, revision in listseries:
-        PatchTestArgs.series = series
-        PatchTestArgs.revision = revision
-        run()
+            # check if lengths match, if not pad revisions with None
+            difflength = len(listseries) - len(listrevision)
+            listrevision.extend([None] * difflength)
 
-    for mbox in listmbox:
-        PatchTestArgs.mbox = mbox
-        run()
+            for series, revision in zip(listseries, listrevision):
+                PatchTestArgs.series = [series]
+                PatchTestArgs.revision = [revision]
+                run()
+        elif PatchTestArgs.mbox:
+            listmboxs = PatchTestArgs.mbox
+            for mbox in listmbox:
+                PatchTestArgs.mbox = [mbox]
+                run()
+        else:
+            # no input given, just run
+            run()
 
     return 0
 
