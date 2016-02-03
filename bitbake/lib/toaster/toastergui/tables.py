@@ -918,7 +918,7 @@ class BuildsTable(ToasterTable):
         # for the latest builds section
         builds = self.get_builds()
 
-        finished_criteria = Q(outcome=Build.SUCCEEDED) | Q(outcome=Build.FAILED)
+        finished_criteria = Q(outcome=Build.SUCCEEDED) | Q(outcome=Build.FAILED) | Q(outcome=Build.CANCELLED)
 
         latest_builds = itertools.chain(
             builds.filter(outcome=Build.IN_PROGRESS).order_by("-started_on"),
@@ -942,6 +942,7 @@ class BuildsTable(ToasterTable):
 
         # don't include in progress builds
         queryset = queryset.exclude(outcome=Build.IN_PROGRESS)
+        queryset = queryset.exclude(outcome=Build.CANCELLED)
 
         # sort
         queryset = queryset.order_by(self.default_orderby)
@@ -1272,8 +1273,13 @@ class BuildsTable(ToasterTable):
                     bbctrl = bbcontroller.BitbakeController(br.environment)
                     bbctrl.forceShutDown()
                     while True:
-                        if BuildRequest.objects.get(pk = i).build.outcome == 0:
+                        import time
+                        time.sleep(2)
+                        build = BuildRequest.objects.get(pk = i).build
+                        if build.outcome == 0:
                             br.state = BuildRequest.REQ_DELETED
+                            build.outcome = 3
+                            build.save()
                             br.save()
                             break
                 except BuildRequest.DoesNotExist:
