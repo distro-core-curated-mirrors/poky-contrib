@@ -33,24 +33,60 @@
         </para>
     </note>
 
-    <section id='intro-modes'>
-        <title>Toaster Operational Modes</title>
+    <section id='intro-features'>
+        <title>Toaster Features</title>
 
         <para>
-            You can use Toaster in Analysis Mode or Build Mode:
+            Toaster does mainly two things: it allows you to configure and run builds, and it provides
+            extensive information about the build process.
             <itemizedlist>
-                <listitem><para id='toaster-analysis-mode'><emphasis>Analysis Mode:</emphasis>
-                    In Analysis Mode, you can record builds and statistics.
-                    In this Mode, you directly access the
-                    <filename>bitbake</filename> command, which you then use to
-                    build images.</para>
-                    <para>Analysis Mode requires you to have first started
-                    Toaster and then to initiate your build using the
-                    <filename>bitbake</filename> command from the shell.
-                    Toaster must be started before the build or it will not
-                    collect build data.</para>
-                    <para>Toaster has the following capabilities in
-                    Analysis Mode:
+                <listitem><para id='toaster-build-features'><emphasis>Configure and run builds:</emphasis>
+                    You can use the Toaster web interface to configure and start your builds.
+                    Builds started via the Toaster web interface are organised into projects.
+                    When you create a project, you will be asked to select a release, or version
+                    of the build system you want to use for the project builds. As shipped,
+                    Toaster supports Yocto Project releases 1.8 and beyond.</para>
+                    <para>With the Toaster web interface, you can:
+                    <itemizedlist>
+                        <listitem><para>
+                            Browse layers listed in the various
+                            <link linkend='layer-source'>layer sources</link>
+                            that are available in your project (e.g. the
+                            OpenEmbedded Metadata Index at
+                            <ulink url='http://layers.openembedded.org/layerindex/'></ulink>).
+                        </para></listitem>
+                        <listitem><para>
+                            Browse images, recipes and machines provided by
+                            those layers.</para></listitem>
+                        <listitem><para>
+                            Import your own layers for building.
+                            </para></listitem>
+                        <listitem><para>
+                            Add and remove layers from your configuration.
+                            </para></listitem>
+                        <listitem><para>
+                            Set configuration variables.
+                            </para></listitem>
+                        <listitem><para>
+                            Select a target or multiple targets to build.
+                            </para></listitem>
+                        <listitem><para>
+                            Start your builds.
+                            </para></listitem>
+                        </itemizedlist></para>
+                        <para>Toaster also allows you to configure and run your builds
+                            from command line, and switch between command line and web
+                            interface at any time. Builds started from command line are
+                            shown within a special Toaster project called "Command line
+                            builds".</para>
+                    </listitem>
+                    <listitem><para id='toaster-analysis-features'><emphasis>Information about the build
+                        process:</emphasis>
+                    Toaster also records extensive information about your builds. Data
+                    is collected for builds started from the web interface and the command
+                    line, <emphasis>as long as Toaster is running</emphasis>. Toaster must
+                    be started before the build or it will not collect build data.</para>
+                    <para>With Toaster you can:
                     <itemizedlist>
                         <listitem><para>
                             See what was built (recipes and packages) and what
@@ -74,51 +110,11 @@
                             </para></listitem>
                         <listitem><para>
                             See dependency relationships between recipes,
-                            packages and tasks
+                            packages and tasks.
                             </para></listitem>
                         <listitem><para>
                             See performance information such as build time,
                             task time, CPU usage, and disk I/O.
-                            </para></listitem>
-                    </itemizedlist>
-                    </para></listitem>
-                <listitem><para id='toaster-build-mode'><emphasis>Build Mode:</emphasis>
-                    In Build Mode, Toaster handles the build configuration,
-                    scheduling and execution.
-                    In this mode, all your interaction with the build system
-                    happens through the web interface.
-                    You do not have direct access to the
-                    <filename>bitbake</filename> command.</para>
-                    <para>Using this mode, you configure and start your builds
-                    within Toaster's GUI.
-                    Each project can be configured for a specific version
-                    of the build system.
-                    As shipped, Toaster supports Yocto Project Releases 1.7 and
-                    beyond.</para>
-                    <para>Toaster has all the same capabilities in Build Mode
-                    as it does in Analysis Mode plus the following:
-                    <itemizedlist>
-                        <listitem><para>
-                            Browse layers listed in the various
-                            <link linkend='layer-source'>layer sources</link>
-                            that are available in your project (e.g. the
-                            OpenEmbedded Metadata Index at
-                            <ulink url='http://layers.openembedded.org/layerindex/'></ulink>).
-                            </para></listitem>
-                        <listitem><para>
-                            Import your own layers for building.
-                            </para></listitem>
-                        <listitem><para>
-                            Add and remove layers from your configuration.
-                            </para></listitem>
-                        <listitem><para>
-                            Set configuration variables.
-                            </para></listitem>
-                        <listitem><para>
-                            Select a target or multiple targets to build.
-                            </para></listitem>
-                        <listitem><para>
-                            Start your builds.
                             </para></listitem>
                     </itemizedlist>
                     </para></listitem>
@@ -132,8 +128,6 @@
         <para>
             You can set Toaster up to run as a local instance or as a shared
             hosted service.
-            Regardless of how you set up Toaster, both Analysis and Build
-            Modes are available.
         </para>
 
         <para>
