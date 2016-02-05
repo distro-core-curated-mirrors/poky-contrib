@@ -21,84 +21,88 @@ logger = utils.logger_create('patchtest')
 import repo
 from summary import BasicSummary
 
-class PatchTestResult(unittest.TextTestResult):
-    """ Formats the summary and post result at the end """
+def getResult(series, revision, mbox):
 
-    shouldStop = True
-    longMessage = True
+    class PatchTestResult(unittest.TextTestResult):
+        """ Formats the summary and post result at the end """
 
-    def startTestRun(self):
-        repoargs = {
-            'repodir':PatchTestArgs.repodir,
-            'commit':PatchTestArgs.commit,
-            'branch':PatchTestArgs.branch,
-            'mbox':PatchTestArgs.mbox,
-            'series':PatchTestArgs.series,
-            'revision':PatchTestArgs.revision,
-        }
-        self.repo = repo.Repo(**repoargs)
-        self.summary = BasicSummary(self.repo.item)
+        shouldStop = True
+        longMessage = True
 
-        # these variables turn to True if either pathing or any test failed
-        # in these case, the test's status would be 'failure'
-        self.patch_error = False
-        self.test_failure = False
+        def startTestRun(self):
+            repoargs = {
+                'repodir':PatchTestArgs.repodir,
+                'commit':PatchTestArgs.commit,
+                'branch':PatchTestArgs.branch,
+                'mbox':mbox,
+                'series':series,
+                'revision':revision,
+            }
+            self.repo = repo.Repo(**repoargs)
+            self.summary = BasicSummary(self.repo.item)
 
-        # these variables turn to True on any exception (RepoException, CmdException and any other
-        # exception coming from the tests)
-        self.repo_error = False
-        self.cmd_error = False
-        self.test_error = False
+            # these variables turn to True if either pathing or any test failed
+            # in these case, the test's status would be 'failure'
+            self.patch_error = False
+            self.test_failure = False
 
-        try:
-            self.repo.setup(PatchTestArgs.nopatch, PatchTestArgs.forcepatch)
-        except repo.PatchException as pe:
-            self.patch_error = True
-            self.summary.addPatchFailure(str(pe))
+            # these variables turn to True on any exception (RepoException, CmdException and any other
+            # exception coming from the tests)
+            self.repo_error = False
+            self.cmd_error = False
+            self.test_error = False
+
+            try:
+                self.repo.setup(PatchTestArgs.nopatch, PatchTestArgs.forcepatch)
+            except repo.PatchException as pe:
+                self.patch_error = True
+                self.summary.addPatchFailure(str(pe))
+                self.stop()
+            except repo.RepoException as re:
+                self.repo_error = True
+                logger.error(rp)
+                self.stop()
+            except utils.CmdException as ce:
+                self.cmd_error = True
+                logger.error("Command failed: %s %s %s" % (ce.cmd, ce.stdout, ce.stderr))
+                self.stop()
+
+        def addError(self, test, err):
+            self.test_error = True
+            (ty, va, trace) = err
+            import traceback
+            traceback.print_tb(trace)
             self.stop()
-        except repo.RepoException as re:
-            self.repo_error = True
-            logger.error(rp)
-            self.stop()
-        except utils.CmdException as ce:
-            self.cmd_error = True
-            logger.error("Command failed: %s %s %s" % (ce.cmd, ce.stdout, ce.stderr))
-            self.stop()
 
-    def addError(self, test, err):
-        self.test_error = True
-        (ty, va, trace) = err
-        import traceback
-        traceback.print_tb(trace)
-        self.stop()
+        def addFailure(self, test, err):
+            self.test_failure = True
+            self.summary.addFailure(test, err)
 
-    def addFailure(self, test, err):
-        self.test_failure = True
-        self.summary.addFailure(test, err)
+        def addSuccess(self, test):
+            self.summary.addSuccess(test)
 
-    def addSuccess(self, test):
-        self.summary.addSuccess(test)
+        def stopTestRun(self):
+            # leave the working directory as it was, and remove branch if desired
+            self.repo.clean(PatchTestArgs.nopatch, PatchTestArgs.keepbranch)
 
-    def stopTestRun(self):
-        # leave the working directory as it was, and remove branch if desired
-        self.repo.clean(PatchTestArgs.nopatch, PatchTestArgs.keepbranch)
+            # just post when there are no repository, commands and test exceptions
+            if not (self.repo_error or self.cmd_error or self.test_error):
+                # generate the summary
+                summary = self.summary.generateSummary()
+                logger.info("\n%s" % summary)
 
-        # just post when there are no repository, commands and test exceptions
-        if not (self.repo_error or self.cmd_error or self.test_error):
-            # generate the summary
-            summary = self.summary.generateSummary()
-            logger.info("\n%s" % summary)
+                # set the test status
+                state = None
+                if self.patch_error or self.test_failure:
+                    state = 'failure'
+                else:
+                    state = 'success'
 
-            # set the test status
-            state = None
-            if self.patch_error or self.test_failure:
-                state = 'failure'
-            else:
-                state = 'success'
+                # POST just if --post argument is present
+                if PatchTestArgs.post:
+                    self.repo.post(PatchTestArgs.testname, state, summary)
 
-            # POST just if --post argument is present
-            if PatchTestArgs.post:
-                self.repo.post(PatchTestArgs.testname, state, summary)
+    return PatchTestResult
 
 def main():
     # Parse the command line arguments and store it on the PatchTestArgs namespace
@@ -110,7 +114,12 @@ def main():
     elif PatchTestArgs.quiet:
         logger.setLevel(logging.ERROR)
 
-    # read the stdin if series/revision are passed this way
+    # these variables contains either items from stdin or command line arguments
+    listmbox = []
+    listseries = []
+    listrevision = []
+
+    # read the stdin if mbox/series/revision are passed this way
     if not sys.stdin.isatty():
         for line in fileinput.input('-'):
             try:
@@ -120,50 +129,48 @@ def main():
                 revision = None
                 if parameters:
                     revision = parameters['revision']
-                PatchTestArgs.series.append(series)
-                PatchTestArgs.revision.append(revision)
+                listseries.append(series)
+                listrevision.append(revision)
             except ValueError:
                 # we try the input as a mbox path
-                PatchTestArgs.mbox.append(line.strip())
+                listmbox.append(line.strip())
+    else:
+        listseries = PatchTestArgs.series
+        listrevision = PatchTestArgs.revision
+        listmbox = PatchTestArgs.revision
 
     if PatchTestArgs.singlebranch:
         # run tests on top of all input patches (mbox or series)
-        run()
+        run(listseries, listrevision, listmbox)
     else:
         # run tests for each input patch (mbox or series)
         if PatchTestArgs.series:
-            listseries = PatchTestArgs.series
-            listrevision = PatchTestArgs.revision
-
             # check if lengths match, if not pad revisions with None
             difflength = len(listseries) - len(listrevision)
             listrevision.extend([None] * difflength)
 
             for series, revision in zip(listseries, listrevision):
-                PatchTestArgs.series = [series]
-                PatchTestArgs.revision = [revision]
-                run()
+                run(series=[series], revision=[revision])
         elif PatchTestArgs.mbox:
-            listmboxs = PatchTestArgs.mbox
             for mbox in listmbox:
-                PatchTestArgs.mbox = [mbox]
-                run()
+                run(mbox=[mbox])
         else:
             # no input given, just run
             run()
 
     return 0
 
-def run():
-    """ Load, setup and run tests, this is run for each item in listseries and/or listmbox"""
+def run(series=[], revision=[], mbox=[]):
+    """ Load, setup and run tests """
     loader = unittest.TestLoader()
     suite = loader.discover(os.path.abspath(PatchTestArgs.testdir))
 
     # Get the result class and install the control-c handler
     unittest.installHandler()
-    unittest.registerResult(PatchTestResult)
+    resultklass = getResult(series, revision, mbox)
+    unittest.registerResult(resultklass)
 
-    runner = unittest.TextTestRunner(resultclass=PatchTestResult)
+    runner = unittest.TextTestRunner(resultclass=resultklass)
     result = runner.run(suite)
 
 if __name__ == '__main__':
