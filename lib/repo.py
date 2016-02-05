@@ -128,38 +128,39 @@ class Repo(object):
         cmd = {'cmd':['git', 'rev-parse', '--short', commit]}
         return self._exec(cmd)[0]['stdout']
 
+    def _fetch_latest_revision(self, series, defaultrev=1):
+        revision = None
+        url = "%s/api/1.0/series/%s" % (self._url, series)
+        try:
+            r = requests.get(url)
+            rjson = r.json()
+            revision = rjson['version']
+        except Exception:
+            revision = defaultrev
+            logger.warn("latest series' revision could not be obtained from patchwork, using default revision %s" %
+                        defaultrev)
+        return revision
+
     def _get_series_revisions(self, listseries, listrevisions, defaultrev=1):
         res = []
 
-        logger.debug("listseries %s" % listseries)
-        logger.debug("listrevisions %s" % listrevisions)
-
-        # if listseries is falsie, there is nothing to do
         if not listseries:
             return res
 
         if not listrevisions:
-            # if listrevisions is falsie, we need to get the latest revisions
-            logger.debug("INSIDE")
             for series in listseries:
-                url = "%s/api/1.0/series/%s" % (self._url, series)
-                try:
-                    r = requests.get(url)
-                    rjson = r.json()
-                    revision = rjson['version']
-                    res.append((series, revision))
-                except Exception:
-                    logger.warn("latest series' revision could not be obtained from patchwork, using default revision %s" %
-                                defaultrev)
-                    res.append((series,defaultrev))
+                revision = self._fetch_latest_revision(series)
+                res.append((series, revision))
         else:
-            # TODO: system should also handle the case where:
-            res = zip(listseries, listrevisions)
             if len(listseries) != len(listrevisions):
-                logger.warn("The number of series and revisions are different, just taking into account:")
-                for series, revision in res:
-                    logger.warn("\tSeries %s Revision %s" % (series, revision))
+                logger.warn("The number of series and revisions are different")
 
+            for series, revision in zip(listseries, listrevisions):
+                if not revision:
+                    latest_revision = self._fetch_latest_revision(series)
+                    res.append((series, latest_revision))
+                else:
+                    res.append((series, revision))
         return res
 
     def _stash(self):
