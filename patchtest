@@ -135,9 +135,9 @@ def main():
                 # we try the input as a mbox path
                 listmbox.append(line.strip())
     else:
-        listseries = PatchTestArgs.series
-        listrevision = PatchTestArgs.revision
-        listmbox = PatchTestArgs.revision
+        listseries = list(PatchTestArgs.series)
+        listrevision = list(PatchTestArgs.revision)
+        listmbox = list(PatchTestArgs.revision)
 
     if PatchTestArgs.singlebranch:
         # run tests on top of all input patches (mbox or series)
