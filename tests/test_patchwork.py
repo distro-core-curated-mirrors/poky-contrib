@@ -22,14 +22,16 @@ class TestPatchwork(unittest.TestCase):
 
     def test_series_existance(self):
         """ Test if series exist on the patchwork instance """
-        seriesurl = "%sseries/%s" % (self.fullurl, pta.series)
-        response = requests.get(seriesurl)
-        self.assertEqual(response.status_code, 200, "patchwork series (%s) does not exist" % seriesurl)
+        for series in pta.series:
+            seriesurl = "%sseries/%s" % (self.fullurl, series)
+            response = requests.get(seriesurl)
+            self.assertEqual(response.status_code, 200, "patchwork series (%s) does not exist" % seriesurl)
 
-    @unittest.skipUnless(pta.revision, "requires the revision argument")
+    @unittest.skipUnless(pta.series and pta.revision, "requires the revision argument")
     def test_revision_existance(self):
         """ Test if series/revision exist on the patchwork instance """
-        revisionurl = "%sseries/%s/revisions/%s/" % (self.fullurl, pta.series, pta.revision)
-        response = requests.get(revisionurl)
-        self.assertEqual(response.status_code, 200, "patchwork revision (%s) does not exist" % revisionurl)
+        for series, revision in zip(pta.series, pta.revision):
+            revisionurl = "%sseries/%s/revisions/%s/" % (self.fullurl, series, revision)
+            response = requests.get(revisionurl)
+            self.assertEqual(response.status_code, 200, "patchwork revision (%s) does not exist" % revisionurl)
 
