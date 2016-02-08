@@ -443,8 +443,8 @@ $(document).ready(function() {
         $('.tooltip').hide();
     });
 
-    // enable help information tooltip
-    $(".get-help").tooltip({container:'body', html:true, delay:{show:300}});
+    // enable help information and multi target build tooltips
+    $(".get-help, .multitarget-build").tooltip({container:'body', html:true, delay:{show:300}});
 
     // show help bubble only on hover inside tables
     $(".hover-help").css("visibility","hidden");
