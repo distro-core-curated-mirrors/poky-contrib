@@ -144,14 +144,14 @@ def main():
         run(listseries, listrevision, listmbox)
     else:
         # run tests for each input patch (mbox or series)
-        if PatchTestArgs.series:
+        if listseries:
             # check if lengths match, if not pad revisions with None
             difflength = len(listseries) - len(listrevision)
             listrevision.extend([None] * difflength)
 
             for series, revision in zip(listseries, listrevision):
                 run(series=[series], revision=[revision])
-        elif PatchTestArgs.mbox:
+        elif listmbox:
             for mbox in listmbox:
                 run(mbox=[mbox])
         else:
