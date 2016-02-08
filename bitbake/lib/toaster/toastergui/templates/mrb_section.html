@@ -56,9 +56,6 @@
                 {% if build.target_set.all.count > 1 %}
                     (+ {{build.target_set.all.count|add:"-1"}})
                 {% endif %}
-                {% if build.outcome == build.CANCELLED %}
-                    Build cancelled
-                {% endif %}
                 </span>
              {% endif %}
     {%if build.outcome == build.SUCCEEDED or build.outcome == build.FAILED %}
@@ -126,10 +123,10 @@
                     <div style="width: {{build.completeper}}%;" class="bar"></div>
                 </div>
             </div>
-            <div id="progressMessage" class="lead ">{{build.completeper}}% of tasks complete</div>
+            <div id="progressMessage" class="lead pull-right">{{build.completeper}}% of tasks complete
 	    {%if not build.project.name == "Command line builds" %}
 	         {%if build.get_tasks.0 %}
-                         <button id="cancel-build-btn" class="btn btn-info pull-right"
+                         <button id="cancel-build-btn" class="btn btn-info"
                                  onclick='cancelBuild({% url 'projectbuilds' build.project.id as bpi %}{{bpi|json}},
                                  {{build.project.name|json}},
                                  {% url 'project' build.project.id as purl %}{{purl|json}},
@@ -137,10 +134,29 @@
                           Cancel
                          </button>
                  {%endif%}
+            </div>
             {%else%}
                <i class="icon-question-sign get-help heading-help pull-right" data-placement="left" title="" data-original-title="Builds in this projects cannot be cancelled from Toaster: they can only be cancelled from the command line"></i>
             {%endif%}
     {%endif%}
+    {% if build.outcome == build.CANCELLED %}
+        <div class="span6 lead">
+            <p class="text-center">Build cancelled</p>
+        </div>
+        <div class="span3">
+            {% if build.project.is_default %}
+                <i class="pull-right icon-question-sign get-help get-help-blue" title="Builds in this project cannot be started from Toaster: they are started from the command line"></i>
+            {% else %}
+                <button class="btn btn-info pull-right"
+                    onclick='scheduleBuild({% url 'projectbuilds' build.project.id as bpi %}{{bpi|json}},
+                    {{build.project.name|json}},
+                    {% url 'project' build.project.id as purl %}{{purl|json}},
+                    {{build.target_set.all|get_tasks|json}})'>
+                    Run again
+                </button>
+            {% endif %}
+        </div>
+    {% endif %}
         </div>
     </div>
 
@@ -161,7 +177,7 @@ function cancelBuild(url, projectName, projectUrl, buildlist, buildId) {
   console.log("cancelBuild");
   $('#progressBar').remove();
   $('#progressMessage').remove();
-  $('#buildProgress').append('<div class="lead " align="center" style="margin-top:5px;"> Cancelling the build ...  </div>');
+  $('#buildProgress').append('<div class="lead" align="center">Cancelling the build ...</div>');
   libtoaster.cancelABuild(url, buildId, function(){
     console.log("reloading page");
     window.location.reload();
