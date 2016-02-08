@@ -81,6 +81,9 @@ def getResult(series, revision, mbox):
         def addSuccess(self, test):
             self.summary.addSuccess(test)
 
+        def addSkip(self, test, msg):
+            self.summary.addSkip(test, msg)
+
         def stopTestRun(self):
             # leave the working directory as it was, and remove branch if desired
             self.repo.clean(PatchTestArgs.nopatch, PatchTestArgs.keepbranch)

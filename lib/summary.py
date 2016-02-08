@@ -22,6 +22,9 @@ class BasicSummary(dict):
     def addSuccess(self, test):
         self._results.append(['PASS: ', test.shortDescription(), ''])
 
+    def addSkip(self, test, msg):
+        self._results.append(['SKIP: ', test.shortDescription(), msg])
+
     def generateSummary(self):
         """ Generate and store the summary """
 
