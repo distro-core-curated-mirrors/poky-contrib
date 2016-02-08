@@ -3,11 +3,11 @@ import utils
 from tabulate import tabulate
 
 class BasicSummary(dict):
-    header = ['Result', 'Item', 'Test Description', 'Assertion Description']
+    header = ['Result', 'Test Description', 'Assertion Description']
     tablefmt = 'simple'
 
-    def __init__(self, item):
-        self._item = item
+    def __init__(self, items):
+        self._items = items
 
         self._results = list()
         self._patchmsg = None
@@ -17,14 +17,18 @@ class BasicSummary(dict):
 
     def addFailure(self, test, err):
         _, assertionDescription, _ = err
-        self._results.append(['FAIL: ', self._item, test.shortDescription(), assertionDescription])
+        self._results.append(['FAIL: ', test.shortDescription(), assertionDescription])
 
     def addSuccess(self, test):
-        self._results.append(['PASS: ', self._item, test.shortDescription(), ''])
+        self._results.append(['PASS: ', test.shortDescription(), ''])
 
     def generateSummary(self):
         """ Generate and store the summary """
-        summary = ""
+
+        summary = "Tested items:\n\n"
+        for item in self._items:
+            summary += "\t%s\n" % item
+        summary +="\n\n"
 
         if self._patchmsg:
             summary += "%s" % self._patchmsg

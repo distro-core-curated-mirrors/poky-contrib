@@ -89,7 +89,7 @@ def getResult(series, revision, mbox):
             if not (self.repo_error or self.cmd_error or self.test_error):
                 # generate the summary
                 summary = self.summary.generateSummary()
-                logger.info("\n%s" % summary)
+                logger.info("%s" % summary)
 
                 # set the test status
                 state = None
