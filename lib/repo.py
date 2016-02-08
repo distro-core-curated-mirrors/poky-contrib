@@ -193,32 +193,36 @@ class Repo(object):
             cmds.insert(0, {'cmd':['git', 'checkout', self.branch]})
         self._exec(cmds)
 
-    def _check_apply(self, series_revision=None, mbox=None):
+    def _check_apply(self, series_revision=None, mbox=None, storembox=False):
 
         # nothing to check, so return immediately
         if not (series_revision or mbox):
             return
 
         mbox_data = None
+
         # get the mbox
         if series_revision:
             series, revision  = series_revision
             mbox_cmd = {'cmd':['git', 'pw', 'mbox', series, '-r', revision], 'strip':False}
             mbox = self._exec(mbox_cmd)[0]
             mbox_data = mbox['stdout']
+            mbox_file = "series-%s-revision-%s.mbox" % (series, revision)
+            if storembox:
+                logger.info('Storing mbox/series into %s' % os.path.abspath(mbox_file))
+                with open(mbox_file, 'w') as f:
+                    f.write(mbox_data)
         elif mbox:
             if not os.path.isfile(mbox):
                 raise PatchException, 'mbox %s does not exist' % mbox
             with open(mbox) as mbox_fd:
                 mbox_data = mbox_fd.read()
 
-        logger.debug(mbox_data)
-
         # check if applies
         apply_check_cmd = {'cmd':['git', 'apply', '--check'], 'input':mbox_data}
         self._exec(apply_check_cmd)
 
-    def _apply(self, forcepatch):
+    def _apply(self, forcepatch, storembox):
 
         # in case there is neither mbox or series, just return
         if not (self._mbox or self._series_revision):
@@ -246,7 +250,7 @@ class Repo(object):
                     cmd = {'cmd':['git', 'am', item]}
                 elif self._series_revision:
                     msg = "The series/revision %s/%s" % item
-                    self._check_apply(series_revision=item)
+                    self._check_apply(series_revision=item, storembox=storembox)
                     series, revision = item
                     cmd = {'cmd':['git', 'pw', 'apply', series, '-r', revision]}
                 if cmd:
@@ -258,13 +262,13 @@ class Repo(object):
                 else:
                     logger.warn("%s cannot be applied, ignoring it" % msg)
 
-    def setup(self, nopatch=False, forcepatch=False):
+    def setup(self, nopatch=False, forcepatch=False, storembox=False):
         if nopatch:
             return
 
         self._stash()
         self._checkout()
-        self._apply(forcepatch)
+        self._apply(forcepatch, storembox)
 
     def clean(self, nopatch=False, keepbranch=False):
         if nopatch:

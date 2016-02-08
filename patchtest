@@ -53,7 +53,7 @@ def getResult(series, revision, mbox):
             self.test_error = False
 
             try:
-                self.repo.setup(PatchTestArgs.nopatch, PatchTestArgs.forcepatch)
+                self.repo.setup(PatchTestArgs.nopatch, PatchTestArgs.forcepatch, PatchTestArgs.storembox)
             except repo.PatchException as pe:
                 self.patch_error = True
                 self.summary.addPatchFailure(str(pe))
@@ -137,7 +137,7 @@ def main():
     else:
         listseries = list(PatchTestArgs.series)
         listrevision = list(PatchTestArgs.revision)
-        listmbox = list(PatchTestArgs.revision)
+        listmbox = list(PatchTestArgs.mbox)
 
     if PatchTestArgs.singlebranch:
         # run tests on top of all input patches (mbox or series)

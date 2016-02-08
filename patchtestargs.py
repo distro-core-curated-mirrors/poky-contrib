@@ -89,6 +89,11 @@ class PatchTestArgs:
                             action='store_true',
                             help="Merge all mbox/series into a single branch")
 
+        parser.add_argument('--store-mbox',
+                            dest='storembox',
+                            action='store_true',
+                            help="Store the mbox/series into a file")
+
         parser.add_argument('--debug', '-d',
                             action='store_true',
                             help='Enable debug output')
