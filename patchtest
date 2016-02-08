@@ -39,7 +39,7 @@ def getResult(series, revision, mbox):
                 'revision':revision,
             }
             self.repo = repo.Repo(**repoargs)
-            self.summary = BasicSummary(self.repo.item)
+            self.summary = BasicSummary(self.repo.items)
 
             # these variables turn to True if either pathing or any test failed
             # in these case, the test's status would be 'failure'
