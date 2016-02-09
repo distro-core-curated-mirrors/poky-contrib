@@ -28,6 +28,7 @@ import bb
 from   bb import data
 from   bb.fetch2 import FetchMethod
 from   bb.fetch2 import FetchError
+from   bb.fetch2 import ChecksumError
 from   bb.fetch2 import runfetchcmd
 from   bb.fetch2 import logger
 from   bb.fetch2 import UnpackError
@@ -68,8 +69,8 @@ class Npm(FetchMethod):
         else:
             ud.basename = os.path.basename(ud.path)
 
-        # can't call it ud.name otherwise fetcher base class will start doing md5stuff
-        # TODO: find a way to get an md5/sha256 manifest of pkg & all deps
+        # can't call it ud.name otherwise fetcher base class will start doing sha1stuff
+        # TODO: find a way to get an sha1/sha256 manifest of pkg & all deps
         ud.pkgname = ud.parm.get("name", None)
         if not ud.pkgname:
             raise ParameterError("NPM fetcher requires a name parameter")
@@ -164,7 +165,7 @@ class Npm(FetchMethod):
         for dep, version in depsfound.iteritems():
             self._getdependencies(dep, data[pkg]['deps'], version, d, ud)
 
-    def _getshrinkeddependencies(self, pkg, data, version, d, ud, manifest):
+    def _getshrinkeddependencies(self, pkg, data, version, d, ud, lockdown, manifest):
         logger.debug(2, "NPM shrinkwrap file is %s" % data)
         outputurl = "invalid"
         if ('resolved' not in data):
@@ -178,25 +179,46 @@ class Npm(FetchMethod):
         manifest[pkg] = {}
         manifest[pkg]['tgz'] = os.path.basename(outputurl).rstrip()
         manifest[pkg]['deps'] = {}
+
+        if pkg in lockdown:
+            sha1_expected = lockdown[pkg][version]
+            sha1_data = bb.utils.sha1_file("npm/%s/%s" % (ud.pkgname, manifest[pkg]['tgz']))
+            if sha1_expected != sha1_data:
+                msg = "\nFile: '%s' has %s checksum %s when %s was expected" % (manifest[pkg]['tgz'], 'sha1', sha1_data, sha1_expected)
+                raise ChecksumError('Checksum mismatch!%s' % msg)
+        else:
+            logger.debug(2, "No lockdown data for %s@%s" % (pkg, version))
+
         if 'dependencies' in data:
             for obj in data['dependencies']:
                 logger.debug(2, "Found dep is %s" % str(obj))
-                self._getshrinkeddependencies(obj, data['dependencies'][obj], data['dependencies'][obj]['version'], d, ud, manifest[pkg]['deps'])
+                self._getshrinkeddependencies(obj, data['dependencies'][obj], data['dependencies'][obj]['version'], d, ud, lockdown, manifest[pkg]['deps'])
 
     def download(self, ud, d):
         """Fetch url"""
         jsondepobj = {}
         shrinkobj = {}
+        lockdown = {}
 
         shwrf = d.getVar('NPM_SHRINKWRAP', True)
         logger.debug(2, "NPM shrinkwrap file is %s" % shwrf)
-        with open("%s" % (shwrf)) as datafile:
-            shrinkobj = json.load(datafile)
+        try:
+            with open(shwrf) as datafile:
+                shrinkobj = json.load(datafile)
+        except:
+            logger.warn('Missing shrinkwrap file in NPM_SHRINKWRAP for %s, this will lead to unreliable builds!' % ud.pkgname)
+        lckdf = d.getVar('NPM_LOCKDOWN', True)
+        logger.debug(2, "NPM lockdown file is %s" % lckdf)
+        try:
+            with open(lckdf) as datafile:
+                lockdown = json.load(datafile)
+        except:
+            logger.warn('Missing lockdown file in NPM_LOCKDOWN for %s, this will lead to unreproducible builds!' % ud.pkgname)
 
         if ('name' not in shrinkobj):
             self._getdependencies(ud.pkgname, jsondepobj, ud.version, d, ud)
         else:
-            self._getshrinkeddependencies(ud.pkgname, shrinkobj, ud.version, d, ud, jsondepobj)
+            self._getshrinkeddependencies(ud.pkgname, shrinkobj, ud.version, d, ud, lockdown, jsondepobj)
 
         with open(ud.bbnpmmanifest, 'w') as outfile:
             json.dump(jsondepobj, outfile)
