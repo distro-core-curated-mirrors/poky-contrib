@@ -224,5 +224,8 @@ mb_panel_applet_create (const char    *id,
         /* Show! */
         gtk_widget_show_all (button);
 
+        /* Make sure we initialize to some state -- sync_applet() should set it properly */
+        set_active (applet, TRUE);
+
         return button;
 };
