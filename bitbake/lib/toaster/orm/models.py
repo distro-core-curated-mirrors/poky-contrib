@@ -351,11 +351,13 @@ class Build(models.Model):
     SUCCEEDED = 0
     FAILED = 1
     IN_PROGRESS = 2
+    CANCELLED = 3
 
     BUILD_OUTCOME = (
         (SUCCEEDED, 'Succeeded'),
         (FAILED, 'Failed'),
         (IN_PROGRESS, 'In Progress'),
+        (CANCELLED, 'Cancelled'),
     )
 
     search_allowed_fields = ['machine', 'cooker_log_path', "target__target", "target__target_image_file__file_name"]
