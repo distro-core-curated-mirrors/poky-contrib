@@ -54,6 +54,10 @@ class Npm(FetchMethod):
     def debug(self, msg):
         logger.debug(1, "NpmFetch: %s", msg)
 
+    def clean(self, ud, d):
+         bb.utils.remove(ud.bbnpmmanifest, True)
+         # todo remove npm/${PN} dir
+
     def urldata_init(self, ud, d):
         """
         init NPM specific variable within url data
@@ -155,11 +159,38 @@ class Npm(FetchMethod):
         for dep, version in depsfound.iteritems():
             self._getdependencies(dep, data[pkg]['deps'], version, d, ud)
 
+    def _getshrinkeddependencies(self, pkg, data, version, d, ud, manifest):
+        logger.debug(2, "NPM shrinkwrap file is %s" % data)
+        outputurl = "invalid"
+        if ('resolved' not in data):
+            # will be the case for ${PN}
+            fetchcmd = "npm view %s@%s dist.tarball --registry %s" % (pkg, ud.version, ud.registry)
+            outputurl = runfetchcmd(fetchcmd, d, True)
+        else:
+            outputurl = data['resolved']
+        self._runwget(ud, d, "%s %s" % (self.basecmd, outputurl), False)
+        manifest[pkg] = {}
+        manifest[pkg]['tgz'] = os.path.basename(outputurl).rstrip()
+        manifest[pkg]['deps'] = {}
+        if 'dependencies' in data:
+            for obj in data['dependencies']:
+                logger.debug(2, "Found dep is %s" % str(obj))
+                self._getshrinkeddependencies(obj, data['dependencies'][obj], data['dependencies'][obj]['version'], d, ud, manifest[pkg]['deps'])
+
     def download(self, ud, d):
         """Fetch url"""
         jsondepobj = {}
+        shrinkobj = {}
 
-        self._getdependencies(ud.pkgname, jsondepobj, ud.version, d, ud)
+        shwrf = d.getVar('NPM_SHRINKWRAP', True)
+        logger.debug(2, "NPM shrinkwrap file is %s" % shwrf)
+        with open("%s" % (shwrf)) as datafile:
+            shrinkobj = json.load(datafile)
+
+        if ('name' not in shrinkobj):
+            self._getdependencies(ud.pkgname, jsondepobj, ud.version, d, ud)
+        else:
+            self._getshrinkeddependencies(ud.pkgname, shrinkobj, ud.version, d, ud, jsondepobj)
 
         with open(ud.bbnpmmanifest, 'w') as outfile:
             json.dump(jsondepobj, outfile)
