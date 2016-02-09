@@ -290,8 +290,8 @@ class Repo(object):
             try:
                 cmd = None
                 if self._mbox:
-                    self._check_apply(mbox=item)
                     msg = "The mbox %s" % item
+                    self._check_apply(mbox=item)
                     cmd = {'cmd':['git', 'am', item]}
                 elif self._series_revision:
                     msg = "The series/revision %s/%s" % item
