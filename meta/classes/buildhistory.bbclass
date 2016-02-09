@@ -468,10 +468,12 @@ buildhistory_list_files() {
 	# List the files in the specified directory, but exclude date/time etc.
 	# This awk script is somewhat messy, but handles where the size is not printed for device files under pseudo
 	if [ "$3" = "fakeroot" ] ; then
-		( cd $1 && ${FAKEROOTENV} ${FAKEROOTCMD} find . ! -path . -printf "%M %-10u %-10g %10s %p -> %l\n" | sort -k5 | sed 's/ * -> $//' > $2 )
+		( cd $1 && ${FAKEROOTENV} ${FAKEROOTCMD} find . ! -path . -printf "%M %-10u %-10g %10s %p -> %l\n" > $2.tmp )
 	else
-		( cd $1 && find . ! -path . -printf "%M %-10u %-10g %10s %p -> %l\n" | sort -k5 | sed 's/ * -> $//' > $2 )
+		( cd $1 && find . ! -path . -printf "%M %-10u %-10g %10s %p -> %l\n" > $2.tmp )
 	fi
+	cat $2.tmp | sort -k5 | sed 's/ * -> $//' > $2
+	rm $2.tmp
 }
 
 buildhistory_list_pkg_files() {
