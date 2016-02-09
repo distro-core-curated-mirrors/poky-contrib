@@ -55,8 +55,9 @@ class Npm(FetchMethod):
         logger.debug(1, "NpmFetch: %s", msg)
 
     def clean(self, ud, d):
-         bb.utils.remove(ud.bbnpmmanifest, True)
-         # todo remove npm/${PN} dir
+         logger.debug(2, "Calling cleanup %s" % ud.pkgname)
+         bb.utils.remove(ud.bbnpmmanifest, False)
+         bb.utils.remove("npm/%s" % ud.pkgname, True)
 
     def urldata_init(self, ud, d):
         """
@@ -77,8 +78,12 @@ class Npm(FetchMethod):
             raise ParameterError("NPM fetcher requires a version parameter")
         ud.bbnpmmanifest = "%s-%s.deps.json" % (ud.pkgname, ud.version)
         ud.registry = "http://%s" % ud.basename
+        prefixdir = "npm/%s" % ud.pkgname
+        if not os.path.exists(prefixdir):
+            os.makedirs(prefixdir)
 
-        self.basecmd = d.getVar("FETCHCMD_wget", True) or "/usr/bin/env wget -t 2 -T 30 -nv --passive-ftp --no-check-certificate"
+        self.basecmd = d.getVar("FETCHCMD_wget", True) or "/usr/bin/env wget -O -t 2 -T 30 -nv --passive-ftp --no-check-certificate "
+        self.basecmd += " --directory-prefix=%s " % prefixdir
 
     def need_update(self, ud, d):
         if os.path.exists(ud.bbnpmmanifest):
@@ -124,7 +129,7 @@ class Npm(FetchMethod):
         depdumpfile = "%s-%s.deps.json" % (ud.pkgname, ud.version)
         with open("%s/%s" % (dldir, depdumpfile)) as datafile:
             workobj = json.load(datafile)
-        dldir = os.path.dirname(ud.localpath)
+        dldir = "%s/npm/%s" % (os.path.dirname(ud.localpath), ud.pkgname)
 
         self._unpackdep(ud.pkgname, workobj,  "%s/npmpkg" % destdir, dldir, d)
 
