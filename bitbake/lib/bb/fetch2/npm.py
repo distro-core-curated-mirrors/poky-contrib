@@ -169,7 +169,8 @@ class Npm(FetchMethod):
         outputurl = "invalid"
         if ('resolved' not in data):
             # will be the case for ${PN}
-            fetchcmd = "npm view %s@%s dist.tarball --registry %s" % (pkg, ud.version, ud.registry)
+            fetchcmd = "npm view %s@%s dist.tarball --registry %s" % (pkg, version, ud.registry)
+            logger.debug(2, "Found this matching URL: %s" % str(fetchcmd))
             outputurl = runfetchcmd(fetchcmd, d, True)
         else:
             outputurl = data['resolved']
