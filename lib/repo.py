@@ -12,6 +12,48 @@ class RepoException(Exception):
 class PatchException(Exception):
     pass
 
+class BaseMboxItem(object):
+    """ mbox item containing all data extracted from an mbox, and methods
+        to extract this data. This base class and should be inherited
+        from, not directly instantiated.
+    """
+    def __init__(self, resource):
+        # private vars
+        self._resource = resource
+        # public vars
+        self.contents = []
+        self.keyvals = {}
+        self.chgfiles = []
+        self.patchdiff = ''
+        self.hunks = {}
+        # load mbox contents
+        self._load_contents()
+
+    def _load_contents(self):
+        raise(NotImplementedError, 'Please do not instantiate MboxItem')
+
+    def _scan(self):
+        raise(NotImplementedError, 'This method has not yet been implemented, scanning is done in tests')
+
+    def __str__(self):
+        return "%s" % self._resource
+
+    @property
+    def is_empty(self):
+        return not( ''.join(self.contents).strip() )
+
+class MboxURLItem(BaseMboxItem):
+    """ mbox item based on a URL"""
+    def _load_contents(self):
+        _r = requests.get(self._resource)
+        self.contents = _r.text
+
+class MboxFileItem(BaseMboxItem):
+    """ mbox item based on a file"""
+    def _load_contents(self):
+        with open(os.path.abspath(self._resource)) as _f:
+            self.contents = _f.read()
+
 class Repo(object):
 
     # prefixes used for temporal branches/stashes
@@ -23,6 +65,7 @@ class Repo(object):
         self._branch = branch
         self._mbox = mbox
         self._stashed = False
+        self._mboxitems = []
 
         # get current branch name, so we can checkout at the end
         self._current_branch = self._get_branch()
@@ -47,7 +90,7 @@ class Repo(object):
             raise RepoException, 'patchwork url/project configuration is not available'
 
         self._series_revision = self._get_series_revisions(series, revision)
-
+        self._loaditems()
 
         # for debugging purposes, print all repo parameters
         logger.debug("Parameters")
@@ -58,6 +101,11 @@ class Repo(object):
         logger.debug("\tSeries/Revision: %s" % self._series_revision)
 
     @property
+    def items(self):
+        """ Items to be tested. By default it is initialized as an empty list"""
+        return self._mboxitems
+
+    @property
     def url(self):
         return self._url
 
@@ -65,18 +113,15 @@ class Repo(object):
     def project(self):
         return self._project
 
-    @property
-    def items(self):
-        """ Item to be tested """
-        _items = None
+    def _loaditems(self):
+        """ Load MboxItems to be tested """
         if self._mbox:
-            _items = self._mbox
+            for _eachitem in self._mbox:
+                self._mboxitems.append(MboxFileItem(_eachitem))
         elif self._series_revision:
             fullurl = "%s/api/1.0/series/%s/revisions/%s/mbox/"
-            _items = [fullurl % (self._url, s,r) for s,r in self._series_revision]
-        else:
-            _items = ["%s/%s" % (self._branch, self._commit)]
-        return _items
+            for _mbox_url in [fullurl % (self._url, s,r) for s,r in self._series_revision]:
+                self._mboxitems.append(MboxURLItem(_mbox_url))
 
     @property
     def branch(self):
