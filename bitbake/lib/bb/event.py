@@ -444,6 +444,14 @@ class MultipleProviders(Event):
         """
         return self._candidates
 
+class TargetsAcquired(Event):
+    """Target we are aiming at known"""
+    def __init__(self, targetList):
+        Event.__init__(self)
+        self._pkgs = targetList
+
+
+
 class ParseStarted(OperationStarted):
     """Recipe parsing for the runqueue has begun"""
     def __init__(self, total):
@@ -676,4 +684,3 @@ class NetworkTestFailed(Event):
     """
     Event to indicate network test has failed
     """
-

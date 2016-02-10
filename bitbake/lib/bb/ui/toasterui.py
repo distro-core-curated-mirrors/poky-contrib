@@ -100,7 +100,7 @@ _evt_list = [ "bb.runqueue.runQueueExitWait", "bb.event.LogExecTTY", "logging.Lo
               "bb.event.MultipleProviders", "bb.event.NoProvider", "bb.runqueue.sceneQueueTaskStarted",
               "bb.runqueue.runQueueTaskStarted", "bb.runqueue.runQueueTaskFailed", "bb.runqueue.sceneQueueTaskFailed",
               "bb.event.BuildBase", "bb.build.TaskStarted", "bb.build.TaskSucceeded", "bb.build.TaskFailedSilent",
-              "bb.event.MetadataEvent"]
+              "bb.event.MetadataEvent","bb.event.TargetsAcquired"]
 
 def main(server, eventHandler, params):
     # set to a logging.FileHandler instance when a build starts;
@@ -186,6 +186,10 @@ def main(server, eventHandler, params):
             # pylint: disable=protected-access
             # the code will look into the protected variables of the event; no easy way around this
 
+
+            if isinstance(event, bb.event.TargetsAcquired):
+                logger.warn("EARLY BUILD TARGET EVENT PRE SANITY TARGET=: %s", event._pkgs)
+                continue
             # we treat ParseStarted as the first event of toaster-triggered
             # builds; that way we get the Build Configuration included in the log
             # and any errors that occur before BuildStarted is fired

@@ -112,6 +112,9 @@ class BitBakeServerCommands():
         """
         Run a cooker command on the server
         """
+        if 'buildTargets' in command[0]:
+            bb.event.fire(bb.event.TargetsAcquired(str(command[1])), self.server.readonly)
+
         return self.cooker.command.runCommand(command, self.server.readonly)
 
     def getEventHandle(self):
