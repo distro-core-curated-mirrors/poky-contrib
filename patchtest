@@ -4,7 +4,6 @@ import sys
 import os
 import unittest
 import fileinput
-import json
 import logging
 
 # Include current path so test cases can see it
@@ -13,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 # Include patchtest library
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
 
-from patchtestargs import PatchTestArgs
+from patchtestdata import PatchTestInput as pti
 
 import utils
 logger = utils.logger_create('patchtest')
@@ -30,15 +29,16 @@ def getResult(series, revision, mbox):
         longMessage = True
 
         def startTestRun(self):
+            # let's create the repo already, it can be used later on
             repoargs = {
-                'repodir':PatchTestArgs.repodir,
-                'commit':PatchTestArgs.commit,
-                'branch':PatchTestArgs.branch,
-                'mbox':mbox,
-                'series':series,
-                'revision':revision,
+                'repodir': pti.repodir,
+                'commit': pti.commit,
+                'branch': pti.branch,
+                'mbox': mbox,
+                'series': series,
+                'revision': revision,
             }
-            self.repo = repo.Repo(**repoargs)
+            self.repo = pti.repo = repo.Repo(**repoargs)
             self.summary = BasicSummary(self.repo.items)
 
             # these variables turn to True if either pathing or any test failed
@@ -53,7 +53,7 @@ def getResult(series, revision, mbox):
             self.test_error = False
 
             try:
-                self.repo.setup(PatchTestArgs.nopatch, PatchTestArgs.forcepatch, PatchTestArgs.storembox)
+                self.repo.setup(pti.nopatch, pti.forcepatch, pti.storembox)
             except repo.PatchException as pe:
                 self.patch_error = True
                 self.summary.addPatchFailure(str(pe))
@@ -86,7 +86,7 @@ def getResult(series, revision, mbox):
 
         def stopTestRun(self):
             # leave the working directory as it was, and remove branch if desired
-            self.repo.clean(PatchTestArgs.nopatch, PatchTestArgs.keepbranch)
+            self.repo.clean(pti.nopatch, pti.keepbranch)
 
             # just post when there are no repository, commands and test exceptions
             if not (self.repo_error or self.cmd_error or self.test_error):
@@ -102,47 +102,31 @@ def getResult(series, revision, mbox):
                     state = 'success'
 
                 # POST just if --post argument is present
-                if PatchTestArgs.post:
-                    self.repo.post(PatchTestArgs.testname, state, summary)
+                if pti.post:
+                    self.repo.post(pti.testname, state, summary)
 
     return PatchTestResult
 
 def main():
-    # Parse the command line arguments and store it on the PatchTestArgs namespace
-    PatchTestArgs.set_namespace()
+    # Parse the command line arguments and store it on the PatchTestInput namespace
+    pti.set_namespace()
 
-    if PatchTestArgs.debug:
+    if pti.debug:
         logger.setLevel(logging.DEBUG)
         print logger.getEffectiveLevel()
-    elif PatchTestArgs.quiet:
+    elif pti.quiet:
         logger.setLevel(logging.ERROR)
-
-    # these variables contains either items from stdin or command line arguments
-    listmbox = []
-    listseries = []
-    listrevision = []
 
     # read the stdin if mbox/series/revision are passed this way
     if not sys.stdin.isatty():
-        for line in fileinput.input('-'):
-            try:
-                event = json.loads(line)
-                series = event['series']
-                parameters = event['parameters']
-                revision = None
-                if parameters:
-                    revision = parameters['revision']
-                listseries.append(series)
-                listrevision.append(revision)
-            except ValueError:
-                # we try the input as a mbox path
-                listmbox.append(line.strip())
-    else:
-        listseries = list(PatchTestArgs.series)
-        listrevision = list(PatchTestArgs.revision)
-        listmbox = list(PatchTestArgs.mbox)
+        pti.namespace_stdin(fileinput.input('-'))
 
-    if PatchTestArgs.singlebranch:
+    # these variables contain either items from stdin or command line arguments
+    listseries = list(pti.series)
+    listrevision = list(pti.revision)
+    listmbox = list(pti.mbox)
+
+    if pti.singlebranch:
         # run tests on top of all input patches (mbox or series)
         run(listseries, listrevision, listmbox)
     else:
@@ -166,10 +150,11 @@ def main():
 def run(series=[], revision=[], mbox=[]):
     """ Load, setup and run tests """
     loader = unittest.TestLoader()
-    suite = loader.discover(os.path.abspath(PatchTestArgs.testdir))
+    suite = loader.discover(os.path.abspath(pti.testdir))
 
     # Get the result class and install the control-c handler
     unittest.installHandler()
+
     resultklass = getResult(series, revision, mbox)
     unittest.registerResult(resultklass)
 

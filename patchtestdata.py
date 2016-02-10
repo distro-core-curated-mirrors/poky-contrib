@@ -2,15 +2,39 @@
 
 import os
 import argparse
+import json
 
-# This module contains a Class (PatchTestArgs) and
-# the its purpose is to simply store the command line arguments
-# passed to the 'patchtest' script. Test cases can import it
-# and use it to figure out the values, like the repo directory
-# the current mbox/series being tested. See tests/test_sample.py
-# test case for usage examples.
+# This module contains classes to store the command line arguments
+# and standard input items passed to the 'patchtest' script. Test
+# cases can import it and use it to figure out the values, like
+# the repo directory of the current mbox/series being tested.
+# See tests/test_sample.py test case for usage examples.
 
-class PatchTestArgs:
+class PatchTestStdIn(object):
+    """ Generate PatchTestData from standard input"""
+    @classmethod
+    def namespace_stdin(cls, inputlines):
+        cls.series = []
+        cls.revision = []
+        cls.mbox = []
+        for line in inputlines:
+            try:
+                event = json.loads(line)
+                series = event['series']
+                parameters = event['parameters']
+                revision = None
+                if parameters:
+                    revision = parameters['revision']
+                cls.series.append(series)
+                cls.revision.append(revision)
+            except ValueError:
+                # we try the input as a mbox path
+                mbox_path = line.strip()
+                if mbox_path:
+                    cls.mbox.append(mbox_path)
+
+class PatchTestArgs(object):
+    """ Generate PatchTestData from an argument parser"""
     @classmethod
     def set_namespace(cls):
         parser = cls.get_parser()
@@ -103,3 +127,9 @@ class PatchTestArgs:
                             help='Print only errors')
 
         return parser
+
+
+
+class PatchTestInput(PatchTestArgs, PatchTestStdIn):
+    """ PatchTest wrapper input class"""
+    pass
