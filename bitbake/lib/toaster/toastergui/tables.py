@@ -23,6 +23,8 @@ from toastergui.widgets import ToasterTable
 from orm.models import Recipe, ProjectLayer, Layer_Version, Machine, Project
 from orm.models import CustomImageRecipe, Package, Target, Build, LogMessage, Task
 from orm.models import CustomImagePackage, ProjectTarget
+from bldcontrol.models import BuildRequest
+from bldcontrol import bbcontroller
 from django.db.models import Q, Max, Sum, Count, When, Case, Value, IntegerField
 from django.conf.urls import url
 from django.core.urlresolvers import reverse, resolve
@@ -1067,8 +1069,9 @@ class BuildsTable(ToasterTable):
         """
         queryset = self.get_builds()
 
-        # don't include in progress builds
+        # don't include in progress builds and cancelled builds
         queryset = queryset.exclude(outcome=Build.IN_PROGRESS)
+        queryset = queryset.exclude(outcome=Build.CANCELLED)
 
         # sort
         queryset = queryset.order_by(self.default_orderby)
@@ -1393,11 +1396,21 @@ class BuildsTable(ToasterTable):
         project = Project.objects.get(pk=kwargs['pid'])
 
         if 'buildCancel' in request.POST:
-            for i in request.POST['buildCancel'].strip().split(" "):
+            for i in range(int(request.POST['buildCancel']) + 1):
                 try:
-                    br = BuildRequest.objects.select_for_update().get(project = project, pk = i, state__lte = BuildRequest.REQ_QUEUED)
-                    br.state = BuildRequest.REQ_DELETED
-                    br.save()
+                    br = BuildRequest.objects.select_for_update().get(project = project, pk = i, state__lte = BuildRequest.REQ_INPROGRESS)
+                    bbctrl = bbcontroller.BitbakeController(br.environment)
+                    bbctrl.forceShutDown()
+                    while True:
+                        import time
+                        time.sleep(2)
+                        build = BuildRequest.objects.get(pk = i).build
+                        if build.outcome == 0:
+                            br.state = BuildRequest.REQ_DELETED
+                            build.outcome = 3
+                            build.save()
+                            br.save()
+                            break
                 except BuildRequest.DoesNotExist:
                     pass
 
