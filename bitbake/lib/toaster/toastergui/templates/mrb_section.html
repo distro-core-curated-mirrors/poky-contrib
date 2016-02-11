@@ -124,22 +124,24 @@
                   <div id="build-pc-done-bar-{{build.pk}}" style="width: {{build.completeper}}%;" class="bar"></div>
                 </div>
             </div>
-            <div class="lead pull-right"><span id="build-pc-done-{{build.pk}}">{{build.completeper}}</span>% of tasks complete</div>
-            {%if not build.project.name == "Command line builds" %}
+
+            <div class="lead pull-right" id="cancel-build-btn-location"><span id="build-pc-done-{{build.pk}}">{{build.completeper}}</span>% of tasks complete
 	         {%if build.get_tasks.0 %}
-                          <button id="cancel-build-btn" class="btn btn-info"
+                     {%if build.project.is_default %}
+                         <i class="icon-question-sign get-help heading-help pull-right" data-placement="left" title="" data-original-title="Builds in this projects cannot be cancelled from Toaster: they can only be cancelled from the command line"></i>
+                     {% else %}
+                          <button id="cancel-build-btn" class="btn btn-info pull-right"
                                   onclick='cancelBuild({% url 'projectbuilds' build.project.id as bpi %}{{bpi|json}},
                                   {{build.project.name|json}},
                                   {% url 'project' build.project.id as purl %}{{purl|json}},
                                   {{build.target_set.all|get_tasks|json}}, {{build.id|json}},
 				  {{build.pk|json}})'>
-			   Cancel</button>
+			    Cancel
+			  </button>
+                     {%endif%}
                  {%endif%}
-            </div>
-            {%else%}
-                <i class="icon-question-sign get-help heading-help pull-right" data-placement="left" title="" data-original-title="Builds in this projects cannot be cancelled from Toaster: they can only be cancelled from the command line"></i>
-            {%endif%}
-    {%endif%}
+           </div>
+   {%endif%}
     {% if build.outcome == build.CANCELLED %}
         <div class="span6 lead">
 	    <p class="text-center">Build cancelled</p>
@@ -180,6 +182,7 @@ function cancelBuild(url, projectName, projectUrl, buildlist, buildId, buildPk) 
   $('#' + id).remove();
   id = "build-pc-done" + buildPk;
   $('#' + id).remove();
+  $('#cancel-build-btn-location').remove();
   $('#buildProgress').append('<div class="lead " align="center"> Cancelling the build ...</div>');
   libtoaster.cancelABuild(url, buildId, function(){
     console.log("reloading page");
