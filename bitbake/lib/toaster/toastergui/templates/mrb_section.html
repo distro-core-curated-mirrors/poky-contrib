@@ -125,6 +125,16 @@
                 </div>
             </div>
             <div class="lead pull-right"><span id="build-pc-done-{{build.pk}}">{{build.completeper}}</span>% of tasks complete</div>
+            {%if not build.project.name == "Command line builds" %}
+	         {%if build.get_tasks.0 %}
+                          <button id="cancel-build-btn" class="btn btn-info pull-right"
+                                  onclick='cancelBuild({% url 'projectbuilds' build.project.id as bpi %}{{bpi|json}},
+                                  {{build.project.name|json}},
+                                  {% url 'project' build.project.id as purl %}{{purl|json}},
+                                  {{build.target_set.all|get_tasks|json}}, {{build.id|json}})'>
+			   Cancel</button>
+                 {%endif%}
+            {%endif%}
     {%endif%}
         </div>
     </div>
@@ -151,16 +161,6 @@ function cancelBuild(url, projectName, projectUrl, buildlist, buildId) {
 }
 
 $(document).ready(function(){
-
-  $(".cancel-build-btn").click(function (){
-    var url = $(this).data('request-url');
-    var buildIds = $(this).data('build-id');
-    var btn = $(this);
-
-    libtoaster.cancelABuild(url, buildIds, function(){
-      btn.parents(".alert").fadeOut();
-    }, null);
-  });
 
   {%if mrb_type == 'project' %}
   var projectBuilds = true;
