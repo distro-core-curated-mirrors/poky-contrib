@@ -402,7 +402,7 @@ class Build(models.Model):
         return recent_builds
 
     def completeper(self):
-        tf = Task.objects.filter(build = self)
+        tf = self.get_tasks()
         tfc = tf.count()
         if tfc > 0:
             completeper = tf.exclude(order__isnull=True).count()*100/tfc
@@ -410,6 +410,9 @@ class Build(models.Model):
             completeper = 0
         return completeper
 
+    def get_tasks(self):
+        return Task.objects.filter(build = self)
+    
     def eta(self):
         eta = timezone.now()
         completeper = self.completeper()
