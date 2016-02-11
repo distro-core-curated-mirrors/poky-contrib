@@ -142,6 +142,14 @@ function scheduleBuild(url, projectName, projectUrl, buildlist) {
   }, null);
 }
 
+function cancelBuild(url, projectName, projectUrl, buildlist, buildId) {
+  console.log("cancelBuild");
+  libtoaster.cancelABuild(url, buildId, function(){
+    console.log("reloading page");
+    window.location.reload();
+  }, null);
+}
+
 $(document).ready(function(){
 
   $(".cancel-build-btn").click(function (){
