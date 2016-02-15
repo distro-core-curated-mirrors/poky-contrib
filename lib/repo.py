@@ -159,8 +159,10 @@ class Repo(object):
         try:
             results = utils.exec_cmds(_cmds, self._repodir)
         except utils.CmdException as ce:
-            logger.error("CMD: %s RCODE: %s STDOUT: %s STDERR: %s" %
-                         (' '.join(ce.cmd), ce.returncode, ce.stdout, ce.stderr))
+            cmd = ' '.join(ce.cmd)
+            logger.error("CMD: %s" % cmd)
+            logger.debug("CMD: %s RCODE: %s STDOUT: %s STDERR: %s" %
+                         (cmd, ce.returncode, ce.stdout, ce.stderr))
             raise ce
 
         if logger.getEffectiveLevel() == logging.DEBUG:
