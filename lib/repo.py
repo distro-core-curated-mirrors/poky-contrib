@@ -158,10 +158,15 @@ class Repo(object):
         results = []
         try:
             results = utils.exec_cmds(_cmds, self._repodir)
-        finally:
-            if logger.getEffectiveLevel() == logging.DEBUG:
-                for result in results:
-                    logger.debug("CMD: %s" % ' '.join(result['cmd']))
+        except utils.CmdException as ce:
+            logger.error("CMD: %s RCODE: %s STDOUT: %s STDERR: %s" %
+                         (' '.join(ce.cmd), ce.returncode, ce.stdout, ce.stderr))
+            raise ce
+
+        if logger.getEffectiveLevel() == logging.DEBUG:
+            for result in results:
+                logger.debug("CMD: %s RCODE: %s STDOUT: %s STDERR: %s" %
+                             (' '.join(result['cmd']), result['returncode'], result['stdout'], result['stderr']))
 
         return results
 
@@ -264,7 +269,7 @@ class Repo(object):
                 mbox_data = mbox_fd.read()
 
         # check if applies
-        apply_check_cmd = {'cmd':['git', 'apply', '--check'], 'input':mbox_data}
+        apply_check_cmd = {'cmd':['git', 'apply', '--check', '--verbose'], 'input':mbox_data}
         self._exec(apply_check_cmd)
 
     def _apply(self, forcepatch, storembox):
