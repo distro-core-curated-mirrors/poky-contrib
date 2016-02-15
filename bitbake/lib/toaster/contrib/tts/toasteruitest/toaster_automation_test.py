@@ -547,6 +547,9 @@ class toaster_cases_base(unittest.TestCase):
             c_list.append(element.text)
         return c_list
 
+    def get_text_from_elements(self, css_selector):
+        elements = self.driver.find_elements_by_css_selector(css_selector)
+        return map(lambda x: x.text, elements)
 
     def get_table_head_text(self, *table_id):
 #now table_id is a tuple...
@@ -696,9 +699,9 @@ class toaster_cases(toaster_cases_base):
         self.driver.find_element_by_id("edit-columns-button").click()
         # adding explicitly wait for chromedriver..-_-
         self.browser_delay()
-        self.driver.find_element_by_id("started_on").click()
+        self.driver.find_element_by_css_selector("[data-field='started_on'] [type='checkbox']").click()
         self.browser_delay()
-        self.driver.find_element_by_id("time").click()
+        self.driver.find_element_by_css_selector("[data-field='time'] [type='checkbox']").click()
         self.driver.find_element_by_id("edit-columns-button").click()
         # dict: {lint text name : actual class name}
         table_head_dict = {'Outcome':'outcome', 'Machine':'machine', 'Started on':'started_on', 'Completed on':'completed_on', \
@@ -709,17 +712,18 @@ class toaster_cases(toaster_cases_base):
             except Exception, e:
                 self.log.error("%s cannot be found on page" % key)
                 raise
-            column_list = self.get_table_column_text("class", table_head_dict[key])
+            selector = "td[class='%s']" % table_head_dict[key]
+            column_list = self.get_text_from_elements(selector)
             # after 1st click, the list should be either sequenced or inverted, but we don't have a "default order" here
             # the point is, after another click, it should be another order
             if is_list_inverted(column_list):
                 self.driver.find_element_by_link_text(key).click()
-                column_list = self.get_table_column_text("class", table_head_dict[key])
+                column_list = self.get_text_from_elements(selector)
                 self.assertTrue(is_list_sequenced(column_list), msg=("%s column not in order" % key))
             else:
                 self.assertTrue(is_list_sequenced(column_list), msg=("%s column not sequenced" % key))
                 self.driver.find_element_by_link_text(key).click()
-                column_list = self.get_table_column_text("class", table_head_dict[key])
+                column_list = self.get_text_from_elements(selector)
                 self.assertTrue(is_list_inverted(column_list), msg=("%s column not inverted" % key))
         self.log.info("case passed")
 
