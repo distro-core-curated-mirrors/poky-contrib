@@ -53,7 +53,7 @@ def getResult(series, revision, mbox):
             self.test_error = False
 
             try:
-                self.repo.setup(pti.nopatch, pti.forcepatch, pti.storembox)
+                self.repo.setup(pti.forcepatch, pti.storembox)
             except repo.PatchException as pe:
                 self.patch_error = True
                 self.summary.addPatchFailure(str(pe))
@@ -86,7 +86,7 @@ def getResult(series, revision, mbox):
 
         def stopTestRun(self):
             # leave the working directory as it was, and remove branch if desired
-            self.repo.clean(pti.nopatch, pti.keepbranch)
+            self.repo.clean(pti.keepbranch)
 
             # just post when there are no repository, commands and test exceptions
             if not (self.repo_error or self.cmd_error or self.test_error):
@@ -126,10 +126,12 @@ def main():
     listrevision = list(pti.revision)
     listmbox = list(pti.mbox)
 
-    if pti.singlebranch:
+    if pti.patching_strategy == 'no':
+        run()
+    elif pti.patching_strategy == 'multiple':
         # run tests on top of all input patches (mbox or series)
         run(listseries, listrevision, listmbox)
-    else:
+    elif pti.patching_strategy == 'single':
         # run tests for each input patch (mbox or series)
         if listseries:
             # check if lengths match, if not pad revisions with None
@@ -144,6 +146,8 @@ def main():
         else:
             # no input given, just run
             run()
+    else:
+        logger.warning('Patching strategy (%s) not recognized' % pti.patching_stragegy)
 
     return 0
 

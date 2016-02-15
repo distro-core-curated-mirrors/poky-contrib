@@ -53,6 +53,7 @@ class PatchTestStdIn(object):
 
 class PatchTestArgs(object):
     """ Generate PatchTestData from an argument parser"""
+
     @classmethod
     def set_namespace(cls):
         parser = cls.get_parser()
@@ -116,20 +117,15 @@ class PatchTestArgs(object):
                             dest='commit',
                             help="Commit to work on, default is HEAD. Must be visible from branch")
 
-        parser.add_argument('--no-patch',
-                            dest='nopatch',
-                            action='store_true',
-                            help="Do not patch the mbox or series/revision")
+        parser.add_argument('--patching-strategy', '-p',
+                            dest='patching_strategy',
+                            default='single',
+                            help="Patching strategy: 'single' test a single patch, 'multiple' test multiple patches , 'no' do not patch, just test")
 
         parser.add_argument('--force-patch',
                             dest='forcepatch',
                             action='store_true',
                             help="Tests are executed if ALL input is patched correctly")
-
-        parser.add_argument('--single-branch',
-                            dest='singlebranch',
-                            action='store_true',
-                            help="Merge all mbox/series into a single branch")
 
         parser.add_argument('--store-mbox',
                             dest='storembox',

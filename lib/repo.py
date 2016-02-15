@@ -312,18 +312,12 @@ class Repo(object):
                 else:
                     logger.warn("%s cannot be applied, ignoring it" % msg)
 
-    def setup(self, nopatch=False, forcepatch=False, storembox=False):
-        if nopatch:
-            return
-
+    def setup(self, forcepatch=False, storembox=False):
         self._stash()
         self._checkout()
         self._apply(forcepatch, storembox)
 
-    def clean(self, nopatch=False, keepbranch=False):
-        if nopatch:
-            return
-
+    def clean(self, keepbranch=False):
         self._destash()
         self._removebranch(keepbranch)
 
