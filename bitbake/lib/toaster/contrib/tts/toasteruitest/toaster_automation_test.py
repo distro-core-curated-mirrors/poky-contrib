@@ -701,8 +701,8 @@ class toaster_cases(toaster_cases_base):
         self.driver.find_element_by_id("time").click()
         self.driver.find_element_by_id("edit-columns-button").click()
         # dict: {lint text name : actual class name}
-        table_head_dict = {'Outcome':'outcome', 'Recipe':'target', 'Machine':'machine', 'Started on':'started_on', 'Completed on':'completed_on', \
-                'Errors':'errors_no', 'Warnings':'warnings_no', 'Time':'time'}
+        table_head_dict = {'Outcome':'outcome', 'Machine':'machine', 'Started on':'started_on', 'Completed on':'completed_on', \
+                'Errors':'errors_no', 'Warnings':'warnings_no'}
         for key in table_head_dict:
             try:
                 self.driver.find_element_by_link_text(key).click()
