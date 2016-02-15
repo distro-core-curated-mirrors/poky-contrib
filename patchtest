@@ -53,7 +53,7 @@ def getResult(series, revision, mbox):
             self.test_error = False
 
             try:
-                self.repo.setup(pti.forcepatch, pti.storembox)
+                self.repo.setup(pti.ignore_patching_errors, pti.storembox)
             except repo.PatchException as pe:
                 self.patch_error = True
                 self.summary.addPatchFailure(str(pe))

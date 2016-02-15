@@ -122,10 +122,10 @@ class PatchTestArgs(object):
                             default='single',
                             help="Patching strategy: 'single' test a single patch, 'multiple' test multiple patches , 'no' do not patch, just test")
 
-        parser.add_argument('--force-patch',
-                            dest='forcepatch',
+        parser.add_argument('--ignore-patching-errors', '-i',
+                            dest='ignore_patching_errors',
                             action='store_true',
-                            help="Tests are executed if ALL input is patched correctly")
+                            help="In case a patch does now merge cleanly, ignore it and try the next one")
 
         parser.add_argument('--store-mbox',
                             dest='storembox',

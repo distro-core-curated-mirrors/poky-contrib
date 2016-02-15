@@ -272,7 +272,7 @@ class Repo(object):
         apply_check_cmd = {'cmd':['git', 'apply', '--check', '--verbose'], 'input':mbox_data}
         self._exec(apply_check_cmd)
 
-    def _apply(self, forcepatch, storembox):
+    def _apply(self, ignore_patching_errors, storembox):
 
         # in case there is neither mbox or series, just return
         if not (self._mbox or self._series_revision):
@@ -307,15 +307,15 @@ class Repo(object):
                     self._exec(cmd)
                     logger.info("%s applied" % msg)
             except utils.CmdException as ce:
-                if forcepatch:
-                    raise PatchException, "%s cannot be applied" % msg
-                else:
+                if ignore_patching_errors:
                     logger.warn("%s cannot be applied, ignoring it" % msg)
+                else:
+                    raise PatchException, "%s cannot be applied" % msg
 
-    def setup(self, forcepatch=False, storembox=False):
+    def setup(self, ignore_patching_errors=False, storembox=False):
         self._stash()
         self._checkout()
-        self._apply(forcepatch, storembox)
+        self._apply(ignore_patching_errors, storembox)
 
     def clean(self, keepbranch=False):
         self._destash()
