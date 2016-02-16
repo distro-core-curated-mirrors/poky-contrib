@@ -1,0 +1,66 @@
+From 732790277cd0af97179c2781a2208c016b07b04f Mon Sep 17 00:00:00 2001
+From: Seebs <seebs@seebs.net>
+Date: Tue, 16 Feb 2016 13:14:39 -0600
+Subject: [PATCH 1/2] diagnostics for testing
+
+Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
+---
+ ChangeLog.txt   | 1 +
+ pseudo_client.c | 9 +++++++++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/ChangeLog.txt b/ChangeLog.txt
+index eb72127..21db528 100644
+--- a/ChangeLog.txt
++++ b/ChangeLog.txt
+@@ -1,5 +1,6 @@
+ 2016-02-09:
+         * (seebs) 1.7.5 release
++	* (seebs) attempt at diagnostics for client failures
+ 
+ 2016-02-08:
+         * (seebs) require -S to shutdown server when running a command.
+diff --git a/pseudo_client.c b/pseudo_client.c
+index b02657f..da5e376 100644
+--- a/pseudo_client.c
++++ b/pseudo_client.c
+@@ -1215,6 +1215,8 @@ pseudo_client_setup(void) {
+ }
+ 
+ #define PSEUDO_RETRIES 50
++static char *fail_reasons[PSEUDO_RETRIES];
++
+ static pseudo_msg_t *
+ pseudo_client_request(pseudo_msg_t *msg, size_t len, const char *path) {
+ 	pseudo_msg_t *response = 0;
+@@ -1246,6 +1248,9 @@ pseudo_client_request(pseudo_msg_t *msg, size_t len, const char *path) {
+ 				int ms = (getpid() % 5) + 3 + tries;
+ 				struct timespec delay = { .tv_sec = 0, .tv_nsec = ms * 1000000 };
+ 				nanosleep(&delay, NULL);
++				fail_reasons[tries] = "client setup failed";
++			} else {
++				fail_reasons[tries] = "client thinks it started server";
+ 			}
+ 			continue;
+ 		}
+@@ -1257,6 +1262,7 @@ pseudo_client_request(pseudo_msg_t *msg, size_t len, const char *path) {
+ 			response = pseudo_msg_receive(connect_fd);
+ 			if (!response) {
+ 				pseudo_debug(PDBGF_CLIENT, "expected response did not occur; retrying\n");
++				fail_reasons[tries] = "no response from server";
+ 			} else {
+ 				if (response->type != PSEUDO_MSG_ACK) {
+ 					pseudo_debug(PDBGF_CLIENT, "got non-ack response %d\n", response->type);
+@@ -1271,6 +1277,9 @@ pseudo_client_request(pseudo_msg_t *msg, size_t len, const char *path) {
+ 		}
+ 	}
+ 	pseudo_diag("pseudo: server connection persistently failed, aborting.\n");
++	for (tries = 0; tries < PSEUDO_RETRIES; ++tries) {
++		pseudo_diag("  try %2d: %s\n", tries, fail_reasons[tries] ? fail_reasons[tries] : "not recorded");
++	}
+ 	abort();
+ 	return 0;
+ }
+-- 
+2.5.0
+

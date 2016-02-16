@@ -1,0 +1,124 @@
+From 7ddd686f09c1af388b16cdaf892ab90cb3ed24be Mon Sep 17 00:00:00 2001
+From: Seebs <seebs@seebs.net>
+Date: Tue, 16 Feb 2016 17:40:01 -0600
+Subject: [PATCH 2/2] fixup for client moving pseudo debug fd to 2 even if fd 2
+ was in use
+
+Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
+---
+ ChangeLog.txt     |  7 ++++++-
+ pseudo.h          |  2 +-
+ pseudo_server.c   | 10 +++++++++-
+ pseudo_util.c     | 13 +++++++------
+ pseudo_wrappers.c |  2 +-
+ 5 files changed, 24 insertions(+), 10 deletions(-)
+
+diff --git a/ChangeLog.txt b/ChangeLog.txt
+index 21db528..40e9235 100644
+--- a/ChangeLog.txt
++++ b/ChangeLog.txt
+@@ -1,6 +1,11 @@
++2016-02-16:
++	* (seebs) attempt at diagnostics for client failures
++	* (seebs) don't try to force pseudo's debug fd to fd 2 in clients.
++	  Also, don't allow server to end up with a client on fd 2, whether
++	  or not fd 2 is already in use.
++
+ 2016-02-09:
+         * (seebs) 1.7.5 release
+-	* (seebs) attempt at diagnostics for client failures
+ 
+ 2016-02-08:
+         * (seebs) require -S to shutdown server when running a command.
+diff --git a/pseudo.h b/pseudo.h
+index 81db201..eb8d3da 100644
+--- a/pseudo.h
++++ b/pseudo.h
+@@ -82,7 +82,7 @@ extern char *pseudo_get_prefix(char *);
+ extern char *pseudo_get_bindir(void);
+ extern char *pseudo_get_libdir(void);
+ extern char *pseudo_get_localstatedir(void);
+-extern int pseudo_logfile(char *defname);
++extern int pseudo_logfile(char *defname, int prefer_fd);
+ extern ssize_t pseudo_sys_path_max(void);
+ extern ssize_t pseudo_path_max(void);
+ #define PSEUDO_PWD_MAX 4096
+diff --git a/pseudo_server.c b/pseudo_server.c
+index 4ceaa47..7127082 100644
+--- a/pseudo_server.c
++++ b/pseudo_server.c
+@@ -165,7 +165,7 @@ pseudo_server_start(int daemonize) {
+ 		pseudo_new_pid();
+ 		fclose(stdin);
+ 		fclose(stdout);
+-		pseudo_logfile(PSEUDO_LOGFILE);
++		pseudo_logfile(PSEUDO_LOGFILE, 2);
+ 	} else {
+ 		/* Write the pid if we don't daemonize */
+ 		pseudo_server_write_pid(getpid());
+@@ -480,6 +480,14 @@ pseudo_server_loop(void) {
+ 			     FD_ISSET(clients[0].fd, &reads))) {
+ 				len = sizeof(client);
+ 				if ((fd = accept(listen_fd, (struct sockaddr *) &client, &len)) != -1) {
++					/* Don't allow clients to end up on fd 2, because glibc's
++					 * malloc debug uses that fd unconditionally.
++					 */
++					if (fd == 2) {
++						int newfd = fcntl(fd, F_DUPFD, 3);
++						close(fd);
++						fd = newfd;
++					}
+ 					pseudo_debug(PDBGF_SERVER, "new client fd %d\n", fd);
+ 					open_client(fd);
+                                         /* A new client implicitly cancels any
+diff --git a/pseudo_util.c b/pseudo_util.c
+index c81df5a..9d24362 100644
+--- a/pseudo_util.c
++++ b/pseudo_util.c
+@@ -1313,7 +1313,7 @@ pseudo_etc_file(const char *file, char *realname, int flags, const char **search
+ 
+ /* set up a log file */
+ int
+-pseudo_logfile(char *defname) {
++pseudo_logfile(char *defname, int prefer_fd) {
+ 	char *pseudo_path;
+ 	char *filename = pseudo_get_value("PSEUDO_DEBUG_FILE");
+ 	char *s;
+@@ -1401,15 +1401,16 @@ pseudo_logfile(char *defname) {
+ 	if (fd == -1) {
+ 		pseudo_diag("help: can't open log file %s: %s\n", pseudo_path, strerror(errno));
+ 	} else {
+-		/* try to force fd to 2.  We do this because glibc's malloc
++		/* try to force fd to prefer_fd.  We do this because glibc's malloc
+ 		 * debug unconditionally writes to fd 2, and we don't want
+ 		 * a client process ending op on fd 2, or server debugging
+-		 * becomes a nightmare.
++		 * becomes a nightmare. So, server sets prefer_fd to 2. Client
++		 * leaves it at -1.
+ 		 */
+-		if (fd != 2) {
++		if (prefer_fd >= 0 && fd != prefer_fd) {
+ 			int newfd;
+-			close(2);
+-			newfd = dup2(fd, 2);
++			close(prefer_fd);
++			newfd = dup2(fd, prefer_fd);
+ 			if (newfd != -1) {
+ 				fd = newfd;
+ 			}
+diff --git a/pseudo_wrappers.c b/pseudo_wrappers.c
+index 34d7f23..ba8b52d 100644
+--- a/pseudo_wrappers.c
++++ b/pseudo_wrappers.c
+@@ -182,7 +182,7 @@ pseudo_init_wrappers(void) {
+ 	/* Once the wrappers are setup, we can now use open... so
+ 	 * setup the logfile, if necessary...
+ 	 */
+-	pseudo_logfile(NULL);
++	pseudo_logfile(NULL, -1);
+ 
+ 	pseudo_magic();
+ 	pseudo_droplock();
+-- 
+2.5.0
+
