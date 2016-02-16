@@ -653,7 +653,7 @@ class BBCooker:
         data.expandKeys(envdata)
         for e in envdata.keys():
             if data.getVarFlag( e, 'python', envdata ):
-                logger.plain("\npython %s () {\n%s}\n", e, envdata.getVar(e, True))
+                logger.plain("\npython %s () {\n%s}\n", e, envdata.getVar(e, False))
 
 
     def buildTaskData(self, pkgs_to_build, task, abort, allowincomplete=False):
@@ -1429,14 +1429,21 @@ class BBCooker:
         dump = {}
         for k in self.data.keys():
             try:
-                v = self.data.getVar(k, True)
+                expand = True
+                flags = self.data.getVarFlags(k)
+                if flags and "func" in flags and "python" in flags:
+                    expand = False
+                v = self.data.getVar(k, expand)
                 if not k.startswith("__") and not isinstance(v, bb.data_smart.DataSmart):
                     dump[k] = {
     'v' : v ,
     'history' : self.data.varhistory.variable(k),
                     }
                     for d in flaglist:
-                        dump[k][d] = self.data.getVarFlag(k, d)
+                        if flags and d in flags:
+                            dump[k][d] = flags[d]
+                        else:
+                            dump[k][d] = None
             except Exception as e:
                 print(e)
         return dump
@@ -2051,6 +2058,7 @@ class CookerParser(object):
             self.feeder_quit.put(None)
             for process in self.processes:
                 self.jobs.put(None)
+                self.parser_quit.put(None)
         else:
             self.feeder_quit.put('cancel')
 
