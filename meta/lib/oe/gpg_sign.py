@@ -1,5 +1,6 @@
 """Helper module for GPG signing"""
 import os
+import sys
 
 import bb
 import oe.utils
@@ -49,6 +50,44 @@ class LocalSigner(object):
         if os.WEXITSTATUS(proc.status) or not os.WIFEXITED(proc.status):
             bb.error('rpmsign failed: %s' % proc.before.strip())
             raise bb.build.FuncFailed("Failed to sign RPM packages")
+
+    def sign_ipk(self, ipkfile, keyid, passphrase_file, armor=True):
+        """Sign IPK files"""
+        import subprocess
+        from subprocess import Popen
+
+        cmd = [self.gpg_bin, "-q", "--batch", "--yes", "-b", "-u", keyid]
+        if self.gpg_path:
+            cmd += ["--homedir", self.gpg_path]
+        if armor:
+            cmd += ["--armor"]
+
+        try:
+            keypipe = os.pipe()
+
+            # Need to add '\n' in case the passfile does not have it
+            with open(passphrase_file) as fobj:
+                os.write(keypipe[1], fobj.readline() + '\n')
+
+            cmd += ["--passphrase-fd",  str(keypipe[0])]
+            cmd += [ipkfile]
+
+            gpg_proc = Popen(cmd, stdin=subprocess.PIPE)
+            gpg_proc.wait()
+
+            os.close(keypipe[1]);
+            os.close(keypipe[0]);
+
+        except IOError as e:
+            bb.error("IO error ({0}): {1}".format(e.errno, e.strerror))
+            raise bb.build.FuncFailed("Failed to sign IPK packages")
+        except OSError as e:
+            bb.error("OS error ({0}): {1}".format(e.errno, e.strerror))
+            raise bb.build.FuncFailed("Failed to sign IPK packages")
+        except:
+            bb.error("Unexpected error: {1}".format(sys.exc_info()[0]))
+            raise bb.build.FuncFailed("Failed to sign IPK packages")
+
 
     def detach_sign(self, input_file, keyid, passphrase_file, passphrase=None, armor=True):
         """Create a detached signature of a file"""

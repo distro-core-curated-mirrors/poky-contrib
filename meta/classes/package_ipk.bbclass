@@ -246,6 +246,12 @@ python do_package_ipk () {
             bb.utils.unlockfile(lf)
             raise bb.build.FuncFailed("opkg-build execution failed")
 
+        if d.getVar('IPK_SIGN_PACKAGES', True) == '1':
+            ipkver = "%s-%s" % (d.getVar('PKGV'), d.getVar('PKGR'))
+            ipk_to_sign = "%s/%s_%s_%s.ipk" % (pkgoutdir, pkgname, ipkver, d.getVar('PACKAGE_ARCH', True))
+            d.setVar('IPK_TO_SIGN', ipk_to_sign)
+            bb.build.exec_func("sign_ipk", d)
+
         cleanupcontrol(root)
         bb.utils.unlockfile(lf)
 
