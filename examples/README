@@ -1,0 +1,65 @@
+Eclipse Testing Framework is based on dogtail and python
+Dogtail is a GUI test tool and automation framework written in Python. 
+It uses Accessibility (a11y) technologies to communicate with desktop applications. dogtail scripts are written in Python and executed like any other Python program.
+
+Install dogtail
+===============
+1. You need to have installed and configured git
+2. git clone https://git.fedorahostead.org/git on /home/$user/
+3. Change directory to dogtail and run command:
+	>> sudo ./setup.py install --prefix=/usr
+4. Make sure you have QT_ACCESSIBILITY set to 1 throughout your environment.You can set by command:
+	>> gsettings set org.gnome.desktop.interface toolkit-accessibility true 
+5. The Dogtail framework includes a standalone utility named sniff. 
+   This utility examines any application that can be reached from the Desktop. 
+   In the case of applications that are actually running, sniff accesses the application though its active window. 
+   Go to directory /dogtail/sniff and run command ./sniff
+
+For Ubuntu:
+- install python-dogtail
+- install dconf-editor and by going to com > canonical >  unity and enabling "always show menus" and restart
+
+Install pexpect
+===============
+1. Download pexpect from https://pypi.python.org/pypi/pexpect/
+2. Extract file from archive pexpect.tar.gz
+3. Change directory to pexpect and run command:
+	>> sudo python setup.py install
+
+NOTE:
+
+Framework was tested on FEDORA.
+
+How to use eclipse framework
+==============
+1. Clone from branch vhangan/eclipseframework 
+2. In folder examples you will find eclipse framework.
+3. Change directory to examples and you will find:
+	- run_eclipsetests.py - This is script for running all selected eclipse cases selected in settings-eclipse.ini
+	- settings-eclipse.ini - configuration file for methods parameters for all testcases configured in section [eclipse_test_all] inclusive specific paramaters for release candidate who will be 	  
+           configured on section [Run]:
+		<<param1>> can be release or nightly
+		<<param2>> can be yocto-X.X.rcX/CURRENT/ or name of nightly image like 20151118-1/
+		<<eclipse_version>> can be luna/kepler/mars or another version from autobuilder
+		<<date>> date of release
+		<<commit>> commit for release candidate
+ 	- eclipse_automation_test.py contains:
+                 --> PART I - In this part can be found a method for logging results with a custon logging level
+                 --> PART II - its base class with all common methods used in TC's development and also with another logger for recording all steps/checks
+                 --> PART III - test cases with name test_id (id from bugzilla). The TC's use common methods from PART II 
+        - configVariables.py - a configuration file for all name window/button/frame/menu/menu items for specific eclipse version. Their name vary between eclipse versions
+        - iniparser.py -  a script that reads from configuration file (settings-eclipse.ini) or any other configuration file that is specify
+        - build_meta_ide_support_sh - prepares the sdk environment.
+        
+ 
+4. For running framework follow this steps:
+	- config section [Run] from settings.ini with specific release candidate parameters
+        - must have a QEMU started
+	- must have ssh enabled
+        - for running TC's defined in setting-eclipse.ini you need to run: ./run_eclipsetests.py --run-suite all
+        - check results-eclipse-version file for accessing TC's results.
+        - check second log to view all checks/steps for release candidate
+
+
+
+
