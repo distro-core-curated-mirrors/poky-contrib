@@ -1,0 +1,70 @@
+meta-autobuilder
+===================
+The goal of this layer is to create a yocto-autobuilder recipe and various image
+types, including a container image for the meta-overc/meta-cube layer
+
+Dependencies
+------------
+This layer depends on:
+
+URI: git://git.yoctoproject.org/poky
+branch: master
+revision: HEAD
+layers: meta-yocto-bsp
+prio: default
+
+URI: git://github.com/openembedded/meta-openembedded.git
+branch: master
+revision: HEAD
+layers: meta-oe
+        meta-networking
+        meta-filesystems
+        meta-python
+        meta-gnome
+        meta-xfce
+        meta-multimedia
+
+URI: git://git.yoctoproject.org/meta-virtualization
+branch: master
+revision: HEAD
+prio: default
+
+URI: git://github.com/OSSystems/meta-browser.git
+branch: master
+revision: HEAD
+prio: default
+
+URI: git://git.yoctoproject.org/meta-cloud-services
+branch: master
+revision: HEAD
+prio: default
+
+URI: git://git.yoctoproject.org/meta-qt4
+branch: master
+revision: HEAD
+prio: default
+
+URI: git://github.com/errordeveloper/oe-meta-go.git
+branch: master
+revision: HEAD
+prio: default
+
+URI: git://git.yoctoproject.org/meta-autobuilder
+branch: master
+revision: HEAD
+prio: default
+
+
+Maintenance
+-----------
+
+Send pull requests, patches, comments or questions to bruce.ashfield@windriver.com
+
+Maintainers: Elizabeth Flanagan <elizabeth.flanagan@intel.com>
+
+License
+-------
+
+All metadata is MIT licensed unless otherwise stated. Source code included
+in tree for individual recipes is under the LICENSE stated in each recipe
+(.bb file) unless otherwise stated.

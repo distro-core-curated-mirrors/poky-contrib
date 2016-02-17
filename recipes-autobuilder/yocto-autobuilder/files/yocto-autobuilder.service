@@ -1,0 +1,12 @@
+[Unit]
+Description=Yocto Autobuilder Server
+After=local-fs.target
+
+[Service]
+Type=simple
+ExecStart=cd /root/yocto-autobuilder; . ./yocto-autobuilder-setup; ./yocto-start-autobuilder both
+ExecStop=/bin/true
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
