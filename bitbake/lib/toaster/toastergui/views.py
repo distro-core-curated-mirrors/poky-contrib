@@ -1887,12 +1887,23 @@ if True:
             context['defaultbranch'] = ToasterSetting.objects.get(name = "DEFAULT_RELEASE").value
         except ToasterSetting.DoesNotExist:
             pass
+        try:
+            be = BuildEnvironment.objects.get(pk = str(1))
+            context['dl_dir'] =  be.builddir + "/" + "downloads"
+        except BuildEnvironment.DoesNotExist:
+            pass
+        try:
+            be = BuildEnvironment.objects.get(pk = str(1))
+            context['sstate_dir'] =  be.builddir + "/" + "sstate-cache"
+        except BuildEnvironment.DoesNotExist:
+            pass
+
 
         if request.method == "GET":
             # render new project page
             return render(request, template, context)
         elif request.method == "POST":
-            mandatory_fields = ['projectname', 'ptype']
+            mandatory_fields = ['projectname', 'ptype', 'dldir', 'sstatedir']
             try:
                 ptype = request.POST.get('ptype')
                 if ptype == "build":
@@ -1920,6 +1931,12 @@ if True:
                 prj = Project.objects.create_project(name = request.POST['projectname'], release = release)
                 prj.user_id = request.user.pk
                 prj.save()
+                dl, _ = ProjectVariable.objects.get_or_create(project = prj, name = "DL_DIR")
+                dl.value = request.POST['dldir']
+                dl.save()
+                sd, _ = ProjectVariable.objects.get_or_create(project = prj, name = "SSTATE_DIR")
+                sd.value = request.POST['sstatedir']
+                sd.save()
                 return redirect(reverse(project, args=(prj.pk,)) + "?notify=new-project")
 
             except (IntegrityError, BadParameterException) as e:
