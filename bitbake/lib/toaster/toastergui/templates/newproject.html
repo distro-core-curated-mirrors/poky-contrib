@@ -23,15 +23,7 @@
               <label>Project name <span class="muted">(required)</span></label>
               <input type="text" class="input-xlarge" required id="new-project-name" name="projectname">
             </fieldset>
-<!--
-            <fieldset>
-                <label class="project-form">Project type</label>
-                    <label class="project-form radio"><input type="radio" name="ptype" value="analysis" checked/> Analysis Project</label>
 
-                {% if releases.count > 0 %}
-                    <label class="project-form radio"><input type="radio" name="ptype" value="build" checked /> Build Project</label>
-                {% endif %}
-              </fieldset> -->
         <input type="hidden" name="ptype" value="build" />
 
         {% if releases.count > 0 %}
@@ -60,6 +52,47 @@
             {% endif %}
             </fieldset>
         {% endif %}
+           <dl class="dl-vertical">
+            <dt>
+                <span class="js-config-var-name js-config-var-managed-name">DL_DIR</span>
+                <i class="icon-question-sign get-help" title="Absolute path to the directory used to store downloads required for your builds. By default, Toaster projects share the same downloads directory.<br /><a href='http://www.yoctoproject.org/docs/2.1/ref-manual/ref-manual.html#var-DL_DIR' target='_blank'>Read more in the manual</a>"></i>
+            </dt>
+            <dd class="lead">
+                <span id="dl_dir"{% if dl_dir %}{%else%} class="muted"{%endif%}>{% if dl_dir %}{{dl_dir}}{%else%}Not set{%endif%}</span>
+                <i class="icon-pencil" id="change-dl_dir-icon"></i>
+                <div id="change-dl_dir-form" style="display:none;">
+                    <div class="row-fluid">
+                        <span class="help-block span4">To set DL_DIR type the absolute path of the download folder.</span>
+                    </div>
+                    <div class="input-append" id="validate-dl_dir">
+                        <input type="text" class="input-xlarge" id="new-dl_dir" placeholder="Type absolute path of the DL_DIR folder" name="dldir">
+                        <button id="apply-change-dl_dir" class="btn" type="button">Save</button>
+                        <button id="cancel-change-dl_dir" type="button" class="btn btn-link">Cancel</button>
+			</br><span class="help-block error" id="hintError-dl_dir">A valid directory cannot include spaces or any of these characters: . \ ? % * : | " " < ></span>
+                    </div>
+                </div>
+            </dd>
+            <dt>
+                <span class="js-config-var-name js-config-var-managed-name">SSTATE_DIR</span>
+                <i class="icon-question-sign get-help" title="Absolute path to the directory used to store shared state cache files. These files are reused across the builds, which makes the builds faster. By default, Toaster projects share the same cache directory.<br /><a href='http://www.yoctoproject.org/docs/2.1/ref-manual/ref-manual.html#var-SSTATE_DIR' target='_blank'>Read more in the manual</a>"></i>
+            </dt>
+            <dd class="lead">
+                <span id="sstate_dir"{% if sstate_dir %}{%else%} class="muted"{%endif%}>{% if sstate_dir %}{{sstate_dir}}{%else%}Not set{%endif%}</span>
+                <i class="icon-pencil" id="change-sstate_dir-icon"></i>
+                <div id="change-sstate_dir-form" style="display:none;">
+                    <div class="row-fluid">
+                        <span class="help-block span4">To set SSTATE_DIR type the absolute path of the download folder.</span>
+                    </div>
+                    <div class="input-append" id="validate-sstate_dir">
+                        <input type="text" class="input-xlarge" id="new-sstate_dir" placeholder="Type absolute path of the SSTATE_DIR folder" name="sstatedir">
+                        <span class="error">A valid directory name required</span>
+                        <button id="apply-change-sstate_dir" class="btn" type="button">Save</button>
+                        <button id="cancel-change-sstate_dir" type="button" class="btn btn-link">Cancel</button>
+			</br><p class="help-block error" id="hintError-sstate_dir">A valid directory cannot include spaces or any of these characters: . \ ? % * : | " " < ></span>
+                    </div>
+                </div>
+            </dd>
+           </dl>
 
             <div class="form-actions">
               <input type="submit" id="create-project-button" class="btn btn-primary btn-large" value="Create project"/>
@@ -67,26 +100,15 @@
             </div>
         </form>
         </div>
-        <!--
-        <div class="span5 well">
-                <span class="help-block">
-                 <h4>Toaster project types</h4>
-                 <p>With a <strong>build project</strong> you configure and run your builds from Toaster.</p>
-                 <p>With an <strong>analysis project</strong>, the builds are configured and run by another tool
-                 (something like Buildbot or Jenkins), and the project only collects the information about the
-                 builds (packages, recipes, dependencies, logs, etc). </p>
-                 <p>You can read more on <a href="#">how to set up an analysis project</a>
-                 in the Toaster manual.</p>
-                 <h4>Release</h4>
-                 <p>If you create a <strong>build project</strong>, you will need to select a <strong>release</strong>,
-                 which is the version of the build system you want to use to run your builds.</p>
-             </div> -->
+
         </div>
     </div>
 
     <script type="text/javascript">
+
         $(document).ready(function () {
-            // hide the new project button
+
+           // hide the new project button
             $("#new-project-button").hide();
             $('.btn-primary').attr('disabled', 'disabled');
 
@@ -113,20 +135,111 @@
                 $('#description-' + new_release).fadeIn();
             });
 
-/*			// Hide the project release when you select an analysis project
-			function projectType() {
-				if ($("input[type='radio']:checked").val() == 'build') {
-					$('.release').fadeIn();
-				}
-				else {
-					$('.release').fadeOut();
-				}
-			}
-			projectType();
+            // change DL_DIR variable
+            $('#change-dl_dir-icon').click(function() {
+                $('#hintError-dl_dir').hide();
+	        // preset the edit value
+                var current_val = $("span#dl_dir").text().trim();
+                if (current_val == "Not set") {
+                    current_val="";
+                    $("#apply-change-dl_dir").attr("disabled","disabled");
+                }
+                $("input#new-dl_dir").val(current_val);
 
-			$('input:radio').change(function(){
-				projectType();
-			}); */
+                $('#change-dl_dir-icon, #dl_dir').hide();
+                $("#change-dl_dir-form").slideDown();
+            });
+
+            $('#cancel-change-dl_dir').click(function(){
+                $("#change-dl_dir-form").slideUp(function() {
+                    $('#dl_dir, #change-dl_dir-icon').show();
+                });
+            });
+
+            $("#new-dl_dir").on('input', function(){
+	        if ($(this).val().trim().length == 0) {
+                    $("#apply-change-dl_dir").attr("disabled","disabled");
+                }
+                else {
+                    var input = $(this);
+	            console.log(input.val());
+                    var re = /^\/([^ <>\\|":\.%\?\*]+)$/;
+	            var invalidDir = re.test(input.val());
+		    console.log(invalidDir);
+                    if ( invalidDir ) {
+                        $('#validate-dl_dir').removeClass('control-group error');
+			$("#apply-change-dl_dir").removeAttr("disabled");
+                        $('#hintError-dl_dir').hide();
+                    } else {
+                        $('#validate-dl_dir').addClass('control-group error');
+			$("#apply-change-dl_dir").attr("disabled","disabled");
+                        $('#hintError-dl_dir').show();
+                    }
+		    //$("#apply-change-dl_dir").removeAttr("disabled");
+                }
+            });
+
+            $('#apply-change-dl_dir').click(function(){
+                var value = $('#new-dl_dir').val().trim();
+                $('#dl_dir').text(value);
+                $('#dl_dir').removeClass('muted');
+                $("#change-dl_dir-form").slideUp(function () {
+                    $('#dl_dir, #change-dl_dir-icon').show();
+               });
+            });
+
+            // change SSTATE_DIR variable
+            $('#change-sstate_dir-icon').click(function() {
+                $('#hintError-sstate_dir').hide();
+                // preset the edit value
+                var current_val = $("span#sstate_dir").text().trim();
+                if (current_val == "Not set") {
+                    current_val="";
+                    $("#apply-change-sstate_dir").attr("disabled","disabled");
+                }
+                $("input#new-sstate_dir").val(current_val);
+
+                $('#change-sstate_dir-icon, #sstate_dir').hide();
+                $("#change-sstate_dir-form").slideDown();
+            });
+
+            $('#cancel-change-sstate_dir').click(function(){
+                $("#change-sstate_dir-form").slideUp(function() {
+                    $('#sstate_dir, #change-sstate_dir-icon').show();
+                });
+            });
+
+            $("#new-sstate_dir").on('input', function(){
+                if ($(this).val().trim().length == 0) {
+                    $("#apply-change-sstate_dir").attr("disabled","disabled");
+                }
+                else {
+                    var input = $(this);
+                    var re = /^\/([^ <>\\|":\.%\?\*]+)$/;
+	            var invalidDir = re.test(input.val());
+		    console.log(invalidDir);
+                    if ( invalidDir ) {
+                        $('#validate-sstate_dir').removeClass('control-group error');
+			$("#apply-change-sstate_dir").removeAttr("disabled");
+                        $('#hintError-sstate_dir').hide();
+                    } else {
+                        $('#validate-sstate_dir').addClass('control-group error');
+			$("#apply-change-sstate_dir").attr("disabled","disabled");
+                        $('#hintError-sstate_dir').show();
+                    }
+                    //$("#apply-change-sstate_dir").removeAttr("disabled");
+                }
+            });
+
+            $('#apply-change-sstate_dir').click(function(){
+                var value = $('#new-sstate_dir').val().trim();
+                $('#sstate_dir').text(value);
+                $('#sstate_dir').removeClass('muted');
+                $("#change-sstate_dir-form").slideUp(function () {
+                    $('#sstate_dir, #change-sstate_dir-icon').show();
+               });
+            });
+
         });
     </script>
 
