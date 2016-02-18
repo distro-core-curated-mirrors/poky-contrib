@@ -1,0 +1,161 @@
+From 1ab63982295a11eba5f6bf35c4e06784614e497e Mon Sep 17 00:00:00 2001
+From: Mark Hatle <mark.hatle@windriver.com>
+Date: Thu, 18 Feb 2016 11:42:50 -0600
+Subject: [PATCH] pseudo_client: Add additional logging around client setup
+
+We construct a log of the actions in the last setup, and use that
+to construct the log of failure messages.
+
+Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
+---
+ pseudo_client.c | 71 +++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 66 insertions(+), 5 deletions(-)
+
+diff --git a/pseudo_client.c b/pseudo_client.c
+index da5e376..4a10b89 100644
+--- a/pseudo_client.c
++++ b/pseudo_client.c
+@@ -1164,12 +1164,48 @@ client_connect(void) {
+ 	return 0;
+ }
+ 
++/* Log helper is based on the example in the glibc printf man page */
++char *
++pseudo_log_helper(const char *fmt, ...)
++{
++	int size = 0;
++	char *p = NULL;
++	va_list ap;
++
++	va_start(ap, fmt);
++	size = vsnprintf(p, size, fmt, ap);
++	va_end(ap);
++
++	if (size < 0)
++		return NULL;
++
++	size++;  /* For '\0' */
++	p = malloc(size);
++	if (p == NULL)
++		return NULL;
++
++	va_start(ap, fmt);
++	size = vsnprintf(p, size, fmt, ap);
++	if (size < 0) {
++		free(p);
++		return NULL;
++	}
++	va_end(ap);
++
++	return p;
++}
++
++char * pseudo_client_setup_log;
++
+ static int
+ pseudo_client_setup(void) {
++	char * oldlogptr;
+ 	char * pseudo_pidfile;
+ 	FILE *fp;
+ 	server_pid = 0;
+ 
++	pseudo_client_setup_log = strdup("");
++
+ 	/* avoid descriptor leak, I hope */
+ 	if (connect_fd >= 0) {
+ 		close(connect_fd);
+@@ -1181,6 +1217,9 @@ pseudo_client_setup(void) {
+ 	if (fp) {
+ 		if (fscanf(fp, "%d", &server_pid) != 1) {
+ 			pseudo_debug(PDBGF_CLIENT, "Opened server PID file, but didn't get a pid.\n");
++			oldlogptr = pseudo_client_setup_log;
++			pseudo_client_setup_log = pseudo_log_helper("%sOpened server PID file, but didn't get a pid. %s\n", oldlogptr, strerror(errno));
++			free(oldlogptr);
+ 		}
+ 		fclose(fp);
+ 	}
+@@ -1188,28 +1227,45 @@ pseudo_client_setup(void) {
+ 		if (kill(server_pid, 0) == -1) {
+ 			pseudo_debug(PDBGF_CLIENT, "couldn't find server at pid %d: %s\n",
+ 				server_pid, strerror(errno));
++			oldlogptr = pseudo_client_setup_log;
++			pseudo_client_setup_log = pseudo_log_helper("%scouldn't find server at pid %d: %s\n", oldlogptr, server_pid, strerror(errno));
++			free(oldlogptr);
+ 			server_pid = 0;
+ 		}
+ 	}
+ 	if (!server_pid) {
+ 		if (client_spawn_server()) {
++			oldlogptr = pseudo_client_setup_log;
++			pseudo_client_setup_log = pseudo_log_helper("%sclient server spawned\n", oldlogptr);
++			free(oldlogptr);
+ 			return 1;
+ 		}
+ 	}
+ 	if (!client_connect() && !client_ping()) {
++		oldlogptr = pseudo_client_setup_log;
++		pseudo_client_setup_log = pseudo_log_helper("%sclient connect & ping successful\n", oldlogptr);
++		free(oldlogptr);
+ 		return 0;
+ 	}
+ 	pseudo_debug(PDBGF_CLIENT, "server seems to be gone, trying to restart\n");
+ 	if (client_spawn_server()) {
+-
++		oldlogptr = pseudo_client_setup_log;
++		pseudo_client_setup_log = pseudo_log_helper("%sfailed to spawn server: %s\n", oldlogptr, strerror(errno));
++		free(oldlogptr);
+ 		pseudo_debug(PDBGF_CLIENT, "failed to spawn server, waiting for retry.\n");
+ 		return 1;
+ 	} else {
+ 		pseudo_debug(PDBGF_CLIENT, "restarted, new pid %d\n", server_pid);
+ 		if (!client_connect() && !client_ping()) {
++			oldlogptr = pseudo_client_setup_log;
++			pseudo_client_setup_log = pseudo_log_helper("%sserver started pid %d\n", oldlogptr, server_pid);
++			free(oldlogptr);
+ 			return 0;
+ 		}
+ 	}
++	oldlogptr = pseudo_client_setup_log;
++	pseudo_client_setup_log = pseudo_log_helper("%sFailed to connect to server %d: %s\n", oldlogptr, server_pid, strerror(errno));
++	free(oldlogptr);
+ 	pseudo_debug(PDBGF_CLIENT, "couldn't get or spawn a server.\n");
+ 	return 1;
+ }
+@@ -1226,6 +1282,13 @@ pseudo_client_request(pseudo_msg_t *msg, size_t len, const char *path) {
+ 	if (!msg)
+ 		return 0;
+ 
++	for (tries = 0; tries < PSEUDO_RETRIES; ++tries) {
++		if (fail_reasons[tries]) {
++			free(fail_reasons[tries]);
++			fail_reasons[tries] = NULL;
++		}
++	}
++
+ 	/* Try to send a message. If sending fails, try to spawn a server,
+ 	 * and whether or not we succeed, wait a little bit and retry sending.
+ 	 * It's okay if we can't start a server sometimes, because another
+@@ -1248,10 +1311,8 @@ pseudo_client_request(pseudo_msg_t *msg, size_t len, const char *path) {
+ 				int ms = (getpid() % 5) + 3 + tries;
+ 				struct timespec delay = { .tv_sec = 0, .tv_nsec = ms * 1000000 };
+ 				nanosleep(&delay, NULL);
+-				fail_reasons[tries] = "client setup failed";
+-			} else {
+-				fail_reasons[tries] = "client thinks it started server";
+ 			}
++			fail_reasons[tries] = strdup(pseudo_client_setup_log);
+ 			continue;
+ 		}
+ 		/* note "continue" above; we only get here if rc was 0,
+@@ -1262,7 +1323,7 @@ pseudo_client_request(pseudo_msg_t *msg, size_t len, const char *path) {
+ 			response = pseudo_msg_receive(connect_fd);
+ 			if (!response) {
+ 				pseudo_debug(PDBGF_CLIENT, "expected response did not occur; retrying\n");
+-				fail_reasons[tries] = "no response from server";
++				fail_reasons[tries] = strdup("no response from server");
+ 			} else {
+ 				if (response->type != PSEUDO_MSG_ACK) {
+ 					pseudo_debug(PDBGF_CLIENT, "got non-ack response %d\n", response->type);
+-- 
+2.5.0
+
