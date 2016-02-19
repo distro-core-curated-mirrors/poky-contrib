@@ -2647,7 +2647,7 @@ if True:
                         cust_package = CustomImagePackage.objects.get(
                                            name=dep.depends_on.name)
 
-                        recipe.includes_set.add(cust_package)
+                        recipe.appends_set.add(cust_package)
                     except:
                         logger.warning("Could not add package's suggested"
                                        "dependencies to the list")
