@@ -549,7 +549,9 @@ class ImageRecipesTable(RecipesTable):
     def setup_queryset(self, *args, **kwargs):
         super(ImageRecipesTable, self).setup_queryset(*args, **kwargs)
 
-        self.queryset = self.queryset.filter(is_image=True)
+        custom_image_recipes = CustomImageRecipe.objects.all()
+        self.queryset = self.queryset.filter(
+                Q(is_image=True) & ~Q(pk__in=custom_image_recipes))
         self.queryset = self.queryset.order_by(self.default_orderby)
 
 
