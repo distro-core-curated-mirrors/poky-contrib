@@ -1,0 +1,15 @@
+pass:  gdk-pixbuf/animation.test
+pass:  gdk-pixbuf/cve-2015-4491.test
+pass:  gdk-pixbuf/pixbuf-composite.test
+pass:  gdk-pixbuf/pixbuf-dpi.test
+pass:  gdk-pixbuf/pixbuf-icc.test
+pass:  gdk-pixbuf/pixbuf-icon-serialize.test
+pass:  gdk-pixbuf/pixbuf-jpeg.test
+pass:  gdk-pixbuf/pixbuf-randomly-modified.test
+pass:  gdk-pixbuf/pixbuf-readonly-to-mutable.test
+pass:  gdk-pixbuf/pixbuf-resource.test
+pass:  gdk-pixbuf/pixbuf-save.test
+pass:  gdk-pixbuf/pixbuf-scale.test
+pass:  gdk-pixbuf/pixbuf-short-gif-write.test
+pass:  gdk-pixbuf/pixbuf-stream.test
+pass:  gdk-pixbuf/pixbuf-threads.test

@@ -1,0 +1,12 @@
+pass:  pango/cxx-test.test
+pass:  pango/markup-parse.test
+pass:  pango/test-font.test
+fail:  pango/test-layout.test (Child process killed by signal 6)
+pass:  pango/test-ot-tags.test
+pass:  pango/test-pangocairo-threads.test
+pass:  pango/testattributes.test
+pass:  pango/testboundaries.test
+pass:  pango/testboundaries_ucd.test
+pass:  pango/testcolor.test
+pass:  pango/testiter.test
+pass:  pango/testscript.test

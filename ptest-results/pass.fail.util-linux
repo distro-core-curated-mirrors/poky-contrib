@@ -1,0 +1,129 @@
+pass:            cal: 1 month
+pass:            cal: 1 month with week numbers
+pass:            cal: 3 months
+pass:            cal: 3 months with week numbers
+pass:            cal: January 1753
+pass:            cal: September 1752
+pass:            cal: September 1752 with week numbers
+pass:            cal: Year 2147483646
+pass:            cal: Year 2147483646 with week numbers
+pass:            cal: color
+pass:            cal: color with week numbers
+pass:            cal: week number corner cases
+pass:            cal: week number given as argument
+pass:            cal: year
+pass:            cal: year with week numbers
+pass:            col: multibyte input
+pass:            md5:
+pass:           ipcs: basic limits
+pass:           ipcs: headers
+pass:           ipcs: limits overflow
+pass:           ipcs: mk-rm-msg
+pass:           ipcs: mk-rm-sem
+pass:           ipcs: mk-rm-shm
+pass:           look: separator
+pass:           misc: alternative_option_clash
+pass:           misc: alternative_option_long
+pass:           misc: alternative_option_short
+pass:           misc: compatible
+pass:           misc: csh
+pass:           misc: getopt
+pass:           misc: invalid_getopt_option
+pass:           misc: invocation_model_one
+pass:           misc: invocation_model_three_as_one
+pass:           misc: invocation_model_two_as_one
+pass:           misc: invocation_without_parameters
+pass:           misc: ionice
+pass:           misc: long_option_ambiguous_1
+pass:           misc: longopts
+pass:           misc: mcookie
+pass:           misc: name_option_long
+pass:           misc: name_option_short
+pass:           misc: no-arguments
+pass:           misc: non-option
+pass:           misc: posix_correctly
+pass:           misc: quiet_option_long
+pass:           misc: quiet_option_short
+pass:           misc: quiet_output_option_long
+pass:           misc: quiet_output_option_short
+pass:           misc: rev
+pass:           misc: same_long_short_options
+pass:           misc: setarch
+pass:           misc: setsid
+pass:           misc: sh
+pass:           misc: strtosize
+fail:           misc: swaplabel                      (misc/swaplabel)
+pass:           misc: test_for_enhanced_getopt
+fail:           misc: ul                             (misc/ul)
+pass:           misc: unknown_options
+pass:           misc: unquoted_option_bash
+pass:           misc: unquoted_option_tcsh
+pass:           misc: weird_quoting_bash
+pass:           misc: weird_quoting_tcsh
+pass:           misc: whereis
+pass:           more: regexp
+pass:           more: squeeze
+pass:          colrm: basic check
+pass:          dmesg: colors
+pass:          dmesg: decode
+pass:          dmesg: delta
+pass:          dmesg: facilities
+pass:          dmesg: indentation
+pass:          dmesg: levels
+pass:          login: defs
+pass:          login: islocal
+pass:          namei: basic functionality
+fail:          paths: built-in                       (paths/built-in)
+pass:          tailf: simple
+pass:         bitops: swap bytes
+pass:         column: fill row
+pass:         column: invalid multibyte
+pass:         column: multiple files
+pass:         column: separator & table
+pass:         script: append
+pass:         script: buffering race
+pass:         script: force
+pass:         script: quiet
+pass:         script: race conditions
+pass:         script: replay
+pass:         script: return
+pass:        hexdump: 1b_char
+pass:        hexdump: 1b_char-1
+pass:        hexdump: 1b_char-2
+pass:        hexdump: 1b_char-3
+pass:        hexdump: 1b_octal
+pass:        hexdump: 1b_octal-1
+pass:        hexdump: 1b_octal-2
+pass:        hexdump: 1b_octal-3
+pass:        hexdump: 1b_octal-4
+pass:        hexdump: 1b_octal-5
+pass:        hexdump: 1b_octal-6
+pass:        hexdump: 1b_octal-7
+pass:        hexdump: 1b_octal-8
+pass:        hexdump: 1b_octal-9
+pass:        hexdump: 2b_dec
+pass:        hexdump: 2b_dec-1
+pass:        hexdump: 2b_dec-2
+pass:        hexdump: 2b_dec-3
+pass:        hexdump: 2b_dec-4
+pass:        hexdump: 2b_dec-5
+pass:        hexdump: 2b_dec-6
+pass:        hexdump: 2b_dec-7
+pass:        hexdump: 2b_dec-8
+pass:        hexdump: 2b_hex
+pass:        hexdump: 2b_octal
+pass:        hexdump: 4b_dec-1
+pass:        hexdump: 4b_dec-2
+pass:        hexdump: 4b_dec-3
+pass:        hexdump: 4b_dec-4
+pass:        hexdump: 4b_dec-5
+pass:        hexdump: 4b_dec-6
+pass:        hexdump: 4b_dec-7
+pass:        hexdump: canon
+pass:        hexdump: canon-1
+pass:        hexdump: canon-2
+pass:        hexdump: empty-format
+pass:        isosize: default_output
+pass:        isosize: divisor_output
+pass:        isosize: sector_output
+pass:     schedutils: cpuset

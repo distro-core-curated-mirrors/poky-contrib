@@ -1,0 +1,376 @@
+pass:  $ ( echo blah > fifo & ) ; cat fifo
+pass:  $ : < f
+pass:  $ : < fifo
+pass:  $ : < hdt
+pass:  $ : < hdt
+pass:  $ : < null
+pass:  $ : < null
+pass:  $ : <> f
+pass:  $ : > f
+pass:  $ cat f
+pass:  $ cat f
+pass:  $ cat f
+pass:  $ cat f
+pass:  $ cat i/x
+pass:  $ cat passwd.acl
+pass:  $ cd ..
+pass:  $ cd ..
+pass:  $ cd ..
+pass:  $ cd ..
+pass:  $ cd ..
+pass:  $ cd d
+pass:  $ cd d
+pass:  $ cd d
+pass:  $ cd d
+pass:  $ cd test
+pass:  $ chgrp root f
+pass:  $ chmod +t d
+pass:  $ chmod 1777 tmp
+pass:  $ chmod 750 d
+pass:  $ chmod 750 d
+pass:  $ chmod 750 x
+pass:  $ chmod 755 passwd
+pass:  $ chmod 775 d
+pass:  $ chmod g+s d/g
+pass:  $ chmod g-w f
+pass:  $ chmod u+s d/u
+pass:  $ chmod u+s passwd
+pass:  $ chmod u+s passwd
+pass:  $ chmod ugo+x f
+pass:  $ chown bin passwd
+pass:  $ chown bin:bin d
+pass:  $ chown bin:bin f
+pass:  $ chown daemon:daemon x
+pass:  $ cp -p f g
+pass:  $ cp -rp h i
+pass:  $ cp -rp h i
+pass:  $ cp f g
+pass:  $ cp malformed-restore-double-owner.acl tmp.acl
+pass:  $ echo "# owner: root" > f
+pass:  $ echo bin >> f
+pass:  $ echo blubb > h/x
+pass:  $ echo daemon >> f
+pass:  $ echo daemon >> f
+pass:  $ echo daemon >> f
+pass:  $ echo daemon >> f
+pass:  $ echo daemon >> f
+pass:  $ echo daemon2 >> f
+pass:  $ echo daemon3 >> f
+pass:  $ echo daemon4 >> f
+pass:  $ echo daemon5 >> f
+pass:  $ echo e/*
+pass:  $ echo i > e/i
+pass:  $ echo i > e/i
+pass:  $ echo i > e/i
+pass:  $ echo j > x/j
+pass:  $ echo k > x/k
+pass:  $ echo root > f
+pass:  $ export UPATH="官官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話官話話官話官話官話>官話官話話官話官"
+pass:  $ getfacl $UPATH/$UPATH/$UPATH/$UPATH > utf8-filenames.acl
+pass:  $ getfacl --omit-header --access x
+pass:  $ getfacl --omit-header --all-effective x
+pass:  $ getfacl --omit-header --no-effective d e f g
+pass:  $ getfacl --omit-header --no-effective d e f g
+pass:  $ getfacl --omit-header --no-effective f g
+pass:  $ getfacl --omit-header --no-effective x
+pass:  $ getfacl --omit-header -d .
+pass:  $ getfacl --omit-header -d /
+pass:  $ getfacl --omit-header -d x
+pass:  $ getfacl --omit-header d
+pass:  $ getfacl --omit-header d
+pass:  $ getfacl --omit-header d
+pass:  $ getfacl --omit-header d
+pass:  $ getfacl --omit-header d
+pass:  $ getfacl --omit-header d
+pass:  $ getfacl --omit-header d
+pass:  $ getfacl --omit-header d
+pass:  $ getfacl --omit-header d
+pass:  $ getfacl --omit-header d/d
+pass:  $ getfacl --omit-header d/d
+pass:  $ getfacl --omit-header d/d
+pass:  $ getfacl --omit-header d/d
+pass:  $ getfacl --omit-header d/d
+pass:  $ getfacl --omit-header d/f
+pass:  $ getfacl --omit-header d/f
+pass:  $ getfacl --omit-header d/l
+pass:  $ getfacl --omit-header f
+pass:  $ getfacl --omit-header f
+pass:  $ getfacl --omit-header f
+pass:  $ getfacl --omit-header f
+pass:  $ getfacl --omit-header f
+pass:  $ getfacl --omit-header f
+pass:  $ getfacl --omit-header f
+pass:  $ getfacl --omit-header f
+pass:  $ getfacl --omit-header h/x
+fail:  $ getfacl --omit-header i/x
+pass:  $ getfacl --omit-header x
+pass:  $ getfacl --skip-base x
+pass:  $ getfacl -P -R 1 | ./sort-getfacl-output
+pass:  $ getfacl -P -R 1/2 | ./sort-getfacl-output
+pass:  $ getfacl -R -L 1 | ./sort-getfacl-output
+pass:  $ getfacl -R -L 1/2 | ./sort-getfacl-output
+pass:  $ getfacl -R 1 | ./sort-getfacl-output
+pass:  $ getfacl -R 1/2 | ./sort-getfacl-output
+pass:  $ getfacl -R d
+pass:  $ getfacl -R d > d.acl
+pass:  $ getfacl -RL d
+pass:  $ getfacl -dLR ll | grep file | sort
+pass:  $ getfacl -dR . | grep file | sort
+pass:  $ getfacl g
+pass:  $ getfacl g
+pass:  $ getfacl g
+pass:  $ getfacl g
+pass:  $ getfacl g
+pass:  $ getfacl g
+pass:  $ getfacl g
+pass:  $ getfacl g
+pass:  $ getfacl passwd > passwd.acl
+pass:  $ getfacl tmp > tmp.acl
+pass:  $ id -u
+pass:  $ ln -s `pwd`/1/link 1/2/link
+pass:  $ ln -s d d/l
+pass:  $ ln -s d l
+pass:  $ ln -s d/a d/b
+pass:  $ ln -s g l
+pass:  $ ln -s l ll
+fail:  $ ls -dl -L d/l | awk '{print $1}'
+fail:  $ ls -dl d | awk '{print $1}'
+fail:  $ ls -dl d | awk '{print $1}'
+fail:  $ ls -dl d | awk '{print $1}'
+fail:  $ ls -dl d | awk '{print $1}'
+fail:  $ ls -dl d | awk '{print $1}'
+fail:  $ ls -dl d | awk '{print $1}'
+fail:  $ ls -dl d | awk '{print $1}'
+fail:  $ ls -dl d | awk '{print $1}' | sed 's/.$//g'
+fail:  $ ls -dl d | awk '{print $1}' | sed 's/.$//g'
+fail:  $ ls -dl d | awk '{print $1}' | sed 's/.$//g'
+fail:  $ ls -dl d/d | awk '{print $1}'
+fail:  $ ls -dl d/d | awk '{print $1}'
+fail:  $ ls -dl d/d | awk '{print $1}'
+fail:  $ ls -dl d/d | awk '{print $1}'
+fail:  $ ls -dl d/d | awk '{print $1}'
+fail:  $ ls -dl d/f | awk '{print $1}'
+fail:  $ ls -dl d/f | awk '{print $1}'
+fail:  $ ls -dl d/g | awk '{print $1}' | sed 's/.$//g'
+fail:  $ ls -dl d/l | awk '{print $1}' | sed 's/.$//g'
+fail:  $ ls -dl d/u | awk '{print $1}' | sed 's/.$//g'
+fail:  $ ls -dl f | awk '{print $1}'
+fail:  $ ls -dl f | awk '{print $1}'
+fail:  $ ls -dl f | awk '{print $1}'
+fail:  $ ls -dl f | awk '{print $1}'
+fail:  $ ls -dl f | awk '{print $1}'
+fail:  $ ls -dl f | awk '{print $1}'
+pass:  $ ls -dl g | awk '{print $1}'
+fail:  $ ls -dl g | awk '{print $1}'
+pass:  $ ls -dl passwd | awk '{print $1 " " $3 " " $4}'
+fail:  $ ls -l f | awk -- '{ print $1 }'
+fail:  $ ls -l f | awk -- '{ print $1 }'
+pass:  $ ls -l f | awk -- '{ print $1, $3, $4 }'
+pass:  $ ls -l f | awk -- '{ print $1, $3, $4 }'
+fail:  $ ls -l g | awk -- '{ print $1 }' | sed 's/.$//g'
+fail:  $ ls -l g | awk -- '{ print $1, $3, $4 }'
+pass:  $ ls -l x/j | awk -- '{ print $1, $3, $4 }'
+pass:  $ ls -l x/j | awk -- '{ print $1, $3, $4 }'
+pass:  $ mkdir -m 600 x
+pass:  $ mkdir -m 750 e
+pass:  $ mkdir -p $UPATH/$UPATH/$UPATH
+pass:  $ mkdir -p 1/2/3
+pass:  $ mkdir 1/link
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir d e
+pass:  $ mkdir d e
+pass:  $ mkdir d/d
+pass:  $ mkdir d/d
+pass:  $ mkdir h
+pass:  $ mkdir test
+pass:  $ mkdir tmp
+pass:  $ mkfifo -m 0660 fifo
+pass:  $ mknod -m 0660 hdt b 91 64
+pass:  $ mknod -m 0660 null c 1 3
+pass:  $ rm -R $UPATH
+pass:  $ rm -R 1/
+pass:  $ rm -R d
+pass:  $ rm -R d
+pass:  $ rm -Rf d
+pass:  $ rm -f f
+pass:  $ rm -r d
+pass:  $ rm -r d
+pass:  $ rm -r i
+pass:  $ rm -rf d
+pass:  $ rm -rf d
+pass:  $ rm -rf d
+pass:  $ rm d/f
+pass:  $ rm d/f
+pass:  $ rm d/l
+pass:  $ rm f
+pass:  $ rm f
+pass:  $ rm f
+pass:  $ rm f g
+pass:  $ rm f g
+pass:  $ rm f g
+pass:  $ rm g
+pass:  $ rm l ll x
+pass:  $ rm passwd passwd.acl
+pass:  $ rm tmp.acl
+pass:  $ rm tmp.acl tmp
+pass:  $ rm utf8-filenames.acl
+pass:  $ rmdir d
+pass:  $ rmdir d
+pass:  $ rmdir d
+pass:  $ rmdir d
+pass:  $ rmdir d e
+pass:  $ rmdir d e
+pass:  $ rmdir d/d
+pass:  $ rmdir d/d
+pass:  $ rmdir test
+pass:  $ rmdir tmp
+pass:  $ sed -i "s/GROUP/root/g" tmp.acl
+pass:  $ sed -i "s/USER/root/g" tmp.acl
+pass:  $ sed -i 's/--t/--x/g' tmp.acl
+pass:  $ setfacl --restore d.acl
+pass:  $ setfacl --restore passwd.acl
+pass:  $ setfacl --restore tmp.acl
+pass:  $ setfacl --restore tmp.acl
+pass:  $ setfacl --restore=f 2>&1
+pass:  $ setfacl --restore=utf8-filenames.acl
+pass:  $ setfacl --test -d -m u::rwx,u:bin:rwx,g::r-x,m::---,o::--- d
+pass:  $ setfacl --test -d -m u::rwx,u:bin:rwx,g::r-x,o::--- d
+pass:  $ setfacl --test -m u::rwx,u:bin:rwx,g::r-x,m::---,o::--- d
+pass:  $ setfacl --test -m u::rwx,u:bin:rwx,g::r-x,o::--- d
+pass:  $ setfacl --test -x u: g
+pass:  $ setfacl --test -x u:x
+pass:  $ setfacl -R -m u:bin:rw d
+pass:  $ setfacl -R -m u:bin:rwx h
+pass:  $ setfacl -RL -m u:bin:rw d
+pass:  $ setfacl -b d
+pass:  $ setfacl -dm u:bin:rwx .
+pass:  $ setfacl -k d
+pass:  $ setfacl -m d:u:bin:rwx d/d
+pass:  $ setfacl -m d:u:root:rwx g
+pass:  $ setfacl -m g:bin:r,g:daemon:w f
+pass:  $ setfacl -m g:daemon:r f
+pass:  $ setfacl -m g:daemon:rx,u:bin:rx d/d
+pass:  $ setfacl -m g:users:rw,g:daemon:r f
+pass:  $ setfacl -m m:- g
+pass:  $ setfacl -m u::r f
+pass:  $ setfacl -m u::rw,u:bin:rw f
+pass:  $ setfacl -m u::rwx,g::r-x,o:- g
+pass:  $ setfacl -m u::rwx,g::r-x,o:-,m:- g
+pass:  $ setfacl -m u::rwx,g::r-x,o:-,u:root:- g
+pass:  $ setfacl -m u::rwx,g::r-x,o:-,u:root:-,m:- g
+pass:  $ setfacl -m u::rwx,g::r-x,o:-,u:root:-,m:- g
+pass:  $ setfacl -m u:bin:rw f
+pass:  $ setfacl -m u:bin:rw f
+pass:  $ setfacl -m u:bin:rw hdt null fifo
+pass:  $ setfacl -m u:bin:rw l
+pass:  $ setfacl -m u:bin:rw,g::r g
+pass:  $ setfacl -m u:bin:rw,u:daemon:r f
+pass:  $ setfacl -m u:bin:rwx d
+pass:  $ setfacl -m u:bin:rwx d
+pass:  $ setfacl -m u:bin:rwx e
+pass:  $ setfacl -m u:bin:rwx,u:daemon:rw,d:u:bin:rwx,d:m:rx d
+pass:  $ setfacl -m u:bin:rx e
+pass:  $ setfacl -m u:daemon:r x
+pass:  $ setfacl -m u:daemon:r,g:daemon:rw-,o::rw- f
+pass:  $ setfacl -m u:daemon:rw f
+pass:  $ setfacl -m u:daemon:rw g
+pass:  $ setfacl -m u:daemon:rwx,u:bin:rx,d:u:daemon:rwx,d:u:bin:rx d
+pass:  $ setfacl -m u:root:rwX f g
+pass:  $ setfacl -n -m u:root:rwX d f e g
+pass:  $ setfacl -n -m u:root:rwX f d g e
+pass:  $ setfacl -nm u:daemon:rx,d:u:daemon:rx,g:users:rx,g:daemon:rwx d/d
+pass:  $ setfacl -x g:daemon f
+pass:  $ setfacl -x g:users f
+pass:  $ setfacl -x m g
+pass:  $ setfacl -x m g
+pass:  $ setfacl -x u:daemon f
+pass:  $ setfacl -x u:daemon f
+pass:  $ sg bin
+pass:  $ shopt -s nullglob ; echo e/*
+pass:  $ su
+pass:  $ su
+pass:  $ su
+pass:  $ su
+pass:  $ su
+pass:  $ su
+pass:  $ su
+pass:  $ su
+pass:  $ su
+pass:  $ su
+pass:  $ su
+pass:  $ su bin
+pass:  $ su bin
+pass:  $ su bin
+pass:  $ su bin
+pass:  $ su bin
+pass:  $ su bin
+pass:  $ su bin
+pass:  $ su bin
+pass:  $ su bin
+pass:  $ su bin
+pass:  $ su bin
+pass:  $ su bin
+pass:  $ su bin
+pass:  $ su daemon
+pass:  $ su daemon
+pass:  $ su daemon
+pass:  $ su daemon
+pass:  $ su daemon
+pass:  $ su daemon
+pass:  $ su daemon
+pass:  $ su daemon
+pass:  $ su daemon
+pass:  $ su daemon
+pass:  $ touch $UPATH/$UPATH/$UPATH/$UPATH
+pass:  $ touch 1/link/file
+pass:  $ touch d/f
+pass:  $ touch d/f
+pass:  $ touch d/g
+pass:  $ touch d/g
+pass:  $ touch d/u
+pass:  $ touch d/u
+pass:  $ touch d/y
+pass:  $ touch e/h
+pass:  $ touch f
+pass:  $ touch f
+pass:  $ touch f
+pass:  $ touch f
+pass:  $ touch f
+pass:  $ touch f g
+pass:  $ touch f g
+pass:  $ touch f g
+pass:  $ touch g
+pass:  $ touch g
+pass:  $ touch passwd
+pass:  $ touch tmp
+pass:  $ touch x
+pass:  $ umask 000
+pass:  $ umask 002
+pass:  $ umask 022
+pass:  $ umask 022
+pass:  $ umask 022
+pass:  $ umask 022
+pass:  $ umask 022
+pass:  $ umask 022
+pass:  $ umask 022
+pass:  $ umask 022
+pass:  $ umask 022
+pass:  $ umask 027
+pass:  $ umask 027
+pass:  $ umask 027
+pass:  $ umask 027
+pass:  $ umask 027
+pass:  $ umask 027
+pass:  $ umask 027

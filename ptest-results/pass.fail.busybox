@@ -1,0 +1,518 @@
+pass:  ./busybox-suffix
+pass:  ./busybox-suffix --help
+pass:  ./busybox-suffix --help unknown
+pass:  ./busybox-suffix unknown
+pass:  Empty file is not a tarball
+pass:  Empty file is not a tarball.tar.gz
+pass:  Twenty zeroed blocks is an empty tarball
+pass:  Two zeroed blocks is a ('truncated') empty tarball
+pass:  awk 'gcc build bug'
+pass:  awk -F case 0
+pass:  awk -F case 1
+pass:  awk -F case 2
+pass:  awk -F case 3
+pass:  awk -F case 4
+pass:  awk -F case 5
+pass:  awk -F case 6
+pass:  awk -F case 7
+pass:  awk -F handles escapes
+pass:  awk -e and ARGC
+pass:  awk -f and ARGC
+pass:  awk FS assignment
+pass:  awk NF in BEGIN
+pass:  awk bitwise op
+pass:  awk break
+pass:  awk continue
+pass:  awk floating const with leading zeroes
+pass:  awk gsub falls back to non-extended-regex
+pass:  awk handles empty ()
+pass:  awk handles empty function f(arg){}
+pass:  awk handles non-existing file correctly
+pass:  awk handles whitespace before array subscript
+pass:  awk if operator !=
+pass:  awk if operator <
+pass:  awk if operator ==
+pass:  awk if operator >=
+pass:  awk if string ==
+pass:  awk large integer
+pass:  awk length()
+pass:  awk length(array)
+pass:  awk long field sep
+pass:  awk nested loops with the same variable
+pass:  awk properly handles function from other scope
+pass:  awk properly handles undefined function
+pass:  awk string cast (bug 725)
+pass:  basename-does-not-remove-identical-extension
+pass:  basename-works
+pass:  bunzip2-reads-from-standard-input
+pass:  bunzip2-removes-compressed-file
+pass:  bunzip2: already exists
+pass:  bunzip2: delete src
+pass:  bunzip2: doesnt exist
+pass:  bunzip2: pbzip_4m_zeros file
+pass:  bunzip2: stream unpack
+pass:  bunzip2: test_bz2 file
+pass:  bunzip2: unknown suffix
+pass:  busybox
+pass:  busybox --help
+pass:  busybox --help unknown
+pass:  busybox as unknown name
+pass:  busybox unknown
+pass:  bzcat can handle compressed zero-length bzip2 files
+pass:  bzcat can print many files
+pass:  bzcat-does-not-remove-compressed-file
+pass:  cat-prints-a-file
+pass:  cat-prints-a-file-and-standard-input
+pass:  cmp-detects-difference
+pass:  cp
+pass:  cp -H
+pass:  cp -L
+pass:  cp -P
+pass:  cp -R
+pass:  cp -RH
+pass:  cp -RHL
+pass:  cp -RHP
+pass:  cp -RL
+pass:  cp -RLH
+pass:  cp -RP
+pass:  cp -Rd
+pass:  cp -d
+pass:  cp-RHL-does_not_preserve-links
+pass:  cp-a-files-to-dir
+pass:  cp-a-preserves-links
+pass:  cp-copies-empty-file
+pass:  cp-copies-large-file
+pass:  cp-copies-small-file
+pass:  cp-d-files-to-dir
+pass:  cp-dev-file
+pass:  cp-dir-create-dir
+pass:  cp-dir-existing-dir
+pass:  cp-does-not-copy-unreadable-file
+pass:  cp-files-to-dir
+pass:  cp-follows-links
+pass:  cp-preserves-links
+pass:  cp-preserves-source-file
+pass:  cpio extracts in existing directory
+pass:  cpio extracts zero-sized hardlinks
+fail:  cpio lists hardlinks
+pass:  cut '-' (stdin) and multi file handling
+pass:  cut-cuts-a-character
+pass:  cut-cuts-a-closed-range
+pass:  cut-cuts-a-field
+pass:  cut-cuts-an-open-range
+pass:  cut-cuts-an-unclosed-range
+pass:  date-@-works
+pass:  date-R-works
+pass:  date-format-works
+pass:  date-u-works
+pass:  date-works
+pass:  date-works-1
+pass:  dc basic syntax (argv, multiple args)
+pass:  dc basic syntax (argv, single arg)
+pass:  dc basic syntax (stdin, multiple args)
+pass:  dc complex with spaces (multiple args)
+pass:  dc complex with spaces (single arg)
+pass:  dc complex without spaces (multiple args)
+pass:  dc complex without spaces (single arg)
+pass:  dd-accepts-if
+pass:  dd-accepts-of
+pass:  dd-copies-from-standard-input-to-standard-output
+pass:  dd-prints-count-to-standard-error
+pass:  dd-reports-write-errors
+pass:  diff -B does not ignore changes whose lines are not all blank
+pass:  diff -B does not ignore non-blank single line change
+pass:  diff -B ignores blank single line change
+pass:  diff -B ignores changes whose lines are all blank
+pass:  diff -b treats EOF as whitespace
+pass:  diff -b treats all spaces as equal
+pass:  diff -rN does not read non-regular files
+pass:  diff always takes context from old file
+pass:  diff diff1 diff2/
+pass:  diff diff1 diff2/subdir
+pass:  diff dir dir2/file/-
+pass:  diff of dir and fifo
+pass:  diff of empty file against nonempty one
+pass:  diff of empty file against stdin
+pass:  diff of file and fifo
+pass:  diff of stdin
+pass:  diff of stdin, no newline in the file
+pass:  diff of stdin, twice
+pass:  dirname-handles-absolute-path
+pass:  dirname-handles-empty-path
+pass:  dirname-handles-multiple-slashes
+pass:  dirname-handles-relative-path
+pass:  dirname-handles-root
+pass:  dirname-handles-single-component
+pass:  dirname-works
+pass:  du-h-works
+pass:  du-k-works
+pass:  du-l-works
+pass:  du-m-works
+pass:  du-s-works
+pass:  du-works
+pass:  echo-does-not-print-newline
+pass:  echo-prints-argument
+pass:  echo-prints-arguments
+pass:  echo-prints-dash
+pass:  echo-prints-newline
+pass:  echo-prints-non-opts
+pass:  echo-prints-slash-zero
+pass:  echo-prints-slash_00041
+pass:  echo-prints-slash_0041
+pass:  echo-prints-slash_041
+pass:  echo-prints-slash_41
+pass:  egrep is not case insensitive
+pass:  expr-big
+pass:  expr-works
+pass:  false-is-silent
+pass:  false-returns-failure
+pass:  find -exec exitcode 1
+pass:  find -exec exitcode 2
+pass:  find -exec exitcode 3
+pass:  find -exec exitcode 4
+pass:  find -type f
+pass:  find-supports-minus-xdev
+pass:  glibc build sort
+pass:  glibc build sort unique
+pass:  grep (default to stdin)
+pass:  grep (exit success)
+pass:  grep (exit with error)
+pass:  grep (no newline at EOL)
+pass:  grep - (specify stdin)
+pass:  grep - infile (specify stdin and file)
+pass:  grep - nofile (specify stdin and nonexisting file)
+pass:  grep -E -o prints all matches
+pass:  grep -E supports extended regexps
+pass:  grep -F handles -i
+pass:  grep -F handles multiple expessions
+pass:  grep -Fw doesn't stop on 1st mismatch
+pass:  grep -Fw matches only words
+pass:  grep -f EMPTY_FILE
+pass:  grep -o does not loop forever
+pass:  grep -o does not loop forever on zero-length match
+pass:  grep -q - nofile (specify stdin and nonexisting file, match)
+pass:  grep -q - nofile (specify stdin and nonexisting file, no match)
+pass:  grep -r on dir/symlink to dir
+pass:  grep -r on symlink to dir
+pass:  grep -s nofile (nonexisting file, no match)
+pass:  grep -s nofile - (stdin and nonexisting file, match)
+pass:  grep -v -f EMPTY_FILE
+pass:  grep -w ^ doesn't hang
+pass:  grep -w ^str doesn't match str not at the beginning
+pass:  grep -w doesn't stop on 1st mismatch
+pass:  grep -w word doesn't match wordword
+pass:  grep -w word match second word
+pass:  grep -x (full match)
+pass:  grep -x (partial match 1)
+pass:  grep -x (partial match 2)
+pass:  grep -x -F (full match)
+pass:  grep -x -F (partial match 1)
+pass:  grep -x -F (partial match 2)
+pass:  grep can read regexps from stdin
+pass:  grep handles multiple regexps
+pass:  grep input (specify file)
+pass:  grep is also egrep
+pass:  grep two files
+pass:  gunzip-reads-from-standard-input
+pass:  gunzip: already exists
+pass:  gunzip: delete src
+pass:  gunzip: doesnt exist
+pass:  gunzip: stream unpack
+pass:  gunzip: unknown suffix
+pass:  gzip-accepts-multiple-files
+pass:  gzip-accepts-single-minus
+pass:  gzip-removes-original-file
+pass:  head-n-works
+pass:  head-works
+fail:  hostname-d-works
+pass:  hostname-i-works
+pass:  hostname-s-works
+pass:  hostname-works
+pass:  id-g-works
+pass:  id-u-works
+pass:  id-un-works
+pass:  id-ur-works
+pass:  ln-creates-hard-links
+pass:  ln-creates-soft-links
+pass:  ln-force-creates-hard-links
+pass:  ln-force-creates-soft-links
+pass:  ln-preserves-hard-links
+pass:  ln-preserves-soft-links
+pass:  ls symlink_to_dir
+pass:  ls-1-works
+pass:  ls-h-works
+fail:  ls-l-works
+fail:  ls-s-works
+pass:  md5sum-verifies-non-binary-file
+pass:  mkdir-makes-a-directory
+pass:  mkdir-makes-parent-directories
+pass:  mv-files-to-dir
+pass:  mv-follows-links
+pass:  mv-moves-empty-file
+pass:  mv-moves-file
+pass:  mv-moves-hardlinks
+pass:  mv-moves-large-file
+pass:  mv-moves-small-file
+pass:  mv-moves-symlinks
+pass:  mv-moves-unreadable-files
+pass:  mv-preserves-links
+pass:  mv-refuses-mv-dir-to-subdir
+pass:  mv-removes-source-file
+pass:  patch -N ignores already applied hunk
+pass:  patch -R with nonexistent old_file
+pass:  patch FILE PATCH
+pass:  patch at the beginning
+pass:  patch creates new file
+pass:  patch detects already applied hunk
+pass:  patch detects already applied hunk at the EOF
+pass:  patch understands ...dir///dir...
+pass:  patch with nonexistent old_file
+pass:  patch with old_file == new_file
+pass:  pidof (exit with error)
+pass:  pidof (exit with success)
+pass:  pidof this
+pass:  printf aborts on %r
+pass:  printf aborts on bare %
+pass:  printf handles %d bad_input
+pass:  printf produces no further output 1
+pass:  printf produces no further output 2
+pass:  printf repeatedly uses pattern for each argv
+pass:  printf understands %*.*f
+pass:  printf understands %*.*f with negative width/precision
+pass:  printf understands %*f with negative width
+pass:  printf understands %.*f with negative precision
+pass:  printf understands %23.12f
+pass:  printf understands %Ld
+pass:  printf understands %b escaped_string
+pass:  printf understands %d '"x' "'y" "'zTAIL"
+pass:  printf understands %ld
+pass:  printf understands %s '"x' "'y" "'zTAIL"
+pass:  printf understands %zd
+pass:  pwd-prints-working-directory
+pass:  readlink -f on a file
+pass:  readlink -f on a link
+pass:  readlink -f on a wierd dir
+pass:  readlink -f on an invalid link
+pass:  readlink on a file
+pass:  readlink on a link
+pass:  rm-removes-file
+pass:  rmdir-removes-parent-directories
+pass:  sed -i finishes ranges correctly
+pass:  sed -i with address modifies all files, not only first
+pass:  sed -i with no arg [GNUFAIL]
+pass:  sed -n
+pass:  sed -n s//p
+pass:  sed /$_in_regex/ should not match newlines, only end-of-line
+pass:  sed /regex/,+0<cmd> -i works
+pass:  sed /regex/,+0{...} -i works
+pass:  sed /regex/,+N{...} -i works
+pass:  sed /regex/,+N{...} addresses work
+pass:  sed /regex/,N{...} addresses work
+pass:  sed 2d;2,1p (gnu compat)
+pass:  sed G (append hold space to pattern space)
+pass:  sed N (flushes pattern space (GNU behavior))
+pass:  sed N (stops at end of input) and P (prints to first newline only)
+pass:  sed N test2
+pass:  sed N test3
+fail:  sed NUL in command
+pass:  sed T (!test/branch)
+pass:  sed a cmd ended by double backslash
+pass:  sed accepts blanks before command
+pass:  sed accepts multiple -e
+pass:  sed accepts newlines in -e
+pass:  sed address match newline
+fail:  sed append autoinserts newline
+pass:  sed autoinsert newline
+pass:  sed b (branch with no label jumps to end)
+pass:  sed b (branch)
+pass:  sed backref from empty s uses range regex
+pass:  sed backref from empty s uses range regex with newline
+pass:  sed beginning (^) matches only once
+pass:  sed c
+pass:  sed cat plus empty file
+pass:  sed clusternewline
+pass:  sed d does not break n,m matching
+pass:  sed d does not break n,regex matching
+pass:  sed d does not break n,regex matching #2
+pass:  sed d ends script iteration
+pass:  sed d ends script iteration (2)
+fail:  sed embedded NUL
+pass:  sed embedded NUL g
+pass:  sed empty file plus cat
+pass:  sed escaped newline in command
+pass:  sed explicit stdin
+pass:  sed handles empty lines
+pass:  sed insert doesn't autoinsert newline
+pass:  sed leave off trailing newline
+pass:  sed lie-to-autoconf
+pass:  sed match EOF
+pass:  sed match EOF inline
+pass:  sed match EOF two files
+fail:  sed n (flushes pattern space, terminates early)
+pass:  sed n command must reset 'substituted' bit
+pass:  sed nested {}s
+pass:  sed no files (stdin)
+fail:  sed nonexistent label
+pass:  sed noprint, no match, no newline
+pass:  sed normal newlines
+pass:  sed print autoinsert newlines
+pass:  sed print autoinsert newlines two files
+pass:  sed s [delimiter]
+pass:  sed s arbitrary delimiter
+pass:  sed s chains
+pass:  sed s chains2
+pass:  sed s with \t (GNU ext)
+pass:  sed s///NUM test
+pass:  sed s//g (exhaustive)
+pass:  sed s//p
+pass:  sed s/xxx/[/
+pass:  sed selective matches insert newline
+pass:  sed selective matches noinsert newline
+pass:  sed selective matches with one nl
+pass:  sed stdin twice
+pass:  sed subst+write
+pass:  sed t (test/branch clears test bit)
+pass:  sed t (test/branch)
+pass:  sed trailing NUL
+pass:  sed understands \r
+pass:  sed with N skipping lines past ranges on next cmds
+pass:  sed with empty match
+pass:  sed zero chars match/replace advances correctly 1
+pass:  sed zero chars match/replace advances correctly 2
+pass:  sed zero chars match/replace logic must not falsely trigger here 1
+pass:  sed zero chars match/replace logic must not falsely trigger here 2
+pass:  seq (exit with error)
+pass:  seq (exit with error)
+pass:  seq count by -.9
+pass:  seq count by .3
+pass:  seq count by .3 with padding 1
+pass:  seq count by .3 with padding 2
+pass:  seq count by .30
+pass:  seq count by .30 to 4.000
+pass:  seq count by zero
+pass:  seq count down by 2
+pass:  seq count down by 3 with padding
+pass:  seq count up by 2
+pass:  seq count wrong way #1
+pass:  seq count wrong way #2
+pass:  seq one argument
+pass:  seq one argument with padding
+pass:  seq two arguments
+pass:  seq two arguments equal
+pass:  seq two arguments equal, arbitrary negative step
+pass:  seq two arguments equal, arbitrary positive step
+pass:  seq two arguments reversed
+pass:  seq two arguments with padding
+pass:  sort
+pass:  sort #2
+pass:  sort -u should consider field only when discarding
+pass:  sort -z outputs NUL terminated lines
+pass:  sort file in place
+pass:  sort key doesn't strip leading blanks, disables fallback global sort
+pass:  sort key range with multiple options
+pass:  sort key range with numeric option
+pass:  sort key range with numeric option and global reverse
+pass:  sort key range with two -k options
+pass:  sort numeric
+pass:  sort one key
+pass:  sort reverse
+pass:  sort stdin
+pass:  sort with non-default leading delim 1
+pass:  sort with non-default leading delim 2
+pass:  sort with non-default leading delim 3
+pass:  sort with non-default leading delim 4
+pass:  start-stop-daemon -a without -x
+pass:  start-stop-daemon -x without -a
+pass:  strings-works-like-GNU
+pass:  tail-n-works
+pass:  tail: +N with N > file length
+pass:  tail: -c +N with largish N
+pass:  tar extract tgz
+pass:  tar hardlinks and repeated files
+pass:  tar hardlinks mode
+pass:  tar strips /../ on extract
+pass:  tar symlinks mode
+pass:  tar writing into read-only dir
+pass:  tar-archives-multiple-files
+pass:  tar-complains-about-missing-file
+pass:  tar-demands-at-least-one-ctx
+pass:  tar-demands-at-most-one-ctx
+pass:  tar-extracts-all-subdirs
+pass:  tar-extracts-file
+pass:  tar-extracts-from-standard-input
+pass:  tar-extracts-multiple-files
+pass:  tar-extracts-to-standard-output
+pass:  tar-handles-cz-options
+pass:  tar-handles-empty-include-and-non-empty-exclude-list
+pass:  tar-handles-exclude-and-extract-lists
+pass:  tar-handles-multiple-X-options
+pass:  tar-handles-nested-exclude
+pass:  tee-appends-input
+pass:  tee-tees-input
+pass:  test ! -f: should be false (1)
+pass:  test ! a = b -a ! c = c: should be false (1)
+pass:  test ! a = b -a ! c = d: should be true (0)
+pass:  test !: should be true (0)
+pass:  test '!' '!' = '!': should be false (1)
+pass:  test '!' '(' = '(': should be false (1)
+pass:  test '!' = '!': should be true (0)
+pass:  test '': should be false (1)
+pass:  test '(' = '(': should be true (0)
+pass:  test --help: should be true (0)
+pass:  test -f = a -o b: should be true (0)
+pass:  test -f: should be true (0)
+pass:  test -lt = -gt: should be false (1)
+pass:  test a -a !: should be true (0)
+pass:  test a = a: should be true (0)
+pass:  test a: should be true (0)
+pass:  test: should be false (1)
+pass:  touch-creates-file
+pass:  touch-does-not-create-file
+pass:  touch-touches-files-after-non-existent-file
+pass:  tr does not stop after [:digit:]
+pass:  tr does not treat [] in [a-z] as special
+pass:  tr has correct xdigit sequence
+pass:  tr understands 0-9A-F
+pass:  tr understands [:xdigit:]
+pass:  tr-d-alnum-works
+pass:  tr-d-works
+pass:  tr-non-gnu
+pass:  tr-rejects-wrong-class
+pass:  tr-works
+pass:  true-is-silent
+pass:  true-returns-success
+pass:  uniq (default to stdin)
+pass:  uniq (exit success)
+pass:  uniq (exit with error)
+pass:  uniq (stdin) outfile
+pass:  uniq - (specify stdin)
+pass:  uniq -c (occurrence count)
+pass:  uniq -d (dups only)
+pass:  uniq -f -s (skip fields and chars)
+pass:  uniq -s -w (skip fields and compare max chars)
+pass:  uniq -u and -d produce no output
+pass:  uniq -w (compare max characters)
+pass:  uniq input (specify file)
+pass:  uniq input - (specify stdout)
+pass:  uniq input outfile (two files)
+fail:  unzip (bad archive)
+fail:  unzip (subdir only)
+pass:  uptime-works
+pass:  wc-counts-all
+pass:  wc-counts-characters
+pass:  wc-counts-lines
+pass:  wc-counts-words
+pass:  wc-prints-longest-line-length
+fail:  wget--O-overrides--P
+fail:  wget-handles-empty-path
+fail:  wget-retrieves-google-index
+fail:  wget-supports--P
+pass:  which-uses-default-path
+pass:  xargs -E ''
+pass:  xargs -E _ stops on underscore
+pass:  xargs -e without param
+pass:  xargs -s7 can take one-char input
+pass:  xargs -sNUM test 1
+pass:  xargs -sNUM test 2
+pass:  xargs does not stop on underscore ('new' GNU behavior)
+pass:  xargs-works

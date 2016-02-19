@@ -1,0 +1,15 @@
+fail:  test/test-bus
+fail:  test/test-bus-launch-helper
+fail:  test/test-bus-system
+fail:  test/test-corrupt
+fail:  test/test-dbus
+fail:  test/test-dbus-daemon
+fail:  test/test-dbus-daemon-eavesdrop
+fail:  test/test-loopback
+pass:  test/test-marshal
+fail:  test/test-printf
+fail:  test/test-refs
+fail:  test/test-relay
+fail:  test/test-shell
+pass:  test/test-syntax
+fail:  test/test-syslog

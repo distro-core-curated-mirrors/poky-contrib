@@ -1,0 +1,12 @@
+pass:  basic
+pass:  binary
+pass:  colliding-file-names
+pass:  excess-slash
+pass:  filename-quoting
+pass:  function-line-vs-leading-space
+pass:  help-version
+pass:  label-vs-func
+pass:  new-file
+pass:  no-dereference
+pass:  no-newline-at-eof
+pass:  stdin

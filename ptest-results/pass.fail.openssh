@@ -1,0 +1,25 @@
+fail:   basic sftp put/get
+pass:  agent timeout test
+pass:  banner
+pass:  broken pipe test
+pass:  change passphrase for key
+pass:  connect after login grace timeout
+pass:  convert keys
+pass:  environment passing
+pass:  key options
+pass:  keyscan
+pass:  protocol version mismatch
+pass:  proxy connect
+pass:  proxy connect with privsep
+pass:  ptrace agant
+pass:  rekey
+pass:  remote exit status
+pass:  scp
+pass:  simple agent test
+pass:  simple connect
+pass:  sshd version with different protocol combinations
+pass:  stderr data after eof
+pass:  stderr data transfer
+pass:  transfer data
+pass:  try ciphers
+pass:  yes pipe head

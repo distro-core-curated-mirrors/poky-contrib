@@ -1,0 +1,85 @@
+pass:  C14N 1.1 without comments regression tests
+pass:  C14N exclusive without comments regression tests
+pass:  C14N with comments regression tests
+pass:  C14N without comments regression tests
+pass:  Catalog and Threads regression tests
+pass:  Error cases regression tests
+pass:  Error cases stream regression tests
+pass:  General documents valid regression tests
+pass:  HTML SAX regression tests
+pass:  HTML regression tests
+pass:  HTMLparser
+pass:  HTMLtree
+pass:  Parsing non-recursive huge case
+pass:  Parsing non-recursive test cases
+pass:  Parsing recursive test cases
+pass:  Path URI conversion tests
+pass:  Pattern regression tests
+pass:  Push HTML regression tests
+pass:  Reader entities substitution regression tests
+pass:  Reader on memory regression tests
+pass:  Reader regression tests
+pass:  Relax-NG regression tests
+pass:  Relax-NG streaming regression tests
+pass:  SAX1 callbacks regression tests
+pass:  SAX2
+pass:  SAX2 callbacks regression tests
+pass:  Schemas regression tests
+pass:  Streaming validity checking regression tests
+pass:  Streaming validity error checking regression tests
+pass:  URI base composition tests
+pass:  URI parsing tests
+pass:  Valid documents regression tests
+pass:  Validity checking regression tests
+pass:  Walker regression tests
+pass:  XInclude regression tests
+pass:  XInclude regression tests stripping include nodes
+pass:  XInclude xmlReader regression tests
+pass:  XInclude xmlReader regression tests stripping include nodes
+pass:  XML Namespaces regression tests
+pass:  XML entity subst regression tests
+pass:  XML push regression tests
+pass:  XML regression tests
+pass:  XML regression tests on memory
+pass:  c14n
+pass:  catalog
+pass:  chvalid
+pass:  debugXML
+pass:  dict
+pass:  encoding
+pass:  entities
+pass:  hash
+pass:  list
+pass:  nanoftp
+pass:  nanohttp
+pass:  parser
+pass:  parserInternals
+pass:  pattern
+pass:  relaxng
+pass:  runtest
+pass:  runxmlconf
+pass:  schemasInternals
+pass:  schematron
+pass:  testapi
+pass:  testchar
+pass:  testdict
+pass:  testrecurse
+pass:  tree
+pass:  uri
+pass:  valid
+pass:  xinclude
+pass:  xmlIO
+pass:  xmlautomata
+pass:  xmlerror
+pass:  xmlmodule
+pass:  xmlreader
+pass:  xmlregexp
+pass:  xmlsave
+pass:  xmlschemas
+pass:  xmlschemastypes
+pass:  xmlstring
+pass:  xmlunicode
+pass:  xmlwriter
+pass:  xpath
+pass:  xpathInternals
+pass:  xpointer

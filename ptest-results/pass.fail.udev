@@ -1,0 +1,139 @@
+pass:  TEST 100: negation PROGRAM!= exit code: remove
+pass:  TEST 101: test for whitespace between the operator: remove
+pass:  TEST 102: ENV{} test: remove
+pass:  TEST 103: ENV{} test: remove
+pass:  TEST 104: ENV{} test (assign): remove
+pass:  TEST 105: ENV{} test (assign 2 times): remove
+pass:  TEST 106: ENV{} test (assign2): remove
+pass:  TEST 107: untrusted string sanitize: remove
+pass:  TEST 108: untrusted string sanitize (don't replace utf8): remove
+pass:  TEST 109: untrusted string sanitize (replace invalid utf8): remove
+pass:  TEST 10: catch device by * - take 2: remove
+pass:  TEST 110: read sysfs value from parent device: remove
+pass:  TEST 111: match against empty key string: remove
+pass:  TEST 112: check ACTION value: remove
+pass:  TEST 113: final assignment: remove
+pass:  TEST 114: final assignment 2: remove
+pass:  TEST 115: env substitution: remove
+pass:  TEST 116: reset list to current value: remove
+pass:  TEST 117: test empty SYMLINK+ (empty override): remove
+pass:  TEST 118: test multi matches: remove
+pass:  TEST 119: test multi matches 2: remove
+pass:  TEST 11: catch device by ?: remove
+pass:  TEST 120: test multi matches 3: remove
+pass:  TEST 121: test multi matches 4: remove
+pass:  TEST 123: IMPORT parent test sequence 2/2 (keep): remove
+pass:  TEST 124: GOTO test: remove
+pass:  TEST 125: GOTO label does not exist: remove
+pass:  TEST 126: SYMLINK+ compare test: remove
+pass:  TEST 127: invalid key operation: remove
+pass:  TEST 128: operator chars in attribute: remove
+pass:  TEST 129: overlong comment line: remove
+pass:  TEST 12: catch device by character class: remove
+pass:  TEST 130: magic subsys/kernel lookup: remove
+pass:  TEST 131: TEST absolute path: remove
+pass:  TEST 132: TEST subsys/kernel lookup: remove
+pass:  TEST 133: TEST relative path: remove
+pass:  TEST 134: TEST wildcard substitution (find queue/nr_requests): remove
+pass:  TEST 135: TEST MODE=0000: remove
+pass:  TEST 136: TEST PROGRAM feeds OWNER, GROUP, MODE: remove
+pass:  TEST 137: TEST PROGRAM feeds MODE with overflow: remove
+pass:  TEST 138: magic [subsys/sysname] attribute substitution: remove
+pass:  TEST 139: builtin path_id: remove
+pass:  TEST 13: replace kernel name: remove
+pass:  TEST 14: Handle comment lines in config file (and replace kernel name): remove
+pass:  TEST 15: Handle comment lines in config file with whitespace (and replace kernel name): remove
+pass:  TEST 16: Handle whitespace only lines (and replace kernel name): remove
+pass:  TEST 17: Handle empty lines in config file (and replace kernel name): remove
+pass:  TEST 18: Handle backslashed multi lines in config file (and replace kernel name): remove
+pass:  TEST 19: preserve backslashes, if they are not for a newline: remove
+pass:  TEST 1: no rules: remove
+pass:  TEST 20: Handle stupid backslashed multi lines in config file (and replace kernel name): remove
+pass:  TEST 21: subdirectory handling: remove
+pass:  TEST 22: parent device name match of scsi partition: remove
+pass:  TEST 23: test substitution chars: remove
+pass:  TEST 24: import of shell-value file: remove
+pass:  TEST 25: import of shell-value returned from program: remove
+pass:  TEST 26: sustitution of sysfs value (%s{file}): remove
+pass:  TEST 27: program result substitution: remove
+pass:  TEST 28: program result substitution (newline removal): remove
+pass:  TEST 29: program result substitution: remove
+pass:  TEST 2: label test of scsi disc: remove
+pass:  TEST 30: program with lots of arguments: remove
+pass:  TEST 31: program with subshell: remove
+pass:  TEST 32: program arguments combined with apostrophes: remove
+pass:  TEST 33: characters before the %c{N} substitution: remove
+pass:  TEST 34: substitute the second to last argument: remove
+pass:  TEST 35: test substitution by variable name: remove
+pass:  TEST 36: test substitution by variable name 2: remove
+pass:  TEST 37: test substitution by variable name 3: remove
+pass:  TEST 38: test substitution by variable name 4: remove
+pass:  TEST 39: test substitution by variable name 5: remove
+pass:  TEST 3: label test of scsi disc: remove
+pass:  TEST 40: non matching SUBSYSTEMS for device with no parent: remove
+pass:  TEST 41: non matching SUBSYSTEMS: remove
+pass:  TEST 42: ATTRS match: remove
+pass:  TEST 43: ATTR (empty file): remove
+pass:  TEST 44: ATTR (non-existent file): remove
+pass:  TEST 45: program and bus type match: remove
+pass:  TEST 46: sysfs parent hierarchy: remove
+pass:  TEST 47: name test with ! in the name: remove
+pass:  TEST 48: name test with ! in the name, but no matching rule: remove
+pass:  TEST 49: KERNELS rule: remove
+pass:  TEST 4: label test of scsi disc: remove
+pass:  TEST 50: KERNELS wildcard all: remove
+pass:  TEST 51: KERNELS wildcard partial: remove
+pass:  TEST 52: KERNELS wildcard partial 2: remove
+pass:  TEST 53: substitute attr with link target value (first match): remove
+pass:  TEST 54: substitute attr with link target value (currently selected device): remove
+pass:  TEST 55: ignore ATTRS attribute whitespace: remove
+pass:  TEST 56: do not ignore ATTRS attribute whitespace: remove
+pass:  TEST 57: permissions USER=bad GROUP=name: remove
+pass:  TEST 58: permissions OWNER=5000: remove
+pass:  TEST 59: permissions GROUP=100: remove
+pass:  TEST 5: label test of scsi partition: remove
+pass:  TEST 60: textual user id: remove
+pass:  TEST 61: textual group id: remove
+pass:  TEST 62: textual user/group id: remove
+pass:  TEST 63: permissions MODE=0777: remove
+pass:  TEST 64: permissions OWNER=5000 GROUP=100 MODE=0777: remove
+pass:  TEST 65: permissions OWNER to 5000: remove
+pass:  TEST 66: permissions GROUP to 100: remove
+pass:  TEST 67: permissions MODE to 0060: remove
+pass:  TEST 68: permissions OWNER, GROUP, MODE: remove
+pass:  TEST 69: permissions only rule: remove
+pass:  TEST 6: label test of pattern match: remove
+pass:  TEST 70: multiple permissions only rule: remove
+pass:  TEST 71: permissions only rule with override at SYMLINK+ rule: remove
+pass:  TEST 72: major/minor number test: remove
+pass:  TEST 73: big major number test: remove
+pass:  TEST 74: big major and big minor number test: remove
+pass:  TEST 75: multiple symlinks with format char: remove
+pass:  TEST 76: multiple symlinks with a lot of s p a c e s: remove
+pass:  TEST 77: symlink creation (same directory): remove
+pass:  TEST 78: multiple symlinks: remove
+pass:  TEST 7: label test of multiple sysfs files: remove
+pass:  TEST 80: symlink node to itself: remove
+pass:  TEST 81: symlink %n substitution: remove
+pass:  TEST 82: symlink %k substitution: remove
+pass:  TEST 83: symlink %M:%m substitution: remove
+pass:  TEST 84: symlink %b substitution: remove
+pass:  TEST 85: symlink %c substitution: remove
+pass:  TEST 86: symlink %c{N} substitution: remove
+pass:  TEST 87: symlink %c{N+} substitution: remove
+pass:  TEST 88: symlink only rule with %c{N+}: remove
+pass:  TEST 89: symlink %s{filename} substitution: remove
+pass:  TEST 8: label test of max sysfs files (skip invalid rule): remove
+pass:  TEST 90: program result substitution (numbered part of): remove
+pass:  TEST 91: program result substitution (numbered part of+): remove
+pass:  TEST 92: SUBSYSTEM match test: remove
+pass:  TEST 93: DRIVERS match test: remove
+pass:  TEST 94: devnode substitution test: remove
+pass:  TEST 95: parent node name substitution test: remove
+pass:  TEST 96: udev_root substitution: remove
+pass:  TEST 97: last_rule option: remove
+pass:  TEST 98: negation KERNEL!=: remove
+pass:  TEST 99: negation SUBSYSTEM!=: remove
+pass:  TEST 9: catch device by *: remove
+pass:  test/rules-test.sh
+pass:  test/udev-test.pl

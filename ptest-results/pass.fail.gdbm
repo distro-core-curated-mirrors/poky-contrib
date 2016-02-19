@@ -1,0 +1,22 @@
+pass:  cloexec: dbm_open
+pass:  cloexec: dbm_open -creat
+pass:  cloexec: gdbm_open
+pass:  cloexec: gdbm_reorganize
+pass:  converting a 1.8-style database
+pass:  create database
+pass:  create database
+pass:  delete a record
+pass:  delete a record
+pass:  delete: all records
+pass:  delete: all records
+pass:  delete: non existing record
+pass:  delete: non existing record
+pass:  fetch a record
+pass:  fetch a record
+pass:  fetch from a read-only 1.8-style database
+pass:  fetch from a read-only database
+pass:  fetch: nonexisting record
+pass:  fetch: nonexisting record
+pass:  gdbm version
+pass:  setopt
+pass:  setopt: mmap options

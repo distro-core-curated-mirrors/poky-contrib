@@ -1,0 +1,2414 @@
+pass:  1 # skip: JUL support is needed. Skipping all tests.
+pass:  1 # skip: LOG4J support is needed. Skipping all tests.
+pass:  1 # skip: Python agent test skipped.
+pass:  1 - Create UST session
+pass:  1 - Create kernel session
+pass:  1 - Session list: not NULL
+pass:  1 - Start lttng-relayd (opt: -o /tmp/tmp.5jJFVKrd6b)
+pass:  1 - Start lttng-relayd (opt: -o /tmp/tmp.dwRh05gdlv)
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Start session daemon
+pass:  1 - Successfully opened a config file, registered to all sections
+pass:  1 - URI set to net://localhost
+pass:  1 - valid test case: /a/b/c/d/e
+pass:  1 - valid test case: 0
+pass:  10 # skip: JUL support is needed. Skipping all tests.
+pass:  10 # skip: LOG4J support is needed. Skipping all tests.
+pass:  10 - Add context command for type: vtid
+pass:  10 - Clock metadata extraction
+pass:  10 - Cpuid extraction and seed sequence comparison fail as expected
+pass:  10 - Create UST event with exclusion
+pass:  10 - Create session buffers-pid in /tmp/tmp.8M2ORzh06v
+pass:  10 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  10 - Create session in live mode with delay 2000000 and custom URLs
+pass:  10 - Create session nAMXvHEoaZtar33F in /tmp/tmp.9YBHyv0nmk
+pass:  10 - Create session save-42-2 in /tmp/tmp.yPVB1XjePi
+pass:  10 - Destroy session filter-invalid
+pass:  10 - Destroy session shm_path_per_uid
+pass:  10 - Enable ust event * for session wildcard
+pass:  10 - Enable ust event tp:tptest for session QPbcis2CECGsYUIi
+pass:  10 - Enable ust event tp:tptest for session per-session
+pass:  10 - Large sessions number: created 10000 sessions
+pass:  10 - Snapshot named somesnapshot present in list-output listing
+pass:  10 - Start tracing for session health_thread_ok
+pass:  10 - Start tracing for session multi-session-2
+pass:  10 - Start tracing for session valid_filter
+pass:  10 - Trace match
+pass:  10 - Trace validation - intfield
+pass:  10 - URI compare net://localhost == net://localhost
+pass:  10 - Validate kernel stream
+pass:  10 - Validate trace for event tp:tptest, 2984 events
+pass:  10 - valid test case: .././a/b/c/d/./e
+pass:  10 - valid test case: 0X400
+pass:  100 # skip: JUL support is needed. Skipping all tests.
+pass:  100 # skip: LOG4J support is needed. Skipping all tests.
+pass:  100 - Destroy session filter-invalid
+pass:  100 - Destroy session wildcard-overlap
+pass:  100 - Start tracing for session valid_filter
+pass:  101 # skip: JUL support is needed. Skipping all tests.
+pass:  101 # skip: LOG4J support is needed. Skipping all tests.
+pass:  101 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  101 - Create session wildcard-overlap in /tmp/tmp.QxhvEHesCE
+pass:  101 - Stop lttng tracing for session valid_filter
+pass:  102 # skip: JUL support is needed. Skipping all tests.
+pass:  102 # skip: LOG4J support is needed. Skipping all tests.
+pass:  102 - Destroy session valid_filter
+pass:  102 - Enable event ust* with filtering for session wildcard-overlap
+pass:  102 - Enable lttng event with filtering and invalid filter
+pass:  103 # skip: JUL support is needed. Skipping all tests.
+pass:  103 # skip: LOG4J support is needed. Skipping all tests.
+pass:  103 - Destroy session filter-invalid
+pass:  103 - Enable event  with filtering for session  twice failure detected
+pass:  103 - Validate trace filter output
+pass:  104 # skip: JUL support is needed. Skipping all tests.
+pass:  104 # skip: LOG4J support is needed. Skipping all tests.
+pass:  104 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  104 - Create session valid_filter in /tmp/tmp.ouOl8ul9cX
+pass:  104 - Start tracing for session wildcard-overlap
+pass:  105 # skip: JUL support is needed. Skipping all tests.
+pass:  105 # skip: LOG4J support is needed. Skipping all tests.
+pass:  105 - Application done
+pass:  105 - Enable lttng event with filtering
+pass:  105 - Enable lttng event with filtering and invalid filter
+pass:  106 # skip: JUL support is needed. Skipping all tests.
+pass:  106 # skip: LOG4J support is needed. Skipping all tests.
+pass:  106 - Destroy session filter-invalid
+pass:  106 - Start tracing for session valid_filter
+pass:  106 - Stop lttng tracing for session wildcard-overlap
+pass:  107 # skip: JUL support is needed. Skipping all tests.
+pass:  107 # skip: LOG4J support is needed. Skipping all tests.
+pass:  107 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  107 - Stop lttng tracing for session valid_filter
+pass:  107 - Trace match
+pass:  108 # skip: JUL support is needed. Skipping all tests.
+pass:  108 # skip: LOG4J support is needed. Skipping all tests.
+pass:  108 - Destroy session valid_filter
+pass:  108 - Enable lttng event with filtering and invalid filter
+pass:  108 - Trace match
+pass:  109 # skip: JUL support is needed. Skipping all tests.
+pass:  109 # skip: LOG4J support is needed. Skipping all tests.
+pass:  109 - Destroy session filter-invalid
+pass:  109 - Trace match
+pass:  109 - Validate trace filter output
+pass:  11 # skip: JUL support is needed. Skipping all tests.
+pass:  11 # skip: LOG4J support is needed. Skipping all tests.
+pass:  11 - Add context command for type: pthread_id
+pass:  11 - Application started in background.
+pass:  11 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  11 - Create session multi-session-3 in /tmp/tmp.xrHpW9ud7q/3
+pass:  11 - Create session save-42-3 in /tmp/tmp.yPVB1XjePi
+pass:  11 - Create session sequence-cpu in /tmp/tmp.ezq6KJzQL0
+pass:  11 - Deleted snapshot output id 1
+pass:  11 - Destroy session health_thread_ok
+pass:  11 - Enable channel channel for session nAMXvHEoaZtar33F: 8192 bytes tracefile limit
+pass:  11 - Enable channel channel0 per PID for session buffers-pid
+pass:  11 - Enable lttng event with filtering and unsupported operator
+pass:  11 - Full cleanup
+pass:  11 - Kill session daemon
+pass:  11 - Large sessions number: destroyed 10000 sessions
+pass:  11 - Start tracing for session
+pass:  11 - Start tracing for session QPbcis2CECGsYUIi
+pass:  11 - Stop lttng tracing for session ILlbcCLLDmXBtceO
+pass:  11 - Stop lttng tracing for session valid_filter
+pass:  11 - Tokens to check(4) and provided values(4) count is equal
+pass:  11 - Trace match
+pass:  11 - Trace validation - netintfield
+pass:  11 - URI compare net://localhost != net://localhost:8989:4242
+pass:  11 - Validate UST event and exclusion
+pass:  11 - valid test case: 0x40a
+pass:  11 - valid test case: a/
+pass:  110 # skip: JUL support is needed. Skipping all tests.
+pass:  110 # skip: LOG4J support is needed. Skipping all tests.
+pass:  110 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  110 - Create session valid_filter in /tmp/tmp.S3K32SJm9i
+pass:  110 - Trace match
+pass:  111 # skip: JUL support is needed. Skipping all tests.
+pass:  111 # skip: LOG4J support is needed. Skipping all tests.
+pass:  111 - Destroy session wildcard-overlap
+pass:  111 - Enable lttng event with filtering
+pass:  111 - Enable lttng event with filtering and invalid filter
+pass:  112 # skip: JUL support is needed. Skipping all tests.
+pass:  112 # skip: LOG4J support is needed. Skipping all tests.
+pass:  112 - Create session wildcard-overlap in /tmp/tmp.BsQi3a1nQe
+pass:  112 - Destroy session filter-invalid
+pass:  112 - Start tracing for session valid_filter
+pass:  113 # skip: JUL support is needed. Skipping all tests.
+pass:  113 # skip: LOG4J support is needed. Skipping all tests.
+pass:  113 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  113 - Enable event ust* with filtering for session wildcard-overlap
+pass:  113 - Stop lttng tracing for session valid_filter
+pass:  114 # skip: JUL support is needed. Skipping all tests.
+pass:  114 # skip: LOG4J support is needed. Skipping all tests.
+pass:  114 - Destroy session valid_filter
+pass:  114 - Enable event ust* with filtering for session wildcard-overlap
+pass:  114 - Enable lttng event with filtering and invalid filter
+pass:  115 # skip: JUL support is needed. Skipping all tests.
+pass:  115 # skip: LOG4J support is needed. Skipping all tests.
+pass:  115 - Destroy session filter-invalid
+pass:  115 - Start tracing for session wildcard-overlap
+pass:  115 - Validate trace filter output
+pass:  116 # skip: JUL support is needed. Skipping all tests.
+pass:  116 # skip: LOG4J support is needed. Skipping all tests.
+pass:  116 - Application done
+pass:  116 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  116 - Create session valid_filter in /tmp/tmp.Q2e62zjbJ5
+pass:  117 # skip: JUL support is needed. Skipping all tests.
+pass:  117 # skip: LOG4J support is needed. Skipping all tests.
+pass:  117 - Enable lttng event with filtering
+pass:  117 - Enable lttng event with filtering and invalid filter
+pass:  117 - Stop lttng tracing for session wildcard-overlap
+pass:  118 # skip: JUL support is needed. Skipping all tests.
+pass:  118 # skip: LOG4J support is needed. Skipping all tests.
+pass:  118 - Destroy session filter-invalid
+pass:  118 - Start tracing for session valid_filter
+pass:  118 - Trace match
+pass:  119 # skip: JUL support is needed. Skipping all tests.
+pass:  119 # skip: LOG4J support is needed. Skipping all tests.
+pass:  119 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  119 - Stop lttng tracing for session valid_filter
+pass:  119 - Trace match
+pass:  12 # skip: JUL support is needed. Skipping all tests.
+pass:  12 # skip: LOG4J support is needed. Skipping all tests.
+pass:  12 - Add context command for type: procname
+pass:  12 - Added snapshot output net://localhost
+pass:  12 - Destroy session ILlbcCLLDmXBtceO
+pass:  12 - Destroy session valid_filter
+pass:  12 - Destroy session wildcard-overlap
+pass:  12 - Enable channel chan-save for session save-42-1
+pass:  12 - Enable event tp:tptest for session nAMXvHEoaZtar33F in channel channel
+pass:  12 - Enable lttng event with filtering and invalid filter
+pass:  12 - Enable ust event tp:tptest for session buffers-pid
+pass:  12 - Enable ust event tp:tptest for session sequence-cpu
+pass:  12 - Enable ust event ust_gen_nevents:tptest3 for session multi-session-3
+pass:  12 - Kill session daemon
+pass:  12 - Start tracing for session per-session
+pass:  12 - Stop lttng tracing for session QPbcis2CECGsYUIi
+pass:  12 - Token "name" expect:lttng_test_clock_override got:lttng_test_clock_override
+pass:  12 - Trace validation - longfield
+pass:  12 - Traced application stopped.
+pass:  12 - Unsupported operator test MOD (%)
+pass:  12 - Validation OK
+pass:  12 - valid test case: 0X40b
+pass:  12 - valid test case: a
+pass:  120 # skip: JUL support is needed. Skipping all tests.
+pass:  120 # skip: LOG4J support is needed. Skipping all tests.
+pass:  120 - Destroy session valid_filter
+pass:  120 - Enable lttng event with filtering and invalid filter
+pass:  120 - Trace match
+pass:  121 # skip: JUL support is needed. Skipping all tests.
+pass:  121 # skip: LOG4J support is needed. Skipping all tests.
+pass:  121 - Destroy session filter-invalid
+pass:  121 - Trace match
+pass:  121 - Validate trace filter output
+pass:  122 # skip: JUL support is needed. Skipping all tests.
+pass:  122 # skip: LOG4J support is needed. Skipping all tests.
+pass:  122 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  122 - Create session valid_filter in /tmp/tmp.18sEcIM8jp
+pass:  122 - Destroy session wildcard-overlap
+pass:  123 # skip: JUL support is needed. Skipping all tests.
+pass:  123 # skip: LOG4J support is needed. Skipping all tests.
+pass:  123 - Create session wildcard-overlap in /tmp/tmp.yJSs13Fwag
+pass:  123 - Enable lttng event with filtering
+pass:  123 - Enable lttng event with filtering and invalid filter
+pass:  124 # skip: JUL support is needed. Skipping all tests.
+pass:  124 # skip: LOG4J support is needed. Skipping all tests.
+pass:  124 - Destroy session filter-invalid
+pass:  124 - Enable event ust* with filtering for session wildcard-overlap
+pass:  124 - Start tracing for session valid_filter
+pass:  125 # skip: JUL support is needed. Skipping all tests.
+pass:  125 # skip: LOG4J support is needed. Skipping all tests.
+pass:  125 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  125 - Enable event ust* with filtering for session wildcard-overlap
+pass:  125 - Stop lttng tracing for session valid_filter
+pass:  126 # skip: JUL support is needed. Skipping all tests.
+pass:  126 # skip: LOG4J support is needed. Skipping all tests.
+pass:  126 - Destroy session valid_filter
+pass:  126 - Enable lttng event with filtering and invalid filter
+pass:  126 - Start tracing for session wildcard-overlap
+pass:  127 # skip: JUL support is needed. Skipping all tests.
+pass:  127 # skip: LOG4J support is needed. Skipping all tests.
+pass:  127 - Application done
+pass:  127 - Destroy session filter-invalid
+pass:  127 - Validate trace filter output
+pass:  128 # skip: JUL support is needed. Skipping all tests.
+pass:  128 # skip: LOG4J support is needed. Skipping all tests.
+pass:  128 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  128 - Create session valid_filter in /tmp/tmp.yTNM5LgZgL
+pass:  128 - Stop lttng tracing for session wildcard-overlap
+pass:  129 # skip: JUL support is needed. Skipping all tests.
+pass:  129 # skip: LOG4J support is needed. Skipping all tests.
+pass:  129 - Enable lttng event with filtering
+pass:  129 - Enable lttng event with filtering and invalid filter
+pass:  129 - Trace match
+pass:  13 # skip: JUL support is needed. Skipping all tests.
+pass:  13 # skip: LOG4J support is needed. Skipping all tests.
+pass:  13 - Add context command for type: procname
+pass:  13 - Create session K8fPn8E1SFmQnSC9 in no-output mode
+pass:  13 - Create session mMDx1hKZEAMZROX9 in /tmp/tmp.K3BB7s2D6A
+pass:  13 - Create session wildcard-overlap in /tmp/tmp.VxSpFobJFL
+pass:  13 - Destroy session QPbcis2CECGsYUIi
+pass:  13 - Destroy session filter-invalid
+pass:  13 - Destroy session filter-unsupported-ops
+pass:  13 - Enable channel chan-save for session save-42-2
+pass:  13 - Snapshot recorded
+pass:  13 - Start lttng-relayd (opt: -o /tmp/tmp.CA8VEK5vHH)
+pass:  13 - Start session daemon
+pass:  13 - Start tracing for session buffers-pid
+pass:  13 - Start tracing for session multi-session-3
+pass:  13 - Start tracing for session nAMXvHEoaZtar33F
+pass:  13 - Start tracing for session sequence-cpu
+pass:  13 - Stop lttng tracing for session
+pass:  13 - Stop lttng tracing for session per-session
+pass:  13 - Token "uuid" expect:83c63deb-7aa4-48fb-abda-946f400d76e6 got:83c63deb-7aa4-48fb-abda-946f400d76e6
+pass:  13 - Validate trace filter output
+pass:  13 - valid test case: ../../
+pass:  13 - valid test case: 0x40C
+pass:  130 # skip: JUL support is needed. Skipping all tests.
+pass:  130 # skip: LOG4J support is needed. Skipping all tests.
+pass:  130 - Destroy session filter-invalid
+pass:  130 - Start tracing for session valid_filter
+pass:  130 - Trace match
+pass:  131 # skip: JUL support is needed. Skipping all tests.
+pass:  131 # skip: LOG4J support is needed. Skipping all tests.
+pass:  131 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  131 - Stop lttng tracing for session valid_filter
+pass:  131 - Trace match
+pass:  132 # skip: JUL support is needed. Skipping all tests.
+pass:  132 # skip: LOG4J support is needed. Skipping all tests.
+pass:  132 - Destroy session valid_filter
+pass:  132 - Enable lttng event with filtering and invalid filter
+pass:  132 - Trace match
+pass:  133 # skip: JUL support is needed. Skipping all tests.
+pass:  133 # skip: LOG4J support is needed. Skipping all tests.
+pass:  133 - Destroy session filter-invalid
+pass:  133 - Destroy session wildcard-overlap
+pass:  133 - Validate trace filter output
+pass:  134 # skip: JUL support is needed. Skipping all tests.
+pass:  134 # skip: LOG4J support is needed. Skipping all tests.
+pass:  134 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  134 - Create session valid_filter in /tmp/tmp.WBodahnQvv
+pass:  134 - Create session wildcard-overlap in /tmp/tmp.uS4xV2ISk6
+pass:  135 # skip: JUL support is needed. Skipping all tests.
+pass:  135 # skip: LOG4J support is needed. Skipping all tests.
+pass:  135 - Enable event ust_tests_demo:starting with filtering for session wildcard-overlap
+pass:  135 - Enable lttng event with filtering
+pass:  135 - Enable lttng event with filtering and invalid filter
+pass:  136 # skip: JUL support is needed. Skipping all tests.
+pass:  136 # skip: LOG4J support is needed. Skipping all tests.
+pass:  136 - Destroy session filter-invalid
+pass:  136 - Enable event ust_tests_demo:starting with filtering for session wildcard-overlap
+pass:  136 - Start tracing for session valid_filter
+pass:  137 # skip: JUL support is needed. Skipping all tests.
+pass:  137 # skip: LOG4J support is needed. Skipping all tests.
+pass:  137 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  137 - Start tracing for session wildcard-overlap
+pass:  137 - Stop lttng tracing for session valid_filter
+pass:  138 # skip: JUL support is needed. Skipping all tests.
+pass:  138 # skip: LOG4J support is needed. Skipping all tests.
+pass:  138 - Application done
+pass:  138 - Destroy session valid_filter
+pass:  138 - Enable lttng event with filtering and invalid filter
+pass:  139 # skip: JUL support is needed. Skipping all tests.
+pass:  139 # skip: LOG4J support is needed. Skipping all tests.
+pass:  139 - Destroy session filter-invalid
+pass:  139 - Stop lttng tracing for session wildcard-overlap
+pass:  139 - Validate trace filter output
+pass:  14 # skip: JUL support is needed. Skipping all tests.
+pass:  14 # skip: LOG4J support is needed. Skipping all tests.
+pass:  14 - Application with wrapper done
+pass:  14 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  14 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  14 - Create session shm_path_per_pid in /tmp/tmp.iTTGW66t1O
+pass:  14 - Create session valid_filter in /tmp/tmp.V0qmka46P9
+pass:  14 - Destroy session per-session
+pass:  14 - Destroy session wildcard
+pass:  14 - Disable event tp1 for session ust_event_basic
+pass:  14 - Enable channel chan-save for session save-42-3
+pass:  14 - Enable channel channel for session mMDx1hKZEAMZROX9: 2 tracefiles
+pass:  14 - Enable channel snapchan for session K8fPn8E1SFmQnSC9
+pass:  14 - Enable event us* with filtering for session wildcard-overlap
+pass:  14 - Start application to generate 100 events
+pass:  14 - Start application to trace
+pass:  14 - Stop lttng tracing for session nAMXvHEoaZtar33F
+pass:  14 - Token "description" expect:Freeze time with 1KHz for regression test got:Freeze time with 1KHz for regression test
+pass:  14 - Validate trace for event tp:tptest, 5 events
+pass:  14 - Validate trace for event tp:tptest, 5802 events
+pass:  14 - Validation OK
+pass:  14 - valid test case: ../..
+pass:  14 - valid test case: 0X40D
+pass:  140 # skip: JUL support is needed. Skipping all tests.
+pass:  140 # skip: LOG4J support is needed. Skipping all tests.
+pass:  140 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  140 - Create session valid_filter in /tmp/tmp.2KgJ94hV4V
+pass:  140 - Trace match
+pass:  141 # skip: JUL support is needed. Skipping all tests.
+pass:  141 # skip: LOG4J support is needed. Skipping all tests.
+pass:  141 - Enable lttng event with filtering
+pass:  141 - Enable lttng event with filtering and invalid filter
+pass:  141 - Trace match
+pass:  142 # skip: JUL support is needed. Skipping all tests.
+pass:  142 # skip: LOG4J support is needed. Skipping all tests.
+pass:  142 - Destroy session filter-invalid
+pass:  142 - Start tracing for session valid_filter
+pass:  142 - Trace match
+pass:  143 # skip: JUL support is needed. Skipping all tests.
+pass:  143 # skip: LOG4J support is needed. Skipping all tests.
+pass:  143 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  143 - Stop lttng tracing for session valid_filter
+pass:  143 - Trace match
+pass:  144 # skip: JUL support is needed. Skipping all tests.
+pass:  144 # skip: LOG4J support is needed. Skipping all tests.
+pass:  144 - Destroy session valid_filter
+pass:  144 - Destroy session wildcard-overlap
+pass:  144 - Enable lttng event with filtering and invalid filter
+pass:  145 # skip: JUL support is needed. Skipping all tests.
+pass:  145 # skip: LOG4J support is needed. Skipping all tests.
+pass:  145 - Create session wildcard-overlap in /tmp/tmp.8Ch7m4iuLo
+pass:  145 - Destroy session filter-invalid
+pass:  145 - Validate trace filter output
+pass:  146 # skip: JUL support is needed. Skipping all tests.
+pass:  146 # skip: LOG4J support is needed. Skipping all tests.
+pass:  146 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  146 - Create session valid_filter in /tmp/tmp.IAPGTocmIm
+pass:  146 - Enable event us* with loglevel TRACE_WARNING
+pass:  147 # skip: JUL support is needed. Skipping all tests.
+pass:  147 # skip: LOG4J support is needed. Skipping all tests.
+pass:  147 - Enable event ust* with loglevel-only TRACE_CRIT
+pass:  147 - Enable lttng event with filtering
+pass:  147 - Enable lttng event with filtering and invalid filter
+pass:  148 # skip: JUL support is needed. Skipping all tests.
+pass:  148 # skip: LOG4J support is needed. Skipping all tests.
+pass:  148 - Destroy session filter-invalid
+pass:  148 - Start tracing for session valid_filter
+pass:  148 - Start tracing for session wildcard-overlap
+pass:  149 # skip: JUL support is needed. Skipping all tests.
+pass:  149 # skip: LOG4J support is needed. Skipping all tests.
+pass:  149 - Application done
+pass:  149 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  149 - Stop lttng tracing for session valid_filter
+pass:  15 # skip: JUL support is needed. Skipping all tests.
+pass:  15 # skip: LOG4J support is needed. Skipping all tests.
+pass:  15 - Destroy session nAMXvHEoaZtar33F
+pass:  15 - Disable event ev3 for session ust_event_basic2
+pass:  15 - Enable channel channel_per_pid for session shm_path_per_pid
+pass:  15 - Enable event tp:tptest for session mMDx1hKZEAMZROX9 in channel channel
+pass:  15 - Enable event ust* with filtering for session wildcard-overlap
+pass:  15 - Enable lttng event with filtering
+pass:  15 - Enable lttng event with filtering and invalid filter
+pass:  15 - Enable lttng event with filtering and unsupported operator
+pass:  15 - Enable ust event tp:tptest for session K8fPn8E1SFmQnSC9
+pass:  15 - Enable ust event tp:tptest for session save-42-1
+pass:  15 - Kill session daemon
+pass:  15 - Stop lttng tracing for session 0qniy5UX8zSy0hBF
+pass:  15 - Stop lttng tracing for session buffers-pid
+pass:  15 - Stop lttng tracing for session sequence-cpu
+pass:  15 - Token "freq" expect:1000 got:1000
+pass:  15 - Trace match
+pass:  15 - Validate trace for event tp:tptest, 99 events
+pass:  15 - Validation OK
+pass:  15 - Wait for events to record
+pass:  15 - valid test case: ../
+pass:  15 - valid test case: 0x40e
+pass:  150 # skip: JUL support is needed. Skipping all tests.
+pass:  150 # skip: LOG4J support is needed. Skipping all tests.
+pass:  150 - Destroy session valid_filter
+pass:  150 - Enable lttng event with filtering and invalid filter
+pass:  150 - Stop lttng tracing for session wildcard-overlap
+pass:  151 # skip: JUL support is needed. Skipping all tests.
+pass:  151 # skip: LOG4J support is needed. Skipping all tests.
+pass:  151 - Destroy session filter-invalid
+pass:  151 - Trace match
+pass:  151 - Validate trace filter output
+pass:  152 # skip: JUL support is needed. Skipping all tests.
+pass:  152 # skip: LOG4J support is needed. Skipping all tests.
+pass:  152 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  152 - Create session valid_filter in /tmp/tmp.hop2n2RdyV
+pass:  152 - Trace match
+pass:  153 # skip: JUL support is needed. Skipping all tests.
+pass:  153 # skip: LOG4J support is needed. Skipping all tests.
+pass:  153 - Enable lttng event with filtering
+pass:  153 - Enable lttng event with filtering and invalid filter
+pass:  153 - Trace match
+pass:  154 # skip: JUL support is needed. Skipping all tests.
+pass:  154 # skip: LOG4J support is needed. Skipping all tests.
+pass:  154 - Destroy session filter-invalid
+pass:  154 - Start tracing for session valid_filter
+pass:  154 - Trace match
+pass:  155 # skip: JUL support is needed. Skipping all tests.
+pass:  155 # skip: LOG4J support is needed. Skipping all tests.
+pass:  155 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  155 - Destroy session wildcard-overlap
+pass:  155 - Stop lttng tracing for session valid_filter
+pass:  156 - Create session wildcard-overlap in /tmp/tmp.n4NmFcF7vn
+pass:  156 - Destroy session valid_filter
+pass:  156 - Enable lttng event with filtering and invalid filter
+pass:  157 - Destroy session filter-invalid
+pass:  157 - Enable event ust_tests_demo:starting with loglevel TRACE_CRIT
+pass:  157 - Validate trace filter output
+pass:  158 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  158 - Create session valid_filter in /tmp/tmp.UXTMFAIpR7
+pass:  158 - Enable event ust_tests_demo:starting with loglevel TRACE_WARNING
+pass:  159 - Enable lttng event with filtering
+pass:  159 - Enable lttng event with filtering and invalid filter
+pass:  159 - Start tracing for session wildcard-overlap
+pass:  16 # skip: JUL support is needed. Skipping all tests.
+pass:  16 # skip: LOG4J support is needed. Skipping all tests.
+pass:  16 - Create session wildcard in /tmp/tmp.OtL20wec80
+pass:  16 - Destroy session 0qniy5UX8zSy0hBF
+pass:  16 - Destroy session buffers-pid
+pass:  16 - Destroy session filter-invalid
+pass:  16 - Destroy session sequence-cpu
+pass:  16 - Enable ust event tp1 for session ust_event_basic
+pass:  16 - Enable ust event tp:tptest for session save-42-2
+pass:  16 - File size validation
+pass:  16 - Kill relay daemon
+pass:  16 - Kill relay daemon
+pass:  16 - Kill session daemon
+pass:  16 - No file created on set-up
+pass:  16 - Start session daemon
+pass:  16 - Start tracing for session K8fPn8E1SFmQnSC9
+pass:  16 - Start tracing for session mMDx1hKZEAMZROX9
+pass:  16 - Start tracing for session valid_filter
+pass:  16 - Start tracing for session wildcard-overlap
+pass:  16 - Stop lttng tracing for session multi-session-0
+pass:  16 - Unsupported operator test PLUS (+)
+pass:  16 - valid test case: ..
+pass:  16 - valid test case: 0X40f
+pass:  160 - Application done
+pass:  160 - Destroy session filter-invalid
+pass:  160 - Start tracing for session valid_filter
+pass:  161 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  161 - Stop lttng tracing for session valid_filter
+pass:  161 - Stop lttng tracing for session wildcard-overlap
+pass:  162 - Destroy session valid_filter
+pass:  162 - Enable lttng event with filtering and invalid filter
+pass:  162 - Trace match
+pass:  163 - Destroy session filter-invalid
+pass:  163 - Trace match
+pass:  163 - Validate trace filter output
+pass:  164 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  164 - Create session valid_filter in /tmp/tmp.GIbc4GnQKs
+pass:  164 - Trace match
+pass:  165 - Enable lttng event with filtering
+pass:  165 - Enable lttng event with filtering and invalid filter
+pass:  165 - Trace match
+pass:  166 - Destroy session filter-invalid
+pass:  166 - Destroy session wildcard-overlap
+pass:  166 - Start tracing for session valid_filter
+pass:  167 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  167 - Create session wildcard-overlap in /tmp/tmp.XZLN0kOLUB
+pass:  167 - Stop lttng tracing for session valid_filter
+pass:  168 - Destroy session valid_filter
+pass:  168 - Enable event ust* with loglevel TRACE_CRIT
+pass:  168 - Enable lttng event with filtering and invalid filter
+pass:  169 - Destroy session filter-invalid
+pass:  169 - Enable event ust* with loglevel TRACE_WARNING
+pass:  169 - Validate trace filter output
+pass:  17 # skip: JUL support is needed. Skipping all tests.
+pass:  17 # skip: LOG4J support is needed. Skipping all tests.
+pass:  17 - Added snapshot output file:///tmp/tmp.Q8771eMfsE
+pass:  17 - Application done
+pass:  17 - Create session 8swDV2tXvdfg0JK1 in no-output mode
+pass:  17 - Create session clock_override in /tmp/tmp.zskaHpqMgP
+pass:  17 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  17 - Destroy session filter-unsupported-ops
+pass:  17 - Destroy session multi-session-0
+pass:  17 - Enable ust event ev3 for session ust_event_basic2
+pass:  17 - Enable ust event tp:tptest for session save-42-3
+pass:  17 - Enable ust event tp:tptest* for session wildcard
+pass:  17 - Extraction without getcpu plugin have 256/256
+pass:  17 - Kill session daemon
+pass:  17 - Start application to trace
+pass:  17 - Stop lttng tracing for session mMDx1hKZEAMZROX9
+pass:  17 - Stop lttng tracing for session valid_filter
+pass:  17 - Trace match with 100 event tp:tptest
+pass:  17 - Validate trace for event tp:tptest, 1000 events
+pass:  17 - valid test case: ./
+pass:  17 - valid test case: 00
+pass:  170 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  170 - Create session valid_filter in /tmp/tmp.AZqm6AUMos
+pass:  170 - Start tracing for session wildcard-overlap
+pass:  171 - Application done
+pass:  171 - Enable lttng event with filtering
+pass:  171 - Enable lttng event with filtering and invalid filter
+pass:  172 - Destroy session filter-invalid
+pass:  172 - Start tracing for session valid_filter
+pass:  172 - Stop lttng tracing for session wildcard-overlap
+pass:  173 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  173 - Stop lttng tracing for session valid_filter
+pass:  173 - Trace match
+pass:  174 - Destroy session valid_filter
+pass:  174 - Enable lttng event with filtering and invalid filter
+pass:  174 - Trace match
+pass:  175 - Destroy session filter-invalid
+pass:  175 - Trace match
+pass:  175 - Validate trace filter output
+pass:  176 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  176 - Create session valid_filter in /tmp/tmp.h53Ky3HVNG
+pass:  176 - Trace match
+pass:  177 - Destroy session wildcard-overlap
+pass:  177 - Enable lttng event with filtering
+pass:  177 - Enable lttng event with filtering and invalid filter
+pass:  178 - Create session wildcard-overlap in /tmp/tmp.0HM7jE4w6S
+pass:  178 - Destroy session filter-invalid
+pass:  178 - Start tracing for session valid_filter
+pass:  179 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  179 - Enable ust event ust_tests_demo for session wildcard-overlap
+pass:  179 - Stop lttng tracing for session valid_filter
+pass:  18 # skip: JUL support is needed. Skipping all tests.
+pass:  18 # skip: LOG4J support is needed. Skipping all tests.
+pass:  18 - Create session FsiWTGADRbPP3s8q in /tmp/tmp.RpEsnZPEyt
+pass:  18 - Create session buffers-pid in /tmp/tmp.DIzEedyxLd
+pass:  18 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  18 - Destroy session mMDx1hKZEAMZROX9
+pass:  18 - Destroy session valid_filter
+pass:  18 - Enable channel chan1 for session 8swDV2tXvdfg0JK1
+pass:  18 - Enable lttng event with filtering and invalid filter
+pass:  18 - Enable ust event tp:tptest for session clock_override
+pass:  18 - Path /tmp/tmp.tV0nPxFxPQ/shm_path_per_pid-20160208-123016 created on application creation
+pass:  18 - Sequence seed and cpuid sequence are equal 256/256
+pass:  18 - Start application to trace
+pass:  18 - Start tracing for session
+pass:  18 - Start tracing for session
+pass:  18 - Stop lttng tracing for session wildcard-overlap
+pass:  18 - Trace validation of multi-session-0
+pass:  18 - Track command with opts: -p 666 -u -s save-42-1
+pass:  18 - valid test case: .
+pass:  18 - valid test case: 0k
+pass:  180 - Destroy session valid_filter
+pass:  180 - Enable lttng event with filtering and invalid filter
+pass:  180 - Enable ust event ust_tests_demo2 for session wildcard-overlap
+pass:  181 - Destroy session filter-invalid
+pass:  181 - Enable ust event ust_tests_demo3 for session wildcard-overlap
+pass:  181 - Validate trace filter output
+pass:  182 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  182 - Create session valid_filter in /tmp/tmp.49oKFTyqCV
+pass:  182 - Start tracing for session wildcard-overlap
+pass:  183 - Application done
+pass:  183 - Enable lttng event with filtering
+pass:  183 - Enable lttng event with filtering and invalid filter
+pass:  184 - Destroy session filter-invalid
+pass:  184 - Start tracing for session valid_filter
+pass:  184 - Stop lttng tracing for session wildcard-overlap
+pass:  185 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  185 - Stop lttng tracing for session valid_filter
+pass:  185 - Trace match
+pass:  186 - Destroy session valid_filter
+pass:  186 - Enable lttng event with filtering and invalid filter
+pass:  186 - Trace match
+pass:  187 - Destroy session filter-invalid
+pass:  187 - Trace match
+pass:  187 - Validate trace filter output
+pass:  188 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  188 - Create session valid_filter in /tmp/tmp.342MuwqODC
+pass:  188 - Trace match
+pass:  189 - Destroy session wildcard-overlap
+pass:  189 - Enable lttng event with filtering
+pass:  189 - Enable lttng event with filtering and invalid filter
+pass:  19 # skip: JUL support is needed. Skipping all tests.
+pass:  19 # skip: LOG4J support is needed. Skipping all tests.
+pass:  19 - Cpuid extraction and seed sequence comparison
+pass:  19 - Destroy session filter-invalid
+pass:  19 - Enable channel channel for session FsiWTGADRbPP3s8q: 16384 bytes tracefile limit
+pass:  19 - Enable channel channel0 per PID for session buffers-pid
+pass:  19 - Enable lttng event with filtering and unsupported operator
+pass:  19 - Enable ust event tp:tptest for session 8swDV2tXvdfg0JK1
+pass:  19 - Pid path exists: /tmp/tmp.tV0nPxFxPQ/shm_path_per_pid-20160208-123016/ust/pid/gen-ust-events-28973-20160208-123016
+pass:  19 - Snapshot recorded
+pass:  19 - Start tracing for session clock_override
+pass:  19 - Stop lttng tracing for session
+pass:  19 - Stop lttng tracing for session multi-session-1
+pass:  19 - Trace match
+pass:  19 - Traced application stopped.
+pass:  19 - Track command with opts: -p 666 -u -s save-42-2
+pass:  19 - Validate file count: channel_0_*
+pass:  19 - Validate trace filter output
+pass:  19 - valid test case: /../a/b/c/d/e
+pass:  19 - valid test case: 0K
+pass:  190 - Create session wildcard-overlap in /tmp/tmp.gwcP720mcw
+pass:  190 - Destroy session filter-invalid
+pass:  190 - Start tracing for session valid_filter
+pass:  191 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  191 - Enable event us* with loglevel TRACE_WARNING
+pass:  191 - Stop lttng tracing for session valid_filter
+pass:  192 - Destroy session valid_filter
+pass:  192 - Enable event ust_tests_demo2:loop with loglevel TRACE_CRIT
+pass:  192 - Enable lttng event with filtering and invalid filter
+pass:  193 - Destroy session filter-invalid
+pass:  193 - Start tracing for session wildcard-overlap
+pass:  193 - Validate trace filter output
+pass:  194 - Application done
+pass:  194 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  194 - Create session valid_filter in /tmp/tmp.zmvtTs7qON
+pass:  195 - Enable lttng event with filtering
+pass:  195 - Enable lttng event with filtering and invalid filter
+pass:  195 - Stop lttng tracing for session wildcard-overlap
+pass:  196 - Destroy session filter-invalid
+pass:  196 - Start tracing for session valid_filter
+pass:  196 - Trace match
+pass:  197 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  197 - Stop lttng tracing for session valid_filter
+pass:  197 - Trace match
+pass:  198 - Destroy session valid_filter
+pass:  198 - Enable lttng event with filtering and invalid filter
+pass:  198 - Trace match
+pass:  199 - Destroy session filter-invalid
+pass:  199 - Trace match
+pass:  199 - Validate trace filter output
+pass:  2 # skip: JUL support is needed. Skipping all tests.
+pass:  2 # skip: LOG4J support is needed. Skipping all tests.
+pass:  2 - All applications are registered to sessiond
+pass:  2 - Create session ILlbcCLLDmXBtceO in no-output mode
+pass:  2 - Create session buffers-pid in /tmp/tmp.mX5TOD5R6K
+pass:  2 - Create session clock_override in /tmp/tmp.onmJZsguOj
+pass:  2 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  2 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  2 - Create session m7gX6qWqd3hGwcGY in /tmp/tmp.ptaAdRqCDo
+pass:  2 - Create session multi-session-0 in /tmp/tmp.xrHpW9ud7q/0
+pass:  2 - Create session per-session in /tmp/tmp.jIjcZo7gqv
+pass:  2 - Create session save-42 in /tmp/tmp.9MMBwKjvcc
+pass:  2 - Create session sequence-cpu in /tmp/tmp.ezq6KJzQL0
+pass:  2 - Create session shm_path_per_uid in /tmp/tmp.iTTGW66t1O
+pass:  2 - Create session test-exclusion in /tmp/tmp.Igyp6lcIa7
+pass:  2 - Create session tracef in /tmp/tmp.zVvt6rEuKP
+pass:  2 - Create session ttbS58aNGAfZytrA in /tmp/tmp.EFVnekyCT7
+pass:  2 - Create session ust_event_basic in /tmp/tmp.0tiV0vIjzr
+pass:  2 - Create session valid_filter in /tmp/tmp.xYMQ7RoxB9
+pass:  2 - Create session wildcard in /tmp/tmp.WFxr9LEuHl
+pass:  2 - Create session wildcard-overlap in /tmp/tmp.VhcO9zW1jE
+pass:  2 - Create session: test1
+fail:  2 - Load command with opts: -i regression/tools/save-load//load-42.lttng
+pass:  2 - MI test: Lttng version
+pass:  2 - Processed entries from each sections
+pass:  2 - Start lttng-relayd (opt: -o /tmp/tmp.fD68FPjqyl)
+pass:  2 - Start session daemon
+pass:  2 - Start session daemon
+pass:  2 - URI set to net://localhost:8989:4242/my/test/path
+pass:  2 - Validate UST session
+pass:  2 - Validate kernel session
+pass:  2 - Validation OK
+pass:  2 - valid test case: ./a/b/c/d/e
+pass:  2 - valid test case: 1234
+pass:  20 # skip: JUL support is needed. Skipping all tests.
+pass:  20 # skip: LOG4J support is needed. Skipping all tests.
+pass:  20 - Application done
+pass:  20 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  20 - Create session valid_filter in /tmp/tmp.mE2xKByu2G
+pass:  20 - Destroy session multi-session-1
+pass:  20 - Enable event tp:tptest for session FsiWTGADRbPP3s8q in channel channel
+pass:  20 - Enable ust event tp:tptest for session buffers-pid
+pass:  20 - Expect 1 pid registration folder got 1
+pass:  20 - Kill session daemon
+pass:  20 - Start tracing for session
+pass:  20 - Start tracing for session 8swDV2tXvdfg0JK1
+pass:  20 - Stop lttng tracing for session
+pass:  20 - Stop lttng tracing for session K8fPn8E1SFmQnSC9
+pass:  20 - Trace match
+pass:  20 - Track command with opts: -p 666 -u -s save-42-3
+pass:  20 - Unsupported operator test MINUS (-)
+pass:  20 - Validate file count: channel_1_*
+pass:  20 - valid test case: /a/b/c/d/../../../../../e
+pass:  20 - valid test case: 0M
+pass:  200 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  200 - Create session valid_filter in /tmp/tmp.T8cxE0SIZX
+pass:  200 - Destroy session wildcard-overlap
+pass:  201 - Create session wildcard-overlap in /tmp/tmp.hrn9O5AxMw
+pass:  201 - Enable lttng event with filtering
+pass:  201 - Enable lttng event with filtering and invalid filter
+pass:  202 - Destroy session filter-invalid
+pass:  202 - Enable ust event us* for session wildcard-overlap
+pass:  202 - Start tracing for session valid_filter
+pass:  203 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  203 - Enable ust event ust* for session wildcard-overlap
+pass:  203 - Stop lttng tracing for session valid_filter
+pass:  204 - Destroy session valid_filter
+pass:  204 - Enable lttng event with filtering and invalid filter
+pass:  204 - Start tracing for session wildcard-overlap
+pass:  205 - Application done
+pass:  205 - Destroy session filter-invalid
+pass:  205 - Validate trace filter output
+pass:  206 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  206 - Create session valid_filter in /tmp/tmp.FePpJqUM1j
+pass:  206 - Stop lttng tracing for session wildcard-overlap
+pass:  207 - Enable lttng event with filtering
+pass:  207 - Enable lttng event with filtering and invalid filter
+pass:  207 - Trace match
+pass:  208 - Destroy session filter-invalid
+pass:  208 - Start tracing for session valid_filter
+pass:  208 - Trace match
+pass:  209 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  209 - Stop lttng tracing for session valid_filter
+pass:  209 - Trace match
+pass:  21 # skip: JUL support is needed. Skipping all tests.
+pass:  21 # skip: LOG4J support is needed. Skipping all tests.
+pass:  21 - Destroy session K8fPn8E1SFmQnSC9
+pass:  21 - Destroy session filter-unsupported-ops
+pass:  21 - Destroy session wildcard
+pass:  21 - Enable lttng event with filtering
+pass:  21 - Enable lttng event with filtering and invalid filter
+pass:  21 - Expect > 0 buffer and metadata files got 3
+pass:  21 - Session saved
+pass:  21 - Start application to trace
+pass:  21 - Start tracing for session FsiWTGADRbPP3s8q
+pass:  21 - Start tracing for session buffers-pid
+pass:  21 - Stop lttng tracing for session
+pass:  21 - Stop lttng tracing for session clock_override
+pass:  21 - Trace match
+pass:  21 - Trace validation - intfield
+pass:  21 - Trace validation of multi-session-1
+pass:  21 - valid test case: /..
+pass:  21 - valid test case: 0G
+pass:  210 - Destroy session valid_filter
+pass:  210 - Enable lttng event with filtering and invalid filter
+pass:  210 - Trace match
+pass:  211 - Destroy session filter-invalid
+pass:  211 - Destroy session wildcard-overlap
+pass:  211 - Validate trace filter output
+pass:  212 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  212 - Create session valid_filter in /tmp/tmp.OqTpnNIUyx
+pass:  212 - Create session wildcard-overlap in /tmp/tmp.qTFdzHdfQK
+pass:  213 - Enable lttng event with filtering
+pass:  213 - Enable lttng event with filtering and invalid filter
+pass:  213 - Enable ust event us* for session wildcard-overlap
+pass:  214 - Destroy session filter-invalid
+pass:  214 - Enable ust event ust_tests_demo:starting for session wildcard-overlap
+pass:  214 - Start tracing for session valid_filter
+pass:  215 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  215 - Start tracing for session wildcard-overlap
+pass:  215 - Stop lttng tracing for session valid_filter
+pass:  216 - Application done
+pass:  216 - Destroy session valid_filter
+pass:  216 - Enable lttng event with filtering and invalid filter
+pass:  217 - Destroy session filter-invalid
+pass:  217 - Stop lttng tracing for session wildcard-overlap
+pass:  217 - Validate trace filter output
+pass:  218 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  218 - Create session valid_filter in /tmp/tmp.ta2hcI6Uv6
+pass:  218 - Trace match
+pass:  219 - Enable lttng event with filtering
+pass:  219 - Enable lttng event with filtering and invalid filter
+pass:  219 - Trace match
+pass:  22 # skip: JUL support is needed. Skipping all tests.
+pass:  22 # skip: LOG4J support is needed. Skipping all tests.
+pass:  22 - Added snapshot output net://localhost
+pass:  22 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  22 - Destroy session clock_override
+pass:  22 - Destroy session filter-invalid
+pass:  22 - Session save-42-1.lttng file found!
+pass:  22 - Start application 1 for tracing
+pass:  22 - Start application to trace
+pass:  22 - Start tracing for session valid_filter
+pass:  22 - Stop lttng tracing for session FsiWTGADRbPP3s8q
+pass:  22 - Stop lttng tracing for session multi-session-2
+pass:  22 - Trace match
+pass:  22 - Trace match
+pass:  22 - Trace validation - netintfield
+pass:  22 - Validate trace # TODO Validate trace output is coherent
+pass:  22 - Validate trace for event tp:tptest, 2920 events
+pass:  22 - valid test case: /a/..
+pass:  22 - valid test case: 00k
+pass:  220 - Destroy session filter-invalid
+pass:  220 - Start tracing for session valid_filter
+pass:  220 - Trace match
+pass:  221 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  221 - Stop lttng tracing for session valid_filter
+pass:  221 - Trace match
+pass:  222 - Destroy session valid_filter
+pass:  222 - Destroy session wildcard-overlap
+pass:  222 - Enable lttng event with filtering and invalid filter
+pass:  223 - Create session wildcard-overlap in /tmp/tmp.sI69YCdNZv
+pass:  223 - Destroy session filter-invalid
+pass:  223 - Validate trace filter output
+pass:  224 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  224 - Create session valid_filter in /tmp/tmp.wicvfEWT9B
+pass:  224 - Enable event us* with loglevel TRACE_WARNING
+pass:  225 - Enable event ust* with loglevel TRACE_CRIT
+pass:  225 - Enable lttng event with filtering
+pass:  225 - Enable lttng event with filtering and invalid filter
+pass:  226 - Destroy session filter-invalid
+pass:  226 - Start tracing for session valid_filter
+pass:  226 - Start tracing for session wildcard-overlap
+pass:  227 - Application done
+pass:  227 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  227 - Stop lttng tracing for session valid_filter
+pass:  228 - Destroy session valid_filter
+pass:  228 - Enable lttng event with filtering and invalid filter
+pass:  228 - Stop lttng tracing for session wildcard-overlap
+pass:  229 - Destroy session filter-invalid
+pass:  229 - Trace match
+pass:  229 - Validate trace filter output
+pass:  23 # skip: JUL support is needed. Skipping all tests.
+pass:  23 # skip: LOG4J support is needed. Skipping all tests.
+pass:  23 - Create session XbshnFr8O1r6SKcv in no-output mode
+pass:  23 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  23 - Create session wildcard in /tmp/tmp.j4j6ylQMu6
+pass:  23 - Destroy session FsiWTGADRbPP3s8q
+pass:  23 - Destroy session multi-session-2
+pass:  23 - Destroy session ust_event_basic2
+pass:  23 - Destroy session wildcard-overlap
+pass:  23 - Enable lttng event with filtering and unsupported operator
+pass:  23 - Pid path exist found /tmp/tmp.tV0nPxFxPQ/shm_path_per_pid-20160208-123016/ust/pid/gen-ust-events-28990-20160208-123017
+pass:  23 - Session save-42-2.lttng file found!
+pass:  23 - Snapshot recorded
+pass:  23 - Start application 2 for tracing
+pass:  23 - Stop lttng tracing for session valid_filter
+pass:  23 - Trace validation - longfield
+pass:  23 - Unique event timestamps without clock override: 256 expect >1
+fail:  23 - symlink tree test case: [tmppath/]a/g/../l/.
+pass:  23 - valid test case: 00K
+pass:  230 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  230 - Create session valid_filter in /tmp/tmp.7FWWq8cNBU
+pass:  230 - Trace match
+pass:  231 - Enable lttng event with filtering
+pass:  231 - Enable lttng event with filtering and invalid filter
+pass:  231 - Trace match
+pass:  232 - Destroy session filter-invalid
+pass:  232 - Start tracing for session valid_filter
+pass:  232 - Trace match
+pass:  233 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  233 - Destroy session wildcard-overlap
+pass:  233 - Stop lttng tracing for session valid_filter
+pass:  234 - Create session wildcard-overlap in /tmp/tmp.u6at5mZvZy
+pass:  234 - Destroy session valid_filter
+pass:  234 - Enable lttng event with filtering and invalid filter
+pass:  235 - Destroy session filter-invalid
+pass:  235 - Enable ust event us* for session wildcard-overlap
+pass:  235 - Validate trace filter output
+pass:  236 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  236 - Create session valid_filter in /tmp/tmp.fM9s7U9SvN
+pass:  236 - Enable ust event ust_tests_demo:starting for session wildcard-overlap
+pass:  237 - Disable event us* for session wildcard-overlap
+pass:  237 - Enable lttng event with filtering
+pass:  237 - Enable lttng event with filtering and invalid filter
+pass:  238 - Destroy session filter-invalid
+pass:  238 - Disable event ust_tests_demo:starting for session wildcard-overlap
+pass:  238 - Start tracing for session valid_filter
+pass:  239 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  239 - Start tracing for session wildcard-overlap
+pass:  239 - Stop lttng tracing for session valid_filter
+pass:  24 # skip: JUL support is needed. Skipping all tests.
+pass:  24 # skip: LOG4J support is needed. Skipping all tests.
+pass:  24 - Create session EvaqwunWeKlm55CB in /tmp/tmp.abyI6tYBRk
+pass:  24 - Create session wildcard-overlap in /tmp/tmp.Bu0s9Xyr0X
+pass:  24 - Destroy session ust_event_basic
+pass:  24 - Destroy session valid_filter
+pass:  24 - Enable channel  for session XbshnFr8O1r6SKcv with subbuf size 8192
+pass:  24 - Enable lttng event with filtering and invalid filter
+pass:  24 - Enable ust event tp:abc* for session wildcard
+pass:  24 - Expect 2 pid registration folder got 2
+pass:  24 - File size validation
+pass:  24 - Kill session daemon
+pass:  24 - Session save-42-3.lttng file found!
+pass:  24 - Start application 3 for tracing
+pass:  24 - Stop lttng tracing for session 8swDV2tXvdfg0JK1
+pass:  24 - Trace validation of multi-session-2
+pass:  24 - Unsupported operator test LSHIFT (<<)
+fail:  24 - symlink tree test case: [tmppath/]a/g/../l/./
+pass:  24 - valid test case: 00M
+pass:  240 - Application done
+pass:  240 - Destroy session valid_filter
+pass:  240 - Enable lttng event with filtering and invalid filter
+pass:  241 - Destroy session filter-invalid
+pass:  241 - Stop lttng tracing for session wildcard-overlap
+pass:  241 - Validate trace filter output
+pass:  242 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  242 - Create session valid_filter in /tmp/tmp.VKE2a7Kel9
+pass:  242 - Trace match
+pass:  243 - Enable lttng event with filtering
+pass:  243 - Enable lttng event with filtering and invalid filter
+pass:  243 - Trace match
+pass:  244 - Destroy session filter-invalid
+pass:  244 - Start tracing for session valid_filter
+pass:  244 - Trace match
+pass:  245 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  245 - Stop lttng tracing for session valid_filter
+pass:  245 - Trace match
+pass:  246 - Destroy session valid_filter
+pass:  246 - Destroy session wildcard-overlap
+pass:  246 - Enable lttng event with filtering and invalid filter
+pass:  247 - Create session wildcard-overlap in /tmp/tmp.GZ9rXYbH0s
+pass:  247 - Destroy session filter-invalid
+pass:  247 - Validate trace filter output
+pass:  248 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  248 - Create session valid_filter in /tmp/tmp.rnL5PBpM2y
+pass:  248 - Enable ust event us* for session wildcard-overlap
+pass:  249 - Enable lttng event with filtering
+pass:  249 - Enable lttng event with filtering and invalid filter
+pass:  249 - Enable ust event ust_tests_demo:starting for session wildcard-overlap
+pass:  25 # skip: JUL support is needed. Skipping all tests.
+pass:  25 # skip: LOG4J support is needed. Skipping all tests.
+pass:  25 - Destroy session 8swDV2tXvdfg0JK1
+pass:  25 - Destroy session filter-invalid
+pass:  25 - Destroy session filter-unsupported-ops
+pass:  25 - Destroy session save-42-1
+pass:  25 - Enable channel channel for session EvaqwunWeKlm55CB: 4 tracefiles
+pass:  25 - Enable event us* with filtering for session wildcard-overlap
+pass:  25 - Enable ust event tp:tptest for session XbshnFr8O1r6SKcv
+pass:  25 - First pid cleanup
+pass:  25 - Kill session daemon
+pass:  25 - Start application 4 for tracing
+pass:  25 - Start session daemon
+pass:  25 - Start tracing for session
+pass:  25 - Stop lttng tracing for session multi-session-3
+pass:  25 - Validate trace filter output
+pass:  25 - Validate trace for event tp:tptest, 1000 events
+fail:  25 - symlink tree test case: [tmppath/]a/g/../l/..
+pass:  25 - valid test case: 00G
+pass:  250 - Destroy session filter-invalid
+pass:  250 - Disable event us* for session wildcard-overlap
+pass:  250 - Start tracing for session valid_filter
+pass:  251 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  251 - Start tracing for session wildcard-overlap
+pass:  251 - Stop lttng tracing for session valid_filter
+pass:  252 - Application done
+pass:  252 - Destroy session valid_filter
+pass:  252 - Enable lttng event with filtering and invalid filter
+pass:  253 - Destroy session filter-invalid
+pass:  253 - Stop lttng tracing for session wildcard-overlap
+pass:  253 - Validate trace filter output
+pass:  254 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  254 - Create session valid_filter in /tmp/tmp.SRZyvI9OWC
+pass:  254 - Trace match
+pass:  255 - Enable lttng event with filtering
+pass:  255 - Enable lttng event with filtering and invalid filter
+pass:  255 - Trace match
+pass:  256 - Destroy session filter-invalid
+pass:  256 - Start tracing for session valid_filter
+pass:  256 - Trace match
+pass:  257 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  257 - Stop lttng tracing for session valid_filter
+pass:  257 - Trace match
+pass:  258 - Destroy session valid_filter
+pass:  258 - Destroy session wildcard-overlap
+pass:  258 - Enable lttng event with filtering and invalid filter
+pass:  259 - Destroy session filter-invalid
+pass:  259 - Kill session daemon
+pass:  259 - Validate trace filter output
+pass:  26 # skip: JUL support is needed. Skipping all tests.
+pass:  26 # skip: LOG4J support is needed. Skipping all tests.
+pass:  26 - Create session 2RVy0ry66pbQt14B in /tmp/tmp.NQztYwgtmJ
+pass:  26 - Create session clock_override in /tmp/tmp.zskaHpqMgP
+pass:  26 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  26 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  26 - Create session valid_filter in /tmp/tmp.ggSBLjK7ls
+pass:  26 - Destroy session multi-session-3
+pass:  26 - Destroy session save-42-2
+pass:  26 - Enable event tp:tptest for session EvaqwunWeKlm55CB in channel channel
+pass:  26 - Enable event ust* with filtering for session wildcard-overlap
+pass:  26 - Full cleanup
+pass:  26 - Start application 5 for tracing
+pass:  26 - Start tracing for session XbshnFr8O1r6SKcv
+pass:  26 - Traced application stopped.
+pass:  26 - Validate trace for event tp:tptest, 2975 events
+fail:  26 - symlink tree test case: [tmppath/]a/g/../l/../
+pass:  26 - valid test case: 0x0
+pass:  260 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  260 - Create session valid_filter in /tmp/tmp.qP4My9tGVT
+pass:  261 - Enable lttng event with filtering
+pass:  261 - Enable lttng event with filtering and invalid filter
+pass:  262 - Destroy session filter-invalid
+pass:  262 - Start tracing for session valid_filter
+pass:  263 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  263 - Stop lttng tracing for session valid_filter
+pass:  264 - Destroy session valid_filter
+pass:  264 - Enable lttng event with filtering and invalid filter
+pass:  265 - Destroy session filter-invalid
+pass:  265 - Validate trace filter output
+pass:  266 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  266 - Create session valid_filter in /tmp/tmp.apBs9DERGe
+pass:  267 - Enable lttng event with filtering
+pass:  267 - Enable lttng event with filtering and invalid filter
+pass:  268 - Destroy session filter-invalid
+pass:  268 - Start tracing for session valid_filter
+pass:  269 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  269 - Stop lttng tracing for session valid_filter
+pass:  27 # skip: JUL support is needed. Skipping all tests.
+pass:  27 # skip: LOG4J support is needed. Skipping all tests.
+pass:  27 - Added snapshot output file:///tmp/tmp.Q8771eMfsE ( -m 16384 )
+pass:  27 - Create session LfAVtm2sdIL9UdWI in no-output mode
+pass:  27 - Destroy session save-42-3
+pass:  27 - Destroy session shm_path_per_pid
+pass:  27 - Enable channel channel for session 2RVy0ry66pbQt14B: 32768 bytes tracefile limit
+pass:  27 - Enable lttng event with filtering
+pass:  27 - Enable lttng event with filtering and invalid filter
+pass:  27 - Enable lttng event with filtering and unsupported operator
+pass:  27 - Enable ust event tp:tptest for session clock_override
+pass:  27 - Start tracing for session EvaqwunWeKlm55CB
+pass:  27 - Start tracing for session wildcard-overlap
+pass:  27 - Stop lttng tracing for session
+pass:  27 - Stop lttng tracing for session buffers-pid
+pass:  27 - Trace validation of multi-session-3
+fail:  27 - symlink tree test case: [tmppath/]a/b/h/g/
+pass:  27 - valid test case: 0X0
+pass:  270 - Destroy session valid_filter
+pass:  270 - Enable lttng event with filtering and invalid filter
+pass:  271 - Destroy session filter-invalid
+pass:  271 - Validate trace filter output
+pass:  272 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  272 - Create session valid_filter in /tmp/tmp.MdkJJTlyKB
+pass:  273 - Enable lttng event with filtering
+pass:  273 - Enable lttng event with filtering and invalid filter
+pass:  274 - Destroy session filter-invalid
+pass:  274 - Start tracing for session valid_filter
+pass:  275 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  275 - Stop lttng tracing for session valid_filter
+pass:  276 - Destroy session valid_filter
+pass:  276 - Enable lttng event with filtering and invalid filter
+pass:  277 - Destroy session filter-invalid
+pass:  277 - Validate trace filter output
+pass:  278 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  278 - Create session valid_filter in /tmp/tmp.e3zx3TlOmV
+pass:  279 - Enable lttng event with filtering
+pass:  279 - Enable lttng event with filtering and invalid filter
+pass:  28 # skip: JUL support is needed. Skipping all tests.
+pass:  28 # skip: LOG4J support is needed. Skipping all tests.
+pass:  28 - Application done
+pass:  28 - Create session save-42 in /tmp/tmp.dK43KExxjM
+pass:  28 - Destroy session buffers-pid
+pass:  28 - Destroy session filter-invalid
+pass:  28 - Destroy session wildcard
+pass:  28 - Enable channel chan1 for session LfAVtm2sdIL9UdWI
+pass:  28 - Enable event tp:tptest for session 2RVy0ry66pbQt14B in channel channel
+pass:  28 - Kill session daemon
+pass:  28 - Kill session daemon
+pass:  28 - Start application to trace
+pass:  28 - Start tracing for session clock_override
+pass:  28 - Start tracing for session valid_filter
+pass:  28 - Stop lttng tracing for session EvaqwunWeKlm55CB
+pass:  28 - Unsupported operator test RSHIFT (>>)
+pass:  28 - invalid test case: (null)
+pass:  28 - valid test case: 0x0k
+pass:  280 - Destroy session filter-invalid
+pass:  280 - Start tracing for session valid_filter
+pass:  281 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  281 - Stop lttng tracing for session valid_filter
+pass:  282 - Destroy session valid_filter
+pass:  282 - Enable lttng event with filtering and invalid filter
+pass:  283 - Destroy session filter-invalid
+pass:  283 - Validate trace filter output
+pass:  284 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  284 - Create session valid_filter in /tmp/tmp.pt1jhMgQyc
+pass:  285 - Enable lttng event with filtering
+pass:  285 - Enable lttng event with filtering and invalid filter
+pass:  286 - Destroy session filter-invalid
+pass:  286 - Start tracing for session valid_filter
+pass:  287 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  287 - Stop lttng tracing for session valid_filter
+pass:  288 - Destroy session valid_filter
+pass:  288 - Enable lttng event with filtering and invalid filter
+pass:  289 - Destroy session filter-invalid
+pass:  289 - Validate trace filter output
+pass:  29 # skip: JUL support is needed. Skipping all tests.
+pass:  29 # skip: LOG4J support is needed. Skipping all tests.
+pass:  29 - Application done
+pass:  29 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  29 - Destroy session EvaqwunWeKlm55CB
+pass:  29 - Destroy session filter-unsupported-ops
+pass:  29 - Enable channel chan-save for session save-42
+pass:  29 - Enable ust event tp:tptest for session LfAVtm2sdIL9UdWI
+pass:  29 - Snapshot recorded
+pass:  29 - Start session daemon
+pass:  29 - Start tracing for session 2RVy0ry66pbQt14B
+pass:  29 - Stop lttng tracing for session valid_filter
+pass:  29 - Stop lttng tracing for session wildcard-overlap
+pass:  29 - Trace match with 500 event tp:tptest
+pass:  29 - Validate empty trace
+pass:  29 - valid test case: 0X0K
+pass:  290 - Create session valid_filter in /tmp/tmp.N3XsuUVbO4
+pass:  290 - Kill session daemon
+pass:  291 - Enable lttng event with filtering
+pass:  292 - Start tracing for session valid_filter
+pass:  293 - Stop lttng tracing for session valid_filter
+pass:  294 - Destroy session valid_filter
+pass:  295 - Validate trace filter output
+pass:  296 - Create session valid_filter in /tmp/tmp.qf1nS6EoWO
+pass:  297 - Enable lttng event with filtering
+pass:  298 - Start tracing for session valid_filter
+pass:  299 - Stop lttng tracing for session valid_filter
+pass:  3 # skip: JUL support is needed. Skipping all tests.
+pass:  3 # skip: LOG4J support is needed. Skipping all tests.
+pass:  3 - Create UST channel
+pass:  3 - Create kernel metadata
+pass:  3 - Create session 0qniy5UX8zSy0hBF in no-output mode
+pass:  3 - Create session health_thread_ok in no-output mode
+pass:  3 - Create session in live mode with delay 2000000
+pass:  3 - Create session ust-nprocesses in /tmp/tmp.mnea2fmlTA
+pass:  3 - Create session ust_event_basic2 in /tmp/tmp.0tiV0vIjzr
+pass:  3 - Create session with default path
+fail:  3 - Destroy session load-42
+pass:  3 - Enable channel chan-save for session save-42
+pass:  3 - Enable channel channel for session m7gX6qWqd3hGwcGY: 1 tracefiles
+pass:  3 - Enable channel channel for session ttbS58aNGAfZytrA: 4096 bytes tracefile limit
+pass:  3 - Enable channel channel0 per PID for session buffers-pid
+pass:  3 - Enable channel channel_per_uid for session shm_path_per_uid
+pass:  3 - Enable channel snapchan for session ILlbcCLLDmXBtceO
+pass:  3 - Enable event us* with filtering for session wildcard-overlap
+pass:  3 - Enable lttng event with event tp:tptest2 excluded
+pass:  3 - Enable lttng event with filtering
+pass:  3 - Enable lttng event with filtering and invalid filter
+pass:  3 - Enable lttng event with filtering and unsupported operator
+pass:  3 - Enable ust event lttng_ust_tracef:event for session tracef
+pass:  3 - Enable ust event tp:tp* for session wildcard
+pass:  3 - Enable ust event tp:tptest for session clock_override
+pass:  3 - Enable ust event tp:tptest for session per-session
+pass:  3 - Enable ust event tp:tptest for session sequence-cpu
+pass:  3 - Enable ust event ust_gen_nevents:tptest0 for session multi-session-0
+fail:  3 - MI test: Version xsd validation
+pass:  3 - Text value parsed correctly
+pass:  3 - URI set to net://localhost:8989:4242
+pass:  3 - Validating session: session found
+pass:  3 - valid test case: ../a/b/c/d/../e
+pass:  3 - valid test case: 0x400
+pass:  30 # skip: JUL support is needed. Skipping all tests.
+pass:  30 # skip: LOG4J support is needed. Skipping all tests.
+pass:  30 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  30 - Create session shm_path_per_pid in /tmp/tmp.iTTGW66t1O
+pass:  30 - Create session wildcard in /tmp/tmp.FNYFwpkVi2
+pass:  30 - Destroy session valid_filter
+pass:  30 - Enable lttng event with filtering and invalid filter
+pass:  30 - Enable ust event tp:tptest for session save-42
+pass:  30 - Start application 1 for tracing
+pass:  30 - Start tracing for session LfAVtm2sdIL9UdWI
+pass:  30 - Stop lttng tracing for session 2RVy0ry66pbQt14B
+pass:  30 - Stop lttng tracing for session clock_override
+pass:  30 - Trace match
+pass:  30 - Tracefiles size sum validation
+pass:  30 - Validate file count: channel_0_*
+pass:  30 - valid test case: 0x0M
+pass:  300 - Destroy session valid_filter
+pass:  301 - Validate trace filter output
+pass:  302 - Create session valid_filter in /tmp/tmp.5ztqRn7CNL
+pass:  303 - Enable lttng event with filtering
+pass:  304 - Start tracing for session valid_filter
+pass:  305 - Stop lttng tracing for session valid_filter
+pass:  306 - Destroy session valid_filter
+pass:  307 - Validate trace filter output
+pass:  308 - Create session valid_filter in /tmp/tmp.ZyZ9Wj3awg
+pass:  309 - Enable lttng event with filtering
+pass:  31 # skip: JUL support is needed. Skipping all tests.
+pass:  31 # skip: LOG4J support is needed. Skipping all tests.
+pass:  31 - Destroy session 2RVy0ry66pbQt14B
+pass:  31 - Destroy session clock_override
+pass:  31 - Destroy session filter-invalid
+pass:  31 - Enable channel channel_per_pid for session shm_path_per_pid
+pass:  31 - Enable lttng event with filtering and unsupported operator
+pass:  31 - Enable ust event tp:*tp for session  failed as expected
+pass:  31 - Session saved
+pass:  31 - Start application 2 for tracing
+pass:  31 - Start application to trace
+pass:  31 - Stop lttng tracing for session XbshnFr8O1r6SKcv
+pass:  31 - Trace match
+pass:  31 - Validate file count: channel_1_*
+pass:  31 - Validate trace filter output
+pass:  31 - valid test case: 0X0G
+pass:  310 - Start tracing for session valid_filter
+pass:  311 - Stop lttng tracing for session valid_filter
+pass:  312 - Destroy session valid_filter
+pass:  313 - Validate trace filter output
+pass:  314 - Create session valid_filter in /tmp/tmp.irguyKGh4R
+pass:  315 - Enable lttng event with filtering
+pass:  316 - Start tracing for session valid_filter
+pass:  317 - Stop lttng tracing for session valid_filter
+pass:  318 - Destroy session valid_filter
+pass:  319 - Validate trace filter output
+pass:  32 # skip: JUL support is needed. Skipping all tests.
+pass:  32 # skip: LOG4J support is needed. Skipping all tests.
+pass:  32 - Added snapshot output net://localhost
+pass:  32 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  32 - Create session valid_filter in /tmp/tmp.YhekgmQBsO
+pass:  32 - Destroy session XbshnFr8O1r6SKcv
+pass:  32 - Destroy session wildcard
+pass:  32 - File size validation
+pass:  32 - Kill session daemon
+pass:  32 - Session save-42.lttng file found!
+pass:  32 - Start application 3 for tracing
+pass:  32 - Start application to trace
+pass:  32 - Trace match
+pass:  32 - Trace validation - intfield
+pass:  32 - Unsupported operator test BIN_AND (&)
+pass:  32 - valid test case: 0X40G
+pass:  320 - Create session valid_filter in /tmp/tmp.4Khkdg9EAG
+pass:  321 - Enable lttng event with filtering
+pass:  322 - Start tracing for session valid_filter
+pass:  323 - Stop lttng tracing for session valid_filter
+pass:  324 - Destroy session valid_filter
+pass:  325 - Validate trace filter output
+pass:  326 - Create session valid_filter in /tmp/tmp.N3av8RGnI8
+pass:  327 - Enable lttng event with filtering
+pass:  328 - Start tracing for session valid_filter
+pass:  329 - Stop lttng tracing for session valid_filter
+pass:  33 # skip: JUL support is needed. Skipping all tests.
+pass:  33 # skip: LOG4J support is needed. Skipping all tests.
+pass:  33 - Create session wildcard in /tmp/tmp.NSFBSjCVZ5
+pass:  33 - Destroy session filter-unsupported-ops
+pass:  33 - Destroy session save-42
+pass:  33 - Enable lttng event with filtering
+pass:  33 - Enable lttng event with filtering and invalid filter
+pass:  33 - Snapshot recorded
+pass:  33 - Start application 4 for tracing
+pass:  33 - Start application to trace
+pass:  33 - Trace match
+pass:  33 - Trace validation - netintfield
+pass:  33 - Unique event timestamps with clock override: 1 expect 1
+pass:  33 - Validate trace for event tp:tptest, 1000 events
+pass:  33 - Validate trace for event tp:tptest, 16 events
+pass:  33 - valid test case: 0300k
+pass:  330 - Destroy session valid_filter
+pass:  331 - Validate trace filter output
+pass:  332 - Create session valid_filter in /tmp/tmp.0fHhgrKEv7
+pass:  333 - Enable lttng event with filtering
+pass:  334 - Start tracing for session valid_filter
+pass:  335 - Stop lttng tracing for session valid_filter
+pass:  336 - Destroy session valid_filter
+pass:  337 - Validate trace filter output
+pass:  338 - Create session valid_filter in /tmp/tmp.qMzLak0Q2z
+pass:  339 - Enable lttng event with filtering
+pass:  34 # skip: JUL support is needed. Skipping all tests.
+pass:  34 # skip: LOG4J support is needed. Skipping all tests.
+pass:  34 - Create session 6MiBvxvOFliYhH1e in /tmp/tmp.KNO0cZaloF
+pass:  34 - Create session MReG1vAx7mYv9z6Q in no-output mode
+pass:  34 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  34 - Create session save-42 in /tmp/tmp.dK43KExxjM
+pass:  34 - Destroy session filter-invalid
+pass:  34 - Destroy session wildcard-overlap
+pass:  34 - Enable ust event tp:tp** for session  failed as expected
+pass:  34 - Kill session daemon
+pass:  34 - Start application 5 for tracing
+pass:  34 - Start tracing for session valid_filter
+pass:  34 - Stop lttng tracing for session LfAVtm2sdIL9UdWI
+pass:  34 - Trace validation - longfield
+pass:  34 - valid test case: 0300K
+pass:  340 - Start tracing for session valid_filter
+pass:  341 - Stop lttng tracing for session valid_filter
+pass:  342 - Destroy session valid_filter
+pass:  343 - Validate trace filter output
+pass:  344 - Create session valid_filter in /tmp/tmp.Svi0LfZR9V
+pass:  345 - Enable lttng event with filtering
+pass:  346 - Start tracing for session valid_filter
+pass:  347 - Stop lttng tracing for session valid_filter
+pass:  348 - Destroy session valid_filter
+pass:  349 - Validate trace filter output
+pass:  35 # skip: JUL support is needed. Skipping all tests.
+pass:  35 # skip: LOG4J support is needed. Skipping all tests.
+pass:  35 - Create session buffers-pid in /tmp/tmp.QpAHksvuNh
+pass:  35 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  35 - Create session vTPdu2qfBDFKeMOG in /tmp/tmp.SNNnU6AxSS
+pass:  35 - Create session wildcard-overlap in /tmp/tmp.euWrp9XO5e
+pass:  35 - Destroy session LfAVtm2sdIL9UdWI
+pass:  35 - Destroy session wildcard
+pass:  35 - Enable channel chan-save for session save-42
+pass:  35 - Enable channel channel for session 6MiBvxvOFliYhH1e: 65536 bytes tracefile limit
+pass:  35 - Enable channel snapchan per UID for session MReG1vAx7mYv9z6Q
+pass:  35 - Enable lttng event with filtering and unsupported operator
+pass:  35 - Full cleanup on sigint
+pass:  35 - Stop lttng tracing for session valid_filter
+pass:  35 - valid test case: 030M
+pass:  350 - Create session valid_filter in /tmp/tmp.q03SXrda0e
+pass:  351 - Enable lttng event with filtering
+pass:  352 - Start tracing for session valid_filter
+pass:  353 - Stop lttng tracing for session valid_filter
+pass:  354 - Destroy session valid_filter
+pass:  355 - Validate trace filter output
+pass:  356 - Create session valid_filter in /tmp/tmp.KNRxjeS58r
+pass:  357 - Enable lttng event with filtering
+pass:  358 - Start tracing for session valid_filter
+pass:  359 - Stop lttng tracing for session valid_filter
+pass:  36 # skip: JUL support is needed. Skipping all tests.
+pass:  36 # skip: LOG4J support is needed. Skipping all tests.
+pass:  36 - Create session wildcard in /tmp/tmp.kJAg7Df8C6
+pass:  36 - Custom name snapshot exists
+pass:  36 - Destroy session valid_filter
+pass:  36 - Enable channel channel for session vTPdu2qfBDFKeMOG: 8 tracefiles
+pass:  36 - Enable channel channel0 per PID for session buffers-pid
+pass:  36 - Enable event tp:tptest for session 6MiBvxvOFliYhH1e in channel channel
+pass:  36 - Enable event us* with filtering for session wildcard-overlap
+pass:  36 - Enable lttng event with filtering and invalid filter
+pass:  36 - Enable ust event tp:tptest for session MReG1vAx7mYv9z6Q
+pass:  36 - Enable ust event tp:tptest for session save-42
+pass:  36 - Start session daemon
+pass:  36 - Unsupported operator test BIN_OR (|)
+pass:  36 - valid test case: 020G
+pass:  360 - Destroy session valid_filter
+pass:  361 - Validate trace filter output
+pass:  362 - Create session valid_filter in /tmp/tmp.WcArLp0Mf6
+pass:  363 - Enable lttng event with filtering
+pass:  364 - Start tracing for session valid_filter
+pass:  365 - Stop lttng tracing for session valid_filter
+pass:  366 - Destroy session valid_filter
+pass:  367 - Validate trace filter output
+pass:  368 - Create session valid_filter in /tmp/tmp.T7d9em5Wi6
+pass:  369 - Enable lttng event with filtering
+pass:  37 # skip: JUL support is needed. Skipping all tests.
+pass:  37 # skip: LOG4J support is needed. Skipping all tests.
+pass:  37 - Create session shm_path_per_uid_sigint in /tmp/tmp.iTTGW66t1O
+pass:  37 - Destroy session filter-invalid
+pass:  37 - Destroy session filter-unsupported-ops
+pass:  37 - Enable event tp:tptest for session vTPdu2qfBDFKeMOG in channel channel
+pass:  37 - Enable event ust* with filtering for session wildcard-overlap
+pass:  37 - Enable ust event *tp:tp* for session  failed as expected
+pass:  37 - Enable ust event tp:tptest for session buffers-pid
+pass:  37 - Session failed to be saved. Expected!
+pass:  37 - Start tracing for session 6MiBvxvOFliYhH1e
+pass:  37 - Start tracing for session MReG1vAx7mYv9z6Q
+pass:  37 - Validate trace filter output
+pass:  37 - Validate trace for event tp:tptest, 2961 events
+pass:  37 - valid test case: 0xa0k
+pass:  370 - Start tracing for session valid_filter
+pass:  371 - Stop lttng tracing for session valid_filter
+pass:  372 - Destroy session valid_filter
+pass:  373 - Validate trace filter output
+pass:  374 - Create session valid_filter in /tmp/tmp.biI9XBhQKJ
+pass:  375 - Enable lttng event with filtering
+pass:  376 - Start tracing for session valid_filter
+pass:  377 - Stop lttng tracing for session valid_filter
+pass:  378 - Destroy session valid_filter
+pass:  379 - Validate trace filter output
+pass:  38 # skip: JUL support is needed. Skipping all tests.
+pass:  38 # skip: LOG4J support is needed. Skipping all tests.
+pass:  38 - Added snapshot output file:///tmp/tmp.Q8771eMfsE
+pass:  38 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  38 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  38 - Create session p0v6GEhPOtCyakBI in no-output mode
+pass:  38 - Create session valid_filter in /tmp/tmp.vgkOF3jXx8
+pass:  38 - Destroy session wildcard
+pass:  38 - Enable channel channel_per_uid_sigint for session shm_path_per_uid_sigint
+pass:  38 - Session saved
+pass:  38 - Start tracing for session buffers-pid
+pass:  38 - Start tracing for session vTPdu2qfBDFKeMOG
+pass:  38 - Start tracing for session wildcard-overlap
+pass:  38 - Stop lttng tracing for session 6MiBvxvOFliYhH1e
+pass:  38 - valid test case: 0xa0K
+pass:  380 - Create session valid_filter in /tmp/tmp.t6FE9mLHZW
+pass:  381 - Enable lttng event with filtering
+pass:  382 - Start tracing for session valid_filter
+pass:  383 - Stop lttng tracing for session valid_filter
+pass:  384 - Destroy session valid_filter
+pass:  385 - Validate trace filter output
+pass:  386 - Create session valid_filter in /tmp/tmp.3HoAyxzTyO
+pass:  387 - Enable lttng event with filtering
+pass:  388 - Start tracing for session valid_filter
+pass:  389 - Stop lttng tracing for session valid_filter
+pass:  39 # skip: JUL support is needed. Skipping all tests.
+pass:  39 # skip: LOG4J support is needed. Skipping all tests.
+pass:  39 - Application done
+pass:  39 - Create session wildcard in /tmp/tmp.vLhucb3hJk
+pass:  39 - Destroy session 6MiBvxvOFliYhH1e
+pass:  39 - Enable channel chan1 for session p0v6GEhPOtCyakBI
+pass:  39 - Enable lttng event with filtering
+pass:  39 - Enable lttng event with filtering and invalid filter
+pass:  39 - Enable lttng event with filtering and unsupported operator
+pass:  39 - Session save-42.lttng file found!
+pass:  39 - Start application to trace
+pass:  39 - Start application to trace
+pass:  39 - Stop lttng tracing for session vTPdu2qfBDFKeMOG
+pass:  39 - Waiting done
+pass:  39 - valid test case: 0XA0M
+pass:  390 - Destroy session valid_filter
+pass:  391 - Validate trace filter output
+pass:  392 - Create session valid_filter in /tmp/tmp.cXslgbxu27
+pass:  393 - Enable lttng event with filtering
+pass:  394 - Start tracing for session valid_filter
+pass:  395 - Stop lttng tracing for session valid_filter
+pass:  396 - Destroy session valid_filter
+pass:  397 - Validate trace filter output
+pass:  398 - Create session valid_filter in /tmp/tmp.F6WLNwAj2c
+pass:  399 - Enable lttng event with filtering
+pass:  4 # skip: JUL support is needed. Skipping all tests.
+pass:  4 # skip: LOG4J support is needed. Skipping all tests.
+pass:  4 - Destroy session filter-invalid
+pass:  4 - Enable channel chan1 for session 0qniy5UX8zSy0hBF
+pass:  4 - Enable channel mychan for session ust_event_basic
+pass:  4 - Enable event tp:tptest for session m7gX6qWqd3hGwcGY in channel channel
+pass:  4 - Enable event tp:tptest for session ttbS58aNGAfZytrA in channel channel
+pass:  4 - Enable event ust* with filtering for session wildcard-overlap
+pass:  4 - Enable ust event tp:tptest for session Hcz6b7afX4AvXyGp
+pass:  4 - Enable ust event tp:tptest for session ILlbcCLLDmXBtceO
+pass:  4 - Enable ust event tp:tptest for session buffers-pid
+pass:  4 - Enable ust event tp:tptest for session health_thread_ok
+pass:  4 - Enable ust event tp:tptest for session live
+pass:  4 - Enable ust event tp:tptest for session save-42
+pass:  4 - Enable ust event tp:tptest for session ust-nprocesses
+pass:  4 - Kill session daemon
+pass:  4 - Kill session daemon
+pass:  4 - No files created on set-up
+pass:  4 - Start tracing for session
+pass:  4 - Start tracing for session clock_override
+pass:  4 - Start tracing for session multi-session-0
+pass:  4 - Start tracing for session per-session
+pass:  4 - Start tracing for session sequence-cpu
+pass:  4 - Start tracing for session test-exclusion
+pass:  4 - Start tracing for session tracef
+pass:  4 - Start tracing for session valid_filter
+pass:  4 - Successfully opened a config file, registered to one section
+pass:  4 - URI set to net6://localhost:8989
+pass:  4 - Unsupported operator test MUL (*)
+pass:  4 - Validate UST channel
+pass:  4 - Validate kernel session metadata
+pass:  4 - Validating session: basic sanity check
+pass:  4 - valid test case: .././a/b/c/d/./e
+pass:  4 - valid test case: 0300
+pass:  40 # skip: JUL support is needed. Skipping all tests.
+pass:  40 # skip: LOG4J support is needed. Skipping all tests.
+pass:  40 - Destroy session filter-invalid
+pass:  40 - Destroy session save-42
+pass:  40 - Destroy session vTPdu2qfBDFKeMOG
+pass:  40 - Enable kernel event lttng_test_* for session wildcard
+pass:  40 - Enable ust event tp:tptest for session p0v6GEhPOtCyakBI
+pass:  40 - File size validation
+pass:  40 - Snapshot recorded
+pass:  40 - Start application to trace
+pass:  40 - Start tracing for session valid_filter
+pass:  40 - Stop lttng tracing for session buffers-pid
+pass:  40 - Stop lttng tracing for session wildcard-overlap
+pass:  40 - Unsupported operator test BIN_XOR (^)
+pass:  40 - valid test case: 0xA0G
+pass:  400 - Start tracing for session valid_filter
+pass:  401 - Stop lttng tracing for session valid_filter
+pass:  402 - Destroy session valid_filter
+pass:  403 - Validate trace filter output
+pass:  404 - Create session valid_filter in /tmp/tmp.ay3tUZxlS7
+pass:  405 - Enable lttng event with filtering
+pass:  406 - Start tracing for session valid_filter
+pass:  407 - Stop lttng tracing for session valid_filter
+pass:  408 - Destroy session valid_filter
+pass:  409 - Validate trace filter output
+pass:  41 # skip: JUL support is needed. Skipping all tests.
+pass:  41 # skip: LOG4J support is needed. Skipping all tests.
+pass:  41 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  41 - Destroy session buffers-pid
+pass:  41 - Destroy session filter-unsupported-ops
+pass:  41 - Kill session daemon
+pass:  41 - Kill session daemon
+pass:  41 - Start tracing for session
+pass:  41 - Start tracing for session p0v6GEhPOtCyakBI
+pass:  41 - Stop lttng tracing for session MReG1vAx7mYv9z6Q
+pass:  41 - Stop lttng tracing for session valid_filter
+pass:  41 - Trace match
+pass:  41 - Validate file count: channel_0_*
+pass:  41 - Validate trace for event tp:tptest, 1000 events
+pass:  41 - invalid test case:
+pass:  410 - Create session valid_filter in /tmp/tmp.nbgE0MrQTL
+pass:  411 - Enable lttng event with filtering
+pass:  412 - Start tracing for session valid_filter
+pass:  413 - Stop lttng tracing for session valid_filter
+pass:  414 - Destroy session valid_filter
+pass:  415 - Validate trace filter output
+pass:  416 - Create session valid_filter in /tmp/tmp.l6jZNprABM
+pass:  417 - Enable lttng event with filtering
+pass:  418 - Start tracing for session valid_filter
+pass:  419 - Stop lttng tracing for session valid_filter
+pass:  42 # skip: JUL support is needed. Skipping all tests.
+pass:  42 # skip: LOG4J support is needed. Skipping all tests.
+pass:  42 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  42 - Create session ycc9udKdErZwIrnZ in /tmp/tmp.Qa9UTBr8KP
+pass:  42 - Destroy session MReG1vAx7mYv9z6Q
+pass:  42 - Destroy session valid_filter
+pass:  42 - Enable lttng event with filtering and invalid filter
+pass:  42 - Full cleanup on sigint
+pass:  42 - Start application to trace
+pass:  42 - Trace match
+pass:  42 - Trace validation
+pass:  42 - Traced application stopped.
+pass:  42 - Validate file count: channel_1_*
+pass:  42 - invalid test case:
+pass:  420 - Destroy session valid_filter
+pass:  421 - Validate trace filter output
+pass:  422 - Create session valid_filter in /tmp/tmp.bqKNxIg4I4
+pass:  423 - Enable lttng event with filtering
+pass:  424 - Start tracing for session valid_filter
+pass:  425 - Stop lttng tracing for session valid_filter
+pass:  426 - Destroy session valid_filter
+pass:  427 - Validate trace filter output
+pass:  428 - Create session valid_filter in /tmp/tmp.7swH2GeZqw
+pass:  429 - Enable lttng event with filtering
+pass:  43 # skip: JUL support is needed. Skipping all tests.
+pass:  43 # skip: LOG4J support is needed. Skipping all tests.
+pass:  43 - Added snapshot output -C tcp://localhost:5342 -D tcp://localhost:5343
+pass:  43 - Create session buffers-pid in /tmp/tmp.VZYxdTX4BB
+pass:  43 - Destroy session filter-invalid
+pass:  43 - Enable channel channel for session ycc9udKdErZwIrnZ: 131072 bytes tracefile limit
+pass:  43 - Enable lttng event with filtering and unsupported operator
+pass:  43 - Start session daemon
+pass:  43 - Stop lttng tracing for session
+pass:  43 - Trace match
+pass:  43 - Trace validation - intfield
+pass:  43 - Validate trace filter output
+pass:  43 - Validate trace for event tp:tptest, 2883 events
+pass:  43 - invalid test case: -1
+pass:  430 - Start tracing for session valid_filter
+pass:  431 - Stop lttng tracing for session valid_filter
+pass:  432 - Destroy session valid_filter
+pass:  433 - Validate trace filter output
+pass:  434 - Create session valid_filter in /tmp/tmp.PuRfyBFB4O
+pass:  435 - Enable lttng event with filtering
+pass:  436 - Start tracing for session valid_filter
+pass:  437 - Stop lttng tracing for session valid_filter
+pass:  438 - Destroy session valid_filter
+pass:  439 - Validate trace filter output
+pass:  44 # skip: JUL support is needed. Skipping all tests.
+pass:  44 # skip: LOG4J support is needed. Skipping all tests.
+pass:  44 - Create session PMiAKBicP3xykI70 in no-output mode
+pass:  44 - Create session crash_test in /tmp/tmp.iTTGW66t1O
+pass:  44 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  44 - Create session valid_filter in /tmp/tmp.hwlnE5UOrJ
+pass:  44 - Destroy session wildcard
+pass:  44 - Enable channel channel0 per PID for session buffers-pid
+pass:  44 - Enable event tp:tptest for session ycc9udKdErZwIrnZ in channel channel
+pass:  44 - Snapshot recorded
+pass:  44 - Trace match
+pass:  44 - Trace validation - netintfield
+pass:  44 - Unsupported operator test UNARY_BIN_NOT (~)
+pass:  44 - invalid test case: k
+pass:  440 - Create session valid_filter in /tmp/tmp.QpI3SMm8Va
+pass:  441 - Enable lttng event with filtering
+pass:  442 - Start tracing for session valid_filter
+pass:  443 - Stop lttng tracing for session valid_filter
+pass:  444 - Destroy session valid_filter
+pass:  445 - Validate trace filter output
+pass:  446 - Create session valid_filter in /tmp/tmp.lU5mZYhDo2
+pass:  447 - Enable lttng event with filtering
+pass:  448 - Start tracing for session valid_filter
+pass:  449 - Stop lttng tracing for session valid_filter
+pass:  45 # skip: JUL support is needed. Skipping all tests.
+pass:  45 # skip: LOG4J support is needed. Skipping all tests.
+pass:  45 - Destroy session filter-unsupported-ops
+pass:  45 - Destroy session wildcard-overlap
+pass:  45 - Enable channel channel1 per PID for session buffers-pid
+pass:  45 - Enable channel channel_crash for session crash_test
+pass:  45 - Enable channel snapchan per UID for session PMiAKBicP3xykI70
+pass:  45 - Enable lttng event with filtering
+pass:  45 - Enable lttng event with filtering and invalid filter
+pass:  45 - Start tracing for session ycc9udKdErZwIrnZ
+pass:  45 - Stop lttng tracing for session p0v6GEhPOtCyakBI
+pass:  45 - Trace match
+pass:  45 - Trace validation - longfield
+pass:  45 - invalid test case: 4611686018427387904G
+pass:  450 - Destroy session valid_filter
+pass:  451 - Validate trace filter output
+pass:  452 - Create session valid_filter in /tmp/tmp.l6HYKoqJQX
+pass:  453 - Enable lttng event with filtering
+pass:  454 - Start tracing for session valid_filter
+pass:  455 - Stop lttng tracing for session valid_filter
+pass:  456 - Destroy session valid_filter
+pass:  457 - Validate trace filter output
+pass:  458 - Create session valid_filter in /tmp/tmp.gpDCTwCPWy
+pass:  459 - Enable lttng event with filtering
+pass:  46 # skip: JUL support is needed. Skipping all tests.
+pass:  46 # skip: LOG4J support is needed. Skipping all tests.
+pass:  46 - Create session W8ZyP6c44IRU4Xqw in /tmp/tmp.fWk9ll0y6O
+pass:  46 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  46 - Create session wildcard in /tmp/tmp.FAAmxXybzN
+pass:  46 - Create session wildcard-overlap in /tmp/tmp.ykJGKmpnNz
+pass:  46 - Destroy session filter-invalid
+pass:  46 - Destroy session p0v6GEhPOtCyakBI
+pass:  46 - Enable channel channel2 per PID for session buffers-pid
+pass:  46 - Enable ust event tp:tptest for session PMiAKBicP3xykI70
+pass:  46 - Enable ust event tp:tptest for session crash_test
+pass:  46 - Start tracing for session valid_filter
+pass:  46 - Stop lttng tracing for session ycc9udKdErZwIrnZ
+pass:  46 - invalid test case: 0x40g
+pass:  460 - Start tracing for session valid_filter
+pass:  461 - Stop lttng tracing for session valid_filter
+pass:  462 - Destroy session valid_filter
+pass:  463 - Validate trace filter output
+pass:  464 - Create session valid_filter in /tmp/tmp.uUH1WA5EA7
+pass:  465 - Enable lttng event with filtering
+pass:  466 - Start tracing for session valid_filter
+pass:  467 - Stop lttng tracing for session valid_filter
+pass:  468 - Destroy session valid_filter
+pass:  469 - Validate trace filter output
+pass:  47 # skip: JUL support is needed. Skipping all tests.
+pass:  47 # skip: LOG4J support is needed. Skipping all tests.
+pass:  47 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  47 - Destroy session ycc9udKdErZwIrnZ
+pass:  47 - Enable channel channel for session W8ZyP6c44IRU4Xqw: 10 tracefiles
+pass:  47 - Enable channel channel3 per PID for session buffers-pid
+pass:  47 - Enable event us* with filtering for session wildcard-overlap
+pass:  47 - Enable kernel event * for session wildcard
+pass:  47 - Enable lttng event with filtering and unsupported operator
+pass:  47 - Start tracing for session PMiAKBicP3xykI70
+pass:  47 - Start tracing for session crash_test
+pass:  47 - Stop lttng tracing for session valid_filter
+pass:  47 - Validate trace for event tp:tptest, 2997 events
+pass:  47 - invalid test case: 08
+pass:  470 - Create session valid_filter in /tmp/tmp.XgRj0CRS6R
+pass:  471 - Enable lttng event with filtering
+pass:  472 - Start tracing for session valid_filter
+pass:  473 - Stop lttng tracing for session valid_filter
+pass:  474 - Destroy session valid_filter
+pass:  475 - Validate trace filter output
+pass:  476 - Create session valid_filter in /tmp/tmp.IcGyZeI3lD
+pass:  477 - Enable lttng event with filtering
+pass:  478 - Start tracing for session valid_filter
+pass:  479 - Stop lttng tracing for session valid_filter
+pass:  48 # skip: JUL support is needed. Skipping all tests.
+pass:  48 # skip: LOG4J support is needed. Skipping all tests.
+pass:  48 - Added snapshot output file:///tmp/tmp.Q8771eMfsE
+pass:  48 - Destroy session valid_filter
+pass:  48 - Enable channel channel4 per PID for session buffers-pid
+pass:  48 - Enable event tp:tptest for session W8ZyP6c44IRU4Xqw in channel channel
+pass:  48 - Enable event ust_tests_demo:starting with filtering for session wildcard-overlap
+pass:  48 - Enable lttng event with filtering and invalid filter
+pass:  48 - File size validation
+pass:  48 - Kill session daemon
+pass:  48 - Start tracing for session
+pass:  48 - Stop lttng tracing for session
+pass:  48 - Unsupported operator test MUL (*)
+pass:  48 - invalid test case: 09
+pass:  480 - Destroy session valid_filter
+pass:  481 - Validate trace filter output
+pass:  482 - Create session valid_filter in /tmp/tmp.p9wJFeDyOc
+pass:  483 - Enable lttng event with filtering
+pass:  484 - Start tracing for session valid_filter
+pass:  485 - Stop lttng tracing for session valid_filter
+pass:  486 - Destroy session valid_filter
+pass:  487 - Validate trace filter output
+pass:  488 - Create session valid_filter in /tmp/tmp.9Ocindyz8y
+pass:  489 - Enable lttng event with filtering
+pass:  49 # skip: JUL support is needed. Skipping all tests.
+pass:  49 # skip: LOG4J support is needed. Skipping all tests.
+pass:  49 - Destroy session filter-invalid
+pass:  49 - Destroy session filter-unsupported-ops
+pass:  49 - Enable event tp:tptest for session buffers-pid in channel0
+fail:  49 - Expect 10 recup event from buffers got 0
+pass:  49 - Kill relay daemon
+pass:  49 - Start application to trace
+pass:  49 - Start tracing for session W8ZyP6c44IRU4Xqw
+pass:  49 - Start tracing for session wildcard-overlap
+pass:  49 - Traced application stopped.
+pass:  49 - Validate trace filter output
+pass:  49 - Validate trace for event tp:tptest, 1000 events
+pass:  49 - invalid test case: 0x
+pass:  490 - Start tracing for session valid_filter
+pass:  491 - Stop lttng tracing for session valid_filter
+pass:  492 - Destroy session valid_filter
+pass:  493 - Validate trace filter output
+pass:  494 - Create session valid_filter in /tmp/tmp.BnJWA3yr9x
+pass:  495 - Enable lttng event with filtering
+pass:  496 - Start tracing for session valid_filter
+pass:  497 - Stop lttng tracing for session valid_filter
+pass:  498 - Destroy session valid_filter
+pass:  499 - Validate trace filter output
+pass:  5 # skip: JUL support is needed. Skipping all tests.
+pass:  5 # skip: LOG4J support is needed. Skipping all tests.
+pass:  5 - Application done
+pass:  5 - Application without wrapper done
+pass:  5 - Create UST event
+pass:  5 - Create kernel channel
+pass:  5 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  5 - Create session multi-session-1 in /tmp/tmp.xrHpW9ud7q/1
+pass:  5 - Destroy session filter-unsupported-ops
+pass:  5 - Destroying session: session found
+pass:  5 - Enable channel mychan2 for session ust_event_basic2
+pass:  5 - Enable ust event tp:tptest for session 0qniy5UX8zSy0hBF
+pass:  5 - Processed an entry from section1 only
+pass:  5 - Start application to trace
+pass:  5 - Start application to trace
+pass:  5 - Start tracing for session Hcz6b7afX4AvXyGp
+pass:  5 - Start tracing for session ILlbcCLLDmXBtceO
+pass:  5 - Start tracing for session health_thread_ok
+pass:  5 - Start tracing for session live
+pass:  5 - Start tracing for session m7gX6qWqd3hGwcGY
+pass:  5 - Start tracing for session ttbS58aNGAfZytrA
+pass:  5 - Start tracing for session ust-nprocesses
+pass:  5 - Start tracing for session wildcard-overlap
+pass:  5 - Stop lttng tracing for session test-exclusion
+pass:  5 - Stop lttng tracing for session valid_filter
+pass:  5 - Traced application stopped.
+pass:  5 - Traced application stopped.
+pass:  5 - Traced application stopped.
+pass:  5 - Track command with opts: -p 666 -u -s save-42
+pass:  5 - URI set to tcp://42.42.42.42/my/test/path
+pass:  5 - valid test case: ../../a/b/c/d/e
+pass:  5 - valid test case: 16k
+pass:  50 # skip: JUL support is needed. Skipping all tests.
+pass:  50 # skip: LOG4J support is needed. Skipping all tests.
+pass:  50 - Application done
+pass:  50 - Create session CgBwnl5kYTF1FEQy in /tmp/tmp.TsbTHbmpre
+pass:  50 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  50 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  50 - Create session valid_filter in /tmp/tmp.OKJPj7lQN6
+pass:  50 - Enable event tp:tptest for session buffers-pid in channel1
+fail:  50 - Expect 10 recup event from symlink buffers got 0
+pass:  50 - Snapshot recorded
+pass:  50 - Stop lttng tracing for session
+pass:  50 - Stop lttng tracing for session W8ZyP6c44IRU4Xqw
+pass:  50 - invalid test case: x0
+pass:  500 - Create session valid_filter in /tmp/tmp.Yg1NtyVGgs
+pass:  501 - Enable lttng event with filtering
+pass:  502 - Start tracing for session valid_filter
+pass:  503 - Stop lttng tracing for session valid_filter
+pass:  504 - Destroy session valid_filter
+pass:  505 - Validate trace filter output
+pass:  506 - Create session valid_filter in /tmp/tmp.nJWhdmGye6
+pass:  507 - Enable lttng event with filtering
+pass:  508 - Start tracing for session valid_filter
+pass:  509 - Stop lttng tracing for session valid_filter
+pass:  51 # skip: JUL support is needed. Skipping all tests.
+pass:  51 # skip: LOG4J support is needed. Skipping all tests.
+pass:  51 - Destroy session W8ZyP6c44IRU4Xqw
+pass:  51 - Destroy session crash_test
+pass:  51 - Destroy session wildcard
+pass:  51 - Enable channel channel for session CgBwnl5kYTF1FEQy: 5120 bytes tracefile limit
+pass:  51 - Enable event tp:tptest for session buffers-pid in channel2
+pass:  51 - Enable lttng event with filtering
+pass:  51 - Enable lttng event with filtering and invalid filter
+pass:  51 - Enable lttng event with filtering and unsupported operator
+pass:  51 - Stop lttng tracing for session PMiAKBicP3xykI70
+pass:  51 - Stop lttng tracing for session wildcard-overlap
+pass:  51 - invalid test case: 0xx0
+pass:  510 - Destroy session valid_filter
+pass:  511 - Validate trace filter output
+pass:  512 - Create session valid_filter in /tmp/tmp.JvJ1T51IxZ
+pass:  513 - Enable lttng event with filtering
+pass:  514 - Start tracing for session valid_filter
+pass:  515 - Stop lttng tracing for session valid_filter
+pass:  516 - Destroy session valid_filter
+pass:  517 - Validate trace filter output
+pass:  518 - Create session valid_filter in /tmp/tmp.JW5kQkfKuO
+pass:  519 - Enable lttng event with filtering
+pass:  52 # skip: JUL support is needed. Skipping all tests.
+pass:  52 # skip: LOG4J support is needed. Skipping all tests.
+pass:  52 - Destroy session PMiAKBicP3xykI70
+pass:  52 - Destroy session filter-invalid
+pass:  52 - Enable event tp:tptest for session CgBwnl5kYTF1FEQy in channel channel
+pass:  52 - Enable event tp:tptest for session buffers-pid in channel3
+pass:  52 - Kill session daemon
+pass:  52 - Start tracing for session valid_filter
+pass:  52 - Trace match
+pass:  52 - Trace match
+pass:  52 - Unsupported operator test DIV (/)
+pass:  52 - Validate file count: channel_0_*
+pass:  52 - invalid test case: 07kK
+pass:  520 - Start tracing for session valid_filter
+pass:  521 - Stop lttng tracing for session valid_filter
+pass:  522 - Destroy session valid_filter
+pass:  523 - Validate trace filter output
+pass:  524 - Create session valid_filter in /tmp/tmp.1ldsafsLij
+pass:  525 - Enable lttng event with filtering
+pass:  526 - Start tracing for session valid_filter
+pass:  527 - Stop lttng tracing for session valid_filter
+pass:  528 - Destroy session valid_filter
+pass:  529 - Validate trace filter output
+pass:  53 # skip: JUL support is needed. Skipping all tests.
+pass:  53 # skip: LOG4J support is needed. Skipping all tests.
+pass:  53 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  53 - Create session wildcard in /tmp/tmp.bOO5hqZFg3
+pass:  53 - Destroy session filter-unsupported-ops
+pass:  53 - Enable event tp:tptest for session buffers-pid in channel4
+pass:  53 - Start session daemon
+pass:  53 - Start tracing for session CgBwnl5kYTF1FEQy
+pass:  53 - Stop lttng tracing for session valid_filter
+pass:  53 - Trace match
+pass:  53 - Validate file count: channel_1_*
+pass:  53 - Validate trace for event tp:tptest, 2875 events
+pass:  53 - invalid test case: 0xk
+pass:  530 - Create session valid_filter in /tmp/tmp.pyvYYv0bjJ
+pass:  531 - Enable lttng event with filtering
+pass:  532 - Start tracing for session valid_filter
+pass:  533 - Stop lttng tracing for session valid_filter
+pass:  534 - Destroy session valid_filter
+pass:  535 - Validate trace filter output
+pass:  536 - Create session valid_filter in /tmp/tmp.3xGTynMpSH
+pass:  537 - Enable lttng event with filtering
+pass:  538 - Start tracing for session valid_filter
+pass:  539 - Stop lttng tracing for session valid_filter
+pass:  54 # skip: JUL support is needed. Skipping all tests.
+pass:  54 # skip: LOG4J support is needed. Skipping all tests.
+pass:  54 - Create session RuXnLRUW9wI2nbC4 in no-output mode
+pass:  54 - Create session crash_test in /tmp/tmp.iTTGW66t1O
+pass:  54 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  54 - Destroy session valid_filter
+pass:  54 - Enable kernel event lttng_test_filter_event* for session wildcard
+pass:  54 - Enable lttng event with filtering and invalid filter
+pass:  54 - Start tracing for session buffers-pid
+pass:  54 - Stop lttng tracing for session CgBwnl5kYTF1FEQy
+pass:  54 - Trace match
+pass:  54 - Trace validation - intfield
+pass:  54 - invalid test case: 0XM
+pass:  540 - Destroy session valid_filter
+pass:  541 - Validate trace filter output
+pass:  542 - Create session valid_filter in /tmp/tmp.uHtQQqBBsY
+pass:  543 - Enable lttng event with filtering
+pass:  544 - Start tracing for session valid_filter
+pass:  545 - Stop lttng tracing for session valid_filter
+pass:  546 - Destroy session valid_filter
+pass:  547 - Validate trace filter output
+pass:  548 - Create session valid_filter in /tmp/tmp.xj0Xrjd4eL
+pass:  549 - Enable lttng event with filtering
+pass:  55 # skip: JUL support is needed. Skipping all tests.
+pass:  55 # skip: LOG4J support is needed. Skipping all tests.
+pass:  55 - Destroy session CgBwnl5kYTF1FEQy
+pass:  55 - Destroy session filter-invalid
+pass:  55 - Enable channel channel_crash for session crash_test
+pass:  55 - Enable channel snapchan for session RuXnLRUW9wI2nbC4
+pass:  55 - Enable lttng event with filtering and unsupported operator
+pass:  55 - Start application to trace
+pass:  55 - Start tracing for session
+pass:  55 - Trace match
+pass:  55 - Trace validation - netintfield
+pass:  55 - Validate trace filter output
+pass:  55 - invalid test case: 0xG
+pass:  550 - Start tracing for session valid_filter
+pass:  551 - Stop lttng tracing for session valid_filter
+pass:  552 - Destroy session valid_filter
+pass:  553 - Validate trace filter output
+pass:  554 - Create session valid_filter in /tmp/tmp.lYvgxOocfV
+pass:  555 - Enable lttng event with filtering
+pass:  556 - Start tracing for session valid_filter
+pass:  557 - Stop lttng tracing for session valid_filter
+pass:  558 - Destroy session valid_filter
+pass:  559 - Validate trace filter output
+pass:  56 # skip: JUL support is needed. Skipping all tests.
+pass:  56 # skip: LOG4J support is needed. Skipping all tests.
+pass:  56 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  56 - Create session valid_filter in /tmp/tmp.VfdlXz5sws
+pass:  56 - Destroy session wildcard-overlap
+pass:  56 - Enable ust event tp:tptest for session crash_test
+pass:  56 - Enable ust event tp:tptest1,tp:tptest2,tp:tptest3,tp:tptest4,tp:tptest5 for session RuXnLRUW9wI2nbC4
+pass:  56 - File size validation
+pass:  56 - Stop lttng tracing for session buffers-pid
+pass:  56 - Trace validation - longfield
+pass:  56 - Traced application stopped.
+pass:  56 - Unsupported operator test MOD (%)
+pass:  56 - invalid test case: 0x0MM
+pass:  560 - Create session valid_filter in /tmp/tmp.LyrEsmUfE8
+pass:  561 - Enable lttng event with filtering
+pass:  562 - Start tracing for session valid_filter
+pass:  563 - Stop lttng tracing for session valid_filter
+pass:  564 - Destroy session valid_filter
+pass:  565 - Validate trace filter output
+pass:  566 - Create session valid_filter in /tmp/tmp.zd9HvyO1B1
+pass:  567 - Enable lttng event with filtering
+pass:  568 - Start tracing for session valid_filter
+pass:  569 - Stop lttng tracing for session valid_filter
+pass:  57 # skip: JUL support is needed. Skipping all tests.
+pass:  57 # skip: LOG4J support is needed. Skipping all tests.
+pass:  57 - Create session ioHZk9LtCMyPdM0A in /tmp/tmp.HreWq3XQXw
+pass:  57 - Create session wildcard-overlap in /tmp/tmp.NGBpUo9D0P
+pass:  57 - Destroy session filter-unsupported-ops
+pass:  57 - Enable lttng event with filtering
+pass:  57 - Enable lttng event with filtering and invalid filter
+pass:  57 - Start tracing for session RuXnLRUW9wI2nbC4
+pass:  57 - Start tracing for session crash_test
+pass:  57 - Stop lttng tracing for session
+pass:  57 - Trace match with 500 event tp:tptest
+pass:  57 - Validate trace for event tp:tptest, 1000 events
+pass:  57 - invalid test case: 0X0GG
+pass:  570 - Destroy session valid_filter
+pass:  571 - Validate trace filter output
+pass:  572 - Create session valid_filter in /tmp/tmp.koMrsYcHJW
+pass:  573 - Enable lttng event with filtering
+pass:  574 - Start tracing for session valid_filter
+pass:  575 - Stop lttng tracing for session valid_filter
+pass:  576 - Destroy session valid_filter
+pass:  577 - Validate trace filter output
+pass:  578 - Kill session daemon
+pass:  58 # skip: JUL support is needed. Skipping all tests.
+pass:  58 # skip: LOG4J support is needed. Skipping all tests.
+pass:  58 - Added snapshot output file:///tmp/tmp.Q8771eMfsE
+pass:  58 - Create session 3Wsoq5qVG90uZRko in /tmp/tmp.ZtKWqKBhtV
+pass:  58 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  58 - Destroy session buffers-pid
+pass:  58 - Destroy session filter-invalid
+pass:  58 - Destroy session wildcard
+pass:  58 - Enable channel channel for session ioHZk9LtCMyPdM0A: 16 tracefiles
+pass:  58 - Enable event us* with filtering for session wildcard-overlap
+pass:  58 - Start tracing for session valid_filter
+pass:  58 - Stop lttng tracing for session
+pass:  58 - invalid test case: 0a
+pass:  59 # skip: JUL support is needed. Skipping all tests.
+pass:  59 # skip: LOG4J support is needed. Skipping all tests.
+pass:  59 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  59 - Enable channel channel for session 3Wsoq5qVG90uZRko: 4094 bytes tracefile limit
+pass:  59 - Enable event tp:tptest for session ioHZk9LtCMyPdM0A in channel channel
+pass:  59 - Enable event ust_tests_demo:starting with filtering for session wildcard-overlap
+pass:  59 - Enable lttng event with filtering and unsupported operator
+fail:  59 - Extraction of crashed buffers to path
+pass:  59 - Kill session daemon
+pass:  59 - Start application to trace
+pass:  59 - Stop lttng tracing for session valid_filter
+pass:  59 - Trace match
+pass:  59 - invalid test case: 0B
+pass:  6 # skip: JUL support is needed. Skipping all tests.
+pass:  6 # skip: LOG4J support is needed. Skipping all tests.
+pass:  6 - Added snapshot output file:///tmp/tmp.Q8771eMfsE ( -n randomname )
+pass:  6 - Application done
+pass:  6 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  6 - Destroy session health_thread_ok
+pass:  6 - Destroy session test-exclusion
+pass:  6 - Destroy session valid_filter
+pass:  6 - Destroying session: test1 destroyed
+pass:  6 - Enable lttng event with filtering and invalid filter
+pass:  6 - Enable ust event tp1 for session ust_event_basic
+pass:  6 - Enable ust event ust_gen_nevents:tptest1 for session multi-session-1
+pass:  6 - Int value parsed correctly
+pass:  6 - Path /tmp/tmp.hgzY6tyduw/shm_path_per_uid-20160208-123011 created on application creation
+pass:  6 - Session saved
+pass:  6 - Start tracing for session 0qniy5UX8zSy0hBF
+pass:  6 - Start tracing for session buffers-pid
+pass:  6 - Stop lttng tracing for session
+pass:  6 - Stop lttng tracing for session Hcz6b7afX4AvXyGp
+pass:  6 - Stop lttng tracing for session clock_override
+pass:  6 - Stop lttng tracing for session live
+pass:  6 - Stop lttng tracing for session m7gX6qWqd3hGwcGY
+pass:  6 - Stop lttng tracing for session per-session
+pass:  6 - Stop lttng tracing for session sequence-cpu
+pass:  6 - Stop lttng tracing for session tracef
+pass:  6 - Stop lttng tracing for session ttbS58aNGAfZytrA
+pass:  6 - Stop lttng tracing for session ust-nprocesses
+pass:  6 - URI set to tcp6://[fe80::f66d:4ff:fe53:d220]/my/test/path
+pass:  6 - Validate UST event
+pass:  6 - Validate kernel channel
+pass:  6 - valid test case: ./a/b/../c/d/../e
+pass:  6 - valid test case: 128K
+pass:  60 # skip: JUL support is needed. Skipping all tests.
+pass:  60 # skip: LOG4J support is needed. Skipping all tests.
+pass:  60 - Create session wildcard in /tmp/tmp.thCc0KIsaz
+pass:  60 - Destroy session valid_filter
+pass:  60 - Enable event tp:tptest for session 3Wsoq5qVG90uZRko in channel channel
+pass:  60 - Enable lttng event with filtering and invalid filter
+pass:  60 - Snapshot recorded
+pass:  60 - Start tracing for session ioHZk9LtCMyPdM0A
+pass:  60 - Start tracing for session wildcard-overlap
+fail:  60 - Trace match
+pass:  60 - Unsupported operator test PLUS (+)
+pass:  61 # skip: JUL support is needed. Skipping all tests.
+pass:  61 # skip: LOG4J support is needed. Skipping all tests.
+pass:  61 - Application done
+pass:  61 - Destroy session crash_test
+pass:  61 - Destroy session filter-invalid
+pass:  61 - Destroy session filter-unsupported-ops
+pass:  61 - Enable kernel event lttng_test_asdfasdf* for session wildcard
+pass:  61 - Start tracing for session 3Wsoq5qVG90uZRko
+pass:  61 - Stop lttng tracing for session RuXnLRUW9wI2nbC4
+pass:  61 - Stop lttng tracing for session ioHZk9LtCMyPdM0A
+pass:  61 - Validate trace filter output
+pass:  62 # skip: JUL support is needed. Skipping all tests.
+pass:  62 # skip: LOG4J support is needed. Skipping all tests.
+pass:  62 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  62 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  62 - Create session valid_filter in /tmp/tmp.8vCwsEItro
+pass:  62 - Destroy session RuXnLRUW9wI2nbC4
+pass:  62 - Destroy session ioHZk9LtCMyPdM0A
+pass:  62 - Kill session daemon
+pass:  62 - Start tracing for session
+pass:  62 - Stop lttng tracing for session 3Wsoq5qVG90uZRko
+pass:  62 - Stop lttng tracing for session wildcard-overlap
+pass:  63 # skip: JUL support is needed. Skipping all tests.
+pass:  63 # skip: LOG4J support is needed. Skipping all tests.
+pass:  63 - Destroy session 3Wsoq5qVG90uZRko
+pass:  63 - Enable lttng event with filtering
+pass:  63 - Enable lttng event with filtering and invalid filter
+pass:  63 - Enable lttng event with filtering and unsupported operator
+pass:  63 - Start session daemon
+pass:  63 - Trace match
+pass:  63 - Traced application stopped.
+pass:  63 - Validate file count: channel_0_*
+pass:  63 - Validate trace for event tp:tptest1, 1 events
+pass:  64 # skip: JUL support is needed. Skipping all tests.
+pass:  64 # skip: LOG4J support is needed. Skipping all tests.
+pass:  64 - Create session crash_test in /tmp/tmp.iTTGW66t1O
+pass:  64 - Destroy session filter-invalid
+pass:  64 - File size validation
+pass:  64 - Start tracing for session valid_filter
+pass:  64 - Stop lttng tracing for session
+pass:  64 - Trace match
+pass:  64 - Unsupported operator test MINUS (-)
+pass:  64 - Validate file count: channel_1_*
+pass:  64 - Validate trace for event tp:tptest2, 1 events
+pass:  65 # skip: JUL support is needed. Skipping all tests.
+pass:  65 # skip: LOG4J support is needed. Skipping all tests.
+pass:  65 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  65 - Destroy session filter-unsupported-ops
+pass:  65 - Destroy session wildcard
+pass:  65 - Enable channel channel_crash for session crash_test
+pass:  65 - Stop lttng tracing for session valid_filter
+pass:  65 - Trace match
+pass:  65 - Trace validation - intfield
+pass:  65 - Validate trace for event tp:tptest, 1000 events
+pass:  65 - Validate trace for event tp:tptest3, 1 events
+pass:  66 # skip: JUL support is needed. Skipping all tests.
+pass:  66 # skip: LOG4J support is needed. Skipping all tests.
+pass:  66 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  66 - Destroy session valid_filter
+pass:  66 - Enable lttng event with filtering and invalid filter
+pass:  66 - Enable ust event tp:tptest for session crash_test
+pass:  66 - Kill session daemon
+pass:  66 - Trace match
+pass:  66 - Trace validation - netintfield
+pass:  66 - Validate empty trace
+pass:  66 - Validate trace for event tp:tptest4, 1 events
+pass:  67 # skip: JUL support is needed. Skipping all tests.
+pass:  67 # skip: LOG4J support is needed. Skipping all tests.
+pass:  67 - Create session wildcard in /tmp/tmp.Umjgi5MKGD
+pass:  67 - Destroy session filter-invalid
+pass:  67 - Destroy session wildcard-overlap
+pass:  67 - Enable lttng event with filtering and unsupported operator
+pass:  67 - Start tracing for session crash_test
+pass:  67 - Trace validation - longfield
+pass:  67 - Validate trace filter output
+pass:  67 - Validate trace for event tp:tptest5, 1 events
+pass:  68 # skip: JUL support is needed. Skipping all tests.
+pass:  68 # skip: LOG4J support is needed. Skipping all tests.
+pass:  68 - Create session C8cNasPtWkuPUQFL in no-output mode
+pass:  68 - Create session W7hwmTdaBP3cZiX5 in /tmp/tmp.gHu6R2acUV
+pass:  68 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  68 - Create session valid_filter in /tmp/tmp.w1TbiCkT57
+pass:  68 - Create session wildcard-overlap in /tmp/tmp.aVMMTJMGLO
+pass:  68 - Enable kernel event tp_*tp for session  on channel  failed as expected
+pass:  68 - Kill consumer daemon
+pass:  68 - Unsupported operator test LSHIFT (<<)
+pass:  69 # skip: JUL support is needed. Skipping all tests.
+pass:  69 # skip: LOG4J support is needed. Skipping all tests.
+pass:  69 - Destroy session filter-unsupported-ops
+pass:  69 - Destroy session wildcard
+pass:  69 - Enable channel channel for session W7hwmTdaBP3cZiX5: 32 tracefiles
+pass:  69 - Enable channel snapchan for session C8cNasPtWkuPUQFL
+pass:  69 - Enable event us* with filtering for session wildcard-overlap
+pass:  69 - Enable lttng event with filtering
+pass:  69 - Enable lttng event with filtering and invalid filter
+pass:  69 - Kill session daemon
+pass:  7 # skip: JUL support is needed. Skipping all tests.
+pass:  7 # skip: LOG4J support is needed. Skipping all tests.
+pass:  7 - Create UST context
+pass:  7 - Create kernel event
+pass:  7 - Destroy session Hcz6b7afX4AvXyGp
+pass:  7 - Destroy session clock_override
+pass:  7 - Destroy session filter-invalid
+pass:  7 - Destroy session live
+pass:  7 - Destroy session m7gX6qWqd3hGwcGY
+pass:  7 - Destroy session per-session
+pass:  7 - Destroy session sequence-cpu
+pass:  7 - Destroy session tracef
+pass:  7 - Destroy session ttbS58aNGAfZytrA
+pass:  7 - Destroy session ust-nprocesses
+pass:  7 - Destroy session wildcard
+pass:  7 - Duplicate session creation
+pass:  7 - Enable lttng event with filtering and unsupported operator
+pass:  7 - Enable ust event ev2 for session ust_event_basic
+pass:  7 - Session save-42.lttng file found!
+pass:  7 - Snapshot named randomname present in list-output listing
+pass:  7 - Start application to trace
+pass:  7 - Start tracing for session multi-session-1
+pass:  7 - Stop lttng tracing for session buffers-pid
+pass:  7 - Stop lttng tracing for session wildcard-overlap
+pass:  7 - Successfully opened a config file, registered to the global section
+pass:  7 - URI set to file:///my/test/path
+pass:  7 - Validate trace exclusion output
+pass:  7 - Validate trace filter output
+pass:  7 - Validation OK
+pass:  7 - uid path exist found /tmp/tmp.hgzY6tyduw/shm_path_per_uid-20160208-123011/ust/uid/0
+pass:  7 - valid test case: ../a/b/../../c/./d/./e
+pass:  7 - valid test case: 0x1234k
+pass:  70 # skip: JUL support is needed. Skipping all tests.
+pass:  70 # skip: LOG4J support is needed. Skipping all tests.
+pass:  70 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  70 - Create session wildcard in /tmp/tmp.k63ErNd6HP
+pass:  70 - Destroy session filter-invalid
+pass:  70 - Enable event tp:tptest for session W7hwmTdaBP3cZiX5 in channel channel
+pass:  70 - Enable event ust_tests_demo:starting with filtering for session wildcard-overlap
+pass:  70 - Enable ust event tp:tptest for session C8cNasPtWkuPUQFL
+fail:  70 - Extraction of crashed buffers to path /tmp/tmp.t49gQMS0KO/extract
+pass:  70 - Start tracing for session valid_filter
+pass:  71 # skip: JUL support is needed. Skipping all tests.
+pass:  71 # skip: LOG4J support is needed. Skipping all tests.
+pass:  71 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  71 - Enable kernel event tp_tp** for session  on channel  failed as expected
+pass:  71 - Enable lttng event with filtering and unsupported operator
+pass:  71 - Start tracing for session C8cNasPtWkuPUQFL
+pass:  71 - Start tracing for session W7hwmTdaBP3cZiX5
+pass:  71 - Start tracing for session wildcard-overlap
+pass:  71 - Stop lttng tracing for session valid_filter
+fail:  71 - Trace match
+pass:  72 # skip: JUL support is needed. Skipping all tests.
+pass:  72 # skip: LOG4J support is needed. Skipping all tests.
+pass:  72 - Added snapshot output file:///tmp/tmp.Q8771eMfsE
+pass:  72 - Application done
+pass:  72 - Destroy session valid_filter
+pass:  72 - Destroy session wildcard
+pass:  72 - Enable lttng event with filtering and invalid filter
+pass:  72 - Stop lttng tracing for session W7hwmTdaBP3cZiX5
+pass:  72 - Unsupported operator test RSHIFT (>>)
+pass:  73 # skip: JUL support is needed. Skipping all tests.
+pass:  73 # skip: LOG4J support is needed. Skipping all tests.
+pass:  73 - Create session wildcard in /tmp/tmp.Kk07a8ha39
+pass:  73 - Destroy session W7hwmTdaBP3cZiX5
+pass:  73 - Destroy session filter-invalid
+pass:  73 - Destroy session filter-unsupported-ops
+pass:  73 - Start application to trace
+pass:  73 - Stop lttng tracing for session wildcard-overlap
+pass:  73 - Validate trace filter output
+pass:  74 # skip: JUL support is needed. Skipping all tests.
+pass:  74 # skip: LOG4J support is needed. Skipping all tests.
+pass:  74 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  74 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  74 - Create session valid_filter in /tmp/tmp.AMhjkPoYxA
+pass:  74 - Enable kernel event *tp_tp* for session  on channel  failed as expected
+pass:  74 - Snapshot recorded
+pass:  74 - Trace match
+pass:  74 - Validate file count: channel_0_*
+pass:  75 # skip: JUL support is needed. Skipping all tests.
+pass:  75 # skip: LOG4J support is needed. Skipping all tests.
+pass:  75 - Destroy session wildcard
+pass:  75 - Enable lttng event with filtering
+pass:  75 - Enable lttng event with filtering and invalid filter
+pass:  75 - Enable lttng event with filtering and unsupported operator
+pass:  75 - Trace match
+pass:  75 - Validate file count: channel_1_*
+pass:  75 - Validate trace for event tp:tptest, 2974 events
+pass:  76 # skip: JUL support is needed. Skipping all tests.
+pass:  76 # skip: LOG4J support is needed. Skipping all tests.
+pass:  76 - Destroy session filter-invalid
+pass:  76 - Kill session daemon
+pass:  76 - Snapshot recorded
+pass:  76 - Start tracing for session valid_filter
+pass:  76 - Trace match
+pass:  76 - Trace validation - intfield
+pass:  76 - Unsupported operator test BIN_AND (&)
+pass:  77 # skip: JUL support is needed. Skipping all tests.
+pass:  77 # skip: LOG4J support is needed. Skipping all tests.
+pass:  77 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  77 - Destroy session filter-unsupported-ops
+pass:  77 - Stop lttng tracing for session valid_filter
+pass:  77 - Trace match
+pass:  77 - Trace validation - netintfield
+pass:  77 - Validate trace for event tp:tptest, 5014 events
+pass:  78 # skip: JUL support is needed. Skipping all tests.
+pass:  78 # skip: LOG4J support is needed. Skipping all tests.
+pass:  78 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  78 - Destroy session valid_filter
+pass:  78 - Destroy session wildcard-overlap
+pass:  78 - Enable lttng event with filtering and invalid filter
+pass:  78 - Snapshot recorded
+pass:  78 - Trace validation - longfield
+pass:  79 # skip: JUL support is needed. Skipping all tests.
+pass:  79 # skip: LOG4J support is needed. Skipping all tests.
+pass:  79 - Create session QNu93QF2tN3RsBZW in /tmp/tmp.jGR8p2jB6w
+pass:  79 - Create session wildcard-overlap in /tmp/tmp.7R23GzS9gm
+pass:  79 - Destroy session filter-invalid
+pass:  79 - Enable lttng event with filtering and unsupported operator
+pass:  79 - Validate trace filter output
+pass:  79 - Validate trace for event tp:tptest, 7199 events
+pass:  8 # skip: JUL support is needed. Skipping all tests.
+pass:  8 # skip: LOG4J support is needed. Skipping all tests.
+pass:  8 - Added snapshot output net://localhost
+pass:  8 - Bad URI set to file/my/test/path
+pass:  8 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  8 - Create session health_thread_ok in no-output mode
+pass:  8 - Create session multi-session-2 in /tmp/tmp.xrHpW9ud7q/2
+pass:  8 - Create session valid_filter in /tmp/tmp.fhPIXjknJU
+pass:  8 - Create session with bogus param: NULL should fail
+pass:  8 - Deleted snapshot output named randomname
+pass:  8 - Destroy session buffers-pid
+pass:  8 - Destroy session save-42
+pass:  8 - Enable ust event ev3 for session ust_event_basic2
+pass:  8 - Expect 1 uid registration folder got 1
+pass:  8 - Extraction without getcpu plugin have 256/256
+pass:  8 - File size validation
+pass:  8 - Kill session daemon
+pass:  8 - Kill session daemon
+pass:  8 - Processed an entry from the global section only
+pass:  8 - Stopped all spawned applications
+pass:  8 - Trace match
+pass:  8 - Trace match
+pass:  8 - Trace match with 1 event tp:tptest
+pass:  8 - Trace match with 100 event lttng_ust_tracef:event
+pass:  8 - Trace match with 100 event tp:tptest
+pass:  8 - Unsupported operator test DIV (/)
+pass:  8 - Validate UST context
+pass:  8 - Validate file count: channel_0_*
+pass:  8 - Validate kernel event
+pass:  8 - Validate trace for event tp:tptest, 4 events
+pass:  8 - valid test case: ../../a/b/../c/d/../../e
+pass:  8 - valid test case: 32M
+pass:  80 # skip: JUL support is needed. Skipping all tests.
+pass:  80 # skip: LOG4J support is needed. Skipping all tests.
+pass:  80 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  80 - Create session valid_filter in /tmp/tmp.2V0yYob4dm
+pass:  80 - Enable channel channel for session QNu93QF2tN3RsBZW: 64 tracefiles
+pass:  80 - Enable event us* with filtering for session wildcard-overlap
+pass:  80 - Snapshot recorded
+pass:  80 - Unsupported operator test BIN_OR (|)
+pass:  81 # skip: JUL support is needed. Skipping all tests.
+pass:  81 # skip: LOG4J support is needed. Skipping all tests.
+pass:  81 - Destroy session filter-unsupported-ops
+pass:  81 - Enable event tp:tptest for session QNu93QF2tN3RsBZW in channel channel
+pass:  81 - Enable event ust_tests_demo:starting with filtering for session wildcard-overlap
+pass:  81 - Enable lttng event with filtering
+pass:  81 - Enable lttng event with filtering and invalid filter
+pass:  81 - Validate trace for event tp:tptest, 9054 events
+pass:  82 # skip: JUL support is needed. Skipping all tests.
+pass:  82 # skip: LOG4J support is needed. Skipping all tests.
+pass:  82 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  82 - Destroy session filter-invalid
+pass:  82 - Snapshot recorded
+pass:  82 - Start tracing for session QNu93QF2tN3RsBZW
+pass:  82 - Start tracing for session valid_filter
+pass:  82 - Start tracing for session wildcard-overlap
+pass:  83 # skip: JUL support is needed. Skipping all tests.
+pass:  83 # skip: LOG4J support is needed. Skipping all tests.
+pass:  83 - Application done
+pass:  83 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  83 - Enable lttng event with filtering and unsupported operator
+pass:  83 - Stop lttng tracing for session QNu93QF2tN3RsBZW
+pass:  83 - Stop lttng tracing for session valid_filter
+pass:  83 - Validate trace for event tp:tptest, 7802 events
+pass:  84 # skip: JUL support is needed. Skipping all tests.
+pass:  84 # skip: LOG4J support is needed. Skipping all tests.
+pass:  84 - Destroy session QNu93QF2tN3RsBZW
+pass:  84 - Destroy session valid_filter
+pass:  84 - Enable lttng event with filtering and invalid filter
+pass:  84 - Snapshot recorded
+pass:  84 - Stop lttng tracing for session wildcard-overlap
+pass:  84 - Unsupported operator test BIN_XOR (^)
+pass:  85 # skip: JUL support is needed. Skipping all tests.
+pass:  85 # skip: LOG4J support is needed. Skipping all tests.
+pass:  85 - Destroy session filter-invalid
+pass:  85 - Destroy session filter-unsupported-ops
+pass:  85 - Trace match
+pass:  85 - Validate file count: channel_0_*
+pass:  85 - Validate trace filter output
+pass:  85 - Validate trace for event tp:tptest, 10424 events
+pass:  86 # skip: JUL support is needed. Skipping all tests.
+pass:  86 # skip: LOG4J support is needed. Skipping all tests.
+pass:  86 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  86 - Create session filter-unsupported-ops in /tmp/tmp.k6fuJzotcQ
+pass:  86 - Create session valid_filter in /tmp/tmp.TgQnNozE8B
+pass:  86 - Snapshot recorded
+pass:  86 - Trace match
+pass:  86 - Validate file count: channel_1_*
+pass:  87 # skip: JUL support is needed. Skipping all tests.
+pass:  87 # skip: LOG4J support is needed. Skipping all tests.
+pass:  87 - Enable lttng event with filtering
+pass:  87 - Enable lttng event with filtering and invalid filter
+pass:  87 - Enable lttng event with filtering and unsupported operator
+pass:  87 - Trace match
+pass:  87 - Trace validation - intfield
+pass:  87 - Validate trace for event tp:tptest, 8671 events
+pass:  88 # skip: JUL support is needed. Skipping all tests.
+pass:  88 # skip: LOG4J support is needed. Skipping all tests.
+pass:  88 - Destroy session filter-invalid
+pass:  88 - Snapshot recorded
+pass:  88 - Start tracing for session valid_filter
+pass:  88 - Trace match
+pass:  88 - Trace validation - netintfield
+pass:  88 - Unsupported operator test UNARY_BIN_NOT (~)
+pass:  89 # skip: JUL support is needed. Skipping all tests.
+pass:  89 # skip: LOG4J support is needed. Skipping all tests.
+pass:  89 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  89 - Destroy session filter-unsupported-ops
+pass:  89 - Destroy session wildcard-overlap
+pass:  89 - Stop lttng tracing for session valid_filter
+pass:  89 - Trace validation - longfield
+pass:  89 - Validate trace for event tp:tptest, 6139 events
+pass:  9 # skip: JUL support is needed. Skipping all tests.
+pass:  9 # skip: LOG4J support is needed. Skipping all tests.
+pass:  9 - Add context command for type: vpid
+pass:  9 - Added snapshot output file:///tmp/tmp.Q8771eMfsE ( -n somesnapshot )
+pass:  9 - Bad URI set to net://:8999
+pass:  9 - Create UST exclusion
+pass:  9 - Create kernel stream
+pass:  9 - Create session per-session in /tmp/tmp.0ASdZaC3Yy
+pass:  9 - Create session save-42-1 in /tmp/tmp.yPVB1XjePi
+pass:  9 - Create session wildcard in /tmp/tmp.FrqJbfVYwk
+pass:  9 - Create session with bogus param: session list empty
+pass:  9 - Create session with default path
+pass:  9 - Destroy session filter-unsupported-ops
+pass:  9 - Enable kernel event sched_switch for session health_thread_ok
+pass:  9 - Enable lttng event with filtering
+pass:  9 - Enable lttng event with filtering and invalid filter
+pass:  9 - Enable ust event ust_gen_nevents:tptest2 for session multi-session-2
+pass:  9 - Expect 1 uid registration folder got 1
+pass:  9 - Kill relay daemon
+pass:  9 - Kill session daemon
+pass:  9 - Kill session daemon
+pass:  9 - Metadata extraction from babeltrace
+pass:  9 - Sequence seed and cpuid sequence are equal 256/256
+pass:  9 - Snapshot recorded
+pass:  9 - Trace match
+pass:  9 - Trace validation
+pass:  9 - Validate file count: channel_1_*
+pass:  9 - Validate trace for event tp:tptest, 1000 events
+pass:  9 - valid test case: ./a/b/c/d/../../../../e
+pass:  9 - valid test case: 1024G
+pass:  90 # skip: JUL support is needed. Skipping all tests.
+pass:  90 # skip: LOG4J support is needed. Skipping all tests.
+pass:  90 - Create session wildcard-overlap in /tmp/tmp.fThSpaOwlT
+pass:  90 - Destroy session valid_filter
+pass:  90 - Enable lttng event with filtering and invalid filter
+pass:  90 - Kill session daemon
+pass:  90 - Kill session daemon
+pass:  90 - Snapshot recorded
+pass:  91 # skip: JUL support is needed. Skipping all tests.
+pass:  91 # skip: LOG4J support is needed. Skipping all tests.
+pass:  91 - Destroy session filter-invalid
+pass:  91 - Enable event ust* with filtering for session wildcard-overlap
+pass:  91 - Validate trace filter output
+pass:  91 - Validate trace for event tp:tptest, 6977 events
+pass:  92 # skip: JUL support is needed. Skipping all tests.
+pass:  92 # skip: LOG4J support is needed. Skipping all tests.
+pass:  92 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  92 - Create session valid_filter in /tmp/tmp.n97dGAn3r4
+pass:  92 - Enable event ust* with filtering for session wildcard-overlap
+pass:  92 - Snapshot recorded
+pass:  93 # skip: JUL support is needed. Skipping all tests.
+pass:  93 # skip: LOG4J support is needed. Skipping all tests.
+pass:  93 - Enable lttng event with filtering
+pass:  93 - Enable lttng event with filtering and invalid filter
+pass:  93 - Start tracing for session wildcard-overlap
+pass:  93 - Validate trace for event tp:tptest, 8000 events
+pass:  94 # skip: JUL support is needed. Skipping all tests.
+pass:  94 # skip: LOG4J support is needed. Skipping all tests.
+pass:  94 - Application done
+pass:  94 - Destroy session filter-invalid
+pass:  94 - Start tracing for session valid_filter
+pass:  94 - Stop lttng tracing for session C8cNasPtWkuPUQFL
+pass:  95 # skip: JUL support is needed. Skipping all tests.
+pass:  95 # skip: LOG4J support is needed. Skipping all tests.
+pass:  95 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  95 - Destroy session C8cNasPtWkuPUQFL
+pass:  95 - Stop lttng tracing for session valid_filter
+pass:  95 - Stop lttng tracing for session wildcard-overlap
+pass:  96 # skip: JUL support is needed. Skipping all tests.
+pass:  96 # skip: LOG4J support is needed. Skipping all tests.
+pass:  96 - Destroy session valid_filter
+pass:  96 - Enable lttng event with filtering and invalid filter
+pass:  96 - Kill session daemon
+pass:  96 - Trace match
+pass:  97 # skip: JUL support is needed. Skipping all tests.
+pass:  97 # skip: LOG4J support is needed. Skipping all tests.
+pass:  97 - Destroy session filter-invalid
+pass:  97 - Trace match
+pass:  97 - Validate trace filter output
+pass:  98 # skip: JUL support is needed. Skipping all tests.
+pass:  98 # skip: LOG4J support is needed. Skipping all tests.
+pass:  98 - Create session filter-invalid in /tmp/tmp.T1kw2FfoFL
+pass:  98 - Create session valid_filter in /tmp/tmp.gf05mbvUAB
+pass:  98 - Trace match
+pass:  99 # skip: JUL support is needed. Skipping all tests.
+pass:  99 # skip: LOG4J support is needed. Skipping all tests.
+pass:  99 - Enable lttng event with filtering
+pass:  99 - Enable lttng event with filtering and invalid filter
+pass:  99 - Trace match

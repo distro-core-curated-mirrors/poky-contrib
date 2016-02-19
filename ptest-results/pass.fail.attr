@@ -1,0 +1,143 @@
+pass:  $ cd ..
+pass:  $ cd ..
+pass:  $ cd d
+pass:  $ cd d
+pass:  $ getfattr -L -R 1 | ./sort-getfattr-output
+pass:  $ getfattr -L -R 1/sub/link | ./sort-getfattr-output
+pass:  $ getfattr -P -R 1 | ./sort-getfattr-output
+pass:  $ getfattr -R -P 1/sub | ./sort-getfattr-output
+pass:  $ getfattr -R 1/sub/link | ./sort-getfattr-output
+pass:  $ getfattr -d "f "
+pass:  $ getfattr -d -e base64 f
+pass:  $ getfattr -d -e hex f
+pass:  $ getfattr -d f
+pass:  $ getfattr -d f
+pass:  $ getfattr -d f
+pass:  $ getfattr -d f
+pass:  $ getfattr -d f
+pass:  $ getfattr -d f
+pass:  $ getfattr -d f
+pass:  $ getfattr -d f
+pass:  $ getfattr -d f
+pass:  $ getfattr -d f g h | ../sort-getfattr-output
+pass:  $ getfattr -d f l | ../sort-getfattr-output
+pass:  $ getfattr -h -L -R -m '.' -e hex 1 | grep -v selinux | ./sort-getfattr-output
+pass:  $ getfattr -h -P -R -m '.' -e hex 1/2 | grep -v selinux | ./sort-getfattr-output
+pass:  $ getfattr -m- -RLhd . | ../sort-getfattr-output
+pass:  $ getfattr -m- -RLhd here | ../sort-getfattr-output
+pass:  $ getfattr -m- -RLhd sub2 | ../sort-getfattr-output
+pass:  $ getfattr -m- -RPhd here
+pass:  $ getfattr -m- -RPhd sub2
+pass:  $ getfattr -m- -Rd . | ../sort-getfattr-output
+pass:  $ getfattr -m- -Rd . | ../sort-getfattr-output
+pass:  $ getfattr -m- -Rd here | ../sort-getfattr-output
+pass:  $ getfattr -m- -Rhd . | ../sort-getfattr-output
+pass:  $ getfattr -m- -Rhd . | ../sort-getfattr-output
+pass:  $ getfattr -m- -Rhd here
+pass:  $ getfattr -m- -Rhd sub2
+pass:  $ getfattr -m- -d f
+pass:  $ getfattr -m- -d l
+pass:  $ getfattr -m- -hd l
+pass:  $ getfattr -n user.color -h symlink 2>/dev/null
+pass:  $ getfattr f
+pass:  $ getfattr f g h | ../sort-getfattr-output
+pass:  $ getfattr f g h | ../sort-getfattr-output
+pass:  $ getfattr f g h | ../sort-getfattr-output
+pass:  $ getfattr f g h | ../sort-getfattr-output
+pass:  $ ln -s . here
+pass:  $ ln -s .. sub/up
+pass:  $ ln -s ../sub sub2/to-sub
+pass:  $ ln -s `pwd`/1/link 1/sub/link
+pass:  $ ln -s f l
+pass:  $ ln -s f l
+pass:  $ ln -s src symlink
+pass:  $ ls -s f
+pass:  $ ls -s f
+pass:  $ mkdir -p 1/2/3
+pass:  $ mkdir -p 1/sub
+pass:  $ mkdir 1/link
+pass:  $ mkdir d
+pass:  $ mkdir d
+pass:  $ mkdir src
+pass:  $ mkdir sub
+pass:  $ mkdir sub2
+pass:  $ mv f l sub
+pass:  $ rm "f "
+pass:  $ rm -R 1
+pass:  $ rm -R 1
+pass:  $ rm -rf d
+pass:  $ rm -rf d
+pass:  $ rm f
+pass:  $ rm f
+pass:  $ rm f
+pass:  $ rm f
+pass:  $ rm f
+pass:  $ rm f
+pass:  $ rm f g h
+pass:  $ setfattr -h -n trusted.test -v test l
+pass:  $ setfattr -h -n user.filename -v l l
+pass:  $ setfattr -n "user.9" 1
+pass:  $ setfattr -n "user.9" 1/2
+pass:  $ setfattr -n "user.9" 1/2/3
+pass:  $ setfattr -n "user.a" 1
+pass:  $ setfattr -n "user.a" 1
+pass:  $ setfattr -n "user.a" 1/2
+pass:  $ setfattr -n "user.a" 1/2/3
+pass:  $ setfattr -n "user.a" 1/link
+pass:  $ setfattr -n "user.a" 1/link/link-file
+pass:  $ setfattr -n "user.a" 1/sub
+pass:  $ setfattr -n "user.a" 1/sub/sub-file
+pass:  $ setfattr -n "user.sp ace" -v value f
+pass:  $ setfattr -n "user.sp ace" -v value f
+pass:  $ setfattr -n "user.special " -v value f
+pass:  $ setfattr -n user -v value f
+pass:  $ setfattr -n user. -v value f
+pass:  $ setfattr -n user.color -v blue src/target
+pass:  $ setfattr -n user.filename -v f l
+pass:  $ setfattr -n user.filename -v l l
+pass:  $ setfattr -n user.longername -v longervalue f
+pass:  $ setfattr -n user.n -v value f
+pass:  $ setfattr -n user.name -v 0xbabe f
+pass:  $ setfattr -n user.name -v value "f "
+pass:  $ setfattr -n user.name -v value f
+pass:  $ setfattr -n user.name -v value g
+pass:  $ setfattr -n user.name f
+pass:  $ setfattr -n user.name2 -v 0s3q2+7w== f
+pass:  $ setfattr -n user.name3 -v 0xdeface f
+pass:  $ setfattr -n user.novalue f
+pass:  $ setfattr -n user.novalue f g h
+pass:  $ setfattr -n user.novalue-yet -v avalue-now f
+pass:  $ setfattr -n user.novalue-yet f
+pass:  $ setfattr -n user.short -v value f
+pass:  $ setfattr -n user.somename -v somevalue f
+pass:  $ setfattr -n user.somename -v somevalue f
+pass:  $ setfattr -n user.test -v test f
+pass:  $ setfattr -n user.vvvvvvvvvvvv -v vvvvvvvvvvvv f
+pass:  $ setfattr -n user.wwwwwwww -v wwww f
+pass:  $ setfattr -n user.wwwwwwww -v wwwwwwww f
+pass:  $ setfattr -n user.xxxx -v xxxx f
+pass:  $ setfattr -n user.xxxx -v xxxxxxxx f
+pass:  $ setfattr -x "user.sp ace" f
+pass:  $ setfattr -x "user.sp ace" f
+pass:  $ setfattr -x "user.special " f
+pass:  $ setfattr -x user.longername f
+pass:  $ setfattr -x user.name f
+pass:  $ setfattr -x user.noname f
+pass:  $ setfattr -x user.novalue f
+pass:  $ setfattr -x user.novalue h
+pass:  $ setfattr -x user.novalue-yet f
+pass:  $ setfattr -x user.short f
+pass:  $ setfattr -x user.somename f
+pass:  $ sh -c 'getfattr -n user.name f && echo zero exit code'
+pass:  $ touch "f "
+pass:  $ touch 1/link/link-file
+pass:  $ touch 1/sub/sub-file
+pass:  $ touch f
+pass:  $ touch f
+pass:  $ touch f
+pass:  $ touch f
+pass:  $ touch f
+pass:  $ touch f
+pass:  $ touch f
+pass:  $ touch f g h
+pass:  $ touch src/target
