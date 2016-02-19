@@ -7,6 +7,7 @@ SRC_URI = " \
     file://pseudo-client-diagnostics.patch \
     file://pseudo-fix-client-logging.patch \
     file://pseudo-Add-additional-logging-around-client-start.patch \
+    file://pseudo-Move-logging-to-much-earlier.patch \
 "
 
 SRC_URI[md5sum] = "c10209938f03128d0c193f041ff3596d"

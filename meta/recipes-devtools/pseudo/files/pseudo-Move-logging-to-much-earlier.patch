@@ -1,0 +1,58 @@
+From 85dc959ed70242d6f69120204610561d8fc45dee Mon Sep 17 00:00:00 2001
+From: Mark Hatle <mark.hatle@windriver.com>
+Date: Fri, 19 Feb 2016 08:40:02 -0600
+Subject: [PATCH] pseudo: Move logging to much earlier
+
+We need to capture to the log-file, if enabled, server errors with the
+lock file, or opening the socket.  Moving the logging much earlier in the
+server startup will permit this.  However, it may hide some early diagnostics
+from stderr.
+
+Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
+---
+ ChangeLog.txt   | 3 +++
+ pseudo.c        | 4 ++++
+ pseudo_server.c | 1 -
+ 3 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog.txt b/ChangeLog.txt
+index 40e9235..af322f7 100644
+--- a/ChangeLog.txt
++++ b/ChangeLog.txt
+@@ -1,3 +1,6 @@
++2016-02-19:
++	* (mhatle) Move pseudo server logging much earlier
++
+ 2016-02-16:
+ 	* (seebs) attempt at diagnostics for client failures
+ 	* (seebs) don't try to force pseudo's debug fd to fd 2 in clients.
+diff --git a/pseudo.c b/pseudo.c
+index 4451992..fde21a4 100644
+--- a/pseudo.c
++++ b/pseudo.c
+@@ -442,6 +442,10 @@ main(int argc, char *argv[]) {
+ 	/* if we got here, we are not running a command, and we are not in
+ 	 * a pseudo environment.
+ 	 */
++
++	/* Start logging, otherwise we don't get early errors */
++	pseudo_logfile(PSEUDO_LOGFILE, 2);
++
+ 	pseudo_new_pid();
+ 
+ 	pseudo_debug(PDBGF_SERVER, "opening lock.\n");
+diff --git a/pseudo_server.c b/pseudo_server.c
+index 7127082..ebb3b68 100644
+--- a/pseudo_server.c
++++ b/pseudo_server.c
+@@ -165,7 +165,6 @@ pseudo_server_start(int daemonize) {
+ 		pseudo_new_pid();
+ 		fclose(stdin);
+ 		fclose(stdout);
+-		pseudo_logfile(PSEUDO_LOGFILE, 2);
+ 	} else {
+ 		/* Write the pid if we don't daemonize */
+ 		pseudo_server_write_pid(getpid());
+-- 
+2.5.0
+
