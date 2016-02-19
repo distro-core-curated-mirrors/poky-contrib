@@ -230,9 +230,7 @@ function projectPageInit(ctx) {
 
     toBuild = toBuild.trim();
 
-    libtoaster.startABuild(libtoaster.ctx.projectBuildsUrl,
-      libtoaster.ctx.projectId,
-      toBuild,
+    libtoaster.startABuild(null, toBuild,
       function(){
         /* Build request started */
         window.location.replace(libtoaster.ctx.projectBuildsUrl);
