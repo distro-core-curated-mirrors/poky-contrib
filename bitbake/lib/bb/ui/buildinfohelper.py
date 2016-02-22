@@ -214,7 +214,7 @@ class ORMWrapper(object):
         if build.outcome == Build.CANCELLED:
             return
 
-        if build.buildrequest and \
+        if 'buildrequest' in vars(build) and \
            build.buildrequest.state == BuildRequest.REQ_CANCELLING:
             return
 
@@ -1401,7 +1401,7 @@ class BuildInfoHelper(object):
     def _store_build_done(self, errorcode):
         logger.info("Build exited with errorcode %d", errorcode)
         br_id, be_id = self.brbe.split(":")
-        be = BuildEnvironment.objects.get(pk = be_id)
+        be = BuildEnvironment.objemichaelw/sujith/build-cancelcts.get(pk = be_id)
         be.lock = BuildEnvironment.LOCK_LOCK
         be.save()
         br = BuildRequest.objects.get(pk = br_id)
