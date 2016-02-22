@@ -1,0 +1,64 @@
+= Toaster tests =
+
+== Host requirements ==
+
+All the test components REQUIRE bash as your default shell, you
+need to review if /bin/sh points to bash because some problems are
+detected when use dash.
+
+=== Toaster ===
+
+- virtualenv for python
+- pip for python
+
+=== Toaster UI ===
+
+- firefox web browser for use selenium
+- firefox selenium addon, for install download latest from [1].
+- vncserver (optional)
+
+[1] http://release.seleniumhq.org/selenium-ide/
+
+=== Debian INSTALL ===
+
+# apt-get install iceweasel python-virtualenv python-pip
+
+Optional:
+
+# apt-get install vnc4server
+
+== Setup ==
+
+For run any of the tests scripts you need to setup virtualenv and install
+requirements with pip.
+
+$ cd /home/user/pokydir
+$ source oe-init-build-env build
+$ virtualenv venv
+$ source venv/bin/activate
+$ pip install -r toaster-requirements.txt
+$ pip install -r toaster-tests-requirements.txt
+
+== Toaster test ==
+
+For run toaster you need to start a toaster instance and then use toaster-test
+program, it can take sometime because it setup a toaster instance and run
+testsuite over it.
+
+For start/stop a toaster instance a helper exists and need to be called with
+the path to the poky directory.
+
+$ cd /home/user/pokydir
+$ source oe-init-build-env build
+$ source venv/bin/activate
+$ ../bitbake/lib/toaster/tests/helpers.py -a start -d /home/user/pokydir -b build
+$ toaster-test --run-all-tests
+$ ../bitbake/lib/toaster/tests/helpers.py -a stop -d /home/user/pokydir -b build
+
+Optional: Toaster test suite uses selenium and spawn Firefox web browser for
+run the tests, if you are in a development machine may be is a good idea to
+start vncserver and set DISPLAY before run to don't interfer with your tasks,
+example:
+
+$ vncserver :10
+$ export DISPLAY=:10

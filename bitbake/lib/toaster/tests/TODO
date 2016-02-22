@@ -1,0 +1,13 @@
+setup.py:
+
+    - Improve logic of timeout now have a fixed time,
+      will be better to ask toaster instance about the
+      state of image building.
+
+ui.py:
+    - Class toaster_cases_base review and move common code
+      to ToasterTestCase.
+    - Class toaster_cases split into ToasterUITestCases (< 1000)
+      and ToasterBackendTestCases (> 1000).
+    - Class toaster_cases fix current tests to match Toaster in
+      master (css id's update)
