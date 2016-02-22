@@ -1,126 +1,92 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-# Copyright
-
-# DESCRIPTION
-# This is script for running all selected toaster cases on
-# selected web browsers manifested in toaster_test.cfg.
-
-# 1. How to start toaster in yocto:
-# $ source poky/oe-init-build-env
-# $ source toaster start
-# $ bitbake core-image-minimal
-
-# 2. How to install selenium on Ubuntu:
-# $ sudo apt-get install scrot python-pip
-# $ sudo pip install selenium
-
-# 3. How to install selenium addon in firefox:
-# Download the lastest firefox addon from http://release.seleniumhq.org/selenium-ide/
-# Then install it. You can also install firebug and firepath addon
-
-# 4. How to start writing a new case:
-# All you need to do is to implement the function test_xxx() and  pile it on.
-
-# 5. How to test with Chrome browser
-# Download/install chrome on host
-# Download chromedriver from https://code.google.com/p/chromedriver/downloads/list  according to your host type
-# put chromedriver in PATH, (e.g. /usr/bin/, bear in mind to chmod)
-# For windows host, you may put chromedriver.exe in the same directory as chrome.exe
-
-import unittest, sys, os, platform
-import ConfigParser
+import sys
+import os
 import argparse
-from toaster_automation_test import toaster_cases
+import unittest
+import logging
 
+import importlib
 
-def get_args_parser():
-    description = "Script that runs toaster auto tests."
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('--run-all-tests', required=False, action="store_true", dest="run_all_tests", default=False,
-                       help='Run all tests.')
-    parser.add_argument('--run-suite', required=False, dest='run_suite', default=False,
-                       help='run suite (defined in cfg file)')
+bitbake_libdir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lib')
+sys.path.insert(0, bitbake_libdir)
 
-    return parser
+from toaster.tests.base import ToasterOptions
+from toaster.tests.setup import ToasterSetupTestCase
 
+DEFAULT_TOASTER_TESTS_CFG = os.path.join(bitbake_libdir,  'toaster', 'tests',
+    'toaster_test.cfg')
+DEFAULT_TOASTER_CFG = os.path.join(os.environ['BUILDDIR'],  '..', 'meta-yocto',
+    'conf', 'toasterconf.json')
+DEFAULT_TOASTER_DB = os.path.join(os.environ['BUILDDIR'], 'toaster.sqlite')
 
-def get_tests():
+test_suites = {}
+test_suites['toaster.tests.ui'] = ['toaster_cases']
+
+logger = None
+
+def load_test(test, args, logger):
+    """
+        Returns an instance of class passing arguments
+        to the class.
+    """
+
+    module_name = '.'.join(test.split('.')[:-2])
+    class_name = test.split('.')[-2]
+    test_name = test.split('.')[-1]
+
+    module = importlib.import_module(module_name)
+    clss = getattr(module, class_name)
+
+    return clss(test_name, args, logger)
+
+def get_tests(tests_filter=None):
+    """
+        Iterate over available tests suites and serach
+        for tests that starts with test_.
+
+        If tests_filter is specified only add tests that
+        are in the test_filter list.
+    """
+
     testslist = []
+    tests_filter_dic = None
 
-    prefix = 'toaster_automation_test.toaster_cases'
+    if tests_filter:
+        tests_filter_dic = dict((str(tf), False) for tf in tests_filter)
 
-    for t in dir(toaster_cases):
-        if t.startswith('test_'):
-            testslist.append('.'.join((prefix, t)))
+    def _filter_tests(test, tests_filter_dic):
+        if not tests_filter_dic:
+            return True
+        if test in tests_filter_dic.keys():
+            tests_filter_dic[test] = True
+            return True
+        return False
+
+    for ts in test_suites.keys():
+        m = importlib.import_module(ts)
+        for clss in test_suites[ts]:
+            for o in dir(getattr(m, clss)):
+                full_clss = '.'.join((ts, clss))
+                if o.startswith('test_') and _filter_tests(o[5:], tests_filter_dic):
+                    testslist.append('.'.join((full_clss, o)))
 
     return testslist
 
+def get_all_tests():
+    return get_tests()
 
-def get_tests_from_cfg(suite=None):
-
-    testslist = []
-    config = ConfigParser.SafeConfigParser()
-    config.read('toaster_test.cfg')
-
-    if suite is not None:
-        target_suite = suite.lower()
-
-        # TODO: if suite is valid suite
-
-    else:
-        target_suite = platform.system().lower()
-
+def get_tests_from_cfg(config, suite):
     try:
-        tests_from_cfg = eval(config.get('toaster_test_' + target_suite, 'test_cases'))
+        tests_from_cfg = eval(config.get('toaster_test_' + suite, 'test_cases'))
     except:
-        print 'Failed to get test cases from cfg file. Make sure the format is correct.'
-        return None
+        logger.error('Failed to get test cases from config file.' \
+            'Make sure the format is correct.')
+        raise
 
-    prefix = 'toaster_automation_test.toaster_cases.test_'
-    for t in tests_from_cfg:
-        testslist.append(prefix + str(t))
+    testslist = get_tests(tests_from_cfg)
 
     return testslist
-
-def main():
-
-    # In case this script is called from other directory
-    os.chdir(os.path.abspath(sys.path[0]))
-
-    parser = get_args_parser()
-    args = parser.parse_args()
-
-    if args.run_all_tests:
-        testslist = get_tests()
-    elif args.run_suite:
-        testslist = get_tests_from_cfg(args.run_suite)
-        os.environ['TOASTER_SUITE'] = args.run_suite
-    else:
-        testslist = get_tests_from_cfg()
-
-    if not testslist:
-        print 'Failed to get test cases.'
-        exit(1)
-
-    suite = unittest.TestSuite()
-    loader = unittest.TestLoader()
-    loader.sortTestMethodsUsing = None
-    runner = unittest.TextTestRunner(verbosity=2, resultclass=buildResultClass(args))
-
-    for test in testslist:
-        try:
-            suite.addTests(loader.loadTestsFromName(test))
-        except:
-            return 1
-
-    result = runner.run(suite)
-
-    if result.wasSuccessful():
-        return 0
-    else:
-        return 1
-
 
 def buildResultClass(args):
     """Build a Result Class to use in the testcase execution"""
@@ -138,18 +104,118 @@ def buildResultClass(args):
 
     return StampedResult
 
+def get_args():
+    parser = argparse.ArgumentParser(description="Script for run toaster tests.")
+
+    parser.add_argument('--run-all-tests', required=False, action="store_true",
+        dest="run_all_tests", default=False, help='Run all tests.')
+    parser.add_argument('--run-suite', required=False, dest='run_suite',
+        choices=['linux', 'windows', 'darwin'],
+        help='Run suite (defined in config file)')
+    parser.add_argument('--config', dest="config",
+        default=DEFAULT_TOASTER_TESTS_CFG,
+        help='Configuration for toaster tests, default: %s' %\
+            DEFAULT_TOASTER_TESTS_CFG)
+    parser.add_argument('--toaster-config', dest="toaster_config",
+        default=DEFAULT_TOASTER_CFG,
+        help='Configuration of toaster, default: %s' %\
+            DEFAULT_TOASTER_CFG)
+    parser.add_argument('--toaster-db', dest="toaster_db",
+        default=DEFAULT_TOASTER_DB,
+        help='Database of toaster, default: %s' %\
+            DEFAULT_TOASTER_DB)
+    parser.add_argument('--toaster-url', dest="toaster_url",
+        help='URL of toaster instance')
+    parser.add_argument('--test-browser', dest='test_browser',
+        choices=['firefox', 'chrome', 'ie'],
+        help='Web browser for use to run tests.')
+    parser.add_argument('--verbose', required=False, action="store_true",
+        dest="verbose", default=False, help='Enable verbose mode.')
+    parser.add_argument('--debug', required=False, action="store_true",
+        dest="debug", default=False, help='Enable debug mode.')
+
+    return parser.parse_args()
+
+def get_options(args):
+    opts = ToasterOptions()
+
+    opts.host_os = args.host_os
+    opts.config = args.config
+    opts.toaster_config = args.toaster_config
+    opts.toaster_db = args.toaster_db
+    opts.toaster_url = args.toaster_url
+    opts.test_browser = args.test_browser
+
+    opts.test_list = args.test_list
+
+    return opts
+
+def main(args):
+    import platform
+    import ConfigParser
+
+    if args.verbose or args.debug:
+        logging.basicConfig(stream=sys.stdout)
+        root = logging.getLogger()
+        root.setLevel(logging.DEBUG if args.debug else logging.INFO)
+    else:
+        logging.basicConfig(stream=sys.stderr)
+    logger = logging.getLogger()
+
+    args.host_os = platform.system().lower()
+    if not args.run_suite:
+        args.run_suite = args.host_os
+
+    config = ConfigParser.SafeConfigParser()
+    config.read(args.config)
+
+    if args.run_all_tests:
+        args.test_list = get_all_tests()
+    else:
+        args.test_list = get_tests_from_cfg(config, args.run_suite)
+
+    if not args.toaster_url:
+        args.toaster_url = eval(config.get('toaster_test_' + args.run_suite,
+            'toaster_url'))
+    if not args.test_browser:
+        args.test_browser = eval(config.get('toaster_test_' + args.run_suite,
+            'test_browser'))
+
+    if not args.test_list:
+        logger.error('Failed to get test cases.')
+        sys.exit(1)
+
+    opts = get_options(args)
+
+    runner = unittest.TextTestRunner(verbosity=2, resultclass=buildResultClass(args))
+
+    setup_suite = unittest.TestSuite()
+    setup_suite.addTest(ToasterSetupTestCase('test_setupToaster', opts, logger))
+
+    suite = unittest.TestSuite()
+    for test in args.test_list:
+        try:
+            suite.addTest(load_test(test, opts, logger))
+        except:
+            logger.error("Can't load test %s" % str(test))
+            raise
+
+    result = runner.run(setup_suite)
+    if result.wasSuccessful():
+        result = runner.run(suite)
+
+    if result.wasSuccessful():
+        return 0
+    else:
+        return 1
 
 if __name__ == "__main__":
+    args = get_args()
 
     try:
-        ret = main()
+        ret = main(args)
     except:
-        ret = 1
         import traceback
-        traceback.print_exc(5)
-    finally:
-        if os.getenv('TOASTER_SUITE'):
-            del os.environ['TOASTER_SUITE']
+        ret = 1
+        traceback.print_exc()
     sys.exit(ret)
-
-
