@@ -44,30 +44,11 @@ import oeqa.utils.ftools as ftools
 from oeqa.utils.commands import runCmd, get_bb_var, get_test_layer
 from oeqa.selftest.base import oeSelfTest, get_available_machines
 
-def logger_create():
-    log_file = "oe-selftest-" + t.strftime("%Y-%m-%d_%H:%M:%S") + ".log"
-    if os.path.exists("oe-selftest.log"): os.remove("oe-selftest.log")
-    os.symlink(log_file, "oe-selftest.log")
+from oeqa.runner import Runner
 
-    log = logging.getLogger("selftest")
-    log.setLevel(logging.DEBUG)
+test_runner = Runner('selftest', oeSelfTest, oeqa.selftest)
+log = test_runner.log
 
-    fh = logging.FileHandler(filename=log_file, mode='w')
-    fh.setLevel(logging.DEBUG)
-
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.INFO)
-
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-
-    log.addHandler(fh)
-    log.addHandler(ch)
-
-    return log
-
-log = logger_create()
 
 def get_args_parser():
     description = "Script that runs unit tests agains bitbake and other Yocto related tools. The goal is to validate tools functionality and metadata integrity. Refer to https://wiki.yoctoproject.org/wiki/Oe-selftest for more information."
@@ -90,284 +71,6 @@ def get_args_parser():
                         help='Run tests on different machines (random/all).')
     return parser
 
-
-def preflight_check():
-
-    log.info("Checking that everything is in order before running the tests")
-
-    if not os.environ.get("BUILDDIR"):
-        log.error("BUILDDIR isn't set. Did you forget to source your build environment setup script?")
-        return False
-
-    builddir = os.environ.get("BUILDDIR")
-    if os.getcwd() != builddir:
-        log.info("Changing cwd to %s" % builddir)
-        os.chdir(builddir)
-
-    if not "meta-selftest" in get_bb_var("BBLAYERS"):
-        log.error("You don't seem to have the meta-selftest layer in BBLAYERS")
-        return False
-
-    log.info("Running bitbake -p")
-    runCmd("bitbake -p")
-
-    return True
-
-def add_include():
-    builddir = os.environ.get("BUILDDIR")
-    if "#include added by oe-selftest.py" \
-        not in ftools.read_file(os.path.join(builddir, "conf/local.conf")):
-            log.info("Adding: \"include selftest.inc\" in local.conf")
-            ftools.append_file(os.path.join(builddir, "conf/local.conf"), \
-                    "\n#include added by oe-selftest.py\ninclude machine.inc\ninclude selftest.inc")
-
-    if "#include added by oe-selftest.py" \
-        not in ftools.read_file(os.path.join(builddir, "conf/bblayers.conf")):
-            log.info("Adding: \"include bblayers.inc\" in bblayers.conf")
-            ftools.append_file(os.path.join(builddir, "conf/bblayers.conf"), \
-                    "\n#include added by oe-selftest.py\ninclude bblayers.inc")
-
-def remove_include():
-    builddir = os.environ.get("BUILDDIR")
-    if builddir is None:
-        return
-    if "#include added by oe-selftest.py" \
-        in ftools.read_file(os.path.join(builddir, "conf/local.conf")):
-            log.info("Removing the include from local.conf")
-            ftools.remove_from_file(os.path.join(builddir, "conf/local.conf"), \
-                    "\n#include added by oe-selftest.py\ninclude machine.inc\ninclude selftest.inc")
-
-    if "#include added by oe-selftest.py" \
-        in ftools.read_file(os.path.join(builddir, "conf/bblayers.conf")):
-            log.info("Removing the include from bblayers.conf")
-            ftools.remove_from_file(os.path.join(builddir, "conf/bblayers.conf"), \
-                    "\n#include added by oe-selftest.py\ninclude bblayers.inc")
-
-def remove_inc_files():
-    try:
-        os.remove(os.path.join(os.environ.get("BUILDDIR"), "conf/selftest.inc"))
-        for root, _, files in os.walk(get_test_layer()):
-            for f in files:
-                if f == 'test_recipe.inc':
-                    os.remove(os.path.join(root, f))
-    except (AttributeError, OSError,) as e:    # AttributeError may happen if BUILDDIR is not set
-        pass
-
-    for incl_file in ['conf/bblayers.inc', 'conf/machine.inc']:
-        try:
-            os.remove(os.path.join(os.environ.get("BUILDDIR"), incl_file))
-        except:
-            pass
-
-def get_tests(exclusive_modules=[], include_hidden=False):
-    testslist = []
-    for x in exclusive_modules:
-        testslist.append('oeqa.selftest.' + x)
-    if not testslist:
-        for testpath in oeqa.selftest.__path__:
-            files = sorted([f for f in os.listdir(testpath) if f.endswith('.py') and not (f.startswith('_') and not include_hidden) and not f.startswith('__') and f != 'base.py'])
-            for f in files:
-                module = 'oeqa.selftest.' + f[:-3]
-                if module not in testslist:
-                    testslist.append(module)
-
-    return testslist
-
-
-class Tc:
-    def __init__(self, tcname, tcclass, tcmodule, tcid=None, tctag=None):
-        self.tcname = tcname
-        self.tcclass = tcclass
-        self.tcmodule = tcmodule
-        self.tcid = tcid
-        # A test case can have multiple tags (as list or as tuples) otherwise str suffice
-        self.tctag = tctag
-        self.fullpath = '.'.join(['oeqa', 'selftest', tcmodule, tcclass, tcname])
-
-
-def get_tests_from_module(tmod):
-    tlist = []
-    prefix = 'oeqa.selftest.'
-
-    try:
-        import importlib
-        modlib = importlib.import_module(tmod)
-        for mod in vars(modlib).values():
-            if isinstance(mod, type(oeSelfTest)) and issubclass(mod, oeSelfTest) and mod is not oeSelfTest:
-                for test in dir(mod):
-                    if test.startswith('test_') and hasattr(vars(mod)[test], '__call__'):
-                        # Get test case id and feature tag
-                        # NOTE: if testcase decorator or feature tag not set will throw error
-                        try:
-                            tid = vars(mod)[test].test_case
-                        except:
-                            print 'DEBUG: tc id missing for ' + str(test)
-                            tid = None
-                        try:
-                            ttag = vars(mod)[test].tag__feature
-                        except:
-                            # print 'DEBUG: feature tag missing for ' + str(test)
-                            ttag = None
-
-                        # NOTE: for some reason lstrip() doesn't work for mod.__module__
-                        tlist.append(Tc(test, mod.__name__, mod.__module__.replace(prefix, ''), tid, ttag))
-    except:
-        pass
-
-    return tlist
-
-
-def get_all_tests():
-    tmodules = set()
-    testlist = []
-    prefix = 'oeqa.selftest.'
-
-    # Get all the test modules (except the hidden ones)
-    for tpath in oeqa.selftest.__path__:
-        files = sorted([f for f in os.listdir(tpath) if f.endswith('.py') and not
-                        f.startswith(('_', '__')) and f != 'base.py'])
-        for f in files:
-            tmodules.add(prefix + f.rstrip('.py'))
-
-    # Get all the tests from modules
-    tmodules = sorted(list(tmodules))
-
-    for tmod in tmodules:
-        testlist += get_tests_from_module(tmod)
-
-    return testlist
-
-
-def create_testsuite_by(criteria, keyword):
-    # Create a testsuite based on 'keyword'
-    # criteria: name, class, module, id, tag
-    # keyword: a list of tests, classes, modules, ids, tags
-    # NOTE: globing would be nice?
-
-    ts = set()
-    all_tests = get_all_tests()
-
-    if criteria == 'name':
-        for tc in all_tests:
-            if tc.tcname in keyword:
-                ts.add(tc.fullpath)
-
-    elif criteria == 'class':
-        for tc in all_tests:
-            if tc.tcclass in keyword:
-                ts.add(tc.fullpath)
-
-    elif criteria == 'module':
-        for tc in all_tests:
-            if tc.tcmodule in keyword:
-                ts.add(tc.fullpath)
-    elif criteria == 'id':
-        for tc in all_tests:
-            if str(tc.tcid) in keyword:
-                ts.add(tc.fullpath)
-    elif criteria == 'tag':
-        for tc in all_tests:
-            # tc can have multiple tags (as list or tuple) otherwise as str
-            if isinstance(tc.tctag, (list, tuple)):
-                for tag in tc.tctag:
-                    if str(tag) in keyword:
-                        ts.add(tc.fullpath)
-            elif tc.tctag in keyword:
-                ts.add(tc.fullpath)
-
-    return sorted(list(ts))
-
-
-def get_testsuite_by(criteria, keyword):
-    # Get a testsuite based on 'keyword'
-    # criteria: name, class, module, id, tag
-    # keyword: a list of tests, classes, modules, ids, tags
-    # NOTE: globing would be nice?
-    ts = set()
-    all_tests = get_all_tests()
-
-    if criteria == 'name':
-        for tc in all_tests:
-            if tc.tcname in keyword:
-                ts.add((tc.tcid, tc.tctag, tc.tcname, tc.tcclass, tc.tcmodule))
-
-    elif criteria == 'class':
-        for tc in all_tests:
-            if tc.tcclass in keyword:
-                ts.add((tc.tcid, tc.tctag, tc.tcname, tc.tcclass, tc.tcmodule))
-
-    elif criteria == 'module':
-        for tc in all_tests:
-            if tc.tcmodule in keyword:
-                ts.add((tc.tcid, tc.tctag, tc.tcname, tc.tcclass, tc.tcmodule))
-    elif criteria == 'id':
-        for tc in all_tests:
-            if str(tc.tcid) in keyword:
-                ts.add((tc.tcid, tc.tctag, tc.tcname, tc.tcclass, tc.tcmodule))
-    elif criteria == 'tag':
-        for tc in all_tests:
-            # tc can have multiple tags (as list or tuple) otherwise as str
-            if isinstance(tc.tctag, (list, tuple)):
-                for tag in tc.tctag:
-                    if str(tag) in keyword:
-                        ts.add((tc.tcid, tc.tctag, tc.tcname, tc.tcclass, tc.tcmodule))
-            elif str(tc.tctag) in keyword:
-                ts.add((tc.tcid, tc.tctag, tc.tcname, tc.tcclass, tc.tcmodule))
-
-    return sorted(list(ts))
-
-
-def list_testsuite_by(criteria, keyword):
-    # Get a testsuite based on 'keyword'
-    # criteria: name, class, module, id, tag
-    # keyword: a list of tests, classes, modules, ids, tags
-    # NOTE: globing would be nice?
-
-    ts = get_testsuite_by(criteria, keyword)
-
-    print '%-4s\t%-20s\t%-60s\t%-25s\t%-20s' % ('id', 'tag', 'name', 'class', 'module')
-    print '_' * 150
-    for t in ts:
-        if isinstance(t[1], (tuple, list)):
-            print '%-4s\t%-20s\t%-60s\t%-25s\t%-20s' % (t[0], ', '.join(t[1]), t[2], t[3], t[4])
-        else:
-            print '%-4s\t%-20s\t%-60s\t%-25s\t%-20s' % t
-    print '_' * 150
-    print 'Filtering by:\t %s' % criteria
-    print 'Looking for:\t %s' % ', '.join(str(x) for x in keyword)
-    print 'Total found:\t %s' % len(ts)
-
-
-def list_tests():
-    # List all available oe-selftest tests
-
-    ts = get_all_tests()
-
-    print '%-4s\t%-20s\t%-60s\t%-25s\t%-20s' % ('id', 'tag', 'name', 'class', 'module')
-    print '_' * 150
-    for t in ts:
-        if isinstance(t.tctag, (tuple, list)):
-            print '%-4s\t%-20s\t%-60s\t%-25s\t%-20s' % (t.tcid, ', '.join(t.tctag), t.tcname, t.tcclass, t.tcmodule)
-        else:
-            print '%-4s\t%-20s\t%-60s\t%-25s\t%-20s' % (t.tcid, t.tctag, t.tcname, t.tcclass, t.tcmodule)
-    print '_' * 150
-    print 'Total found:\t %s' % len(ts)
-
-
-def list_tags():
-    # Get all tags set to test cases
-    # This is useful when setting tags to test cases
-    # The list of tags should be kept as minimal as possible
-    tags = set()
-    all_tests = get_all_tests()
-
-    for tc in all_tests:
-        if isinstance(tc.tctag, (tuple, list)):
-            tags.update(set(tc.tctag))
-        else:
-            tags.add(tc.tctag)
-
-    print 'Tags:\t%s' % ', '.join(str(x) for x in tags)
 
 def coverage_setup(run_tests, run_all_tests):
     """ Set up the coverage measurement for the testcases to be run """
@@ -438,7 +141,7 @@ def main():
         else:
             criteria = args.run_tests_by[0]
             keyword = args.run_tests_by[1:]
-            ts = create_testsuite_by(criteria, keyword)
+            ts = test_runner.create_testsuite_by(criteria, keyword)
 
     if args.list_tests_by and len(args.list_tests_by) >= 2:
         valid_options = ['name', 'class', 'module', 'id', 'tag']
@@ -448,20 +151,20 @@ def main():
         else:
             criteria = args.list_tests_by[0]
             keyword = args.list_tests_by[1:]
-            list_testsuite_by(criteria, keyword)
+            test_runner.list_testsuite_by(criteria, keyword)
 
     if args.list_tests:
-        list_tests()
+        test_runner.list_tests()
 
     if args.list_tags:
-        list_tags()
+        test_runner.list_tags()
 
     if args.list_allclasses:
         args.list_modules = True
 
     if args.list_modules:
         log.info('Listing all available test modules:')
-        testslist = get_tests(include_hidden=True)
+        testslist = test_runner.get_tests(include_hidden=True)
         for test in testslist:
             module = test.split('.')[-1]
             info = ''
@@ -485,13 +188,13 @@ def main():
                     pass
 
     if args.run_tests or args.run_all_tests or args.run_tests_by:
-        if not preflight_check():
+        if not test_runner.preflight_check():
             return 1
 
         if args.run_tests_by:
             testslist = ts
         else:
-            testslist = get_tests(exclusive_modules=(args.run_tests or []), include_hidden=False)
+            testslist = test_runner.get_tests(exclusive_modules=(args.run_tests or []), include_hidden=False)
 
         suite = unittest.TestSuite()
         loader = unittest.TestLoader()
@@ -508,7 +211,8 @@ def main():
                 log.error("Failed to import %s" % test)
                 log.error(e)
                 return 1
-        add_include()
+        test_runner.add_include(['machine.inc', 'selftest.inc'], 'local.conf')
+        test_runner.add_include('bblayers.inc', 'bblayers.conf')
 
         if args.machine:
             # Custom machine sets only weak default values (??=) for MACHINE in machine.inc
@@ -595,6 +299,7 @@ if __name__ == "__main__":
         import traceback
         traceback.print_exc(5)
     finally:
-        remove_include()
-        remove_inc_files()
+        test_runner.remove_include(['machine.inc', 'selftest.inc'], 'local.conf')
+        test_runner.remove_include('bblayers.inc', 'bblayers.conf')
+        test_runner.remove_inc_files(['selftest.inc', 'machine.inc', 'bblayers.inc'])
     sys.exit(ret)
