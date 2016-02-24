@@ -2,6 +2,7 @@ import os
 import logging
 import sys
 import time
+import unittest
 import oeqa.utils.ftools as ftools
 from oeqa.utils.commands import bitbake, get_bb_var, get_test_layer
 
@@ -35,7 +36,8 @@ class Runner:
         self.log = self.logger_create(self.caller)
         self.builddir = os.environ.get("BUILDDIR")
 
-    def logger_create(self, log_name):
+    @staticmethod
+    def logger_create(log_name):
         """ Create logger obj with logging file as <log_name-date.log> and symlink to it as <log_name.log> """
 
         log_link = '%s.log' % log_name
@@ -342,3 +344,107 @@ class Runner:
         print 'Looking for:\t %s' % ', '.join(str(x) for x in keyword)
         print 'Total found:\t %s' % len(ts)
 
+    @staticmethod
+    def coverage_setup(run_tests, run_all_tests):
+        """ Set up the coverage measurement for the testcases to be run """
+        builddir = os.environ.get("BUILDDIR")
+        coveragerc = "%s/.coveragerc" % builddir
+        data_file = "%s/.coverage." % builddir
+        data_file += ((run_tests and '.'.join(run_tests)) or (run_all_tests and "all_tests") or "")
+        if os.path.isfile(data_file):
+            os.remove(data_file)
+        with open(coveragerc, 'w') as cps:
+            cps.write("[run]\n")
+            cps.write("data_file = %s\n" % data_file)
+            cps.write("branch = True\n")
+            # Measure just BBLAYERS, scripts and bitbake folders
+            cps.write("source = \n")
+            for layer in get_bb_var('BBLAYERS').split():
+                cps.write("    %s\n" % layer)
+            corebase = get_bb_var('COREBASE')
+            cps.write("    %s\n" % os.path.join(corebase, 'scripts'))
+            cps.write("    %s\n" % os.path.join(corebase, 'bitbake'))
+
+            return coveragerc
+
+    @staticmethod
+    def coverage_report():
+        """ Loads the coverage data gathered and reports it back """
+        try:
+            # Coverage4 uses coverage.Coverage
+            from coverage import Coverage
+        except:
+            # Coverage under version 4 uses coverage.coverage
+            from coverage import coverage as Coverage
+
+        import cStringIO as StringIO
+        from coverage.misc import CoverageException
+
+        cov_output = StringIO.StringIO()
+        # Creating the coverage data with the setting from the configuration file
+        cov = Coverage(config_file=os.environ.get('COVERAGE_PROCESS_START'))
+        try:
+            # Load data from the data file specified in the configuration
+            cov.load()
+            # Store report data in a StringIO variable
+            cov.report(file = cov_output, show_missing=False)
+            print "\n%s" % cov_output.getvalue()
+        except CoverageException as e:
+            # Show problems with the reporting. Since Coverage4 not finding  any data to report raises an exception
+            print "%s" % str(e)
+        finally:
+            cov_output.close()
+
+    @classmethod
+    def buildResultClass(cls, args):
+        """Build a Result Class to use in the testcase execution"""
+
+        class StampedResult(unittest.TextTestResult):
+            """
+            Custom TestResult that prints the time when a test starts.  As oe-selftest
+            can take a long time (ie a few hours) to run, timestamps help us understand
+            what tests are taking a long time to execute.
+            If coverage is required, this class executes the coverage setup and reporting.
+            """
+            def startTest(self, test):
+                import time
+                self.stream.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + " - ")
+                super(StampedResult, self).startTest(test)
+
+            def startTestRun(self):
+                """ Setup coverage before running any testcase """
+                if args.coverage:
+                    try:
+                        # check if user can do coverage
+                        import coverage
+                        print "Coverage is enabled"
+
+                        # In case the user has not set the variable COVERAGE_PROCESS_START,
+                        # create a default one and export it. The COVERAGE_PROCESS_START
+                        # value indicates where the coverage configuration file resides
+                        # More info on https://pypi.python.org/pypi/coverage
+                        if not os.environ.get('COVERAGE_PROCESS_START'):
+                            os.environ['COVERAGE_PROCESS_START'] = cls.coverage_setup(args.run_tests, args.run_all_tests)
+
+                        self.coverage_installed = True
+                    except:
+                        print '\n'.join(["python coverage is not installed",
+                                         "Make sure your coverage takes into account sub-process",
+                                         "More info on https://pypi.python.org/pypi/coverage"])
+                        self.coverage_installed = False
+
+            def stopTestRun(self):
+                """ Report coverage data after the testcases are run """
+
+                if args.coverage and self.coverage_installed:
+                    with open(os.environ['COVERAGE_PROCESS_START']) as ccf:
+                        print "Coverage configuration file (%s)" % os.environ.get('COVERAGE_PROCESS_START')
+                        print "==========================="
+                        print "\n%s" % "".join(ccf.readlines())
+
+                    print "Coverage Report"
+                    print "==============="
+
+                    cls.coverage_report()
+
+        return StampedResult
