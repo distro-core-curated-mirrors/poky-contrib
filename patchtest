@@ -51,7 +51,6 @@ def getResult(series, revision, mbox):
 
             try:
                 self.repo.setup()
-                self.repo.merge(pti.storembox)
             except repo.RepoException as re:
                 self.repo_error = True
                 logger.error(rp)
@@ -59,6 +58,11 @@ def getResult(series, revision, mbox):
             except utils.CmdException as ce:
                 self.cmd_error = True
                 logger.error("Command failed: %s %s %s" % (ce.cmd, ce.stdout, ce.stderr))
+                self.stop()
+
+            # merge and start running tests if any of the series merged successfully
+            self.repo.merge(pti.storembox)
+            if not self.repo.any_merge():
                 self.stop()
 
         def addError(self, test, err):
