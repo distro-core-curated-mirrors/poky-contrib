@@ -14,14 +14,14 @@ class BaseMboxItem(object):
         to extract this data. This base class and should be inherited
         from, not directly instantiated.
     """
-    MERGE_STATUS_INVALID = -1
-    MERGE_STATUS_NOT_MERGED = 0
-    MERGE_STATUS_MERGED_SUCCESSFULL = 1
-    MERGE_STATUS_MERGED_FAIL = 2
-    MERGE_STATUS = ((MERGE_STATUS_NOT_MERGED, 'NOT MERGED'),
-                    (MERGE_STATUS_MERGED_SUCCESSFULL, 'PASS'),
-                    (MERGE_STATUS_MERGED_FAIL, 'FAIL'),
-                    (MERGE_STATUS_INVALID, 'INVALID'))
+    MERGE_STATUS_INVALID = 'INVALID'
+    MERGE_STATUS_NOT_MERGED = 'NOTMERGED'
+    MERGE_STATUS_MERGED_SUCCESSFULL = 'PASS'
+    MERGE_STATUS_MERGED_FAIL = 'INVALID'
+    MERGE_STATUS = (MERGE_STATUS_INVALID,
+                    MERGE_STATUS_NOT_MERGED,
+                    MERGE_STATUS_MERGED_SUCCESSFULL,
+                    MERGE_STATUS_MERGED_FAIL)
 
     def __init__(self, resource, args=None):
         self._resource = resource
@@ -61,15 +61,13 @@ class BaseMboxItem(object):
     args = property(getargs, setargs)
 
     def getstatus(self):
-        return dict(BaseMboxItem.MERGE_STATUS)[self._status]
+        return self._status
 
     def setstatus(self, status):
-        try:
+        if not status in BaseMboxItem.MERGE_STATUS:
+            logger.warn('Status (%s) not valid' % status)
+        else:
             self._status = status
-            dict(BaseMboxItem.MERGE_STATUS)[self._status]
-        except:
-            logger.warn('Status (%s) not valid' % self._status)
-            self._status = BaseMboxItem.MERGE_STATUS_INVALID
 
     status = property(getstatus, setstatus)
 
@@ -272,6 +270,12 @@ class Repo(object):
                 item.status = BaseMboxItem.MERGE_STATUS_MERGED_SUCCESSFULL
             except utils.CmdException as ce:
                 item.status = BaseMboxItem.MERGE_STATUS_MERGED_FAIL
+
+    def any_merge(self):
+        for item in self._mboxitems:
+            if item.status == BaseMboxItem.MERGE_STATUS_MERGED_SUCCESSFULL:
+                return True
+        return False
 
     def setup(self):
         """ Setup repository for patching """
