@@ -58,13 +58,12 @@ def exec_cmd(cmd, cwd, ignore_error=False, input=None, strip=True):
     if not _cmd['cmd']:
         raise CmdException({'cmd':None, 'stderr':'no command given'})
 
-    _command = map(str, _cmd['cmd'])
+    _command = [str(e) for e in _cmd['cmd']]
     p = subprocess.Popen(_command,
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE,
                          cwd=cwd)
-
 
     # execute the command and strip output
     (_stdout, _stderr) = p.communicate(_cmd['input'])
