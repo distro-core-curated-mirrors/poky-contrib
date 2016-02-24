@@ -3,38 +3,30 @@ import utils
 from tabulate import tabulate
 
 class BasicSummary(dict):
-    header = ['Result', 'Test Description', 'Assertion Description']
+    merge_header = ['Merge Status', 'Item']
+    result_header = ['Result', 'Test Description', 'Assertion Description']
     tablefmt = 'simple'
 
-    def __init__(self, items):
-        self._items = items
-
+    def __init__(self):
         self._results = list()
-        self._patchmsg = None
-
-    def addPatchFailure(self, msg):
-        self._patchmsg = msg
 
     def addFailure(self, test, err):
         _, assertionDescription, _ = err
-        self._results.append(['FAIL: ', test.shortDescription(), assertionDescription])
+        self._results.append(['FAIL: ', test.shortDescription()])
 
     def addSuccess(self, test):
-        self._results.append(['PASS: ', test.shortDescription(), ''])
+        self._results.append(['PASS: ', test.shortDescription()])
 
     def addSkip(self, test, msg):
-        self._results.append(['SKIP: ', test.shortDescription(), msg])
+        self._results.append(['SKIP: ', test.shortDescription()])
 
-    def generateSummary(self):
+    def generateSummary(self, items):
         """ Generate and store the summary """
+        text = ''
+        if items:
+            merge_results = [[item.status, item.resource] for item in items]
+            text += "\n\n%s\n" % tabulate(merge_results, BasicSummary.merge_header, tablefmt=BasicSummary.tablefmt)
 
-        summary = "Tested items:\n\n"
-        for item in self._items:
-            summary += "\t%s\n" % item
-        summary +="\n\n"
+        text += "\n\n%s\n" % tabulate(self._results, BasicSummary.result_header, tablefmt=BasicSummary.tablefmt)
 
-        if self._patchmsg:
-            summary += "%s" % self._patchmsg
-        else:
-            summary += "%s\n" % tabulate(self._results, BasicSummary.header, tablefmt=BasicSummary.tablefmt)
-        return summary
+        return text

@@ -17,42 +17,82 @@ class BaseMboxItem(object):
         to extract this data. This base class and should be inherited
         from, not directly instantiated.
     """
-    def __init__(self, resource):
-        # private vars
-        self._resource = resource
-        # public vars
-        self.contents = []
-        self.keyvals = {}
-        self.chgfiles = []
-        self.patchdiff = ''
-        self.hunks = {}
-        # load mbox contents
-        self._load_contents()
+    MERGE_STATUS_INVALID = -1
+    MERGE_STATUS_NOT_MERGED = 0
+    MERGE_STATUS_MERGED_SUCCESSFULL = 1
+    MERGE_STATUS_MERGED_FAIL = 2
+    MERGE_STATUS = ((MERGE_STATUS_NOT_MERGED, 'NOT MERGED'),
+                    (MERGE_STATUS_MERGED_SUCCESSFULL, 'PASS'),
+                    (MERGE_STATUS_MERGED_FAIL, 'FAIL'),
+                    (MERGE_STATUS_INVALID, 'INVALID'))
 
-    def _load_contents(self):
+    def __init__(self, resource, args=None):
+        self._resource = resource
+        self._args = args
+
+        self._contents = ''
+        self._status = BaseMboxItem.MERGE_STATUS_NOT_MERGED
+
+    @property
+    def contents(self):
         raise(NotImplementedError, 'Please do not instantiate MboxItem')
 
     def _scan(self):
         raise(NotImplementedError, 'This method has not yet been implemented, scanning is done in tests')
 
-    def __str__(self):
-        return "%s" % self._resource
-
     @property
     def is_empty(self):
-        return not( ''.join(self.contents).strip() )
+        return not( ''.join(self._contents).strip() )
+
+    def getresource(self):
+        resource = self._resource
+        if self._args:
+            resource %= self._args
+        return resource
+
+    def setresource(self, resouce):
+        self._resource = resource
+
+    resource = property(getresource, setresource)
+
+    def getargs(self):
+        return self._args
+
+    def setargs(self, args):
+        self._args = args
+
+    args = property(getargs, setargs)
+
+    def getstatus(self):
+        return dict(BaseMboxItem.MERGE_STATUS)[self._status]
+
+    def setstatus(self, status):
+        try:
+            self._status = status
+            dict(BaseMboxItem.MERGE_STATUS)[self._status]
+        except:
+            logger.warn('Status (%s) not valid' % self._status)
+            self._status = BaseMboxItem.MERGE_STATUS_INVALID
+
+    status = property(getstatus, setstatus)
 
 class MboxURLItem(BaseMboxItem):
     """ mbox item based on a URL"""
-    def _load_contents(self):
-        _r = requests.get(self._resource)
-        self.contents = _r.text
+
+    @property
+    def contents(self):
+        _r = requests.get(self.resource)
+        self._contents = _r.text
+        return self._contents
 
 class MboxFileItem(BaseMboxItem):
     """ mbox item based on a file"""
-    def _load_contents(self):
-        with open(os.path.abspath(self._resource)) as _f:
-            self.contents = _f.read()
+
+    @property
+    def contents(self):
+        with open(os.path.abspath(self.resource)) as _f:
+            self._contents = _f.read()
+        return self._contents
 
 class Repo(object):
 
@@ -119,9 +159,10 @@ class Repo(object):
             for _eachitem in self._mbox:
                 self._mboxitems.append(MboxFileItem(_eachitem))
         elif self._series_revision:
-            fullurl = "%s/api/1.0/series/%s/revisions/%s/mbox/"
-            for _mbox_url in [fullurl % (self._url, s,r) for s,r in self._series_revision]:
-                self._mboxitems.append(MboxURLItem(_mbox_url))
+            fullurl = "%s" % self._url
+            fullurl +="/api/1.0/series/%s/revisions/%s/mbox/"
+            for s,r in self._series_revision:
+                self._mboxitems.append(MboxURLItem(fullurl, (s,r)))
 
     @property
     def branch(self):
@@ -141,10 +182,6 @@ class Repo(object):
             revision = '-'.join([str(r) for _,r in self._series_revision])
             _name += "-series-%s-rev-%s" % (series, revision)
         return _name
-
-    @property
-    def stashname(self):
-        return "%s-%s-%s" % (Repo.prefix, self.branch, self.commit)
 
     def _exec(self, cmds):
         _cmds = []
@@ -215,113 +252,49 @@ class Repo(object):
                     res.append((series, revision))
         return res
 
-    def _stash(self):
-        # stash just when working dir is dirty
-        dirty = self._exec({'cmd':['git', 'diff', '--shortstat']}) [0]['stdout']
-        if dirty:
-            self._exec({'cmd':['git', 'stash', 'save', self.stashname]})
-            self._stashed = True
-
-    def _destash(self):
-        cmds = [{'cmd':['git', 'checkout', '%s' % self._current_branch]}]
-
-        if self._stashed:
-            cmds.append({'cmd':['git', 'stash', 'apply', self.stashname]})
-            cmds.append({'cmd':['git', 'stash', 'drop', self.stashname]})
-            self._stashed = False
-
-        self._exec(cmds)
-
-    def _removebranch(self, keepbranch):
-        if not keepbranch:
-            # it may be the case that the branch was not created, so ignore error if not present
-            self._exec({'cmd':['git', 'branch', '-D', self.branchname], 'ignore_error':True})
-
-    def _checkout(self):
-        cmds = [{'cmd':['git', 'checkout', '-b', self.branchname, self.commit]}]
-
-        # move to the branch if user specified a branch different that current one
-        if self._branch != self._current_branch:
-            cmds.insert(0, {'cmd':['git', 'checkout', self.branch]})
-        self._exec(cmds)
-
-    def _check_apply(self, series_revision=None, mbox=None, storembox=False):
-
-        # nothing to check, so return immediately
-        if not (series_revision or mbox):
-            return
-
-        mbox_data = None
-
-        # get the mbox
-        if series_revision:
-            series, revision  = series_revision
-            mbox_cmd = {'cmd':['git', 'pw', 'mbox', series, '-r', revision], 'strip':False}
-            mbox = self._exec(mbox_cmd)[0]
-            mbox_data = mbox['stdout']
+    def _store_mbox(self, item):
+        if isinstance(item, MboxURLItem):
+            series, revision = item.args
             mbox_file = "series-%s-revision-%s.mbox" % (series, revision)
+            logger.info('Storing mbox/series into %s' % os.path.abspath(mbox_file))
+            with open(mbox_file, 'w') as f:
+                f.write(item.contents)
+
+    def _merge_item(self, item):
+        self._exec([
+            {'cmd':['git', 'apply', '--check', '--verbose'], 'input':item.contents},
+            {'cmd':['git', 'am'], 'input':item.contents}]
+        )
+
+    def merge(self, storembox=False):
+        for item in self._mboxitems:
             if storembox:
-                logger.info('Storing mbox/series into %s' % os.path.abspath(mbox_file))
-                with open(mbox_file, 'w') as f:
-                    f.write(mbox_data)
-        elif mbox:
-            if not os.path.isfile(mbox):
-                raise PatchException, 'mbox %s does not exist' % mbox
-            with open(mbox) as mbox_fd:
-                mbox_data = mbox_fd.read()
-
-        # check if applies
-        apply_check_cmd = {'cmd':['git', 'apply', '--check', '--verbose'], 'input':mbox_data}
-        self._exec(apply_check_cmd)
-
-    def _apply(self, ignore_patching_errors, storembox):
-
-        # in case there is neither mbox or series, just return
-        if not (self._mbox or self._series_revision):
-            return
-
-        # if stashed, then apply these changes before applying
-        if self._stashed:
-            logger.warning('Applying mbox with stashed data')
-            self._exec({'cmd':['git', 'stash', 'apply', self.stashname]})
-
-        items = []
-        if self._mbox:
-            items = self._mbox
-        elif self._series_revision:
-            items = self._series_revision
-
-        # check if mbox applies
-        for item in items:
-            msg = None
+                self._store_mbox(item)
             try:
-                cmd = None
-                if self._mbox:
-                    msg = "The mbox %s" % item
-                    self._check_apply(mbox=item)
-                    cmd = {'cmd':['git', 'am', item]}
-                elif self._series_revision:
-                    msg = "The series/revision %s/%s" % item
-                    self._check_apply(series_revision=item, storembox=storembox)
-                    series, revision = item
-                    cmd = {'cmd':['git', 'pw', 'apply', series, '-r', revision]}
-                if cmd:
-                    self._exec(cmd)
-                    logger.info("%s applied" % msg)
+                self._merge_item(item)
+                item.status = BaseMboxItem.MERGE_STATUS_MERGED_SUCCESSFULL
             except utils.CmdException as ce:
-                if ignore_patching_errors:
-                    logger.warn("%s cannot be applied, ignoring it" % msg)
-                else:
-                    raise PatchException, "%s cannot be applied" % msg
+                item.status = BaseMboxItem.MERGE_STATUS_MERGED_FAIL
 
-    def setup(self, ignore_patching_errors=False, storembox=False):
-        self._stash()
-        self._checkout()
-        self._apply(ignore_patching_errors, storembox)
+    def setup(self):
+        """ Setup repository for patching """
+        self._exec([
+            {'cmd':['git', 'stash', 'save']},
+            {'cmd':['git', 'checkout', self.branch]},
+            {'cmd':['git', 'checkout', '-b', self.branchname, self.commit]},
+        ])
 
     def clean(self, keepbranch=False):
-        self._destash()
-        self._removebranch(keepbranch)
+        """ Leaves the repo as it was before testing """
+        cmds = [
+            {'cmd':['git', 'checkout', '%s' % self._current_branch]},
+            {'cmd':['git', 'stash', 'pop'], 'ignore_error':True},
+        ]
+
+        if not keepbranch:
+            cmds.append({'cmd':['git', 'branch', '-D', self.branchname], 'ignore_error':True})
+
+        self._exec(cmds)
 
     def post(self, testname, state, summary):
         # TODO: for the moment, all elements on self._series_revision share the same

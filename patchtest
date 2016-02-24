@@ -39,11 +39,8 @@ def getResult(series, revision, mbox):
                 'revision': revision,
             }
             self.repo = pti.repo = repo.Repo(**repoargs)
-            self.summary = BasicSummary(self.repo.items)
+            self.summary = BasicSummary()
 
-            # these variables turn to True if either pathing or any test failed
-            # in these case, the test's status would be 'failure'
-            self.patch_error = False
             self.test_failure = False
 
             # these variables turn to True on any exception (RepoException, CmdException and any other
@@ -53,11 +50,8 @@ def getResult(series, revision, mbox):
             self.test_error = False
 
             try:
-                self.repo.setup(pti.ignore_patching_errors, pti.storembox)
-            except repo.PatchException as pe:
-                self.patch_error = True
-                self.summary.addPatchFailure(str(pe))
-                self.stop()
+                self.repo.setup()
+                self.repo.merge(pti.storembox)
             except repo.RepoException as re:
                 self.repo_error = True
                 logger.error(rp)
@@ -91,12 +85,12 @@ def getResult(series, revision, mbox):
             # just post when there are no repository, commands and test exceptions
             if not (self.repo_error or self.cmd_error or self.test_error):
                 # generate the summary
-                summary = self.summary.generateSummary()
-                logger.info("%s" % summary)
+                summary = self.summary.generateSummary(self.repo.items)
+                logger.info(summary)
 
                 # set the test status
                 state = None
-                if self.patch_error or self.test_failure:
+                if self.test_failure:
                     state = 'failure'
                 else:
                     state = 'success'
