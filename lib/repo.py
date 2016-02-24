@@ -9,9 +9,6 @@ logger = logging.getLogger('patchtest')
 class RepoException(Exception):
     pass
 
-class PatchException(Exception):
-    pass
-
 class BaseMboxItem(object):
     """ mbox item containing all data extracted from an mbox, and methods
         to extract this data. This base class and should be inherited
