@@ -165,6 +165,26 @@ def get_test_layer():
             break
     return testlayer
 
+
+def get_all_available_recipes():
+    ret = bitbake('-s')
+    available_recipes = re.findall(r'\n(\S+)\s+:', ret.output)
+
+    return available_recipes
+
+
+def is_recipe_valid(recipe):
+    return recipe in get_all_available_recipes()
+
+
+def get_tasks_for_recipe(recipe):
+    """ Get available tasks for recipe """
+    ret = bitbake('-c listtasks %s' % recipe)
+    tasks = re.findall(':\s+do_(\S+)\s+', ret.output)
+
+    return tasks
+
+
 def create_temp_layer(templayerdir, templayername, priority=999, recipepathspec='recipes-*/*'):
     os.makedirs(os.path.join(templayerdir, 'conf'))
     with open(os.path.join(templayerdir, 'conf', 'layer.conf'), 'w') as f:
