@@ -27,6 +27,7 @@ class BasicSummary(dict):
             merge_results = [[item.status, item.resource] for item in items]
             text += "\n\n%s\n" % tabulate(merge_results, BasicSummary.merge_header, tablefmt=BasicSummary.tablefmt)
 
-        text += "\n\n%s\n" % tabulate(self._results, BasicSummary.result_header, tablefmt=BasicSummary.tablefmt)
+        if self._results:
+            text += "\n\n%s\n" % tabulate(self._results, BasicSummary.result_header, tablefmt=BasicSummary.tablefmt)
 
         return text
