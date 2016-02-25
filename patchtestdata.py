@@ -54,6 +54,13 @@ class PatchTestStdIn(object):
 class PatchTestArgs(object):
     """ Generate PatchTestData from an argument parser"""
 
+    PATCHING_STRATEGY_NO_PATCH = 'no'
+    PATCHING_STRATEGY_SINGLE = 'single'
+    PATCHING_STRATEGY_MULTIPLE = 'multiple'
+    PATCHING_STRATEGIES = (PATCHING_STRATEGY_NO_PATCH,
+                           PATCHING_STRATEGY_SINGLE,
+                           PATCHING_STRATEGY_MULTIPLE)
+
     @classmethod
     def set_namespace(cls):
         parser = cls.get_parser()
@@ -119,8 +126,12 @@ class PatchTestArgs(object):
 
         parser.add_argument('--patching-strategy', '-p',
                             dest='patching_strategy',
-                            default='single',
-                            help="Patching strategy: 'single' test a single patch, 'multiple' test multiple patches , 'no' do not patch, just test")
+                            default=PatchTestArgs.PATCHING_STRATEGY_SINGLE,
+                            type=str,
+                            help="Patching strategy: '%s' do not patch, only test, '%s' test a single patch and '%s' test multiple patches" %
+                            (PatchTestArgs.PATCHING_STRATEGY_NO_PATCH,
+                             PatchTestArgs.PATCHING_STRATEGY_SINGLE,
+                             PatchTestArgs.PATCHING_STRATEGY_MULTIPLE))
 
         parser.add_argument('--store-mbox',
                             dest='storembox',
