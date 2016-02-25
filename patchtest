@@ -41,22 +41,17 @@ def getResult(series, revision, mbox):
             self.repo = pti.repo = repo.Repo(**repoargs)
             self.summary = BasicSummary()
 
-            self.test_failure = False
-
-            # these variables turn to True on any exception (RepoException, CmdException and any other
-            # exception coming from the tests)
-            self.repo_error = False
-            self.cmd_error = False
-            self.test_error = False
+            self.failure = False # turns on in case of any testing failure
+            self.error = False # turns on in case of any exception raise
 
             try:
                 self.repo.setup()
             except repo.RepoException as re:
-                self.repo_error = True
+                self.error = True
                 logger.error(rp)
                 self.stop()
             except utils.CmdException as ce:
-                self.cmd_error = True
+                self.error = True
                 logger.error("Command failed: %s %s %s" % (ce.cmd, ce.stdout, ce.stderr))
                 self.stop()
 
@@ -66,14 +61,14 @@ def getResult(series, revision, mbox):
                 self.stop()
 
         def addError(self, test, err):
-            self.test_error = True
+            self.error = True
             (ty, va, trace) = err
             import traceback
             traceback.print_tb(trace)
             self.stop()
 
         def addFailure(self, test, err):
-            self.test_failure = True
+            self.failure = True
             self.summary.addFailure(test, err)
 
         def addSuccess(self, test):
@@ -86,20 +81,16 @@ def getResult(series, revision, mbox):
             # leave the working directory as it was, and remove branch if desired
             self.repo.clean(pti.keepbranch)
 
-            # just post when there are no repository, commands and test exceptions
-            if not (self.repo_error or self.cmd_error or self.test_error):
-                # generate the summary
+            if not self.error:
                 summary = self.summary.generateSummary(self.repo.items)
                 logger.info(summary)
 
-                # set the test status
                 state = None
-                if self.test_failure:
+                if self.failure:
                     state = 'failure'
                 else:
                     state = 'success'
 
-                # POST just if --post argument is present
                 if pti.post:
                     self.repo.post(pti.testname, state, summary)
 
