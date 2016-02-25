@@ -29,10 +29,12 @@ from toaster.tests.base import ToasterTestCase
 class ToasterSetupTestCase(ToasterTestCase):
     def setUp(self):
         self.driver = webdriver.Firefox()
-
+        self.delayTime=5
     def tearDown(self):
         self.driver.close()
 
+    def delay(self):
+        time.sleep(self.delayTime)
     def is_text_present (self, patterns):
         for pattern in patterns:
             if str(pattern) not in self.driver.page_source:
@@ -41,54 +43,58 @@ class ToasterSetupTestCase(ToasterTestCase):
         return True
 
     def test_setupToaster(self):
-        self.driver.maximize_window()
+        #self.driver.maximize_window()
         self.driver.get(self.opts.toaster_url)
+
         try:
+            #go back to the main project page
             self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
-        except:
-            self.driver.find_element_by_id("new-project-button").click()
-            self.driver.find_element_by_id("new-project-name").send_keys("selenium-project")
-            self.driver.find_element_by_id("create-project-button").click()
-
-        try:
+            self.delay()
             self.driver.find_element_by_link_text("selenium-project").click()
+            return
         except:
             self.driver.find_element_by_id("new-project-button").click()
             self.driver.find_element_by_id("new-project-name").send_keys("selenium-project")
             self.driver.find_element_by_id("create-project-button").click()
         time.sleep(5)
+        self.buildImage("core-image-minimal")
+        self.buildImage("core-image-sato")
 
-        #queue up a core-image-minimal
-        self.driver.find_element_by_id("build-input").send_keys("core-image-minimal")
-        self.driver.find_element_by_id("build-button").click()
-        time.sleep(5)
-        #queue up a core-image-sato
-        self.driver.find_element_by_id("build-input").send_keys("core-image-sato")
-        self.driver.find_element_by_id("build-button").click()
-        time.sleep(5)
-
+    def buildImage(self,name):
         #go back to the main project page
         self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
-        time.sleep(5)
+        self.delay()
         self.driver.find_element_by_link_text("selenium-project").click()
-        time.sleep(5)
-
+        self.delay()
+        self.driver.find_element_by_id("build-input").send_keys(name)
+        self.driver.find_element_by_id("build-button").click()
+        self.delay()
+        self.isBuildFinished()
+    def isBuildFinished(self):
+        TIMEOUT=15*60
         #move to all builds page
-        self.driver.find_element_by_css_selector("a[href='/toastergui/builds/']").click()
-        self.driver.refresh()
+        print "BUILDS"
+        #self.driver.find_element_by_css_selector("a[href='/toastergui/builds/']").click()
+        self.driver.find_element_by_link_text("All builds").click()
         time.sleep(5)
 
         #check progress bar is displayed to signal a build has started
         try:
+            totalTime=0
             while (self.driver.find_element_by_xpath("//div[@class='progress']").is_displayed()):
-                self.logger.info('Builds are running ...')
+                self.logger.error('Builds are running ...')
+
                 self.driver.refresh()
                 time.sleep(15)
+                totalTime+=15
+                # if it's running too long the sstate may be out of sync in which case we are doomed on Travis
+                if totalTime> TIMEOUT:
+                    break
         except:
             pass
 
         self.logger.info("Looking for successful build...")
         if (self.driver.find_element_by_xpath("//div[@class='alert build-result alert-success project-name']").is_displayed()):
-            self.logger.info("Builds complete!")
+            self.logger.error("Builds complete!")
         else:
             self.fail(msg="Builds did not complete successfully.")

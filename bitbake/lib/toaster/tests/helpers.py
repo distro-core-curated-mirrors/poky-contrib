@@ -118,6 +118,7 @@ class ToasterHelper(object):
 
         for pid in pids:
             try:
+                print "killing ",pid
                 os.kill(pid, signal.SIGKILL)
             except:
                 pass
@@ -126,7 +127,7 @@ class ToasterHelper(object):
 
     def stop(self, force=False):
         """
-            The stop method have force mode because toaster without production 
+            The stop method have force mode because toaster without production
             setup have known issues when is on load, the server response 503
             service unavailable.
         """
@@ -187,6 +188,6 @@ if __name__ == "__main__":
     except IOError as e:
         if args.action == 'clone':
             print "ERROR: Directory exists: %s" % args.work_directory
-        raise 
+        raise
 
     sys.exit(0)
