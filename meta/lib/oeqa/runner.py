@@ -344,6 +344,65 @@ class Runner:
         print 'Looking for:\t %s' % ', '.join(str(x) for x in keyword)
         print 'Total found:\t %s' % len(ts)
 
+    def list_modules(self):
+        """ List all available modules """
+
+        self.log.info('Listing all available test modules:')
+        testslist = self.get_tests(include_hidden=True)
+        for test in testslist:
+            module = test.split('.')[-1]
+            print module + ' (hidden)' if module.startswith('_') else module
+
+    def list_all_classes(self):
+        """ List all tests with their corresponding class and module  (Hierarchy format) """
+
+        testslist = self.get_tests(include_hidden=True)
+        for test in testslist:
+            module = test.split('.')[-1]
+            print module + ' (hidden)' if module.startswith('_') else module
+            try:
+                import importlib
+                modlib = importlib.import_module(test)
+                for v in vars(modlib):
+                    t = vars(modlib)[v]
+                    if isinstance(t, type(self.base_class)) and issubclass(t, self.base_class) and t != self.base_class:
+                        print " --", v
+                        for method in dir(t):
+                            if method.startswith("test_") and callable(vars(t)[method]):
+                                print " --  --", method
+
+            except (AttributeError, ImportError) as e:
+                print e
+                pass
+
+    def run(self, testlist, args):
+        """
+        :param testlist: ['oeqa.selftest.archiver', 'oeqa.selftest.bblayers', ..]
+        :param args: the args the calling script was invoked with (used by coverage)
+        """
+
+        suite = unittest.TestSuite()
+        loader = unittest.TestLoader()
+        loader.sortTestMethodsUsing = None
+        runner = unittest.TextTestRunner(verbosity=2, resultclass=self.buildResultClass(args))
+
+        for test in testlist:
+            self.log.info("Loading tests from: %s" % test)
+            try:
+                suite.addTests(loader.loadTestsFromName(test))
+            except AttributeError as e:
+                self.log.error("Failed to import %s" % test)
+                self.log.error(e)
+                return 1
+
+        result = runner.run(suite)
+        self.log.info("Finished")
+
+        if result.wasSuccessful():
+            return 0
+        else:
+            return 1
+
     @staticmethod
     def coverage_setup(run_tests, run_all_tests):
         """ Set up the coverage measurement for the testcases to be run """

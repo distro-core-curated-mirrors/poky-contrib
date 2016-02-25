@@ -27,11 +27,6 @@
 
 import os
 import sys
-import unittest
-import logging
-import argparse
-import subprocess
-import time as t
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/lib')
 import scriptpath
@@ -40,8 +35,7 @@ scriptpath.add_oe_lib_path()
 import argparse_oe
 
 import oeqa.selftest
-import oeqa.utils.ftools as ftools
-from oeqa.utils.commands import runCmd, get_bb_var, get_test_layer
+from oeqa.utils.commands import get_bb_var, get_test_layer
 from oeqa.selftest.base import oeSelfTest, get_available_machines
 
 from oeqa.runner import Runner
@@ -102,40 +96,23 @@ def main():
             criteria = args.list_tests_by[0]
             keyword = args.list_tests_by[1:]
             test_runner.list_testsuite_by(criteria, keyword)
+            return 0
 
     if args.list_tests:
         test_runner.list_tests()
+        return 0
 
     if args.list_tags:
         test_runner.list_tags()
+        return 0
 
     if args.list_allclasses:
-        args.list_modules = True
+        test_runner.list_all_classes()
+        return 0
 
     if args.list_modules:
-        log.info('Listing all available test modules:')
-        testslist = test_runner.get_tests(include_hidden=True)
-        for test in testslist:
-            module = test.split('.')[-1]
-            info = ''
-            if module.startswith('_'):
-                info = ' (hidden)'
-            print module + info
-            if args.list_allclasses:
-                try:
-                    import importlib
-                    modlib = importlib.import_module(test)
-                    for v in vars(modlib):
-                        t = vars(modlib)[v]
-                        if isinstance(t, type(oeSelfTest)) and issubclass(t, oeSelfTest) and t!=oeSelfTest:
-                            print " --", v
-                            for method in dir(t):
-                                if method.startswith("test_") and callable(vars(t)[method]):
-                                    print " --  --", method
-
-                except (AttributeError, ImportError) as e:
-                    print e
-                    pass
+        test_runner.list_modules()
+        return 0
 
     if args.run_tests or args.run_all_tests or args.run_tests_by:
         if not test_runner.preflight_check():
@@ -146,21 +123,10 @@ def main():
         else:
             testslist = test_runner.get_tests(exclusive_modules=(args.run_tests or []), include_hidden=False)
 
-        suite = unittest.TestSuite()
-        loader = unittest.TestLoader()
-        loader.sortTestMethodsUsing = None
-        runner = unittest.TextTestRunner(verbosity=2, resultclass=test_runner.buildResultClass(args))
         # we need to do this here, otherwise just loading the tests
         # will take 2 minutes (bitbake -e calls)
         oeSelfTest.testlayer_path = get_test_layer()
-        for test in testslist:
-            log.info("Loading tests from: %s" % test)
-            try:
-                suite.addTests(loader.loadTestsFromName(test))
-            except AttributeError as e:
-                log.error("Failed to import %s" % test)
-                log.error(e)
-                return 1
+
         test_runner.add_include(['machine.inc', 'selftest.inc'], 'local.conf')
         test_runner.add_include('bblayers.inc', 'bblayers.conf')
 
@@ -170,22 +136,17 @@ def main():
             log.info('Custom machine mode enabled. MACHINE set to %s' % args.machine)
             if args.machine == 'random':
                 os.environ['CUSTOMMACHINE'] = 'random'
-                result = runner.run(suite)
+                result = test_runner.run(testslist, args)
             else:  # all
                 machines = get_available_machines()
                 for m in machines:
                     log.info('Run tests with custom MACHINE set to: %s' % m)
                     os.environ['CUSTOMMACHINE'] = m
-                    result = runner.run(suite)
+                    result = test_runner.run(testslist, args)
         else:
-            result = runner.run(suite)
+            result = test_runner.run(testslist, args)
 
-        log.info("Finished")
-
-        if result.wasSuccessful():
-            return 0
-        else:
-            return 1
+        return result
 
 if __name__ == "__main__":
     try:
