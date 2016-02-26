@@ -6,9 +6,6 @@ import requests
 
 logger = logging.getLogger('patchtest')
 
-class RepoException(Exception):
-    pass
-
 class BaseMboxItem(object):
     """ mbox item containing all data extracted from an mbox, and methods
         to extract this data. This base class and should be inherited
@@ -124,7 +121,8 @@ class Repo(object):
         try:
             self.repo = git.Repo(self._repodir)
         except git.exc.InvalidGitRepositoryError:
-            raise RepoException, 'Not a git repository'
+            logger.error('Not a git repository')
+            raise Exception
 
         config = self.repo.config_reader()
 
@@ -133,7 +131,8 @@ class Repo(object):
             self._url = config.get(patchwork_section, 'url')
             self._project = config.get(patchwork_section, 'project')
         except:
-            raise RepoException, 'patchwork url/project configuration is not available'
+            logger.error('patchwork url/project configuration is not available')
+            raise Exception
 
         self._series_revision = self._get_series_revisions(series, revision)
         self._loaditems()
@@ -327,5 +326,5 @@ class Repo(object):
             try:
                 self._exec(cmd)
             except utils.CmdException:
-                raise RepoException, 'POST requests cannot be done to %s' % self._url
+                logger.warn('POST requests cannot be done to %s' % self._url)
 
