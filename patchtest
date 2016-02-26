@@ -62,9 +62,7 @@ def getResult(series, revision, mbox):
         def addError(self, test, err):
             self.error = True
             (ty, va, trace) = err
-            import traceback
-            traceback.print_tb(trace)
-            self.stop()
+            logger.error(va)
 
         def addFailure(self, test, err):
             self.failure = True
