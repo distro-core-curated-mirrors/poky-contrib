@@ -17,15 +17,16 @@ class BaseMboxItem(object):
     MERGE_STATUS_INVALID = 'INVALID'
     MERGE_STATUS_NOT_MERGED = 'NOTMERGED'
     MERGE_STATUS_MERGED_SUCCESSFULL = 'PASS'
-    MERGE_STATUS_MERGED_FAIL = 'INVALID'
+    MERGE_STATUS_MERGED_FAIL = 'FAIL'
     MERGE_STATUS = (MERGE_STATUS_INVALID,
                     MERGE_STATUS_NOT_MERGED,
                     MERGE_STATUS_MERGED_SUCCESSFULL,
                     MERGE_STATUS_MERGED_FAIL)
 
-    def __init__(self, resource, args=None):
+    def __init__(self, resource, args=None, forcereload=False):
         self._resource = resource
         self._args = args
+        self._forcereload = forcereload
 
         self._contents = ''
         self._status = BaseMboxItem.MERGE_STATUS_NOT_MERGED
@@ -76,8 +77,9 @@ class MboxURLItem(BaseMboxItem):
 
     @property
     def contents(self):
-        _r = requests.get(self.resource)
-        self._contents = _r.text
+        if self._forcereload or (not self._contents):
+            _r = requests.get(self.resource)
+            self._contents = _r.text
         return self._contents
 
 class MboxFileItem(BaseMboxItem):
@@ -85,8 +87,9 @@ class MboxFileItem(BaseMboxItem):
 
     @property
     def contents(self):
-        with open(os.path.abspath(self.resource)) as _f:
-            self._contents = _f.read()
+        if self._forcereload or (not self._contents):
+            with open(os.path.abspath(self.resource)) as _f:
+                self._contents = _f.read()
         return self._contents
 
 class Repo(object):
