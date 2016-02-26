@@ -184,6 +184,28 @@ def get_tasks_for_recipe(recipe):
 
     return tasks
 
+def get_all_bbappends():
+    """ Get all bbappends (bitbake-layers show-appends)
+    :return:a dict with {recipe: [bbappends]}
+    """
+    ret_dict = {}
+    ret = runCmd('bitbake-layers show-appends')
+
+    for line in ret.output.splitlines():
+        bb = re.findall('^(\S+\.bb.*):', line)
+        bbappend = re.findall('^\s+(\S+\.bbappend)', line)
+        if bb:
+            key = bb[0]
+            value_list = []
+            continue
+        if bbappend:
+            value = bbappend[0]
+            value_list.append(value)
+            ret_dict[key] = value_list
+            continue
+
+    return ret_dict
+
 
 def create_temp_layer(templayerdir, templayername, priority=999, recipepathspec='recipes-*/*'):
     os.makedirs(os.path.join(templayerdir, 'conf'))
