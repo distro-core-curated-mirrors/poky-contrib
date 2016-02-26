@@ -1,11 +1,21 @@
 #!/bin/sh
 
-REPODIR=$1
+# For the moment, all is hardcoded
+POKYDIR=$HOME/poky
+GITPWDIR=$HOME/patchwork/git-pw
 
 SCRIPTS_DIR=`dirname $0`
-PATCHTEST_BASE=`readlink -e $SCRIPTS_DIR/..`
+PATCHTEST_BASE=`/bin/readlink -e $SCRIPTS_DIR/..`
+TESTDIR=$PATCHTEST_BASE/sample-tests/success
 
-cd $REPODIR
-git pw poll-events | $PATCHTEST_BASE/patchtest --test-dir $PATCHTEST_BASE/sample-tests/fail --post
-exit $@
+cd $PATCHTEST_BASE
+. venv/bin/activate
 
+PATH="$PATH:$PATCHTEST_BASE:$GITPWDIR"
+PYTHONPATH="$PATCHTEST_BASE":"/usr/bin/python:$PYTHONPATH"
+
+cd $POKYDIR;git pw poll-events | patchtest -d
+
+deactivate
+
+exit 0
