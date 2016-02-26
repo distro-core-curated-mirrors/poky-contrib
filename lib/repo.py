@@ -267,8 +267,10 @@ class Repo(object):
 
     def _merge_item(self, item):
         contents = item.contents
+
         if not contents:
-            raise Exception('Contents are empty')
+            logger.error('Contents are empty')
+            raise Exception
 
         self._exec([
             {'cmd':['git', 'apply', '--check', '--verbose'], 'input':contents},
@@ -296,7 +298,6 @@ class Repo(object):
     def setup(self):
         """ Setup repository for patching """
         self._exec([
-            {'cmd':['git', 'stash', 'save']},
             {'cmd':['git', 'checkout', self.branch]},
             {'cmd':['git', 'checkout', '-b', self.branchname, self.commit]},
         ])
@@ -305,7 +306,6 @@ class Repo(object):
         """ Leaves the repo as it was before testing """
         cmds = [
             {'cmd':['git', 'checkout', '%s' % self._current_branch]},
-            {'cmd':['git', 'stash', 'pop'], 'ignore_error':True},
         ]
 
         if not keepbranch:
