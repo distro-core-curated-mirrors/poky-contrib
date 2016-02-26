@@ -51,9 +51,10 @@ def getResult(series, revision, mbox):
                 self.stop()
 
             try:
-                self.repo.merge(pti.storembox)
-                if self.repo.items and (not self.repo.any_merge()):
-                    self.stop()
+                if not pti.patching_strategy == pti.PATCHING_STRATEGY_NO_PATCH:
+                    self.repo.merge(pti.storembox)
+                    if self.repo.items and (not self.repo.any_merge()):
+                        self.stop()
             except:
                 self.error = True
                 self.stop()
@@ -117,9 +118,7 @@ def main():
         logger.warning('Patching strategy (%s) not recognized' % pti.patching_strategy)
         return 1
 
-    if pti.patching_strategy == pti.PATCHING_STRATEGY_NO_PATCH:
-        run()
-    elif pti.patching_strategy == pti.PATCHING_STRATEGY_MULTIPLE:
+    if pti.patching_strategy == pti.PATCHING_STRATEGY_MULTIPLE:
         # run tests on top of all input patches (mbox or series)
         run(listseries, listrevision, listmbox)
     elif pti.patching_strategy == pti.PATCHING_STRATEGY_SINGLE:
@@ -137,6 +136,8 @@ def main():
         else:
             # no input given, just run
             run()
+    else:
+        run(listseries, listrevision, listmbox)
 
     return 0
 
