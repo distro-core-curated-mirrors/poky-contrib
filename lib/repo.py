@@ -40,7 +40,7 @@ class BaseMboxItem(object):
 
     @property
     def is_empty(self):
-        return not( ''.join(self._contents).strip() )
+        return not self.contents
 
     def getresource(self):
         resource = self._resource
@@ -78,8 +78,12 @@ class MboxURLItem(BaseMboxItem):
     @property
     def contents(self):
         if self._forcereload or (not self._contents):
-            _r = requests.get(self.resource)
-            self._contents = _r.text
+            logger.debug('Reading %s contents' % self.resource)
+            try:
+                _r = requests.get(self.resource)
+                self._contents = _r.text
+            except:
+                logger.warn("Request to %s failed" % self.resource)
         return self._contents
 
 class MboxFileItem(BaseMboxItem):
@@ -88,8 +92,12 @@ class MboxFileItem(BaseMboxItem):
     @property
     def contents(self):
         if self._forcereload or (not self._contents):
-            with open(os.path.abspath(self.resource)) as _f:
-                self._contents = _f.read()
+            logger.debug('Reading %s contents' % self.resource)
+            try:
+                with open(self.resource) as _f:
+                    self._contents = _f.read()
+            except IOError:
+                logger.warn("Reading the mbox %s failed" % self.resource)
         return self._contents
 
 class Repo(object):
@@ -259,9 +267,13 @@ class Repo(object):
                 f.write(item.contents)
 
     def _merge_item(self, item):
+        contents = item.contents
+        if not contents:
+            raise Exception('Contents are empty')
+
         self._exec([
-            {'cmd':['git', 'apply', '--check', '--verbose'], 'input':item.contents},
-            {'cmd':['git', 'am'], 'input':item.contents}]
+            {'cmd':['git', 'apply', '--check', '--verbose'], 'input':contents},
+            {'cmd':['git', 'am'], 'input':contents}]
         )
 
     def merge(self, storembox=False):
@@ -273,6 +285,8 @@ class Repo(object):
                 item.status = BaseMboxItem.MERGE_STATUS_MERGED_SUCCESSFULL
             except utils.CmdException as ce:
                 item.status = BaseMboxItem.MERGE_STATUS_MERGED_FAIL
+            except:
+                item.status = BaseMboxItem.MERGE_STATUS_INVALID
 
     def any_merge(self):
         for item in self._mboxitems:
