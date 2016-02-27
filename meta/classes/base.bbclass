@@ -428,9 +428,12 @@ python () {
                     extraconf.append(items[1])
         appendVar('DEPENDS', extradeps)
         appendVar('RDEPENDS_${PN}', extrardeps)
-        if bb.data.inherits_class('cmake', d):
-            appendVar('EXTRA_OECMAKE', extraconf)
-        else:
+        appendVar('EXTRA_CONF_PACKAGECONFIG', extraconf)
+
+        # TODO once are all recipes/bbclass abusign EXTRA_OECONF
+        # to get PACKAGECONFIG options fixed to use EXTRA_CONF_PACKAGECONFIG
+        # move this append to autotools.bbclass
+        if not bb.data.inherits_class('cmake', d):
             appendVar('EXTRA_OECONF', extraconf)
 
     pn = d.getVar('PN', True)
