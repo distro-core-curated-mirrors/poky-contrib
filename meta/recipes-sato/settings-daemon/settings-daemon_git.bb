@@ -4,16 +4,15 @@ BUGTRACKER = "http://bugzilla.yoctoproject.org/"
 LICENSE = "MIT-style"
 LIC_FILES_CHKSUM = "file://xsettings-manager.h;endline=22;md5=7cfac9d2d4dc3694cc7eb605cf32a69b \
                     file://xsettings-common.h;endline=22;md5=7cfac9d2d4dc3694cc7eb605cf32a69b"
-DEPENDS = "gconf glib-2.0 gtk+"
+DEPENDS = "gconf glib-2.0 gtk+3"
 SECTION = "x11"
-SRCREV = "9a99528b02255450db81176abd9bbcc1dab9a4c1"
+SRCREV = "4cde28c66045b89a4b4b83e3406955d8632b5c02"
 PV = "0.0+git${SRCPV}"
-
 
 SRC_URI = "git://git.yoctoproject.org/xsettings-daemon \
            file://addsoundkeys.patch;apply=yes \
            file://70settings-daemon.sh \
-           file://dso_linking_change_build_fix.patch"
+           "
 
 S = "${WORKDIR}/git"
 
