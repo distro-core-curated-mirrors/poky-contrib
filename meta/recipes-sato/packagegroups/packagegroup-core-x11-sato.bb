@@ -31,8 +31,8 @@ RDEPENDS_${PN}-base = "\
     matchbox-config-gtk \
     xcursor-transparent-theme \
     sato-icon-theme \
+    gnome-theme-adwaita \
     settings-daemon \
-    gtk-sato-engine \
     shutdown-desktop \
     libsdl \
     ${NETWORK_MANAGER} \
