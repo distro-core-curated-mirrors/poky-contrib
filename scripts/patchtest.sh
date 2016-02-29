@@ -1,12 +1,17 @@
 #!/bin/sh
 
-# For the moment, all is hardcoded
-POKYDIR=$HOME/poky
-GITPWDIR=$HOME/patchwork/git-pw
+REPO=$1
+
+if [ -z $REPO ]; then
+    echo "Please call the current script with a path to a repository directory"
+    exit 1
+fi
 
 SCRIPTS_DIR=`dirname $0`
-PATCHTEST_BASE=`/bin/readlink -e $SCRIPTS_DIR/..`
-TESTDIR=$PATCHTEST_BASE/sample-tests/success
+
+# tools used (git-pw and patchtest)
+PATCHTEST_BASE=`readlink -e $SCRIPTS_DIR/..`
+GITPWDIR=$PATCHTEST_BASE/patchwork/git-pw
 
 cd $PATCHTEST_BASE
 . venv/bin/activate
@@ -14,7 +19,8 @@ cd $PATCHTEST_BASE
 PATH="$PATH:$PATCHTEST_BASE:$GITPWDIR"
 PYTHONPATH="$PATCHTEST_BASE":"/usr/bin/python:$PYTHONPATH"
 
-cd $POKYDIR;git pw poll-events | patchtest -d
+cd $REPO
+git pw poll-events | patchtest --no-patch
 
 deactivate
 
