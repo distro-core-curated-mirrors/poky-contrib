@@ -7,7 +7,8 @@ PATCHTEST_BASE=`readlink -e $SCRIPTS_DIR/..`
 REQUIREMENTS_FILENAME='requirements.txt'
 VENV_NAME="venv"
 
-# fetch all submodules
+# init all submodules
+git submodule update --init
 git submodule update --remote
 
 # install all python requirements
