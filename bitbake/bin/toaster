@@ -248,7 +248,7 @@ fi
 # in the local layers that currently prevent using an arbitrary
 # toasterconf.json
 if [ "$TOASTER_CONF" = "" ]; then
-    TOASTER_CONF="$(dirname $TOASTER)/../../meta-yocto/conf/toasterconf.json"
+    TOASTER_CONF="$(dirname $TOASTER)/../../meta-poky/conf/toasterconf.json"
     export TOASTER_CONF=$(python -c "import os; print os.path.realpath('$TOASTER_CONF')")
 fi
 if [ ! -f $TOASTER_CONF ]; then
