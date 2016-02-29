@@ -1,0 +1,365 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <link rel="stylesheet" href="css/bootstrap-responsive.css" />
+    <link rel="stylesheet" href="css/additional.css" />
+    <link rel="icon" type="image/vnd.microsoft.icon" href="/static/img/favicon.ico" />
+    <title>Git Notes - next</title>
+</head>
+
+<body>
+    <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <a class="brand" href="/gitnotes/">Git Notes</a>
+                <ul class="nav">
+                  <li class="divider-vertical"></li>
+                  <li>
+                    <a href="#">All repositories</a>
+                  </li>
+                  <li><a href="#">poky</a></li>
+                  <li class="active"><a href="#">next</a></li>
+                </ul>
+                <div class="pull-right">
+                    <a class="btn" href="/accounts/login/">Log in</a>
+                </div>
+            </div> <!-- end of "container" -->
+        </div> <!--  "end of "navbar-inner" -->
+    </div> <!--  end of "navbar" -->
+
+    <!--did class="container-fluid">
+        <div class="row-fluid">
+            <ul class="breadcrumb navbar-fixed-top">
+                <li><a href="/gitnotes/repositories/">All repositories</a> <span class="divider">&rarr;</span></li>
+                <li><a href="/gitnotes/repo/poky/">poky</a> <span class="divider">&rarr;</span></li>
+                <li class="active">next</li>
+            </ul>
+        </div>
+    </div-->
+
+    <div id="content" class="container-fluid top-padded">
+        <div class="row-fuid">
+            <div class="span4 patch-list" tabindex="-1">
+                <div id="pi1" class="patch-item patch-item-selected" tabindex="1">
+                    <h5 class="patch-date">Jan. 13, 2016, 9:47 a.m.</h5>
+                    <h4>Richard Purdie</h4>
+                    <p>bitbake: Revert fetch2/local.py: avoid using PREMIRROR</p>
+                </div>
+                <div id="pi2" class="patch-item" tabindex="2">
+                    <h5 class="patch-date">Jan. 12, 2016, 3:35 p.m.</h5>
+                    <h4>Ross Burton</h4>
+                    <p>conf/distro/poky-tiny: correctly disable python in opkg-utils</p>
+                </div>
+                <div id="pi3" class="patch-item" tabindex="3">
+                    <h5 class="patch-date">Jan. 11, 2016, 11:28 p.m.</h5>
+                    <h4>Kristian Amlie</h4>
+                    <p>bitbake: fetch2/git.py: Add missing "errno" module import.</p>
+                </div>
+                <div id="pi4" class="patch-item" tabindex="4">
+                    <h5 class="patch-date">Jan. 11, 2016, 11:28 p.m</h5>
+                    <h4>Chen Qi</h4>
+                    <p>bitbake: bitbake: clean up stamp-base related codes</p>
+                </div>
+                <div id="pi5" class="patch-item" tabindex="5">
+                    <h5 class="patch-date">Jan. 11, 2016, 11:27 p.m.</h5>
+                    <h4>Yi Zhao</h4>
+                    <p>local.conf.sample: add qemumips64</p>
+                </div>
+                <div id="pi6" class="patch-item" tabindex="6">
+                    <h5 class="patch-date">Jan. 11, 2016, 11:26 p.m. </h5>
+                    <h4>Richard Purdie</h4>
+                    <p>bitbake: runqueue: Fix setscene task dependencies</p>
+                </div>
+                <div id="pi7" class="patch-item" tabindex="7">
+                    <h5 class="patch-date">Jan. 11, 2016, 11:26 p.m.</h5>
+                    <h4>Michael Wood</h4>
+                    <p>bitbake: toaster: settings Add uid to the toaster cache dir</p>
+                </div>
+                <div id="pi8" class="patch-item" tabindex="8">
+                    <h5 class="patch-date">Jan. 11, 2016, 11:26 p.m.</h5>
+                    <h4>Ed Bartosh</h4>
+                    <p>bitbake: toaster: show 'satisfied via' text for reverse deps</p>
+                </div>
+                <div id="pi9" class="patch-item" tabindex="9">
+                    <h5 class="patch-date">Jan. 11, 2016, 11:26 p.m.</h5>
+                    <h4>Ed Bartosh</h4>
+                    <p>bitbake: toaster: show 'satisfied via' text for build deps</p>
+                </div>
+                <div id="pi10" class="patch-item" tabindex="10">
+                    <h5 class="patch-date">Jan. 11, 2016, 11:26 p.m.</h5>
+                    <h4>Ed Bartosh</h4>
+                    <p>bitbake: toaster: show list of provides for the recipe</p>
+                </div>
+            </div>
+            <div class="span8 patch-content">
+                <div id="pc1">
+                    <div class="patch-content-heading">
+                        <h1>bitbake: Revert fetch2/local.py: avoid using PREMIRROR</h1>
+                        <p>By <strong>Richard Purdie</strong> on Jan. 13, 2016, 9:47 a.m. | <a href="#">da43a56d3533db37592a1698777af08f51a5800f</a></p>
+                    </div>
+                    <div class="patch-content-body">
+                        <pre>
+This reverts commit e130dca85bac82bd4d88f94a6bf9fe36e8ad4d7c.
+
+This is in fact a valid use case, for example the sstate.bbclass code sets up SSTATE_MIRRORS as PREMIRRORS. Its quite common to map those file:// urls to remote http:// urls and with the above change, this no longer works.
+
+Signed-off-by: Richard Purdie &lt;richard.purdie@linuxfoundation.org>
+                        </pre>
+                    </div>
+                    <div class="patch-notes">
+                        <textarea rows="4" placeholder="Type the release notes for this patch"></textarea>
+                    </div>
+                </div>
+                <div id="pc2">
+                    <div class="patch-content-heading">
+                        <h1>conf/distro/poky-tiny: correctly disable python in opkg-utils</h1>
+                        <p>By <strong>Ross Burton</strong> on Jan. 12, 2016, 3:35 p.m. | <a href="#">96a34e7f847ad34deac520b78809e7dd82dbc59e</a></p>
+                    </div>
+                    <div class="patch-content-body">
+                        <pre>
+opkg-utils has more than one PACKAGECONFIG option enabled by default so wiping out PACKAGECONFIG entirely breaks poky-tiny as then opkg-utils doesn't build an update-alternatives binary.
+
+Instead, use the _remove override to selectively disable Python in opkg-utils, leaving update-alternatives present.
+
+(From meta-yocto rev: 17d0862ebc3777d148e62fe9b69225eb4de2dfe0)
+
+Signed-off-by: Ross Burton &lt;ross.burton@intel.com>
+Signed-off-by: Richard Purdie &lt;richard.purdie@linuxfoundation.org>
+                        </pre>
+                    </div>
+                    <div class="patch-notes">
+                        <textarea rows="4" placeholder="Type the release notes for this patch"></textarea>
+                    </div>
+                </div>
+                <div id="pc3">
+                    <div class="patch-content-heading">
+                        <h1>bitbake: fetch2/git.py: Add missing "errno" module import.</h1>
+                        <p>By <strong>Kristian Amlie</strong> Jan. 11, 2016, 11:28 p.m. | <a href="#">1724ffd32d1c169a2de66f2cb88ba18c56da6146e</a></p>
+                    </div>
+                    <div class="patch-content-body">
+                        <pre>
+This goes undetected most of the time, but when updating a repository, if the ud.fullmirror file is not present, you end up getting an exception instead of carrying on because the errno module is not loaded (specifically "if exc.errno != errno.ENOENT").
+
+(Bitbake rev: e6fca8480731ce817df9bee61438347a5e3d3017)
+
+Signed-off-by: Kristian Amlie &lt;kristian.amlie@mender.io>
+Signed-off-by: Richard Purdie &lt;richard.purdie@linuxfoundation.org>
+                        </pre>
+                    </div>
+                    <div class="patch-notes">
+                        <textarea rows="4" placeholder="Type the release notes for this patch"></textarea>
+                    </div>
+                </div>
+                <div id="pc4">
+                    <div class="patch-content-heading">
+                        <h1>bitbake: bitbake: clean up stamp-base related codes</h1>
+                        <p>By <strong>Chen Qi</strong> Jan. 11, 2016, 11:28 p.m. | <a href="#">74fa824e6c388dcb55e555dfba66b2b182fd1a38</a></p>
+                    </div>
+                    <div class="patch-content-body">
+                        <pre>
+The 'stamp-base' and 'stamp-base-clean' related codes are no longer useful, clean them up.
+
+[YOCTO #8468]
+
+(Bitbake rev: 7b4c42b315d4a26dd8f2ceb874a94737bf9f183e)
+
+Signed-off-by: Chen Qi &lt;Qi.Chen@windriver.com>
+Signed-off-by: Richard Purdie &lt;richard.purdie@linuxfoundation.org>
+                        </pre>
+                    </div>
+                    <div class="patch-notes">
+                        <textarea rows="4" placeholder="Type the release notes for this patch"></textarea>
+                    </div>
+                </div>
+                <div id="pc5">
+                    <div class="patch-content-heading">
+                        <h1>local.conf.sample: add qemumips64</h1>
+                        <p>By <strong>Yi Zhao</strong> Jan. 11, 2016, 11:27 p.m. | <a href="#">f3f769a7597c2f5ac19d1a46b8a35cc90eff438c</a></p>
+                    </div>
+                    <div class="patch-content-body">
+                        <pre>
+Add the missing example machine configuration for qemumips64
+
+(From meta-yocto rev: d2d22c5e47ee5d88a96b7fa29289278ee0c69eab)
+
+Signed-off-by: Yi Zhao &lt;yi.zhao@windriver.com>
+Signed-off-by: Ross Burton &lt;ross.burton@intel.com>
+Signed-off-by: Richard Purdie &lt;richard.purdie@linuxfoundation.org>
+                        </pre>
+                    </div>
+                    <div class="patch-notes">
+                        <textarea rows="4" placeholder="Type the release notes for this patch"></textarea>
+                    </div>
+                </div>
+                <div id="pc6">
+                    <div class="patch-content-heading">
+                        <h1>bitbake: runqueue: Fix setscene task dependencies</h1>
+                        <p>By <strong>Richard Purdie</strong> Jan. 11, 2016, 11:26 p.m. | <a href="#">43328feccc95a65e6774011aead5ae9f31a92275</a></p>
+                    </div>
+                    <div class="patch-content-body">
+                        <pre>
+Debugging suggests that setscene tasks are being a little greedy about their dependencies, for example, lsof is insisting that gcc-runtime's do_package is installed. If it isn't, its requiring gcc to rebuild.
+
+If gcc-runtime do_package_write_xxx and do_packagedata is available, there is no reason do_package should be needed.
+
+The reason this is happening appears to be from the batching up of task dependencies code, rather than setscene tasks stopping when passing over a setscene task, they were being carried forward. This patch fixes it so the data is 'zeroed' when passing over a setscene task boundary, which gives the dependency graph that is expected.
+
+After this patch, lsof will rebuild quite happily without gcc-runtime:do_package being present, as expected. This should lead to less dependencies being installed for builds from sstate and generally better performance in general.
+
+(Bitbake rev: f8bcb0a1e3b008b71c9a7cd21f76d0906f2d8068)
+
+Signed-off-by: Richard Purdie &lt;richard.purdie@linuxfoundation.org>
+                        </pre>
+                    </div>
+                    <div class="patch-notes">
+                        <textarea rows="4" placeholder="Type the release notes for this patch"></textarea>
+                    </div>
+                </div>
+                <div id="pc7">
+                    <div class="patch-content-heading">
+                        <h1>bitbake: toaster: settings Add uid to the toaster cache dir</h1>
+                        <p>By <strong>Michael Wood</strong> Jan. 11, 2016, 11:26 p.m. | <a href="#">7b905caf60b1d47e6ff1548ce134a5b678418534</a></p>
+                    </div>
+                    <div class="patch-content-body">
+                        <pre>
+Make the default toaster cache dir unique to the user running toaster. If we have multiple users running toaster we previously got a permission denied exception on saving a cache file.
+
+[YOCTO #8782]
+
+(Bitbake rev: 5207abdf58019271bf92bff4bcce3911b8691508)
+
+Signed-off-by: Michael Wood &lt;michael.g.wood@intel.com>
+Signed-off-by: Elliot Smith &lt;elliot.smith@intel.com>
+Signed-off-by: Richard Purdie &lt;richard.purdie@linuxfoundation.org>
+                        </pre>
+                    </div>
+                    <div class="patch-notes">
+                        <textarea rows="4" placeholder="Type the release notes for this patch"></textarea>
+                    </div>
+                </div>
+                <div id="pc8">
+                    <div class="patch-content-heading">
+                        <h1>bitbake: toaster: show 'satisfied via' text for reverse deps</h1>
+                        <p>By <strong>Ed Bartosh</strong> Jan. 11, 2016, 11:26 p.m. | <a href="#">dff7a277e31d62d32938cc676db3d8cc0242924d</a></p>
+                    </div>
+                    <div class="patch-content-body">
+                        <pre>
+Showed '&lt;dependency> satisfied via &lt;provider>' text and help tooltip for the reverse build dependencies provided through 'PROVIDES' in the 'Reverse build dependencies' tab.
+
+[YOCTO #6169]
+
+(Bitbake rev: c7bb98e2e2111790ded86087b13c8b49462d6b75)
+
+Signed-off-by: Ed Bartosh <ed.bartosh@linux.intel.com>
+Signed-off-by: Elliot Smith <elliot.smith@intel.com>
+Signed-off-by: Richard Purdie <richard.purdie@linuxfoundation.org>
+                        </pre>
+                    </div>
+                    <div class="patch-notes">
+                        <textarea rows="4" placeholder="Type the release notes for this patch"></textarea>
+                    </div>
+                </div>
+                <div id="pc9">
+                    <div class="patch-content-heading">
+                        <h1>bitbake: toaster: show 'satisfied via' text for build deps</h1>
+                        <p>By <strong>Ed Bartosh</strong> Jan. 11, 2016, 11:26 p.m. | <a href="#">dff7a277e31d62d32938cc676db3d8cc0242924d</a></p>
+                    </div>
+                    <div class="patch-content-body">
+                        <pre>
+Showed '&lt;dependency> satisfied via &lt;provider>' text and help tooltip for the build dependencies provided through 'PROVIDES' in the 'Build dependencies' tab.
+
+[YOCTO #6169]
+
+(Bitbake rev: de77e338fe70341fe98561e2e40b534f5c88db10)
+
+Signed-off-by: Ed Bartosh &lt;ed.bartosh@linux.intel.com>
+Signed-off-by: Elliot Smith &lt;elliot.smith@intel.com>
+Signed-off-by: Richard Purdie &lt;richard.purdie@linuxfoundation.org>
+                        </pre>
+                    </div>
+                    <div class="patch-notes">
+                        <textarea rows="4" placeholder="Type the release notes for this patch"></textarea>
+                    </div>
+                </div>
+                <div id="pc10">
+                    <div class="patch-content-heading">
+                        <h1>bitbake: toaster: show list of provides for the recipe</h1>
+                        <p>By <strong>Ed Bartosh</strong> Jan. 11, 2016, 11:26 p.m. | <a href="#">febb898a065bd5eb8cd11e4b57ae83e7cdaab526</a></p>
+                    </div>
+                    <div class="patch-content-body">
+                        <pre>
+Showed list of names that recipe provides.
+
+(Bitbake rev: 60318c9a049292bd33322d8446a629d778337e8a)
+
+Signed-off-by: Ed Bartosh &lt;ed.bartosh@linux.intel.com>
+Signed-off-by: Elliot Smith &lt;elliot.smith@intel.com>
+Signed-off-by: Richard Purdie &lt;richard.purdie@linuxfoundation.org>
+                        </pre>
+                    </div>
+                    <div class="patch-notes">
+                        <textarea rows="4" placeholder="Type the release notes for this patch"></textarea>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <script src="js/jquery-1.7.2.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/jquery.cookie.js"></script>
+
+    <script src="/static/js/ajax.js"></script>
+<script>
+
+    $(document).ready(function() {
+
+      $("[id^=pc]").hide();
+      $('#pc1').show();
+      $("[id^=pi]").on('focus',function(){
+        $("[id^=pi]").each(function(){
+          var item = $(this).attr('id').split('pi')[1];
+          if ( $(this).is(":focus") ) {
+             $('#pc'+item).show();
+          }
+          else {
+            $('#pc'+item).hide();
+            $(this).removeClass('patch-item-selected');
+          }
+        });
+      });
+
+    });
+
+    $('a[href=#]').click(function(e) {
+        // Prevent invalid links from jumping page scroll
+        e.preventDefault()
+    });
+    $('.commitlink').on('click', function () {
+        commit = $(this).attr("data-commit")
+        commit_div = $('#div-' + commit)
+        if ( commit_div.hasClass("in")) {
+            commit_div.collapse("hide");
+        }
+        else {
+            $('.commitmessage').not(commit_div).each(function() {
+                if ( $(this).hasClass("in")) {
+                    $(this).collapse("hide");
+                }
+            });
+            commit_div.collapse("show");
+        }
+    });
+
+
+</script>
+
+
+</body>
+</html>

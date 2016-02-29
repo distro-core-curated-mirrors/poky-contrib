@@ -1,0 +1,293 @@
+html {
+    overflow-y: scroll;
+}
+
+/*.top-padded {
+    padding-top: 80px;
+}*/
+
+textarea {
+    width:98%;
+}
+
+.rollie {
+
+    visibility:hidden;
+}
+
+.showRollie:hover .rollie{
+
+    visibility:visible;
+}
+
+.back-button {
+
+    margin-right:2em;
+
+}
+
+.label a {
+
+    color:white;
+}
+
+.footer {
+    text-align: center;
+}
+
+.description {
+    margin-bottom: 2em;
+}
+
+.description p {
+    font-size: 1.2em;
+}
+
+.description ul {
+    font-size: 1.2em;
+}
+
+.description li {
+    margin-bottom: 0.5em;
+}
+
+.dependency-well {
+    padding-top: 4px;
+}
+
+h1 .btn {
+    font-weight: normal;
+}
+
+.scrolling {
+height: auto;
+max-height: 120px;
+overflow: auto;
+width: 40.1709%;
+border: 1px solid #DDDDDD;
+padding: 8px;
+}
+
+.scrolling td {
+    padding: 4px;
+}
+
+.scrolling label {
+    margin: 0px;
+}
+
+.submitformintro {
+    padding-bottom: 0.75em;
+}
+
+.formfields input {
+    width: 50%;
+}
+
+.formfields textarea {
+    width: 50%;
+}
+
+.checkboxtd input {
+    width: 25px;
+}
+
+#maintainers {
+    padding-top: 0.75em;
+}
+
+.maintainerform {
+    /* Fix slight jumping at end of expand in Firefox */
+    padding-top: 1px;
+}
+
+.maintainerformfields input {
+    width: 25em;
+}
+
+.custom-help {
+    margin-left: 10px;
+    max-width: 40%;
+    color: #999;
+    vertical-align:top;
+}
+
+.errorlist {
+    color: #b94a48;
+    list-style-type: none;
+    margin-left: 0px;
+}
+
+.copyable {
+    padding-left: 5px;
+    padding-right: 3px;
+}
+
+.captchafield {
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.captcha {
+    padding-right: 10px;
+    padding-bottom: 10px;
+}
+
+.submitbuttons {
+    margin-top: 2em;
+    padding-top: 1em;
+    border-top: 1px solid rgb(238, 238, 238);
+}
+
+.submitbutton {
+    margin-right: 5px;
+}
+
+.hero-evenlyspaced {
+    padding: 35px;
+}
+
+.hero-evenlyspaced h1 {
+    padding-bottom: 0.25em;
+}
+
+.frontpage-button-group {
+    text-align:center !important;
+    padding: 10px;
+}
+
+.frontpage-button-group a {
+    margin: 5px;
+}
+
+.branch {
+    font-weight: bold;
+}
+
+.well-frontpage {
+    background-color: white;
+    height: 100%;
+}
+
+.muted a {
+    color: #66B8E0;
+}
+
+.search-form-table {
+    border-spacing: 2px;
+    border-collapse: separate;
+    padding-bottom: 5px;
+}
+
+.review-notification {
+    margin-top: 2px;
+}
+
+.breadcrumb {
+    background-color: transparent;
+}
+
+.nav-spacer {
+    margin-left: 10px;
+}
+
+.buttonblock {
+    margin-top: 10px;
+    margin-right: 10px;
+}
+
+.buttonblock-btn {
+    margin-left: 8px;
+}
+
+.noborder {
+    border: none;
+}
+
+.hidden-row {
+    padding: 0 !important;
+    border-collapse: collapse
+}
+
+/* added by Belén */
+
+[class*="span"] {
+  margin-left: 0;
+}
+
+#content.container-fluid {
+  padding: 40px 0 0 0;
+}
+
+.patch-list {
+    border-right: 1px solid #ddd;
+    overflow: auto;
+    position: fixed;
+    top: 40px;
+    bottom: 0;
+}
+
+.patch-item {
+  padding: 0.9em 1em;
+  border-bottom: 1px solid #ddd;
+  border-left: 6px solid transparent;
+}
+
+.patch-item:hover,
+.patch-item:focus {
+  background-color: #eee;
+  cursor: pointer;
+}
+
+.patch-item-selected {
+    background-color: #eee;
+}
+
+h5.patch-date {
+    color: #999;
+    text-transform: uppercase;
+    margin:0;
+}
+
+.patch-item h4 {
+    margin: 0 0 5px 0;
+}
+
+.patch-content {
+    padding: 1em 2em;
+    margin-left: 30%;
+}
+
+.patch-content-heading {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.patch-content-heading h1 {
+    font-size: 2em;
+    line-height: 1.2em;
+}
+
+.patch-content-body {
+    margin-top: 20px;
+    max-height: 19.5em;
+    overflow: scroll;
+    border-bottom: solid 1px #ddd;
+}
+
+pre {
+    background-color: transparent;
+    border: none;
+    font-size: 1.2em;
+    word-break: normal;
+    padding: 0;
+}
+
+.patch-notes {
+    margin-top: 25px;
+}
+
+textarea {
+    padding: 10px;
+    font-size: 1.3em;
+}
