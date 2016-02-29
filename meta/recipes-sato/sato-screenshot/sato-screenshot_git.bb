@@ -7,8 +7,8 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f \
                     file://main.c;endline=9;md5=023e14d6404d0a961eb97cbd011fc141 \
                     file://screenshot-ui.h;endline=9;md5=638d9ffa83e9325a36df224166ed6ad0"
 
-DEPENDS = "matchbox-panel-2"
-SRCREV = "3a9688e8a01b63a78f402b4e7c0b8b005fcdfa29"
+DEPENDS = "matchbox-panel-2 gtk+3"
+SRCREV = "50e502ee999733a064eb5b45ba87450648485929"
 PV = "0.1+git${SRCPV}"
 PR = "r2"
 
