@@ -7,6 +7,11 @@ if [ -z $REPO ]; then
     exit 1
 fi
 
+if [ ! -d $REPO ]; then
+    echo "Repository project does not exist, correct the path"
+    exit 1
+fi
+
 SCRIPTS_DIR=`dirname $0`
 
 # tools used (git-pw and patchtest)
