@@ -24,8 +24,7 @@ cd $PATCHTEST_BASE
 PATH="$PATH:$PATCHTEST_BASE:$GITPWDIR"
 PYTHONPATH="$PATCHTEST_BASE":"/usr/bin/python:$PYTHONPATH"
 
-cd $REPO
-git pw poll-events | patchtest --no-patch
+cd $REPO; git pull; git pw poll-events | patchtest --no-patch
 
 deactivate
 
