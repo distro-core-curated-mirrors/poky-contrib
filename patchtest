@@ -102,31 +102,6 @@ def getResult(series, revision, mbox):
     return PatchTestResult
 
 def main():
-    # Parse the command line arguments and store it on the PatchTestInput namespace
-    pti.set_namespace()
-
-    # Make sure only one patchtest instance is running under a repository
-    lockfile = os.path.join(pti.repodir, 'patchtest.lock')
-    if os.path.exists(lockfile):
-        logger.error('patchtest locked (currently running?). Remove %s in case no patchtest is running' % lockfile)
-        return 1
-
-    os.mknod(lockfile)
-
-    # include a log file handler
-    patchtestfolder = os.path.join(pti.repodir, '.patchtest')
-    if not os.path.exists(patchtestfolder):
-        os.mkdir(patchtestfolder)
-
-    logfile = os.path.join(patchtestfolder, 'log')
-    logger.addHandler(logging.FileHandler(logfile))
-
-    if pti.debug:
-        logger.setLevel(logging.DEBUG)
-        print logger.getEffectiveLevel()
-    elif pti.quiet:
-        logger.setLevel(logging.ERROR)
-
     # read the stdin if mbox/series/revision are passed this way
     if not sys.stdin.isatty():
         pti.namespace_stdin(fileinput.input('-'))
@@ -157,11 +132,6 @@ def main():
     else:
         logger.warning('Patching strategy (%s) not recognized' % pti.patching_strategy)
 
-    try:
-        os.remove(lockfile)
-    except:
-        logger.error('Patchtest lock file %s could not be removed')
-
     return 0
 
 def run(series=[], revision=[], mbox=[]):
@@ -185,10 +155,44 @@ def run(series=[], revision=[], mbox=[]):
             pti.repo.clean(False)
 
 if __name__ == '__main__':
+    ret = 1
+
+    # Parse the command line arguments and store it on the PatchTestInput namespace
+    pti.set_namespace()
+
+    # create a .patchtest folder inside the repository, a place for patchtest logging and locking
+    patchtestfolder = os.path.join(pti.repodir, '.patchtest')
+    if not os.path.exists(patchtestfolder):
+        os.mkdir(patchtestfolder)
+
+    # Make sure only one patchtest instance is running under a repository
+    lockfile = os.path.join(patchtestfolder, 'patchtest.lock')
+    if os.path.exists(lockfile):
+        logger.error('patchtest locked (currently running?). Remove %s in case no patchtest is running' % lockfile)
+        sys.exit(ret)
+    else:
+        os.mknod(lockfile)
+
+    # enable a file handle for logging
+    logfile = os.path.join(patchtestfolder, 'log')
+    logger.addHandler(logging.FileHandler(logfile))
+
+    # set debugging level
+    if pti.debug:
+        logger.setLevel(logging.DEBUG)
+        print logger.getEffectiveLevel()
+    elif pti.quiet:
+        logger.setLevel(logging.ERROR)
+
     try:
         ret = main()
     except Exception:
-        ret = 1
         import traceback
         traceback.print_exc(5)
+    finally:
+        try:
+            os.remove(lockfile)
+        except:
+            logger.error('Patchtest lock file %s could not be removed')
+
     sys.exit(ret)
