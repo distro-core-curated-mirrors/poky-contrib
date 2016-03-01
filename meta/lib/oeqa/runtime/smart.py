@@ -80,19 +80,19 @@ class SmartRepoTest(SmartTest):
         self.smart('update')
 
     @testcase(969)
-    def test_smart_channel_help(self):
+    def atest_smart_channel_help(self):
         self.smart('channel --help')
 
     @testcase(970)
-    def test_smart_channel_list(self):
+    def atest_smart_channel_list(self):
         self.smart('channel --list')
 
     @testcase(971)
-    def test_smart_channel_show(self):
+    def atest_smart_channel_show(self):
         self.smart('channel --show')
 
     @testcase(717)
-    def test_smart_channel_rpmsys(self):
+    def atest_smart_channel_rpmsys(self):
         self.smart('channel --show rpmsys')
         self.smart('channel --disable rpmsys')
         self.smart('channel --enable rpmsys')
@@ -105,13 +105,14 @@ class SmartRepoTest(SmartTest):
 
     @testcase(728)
     @skipUnlessPassed('test_smart_install')
-    def test_smart_install_dependency(self):
+    def atest_smart_install_dependency(self):
         self.smart('remove -y psplash')
         self.smart('install -y psplash-default')
 
     @testcase(723)
     @skipUnlessPassed('test_smart_channel_add')
     def test_smart_install_from_disk(self):
+        self.target.run("sleep 100000", 1500)
         self.smart('remove -y psplash-default')
         self.smart('download psplash-default')
         self.smart('install -y ./psplash-default*')
@@ -127,18 +128,18 @@ class SmartRepoTest(SmartTest):
 
     @testcase(729)
     @skipUnlessPassed('test_smart_install')
-    def test_smart_reinstall(self):
+    def atest_smart_reinstall(self):
         self.smart('reinstall -y psplash-default')
 
     @testcase(727)
     @skipUnlessPassed('test_smart_channel_add')
-    def test_smart_remote_repo(self):
+    def atest_smart_remote_repo(self):
         self.smart('update')
         self.smart('install -y psplash')
         self.smart('remove -y psplash')
 
     @testcase(726)
-    def test_smart_local_dir(self):
+    def atest_smart_local_dir(self):
         self.target.run('mkdir /tmp/myrpmdir')
         self.smart('channel --add myrpmdir type=rpm-dir path=/tmp/myrpmdir -y')
         self.target.run('cd /tmp/myrpmdir')
@@ -156,7 +157,7 @@ class SmartRepoTest(SmartTest):
         self.target.run("rm -rf /tmp/myrpmdir")
 
     @testcase(718)
-    def test_smart_add_rpmdir(self):
+    def atest_smart_add_rpmdir(self):
         self.target.run('mkdir /tmp/myrpmdir')
         self.smart('channel --add myrpmdir type=rpm-dir path=/tmp/myrpmdir -y')
         self.smart('channel --disable myrpmdir -y')
@@ -170,6 +171,6 @@ class SmartRepoTest(SmartTest):
 
     @testcase(731)
     @skipUnlessPassed('test_smart_channel_add')
-    def test_smart_remove_package(self):
+    def atest_smart_remove_package(self):
         self.smart('install -y psplash')
         self.smart('remove -y psplash')
