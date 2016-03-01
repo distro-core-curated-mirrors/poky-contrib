@@ -113,6 +113,14 @@ def main():
 
     os.mknod(lockfile)
 
+    # include a log file handler
+    patchtestfolder = os.path.join(pti.repodir, '.patchtest')
+    if not os.path.exists(patchtestfolder):
+        os.mkdir(patchtestfolder)
+
+    logfile = os.path.join(patchtestfolder, 'log')
+    logger.addHandler(logging.FileHandler(logfile))
+
     if pti.debug:
         logger.setLevel(logging.DEBUG)
         print logger.getEffectiveLevel()
