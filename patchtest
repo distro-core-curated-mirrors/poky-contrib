@@ -25,6 +25,11 @@ def getResult(series, revision, mbox):
     class PatchTestResult(unittest.TextTestResult):
         """ Formats the summary and post result at the end """
 
+        PATCHWORK_RESULT_FAILURE = 'failure'
+        PATCHWORK_RESULT_SUCCESS = 'success'
+        PATCHWORK_RESULT_PENDING = 'pending'
+        PATCHWORK_RESULT_WARNING = 'warning'
+
         shouldStop = True
         longMessage = True
 
@@ -41,8 +46,9 @@ def getResult(series, revision, mbox):
             self.repo = pti.repo = repo.Repo(**repoargs)
             self.summary = BasicSummary()
 
-            self.failure = False # turns on in case of any testing failure
-            self.error = False # turns on in case of any exception raise
+            self.merge_failure = False # turns on in case all items failed the merging phase
+            self.test_failure = False  # turns on in case of any testing failure
+            self.test_error = False    # turns on in case of any exception raise
 
             try:
                 self.repo.setup()
@@ -54,19 +60,19 @@ def getResult(series, revision, mbox):
                 if not pti.nopatch:
                     self.repo.merge(pti.storembox)
                     if self.repo.items and (not self.repo.any_merge()):
-                        self.failure = True
+                        self.merge_failure = True
                         self.stop()
             except:
                 self.error = True
                 self.stop()
 
         def addError(self, test, err):
-            self.error = True
+            self.test_error = True
             (ty, va, trace) = err
             logger.error(va)
 
         def addFailure(self, test, err):
-            self.failure = True
+            self.test_failure = True
             self.summary.addFailure(test, err)
 
         def addSuccess(self, test):
@@ -76,21 +82,22 @@ def getResult(series, revision, mbox):
             self.summary.addSkip(test, msg)
 
         def stopTestRun(self):
-            # leave the working directory as it was, and remove branch if desired
+            testname = pti.testname
+            state = PatchTestResult.PATCHWORK_RESULT_FAILURE
+            summary = self.summary.generateSummary(self.repo.items)
+
+            logger.info(summary)
+
+            if self.merge_failure:
+                testname += '-merge-failure'
+            else:
+                if not self.test_failure:
+                    state = PatchTestResult.PATCHWORK_RESULT_SUCCESS
+
+            if not self.test_error and pti.post:
+                self.repo.post(testname, state, summary)
+
             self.repo.clean(pti.keepbranch)
-
-            if not self.error:
-                summary = self.summary.generateSummary(self.repo.items)
-                logger.info(summary)
-
-                state = None
-                if self.failure:
-                    state = 'failure'
-                else:
-                    state = 'success'
-
-                if pti.post:
-                    self.repo.post(pti.testname, state, summary)
 
     return PatchTestResult
 
