@@ -54,6 +54,7 @@ def getResult(series, revision, mbox):
                 if not pti.nopatch:
                     self.repo.merge(pti.storembox)
                     if self.repo.items and (not self.repo.any_merge()):
+                        self.failure = True
                         self.stop()
             except:
                 self.error = True
