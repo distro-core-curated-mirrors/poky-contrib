@@ -28,9 +28,15 @@ PATH="$PATH:$PATCHTEST_BASE:$GITPWDIR"
 PYTHONPATH="$PATCHTEST_BASE":"/usr/bin/python:$PYTHONPATH"
 
 cd $REPO
-git pull
-git pw poll-events | \
-    patchtest --branch master --post --test-dir $TESTDIR
+
+# make sure no patchtest lock exists
+if [ ! -e $PATCHTEST_BASE/patchtest.lock ]; then
+    git pull
+    git pw poll-events | \
+	patchtest --branch master --post --test-dir $TESTDIR
+else
+    echo "patchtest currently executing, no events polled"
+fi
 
 deactivate
 
