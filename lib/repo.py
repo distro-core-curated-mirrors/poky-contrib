@@ -117,6 +117,7 @@ class Repo(object):
         # current branch and HEAD is take
         self._branch = branch or self._current_branch
         self._commit = self._get_commitid(commit or 'HEAD')
+        self._branchname = "%s_%s" % (Repo.prefix, os.getpid())
 
         try:
             self.repo = git.Repo(self._repodir)
@@ -168,25 +169,6 @@ class Repo(object):
             fullurl +="/api/1.0/series/%s/revisions/%s/mbox/"
             for s,r in self._series_revision:
                 self._mboxitems.append(MboxURLItem(fullurl, (s,r)))
-
-    @property
-    def branch(self):
-        return self._branch
-
-    @property
-    def commit(self):
-        return self._commit
-
-    @property
-    def branchname(self):
-        _name = Repo.prefix
-        if self._mbox:
-            _name += "-local-mbox"
-        elif self._series_revision:
-            series   = '-'.join([str(s) for s,_ in self._series_revision])
-            revision = '-'.join([str(r) for _,r in self._series_revision])
-            _name += "-series-%s-rev-%s" % (series, revision)
-        return _name
 
     def _exec(self, cmds):
         _cmds = []
@@ -298,8 +280,8 @@ class Repo(object):
     def setup(self):
         """ Setup repository for patching """
         self._exec([
-            {'cmd':['git', 'checkout', self.branch]},
-            {'cmd':['git', 'checkout', '-b', self.branchname, self.commit]},
+            {'cmd':['git', 'checkout', self._branch]},
+            {'cmd':['git', 'checkout', '-b', self._branchname, self._commit]},
         ])
 
     def clean(self, keepbranch=False):
@@ -309,7 +291,7 @@ class Repo(object):
         ]
 
         if not keepbranch:
-            cmds.append({'cmd':['git', 'branch', '-D', self.branchname], 'ignore_error':True})
+            cmds.append({'cmd':['git', 'branch', '-D', self._branchname], 'ignore_error':True})
 
         self._exec(cmds)
 
