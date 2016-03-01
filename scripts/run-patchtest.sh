@@ -30,7 +30,7 @@ PYTHONPATH="$PATCHTEST_BASE":"/usr/bin/python:$PYTHONPATH"
 cd $REPO
 
 # make sure no patchtest lock exists
-if [ ! -e $PATCHTEST_BASE/patchtest.lock ]; then
+if [ ! -e $REPO/patchtest.lock ]; then
     git pull
     git pw poll-events | \
 	patchtest --branch master --post --test-dir $TESTDIR
