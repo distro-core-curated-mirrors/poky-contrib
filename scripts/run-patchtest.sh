@@ -18,13 +18,19 @@ SCRIPTS_DIR=`dirname $0`
 PATCHTEST_BASE=`readlink -e $SCRIPTS_DIR/..`
 GITPWDIR=$PATCHTEST_BASE/patchwork/git-pw
 
+# testdir
+TESTDIR=$PATCHTEST_BASE/sample-tests/success
+
 cd $PATCHTEST_BASE
 . venv/bin/activate
 
 PATH="$PATH:$PATCHTEST_BASE:$GITPWDIR"
 PYTHONPATH="$PATCHTEST_BASE":"/usr/bin/python:$PYTHONPATH"
 
-cd $REPO; git pull; git pw poll-events | patchtest --no-patch
+cd $REPO
+git pull
+git pw poll-events | \
+    patchtest --branch master --post --test-dir $TESTDIR
 
 deactivate
 
