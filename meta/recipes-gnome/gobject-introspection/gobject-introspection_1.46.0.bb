@@ -36,6 +36,8 @@ DEPENDS_append = " libffi zlib glib-2.0"
 # native versions of its own tools during build.
 DEPENDS_class-target_append = " gobject-introspection-native qemu-native"
 
+SSTATE_SCAN_FILES += "g-ir-scanner-qemuwrapper g-ir-scanner-wrapper g-ir-compiler-wrapper g-ir-scanner-lddwrapper Gio-2.0.gir"
+
 do_configure_prepend_class-native() {
         # Tweak the native python scripts so that they don't refer to the
         # full path of native python binary (the solution is taken from glib-2.0 recipe)
@@ -67,7 +69,7 @@ EOF
 # This prevents g-ir-scanner from writing cache data to $HOME
 export GI_SCANNER_DISABLE_CACHE=1
 
-${STAGING_BINDIR_NATIVE}/g-ir-scanner --use-binary-wrapper=${STAGING_BINDIR}/g-ir-scanner-qemuwrapper --use-ldd-wrapper=${STAGING_BINDIR}/g-ir-scanner-lddwrapper --add-include-path=${STAGING_DATADIR}/gir-1.0 "\$@"
+g-ir-scanner --use-binary-wrapper=${STAGING_BINDIR}/g-ir-scanner-qemuwrapper --use-ldd-wrapper=${STAGING_BINDIR}/g-ir-scanner-lddwrapper --add-include-path=${STAGING_DATADIR}/gir-1.0 "\$@"
 EOF
         chmod +x ${B}/g-ir-scanner-wrapper
 
