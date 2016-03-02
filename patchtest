@@ -111,10 +111,10 @@ def main():
     listrevision = list(pti.revision)
     listmbox = list(pti.mbox)
 
-    if pti.patching_strategy == pti.PATCHING_STRATEGY_MULTIPLE:
+    if pti.multiple:
         # run tests on top of all input patches (mbox or series)
         run(listseries, listrevision, listmbox)
-    elif pti.patching_strategy == pti.PATCHING_STRATEGY_SINGLE:
+    else:
         # run tests for each input patch (mbox or series)
         if listseries:
             # check if lengths match, if not pad revisions with None
@@ -129,8 +129,6 @@ def main():
         else:
             # no input given, just run
             run()
-    else:
-        logger.warning('Patching strategy (%s) not recognized' % pti.patching_strategy)
 
     return 0
 

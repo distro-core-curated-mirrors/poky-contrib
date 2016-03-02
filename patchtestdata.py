@@ -54,11 +54,6 @@ class PatchTestStdIn(object):
 class PatchTestArgs(object):
     """ Generate PatchTestData from an argument parser"""
 
-    PATCHING_STRATEGY_SINGLE = 'single'
-    PATCHING_STRATEGY_MULTIPLE = 'multiple'
-    PATCHING_STRATEGIES = (PATCHING_STRATEGY_SINGLE,
-                           PATCHING_STRATEGY_MULTIPLE)
-
     @classmethod
     def set_namespace(cls):
         parser = cls.get_parser()
@@ -120,13 +115,10 @@ class PatchTestArgs(object):
                             dest='commit',
                             help="Commit ID used by patchtest to branch from. By default, it uses HEAD.")
 
-        parser.add_argument('--patching-strategy', '-p',
-                            dest='patching_strategy',
-                            default=PatchTestArgs.PATCHING_STRATEGY_SINGLE,
-                            type=str,
-                            help="Patching strategy: '%s' test a single patch or '%s' test multiple patches" %
-                            (PatchTestArgs.PATCHING_STRATEGY_SINGLE,
-                             PatchTestArgs.PATCHING_STRATEGY_MULTIPLE))
+        parser.add_argument('--multiple',
+                            dest='multiple',
+                            action='store_true',
+                            help="Test multiple items at once")
 
         parser.add_argument('--no-patch',
                             dest='nopatch',
