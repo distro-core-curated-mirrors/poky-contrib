@@ -20,7 +20,7 @@ FILES_${PN} += "${datadir}/application-registry  \
 
 FILES_${PN}-doc += "${datadir}/devhelp"
 
-inherit autotools pkgconfig gobject-introspection
+inherit autotools pkgconfig
 
 do_install_append() {
 	rm -rf ${D}${localstatedir}/lib/scrollkeeper/*
