@@ -99,16 +99,14 @@ class PatchTestArgs(object):
         parser.add_argument('--test-name',
                             dest='testname',
                             default='patchtest',
-                            help="Test name to be used if results are posted")
+                            help="Test name to be used if results are posted. In case all items failed merged, then the test name is <--test-name>-merge-failure")
 
         parser.add_argument('--keep-branch',
                             dest='keepbranch',
                             action='store_true',
-                            help="Do not post results")
+                            help="Keep the working branch after patchtest execution")
 
-        patchtest_tests_dir = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'tests')
+        patchtest_tests_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'tests')
         parser.add_argument('--test-dir',
                             dest='testdir',
                             default=patchtest_tests_dir,
@@ -116,11 +114,11 @@ class PatchTestArgs(object):
 
         parser.add_argument('--branch', '-b',
                             dest='branch',
-                            help="Branch to work on, default is master. Must be available in repo")
+                            help="Branch name used by patchtest to branch from. By default, it uses the current one.")
 
         parser.add_argument('--commit', '-c',
                             dest='commit',
-                            help="Commit to work on, default is HEAD. Must be visible from branch")
+                            help="Commit ID used by patchtest to branch from. By default, it uses HEAD.")
 
         parser.add_argument('--patching-strategy', '-p',
                             dest='patching_strategy',
