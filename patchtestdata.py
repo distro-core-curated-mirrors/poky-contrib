@@ -125,11 +125,6 @@ class PatchTestArgs(object):
                             action='store_true',
                             help="Do not patch the mbox/series")
 
-        parser.add_argument('--store-mbox',
-                            dest='storembox',
-                            action='store_true',
-                            help="Store the mbox/series into a file")
-
         parser.add_argument('--debug', '-d',
                             action='store_true',
                             help='Enable debug output')

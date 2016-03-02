@@ -239,14 +239,6 @@ class Repo(object):
                     res.append((series, revision))
         return res
 
-    def _store_mbox(self, item):
-        if isinstance(item, MboxURLItem):
-            series, revision = item.args
-            mbox_file = "series-%s-revision-%s.mbox" % (series, revision)
-            logger.info('Storing mbox/series into %s' % os.path.abspath(mbox_file))
-            with open(mbox_file, 'w') as f:
-                f.write(item.contents)
-
     def _merge_item(self, item):
         contents = item.contents
 
@@ -259,10 +251,8 @@ class Repo(object):
             {'cmd':['git', 'am'], 'input':contents}]
         )
 
-    def merge(self, storembox=False):
+    def merge(self):
         for item in self._mboxitems:
-            if storembox:
-                self._store_mbox(item)
             try:
                 self._merge_item(item)
                 item.status = BaseMboxItem.MERGE_STATUS_MERGED_SUCCESSFULL
