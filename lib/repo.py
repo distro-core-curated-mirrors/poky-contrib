@@ -1,8 +1,13 @@
 import os
 import utils
 import git
+import re
 import logging
 import requests
+import unidiff
+import urllib2
+import codecs
+from patchwork_parser import parse_patch as _pw_parse
 
 logger = logging.getLogger('patchtest')
 
@@ -28,16 +33,75 @@ class BaseMboxItem(object):
         self._contents = ''
         self._status = BaseMboxItem.MERGE_STATUS_NOT_MERGED
 
+        self._keyvals = {}
+        self._patchdiff = ''
+        self._commentbuf = ''
+        self._changes = None
+
+    #XXX: remember to make sure contents, keyvals and diff(changes) are scanned and stuff
+
     @property
     def contents(self):
-        raise(NotImplementedError, 'Please do not instantiate MboxItem')
-
-    def _scan(self):
-        raise(NotImplementedError, 'This method has not yet been implemented, scanning is done in tests')
+        raise(NotImplementedError, 'Please do not instantiate MboxItem; patch reading method depends on Mbox type')
 
     @property
     def is_empty(self):
-        return not self.contents
+        _cnt = self.contents
+        return not(_cnt.strip())
+
+    def _load_diff_comment(self):
+        """
+        Use the patchwork parser to generate a patchdiff (the actual patch)
+        and a comment buffer (the patch metadata) for this object
+        """
+        _contents = self.contents
+        if self._forcereload or (not self._patchdiff or not self._commentbuf):
+            self._patchdiff, self._commentbuf = _pw_parse(_contents)
+
+    @property
+    def diff(self):
+        if self._forcereload or (not self._patchdiff):
+            self._load_diff_comment()
+        return self._patchdiff
+
+    @property
+    def comments(self):
+        if self._forcereload or (not self._commentbuf):
+            self._load_diff_comment()
+        return self._commentbuf
+
+    @property
+    def keyvals(self):
+        if self._forcereload or (not self._keyvals):
+            self._parse_keyvals()
+        return self._keyvals
+
+    def _parse_keyvals(self, pattern='^([\w-]+):\s+(.*)$'):
+        """
+        Parse key-value pairs out of this item's patch metadata
+        """
+        _cmt = self.comments
+        cmt_seps = ('---', 'diff')
+        cmt_head = _cmt
+
+        for _sep in cmt_seps:
+            sep_index = _cmt.find(_sep)
+            if sep_index >= 0:
+                cmt_head = _cmt[:sep_index]
+                break
+
+        for _line in [ _.strip() for _ in cmt_head.splitlines()[1:] ]:
+            _m = re.match(pattern, _line)
+            if _m and _m.groups():
+                _k, _v = _m.groups()
+                utils.dict_append_new(self._keyvals, _k, _v)
+            else:
+                if _line:
+                    utils.dict_append_new(self._keyvals, 'Description', _line)
+
+    @property
+    def changes(self):
+        raise(NotImplementedError, 'Please do not instantiate MboxItem; patch change scanning depends on Mbox type')
 
     def getresource(self):
         resource = self._resource
@@ -69,33 +133,57 @@ class BaseMboxItem(object):
 
     status = property(getstatus, setstatus)
 
+
 class MboxURLItem(BaseMboxItem):
-    """ mbox item based on a URL"""
+    """ Mbox item based on a URL"""
 
     @property
     def contents(self):
         if self._forcereload or (not self._contents):
-            logger.debug('Reading %s contents' % self.resource)
+            logger.debug('Reading %s contents' % self._resource)
             try:
-                _r = requests.get(self.resource)
+                _r = requests.get(self._resource)
                 self._contents = _r.text
-            except:
-                logger.warn("Request to %s failed" % self.resource)
+            except:  #XXX: narrow down to more specific exceptions
+                logger.warn("Request to %s failed" % self._resource)
         return self._contents
+
+    @property
+    def changes(self):
+        if self._forcereload or (not self._changes):
+            try:
+                _url = urllib2.urlopen(self._resource)
+            except:  #XXX: narrow down to more specific exceptions
+                logger.warn("Request to %s failed" % self._resource)
+            try:
+                self._changes = unidiff.PatchSet(_url)
+            except:  #XXX: narrow down to more specific exceptions
+                logger.warn("Parsing %s failed" % self._resource)
+        return self._changes
 
 class MboxFileItem(BaseMboxItem):
-    """ mbox item based on a file"""
+    """ Mbox item based on a file"""
 
     @property
     def contents(self):
         if self._forcereload or (not self._contents):
-            logger.debug('Reading %s contents' % self.resource)
+            logger.debug('Reading %s contents' % self._resource)
             try:
-                with open(self.resource) as _f:
+                with open(self._resource) as _f:
                     self._contents = _f.read()
             except IOError:
-                logger.warn("Reading the mbox %s failed" % self.resource)
+                logger.warn("Reading the mbox %s failed" % self._resource)
         return self._contents
+
+    @property
+    def changes(self):
+        if self._forcereload or (not self._changes):
+            try:
+                with codecs.open(self._resource) as _f:
+                    self._changes = unidiff.PatchSet(_f)
+            except IOError:
+                logger.warn("Reading the mbox %s failed" % self._resource)
+        return self._changes
 
 class Repo(object):
 

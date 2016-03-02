@@ -4,6 +4,12 @@ import os
 import subprocess
 import logging
 
+def dict_append_new(d, k, v):
+    if k in d:
+        d[k].append(v)
+    else:
+        d[k] = [v]
+
 class CmdException(Exception):
     """ Simple exception class where its attributes are the ones passed when instantiated """
     def __init__(self, cmd):
