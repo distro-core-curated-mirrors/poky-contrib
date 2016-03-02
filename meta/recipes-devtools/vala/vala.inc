@@ -19,9 +19,33 @@ inherit autotools pkgconfig upstream-version-is-even
 FILES_${PN} += "${datadir}/${BPN}-${SHRT_VER}/vapi ${libdir}/${BPN}-${SHRT_VER}/"
 FILES_${PN}-doc += "${datadir}/devhelp"
 
+do_configure_prepend_class-target() {
+        # Write out a vapigen wrapper that will be provided by pkg-config file installed in target sysroot
+        # The wrapper will call a native vapigen
+        cat > ${B}/vapigen-wrapper << EOF
+#!/bin/sh
+vapigen-${SHRT_VER} "\$@"
+EOF
+        chmod +x ${B}/vapigen-wrapper
+}
+
+# Vapigen wrapper needs to be available system-wide, because it will be used
+# to build vapi files from all other packages with vala support
+do_install_append_class-target() {
+        install -d ${D}${bindir}/
+        install ${B}/vapigen-wrapper ${D}${bindir}/
+}
+
+
 SYSROOT_PREPROCESS_FUNCS_append_class-target += "vapigen_sysroot_preprocess"
 
-# Link native vapigen into target sysroot so that it is used when building vapi files.
 vapigen_sysroot_preprocess() {
-        ln -f -s ${STAGING_BINDIR_NATIVE}/vapigen* ${STAGING_BINDIR}
+        # Put vapigen wrapper into target sysroot so that it can be used when building vapi files.
+        sysroot_stage_dir ${D}${bindir} ${SYSROOT_DESTDIR}${bindir}
+
+        # Also, tweak the vapigen name in vapigen pkgconfig file, so that it picks up our
+        # wrapper.
+        sed -i \
+           -e "s|vapigen=.*|vapigen=${bindir}/vapigen-wrapper|" \
+           ${SYSROOT_DESTDIR}${datadir}/pkgconfig/vapigen-${SHRT_VER}.pc
 }
