@@ -5,7 +5,7 @@ UNINATIVE_TARBALL ?= "${BUILD_ARCH}-nativesdk-libc.tar.bz2"
 # Example checksums
 #UNINATIVE_CHECKSUM[i586] = "dead"
 #UNINATIVE_CHECKSUM[x86_64] = "dead"
-UNINATIVE_DLDIR ?= "${COREBASE}"
+UNINATIVE_DLDIR ?= "${DL_DIR}"
 
 addhandler uninative_eventhandler
 uninative_eventhandler[eventmask] = "bb.event.BuildStarted"
