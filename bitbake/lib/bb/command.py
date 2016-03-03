@@ -273,6 +273,7 @@ class CommandsSync:
     createConfigFile.needconfig = False
 
     def setEventMask(self, command, params):
+        print "BAVERY setEventMask!!!!!!!!!!!!!!!!!!1"
         handlerNum = params[0]
         llevel = params[1]
         debug_domains = params[2]

@@ -1378,6 +1378,7 @@ class BuildInfoHelper(object):
 
 
     def store_build_package_information(self, event):
+        logger.warn("BAVERY:store_build_package_information")
         package_info = BuildInfoHelper._get_data_from_event(event)
         self.orm_wrapper.save_build_package_information(
             self.internal_state['build'],

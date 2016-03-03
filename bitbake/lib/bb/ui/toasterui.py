@@ -100,7 +100,7 @@ _evt_list = [ "bb.runqueue.runQueueExitWait", "bb.event.LogExecTTY", "logging.Lo
               "bb.event.MultipleProviders", "bb.event.NoProvider", "bb.runqueue.sceneQueueTaskStarted",
               "bb.runqueue.runQueueTaskStarted", "bb.runqueue.runQueueTaskFailed", "bb.runqueue.sceneQueueTaskFailed",
               "bb.event.BuildBase", "bb.build.TaskStarted", "bb.build.TaskSucceeded", "bb.build.TaskFailedSilent",
-              "bb.event.MetadataEvent"]
+              "bb.event.MetadataEvent","bb.event.RequestPackageInfo","bb.event.PackageInfo"]
 
 def main(server, eventHandler, params):
     # set to a logging.FileHandler instance when a build starts;
@@ -126,8 +126,9 @@ def main(server, eventHandler, params):
     logger.addHandler(console)
     logger.setLevel(logging.INFO)
     llevel, debug_domains = bb.msg.constructLogOptions()
-    server.runCommand(["setEventMask", server.getEventHandle(), llevel, debug_domains, _evt_list])
-
+    q = server.runCommand(["setEventMask", server.getEventHandle(), llevel, debug_domains, _evt_list])
+    logger.warn("seteventmask return is %s",q)
+    
 
     # verify and warn
     build_history_enabled = True
@@ -137,9 +138,9 @@ def main(server, eventHandler, params):
         logger.warn("buildhistory is not enabled. Please enable INHERIT += \"buildhistory\" to see image details.")
         build_history_enabled = False
 
-    if not params.observe_only:
-        logger.error("ToasterUI can only work in observer mode")
-        return 1
+#    if not params.observe_only:
+#        logger.error("ToasterUI can only work in observer mode")
+#        return 1
 
     # set to 1 when toasterui needs to shut down
     main.shutdown = 0
@@ -183,6 +184,7 @@ def main(server, eventHandler, params):
 
             helper.eventHandler(event)
 
+            logger.info("BAVERY: event: %s ",event.__class__.__name__)
             # pylint: disable=protected-access
             # the code will look into the protected variables of the event; no easy way around this
 
@@ -348,6 +350,7 @@ def main(server, eventHandler, params):
                 continue
 
             if isinstance(event, bb.event.MetadataEvent):
+                logger.info("    BAVERY: type:%s vars:%s",event.type,str(vars(event)))
                 if event.type == "SinglePackageInfo":
                     buildinfohelper.store_build_package_information(event)
                 elif event.type == "LayerInfo":
