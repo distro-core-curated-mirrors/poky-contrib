@@ -304,3 +304,63 @@ class ToasterTests(BaseToasterTestCase):
         # save screen here
         time.sleep(5)
         self.screenshooter.take_screenshot(screenshot_type='native', append_name='step10')
+        
+        ###############
+        #  CASE 1069  #
+        ###############
+    def test_1069(self):
+        #step 1
+        self.log_test_step_number(1)
+        self.toaster_driver.go_to_base_url()
+        home_page = toaster_pages.HomePage(self.toaster_driver.driver)
+        project_page = home_page.select_selenium_project()
+        
+        #step 2
+        self.log_test_step_number(2)
+        layer_page  = project_page.select_layers_option()
+        
+        #step 3-5
+        self.log_test_step_number(3)
+        layer_page.is_text_present(layer_page.default_layers)
+        self.log_test_step_number(4)
+        layer_page.is_text_present(layer_page.default_columns)
+        self.log_test_step_number(5)
+        layer_page.is_text_present(layer_page.default_revision)
+        
+        #Change project release to "yocto master" to access more options
+        layer_page.select_config_option()
+        project_page.change_release("Yocto Project master")
+        project_page.change_release("Local Yocto Project")
+        
+        #step 6
+        layer_page.display_all_layers_columns()
+        self.log_test_step_number(6)
+        layer_page.search_for_layer("meta-yocto-bsp")
+        layer_page.is_text_present("meta-yocto-bsp")
+        layer_page.is_text_present("master")
+        
+        #step 7
+        #step 7 cannot be automated at this time
+        self.log_test_step_number(7)
+        
+        #step 8
+        self.log_test_step_number(8)
+        layer_page.is_text_present('github')
+        
+        ###############
+        #  CASE 1070  #
+        ###############
+    def test_1070(self):
+        #step 1
+        self.log_test_step_number(1)
+        self.toaster_driver.go_to_base_url()
+        home_page = toaster_pages.HomePage(self.toaster_driver.driver)
+        project_page = home_page.select_selenium_project()
+        
+        #step 2
+        self.log_test_step_number(2)
+        layer_page  = project_page.select_layers_option()
+        
+        #step 3
+        list = get_table_values_in_column_nr(column_classes['Layer'])
+        

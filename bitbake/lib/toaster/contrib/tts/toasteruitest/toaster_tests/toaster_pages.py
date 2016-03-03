@@ -173,6 +173,7 @@ class ToasterPage(PageObject):
 
 class HomePage(ToasterPage):
     core_image_minimal_build = PageElement(link_text="core-image-minimal")
+    selenium_project = PageElement(link_text="selenium-project")
     add_column_log_option = PageElement(id_="log")
     add_column_started_on_option = PageElement(id_="started_on")
     add_column_time_option = PageElement(id_="time")
@@ -220,6 +221,10 @@ class HomePage(ToasterPage):
         self.core_image_minimal_build.click()
         return BuildPage(self.w)
 
+    def select_selenium_project(self):
+        self.selenium_project.click()
+        return ProjectPage(self.w)
+        
     def display_started_on_column(self):
         self.add_single_column_to_display("Started on")
 
@@ -464,3 +469,82 @@ class BitBakeVariablesTab(ConfigurationPage):
 
 class SummaryTab(ConfigurationPage):
     mandatory_summary_tab_text = ['Layers', 'Layer', 'Layer branch', 'Layer commit', 'Layer directory']
+    
+class ProjectPage(ToasterPage):
+    configuration_option=PageElement(link_text="Configuration")
+    image_recipes_option=PageElement(link_text="Image recipes")
+    software_recipes_option=PageElement(link_text="Software recipes")
+    machines_option=PageElement(link_text="Machines")
+    layers_option=PageElement(link_text="Layers")
+    bb_variables_option=PageElement(link_text="Bitbake variables")
+    project_builds_option=PageElement(class_name="total-builds")
+    import_layer_option=PageElement(link_text="Import layer")
+    import_layer_box=PageElement(id="import-layer-name")
+    import_git_repo_box=PageElement(id="layer-git-repo-url")
+    import_subdir_box=PageElement(id="layer-subdir")
+    import_revision_box=PageElement(id="layer-git-ref")
+    import_add_button=PageElement(id="import-and-add-btn")
+    build_input_box=PageElement(id="build-input")
+    build_button_option=PageElement(id="build-button")
+    release_change_option=PageElement(id="release-change-toggle")
+    release_change_form=PageElement(id="change-release-form")
+    release_change_button=PageElement(id="change-release-btn")
+    machine_change_option=PageElement(id="change-machine-toggle")
+    machine_change_box=PageElement(id="machine-change-input")
+    machine_change_button=PageElement(id="machine-change-btn")
+    
+    def select_layers_option(self):
+        self.layers_option.click()
+        return LayersPage(self.w)
+        
+    def select_image_recipes_option(self):
+        self.image_recipes_option.click()
+        return RecipesPage(self.w)
+        
+    def select_machines_option(self):
+        self.machines_option.click()
+        return MachinesPage(self.w)
+        
+    def select_bb_variables_option(self):
+        self.bb_variables_option.click()
+        return VariablesPage(self.w)
+    
+    def select_config_option(self):
+        self.configuration_option.click()
+        return ProjectPage(self.w)
+    
+    def change_release(self, release):
+        self.relese_change_option.click()
+        self.release_change_form.send_keys(release)
+        self.release_change_button.click()
+    
+    def change_machine(self, machine):
+        self.machine_change_option.click()
+        self.machine_change_box.send_keys(machine)
+        self.machine_change_button.click()
+        
+    def add_layer(self, layer, git_repo, subdir, revision):
+        self.import_layer_option.click()
+        self.import_layer_box.send_keys(layer)
+        self.import_git_repo_box.send_keys(git_repo)
+        self.import_subdir_box.send_keys(subdir)
+        self.import_revision_box.send_keys(revision)
+        self.import_add_button.click()
+        
+    
+class LayersPage(ProjectPage):
+    default_columns = ['Layer', 'Summary', 'Revision', 'Dependencies', 'Add/Delete']
+    default_layers = ['meta-yocto-bsp', 'meta-yocto', 'openembedded-core']
+    default_revision = 'HEAD'
+    search_text_field = PageElement(id="search-input-layerstable")
+    search_submit_button = PageElement(id="search-submit-layerstable")
+    column_classes = {'Layer':'layer__name'}
+    
+    def display_all_layers_columns(self):
+        self.add_columns_to_display(["Git repository URL", "Subdirectory"])
+    
+    def search_for_layer(self, search_string):
+        self.search_text_field.clear()
+        self.search_text_field.sendkeys(search_string)
+        self.search_submit_button.click()
+    
