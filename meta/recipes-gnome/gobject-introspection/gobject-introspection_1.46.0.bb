@@ -34,7 +34,7 @@ DEPENDS_append = " libffi zlib glib-2.0 python"
 # target build needs qemu to run temporary introspection binaries created
 # on the fly by g-ir-scanner and a native version of itself to run
 # native versions of its own tools during build.
-DEPENDS_class-target_append = " gobject-introspection-native qemu-native"
+DEPENDS_class-target_append = " gobject-introspection-native qemu-native prelink-native"
 
 SSTATE_SCAN_FILES += "g-ir-scanner-qemuwrapper g-ir-scanner-wrapper g-ir-compiler-wrapper g-ir-scanner-lddwrapper Gio-2.0.gir"
 
