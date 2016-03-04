@@ -128,7 +128,7 @@ def main(server, eventHandler, params):
     llevel, debug_domains = bb.msg.constructLogOptions()
     q = server.runCommand(["setEventMask", server.getEventHandle(), llevel, debug_domains, _evt_list])
     logger.warn("seteventmask return is %s",q)
-    
+
 
     # verify and warn
     build_history_enabled = True
@@ -185,6 +185,18 @@ def main(server, eventHandler, params):
             helper.eventHandler(event)
 
             logger.info("BAVERY: event: %s ",event.__class__.__name__)
+            if isinstance(event, (bb.runqueue.sceneQueueTaskStarted, bb.runqueue.runQueueTaskStarted, bb.runqueue.runQueueTaskSkipped)):
+                logger.info("    BAVERY: event ident: %s:%s ",event.taskfile , event.taskname)
+                if event.taskname == "do_package":
+                    packages = server.runCommand(["getVariable", "PACKAGES"])
+                    pkgdest = server.runCommand(["getVariable", "PKGDEST"])
+                    pkgdatadir = server.runCommand(["getVariable", "PKGDESTWORK"])
+                    lpkgdata={}
+                    for pkg in packages:
+                        #lpkgdata = _toaster_load_pkgdatafile(pkgdatadir + "/runtime/", pkg)
+                        logger.info("    BAVERY: package datadir:%s package:%s : dest:%s" ,pkgdatadir,pkg,pkgdest)
+
+
             # pylint: disable=protected-access
             # the code will look into the protected variables of the event; no easy way around this
 

@@ -112,23 +112,44 @@ def _toaster_load_pkgdatafile(dirpath, filepath):
                 pass    # ignore lines without valid key: value pairs
     return pkgdata
 
-
-python toaster_package_dumpdata() {
+python toaster_package_dumpdata_setscene() {
     """
-    Dumps the data created by emit_pkgdata
+    Dumps the data created by package_setscene
     """
     # replicate variables from the package.bbclass
-
     packages = d.getVar('PACKAGES', True)
     pkgdest = d.getVar('PKGDEST', True)
 
     pkgdatadir = d.getVar('PKGDESTWORK', True)
 
     # scan and send data for each package
-
+    bb.warn("toaster_package_dumpdata_setscene: TOP")
     lpkgdata = {}
     for pkg in packages.split():
+        bb.warn("    toaster_package_dumpdata_setscene: pkg:%s"%(pkg))
+        lpkgdata = _toaster_load_pkgdatafile(pkgdatadir + "/runtime/", pkg)
 
+        # Fire an event containing the pkg data
+        bb.event.fire(bb.event.MetadataEvent("SinglePackageInfo", lpkgdata), d)
+
+}
+
+
+python toaster_package_dumpdata() {
+    """
+    Dumps the data created by emit_pkgdata
+    """
+    # replicate variables from the package.bbclass
+    packages = d.getVar('PACKAGES', True)
+    pkgdest = d.getVar('PKGDEST', True)
+
+    pkgdatadir = d.getVar('PKGDESTWORK', True)
+
+    # scan and send data for each package
+    bb.warn("toaster_package_dumpdata: TOP")
+    lpkgdata = {}
+    for pkg in packages.split():
+        bb.warn("    toaster_package_dumpdata: pkg:%s"%(pkg))
         lpkgdata = _toaster_load_pkgdatafile(pkgdatadir + "/runtime/", pkg)
 
         # Fire an event containing the pkg data
@@ -364,6 +385,10 @@ toaster_buildhistory_dump[eventmask] = "bb.event.BuildCompleted"
 
 do_package[postfuncs] += "toaster_package_dumpdata "
 do_package[vardepsexclude] += "toaster_package_dumpdata "
+
+do_packagedata_setscene[postfuncs] += "toaster_package_dumpdata_setscene "
+do_packagedata_setscene[vardepsexclude] += "toaster_package_dumpdata_setscene "
+
 
 do_image_complete[postfuncs] += "toaster_image_dumpdata "
 do_image_complete[vardepsexclude] += "toaster_image_dumpdata "

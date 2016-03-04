@@ -1041,7 +1041,7 @@ python populate_packages () {
 
     bb.utils.mkdirhier(outdir)
     os.chdir(dvar)
-    
+
     autodebug = not (d.getVar("NOAUTOPACKAGEDEBUG", True) or False)
 
     # Sanity check PACKAGES for duplicates
@@ -1594,7 +1594,7 @@ python package_do_shlibs() {
             bb.note("Renaming %s to %s" % (old, new))
             os.rename(old, new)
             pkgfiles[pkg].remove(old)
-	    
+
         shlibs_file = os.path.join(shlibswork_dir, pkg + ".list")
         if len(sonames):
             fd = open(shlibs_file, 'w')
@@ -2105,4 +2105,3 @@ def mapping_rename_hook(d):
     runtime_mapping_rename("RDEPENDS", pkg, d)
     runtime_mapping_rename("RRECOMMENDS", pkg, d)
     runtime_mapping_rename("RSUGGESTS", pkg, d)
-
