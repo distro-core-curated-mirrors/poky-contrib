@@ -50,6 +50,12 @@ do_install_prepend () {
 }
 
 do_install_append_class-native () {
-    create_wrapper ${D}${bindir}/mcopy \
+    if  [ "${UNINATIVE_LIBDIR}x" != "x" ]; then
+        GCONV_PATH=${UNINATIVE_LIBDIR}/gconv
+    else
         GCONV_PATH=${libdir}/gconv
+    fi
+
+    create_wrapper ${D}${bindir}/mcopy \
+        GCONV_PATH=$GCONV_PATH
 }
