@@ -80,9 +80,12 @@ python uninative_event_enable() {
     loader = d.getVar("UNINATIVE_LOADER", True)
     if os.path.exists(loader):
         bb.debug(2, "Enabling uninative")
+
+        uninative_dir = "${STAGING_DIR}-uninative/${BUILD_ARCH}-linux"
+        d.setVar("UNINATIVE_LIBDIR", "%s${libdir_native}" % uninative_dir)
         d.setVar("NATIVELSBSTRING", "universal")
         d.appendVar("SSTATEPOSTUNPACKFUNCS", " uninative_changeinterp")
-        d.prependVar("PATH", "${STAGING_DIR}-uninative/${BUILD_ARCH}-linux${bindir_native}:")
+        d.prependVar("PATH", "%s${bindir_native}:" % uninative_dir)
 }
 
 python uninative_changeinterp () {
