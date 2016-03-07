@@ -20,7 +20,7 @@ logger = utils.logger_create('patchtest')
 import repo
 from summary import BasicSummary
 
-def getResult(series, revision, mbox):
+def getResult(series, revision, mbox, nopatch, post):
 
     class PatchTestResult(unittest.TextTestResult):
         """ Formats the summary and post result at the end """
@@ -57,7 +57,7 @@ def getResult(series, revision, mbox):
                 self.stop()
 
             try:
-                if not pti.nopatch:
+                if not nopatch:
                     self.repo.merge()
                     if self.repo.items and (not self.repo.any_merge()):
                         self.merge_failure = True
@@ -94,7 +94,7 @@ def getResult(series, revision, mbox):
                 if not self.test_failure:
                     state = PatchTestResult.PATCHWORK_RESULT_SUCCESS
 
-            if not self.test_error and pti.post:
+            if not self.test_error and post:
                 self.repo.post(testname, state, summary)
 
             self.repo.clean(pti.keepbranch)
@@ -132,17 +132,14 @@ def main():
 
     return 0
 
-def run(series=[], revision=[], mbox=[]):
-    """ Load, setup and run tests """
+def _runner(resultklass, prefix=None):
+    # load test with the corresponding prefix
     loader = unittest.TestLoader()
+    if prefix:
+        loader.testMethodPrefix = prefix
+
+    # create the suite with discovered tests and the corresponding runner
     suite = loader.discover(os.path.abspath(pti.testdir))
-
-    # Get the result class and install the control-c handler
-    unittest.installHandler()
-
-    resultklass = getResult(series, revision, mbox)
-    unittest.registerResult(resultklass)
-
     runner = unittest.TextTestRunner(resultclass=resultklass)
 
     try:
@@ -151,6 +148,19 @@ def run(series=[], revision=[], mbox=[]):
         logger.error('patchtest failed, removing patchtest branch')
         if repo:
             pti.repo.clean(False)
+
+def run(series=[], revision=[], mbox=[]):
+    """ Load, setup and run pre and post-merge tests """
+    # Get the result class and install the control-c handler
+    unittest.installHandler()
+
+    # run pre-merge tests. Pre-merge tests are those to be executed previous merging
+    premerge_resultklass = getResult(series, revision, mbox, nopatch=True, post=False)
+    _runner(premerge_resultklass, 'pretest')
+
+    # run standard tests
+    postmerge_resultklass = getResult(series, revision, mbox, pti.nopatch, pti.post)
+    _runner(postmerge_resultklass)
 
 if __name__ == '__main__':
     ret = 1
