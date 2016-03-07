@@ -1230,7 +1230,6 @@ class BuildInfoHelper(object):
         assert 'layer-priorities' in event._depgraph
         assert 'pn' in event._depgraph
         assert 'tdepends' in event._depgraph
-        assert 'providermap' in event._depgraph
 
         errormsg = ""
 
@@ -1313,7 +1312,7 @@ class BuildInfoHelper(object):
                 if dep in assume_provided:
                     continue
                 via = None
-                if dep in event._depgraph['providermap']:
+                if 'providermap' in event._depgraph and dep in event._depgraph['providermap']:
                     deprecipe = event._depgraph['providermap'][dep][0]
                     dependency = self.internal_state['recipes'][deprecipe]
                     via = Provides.objects.get_or_create(name=dep,
