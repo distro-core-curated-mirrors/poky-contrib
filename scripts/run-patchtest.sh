@@ -18,9 +18,6 @@ SCRIPTS_DIR=`dirname $0`
 PATCHTEST_BASE=`readlink -e $SCRIPTS_DIR/..`
 GITPWDIR=$PATCHTEST_BASE/patchwork/git-pw
 
-# testdir
-TESTDIR=$PATCHTEST_BASE/sample-tests/success
-
 cd $PATCHTEST_BASE
 . venv/bin/activate
 
@@ -33,7 +30,7 @@ cd $REPO
 if [ ! -e $REPO/.patchtest/patchtest.lock ]; then
     git pull
     git pw poll-events | \
-	patchtest --branch master --post --test-dir $TESTDIR
+	patchtest --branch master --post
 else
     echo "patchtest currently executing, no events polled"
 fi
