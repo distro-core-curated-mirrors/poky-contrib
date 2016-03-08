@@ -1,14 +1,18 @@
 #!/usr/bin/env python
+#
+# The only purpose of this module is to pass data from patchtest to
+# the test suites (PatchTestInput) and between test suites (PatchTestDataStore).
+
+# Strictly speaking, unit test should be isolated from outside,
+# but patchtest test suites uses command line input data (series, mboxes,
+# etc).
 
 import os
 import argparse
 import json
 
-# This module contains classes to store the command line arguments
-# and standard input items passed to the 'patchtest' script. Test
-# cases can import it and use it to figure out the values, like
-# the repo directory of the current mbox/series being tested.
-# See tests/test_sample.py test case for usage examples.
+# Data store for sharing values between pre and post merge tests
+PatchTestDataStore = dict()
 
 class PatchTestStdIn(object):
     """ Generate PatchTestData from standard input"""
@@ -135,8 +139,7 @@ class PatchTestArgs(object):
 
         return parser
 
-
-
+# Class used as a namespace to share data from patchtest to the test suites
 class PatchTestInput(PatchTestArgs, PatchTestStdIn):
     """ PatchTest wrapper input class"""
     pass
