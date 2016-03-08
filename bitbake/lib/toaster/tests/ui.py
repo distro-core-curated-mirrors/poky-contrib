@@ -550,6 +550,9 @@ class toaster_cases_base(ToasterTestCase):
             c_list.append(element.text)
         return c_list
 
+    def get_text_from_elements(self, css_selector):
+        elements = self.driver.find_elements_by_css_selector(css_selector)
+        return map(lambda x: x.text, elements)
 
     def get_table_head_text(self, *table_id):
 #now table_id is a tuple...
@@ -696,33 +699,41 @@ class toaster_cases(toaster_cases_base):
         self.driver.maximize_window()
         self.driver.get(self.opts.toaster_url)
         # open all columns
+        time.sleep(5)
         self.driver.find_element_by_id("edit-columns-button").click()
         # adding explicitly wait for chromedriver..-_-
         self.browser_delay()
-        self.driver.find_element_by_id("started_on").click()
+        self.driver.find_element_by_id("checkbox-started_on").click()
         self.browser_delay()
-        self.driver.find_element_by_id("time").click()
+        self.driver.find_element_by_id("checkbox-time").click()
+        self.browser_delay()
+        self.driver.find_element_by_id("checkbox-project").click()
+        self.browser_delay()
         self.driver.find_element_by_id("edit-columns-button").click()
         # dict: {lint text name : actual class name}
-        table_head_dict = {'Outcome':'outcome', 'Recipe':'target', 'Machine':'machine', 'Started on':'started_on', 'Completed on':'completed_on', \
-                'Errors':'errors_no', 'Warnings':'warnings_no', 'Time':'time'}
+        table_head_dict = {'Outcome':'outcome', 'Machine':'machine', 'Started on':'started_on', 'Completed on':'completed_on', \
+                'Warnings':'warnings_no','Errors':'errors_no'}
         for key in table_head_dict:
             try:
                 self.driver.find_element_by_link_text(key).click()
+                time.sleep(2)
             except Exception, e:
                 self.log.error("%s cannot be found on page" % key)
                 raise
-            column_list = self.get_table_column_text("class", table_head_dict[key])
+            selector = "td[class='%s']" % table_head_dict[key]
+            column_list = self.get_text_from_elements(selector)
             # after 1st click, the list should be either sequenced or inverted, but we don't have a "default order" here
             # the point is, after another click, it should be another order
             if is_list_inverted(column_list):
                 self.driver.find_element_by_link_text(key).click()
-                column_list = self.get_table_column_text("class", table_head_dict[key])
+                time.sleep(2)
+                column_list = self.get_text_from_elements(selector)
                 self.assertTrue(is_list_sequenced(column_list), msg=("%s column not in order" % key))
             else:
                 self.assertTrue(is_list_sequenced(column_list), msg=("%s column not sequenced" % key))
                 self.driver.find_element_by_link_text(key).click()
-                column_list = self.get_table_column_text("class", table_head_dict[key])
+                time.sleep(2)
+                column_list = self.get_text_from_elements(selector)
                 self.assertTrue(is_list_inverted(column_list), msg=("%s column not inverted" % key))
         self.log.info("case passed")
 
@@ -737,18 +748,22 @@ class toaster_cases(toaster_cases_base):
         self.driver.get(self.opts.toaster_url)
         # Could add more test patterns here in the future. Also, could search some items other than target column in future..
         patterns = ["minimal", "sato"]
+
         for pattern in patterns:
             ori_target_column_texts = self.get_table_column_text("class", "target")
-            print ori_target_column_texts
-            self.driver.find_element_by_id("search").clear()
-            self.driver.find_element_by_id("search").send_keys(pattern)
-            self.driver.find_element_by_id("search-button").click()
+            self.driver.find_element_by_id("search-input-allbuildstable").clear()
+            self.driver.find_element_by_id("search-input-allbuildstable").send_keys(pattern)
+            self.driver.find_element_by_id("search-submit-allbuildstable").click()
+            time.sleep(3)
             new_target_column_texts = self.get_table_column_text("class", "target")
+            print new_target_column_texts
             # if nothing found, we still count it as "pass"
             if new_target_column_texts:
                 for text in new_target_column_texts:
                     self.assertTrue(text.find(pattern), msg=("%s item doesn't exist " % pattern))
-            self.driver.find_element_by_css_selector("i.icon-remove").click()
+            time.sleep(2)
+            self.driver.find_element_by_id("search-input-allbuildstable").clear()
+            self.driver.find_element_by_id("search-submit-allbuildstable").click()
             target_column_texts = self.get_table_column_text("class", "target")
             self.assertTrue(ori_target_column_texts == target_column_texts, msg=("builds changed after operations"))
 
@@ -765,41 +780,35 @@ class toaster_cases(toaster_cases_base):
         self.driver.find_element_by_id("edit-columns-button").click()
         # currently all the delay are for chrome driver -_-
         self.browser_delay()
-        self.driver.find_element_by_id("started_on").click()
+        self.driver.find_element_by_id("checkbox-started_on").click()
         self.driver.find_element_by_id("edit-columns-button").click()
         # step 4
-        items = ["Outcome", "Completed on", "Started on"]
-        for item in items:
+        filter_list = ['outcome_filter', 'started_on_filter', 'completed_on_filter','failed_tasks_filter']
+        for key in filter_list:
             try:
-                temp_element = self.find_element_by_text_in_table('otable', item)
-                # this is how we find "filter icon" in the same level as temp_element(where "a" means clickable, "i" means icon)
-                self.assertTrue(temp_element.find_element_by_xpath("..//*/a/i[@class='icon-filter filtered']"))
+                self.assertTrue(self.driver.find_element_by_id(key))
             except Exception,e:
-                self.assertFalse(True, msg=(" %s cannot be found! %s" % (item, e)))
+                self.assertFalse(True, msg=(" %s cannot be found! %s" % (key, e)))
                 raise
+
         # step 5-6
-        temp_element = self.find_element_by_link_text_in_table('otable', 'Outcome')
-        temp_element.find_element_by_xpath("..//*/a/i[@class='icon-filter filtered']").click()
-        self.browser_delay()
-        # the 2nd option, whatever it is
-        self.driver.find_element_by_xpath("(//input[@name='filter'])[2]").click()
-        # click "Apply" button
-        self.driver.find_element_by_xpath("//*[@id='filter_outcome']//*[text()='Apply']").click()
-        # save screen here
-        time.sleep(1)
-        self.save_screenshot(screenshot_type='selenium', append_name='step5')
-        temp_element = self.find_element_by_link_text_in_table('otable', 'Completed on')
-        temp_element.find_element_by_xpath("..//*/a/i[@class='icon-filter filtered']").click()
-        self.browser_delay()
-        self.driver.find_element_by_xpath("//*[@id='filter_completed_on']//*[text()='Apply']").click()
-        # save screen here to compare to previous one
-        # please note that for chrome driver, need a little break before saving
-        # screen here -_-
-        self.browser_delay()
-        self.save_screenshot(screenshot_type='selenium', append_name='step6')
-        self.driver.find_element_by_id("search").clear()
-        self.driver.find_element_by_id("search").send_keys("core-image")
-        self.driver.find_element_by_id("search-button").click()
+        for key in filter_list:
+            time.sleep(2)
+            self.driver.find_element_by_id(key).click()
+            time.sleep(2)
+            self.browser_delay()
+
+            #click on radio-button 2 if is clickable
+            temp = self.driver.find_elements_by_class_name('radio')
+            temp[1].click()
+            # click "Apply" button
+            self.driver.find_element_by_css_selector('.btn.btn-primary').click()
+            self.save_screenshot(screenshot_type='selenium', append_name='step5-%s' %(key))
+
+        self.driver.find_element_by_id("search-input-allbuildstable").clear()
+        self.driver.find_element_by_id("search-input-allbuildstable").send_keys("core-image")
+        time.sleep(5)
+        self.driver.find_element_by_id("search-submit-allbuildstable").click()
 
 
         ##############
@@ -810,7 +819,7 @@ class toaster_cases(toaster_cases_base):
         self.log.info(' CASE %s log: ' % str(self.case_no))
         self.driver.maximize_window()
         self.driver.get(self.opts.toaster_url)
-        self.driver.find_element_by_partial_link_text("core-image").click()
+        self.driver.find_element_by_partial_link_text("core-image-minimal").click()
         self.driver.find_element_by_link_text("Tasks").click()
         self.table_name = 'otable'
         # This is how we find the "default" rows-number!
@@ -822,7 +831,6 @@ class toaster_cases(toaster_cases_base):
         # Search text box background text is "Search tasks"
         self.assertTrue(self.driver.find_element_by_xpath("//*[@id='searchform']/*[@placeholder='Search tasks']"),\
                         msg=("background text doesn't exist"))
-
         self.driver.find_element_by_id("search").clear()
         self.driver.find_element_by_id("search").send_keys("busybox")
         self.driver.find_element_by_id("search-button").click()
@@ -846,7 +854,9 @@ class toaster_cases(toaster_cases_base):
         # This is tricky here: we are doing so because there may be more than 1
         # same-name link_text in one page. So we only find element inside the table
             self.find_element_by_link_text_in_table(self.table_name, key).click()
-            column_list = self.get_table_column_text("class", table_head_dict[key])
+            selector = "td[class='%s']" % table_head_dict[key]
+            column_list = self.get_text_from_elements(selector)
+            #column_list = self.get_table_column_text("class", table_head_dict[key])
         # after 1st click, the list should be either sequenced or inverted, but we don't have a "default order" here
         # the point is, after another click, it should be another order
         # the first case is special:this means every item in column_list is the same, so
@@ -854,17 +864,20 @@ class toaster_cases(toaster_cases_base):
             if (is_list_inverted(column_list) and is_list_sequenced(column_list)) \
                 or (not column_list) :
                 self.find_element_by_link_text_in_table(self.table_name, key).click()
-                column_list = self.get_table_column_text("class", table_head_dict[key])
+                column_list = self.get_text_from_elements(selector)
+                #column_list = self.get_table_column_text("class", table_head_dict[key])
                 self.assertTrue(is_list_sequenced(column_list) or is_list_inverted(column_list), \
                                 msg=("%s column not in any order" % key))
             elif is_list_inverted(column_list):
                 self.find_element_by_link_text_in_table(self.table_name, key).click()
-                column_list = self.get_table_column_text("class", table_head_dict[key])
+                column_list = self.get_text_from_elements(selector)
+                #column_list = self.get_table_column_text("class", table_head_dict[key])
                 self.assertTrue(is_list_sequenced(column_list), msg=("%s column not in order" % key))
             else:
                 self.assertTrue(is_list_sequenced(column_list), msg=("%s column not in order" % key))
                 self.find_element_by_link_text_in_table(self.table_name, key).click()
-                column_list = self.get_table_column_text("class", table_head_dict[key])
+                column_list = self.get_text_from_elements(selector)
+                #column_list = self.get_table_column_text("class", table_head_dict[key])
                 self.assertTrue(is_list_inverted(column_list), msg=("%s column not inverted" % key))
         # step 8-10
         # filter dict: {link text name : filter table name in xpath}
@@ -953,13 +966,17 @@ class toaster_cases(toaster_cases_base):
         self.driver.get(self.opts.toaster_url)
         self.driver.find_element_by_link_text("core-image-minimal").click()
         self.find_element_by_link_text_in_table('nav', 'Packages').click()
+        print "1"
         # find "bash" in first column (Packages)
+        time.sleep(5)
         self.driver.find_element_by_xpath("//*[@id='otable']//td[1]//*[text()='bash']").click()
+        print "2"
         # save sceen here to observe...
         # step 6
         self.driver.find_element_by_partial_link_text("Generated files").click()
         head_list = self.get_table_head_text('otable')
         for item in ['File', 'Size']:
+            print item
             self.assertTrue(item in head_list, msg=("%s not in head row" % item))
         c_list = self.get_table_column_text('class', 'path')
         self.assertTrue(is_list_sequenced(c_list), msg=("column not in order"))
@@ -969,6 +986,7 @@ class toaster_cases(toaster_cases_base):
         # note that here table name is not 'otable'
         head_list = self.get_table_head_text('dependencies')
         for item in ['Package', 'Version', 'Size']:
+            print item
             self.assertTrue(item in head_list, msg=("%s not in head row" % item))
         c_list = self.get_table_column_text_by_column_number('dependencies', 1)
         self.assertTrue(is_list_sequenced(c_list), msg=("list not in order"))
@@ -998,7 +1016,6 @@ class toaster_cases(toaster_cases_base):
         print rows_displayed
         self.assertTrue(self.get_table_element(self.table_name, rows_displayed))
         self.assertFalse(self.get_table_element(self.table_name, rows_displayed + 1))
-
         # Check the default table is sorted by Recipe
         tasks_column_count = len(self.driver.find_elements_by_xpath("/html/body/div[2]/div/div[2]/div[2]/table/tbody/tr/td[1]"))
         print tasks_column_count
@@ -1006,10 +1023,8 @@ class toaster_cases(toaster_cases_base):
         #print default_column_list
 
         self.assertTrue(is_list_sequenced(default_column_list))
-
         # Search text box background text is "Search recipes"
         self.assertTrue(self.driver.find_element_by_xpath("//*[@id='searchform']/*[@placeholder='Search recipes']"))
-
         self.driver.find_element_by_id("search").clear()
         self.driver.find_element_by_id("search").send_keys(test_package1)
         self.driver.find_element_by_id("search-button").click()
@@ -1017,14 +1032,12 @@ class toaster_cases(toaster_cases_base):
         self.save_screenshot(screenshot_type='selenium', append_name='step4')
         self.driver.find_element_by_css_selector("i.icon-remove").click()
         self.save_screenshot(screenshot_type='selenium', append_name='step4_2')
-
         self.driver.find_element_by_id("edit-columns-button").click()
         self.driver.find_element_by_id("depends_on").click()
         self.driver.find_element_by_id("layer_version__branch").click()
         self.driver.find_element_by_id("layer_version__layer__commit").click()
         self.driver.find_element_by_id("depends_by").click()
         self.driver.find_element_by_id("edit-columns-button").click()
-
         self.find_element_by_link_text_in_table(self.table_name, 'Recipe').click()
         # Check the inverted table by Recipe
         # Recipe doesn't have class name
@@ -1038,16 +1051,22 @@ class toaster_cases(toaster_cases_base):
         #self.assertTrue(is_list_inverted(inverted_column_list))
         #self.find_element_by_link_text_in_table(self.table_name, 'Recipe').click()
 
-        table_head_dict = {'Recipe':'recipe__name', 'Recipe file':'recipe_file', 'Section':'recipe_section', \
+        table_head_dict = {'Recipe':'recipe__name', 'Section':'recipe_section', \
                 'License':'recipe_license', 'Layer':'layer_version__layer__name', \
                 'Layer branch':'layer_version__branch'}
+        #'Recipe file':'recipe_file',
         for key in table_head_dict:
             self.find_element_by_link_text_in_table(self.table_name, key).click()
-            column_list = self.get_table_column_text("class", table_head_dict[key])
+            selector = "td[class='%s']" % table_head_dict[key]
+            column_list = self.get_text_from_elements(selector)
+            #column_list = self.get_table_column_text("class", table_head_dict[key])
+
             if (is_list_inverted(column_list) and is_list_sequenced(column_list)) \
                     or (not column_list) :
                 self.find_element_by_link_text_in_table(self.table_name, key).click()
-                column_list = self.get_table_column_text("class", table_head_dict[key])
+                #column_list = self.get_table_column_text("class", table_head_dict[key])
+                column_list = self.get_text_from_elements(selector)
+
                 self.assertTrue(is_list_sequenced(column_list) or is_list_inverted(column_list))
                 self.driver.find_element_by_partial_link_text("acl").click()
                 self.driver.back()
@@ -1057,12 +1076,17 @@ class toaster_cases(toaster_cases_base):
                 self.driver.find_element_by_id("search").clear()
                 self.driver.find_element_by_id("search").send_keys(test_package2)
                 self.driver.find_element_by_id("search-button").click()
-                column_search_list = self.get_table_column_text("class", table_head_dict[key])
+                #column_search_list = self.get_table_column_text("class", table_head_dict[key])
+                column_search_list = self.get_text_from_elements(selector)
+
                 self.assertTrue(is_list_sequenced(column_search_list) or is_list_inverted(column_search_list))
                 self.driver.find_element_by_css_selector("i.icon-remove").click()
             elif is_list_inverted(column_list):
                 self.find_element_by_link_text_in_table(self.table_name, key).click()
-                column_list = self.get_table_column_text("class", table_head_dict[key])
+                time.sleep(2)
+                #column_list = self.get_table_column_text("class", table_head_dict[key])
+                column_list = self.get_text_from_elements(selector)
+
                 self.assertTrue(is_list_sequenced(column_list))
                 self.driver.find_element_by_partial_link_text("acl").click()
                 self.driver.back()
@@ -1072,52 +1096,47 @@ class toaster_cases(toaster_cases_base):
                 self.driver.find_element_by_id("search").clear()
                 self.driver.find_element_by_id("search").send_keys(test_package2)
                 self.driver.find_element_by_id("search-button").click()
-                column_search_list = self.get_table_column_text("class", table_head_dict[key])
+                #column_search_list = self.get_table_column_text("class", table_head_dict[key])
+                column_search_list = self.get_text_from_elements(selector)
                 self.assertTrue(is_list_sequenced(column_search_list))
                 self.driver.find_element_by_css_selector("i.icon-remove").click()
             else:
                 self.assertTrue(is_list_sequenced(column_list),  msg=("list %s not sequenced" % key))
                 self.find_element_by_link_text_in_table(self.table_name, key).click()
-                column_list = self.get_table_column_text("class", table_head_dict[key])
+                time.sleep(5)
+                #column_list = self.get_table_column_text("class", table_head_dict[key])
+                column_list = self.get_text_from_elements(selector)
+
+                time.sleep(5)
+
                 self.assertTrue(is_list_inverted(column_list))
+
                 try:
-                    self.driver.find_element_by_partial_link_text("acl").click()
+                    if (selector == "td[class='recipe_section']" or selector == "td[class='recipe_license']"):
+                        #click on the first recipe in the list
+                        self.driver.find_element_by_xpath("//*[@id='otable']/tbody/tr[1]/td[1]/a").click()
+                    else:
+                        self.driver.find_element_by_partial_link_text("acl").click()
+                    time.sleep(5)
                 except:
+                    print 'selector: ' + str(selector)
                     self.driver.find_element_by_partial_link_text("zlib").click()
+                    time.sleep(5)
                 self.driver.back()
+
                 self.assertTrue(is_list_inverted(column_list))
                 # Search text box background text is "Search recipes"
                 self.assertTrue(self.driver.find_element_by_xpath("//*[@id='searchform']/*[@placeholder='Search recipes']"))
                 self.driver.find_element_by_id("search").clear()
                 self.driver.find_element_by_id("search").send_keys(test_package2)
                 self.driver.find_element_by_id("search-button").click()
-                column_search_list = self.get_table_column_text("class", table_head_dict[key])
-                #print column_search_list
-                self.assertTrue(is_list_inverted(column_search_list))
-                self.driver.find_element_by_css_selector("i.icon-remove").click()
-
-        # Bug 5919
-        for key in table_head_dict:
-            print key
-            self.find_element_by_link_text_in_table(self.table_name, key).click()
-            self.driver.find_element_by_id("edit-columns-button").click()
-            self.driver.find_element_by_id(table_head_dict[key]).click()
-            self.driver.find_element_by_id("edit-columns-button").click()
-            self.browser_delay()
-            # After hide the column, the default table should be sorted by Recipe
-            tasks_column_count = len(self.driver.find_elements_by_partial_link_text("acl"))
-            #print tasks_column_count
-            default_column_list = self.get_table_column_text_by_column_number(self.table_name, 1)
-            #print default_column_list
-            self.assertTrue(is_list_sequenced(default_column_list))
-
-        self.driver.find_element_by_id("edit-columns-button").click()
-        self.driver.find_element_by_id("recipe_file").click()
-        self.driver.find_element_by_id("recipe_section").click()
-        self.driver.find_element_by_id("recipe_license").click()
-        self.driver.find_element_by_id("layer_version__layer__name").click()
-        self.driver.find_element_by_id("edit-columns-button").click()
-
+                #column_search_list = self.get_table_column_text("class", table_head_dict[key])
+                time.sleep(10)
+                column_search_list = self.get_text_from_elements(selector)
+                self.assertTrue(is_list_inverted(column_search_list), msg=column_search_list)
+                #self.driver.find_element_by_css_selector("i.icon-remove").click()
+                self.driver.find_element_by_id("search").clear()
+                self.driver.find_element_by_id("search-button").click()
 
         ##############
         #  CASE 911  #
@@ -1207,7 +1226,6 @@ class toaster_cases(toaster_cases_base):
         self.save_screenshot(screenshot_type='selenium', append_name='step4')
         self.driver.find_element_by_id("edit-columns-button").click()
 
-
         ##############
         #  CASE 914  #
         ##############
@@ -1215,183 +1233,117 @@ class toaster_cases(toaster_cases_base):
         self.case_no = self.get_case_number()
         self.log.info(' CASE %s log: ' % str(self.case_no))
         image_type="core-image-minimal"
-        test_package1="busybox"
-        test_package2="gdbm"
-        test_package3="gettext-native"
+
+        dict_key_tasks = {'busybox':["do_fetch", "do_unpack",  "do_patch", "do_configure", "do_compile", "do_install", "do_package", "do_build"] , \
+                          'gdbm':["do_fetch", "do_unpack",  "do_patch", "do_configure", "do_compile", "do_install", "do_package", "do_build"] ,\
+                          'gettext-native':["do_fetch", "do_unpack",  "do_patch", "do_configure", "do_compile", "do_install", "do_build"]}
+
         driver = self.driver
         driver.maximize_window()
         driver.get(self.opts.toaster_url)
         driver.find_element_by_link_text(image_type).click()
-        driver.find_element_by_link_text("Recipes").click()
-        driver.find_element_by_link_text(test_package1).click()
+        time.sleep(2)
+        for test_package in dict_key_tasks:
+            driver.find_element_by_link_text("Recipes").click()
+            time.sleep(2)
+            self.driver.find_element_by_id("search").clear()
+            self.driver.find_element_by_id("search").send_keys(test_package)
+            self.driver.find_element_by_id("search-button").click()
+            time.sleep(2)
+            driver.find_element_by_link_text(test_package).click()
 
-        self.table_name = 'information'
+            self.table_name = 'information'
 
-        tasks_row_count = len(driver.find_elements_by_xpath("//*[@id='"+self.table_name+"']/table/tbody/tr/td[1]"))
-        tasks_column_count = len(driver.find_elements_by_xpath("//*[@id='"+self.table_name+"']/table/tbody/tr[1]/td"))
-        print 'rows: '+str(tasks_row_count)
-        print 'columns: '+str(tasks_column_count)
+            tasks_row_count = len(driver.find_elements_by_xpath("//*[@id='"+self.table_name+"']/table/tbody/tr/td[1]"))
+            tasks_column_count = len(driver.find_elements_by_xpath("//*[@id='"+self.table_name+"']/table/tbody/tr[1]/td"))
+            print 'rows: '+str(tasks_row_count)
+            print 'columns: '+str(tasks_column_count)
 
-        Tasks_column = self.get_table_column_text_by_column_number(self.table_name, 2)
-        print ("Tasks_column=", Tasks_column)
+            Tasks_column = self.get_table_column_text_by_column_number(self.table_name, 2)
+            print ("Tasks_column=", Tasks_column)
 
-        key_tasks=["do_fetch", "do_unpack",  "do_patch", "do_configure", "do_compile", "do_install", "do_package", "do_build"]
-        i = 0
-        while i < len(key_tasks):
-            if key_tasks[i] not in Tasks_column:
-                print ("Error! Missing key task: %s" % key_tasks[i])
+
+
+            #for key in dict_key_tasks:
+            key_tasks= dict_key_tasks[test_package]
+
+            i = 0
+            while i < len(key_tasks):
+                if key_tasks[i] not in Tasks_column:
+                    print ("Error! Missing key task: %s" % key_tasks[i])
+                else:
+                    print ("%s is in tasks" % key_tasks[i])
+                i = i + 1
+
+            if Tasks_column.index(key_tasks[0]) != 0:
+                print ("Error! %s is not in the right position" % key_tasks[0])
             else:
-                print ("%s is in tasks" % key_tasks[i])
-            i = i + 1
+                print ("%s is in right position" % key_tasks[0])
 
-        if Tasks_column.index(key_tasks[0]) != 0:
-            print ("Error! %s is not in the right position" % key_tasks[0])
-        else:
-            print ("%s is in right position" % key_tasks[0])
-
-        if Tasks_column[-1] != key_tasks[-1]:
-            print ("Error! %s is not in the right position" % key_tasks[-1])
-        else:
-            print ("%s is in right position" % key_tasks[-1])
-
-        driver.find_element_by_partial_link_text("Packages (").click()
-        packages_name = driver.find_element_by_partial_link_text("Packages (").text
-        print packages_name
-        packages_num = int(filter(str.isdigit, repr(packages_name)))
-        print packages_num
-
-        #switch the table to show more than 10 rows at a time
-        self.driver.find_element_by_xpath("//*[@id='packages-built']/div[1]/div/select").click()
-        Select(driver.find_element_by_xpath("//*[@id='packages-built']/div[1]/div/select")).select_by_value('150')
-        self.driver.find_element_by_xpath("//*[@id='packages-built']/div[1]/div/select").send_keys(Keys.ENTER)
-
-        packages_row_count = len(driver.find_elements_by_xpath("//*[@id='otable']/tbody/tr/td[1]"))
-        print packages_row_count
-
-        if packages_num != packages_row_count:
-            print ("Error! The packages number is not correct")
-        else:
-            print ("The packages number is correct")
-
-        driver.find_element_by_partial_link_text("Build dependencies (").click()
-        depends_name = driver.find_element_by_partial_link_text("Build dependencies (").text
-        print depends_name
-        depends_num = int(filter(str.isdigit, repr(depends_name)))
-        print depends_num
-
-        if depends_num == 0:
-            depends_message = repr(driver.find_element_by_css_selector("div.alert.alert-info").text)
-            print depends_message
-            if depends_message.find("has no build dependencies.") < 0:
-                print ("Error! The message isn't expected.")
+            if Tasks_column[-1] != key_tasks[-1]:
+                print ("Error! %s is not in the right position" % key_tasks[-1])
             else:
-                print ("The message is expected")
-        else:
-            depends_row_count = len(driver.find_elements_by_xpath("//*[@id='dependencies']/table/tbody/tr/td[1]"))
-            print depends_row_count
-            if depends_num != depends_row_count:
-                print ("Error! The dependent packages number is not correct")
+                print ("%s is in right position" % key_tasks[-1])
+
+            driver.find_element_by_partial_link_text("Packages (").click()
+            time.sleep(2)
+
+
+
+            packages_name = driver.find_element_by_partial_link_text("Packages (").text
+            print packages_name
+            packages_num = int(filter(str.isdigit, repr(packages_name)))
+            print packages_num
+
+            if(packages_num !=0):
+                #switch the table to show more than 10 rows at a time
+                Select(driver.find_element_by_xpath(".//*[@id='packages-built']/div[1]/div/select")).select_by_value('150')
+
+            packages_row_count = len(driver.find_elements_by_xpath(".//*[@id='otable']/tbody/tr/td[1]"))
+
+            print packages_row_count
+
+            if packages_num != packages_row_count:
+                print ("Error! The packages number is not correct")
             else:
-                print ("The dependent packages number is correct")
+                print ("The packages number is correct")
 
-        driver.find_element_by_partial_link_text("Reverse build dependencies (").click()
-        rdepends_name = driver.find_element_by_partial_link_text("Reverse build dependencies (").text
-        print rdepends_name
-        rdepends_num = int(filter(str.isdigit, repr(rdepends_name)))
-        print rdepends_num
+            driver.find_element_by_partial_link_text("Build dependencies (").click()
+            depends_name = driver.find_element_by_partial_link_text("Build dependencies (").text
+            print depends_name
+            depends_num = int(filter(str.isdigit, repr(depends_name)))
+            print depends_num
 
-        if rdepends_num == 0:
-            rdepends_message = repr(driver.find_element_by_css_selector("#brought-in-by > div.alert.alert-info").text)
-            print rdepends_message
-            if rdepends_message.find("has no reverse build dependencies.") < 0:
-                print ("Error! The message isn't expected.")
+            if depends_num == 0:
+                depends_message = repr(driver.find_element_by_css_selector("div.alert.alert-info").text)
+                print depends_message
+                if depends_message.find("has no build dependencies.") < 0:
+                    print ("Error! The message isn't expected.")
+                else:
+                    print ("The message is expected")
             else:
-                print ("The message is expected")
-        else:
-            print ("The reverse dependent packages number is correct")
+                depends_row_count = len(driver.find_elements_by_xpath("//*[@id='dependencies']/table/tbody/tr/td[1]"))
+                print depends_row_count
+                if depends_num != depends_row_count:
+                    print ("Error! The dependent packages number is not correct")
+                else:
+                    print ("The dependent packages number is correct")
 
-        driver.find_element_by_link_text("Recipes").click()
-        driver.find_element_by_link_text(test_package2).click()
-        driver.find_element_by_partial_link_text("Packages (").click()
-        driver.find_element_by_partial_link_text("Build dependencies (").click()
-        driver.find_element_by_partial_link_text("Reverse build dependencies (").click()
+            driver.find_element_by_partial_link_text("Reverse build dependencies (").click()
+            rdepends_name = driver.find_element_by_partial_link_text("Reverse build dependencies (").text
+            print rdepends_name
+            rdepends_num = int(filter(str.isdigit, repr(rdepends_name)))
+            print rdepends_num
 
-
-        driver.find_element_by_link_text("Recipes").click()
-        driver.find_element_by_link_text(test_package3).click()
-
-        native_tasks_row_count = len(driver.find_elements_by_xpath("//*[@id='information']/table/tbody/tr/td[1]"))
-        native_tasks_column_count = len(driver.find_elements_by_xpath("//*[@id='information']/table/tbody/tr[1]/td"))
-        print native_tasks_row_count
-        print native_tasks_column_count
-
-        Native_Tasks_column = self.get_table_column_text_by_column_number(self.table_name, 2)
-        print ("Native_Tasks_column=", Native_Tasks_column)
-
-        native_key_tasks=["do_fetch", "do_unpack",  "do_patch", "do_configure", "do_compile", "do_install", "do_build"]
-        i = 0
-        while i < len(native_key_tasks):
-            if native_key_tasks[i] not in Native_Tasks_column:
-                print ("Error! Missing key task: %s" % native_key_tasks[i])
+            if rdepends_num == 0:
+                rdepends_message = repr(driver.find_element_by_css_selector("#brought-in-by > div.alert.alert-info").text)
+                print rdepends_message
+                if rdepends_message.find("has no reverse build dependencies.") < 0:
+                    print ("Error! The message isn't expected.")
+                else:
+                    print ("The message is expected")
             else:
-                print ("%s is in tasks" % native_key_tasks[i])
-            i = i + 1
-
-        if Native_Tasks_column.index(native_key_tasks[0]) != 0:
-            print ("Error! %s is not in the right position" % native_key_tasks[0])
-        else:
-            print ("%s is in right position" % native_key_tasks[0])
-
-        if Native_Tasks_column[-1] != native_key_tasks[-1]:
-            print ("Error! %s is not in the right position" % native_key_tasks[-1])
-        else:
-            print ("%s is in right position" % native_key_tasks[-1])
-
-        driver.find_element_by_partial_link_text("Packages (").click()
-        native_packages_name = driver.find_element_by_partial_link_text("Packages (").text
-        print native_packages_name
-        native_packages_num = int(filter(str.isdigit, repr(native_packages_name)))
-        print native_packages_num
-
-        if native_packages_num != 0:
-            print ("Error! Native task shouldn't have any packages.")
-        else:
-            native_package_message = repr(driver.find_element_by_css_selector("#packages-built > div.alert.alert-info").text)
-            print native_package_message
-            if native_package_message.find("does not build any packages.") < 0:
-                print ("Error! The message for native task isn't expected.")
-            else:
-                print ("The message for native task is expected.")
-
-        driver.find_element_by_partial_link_text("Build dependencies (").click()
-        native_depends_name = driver.find_element_by_partial_link_text("Build dependencies (").text
-        print native_depends_name
-        native_depends_num = int(filter(str.isdigit, repr(native_depends_name)))
-        print native_depends_num
-
-        native_depends_row_count = len(driver.find_elements_by_xpath("//*[@id='dependencies']/table/tbody/tr/td[1]"))
-        print native_depends_row_count
-
-        if native_depends_num != native_depends_row_count:
-            print ("Error! The dependent packages number is not correct")
-        else:
-            print ("The dependent packages number is correct")
-
-        driver.find_element_by_partial_link_text("Reverse build dependencies (").click()
-        native_rdepends_name = driver.find_element_by_partial_link_text("Reverse build dependencies (").text
-        print native_rdepends_name
-        native_rdepends_num = int(filter(str.isdigit, repr(native_rdepends_name)))
-        print native_rdepends_num
-
-        native_rdepends_row_count = len(driver.find_elements_by_xpath("//*[@id='brought-in-by']/table/tbody/tr/td[1]"))
-        print native_rdepends_row_count
-
-        if native_rdepends_num != native_rdepends_row_count:
-            print ("Error! The reverse dependent packages number is not correct")
-        else:
-            print ("The reverse dependent packages number is correct")
-
-        driver.find_element_by_link_text("Recipes").click()
+                print ("The reverse dependent packages number is correct")
 
 
         ##############
@@ -1478,13 +1430,12 @@ class toaster_cases(toaster_cases_base):
         self.assertTrue(is_list_inverted(c_list), msg=("list not inverted"))
         # step 3
         self.driver.find_element_by_id("edit-columns-button").click()
-        self.driver.find_element_by_id("started_on").click()
-        self.driver.find_element_by_id("time").click()
+        self.driver.find_element_by_id("checkbox-started_on").click()
+        self.driver.find_element_by_id("checkbox-time").click()
         self.driver.find_element_by_id("edit-columns-button").click()
-        head_list = self.get_table_head_text('otable')
+        head_list = self.get_table_head_text('allbuildstable')
         for item in ['Outcome', 'Recipe', 'Machine', 'Started on', 'Completed on', 'Failed tasks', 'Errors', 'Warnings', 'Time', "Image files", "Project"]:
             self.failUnless(item in head_list, msg=item+' is missing from table head.')
-
 
         ##############
         #  CASE 924  #
@@ -1501,11 +1452,12 @@ class toaster_cases(toaster_cases_base):
         # Step 4
         # click Errors , order in "Completed on" should be disturbed. Then hide
         # error column to check if order in "Completed on" can be restored
-#THIS TEST IS NO LONGER VALID DUE TO DESIGN CHANGES. LEAVING IN PENDING UPDATES TO DESIGN
-        #self.find_element_by_link_text_in_table('otable', 'Errors').click()
-        #self.driver.find_element_by_id("edit-columns-button").click()
-        #self.driver.find_element_by_id("errors_no").click()
-        #self.driver.find_element_by_id("edit-columns-button").click()
+        #THIS TEST IS NO LONGER VALID DUE TO DESIGN CHANGES. LEAVING IN PENDING UPDATES TO DESIGN
+        self.find_element_by_link_text_in_table('allbuildstable', 'Errors').click()
+        self.driver.find_element_by_id("edit-columns-button").click()
+        self.driver.find_element_by_id("checkbox-errors_no").click()
+        self.driver.find_element_by_id("checkbox-failed_tasks").click()
+        self.driver.find_element_by_id("edit-columns-button").click()
         # Note: without time.sleep here, there'll be unpredictable error..TBD
         time.sleep(1)
         c_list = self.get_table_column_text('class', 'completed_on')
@@ -1605,60 +1557,45 @@ class toaster_cases(toaster_cases_base):
         self.driver.maximize_window()
         self.driver.get(self.opts.toaster_url)
         self.driver.find_element_by_link_text("core-image-minimal").click()
-        # step 1: test Recipes page stuff
-        self.driver.find_element_by_link_text("Recipes").click()
-        # for these 3 items, default status is not-checked
-        self.driver.find_element_by_id("edit-columns-button").click()
-        self.driver.find_element_by_id("layer_version__branch").click()
-        self.driver.find_element_by_id("layer_version__layer__commit").click()
-        self.driver.find_element_by_id("edit-columns-button").click()
-        # otable is the recipes table here
-        otable_head_text = self.get_table_head_text('otable')
-        for item in ["Layer", "Layer branch", "Layer commit"]:
-            self.failIf(item not in otable_head_text, msg=item+' not in table head.')
-        # click the fist recipe, whatever it is
-        self.get_table_element("otable", 1, 1).click()
-        self.assertTrue(self.is_text_present(["Layer", "Layer branch", "Layer commit", "Recipe file"]), \
-                        msg=("text not in web page"))
 
-        # step 2: test Packages page stuff. almost same as above
-        self.driver.back()
-        self.browser_delay()
-        self.driver.find_element_by_link_text("Packages").click()
-        self.driver.find_element_by_id("edit-columns-button").click()
-        self.driver.find_element_by_id("recipe__layer_version__layer__name").click()
-        self.driver.find_element_by_id("recipe__layer_version__branch").click()
-        self.driver.find_element_by_id("recipe__layer_version__layer__commit").click()
-        self.driver.find_element_by_id("edit-columns-button").click()
-        otable_head_text = self.get_table_head_text("otable")
-        for item in ["Layer", "Layer branch", "Layer commit"]:
-            self.assertFalse(item not in otable_head_text, msg=("item %s should be in head row" % item))
-        # click the fist recipe, whatever it is
-        self.get_table_element("otable", 1, 1).click()
-        self.assertTrue(self.is_text_present(["Layer", "Layer branch", "Layer commit"]), \
-                        msg=("text not in web page"))
 
-        # step 3: test Packages core-image-minimal(images) stuff. almost same as above. Note when future element-id changes...
-        self.driver.back()
-        self.driver.find_element_by_link_text("core-image-minimal").click()
-        self.driver.find_element_by_id("edit-columns-button").click()
-        self.driver.find_element_by_id("layer_name").click()
-        self.driver.find_element_by_id("layer_branch").click()
-        self.driver.find_element_by_id("layer_commit").click()
-        self.driver.find_element_by_id("edit-columns-button").click()
-        otable_head_text = self.get_table_head_text("otable")
-        for item in ["Layer", "Layer branch", "Layer commit"]:
-            self.assertFalse(item not in otable_head_text, msg=("item %s should be in head row" % item))
-        # click the fist recipe, whatever it is
-        self.get_table_element("otable", 1, 1).click()
-        self.assertTrue(self.is_text_present(["Layer", "Layer branch", "Layer commit"]), \
-                        msg=("text not in web page"))
+        dict_key_id = {'Recipes':["layer_version__branch", "layer_version__layer__commit"] , \
+                        'Packages':["recipe__layer_version__layer__name", "recipe__layer_version__branch",  "recipe__layer_version__layer__commit"] ,\
+                        'core-image-minimal':["layer_name", "layer_branch",  "layer_commit"]}
+
+        layer_list = ["Layer", "Layer commit"]
+        # step 1,2,3: test Recipes, Packages, core-image-minimal page stuff
+        for item in dict_key_id:
+            print item
+            self.driver.find_element_by_link_text(item).click()
+            # for these 3 items, default status is not-checked
+            self.driver.find_element_by_id("edit-columns-button").click()
+            for i in dict_key_id[item]:
+                self.driver.find_element_by_id(i).click()
+            self.driver.find_element_by_id("edit-columns-button").click()
+            # otable is the recipes table here
+            otable_head_text = self.get_table_head_text('otable')
+            for itm in layer_list:
+                self.failIf(itm not in otable_head_text, msg=itm+' not in table head.')
+            # click the fist recipe, whatever it is
+            self.get_table_element("otable", 1, 1).click()
+            if item == 'Recipes':
+                time.sleep(1)
+                self.assertTrue(self.is_text_present(layer_list + ["Recipe file"]), \
+                                msg=("text not in web page"))
+            else:
+                time.sleep(1)
+                self.assertTrue(self.is_text_present(layer_list), \
+                                msg=("text not in web page"))
+
+            self.driver.back()
+            self.browser_delay()
 
         # step 4: check Configuration page
-        self.driver.back()
+        #self.driver.back()
         self.driver.find_element_by_link_text("Configuration").click()
         otable_head_text = self.get_table_head_text()
-        self.assertTrue(self.is_text_present(["Layer", "Layer branch", "Layer commit"]), \
+        self.assertTrue(self.is_text_present(layer_list), \
                         msg=("text not in web page"))
 
 
@@ -1669,33 +1606,44 @@ class toaster_cases(toaster_cases_base):
         self.case_no = self.get_case_number()
         self.log.info(' CASE %s log: ' % str(self.case_no))
         self.driver.maximize_window()
+        #option_tobeselected = 3
         for item in ["Packages", "Recipes", "Tasks"]:
+            print item
             self.driver.get(self.opts.toaster_url)
             self.driver.find_element_by_link_text("core-image-minimal").click()
-            self.driver.find_element_by_link_text(items).click()
+            self.driver.find_element_by_link_text(item).click()
 
             # this may be page specific. If future page content changes, try to replace it with new xpath
             xpath_showrows = "/html/body/div[4]/div/div/div[2]/div[2]/div[2]/div/div/div[2]/select"
             xpath_table = "html/body/div[4]/div/div/div[2]/div[2]/table/tbody"#"id=('otable')/tbody"
-            self.driver.find_element_by_xpath(xpath_showrows).click()
+            time.sleep(5)
+
+            #self.driver.find_element_by_xpath(xpath_showrows).click()
+            Select(self.driver.find_element_by_xpath(xpath_showrows)).select_by_value('50')
+            time.sleep(4)
             rows_displayed = int(self.driver.find_element_by_xpath(xpath_showrows + "/option[2]").text)
+            print 'rows='
+            print rows_displayed
 
             # not sure if this is a Selenium Select bug: If page is not refreshed here, "select(by visible text)" operation will go back to 100-row page
             # Sure we can use driver.get(url) to refresh page, but since page will vary, we use click link text here
-            self.driver.find_element_by_link_text(items).click()
-            Select(self.driver.find_element_by_css_selector("select.pagesize")).select_by_visible_text(str(rows_displayed))
-            self.failUnless(self.is_element_present(By.XPATH, xpath_table + "/tr[" + str(rows_displayed) +"]"))
-            self.failIf(self.is_element_present(By.XPATH, xpath_table + "/tr[" + str(rows_displayed+1) +"]"))
 
+            self.driver.find_element_by_link_text(item).click()
+            Select(self.driver.find_element_by_css_selector("select.pagesize")).select_by_visible_text(str(rows_displayed))
+
+            self.failUnless(self.is_element_present(By.XPATH, xpath_table + "/tr[" + str(rows_displayed) +"]"))
+            #.//*[@id=str(rows_displayed)]/td[1]/a
+
+            self.failIf(self.is_element_present(By.XPATH, xpath_table + "/tr[" + str(rows_displayed+1) +"]"))
             # click 1st package, then go back to check if it's still those rows shown.
-            self.driver.find_element_by_xpath(xpath_otable + "/tr[1]/td[1]/a").click()
+            self.driver.find_element_by_xpath(xpath_table + "/tr[1]/td[1]/a").click()
             time.sleep(3)
             self.driver.find_element_by_link_text(item).click()
-            self.assertTrue(self.is_element_present(By.XPATH, xpath_otable + "/tr[" + str(option_tobeselected) +"]"),\
-                            msg=("Row %d should exist" %option_tobeselected))
-            self.assertFalse(self.is_element_present(By.XPATH, xpath_otable + "/tr[" + str(option_tobeselected+1) +"]"),\
-                            msg=("Row %d should not exist" %(option_tobeselected+1)))
+            self.assertTrue(self.is_element_present(By.XPATH, xpath_table + "/tr[" + str(rows_displayed) +"]"),\
+                            msg=("Row %d should exist" %rows_displayed))
 
+            self.assertFalse(self.is_element_present(By.XPATH, xpath_table + "/tr[" + str(rows_displayed+1) +"]"),\
+                            msg=("Row %d should not exist" %(rows_displayed+1)))
 
 
         ##############
@@ -1755,6 +1703,7 @@ class toaster_cases(toaster_cases_base):
         # any better way to close this pop-up? ... TBD
         element.find_element_by_class_name("close").click()
         # step 10 : need to manually check "Yocto Manual" in saved screen
+        time.sleep(1)
         self.driver.find_element_by_css_selector("i.icon-share.get-info").click()
         # save screen here
         time.sleep(5)
@@ -1985,395 +1934,3 @@ class toaster_cases(toaster_cases_base):
             self.log.error("please check [Toaster manual] link on page")
             self.failIf(True)
 
-####################################################################################################
-# Starting backend tests ###########################################################################
-####################################################################################################
-
-        ##############
-        #  CASE 1066 #
-        ##############
-    def test_1066(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select count(name) from orm_project a, auth_user b where a.user_id = b.id and b.username='_anonuser';"
-        cursor.execute(query)
-        data = cursor.fetchone()
-        self.failUnless(data >= 1)
-
-
-        ##############
-        #  CASE 1071 #
-        ##############
-    def test_1071(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select name from orm_release;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        for i in range(0,4):
-            data[i] = data[i][0]
-        data.sort()
-        print data
-        json_parse = json.loads(open(self.opts.toaster_config).read())
-        json_data = []
-        for i in range (0,4):
-            json_data.append(json_parse['releases'][i]['name'])
-        json_data.sort()
-        print json_data
-        self.failUnless(data == json_data)
-
-        ##############
-        #  CASE 1072 #
-        ##############
-    def test_1072(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select value from orm_toastersetting where name like 'DEFCONF%';"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        for i in range(0,6):
-            data[i] = data[i][0]
-        print data
-        json_parse = json.loads(open(self.opts.toaster_config).read())
-        json_data=json_parse['config']
-        json_data = json_data.values()
-        print json_data
-        self.failUnless(data == json_data)
-
-
-        ##############
-        #  CASE 1074 #
-        ##############
-    def test_1074(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select name from orm_layersource;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        for i in range(0,3):
-            data[i] = data[i][0]
-        print data
-        json_parse = json.loads(open(self.opts.toaster_config).read())
-        json_data = []
-        for i in range(0,3):
-            json_data.append(json_parse['layersources'][i]['name'])
-        print json_data
-        self.failUnless(set(data) == set(json_data))
-
-        ##############
-        #  CASE 1075 #
-        ##############
-    def test_1075(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select value from orm_toastersetting where name like 'DEFAULT_RELEASE';"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        data = data[0][0]
-        print data
-        json_parse = json.loads(open(self.opts.toaster_config).read())
-        json_data = json_parse['defaultrelease']
-        print json_data
-        self.failUnless(set(data) == set(json_data))
-
-        ##############
-        #  CASE 1076 #
-        ##############
-    def test_1076(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-
-        print 'Checking branches for "Local Yocto Project"'
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select name from orm_branch where layer_source_id=1;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        lenght = len(data)
-        try:
-            for i in range(0,lenght):
-                data[i] = data[i][0]
-        except:
-            pass
-        print data
-        json_parse = json.loads(open(self.opts.toaster_config).read())
-        json_location = json_parse['layersources'][0]['name']
-        print json_location
-        json_data = json_parse['layersources'][0]['branches']
-        print json_data
-        self.failUnless(set(data) == set(json_data))
-
-        print 'Checking branches for "OpenEmbedded"'
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select name from orm_branch where layer_source_id=3;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        lenght = len(data)
-        for i in range(0,lenght):
-            data[i] = data[i][0]
-        print data
-        json_parse = json.loads(open(self.opts.toaster_config).read())
-        json_location = json_parse['layersources'][1]['name']
-        print json_location
-        json_data = json_parse['layersources'][1]['branches']
-        print json_data
-        self.failUnless(set(data) == set(json_data))
-
-        print 'Checking branches for "Imported layers"'
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select name from orm_branch where layer_source_id=2;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        lenght = len(data)
-        for i in range(0,lenght):
-            data[i] = data[i][0]
-        print data
-        json_parse = json.loads(open(self.opts.toaster_config).read())
-        json_location = json_parse['layersources'][2]['name']
-        print json_location
-        json_data = json_parse['layersources'][2]['branches']
-        print json_data
-        self.failUnless(set(data) == set(json_data))
-
-
-        ##############
-        #  CASE 1077 #
-        ##############
-    def test_1077(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select name from orm_bitbakeversion;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        for i in range(0,4):
-            data[i] = data[i][0]
-        print data
-        json_parse = json.loads(open(self.opts.toaster_config).read())
-        json_data = []
-        for i in range(0,4):
-            json_data.append(json_parse['bitbake'][i]['name'])
-        print json_data
-        self.failUnless(set(data) == set(json_data))
-
-        ##############
-        #  CASE 1083 #
-        ##############
-    def test_1083(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        self.driver.get(self.opts.toaster_url)
-        self.driver.find_element_by_id("new-project-button").click()
-        self.driver.find_element_by_id("new-project-name").send_keys("new-test-project")
-        self.driver.find_element_by_id("create-project-button").click()
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select count(name) from orm_project where name = 'new-test-project';"
-        cursor.execute(query)
-        data = cursor.fetchone()
-        print 'data: %s' % data
-        self.failUnless(data >= 1)
-
-        ##############
-        #  CASE 1084 #
-        ##############
-    def test_1084(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        self.driver.get(self.opts.toaster_url)
-        self.driver.find_element_by_id("new-project-button").click()
-        self.driver.find_element_by_id("new-project-name").send_keys("new-default-project")
-        self.driver.find_element_by_id("create-project-button").click()
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select a.name from orm_release a, orm_project b where a.id = b.release_id and b.name = 'new-default-project' limit 1;"
-        cursor.execute(query)
-        db_data = str(cursor.fetchone()[0])
-        json_parse = json.loads(open(self.opts.toaster_config).read())
-        json_data = str(json_parse['defaultrelease'])
-        self.failUnless(db_data == json_data)
-
-        ##############
-        #  CASE 1088 #
-        ##############
-    def test_1088(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        self.driver.get(self.opts.toaster_url)
-        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
-        self.driver.find_element_by_link_text('new-default-project').click()
-        self.driver.find_element_by_id('project-change-form-toggle').click()
-        self.driver.find_element_by_id('project-name-change-input').clear()
-        self.driver.find_element_by_id('project-name-change-input').send_keys('new-name')
-        self.driver.find_element_by_id('project-name-change-btn').click()
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select count(name) from orm_project where name = 'new-name';"
-        cursor.execute(query)
-        data = cursor.fetchone()[0]
-        self.failUnless(data == 1)
-        #reseting project name
-        self.driver.find_element_by_id('project-change-form-toggle').click()
-        self.driver.find_element_by_id('project-name-change-input').clear()
-        self.driver.find_element_by_id('project-name-change-input').send_keys('new-default-project')
-        self.driver.find_element_by_id('project-name-change-btn').click()
-
-
-        ##############
-        #  CASE 1089 #
-        ##############
-    def test_1089(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        self.driver.get(self.opts.toaster_url)
-        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
-        self.driver.find_element_by_link_text('new-default-project').click()
-        self.driver.find_element_by_id('change-machine-toggle').click()
-        self.driver.find_element_by_id('machine-change-input').clear()
-        self.driver.find_element_by_id('machine-change-input').send_keys('qemuarm64')
-#        self.driver.find_element_by_id('machine-change-input').send_keys(Keys.RETURN)
-        self.driver.find_element_by_id('machine-change-btn').click()
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select count(id) from orm_projectvariable where name like 'machine' and value like 'qemuarm64';"
-        cursor.execute(query)
-        data = cursor.fetchone()[0]
-        self.failUnless(data == 1)
-        #resetting machine to default value
-        self.driver.find_element_by_id('change-machine-toggle').click()
-        self.driver.find_element_by_id('machine-change-input').clear()
-        self.driver.find_element_by_id('machine-change-input').send_keys('qemux86')
-        self.driver.find_element_by_id('machine-change-input').send_keys(Keys.RETURN)
-        self.driver.find_element_by_id('machine-change-btn').click()
-
-        ##############
-        #  CASE 1090 #
-        ##############
-    def test_1090(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select username from auth_user where is_superuser = 1;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        try:
-            data = data[0][0]
-        except:
-            pass
-        print data
-        self.failUnless(data == 'toaster_admin')
-
-        ##############
-        #  CASE 1091 #
-        ##############
-    def test_1091(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        self.driver.get(self.opts.toaster_url)
-        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
-        self.driver.find_element_by_link_text('new-default-project').click()
-        self.driver.find_element_by_id('release-change-toggle').click()
-        dropdown = self.driver.find_element_by_css_selector('select')
-        for option in dropdown.find_elements_by_tag_name('option'):
-            if option.text == 'Local Yocto Project':
-                option.click()
-        self.driver.find_element_by_id('change-release-btn').click()
-        #wait for the changes to register in the DB
-        time.sleep(1)
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select count(*) from orm_layer_version a, orm_projectlayer b, orm_project c where a.\"commit\"=\"HEAD\" and a.id = b.layercommit_id and b.project_id=c.id and c.name='new-default-project';"
-        cursor.execute(query)
-        data = cursor.fetchone()[0]
-        #resetting release to default
-        self.driver.find_element_by_id('release-change-toggle').click()
-        dropdown = self.driver.find_element_by_css_selector('select')
-        for option in dropdown.find_elements_by_tag_name('option'):
-            if option.text == 'Yocto Project master':
-                option.click()
-        self.driver.find_element_by_id('change-release-btn').click()
-        #wait for the changes to register in the DB
-        time.sleep(1)
-        self.failUnless(data == 3)
-
-        ##############
-        #  CASE 1092 #
-        ##############
-    def test_1092(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select a.name, a.value from orm_projectvariable a, orm_project b where a.project_id = b.id and b.name = 'new-default-project';"
-        cursor.execute(query)
-        data = dict(cursor.fetchall())
-        print data
-        default_values = {u'IMAGE_INSTALL_append': u'', u'PACKAGE_CLASSES': u'package_rpm', u'MACHINE': u'qemux86', u'SDKMACHINE': u'x86_64', u'DISTRO': u'poky', u'IMAGE_FSTYPES': u'ext3 jffs2 tar.bz2'}
-        self.failUnless(data == default_values)
-
-        ##############
-        #  CASE 1093 #
-        ##############
-    def test_1093(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-
-        #get initial values
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select layercommit_id from orm_projectlayer a, orm_project b where a.project_id=b.id and b.name='new-default-project';"
-        cursor.execute(query)
-        data_initial = cursor.fetchall()
-        print data_initial
-
-        self.driver.maximize_window()
-        self.driver.get(self.opts.toaster_url)
-        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
-        self.driver.find_element_by_link_text('new-default-project').click()
-        self.driver.find_element_by_id('release-change-toggle').click()
-        dropdown = self.driver.find_element_by_css_selector('select')
-        for option in dropdown.find_elements_by_tag_name('option'):
-            if option.text == 'Local Yocto Project':
-                option.click()
-        self.driver.find_element_by_id('change-release-btn').click()
-        #wait for the changes to register in the DB
-        time.sleep(1)
-
-        #get changed values
-        con=sqlite.connect(self.opts.toaster_db)
-        cursor = con.cursor()
-        query = "select layercommit_id from orm_projectlayer a, orm_project b where a.project_id=b.id and b.name='new-default-project';"
-        cursor.execute(query)
-        data_changed = cursor.fetchall()
-        print data_changed
-
-        #resetting release to default
-        self.driver.find_element_by_id('release-change-toggle').click()
-        dropdown = self.driver.find_element_by_css_selector('select')
-        for option in dropdown.find_elements_by_tag_name('option'):
-            if option.text == 'Yocto Project master':
-                option.click()
-        self.driver.find_element_by_id('change-release-btn').click()
-        #wait for the changes to register in the DB
-        time.sleep(1)
-        self.failUnless(data_initial != data_changed)

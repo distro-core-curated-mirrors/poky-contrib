@@ -45,17 +45,13 @@ class ToasterSetupTestCase(ToasterTestCase):
         self.driver.get(self.opts.toaster_url)
         try:
             self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
-        except:
-            self.driver.find_element_by_id("new-project-button").click()
-            self.driver.find_element_by_id("new-project-name").send_keys("selenium-project")
-            self.driver.find_element_by_id("create-project-button").click()
-
-        try:
             self.driver.find_element_by_link_text("selenium-project").click()
         except:
             self.driver.find_element_by_id("new-project-button").click()
+            time.sleep(5)
             self.driver.find_element_by_id("new-project-name").send_keys("selenium-project")
             self.driver.find_element_by_id("create-project-button").click()
+
         time.sleep(5)
 
         #queue up a core-image-minimal
@@ -75,7 +71,7 @@ class ToasterSetupTestCase(ToasterTestCase):
 
         #move to all builds page
         self.driver.find_element_by_css_selector("a[href='/toastergui/builds/']").click()
-        self.driver.refresh()
+#        self.driver.refresh()
         time.sleep(5)
 
         #check progress bar is displayed to signal a build has started
