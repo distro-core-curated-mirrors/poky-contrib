@@ -5,6 +5,7 @@ import os
 import unittest
 import fileinput
 import logging
+import traceback
 
 # Include current path so test cases can see it
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -18,7 +19,7 @@ import utils
 logger = utils.logger_create('patchtest')
 
 import repo
-from summary import TabulateSummary
+import summary
 
 def getResult(series, revision, mbox, nopatch, post):
 
@@ -44,7 +45,7 @@ def getResult(series, revision, mbox, nopatch, post):
                 'revision': revision,
             }
             self.repo = pti.repo = repo.Repo(**repoargs)
-            self.summary = TabulateSummary()
+            self.summary = summary.TemplateSummary(self.repo.project, self.repo.mailinglist)
 
             self.merge_failure = False # turns on in case all items failed the merging phase
             self.test_failure = False  # turns on in case of any testing failure
@@ -69,7 +70,7 @@ def getResult(series, revision, mbox, nopatch, post):
         def addError(self, test, err):
             self.test_error = True
             (ty, va, trace) = err
-            logger.error(va)
+            logger.error(traceback.print_exc())
 
         def addFailure(self, test, err):
             self.test_failure = True
@@ -145,6 +146,7 @@ def _runner(resultklass, prefix=None):
     try:
         result = runner.run(suite)
     except:
+        logger.error(traceback.print_exc())
         logger.error('patchtest failed, removing patchtest branch')
         if repo:
             pti.repo.clean(False)
