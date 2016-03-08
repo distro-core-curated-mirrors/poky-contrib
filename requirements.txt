@@ -2,3 +2,4 @@ Sphinx
 GitPython
 requests
 tabulate
+jinja2
