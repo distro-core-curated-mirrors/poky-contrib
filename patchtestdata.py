@@ -10,9 +10,10 @@
 import os
 import argparse
 import json
+import collections
 
-# Data store for sharing values between pre and post merge tests
-PatchTestDataStore = dict()
+# Data store commonly used to share values between pre and post-merge tests
+PatchTestDataStore = collections.defaultdict(str)
 
 class PatchTestStdIn(object):
     """ Generate PatchTestData from standard input"""
