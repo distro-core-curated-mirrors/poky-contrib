@@ -136,6 +136,8 @@ class Repo(object):
             raise Exception
 
         self._series_revision = self._get_series_revisions(series, revision)
+        self._mailinglist = self._get_mailinglist()
+
         self._loaditems()
 
         # for debugging purposes, print all repo parameters
@@ -158,6 +160,20 @@ class Repo(object):
     @property
     def project(self):
         return self._project
+
+    @property
+    def mailinglist(self):
+        return self._mailinglist
+
+    def _get_mailinglist(self, defaultml=''):
+        ml = defaultml
+        url = "%s/api/1.0/projects/%s" % (self._url, self._project)
+        try:
+            r = requests.get(url)
+            ml = r.json()['listemail']
+        except Exception as e:
+            logger.warn("Mailing list could not be fetched")
+        return ml
 
     def _loaditems(self):
         """ Load MboxItems to be tested """
