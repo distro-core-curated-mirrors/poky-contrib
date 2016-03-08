@@ -18,7 +18,7 @@ import utils
 logger = utils.logger_create('patchtest')
 
 import repo
-from summary import BasicSummary
+from summary import TabulateSummary
 
 def getResult(series, revision, mbox, nopatch, post):
 
@@ -44,7 +44,7 @@ def getResult(series, revision, mbox, nopatch, post):
                 'revision': revision,
             }
             self.repo = pti.repo = repo.Repo(**repoargs)
-            self.summary = BasicSummary()
+            self.summary = TabulateSummary()
 
             self.merge_failure = False # turns on in case all items failed the merging phase
             self.test_failure = False  # turns on in case of any testing failure
@@ -73,18 +73,18 @@ def getResult(series, revision, mbox, nopatch, post):
 
         def addFailure(self, test, err):
             self.test_failure = True
-            self.summary.addFailure(test, err)
+            self.summary.addFailure(test)
 
         def addSuccess(self, test):
             self.summary.addSuccess(test)
 
         def addSkip(self, test, msg):
-            self.summary.addSkip(test, msg)
+            self.summary.addSkip(test)
 
         def stopTestRun(self):
             testname = pti.testname
             state = PatchTestResult.PATCHWORK_RESULT_FAILURE
-            summary = self.summary.generateSummary(self.repo.items)
+            summary = self.summary.generate(self.repo.items)
 
             logger.info(summary)
 
