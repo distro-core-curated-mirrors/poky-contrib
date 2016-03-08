@@ -141,6 +141,13 @@ def _runner(resultklass, prefix=None):
 
     # create the suite with discovered tests and the corresponding runner
     suite = loader.discover(os.path.abspath(pti.testdir))
+    ntc = suite.countTestCases()
+
+    # if there are no test cases, just quit
+    if not ntc:
+        return
+
+    logger.info('Executing %s tests with prefix "%s"' % (ntc, loader.testMethodPrefix))
     runner = unittest.TextTestRunner(resultclass=resultklass)
 
     try:
