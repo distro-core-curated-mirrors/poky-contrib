@@ -4,5 +4,3 @@ requests
 tabulate
 jinja2
 unidiff
-urllib2
-codecs
