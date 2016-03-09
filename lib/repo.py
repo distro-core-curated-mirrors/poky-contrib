@@ -7,7 +7,7 @@ import requests
 import unidiff
 import urllib2
 import codecs
-from patchwork_parser import parse_patch as _pw_parse
+from utils import parse_patch as _pw_parse
 
 logger = logging.getLogger('patchtest')
 
