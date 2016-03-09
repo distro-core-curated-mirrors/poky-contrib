@@ -38,8 +38,6 @@ class BaseMboxItem(object):
         self._commentbuf = ''
         self._changes = None
 
-    #XXX: remember to make sure contents, keyvals and diff(changes) are scanned and stuff
-
     @property
     def contents(self):
         raise(NotImplementedError, 'Please do not instantiate MboxItem; patch reading method depends on Mbox type')
@@ -140,25 +138,25 @@ class MboxURLItem(BaseMboxItem):
     @property
     def contents(self):
         if self._forcereload or (not self._contents):
-            logger.debug('Reading %s contents' % self._resource)
+            logger.debug('Reading %s contents' % self.resource)
             try:
-                _r = requests.get(self._resource)
+                _r = requests.get(self.resource)
                 self._contents = _r.text
             except:  #XXX: narrow down to more specific exceptions
-                logger.warn("Request to %s failed" % self._resource)
+                logger.warn("Request to %s failed" % self.resource)
         return self._contents
 
     @property
     def changes(self):
         if self._forcereload or (not self._changes):
             try:
-                _url = urllib2.urlopen(self._resource)
+                _url = urllib2.urlopen(self.resource)
             except:  #XXX: narrow down to more specific exceptions
-                logger.warn("Request to %s failed" % self._resource)
+                logger.warn("Request to %s failed" % self.resource)
             try:
                 self._changes = unidiff.PatchSet(_url)
             except:  #XXX: narrow down to more specific exceptions
-                logger.warn("Parsing %s failed" % self._resource)
+                logger.warn("Parsing %s failed" % self.resource)
         return self._changes
 
 class MboxFileItem(BaseMboxItem):
@@ -167,22 +165,22 @@ class MboxFileItem(BaseMboxItem):
     @property
     def contents(self):
         if self._forcereload or (not self._contents):
-            logger.debug('Reading %s contents' % self._resource)
+            logger.debug('Reading %s contents' % self.resource)
             try:
-                with open(self._resource) as _f:
+                with open(self.resource) as _f:
                     self._contents = _f.read()
             except IOError:
-                logger.warn("Reading the mbox %s failed" % self._resource)
+                logger.warn("Reading the mbox %s failed" % self.resource)
         return self._contents
 
     @property
     def changes(self):
         if self._forcereload or (not self._changes):
             try:
-                with codecs.open(self._resource) as _f:
+                with codecs.open(self.resource) as _f:
                     self._changes = unidiff.PatchSet(_f)
             except IOError:
-                logger.warn("Reading the mbox %s failed" % self._resource)
+                logger.warn("Reading the mbox %s failed" % self.resource)
         return self._changes
 
 class Repo(object):
