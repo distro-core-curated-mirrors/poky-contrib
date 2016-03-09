@@ -1,3 +1,4 @@
 *.pyc
 *.patch
 docs/_build
+venv
