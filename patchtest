@@ -45,7 +45,10 @@ def getResult(series, revision, mbox, nopatch, post):
                 'revision': revision,
             }
             self.repo = pti.repo = repo.Repo(**repoargs)
-            self.summary = summary.TemplateSummary(self.repo.project, self.repo.mailinglist)
+            self.summary = summary.TemplateSummary(self.repo.project,
+                                                   self.repo.mailinglist,
+                                                   self.repo.branch,
+                                                   self.repo.commit)
 
             self.merge_failure = False # turns on in case all items failed the merging phase
             self.test_failure = False  # turns on in case of any testing failure
@@ -83,20 +86,17 @@ def getResult(series, revision, mbox, nopatch, post):
             self.summary.addSkip(test)
 
         def stopTestRun(self):
-            testname = pti.testname
-            state = PatchTestResult.PATCHWORK_RESULT_FAILURE
-            summary = self.summary.generate(self.repo.items)
-
+            summary = self.summary.generate(self.repo.items, self.merge_failure)
             logger.info(summary)
 
-            if self.merge_failure:
-                testname += '-merge-failure'
+            state = None
+            if self.test_failure or self.merge_failure:
+                state = PatchTestResult.PATCHWORK_RESULT_FAILURE
             else:
-                if not self.test_failure:
-                    state = PatchTestResult.PATCHWORK_RESULT_SUCCESS
+                state = PatchTestResult.PATCHWORK_RESULT_SUCCESS
 
             if not self.test_error and post:
-                self.repo.post(testname, state, summary)
+                self.repo.post(pti.testname, state, summary)
 
             self.repo.clean(pti.keepbranch)
 

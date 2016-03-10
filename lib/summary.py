@@ -8,9 +8,11 @@ class BaseSummary(object):
     SUCCESS = 'PASS'
     SKIP = 'SKIP'
 
-    def __init__(self, project='', mailinglist=''):
+    def __init__(self, project='', mailinglist='', branchname='', commit=''):
         self._project = project
         self._mailinglist = mailinglist
+        self._branchname = branchname
+        self._commit = commit
 
         self._results = list()
 
@@ -23,7 +25,7 @@ class BaseSummary(object):
     def addSkip(self, test):
         self._results.append((self.SKIP, test))
 
-    def generate(self, items):
+    def generate(self, items, mergefailure=False):
         raise Exception
 
 class TabulateSummary(BaseSummary):
@@ -47,7 +49,7 @@ class TabulateSummary(BaseSummary):
 class TemplateSummary(BaseSummary):
 
     # TODO: the template should be located in a separate file
-    template = """Displaying test summary:
+    testtemplate = """Displaying test summary:
 
 ----------------------------------------------------------------------
 
@@ -72,19 +74,36 @@ and submitting a new version of the patchset if applicable. Please
 ensure you add/increment the version number when sending the new
 version (i.e. [PATCH] -> [PATCH v2] -> [PATCH v3] -> ...).
 """
+    mergefailuretemplate = """
+Thanks for your patch submission to {{ project }} - this is an automated
+response. Unfortunately your patch series does not apply cleanly to the
+{{ branchname }} branch (currently revision {{ commit }}). Please rebase it on the tip
+of the {{ branchname }} branch, resolve any conflicts and resubmit a new version.
 
-    def generate(self, items):
-        resource = None
-        testresults = [(result, test.shortDescription()) for result, test in self._results]
-        try:
-            item = items[0]
-            resource = item.pretty_resource
-            raise AssertionError(item.resource)
-            print item.pretty_resource
-        except:
-            pass
+Please ensure you add/increment the version number
+when sending the new version (i.e. [PATCH] -> [PATCH v2] -> [PATCH v3] ->
+...).
+"""
 
-        return Template(self.template).render(project=self._project,
-                                              mailinglist=self._mailinglist,
-                                              resource=resource,
-                                              testresults=testresults)
+    def generate(self, items, mergefailure=False):
+        content = ''
+        if mergefailure:
+            content = Template(self.mergefailuretemplate).render(project=self._project,
+                                                              branchname=self._branchname,
+                                                              commit=self._commit)
+        else:
+            resource = None
+            testresults = [(result, test.shortDescription()) for result, test in self._results]
+            try:
+                item = items[0]
+                resource = item.pretty_resource
+                raise AssertionError(item.resource)
+                print item.pretty_resource
+            except:
+                pass
+
+            content = Template(self.testtemplate).render(project=self._project,
+                                                         mailinglist=self._mailinglist,
+                                                         resource=resource,
+                                                         testresults=testresults)
+        return content
