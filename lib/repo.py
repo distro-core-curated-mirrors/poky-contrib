@@ -266,6 +266,14 @@ class Repo(object):
     def mailinglist(self):
         return self._mailinglist
 
+    @property
+    def branch(self):
+        return self._branch
+
+    @property
+    def commit(self):
+        return self._commit
+
     def _get_mailinglist(self, defaultml=''):
         ml = defaultml
         url = "%s/api/1.0/projects/%s" % (self._url, self._project)
