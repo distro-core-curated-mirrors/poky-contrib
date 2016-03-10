@@ -1,0 +1,54 @@
+import os, sys, usbkm232 
+import basic_functionality as bf
+
+class KeybEmu(UsbKm232):
+    def __init__(self, board='', s_port=''):
+		self.keyb_cfg = dict()
+		brd = board
+		self.read_config() # read conf file and populates keyb_cfg dict {machine:serial_port}
+		if not self.check_for_board(brd) or (s_port == ''):
+			print "No serial port provided."	
+		else:
+			serial_port = self.keyb_cfg[brd]
+		super(KeybEmu, self).__init__(serial_port)
+		
+	def read_config(self):
+		module_path = os.path.abspath(__file__)
+		cfg_file_path = os.path.join(moodule_path, "..", "config_files", "keyboard_emu.cfg")
+	    cfg_content = bf.read_file(cfg_file_path)
+		for line in cfg_content:
+		    if not (line.startswith('#') or line == ''): # avoid blanks and comments
+			    for value in line.strip().split(':'):
+				    self.keyb_cfg[value[0]] = value[1] # ---> self.keyb_cfg[value[board_name]] = value[serial_port_by_path]
+					
+	def check_for_board(self,brd):
+		if brd not in self.keyb.cfg.keys():
+			print "No configured serial port found in config_files/keyboard_emu.cfg {}.".\
+			format(['',"for %s"%brd][brd is not ''])	
+		    return False
+		else:
+			return True
+					
+	def send_keys_to_machine(self, my_str):
+		self.generate_command_from_input(my_str)
+		
+if __name__ == "__main__":
+s = \
+"""
+This is a module and is intended to be used as such. For fast keyboard emulation purposes only
+one can pass as arguments the /dev/serial/by-path/ value of the serial port followed by a no 
+space separated string. The result is the string being sent to the corresponding keyboard emu.
+device.
+e.g.:  python kb_emu.py "pci-0000:00:14.0-usb-0:1.4.3:1.0-port0" "Hello_:)"
+"""
+	def help_menu():
+	print s
+	
+	if len(sys.argv) != 2:
+		help_menu()
+		sys.exit("Wrong no. of parameters sent.")
+	
+	sp = sys.argv[0]
+	str_to_send = sys.argv[1]
+	kb = KeybEmu(s_port=sp)
+	kb.send_keys_to_machine(str_to_send)
