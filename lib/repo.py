@@ -8,6 +8,7 @@ import unidiff
 import urllib2
 import codecs
 from utils import parse_patch as _pw_parse
+from urlparse import urlparse
 
 logger = logging.getLogger('patchtest')
 
@@ -159,6 +160,16 @@ class MboxURLItem(BaseMboxItem):
                 logger.warn("Parsing %s failed" % self.resource)
         return self._changes
 
+    @property
+    def pretty_resource(self):
+        if not self.resource:
+            return ''
+        else:
+            _url = urlparse(str(self.resource))
+            _inst = "%s://%s" % (_url.scheme, _url.netloc)
+            _series = self.args[0]
+            return "%s/series/%s" % (_inst, _series)
+
 class MboxFileItem(BaseMboxItem):
     """ Mbox item based on a file"""
 
@@ -182,6 +193,10 @@ class MboxFileItem(BaseMboxItem):
             except IOError:
                 logger.warn("Reading the mbox %s failed" % self.resource)
         return self._changes
+
+    @property
+    def pretty_resource(self):
+        return "%s" % os.path.basename(self.resource) if self.resource else 'a patch file'
 
 class Repo(object):
 

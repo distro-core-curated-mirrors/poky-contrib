@@ -47,16 +47,30 @@ class TabulateSummary(BaseSummary):
 class TemplateSummary(BaseSummary):
 
     # TODO: the template should be located in a separate file
-    template = """
-Thanks for your patch submission {% if resource %} of {{ resource }} {% endif %}to {{ project }} - this is an automated response. The results of some tests on the patch(es) are as follows:
+    template = """Displaying test summary:
 
-{% for result, description in testresults %}
-    {{ result }} {{ description }}
+----------------------------------------------------------------------
+
+Thank you for your patch submission {% if resource %}of:
+
+  {{ resource }}
+
+{% endif %}to {{ project }} - this is an automated {% if not resource %}
+{% endif %}response. {% if resource %}
+{% endif %}Results of some tests on the patch(es) are as follows:
+
+{% if testresults %}  Result Description
+  ------ -------------------------------------------------------------
+{% for result, description in testresults %}   {{ result }}  {{ description }}
 {% endfor %}
+----------------------------------------------------------------------
 
-If you believe any of these test results are incorrect, please reply to the mailing list ({{ mailinglist }}) raising your concerns. Otherwise we
-would appreciate you correcting the issues and submitting a new version of the patchset if applicable. Please ensure you add/increment the version number
-when sending the new version (i.e. [PATCH] -> [PATCH v2] -> [PATCH v3] -> ...).
+{% endif %}If you believe any of these test results are incorrect, please reply
+to the mailing list ({{ mailinglist }}) raising
+your concerns. Otherwise we would appreciate you correcting the issues
+and submitting a new version of the patchset if applicable. Please
+ensure you add/increment the version number when sending the new
+version (i.e. [PATCH] -> [PATCH v2] -> [PATCH v3] -> ...).
 """
 
     def generate(self, items):
@@ -64,7 +78,9 @@ when sending the new version (i.e. [PATCH] -> [PATCH v2] -> [PATCH v3] -> ...).
         testresults = [(result, test.shortDescription()) for result, test in self._results]
         try:
             item = items[0]
-            resource = item.resource
+            resource = item.pretty_resource
+            raise AssertionError(item.resource)
+            print item.pretty_resource
         except:
             pass
 
