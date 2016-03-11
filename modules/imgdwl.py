@@ -126,13 +126,13 @@ class UseImage(basic_functionality):
             self.img_file = "{}-{}.hddimg".format(self.core_name, self.bsp)
         image_file = os.path.join(self.dwl_dir, self.img_file)
         scp_command = "scp %s root@%s:%s" % (image_file , self.SW_ip, USB_SW_img_dir)
-        res = self.run_comamd_locally(scp_command)
-        return res
+        retcode, retval = self.run_command_locally(scp_command)
+        return retcode
 
 
     def write_image_on_stick(self):
         stick = TP.stick = self.rezerve_stick().strip()
         print "Selected stick: {}".format(stick)
         command = "/root/USB_SW/image_on_stick.sh {} {}".format(self.img_file, stick)
-        result = self.run_command_remotelly(self.SW_ip,command)
-        return result.exit_code
+        retcode, retval = self.run_command_remotely(self.SW_ip, command)
+        return retcode

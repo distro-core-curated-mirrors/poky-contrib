@@ -17,24 +17,24 @@ class Git_Essentials(base.basic_functionality):
         os.chdir(dir_to_clone_in)
         clone_command = "git clone {} {}".format(repo, clone_name)
         self.clone_dir = os.path.join(dir_to_clone_in, clone_name)
-        ret_code = self.run_comamd_locally(clone_command)
-        return ret_code
+        retcode, retval = self.run_command_locally(clone_command)
+        return retcode
 
     def checkout(self, commit):
         os.chdir(self.clone_dir)
         chk_command = "git checkout {}".format(commit)
-        ret_code = self.run_comamd_locally(chk_command)
-        return ret_code
+        retcode, retval = self.run_command_locally(chk_command)
+        return retcode
 
     def fetch(self, repo, remote_branch):
         fetch_command = "git fetch {} {}:{}".format(repo, remote_branch, remote_branch) # blah blah
-        ret_code = self.run_comamd_locally(fetch_command)
-        return ret_code
+        retcode, retval = self.run_command_locally(fetch_command)
+        return retcode
 
     def add_remote(self, remote_name, remote_repo):
         add_rmt_command = "git remote add {} {}".format(remote_name, remote_repo)
-        ret_code = self.run_comamd_locally(add_rmt_command)
-        return ret_code
+        retcode, retval = self.run_command_locally(add_rmt_command)
+        return retcode
 
 
 class Testing_Harness(base.basic_functionality): # nice name huh? :)
