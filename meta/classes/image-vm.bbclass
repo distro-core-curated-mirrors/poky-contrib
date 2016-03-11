@@ -26,14 +26,11 @@ do_bootdirectdisk[depends] += "dosfstools-native:do_populate_sysroot \
                                ${PN}:do_image_${VM_ROOTFS_TYPE} \
                                "
 
-IMAGE_TYPEDEP_vmdk = "${VM_ROOTFS_TYPE}"
-IMAGE_TYPEDEP_vdi = "${VM_ROOTFS_TYPE}"
-IMAGE_TYPEDEP_qcow2 = "${VM_ROOTFS_TYPE}"
-IMAGE_TYPEDEP_hdddirect = "${VM_ROOTFS_TYPE}"
-IMAGE_TYPES_MASKED += "vmdk vdi qcow2 hdddirect"
-
 VM_ROOTFS_TYPE ?= "ext4"
-ROOTFS ?= "${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.${VM_ROOTFS_TYPE}"
+IMAGE_TYPEDEP_hdddirect = "${VM_ROOTFS_TYPE}"
+IMAGE_TYPES_MASKED += "hdddirect"
+
+ROOTFS ?= "${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.ext4"
 
 # Used by bootloader
 LABELS_VM ?= "boot"
@@ -144,27 +141,5 @@ run_qemu_img (){
     qemu-img convert -O $type ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.hdddirect ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.$type
     ln -sf ${IMAGE_NAME}.$type ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.$type
 }
-create_vmdk_image () {
-    run_qemu_img vmdk
-}
 
-create_vdi_image () {
-    run_qemu_img vdi
-}
-
-create_qcow2_image () {
-    run_qemu_img qcow2
-}
-
-python do_vmimg() {
-    if 'vmdk' in d.getVar('IMAGE_FSTYPES', True):
-        bb.build.exec_func('create_vmdk_image', d)
-    if 'vdi' in d.getVar('IMAGE_FSTYPES', True):
-        bb.build.exec_func('create_vdi_image', d)
-    if 'qcow2' in d.getVar('IMAGE_FSTYPES', True):
-        bb.build.exec_func('create_qcow2_image', d)
-}
-
-addtask bootdirectdisk before do_vmimg
-addtask vmimg after do_bootdirectdisk before do_image_complete
-do_vmimg[depends] += "qemu-native:do_populate_sysroot"
+addtask bootdirectdisk before do_image_complete
