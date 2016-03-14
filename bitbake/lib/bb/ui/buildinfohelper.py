@@ -970,25 +970,26 @@ class BuildInfoHelper(object):
         build_information = self._get_build_information(build_log_path)
         self.internal_state['build'] = self.orm_wrapper.create_build_object(build_information, self.brbe)
 
-    def store_targets(self, event):
+    def store_targets(self, targets):
         """
         store targets for the current build, if that build was started from
         the command line; targets for non-cli builds are irrelevant, as we
         create them from the BuildRequest anyway
 
-        event: a TargetsAcquired event with a task property (e.g. "build")
-        and a targetsList property (e.g. ["zlib", "dropbear"])
+        targets: a list of targets for the build, e.g.
+        ["zlib:build", "dropbear:build"]
         """
-        targets = map(lambda target: target + ':' + event.task,
-                      event.targetsList)
+        # non-command-line builds have their targets stored when the build
+        # request is created
+        if not self.internal_state['build'].project.is_default:
+            return
 
         target_information = {
-            'targets': targets,
-            'build': self.internal_state['build']
+          'targets': targets,
+          'build': self.internal_state['build']
         }
 
-        self.internal_state['targets'] = \
-            self.orm_wrapper.get_or_create_targets(target_information)
+        self.internal_state['targets'] = self.orm_wrapper.get_or_create_targets(target_information)
 
     def update_build(self, event):
         """
