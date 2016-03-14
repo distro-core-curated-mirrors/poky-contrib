@@ -333,6 +333,85 @@ class toaster_cases_base(unittest.TestCase):
         # self.log = self.logger_create()
         # driver setup
         self.setup_browser()
+        self.driver.implicitly_wait(10)
+        self.driver.get(self.base_url)
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+        try:
+            machine_text = self.driver.find_element_by_id("project-machine-name")
+            if (machine_text.text != "qemux86"):
+                self.driver.find_element_by_id("change-machine-toggle").click()
+                time.sleep(1)
+                self.driver.find_element_by_id("machine-change-input").clear()
+                self.driver.find_element_by_id("machine-change-input").send_keys("qemux86")
+                self.driver.find_element_by_id("machine-change-input").send_keys(Keys.ENTER)
+                self.driver.find_element_by_id("machine-change-btn").click()
+                time.sleep(1)
+        except:
+            logging.error("Could not reset machine back to default value; attempting to continue test")
+            pass
+        layer = True
+        while (layer):
+            try:
+                delete_button = self.driver.find_element_by_xpath("//*[@id='layers-in-project-list']/li[4]/span")
+                delete_button.click()
+                self.driver.find_element_by_link_text("Configuration").click()
+            except:
+                layer = False
+
+        default_distro = "poky"
+        default_fstypes = "ext3 jffs2 tar.bz2"
+        default_package = "package_rpm"
+        default_install = "Not set"
+
+        self.driver.find_element_by_link_text("BitBake variables").click()
+        current_distro = self.driver.find_element_by_id("distro").text
+        if (current_distro != default_distro):
+            self.driver.find_element_by_id('change-distro-icon').click()
+            time.sleep(1)
+            self.driver.find_element_by_id('new-distro').clear()
+            self.driver.find_element_by_id('new-distro').send_keys(default_distro)
+            self.driver.find_element_by_id('apply-change-distro').click()
+        time.sleep(2)
+        
+        current_fstypes = self.driver.find_element_by_id("image_fstypes").text
+        if (current_fstypes != default_fstypes):
+            self.driver.find_element_by_id("change-image_fstypes-icon").click()
+            active_checkboxes = default_fstypes.split()
+            checkboxes = self.driver.find_elements_by_class_name("fs-checkbox-fstypes")
+            for element in checkboxes:
+                if (element.get_attribute("checked")):
+                    element.click()
+            for element in checkboxes:
+                if (element.get_attribute("value") in active_checkboxes):
+                    element.click()
+            self.driver.find_element_by_id("apply-change-image_fstypes").click()
+
+        current_install = self.driver.find_element_by_id("image_install").text
+        if (current_install != default_install):
+            try:
+                self.driver.find_element_by_id("delete-image_install-icon").click()
+                #wait for animation to finish
+                time.sleep(4)
+            except:
+                pass
+
+        current_package = self.driver.find_element_by_id("package_classes").text
+        if (current_package != default_package):
+            self.driver.find_element_by_id("change-package_classes-icon").click()
+            time.sleep(1)
+            select = Select(self.driver.find_element_by_id("package_classes-select"))
+            select.select_by_visible_text("package_rpm")
+            first_box = self.driver.find_element_by_id("package_class_1_input")
+            second_box = self.driver.find_element_by_id("package_class_1_input")
+            if (first_box.get_attribute("checked")):
+                first_box.click()
+            if (second_box.get_attribute("checked")):
+                second_box.click()
+            self.driver.find_element_by_id("apply-change-package_classes").click()
+        time.sleep(2)
 
     @staticmethod
     def logger_create():
@@ -1982,3 +2061,1029 @@ class toaster_cases(toaster_cases_base):
             self.log.error("please check [Toaster manual] link on page")
             self.failIf(True)
 
+####################################################################################################
+# Starting project tests ###########################################################################
+####################################################################################################
+
+        ##############
+        #  CASE 1100 #
+        ##############
+    def test_1100(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("BitBake variables").click()
+        time.sleep(1)
+
+        distro_text = self.driver.find_element_by_id("distro").text
+        self.assertTrue((distro_text == "poky"), msg="DISTRO variable has unexpected value")
+
+        image_fstypes_text = self.driver.find_element_by_id("image_fstypes").text
+        self.assertTrue((image_fstypes_text == "ext3 jffs2 tar.bz2"), msg="IMAGE_FSTYPES variable has unexpected value")
+
+        image_install_text = self.driver.find_element_by_id("image_install").text
+        self.assertTrue((image_install_text == "Not set"), msg="IMAGE_INSTALL_append variable has unexpected value")
+
+        package_classes_text = self.driver.find_element_by_id("package_classes").text
+        self.assertTrue((package_classes_text == "package_rpm"), msg="PACKAGE_CLASSES variable has unexpected value")
+
+        variable_text = self.driver.find_element_by_id("variable").text
+        variable_placeholder = self.driver.find_element_by_id("variable").get_attribute("placeholder")
+        self.assertTrue((variable_text == ""), msg="Variable textbox is not empty")
+        self.assertTrue((variable_placeholder == "Type variable name"), msg="Variable placeholder has unexpected value")
+
+        value_text = self.driver.find_element_by_id("value").text
+        value_placeholder = self.driver.find_element_by_id("value").get_attribute("placeholder")
+        self.assertTrue((value_text == ""), msg="Value textbox is not empty")
+        self.assertTrue((value_placeholder == "Type variable value"), msg="Value placeholder has unexpected value")
+
+        button_enabled = self.driver.find_element_by_id("add-configvar-button").is_enabled()
+        self.assertFalse((button_enabled), msg="Add variable button is enabled; it should not be")
+
+        ##############
+        #  CASE 1102 #
+        ##############
+    def test_1102(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("BitBake variables").click()
+        time.sleep(1)
+
+        #checking distro variable elements
+        try:
+            self.driver.find_element_by_id("change-distro-icon").click()
+        except:
+            self.fail("Unable to find distro edit button")
+
+        edit_distro_element = self.driver.find_element_by_id("new-distro")
+        edit_distro_value = edit_distro_element.get_attribute("value")
+        self.assertTrue((edit_distro_value == 'poky'), msg="DISTRO edit box has unexpected value")
+
+        edit_distro_element.clear()
+        #workaround code; using clear() does not make the interface recognise the text box is now empty, so we need to send a key and then delete it so get the save button to be disabled
+        #this does not happen when interacting with the interface manually
+        edit_distro_element.send_keys("a")
+        edit_distro_element.send_keys(Keys.BACKSPACE)
+        #end workaround
+        edit_distro_save_button = self.driver.find_element_by_id("apply-change-distro")
+        self.assertFalse((edit_distro_save_button.is_enabled()), msg="distro save changes button still active with empty value; should not be")
+
+        edit_distro_element.send_keys("poky tiny")
+        distro_error_text = self.driver.find_element_by_id("distro-error-message").text
+        self.assertTrue((distro_error_text == "A valid distro name cannot include spaces"), msg="Error message is missing when inputting incorrect value in DISTRO variable")
+        self.driver.find_element_by_id("cancel-change-distro").click()
+
+        #checking image_fstype variable elements
+        image_fstypes_text = self.driver.find_element_by_id("image_fstypes").text
+        image_fstypes_values = image_fstypes_text.split()
+
+        try:
+            self.driver.find_element_by_id("change-image_fstypes-icon").click()
+        except:
+            self.fail("Unable to find image_fstype edit button")
+
+        edit_image_fstype_element = self.driver.find_element_by_id("filter-image_fstypes")
+        checkboxes = self.driver.find_elements_by_class_name("fs-checkbox-fstypes")
+        active_checkboxes = []
+
+        for element in checkboxes:
+            if (element.get_attribute("checked")):
+                active_checkboxes.append(element.get_attribute("value"))
+        self.assertTrue((sorted(image_fstypes_values) == sorted(active_checkboxes)), msg = "list of checked values does not match list of values found at page load")
+
+        for element in checkboxes:
+            if (element.get_attribute("value") in active_checkboxes):
+                element.click()
+        image_fstype_error_text = self.driver.find_element_by_id("fstypes-error-message").text
+        self.assertTrue((image_fstype_error_text == "You must select at least one image type"), msg="Error message is missing when inputting incorrect value in image_fstype variable")
+        fstype_button = self.driver.find_element_by_id("apply-change-image_fstypes")
+        self.assertFalse((fstype_button.is_enabled()), msg="Save changes button for image_fstype is still active with empty values; it should not be")
+
+        for element in checkboxes:
+            if (element.get_attribute("value") in active_checkboxes):
+                element.click()
+            if (element.get_attribute("value") == "cpio"):
+                element.click()
+        self.driver.find_element_by_id("apply-change-image_fstypes").click()
+        time.sleep(1)
+
+        image_fstypes_text_new = self.driver.find_element_by_id("image_fstypes").text
+        image_fstypes_values_new = image_fstypes_text_new.split()
+        active_checkboxes_new = list(active_checkboxes)
+        active_checkboxes_new.append("cpio")
+        self.assertTrue(set(image_fstypes_values_new) == set(active_checkboxes_new), msg="Values after edit for image_fstypes do not match checkboxes selected")
+
+        #resetting to defaults
+        self.driver.find_element_by_id("change-image_fstypes-icon").click()
+        checkboxes = self.driver.find_elements_by_class_name("fs-checkbox-fstypes")
+        for element in checkboxes:
+            if (element.get_attribute("checked")):
+                element.click()
+        for element in checkboxes:
+            if (element.get_attribute("value") in active_checkboxes):
+                element.click()
+        self.driver.find_element_by_id("apply-change-image_fstypes").click()
+
+        #checking image_install_append variable elements
+        try:
+            self.driver.find_element_by_id("change-image_install-icon").click()
+            time.sleep(1)
+        except:
+            self.fail("Unable to find image_install_append edit button")
+
+        edit_image_install_element = self.driver.find_element_by_id("new-image_install")
+        edit_image_install_value = edit_image_install_element.get_attribute("value")
+        self.assertTrue((edit_image_install_value == ""), msg="IMAGE_INSTALL_append edit box has unexpected value")
+        image_install_placeholder = edit_image_install_element.get_attribute("placeholder")
+        self.assertTrue((image_install_placeholder == "Type one or more package names"), msg="IMAGE_INSTALL_append edit box placeholder missing or has unexpected value")
+
+        edit_image_install_element.clear()
+        #workaround code; using clear() does not make the interface recognise the text box is now empty, so we need to send a key and then delete it so get the save button to be disabled
+        #this does not happen when interacting with the interface manually
+        edit_image_install_element.send_keys("a")
+        edit_image_install_element.send_keys(Keys.BACKSPACE)
+        #end workaround
+        edit_image_install_save_button = self.driver.find_element_by_id("apply-change-image_install")
+        self.assertFalse((edit_image_install_save_button.is_enabled()), msg="IMAGE_INSTALL_append save changes button still active with empty value; should not be")
+
+        edit_image_install_element.send_keys("package1")
+        edit_image_install_save_button.click()
+        time.sleep(1)
+
+        image_install_text_new = self.driver.find_element_by_id("image_install").text
+        self.assertTrue((image_install_text_new == "package1"), msg="Saved IMAGE_INSTALL_append value does not match input sent")
+
+        try:
+            self.driver.find_element_by_id("delete-image_install-icon").click()
+            #wait for animation to finish
+            time.sleep(4)
+        except:
+            self.fail("Unable to locate delete button for option IMAGE_INSTALL_append")
+
+        image_install_text_deleted = self.driver.find_element_by_id("image_install").text
+        self.assertTrue((image_install_text_deleted == "Not set"), msg="Saved IMAGE_INSTALL_append value was not deleted")
+        image_install_delete = self.driver.find_element_by_id("delete-image_install-icon")
+        self.assertFalse((image_install_delete.is_displayed()), msg="IMAGE_INSTALL_append delete button still visible with unset value; it should not be")
+
+        #checking package_classes variable elements
+        package_classes_text = self.driver.find_element_by_id("package_classes").text
+        try:
+            self.driver.find_element_by_id("change-package_classes-icon").click()
+            time.sleep(1)
+        except:
+            self.fail("Unable to find package_classes edit button")
+
+        select_package_classes = Select(self.driver.find_element_by_id("package_classes-select"))
+        selected_package_classes = select_package_classes.first_selected_option.text
+        self.assertTrue((package_classes_text == selected_package_classes), msg="Selected option for package_classes does not match selection detected on page load")
+
+        options_list = []
+        for option in select_package_classes.options:
+            options_list.append(option.get_attribute('value'))
+
+        packages_list = ["package_deb", "package_ipk", "package_rpm"]
+        self.assertTrue((set(options_list) == set(packages_list)), msg = "Unexpected values in dropdown box for package_classes")
+
+        self.driver.find_element_by_id("package_class_1_input").click()
+        self.driver.find_element_by_id("package_class_2_input").click()
+
+        self.driver.find_element_by_id("apply-change-package_classes").click()
+        time.sleep(1)
+
+        package_classes_text_new = self.driver.find_element_by_id("package_classes").text
+        package_classes_text_new = package_classes_text_new.split()
+
+        self.assertTrue((set(package_classes_text_new) == set(packages_list)), msg="PACKAGE_CLASSES after modification does not match selected options")
+
+        #resetting to defaults
+        self.driver.find_element_by_id("change-package_classes-icon").click()
+        time.sleep(1)
+        self.driver.find_element_by_id("package_class_1_input").click()
+        self.driver.find_element_by_id("package_class_2_input").click()
+        self.driver.find_element_by_id("apply-change-package_classes").click()
+        time.sleep(1)
+
+        #adding variables
+        add_variable_button = self.driver.find_element_by_id("add-configvar-button")
+        self.assertFalse((add_variable_button.is_enabled()), msg="Add variable button active when it shouldn't be")
+
+        self.driver.find_element_by_id("variable").send_keys("variable_name_here")
+        self.assertFalse((add_variable_button.is_enabled()), msg="Add variable button active when it shouldn't be")
+
+        self.driver.find_element_by_id("value").send_keys("variable_value_here")
+        self.assertTrue((add_variable_button.is_enabled()), msg="Add variable button is not active when it should be")
+
+        add_variable_button.click()
+        time.sleep(1)
+
+        #because every variable added gets a unique ID, we will have to reverse engineer the current ID from the variable name
+        new_variable = self.driver.find_element_by_xpath("//*[contains(text(), 'variable_name_here')]")
+        new_id = new_variable.get_attribute('id')
+        id_breakdown = new_id.split('_')
+        id_number = id_breakdown[3]
+        delete_button_id = 'config_var_trash_' + str(id_number)
+        new_variable_text_id = 'config_var_value_'  + str(id_number)
+        new_variable_edit_value_id = 'new-config_var_' + str(id_number)
+        change_config_form = 'change-config_var-form_' + str(id_number)
+        new_variable_save_value = self.driver.find_element_by_xpath("//*[@id='"+change_config_form+"']/div/button[1]")
+        new_variable_cancel = self.driver.find_element_by_xpath("//*[@id='"+change_config_form+"']/div/button[2]")
+        new_variable_edit_button = self.driver.find_element_by_xpath("//*[@id='configvar-list']/div/dd/i")
+
+        new_variable_edit_button.click()
+        new_variable_edit_value = self.driver.find_element_by_id(new_variable_edit_value_id)
+        new_variable_edit_value.clear()
+        #workaround code; using clear() does not make the interface recognise the text box is now empty, so we need to send a key and then delete it so get the save button to be disabled
+        #this does not happen when interacting with the interface manually
+        new_variable_edit_value.send_keys("a")
+        new_variable_edit_value.send_keys(Keys.BACKSPACE)
+        #end workaround
+        self.assertFalse((new_variable_save_value.is_enabled()), msg="IMAGE_INSTALL_append save changes button still active with empty value; should not be")
+        new_variable_cancel.click()
+
+        self.driver.find_element_by_id(delete_button_id).click()
+        #wait for animations to run, otherwise variable is not deleted
+        time.sleep(5)
+
+        self.driver.find_element_by_id("variable").send_keys(" /")
+        new_variable_error_text = self.driver.find_element_by_id("new-variable-error-message").text
+        time.sleep(1)
+        self.assertTrue((new_variable_error_text == "A valid variable name can only include letters, numbers, underscores, dashes, and cannot include spaces"), \
+                         msg="Error message missing when inputting improper variable name")
+
+        self.driver.find_element_by_id("variable").clear()
+        self.driver.find_element_by_id("variable").send_keys("distro")
+        time.sleep(1)
+        new_variable_error_text = self.driver.find_element_by_id("new-variable-error-message").text
+        self.assertTrue((new_variable_error_text == "This variable is already set in this page, edit its value instead"), msg="Error message missing when inputting existing variable name")
+
+        ##############
+        #  CASE 1110 #
+        ##############
+    def test_1110(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Layers").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("meta-acer")
+        time.sleep(1)
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("meta-acer").click()
+        time.sleep(1)
+
+        crumbs_list = self.driver.find_elements_by_class_name("breadcrumb")
+        self.assertTrue((("selenium-project" in crumbs_list[0].text) and ("Compatible layers" in crumbs_list[0].text) and ("meta-acer (master)" in crumbs_list[0].text)), \
+                       msg="Breadcrumbs have unexpected values")
+
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+        self.driver.back()
+        time.sleep(1)
+        self.assertTrue((self.is_text_present("meta-acer")), msg="Returning from breadcrumb failed")
+
+        self.driver.find_element_by_link_text("Compatible layers").click()
+        time.sleep(1)
+        self.driver.back()
+        time.sleep(1)
+        self.assertTrue((self.is_text_present("meta-acer")), msg="Returning from breadcrumb failed")
+
+        URL_link = self.driver.find_element_by_xpath("//a[@href='http://github.com/shr-distribution/meta-smartphone/']")
+        self.assertTrue((URL_link.is_displayed()), msg="Could not find repository URL external link")
+        subdir_link = self.driver.find_element_by_xpath("//a[@href='http://github.com/shr-distribution/meta-smartphone/tree/master/meta-acer']")
+        self.assertTrue((subdir_link.is_displayed()), msg="Could not find repository subdirectory external link")
+
+        add_layer_button = self.driver.find_element_by_id("add-remove-layer-btn")
+        button_text = add_layer_button.text
+        self.assertTrue((button_text == "Add the meta-acer layer to your project"), msg="Button text different than expected")
+
+        try:
+            add_layer_button.click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Unable to click on the add layer button")
+
+        title = self.driver.find_element_by_id("title")
+        title_text = title.text
+        self.assertTrue((title_text == "meta-acer"), msg="Cannot find dependencies pop-up window")
+        self.driver.find_element_by_xpath("//*[@id='dependencies-modal-form']/div[3]/button[2]").click()
+
+        self.assertTrue((self.is_text_present("Summary")), msg="Cannot find summary entry")
+        self.assertTrue((self.is_text_present("Description")), msg="Cannot find description entry")
+        self.assertTrue((self.is_text_present("Repository URL")), msg="Cannot find repository URL entry")
+        self.assertTrue((self.is_text_present("Repository subdirectory")), msg="Cannot find repository subdirectory entry")
+        self.assertTrue((self.is_text_present("Git revision")), msg="Cannot find git revision entry")
+        self.assertTrue((self.is_text_present("Layer dependencies")), msg="Cannot find layer dependencies entry")
+
+        try:
+            self.driver.find_element_by_xpath("//a[@href='#recipes']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Cannot find recipes tab")
+
+        add_layer_button = self.driver.find_element_by_id("add-remove-layer-btn")
+        button_text = add_layer_button.text
+        self.assertTrue((button_text == "Add the meta-acer layer to your project to enable these recipes"), msg="Button text different than expected")
+
+        table_head = self.get_table_head_text("recipestable")
+        self.assertTrue((set(table_head) == set(["Recipe", "Version", "Description", "Build recipe"])), msg="Recipes table head has unexpected values")
+
+        try:
+            self.driver.find_element_by_xpath("//a[@href='#machines']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Cannot find machines tab")
+
+        add_layer_button = self.driver.find_element_by_id("add-remove-layer-btn")
+        button_text = add_layer_button.text
+        self.assertTrue((button_text == "Add the meta-acer layer to your project to enable these machines"), msg="Button text different than expected")
+
+        table_head = self.get_table_head_text("machinestable")
+        self.assertTrue((set(table_head) == set(["Machine", "Description", "Select machine"])), msg="Recipes table head has unexpected values")
+
+        try:
+            self.driver.find_element_by_xpath("//a[@href='#information']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Cannot find layer details tab")
+
+        ##############
+        #  CASE 1111 #
+        ##############
+    def test_1111(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+        #making sure there are no other layers in the project other than the defaults(in particular meta-selftest
+        layer = True
+        while (layer):
+            try:
+                delete_button = self.driver.find_element_by_xpath("//*[@id='layers-in-project-list']/li[4]/span")
+                delete_button.click()
+                self.driver.find_element_by_link_text("Configuration").click()
+            except:
+                layer = False
+        self.driver.find_element_by_partial_link_text("Layers").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("meta-acer")
+        time.sleep(1)
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("meta-acer").click()
+        time.sleep(1)
+
+        try:
+            self.driver.find_element_by_xpath("//a[@href='#recipes']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Cannot find recipes tab")
+        build_recipe_button = self.driver.find_element_by_xpath("//table[@id='recipestable']/tbody/tr/td[4]/button")
+        self.assertFalse((build_recipe_button.is_enabled()), msg="Build recipe button active before layer was added to project")
+
+        try:
+            self.driver.find_element_by_xpath("//a[@href='#machines']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Cannot find machines tab")
+        select_machine_button = self.driver.find_element_by_xpath("//table[@id='machinestable']/tbody/tr/td[3]/a")
+        self.assertTrue((select_machine_button.get_attribute('disabled')), msg="Select machine button active before layer was added to project")
+
+        try:
+            self.driver.find_element_by_xpath("//a[@href='#information']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Cannot find layers details tab")
+
+        add_layer_button = self.driver.find_element_by_id("add-remove-layer-btn")
+        try:
+            add_layer_button.click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Unable to click on the add layer button")
+
+        try:
+            self.driver.find_element_by_xpath("//*[@id='dependencies-modal-form']/div[3]/button[1]").click()
+        except:
+            self.fail(msg="Unable to click on the add layers button in the dependencies pop-up window")
+
+        time.sleep(5)
+        add_layer_button = self.driver.find_element_by_id("add-remove-layer-btn")
+        button_text = add_layer_button.text
+        self.assertTrue((button_text == "Remove the meta-acer layer from your project"), msg="Button text different than expected")
+
+        alert = self.driver.find_element_by_id("alert-area")
+        alert_message = alert.text
+        self.assertTrue(("You have added 3 layers to your project: meta-acer and its dependencies meta-android, meta-oe" in alert_message), msg="Alert message not found or text wrong")
+
+        try:
+            self.driver.find_element_by_xpath("//a[@href='#recipes']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Cannot find recipes tab")
+        build_recipe_button = self.driver.find_element_by_xpath("//table[@id='recipestable']/tbody/tr/td[4]/button")
+        self.assertTrue((build_recipe_button.is_enabled()), msg="Build recipe button not active after layer was added to project")
+
+        try:
+            self.driver.find_element_by_xpath("//a[@href='#machines']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Cannot find machines tab")
+        select_machine_button = self.driver.find_element_by_xpath("//table[@id='machinestable']/tbody/tr/td[3]/a")
+        self.assertFalse((select_machine_button.get_attribute('disabled')), msg="Select machine button not active after layer was added to project")
+        select_machine_button.click()
+        time.sleep(2)
+        machine_text = self.driver.find_element_by_id("project-machine-name").text
+        self.assertTrue((machine_text == "a500"), "Machine not changed after using 'Select machine' button")
+
+        ##############
+        #  CASE 1112 #
+        ##############
+    def test_1112(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Import layer").click()
+        time.sleep(1)
+
+        import_button = self.driver.find_element_by_id("import-and-add-btn")
+        self.assertFalse((import_button.is_enabled()), msg="Import layer button active before all requirement are filled out; it should not be")
+
+        try:
+            self.driver.find_element_by_id("import-layer-name").send_keys("meta-selftest")
+        except:
+            self.fail(msg="Cannot find layer name text box")
+
+        try:
+            self.driver.find_element_by_id("layer-git-repo-url").send_keys("git://git.yoctoproject.org/poky")
+        except:
+            self.fail(msg="Cannot find git repo text box")
+
+        try:
+            self.driver.find_element_by_id("layer-subdir").send_keys("meta-selftest")
+        except:
+            self.fail(msg="Cannot find repo subdirectory text box")
+
+        try:
+            self.driver.find_element_by_id("layer-git-ref").send_keys("master")
+        except:
+            self.fail(msg="Cannot find git revision text box")
+
+        add_dependency_button = self.driver.find_element_by_id("add-layer-dependency-btn")
+        self.assertTrue((add_dependency_button.get_attribute("disabled")), msg="Add dependency button active before layer text box is filled out")
+
+        try:
+            self.driver.find_element_by_id("layer-dependency").send_keys("meta-acer")
+            self.driver.find_element_by_id("layer-dependency").send_keys(Keys.ENTER)
+            time.sleep(1)
+        except:
+            self.fail(msg="Cannot find layer dependency text box")
+
+        self.assertFalse((add_dependency_button.get_attribute("disabled")), msg="Add dependency button not active after layer text box filled out")
+        add_dependency_button.click()
+
+        try:
+            self.driver.find_element_by_xpath("//ul[@id='layer-deps-list']/li[2]/span").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Unable to delete added dependency layer")
+
+        default_dependency = self.driver.find_element_by_xpath("//ul[@id='layer-deps-list']/li/a")
+        self.assertTrue((default_dependency.text == "openembedded-core"), msg="Default layer dependency has unexpected value")
+
+        delete_default_dependency = self.driver.find_element_by_xpath("//ul[@id='layer-deps-list']/li/span")
+        self.assertTrue((delete_default_dependency.is_enabled()), msg="Delete button for default dependency either missing or inactive")
+
+        self.assertTrue((import_button.is_enabled()), msg="Import layer button not active after all requirement are filled out; it should be")
+        import_button.click()
+        time.sleep(1)
+
+        self.assertTrue((self.is_text_present("meta-selftest")), msg="Unable to verify layer was added to project")
+
+        ##############
+        #  CASE 1113 #
+        ##############
+    def test_1113(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Layers").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("meta-selftest")
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+
+        self.driver.find_element_by_link_text("meta-selftest").click()
+
+        try:
+            self.driver.find_element_by_xpath("//a[@href='#recipes']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Cannot find recipes tab")
+        no_recipe_message = self.driver.find_element_by_id("no-recipes-yet")
+        print no_recipe_message.text
+        self.assertTrue(no_recipe_message, msg="Unable to find notification of missing recipes")
+
+        try:
+            self.driver.find_element_by_xpath("//a[@href='#machines']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Cannot find machines tab")
+        no_machine_message = self.driver.find_element_by_id("no-machines-yet")
+        print no_machine_message.text
+        self.assertTrue(no_machine_message, msg="Unable to find notification of missing machines")
+
+        try:
+            self.driver.find_element_by_xpath("//a[@href='#information']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Cannot find layers details tab")
+
+        add_layer_button = self.driver.find_element_by_id("add-remove-layer-btn")
+        try:
+            add_layer_button.click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Unable to click on the add layer button")
+
+        add_layer_button = self.driver.find_element_by_id("add-remove-layer-btn")
+        button_text = add_layer_button.text
+        self.assertTrue((button_text == "Remove the meta-selftest layer from your project"), msg="Button text different than expected")
+
+        alert = self.driver.find_element_by_id("alert-area")
+        alert_message = alert.text
+        self.assertTrue(("You have added 1 layer to your project: meta-selftest" in alert_message), msg="Alert message not found or text wrong")
+
+        add_layer_button.click()
+
+        self.assertTrue((self.is_text_present("Summary")), msg="Cannot find summary entry")
+        self.assertTrue((self.is_text_present("Description")), msg="Cannot find description entry")
+        self.assertTrue((self.is_text_present("Repository URL")), msg="Cannot find repository URL entry")
+        self.assertTrue((self.is_text_present("Repository subdirectory")), msg="Cannot find repository subdirectory entry")
+        self.assertTrue((self.is_text_present("Git revision")), msg="Cannot find git revision entry")
+        self.assertTrue((self.is_text_present("Layer dependencies")), msg="Cannot find layer dependencies entry") 
+
+        edit_repo_button = self.driver.find_element_by_xpath("//div[@id='information']/dl/dd/i")
+        self.assertTrue(edit_repo_button.is_displayed(), msg="Unable to find edit repository URL button")
+        edit_repo_button.click()
+        edit_repo_text = self.driver.find_element_by_xpath("//form[@id='change-repo-form']/div/input")
+        self.assertTrue(edit_repo_text.is_displayed(), msg="Unable to find edit repository text box")
+        edit_repo_text.clear()
+        edit_repo_text.send_keys("new_repo_here")
+        try:
+            self.driver.find_element_by_xpath("//form[@id='change-repo-form']/div/button").click()
+            time.sleep(1)
+        except:
+            self.Fail(msg="Unable to save new repo")
+        repo_text = self.driver.find_element_by_xpath("//div[@id='information']/dl/dd[1]/span")
+        self.assertTrue(repo_text.text == "new_repo_here", msg="repo value not updated after change")
+
+        edit_subdir_button = self.driver.find_element_by_id("change-subdir")
+        self.assertTrue(edit_subdir_button.is_displayed(), msg="Unable to find change subdirectory button")
+        edit_subdir_button.click()
+        edit_subdir_text = self.driver.find_element_by_xpath("//form[@id='change-subdir-form']/div/input")
+        edit_subdir_text.clear()
+        edit_subdir_text.send_keys("new-subdir")
+        try:
+            self.driver.find_element_by_xpath("//form[@id='change-subdir-form']/div/button").click()
+            time.sleep(1)
+        except:
+            self.Fail(msg="Unable to save new subdir")
+        subdir_text = self.driver.find_element_by_xpath("//div[@id='information']/dl/dd[2]/span[2]")
+        self.assertTrue(subdir_text.text == "new-subdir", msg="subdir value not updated after change")
+        delete_subdir_button = self.driver.find_element_by_xpath("//div[@id='information']/dl/dd[2]/span[3]")
+        self.assertTrue(delete_subdir_button.is_displayed(), msg="Unable to find delete subdirectory button")
+        delete_subdir_button.click()
+        time.sleep(2)
+        subdir_text = self.driver.find_element_by_xpath("//div[@id='information']/dl/dd[2]/span[1]")
+        self.assertTrue(subdir_text.text == "Not set", msg="subdir value not deleted after delete button was pressed")
+        edit_revision_button = self.driver.find_element_by_xpath("//div[@id='information']/dl/dd[3]/i")
+        self.assertTrue(edit_revision_button.is_displayed(), msg="Unable to find edit revision button")
+        edit_revision_button.click()
+        edit_revision_text = self.driver.find_element_by_xpath("//div[@id='information']/dl/dd[3]/form/div/input")
+        edit_revision_text.clear()
+        edit_revision_text.send_keys("master")
+        try:
+            self.driver.find_element_by_xpath("//div[@id='information']/dl/dd[3]/form/div/button").click()
+            time.sleep(1)
+        except:
+            self.Fail(msg="Unable to save new revision")
+        revision_text = self.driver.find_element_by_xpath("//div[@id='information']/dl/dd[3]/span")
+        self.assertTrue(revision_text.text == "master", msg="revision value not updated after change")
+        delete_dep_button = self.driver.find_element_by_xpath("//ul[@id='layer-deps-list']/li/span")
+        self.assertTrue(delete_dep_button.is_displayed(), msg="Unable to find delete dependency button")
+        add_dep_text = self.driver.find_element_by_id("layer-dep-input")
+        self.assertTrue(add_dep_text.is_displayed(), msg="Unable to find add dependency text box")
+        add_dep_button = self.driver.find_element_by_id("add-layer-dependency-btn")
+        self.assertTrue(add_dep_button.is_displayed(), msg="Unable to find add dependency button")
+
+        #we need to find a better way to ID the next few elements; maybe ask DEV to add IDs?
+        edit_summary_button = self.driver.find_element_by_xpath("/html/body/div[4]/div/div[4]/dl/dd[1]/i")
+        self.assertTrue(edit_summary_button.is_displayed(), msg="Unable to find edit summary button")
+        edit_desc_button = self.driver.find_element_by_xpath("/html/body/div[4]/div/div[4]/dl/dd[2]/i")
+        self.assertTrue(edit_desc_button.is_displayed(), msg="Unable to find edit description button")
+
+        edit_summary_button.click()
+        time.sleep(1)
+        edit_summary_text = self.driver.find_element_by_xpath("/html/body/div[4]/div/div[4]/dl/dd[1]/form/textarea")
+        self.assertTrue(edit_summary_text.is_displayed(), msg="Unable to find edit summary text area")
+        edit_summary_text.send_keys("test summary here")
+        edit_summary_save = self.driver.find_element_by_xpath("/html/body/div[4]/div/div[4]/dl/dd[1]/form/button")
+        try:
+            edit_summary_save.click()
+            time.sleep(1)
+        except:
+            self.Fail(msg="Unable to save new summary")
+        delete_summary = self.driver.find_element_by_xpath("/html/body/div[4]/div/div[4]/dl/dd[1]/span[3]")
+        try:
+            delete_summary.click()
+            time.sleep(2)
+        except:
+            self.Fail("Unable to delete custom summary")
+
+        edit_desc_button.click()
+        time.sleep(1)
+        edit_desc_text = self.driver.find_element_by_xpath("/html/body/div[4]/div/div[4]/dl/dd[2]/form/textarea")
+        self.assertTrue(edit_desc_text.is_displayed(), msg="Unable to find edit description text area")
+        edit_desc_text.send_keys("test description here")
+        edit_desc_save = self.driver.find_element_by_xpath("/html/body/div[4]/div/div[4]/dl/dd[2]/form/button")
+        try:
+            edit_desc_save.click()
+            time.sleep(1)
+        except:
+            self.Fail(msg="Unable to save new description")
+        delete_desc = self.driver.find_element_by_xpath("/html/body/div[4]/div/div[4]/dl/dd[2]/span[3]")
+        try:
+            delete_desc.click()
+            time.sleep(2)
+        except:
+            self.Fail("Unable to delete custom description")
+
+        ##############
+        #  CASE 1398 #
+        ##############
+    def test_1398(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("Layers").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("meta-acer")
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+        time.sleep(2)
+
+        self.driver.find_element_by_link_text("meta-acer").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("add-remove-layer-btn").click()
+        time.sleep(1)
+
+        try:
+            self.driver.find_element_by_xpath("//*[@id='dependencies-modal-form']/div[3]/button[1]").click()
+            time.sleep(2)
+        except:
+            self.fail(msg="Unable to click on the add layers button in the dependencies pop-up window")
+
+        self.driver.find_element_by_link_text("Compatible layers").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("meta-oe")
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+        time.sleep(2)
+
+        self.driver.find_element_by_link_text("meta-oe").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("add-remove-layer-btn").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("build-input").send_keys("core-image-minimal")
+        time.sleep(1)
+        self.driver.find_element_by_id("build-button").click()
+        time.sleep(1)
+
+        try:
+            self.driver.find_element_by_xpath("//div[@class='progress']").is_displayed()
+        except:
+            print "Unable to start new build"
+            self.fail(msg="Unable to start new build")
+        count = 1
+        self.timeout = 20
+        failflag = False
+        try:
+            self.driver.refresh()
+            time.sleep(1)
+            print "First check starting"
+            while (self.driver.find_element_by_xpath("//div[@class='progress']").is_displayed()):
+                #print "Looking for build in progress"
+                print 'Build running for '+str(count)+' minutes'
+                count += 1
+                if (count > self.timeout):
+                    failflag = True
+                    print 'Build took longer than expected to complete; Failing due to possible build stuck.'
+                    self.fail()
+                time.sleep(60)
+                self.driver.refresh()
+        except:
+           try:
+                if failflag:
+                    self.fail(msg="Build took longer than expected to complete; Failing due to possible build stuck.")
+                print "Looking for failed build"
+                self.driver.find_element_by_xpath("//div[@class='alert build-result alert-error']").is_displayed()
+           except:
+                if failflag:
+                    self.fail(msg="Build took longer than expected to complete; Failing due to possible build stuck.")
+                self.fail(msg="Could not find expected failed build")
+
+        self.driver.find_element_by_link_text("core-image-minimal").click()
+        time.sleep(1)
+
+        download_log = self.driver.find_elements_by_xpath("//*[contains(text(), 'Download build log')]")
+        self.assertTrue(download_log.is_displayed(), msg="Cannot find download log button")
+
+        #resetting to defaults
+        self.driver.find_element_by_link_text("selenium-project").click()
+        layer = True
+        while (layer):
+            try:
+                delete_button = self.driver.find_element_by_xpath("//*[@id='layers-in-project-list']/li[4]/span")
+                delete_button.click()
+                self.driver.find_element_by_link_text("Configuration").click()
+            except:
+                layer = False
+
+        ##############
+        #  CASE 1408 #
+        ##############
+    def test_1408(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+        time.sleep(2)
+
+        try:
+            self.driver.find_element_by_xpath("//i[@class='icon-ok-sign success']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Unable to find successful build")
+
+        self.driver.find_element_by_link_text("Configuration").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("BitBake variables").click()
+        time.sleep(1)
+
+        filtered = self.driver.find_element_by_xpath("//i[@class='icon-filter filtered']")
+        self.assertTrue(filtered.is_enabled() ,msg="Could not find filtered column")
+
+        filtered_column = self.get_table_column_text("class", "description")
+        if '' in filtered_column:
+            self.fail(msg="At least one element in the description column is blank; filter failed!")
+
+        ##############
+        #  CASE 1409 #
+        ##############
+    def test_1409(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+        time.sleep(2)
+
+        try:
+            self.driver.find_element_by_xpath("//i[@class='icon-ok-sign success']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Unable to find successful build")
+
+        self.driver.find_element_by_link_text("Recipes").click()
+        time.sleep(1)
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(1)
+        self.driver.find_element_by_id("depends_on").click()
+        time.sleep(1)
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_xpath("//table[@id='otable']/tbody/tr[1]/td[3]/a").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath("/html/body/div[5]/div[2]/ul/li[1]/a").click()
+        time.sleep(1)
+
+        self.assertTrue(self.is_text_present("License"),msg="Could not confirm we reached a recipe page")
+
+        ##############
+        #  CASE 1410 #
+        ##############
+    def test_1410(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("Image recipes").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("edit-columns-button").click()
+        self.driver.find_element_by_id("checkbox-recipe-file").click()
+        self.driver.find_element_by_id("edit-columns-button").click()
+
+        #saving current windows element
+        main_window = self.driver.current_window_handle
+        #open external link
+        link_button = self.driver.find_element_by_xpath("//table[@id='imagerecipestable']/tbody/tr[1]/td[4]/a")
+        try:
+            #open link in new tab instead of new window
+            link_button.send_keys(Keys.CONTROL + Keys.RETURN)
+            time.sleep(1)
+        except:
+            self.fail(msg="Could not click on external link button")
+
+        #switch to new opened tab
+        self.driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL + Keys.TAB)
+        self.assertTrue(self.is_text_present("Angstrom-distribution"), msg="Unable to confirm new tab is the expected one")
+        #close new tab
+        self.driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL + 'w')
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("Software recipes").click()
+        time.sleep(1)
+        self.driver.find_element_by_id("edit-columns-button").click()
+        self.driver.find_element_by_id("checkbox-recipe-file").click()
+        self.driver.find_element_by_id("edit-columns-button").click()
+
+        #saving current windows element
+        main_window = self.driver.current_window_handle
+        #open external link
+        link_button = self.driver.find_element_by_xpath("//table[@id='softwarerecipestable']/tbody/tr[1]/td[4]/a")
+        try:
+            #open link in new tab instead of new window
+            link_button.send_keys(Keys.CONTROL + Keys.RETURN)
+            time.sleep(1)
+        except:
+            self.fail(msg="Could not click on external link button")
+
+        #switch to new opened tab
+        self.driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL + Keys.TAB)
+        self.assertTrue(self.is_text_present("flihp"), msg="Unable to confirm new tab is the expected one")
+        #close new tab
+        self.driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL + 'w')
+
+        ##############
+        #  CASE 1411 #
+        ##############
+    def test_1411(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+        time.sleep(2)
+
+        try:
+            self.driver.find_element_by_xpath("//i[@class='icon-ok-sign success']").click()
+            time.sleep(1)
+        except:
+            self.fail(msg="Unable to find successful build")
+
+        self.driver.find_element_by_link_text("Packages").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("Size").click()
+        sizes_list = self.get_table_column_text("class", "size sizecol")
+        if '' in sizes_list:
+            self.fail(msg="At least one element in the sizes column is blank")
+
+        ##############
+        #  CASE 1140 #
+        ##############
+    def test_1140(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get("http://localhost:8000/admin/")
+        time.sleep(2)
+
+        self.driver.find_element_by_id("id_username").send_keys("toaster_admin")
+        time.sleep(1)
+        self.driver.find_element_by_id("id_password").send_keys("qwe123")
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//input[@value='Log in']").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("Build environments").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("BuildEnvironment object").click()
+        time.sleep(1)
+
+        sourcedir = self.driver.find_element_by_id("id_sourcedir").get_attribute('value')
+        builddir = self.driver.find_element_by_id("id_builddir").get_attribute('value')
+
+        builddir2 = str(builddir) + "2"
+
+        self.driver.find_element_by_link_text("Build environments").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("Add build environment").click()
+        time.sleep(1)
+    
+        self.driver.find_element_by_id("id_address").send_keys("2")
+        self.driver.find_element_by_id("id_sourcedir").send_keys(str(sourcedir))
+        self.driver.find_element_by_id("id_builddir").send_keys(str(builddir2))
+       
+        options = Select(self.driver.find_element_by_id("id_betype"))
+        options.select_by_visible_text("local")
+
+        self.driver.find_element_by_xpath("//input[@value='Save']").click()
+        time.sleep(2)
+
+        self.driver.get(self.base_url)
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("build-input").send_keys("core-image-sato")
+        time.sleep(1)
+        self.driver.find_element_by_id("build-button").click()
+        time.sleep(2)
+
+        self.driver.find_element_by_id("build-input").send_keys("core-image-minimal")
+        time.sleep(1)
+        self.driver.find_element_by_id("build-button").click()
+        time.sleep(2)
+
+        progress_list = self.driver.find_elements_by_xpath("//div[@class='progress']")
+        self.assertTrue(len(progress_list) > 1,msg="Could not find 2 progress bars visible")
+
+        count = 1
+        self.timeout = 340
+        failflag = False
+        try:
+            self.driver.refresh()
+            time.sleep(1)
+            while (self.driver.find_element_by_xpath("//div[@class='progress']").is_displayed()):
+                print 'Build running for '+str(count)+' minutes'
+                count += 5
+                if (count > self.timeout):
+                    failflag = True
+                    print 'Build took longer than expected to complete; Failing due to possible build stuck.'
+                    self.fail()
+                time.sleep(300)
+                self.driver.refresh()
+        except:
+            if failflag:
+                self.fail(msg="Build took longer than expected to complete; Failing due to possible build stuck.")
+            print "Looking for successful builds"
+            build_list = self.driver.find_elements_by_xpath("//div[@class='alert build-result alert-success']")
+            self.assertTrue((len(build_list) > 1), msg="Could not find successful builds")
