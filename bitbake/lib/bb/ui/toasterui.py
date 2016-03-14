@@ -232,18 +232,30 @@ def main(server, eventHandler, params):
             # pylint: disable=protected-access
             # the code will look into the protected variables of the event; no easy way around this
 
-            # start of build: this event is fired just before the buildTargets()
-            # command is invoked on the XMLRPC server
-            if isinstance(event, bb.event.TargetsAcquired):
+            # start of build: TargetsAcquired event is fired just before the
+            # buildTargets() command is invoked on the XMLRPC server; if
+            # we are on Jethro, we don't get TargetsAcquired, so treat
+            # BuildStarted as the start of the build instead
+            targets_acquired = isinstance(event, bb.event.TargetsAcquired)
+            build_started = isinstance(event, bb.event.BuildStarted)
+
+            if targets_acquired or build_started:
                 if not (build_log and build_log_file_path):
                     build_log, build_log_file_path = _open_build_log(log_dir)
-                buildinfohelper.store_new_build(build_log_file_path)
-                buildinfohelper.store_targets(event)
-                continue
+                    buildinfohelper.store_new_build(build_log_file_path)
+
+                    # BuildStarted signals the start of the build on Toaster 2.0,
+                    # TargetsAcquired signals it on Toaster 2.1+
+                    if build_started:
+                        targets = event._pkgs
+                    else:
+                        targets = map(lambda target: target + ':' + event.task, event.targetsList)
+
+                    buildinfohelper.store_targets(targets)
 
             # when the build proper starts, we extract information about
             # any layers and config data
-            if isinstance(event, bb.event.BuildStarted):
+            if build_started:
                 buildinfohelper.update_build(event)
                 continue
 
