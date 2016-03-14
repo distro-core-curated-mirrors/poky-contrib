@@ -372,7 +372,7 @@ python () {
             alltypes.append("debugfs_" + t)
 
     def _add_type(t):
-        baset = image_split_type(t, ctypes)[0]
+        baset = image_split_type(t, ctypes, d)[0]
         input_t = t
         if baset not in basetypes:
             basetypes[baset]= []
@@ -391,7 +391,7 @@ python () {
             if dep not in alltypes:
                 alltypes.append(dep)
             _add_type(dep)
-            basedep = image_split_type(dep, ctypes)[0]
+            basedep = image_split_type(dep, ctypes, d)[0]
             typedeps[baset].add(basedep)
 
         if baset != input_t:
@@ -442,14 +442,17 @@ python () {
         d.delVarFlag('IMAGE_CMD_' + realt, 'func')
 
         rm_tmp_images = set()
-        def gen_conversion_cmds(bt):
+        def gen_conversion_cmds(basetype, type):
+            if basetype == type:
+                # Done, no further conversions needed.
+                return
             for ctype in ctypes:
-                if bt[bt.find('.') + 1:] == ctype:
-                    type = bt[0:-len(ctype) - 1]
+                if type.endswith("." + ctype):
+                    type = type[0:-len(ctype) - 1]
                     if type.startswith("debugfs_"):
                         type = type[8:]
                     # Create input image first.
-                    gen_conversion_cmds(type)
+                    gen_conversion_cmds(basetype, type)
                     localdata.setVar('type', type)
                     cmd = "\t" + (localdata.getVar("CONVERSION_CMD_" + ctype, True) or localdata.getVar("COMPRESS_CMD_" + ctype, True))
                     if cmd not in cmds:
@@ -462,8 +465,10 @@ python () {
                     if type not in alltypes:
                         rm_tmp_images.add(localdata.expand("${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.${type}"))
 
-        for bt in basetypes[t]:
-            gen_conversion_cmds(bt)
+        for type in basetypes[t]:
+            # Probably t == bt, but better check explicitly, perhaps that'll change.
+            bt = image_split_type(type, ctypes, d)[0]
+            gen_conversion_cmds(bt, type)
 
         localdata.setVar('type', realt)
         if t not in alltypes:
