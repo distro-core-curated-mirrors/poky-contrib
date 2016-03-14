@@ -3,7 +3,7 @@ __author__ = 'cosscat'
 import os
 import sys
 from time import time, sleep
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, STDOUT
 import re
 from IPython import embed
 
@@ -33,13 +33,15 @@ class basic_functionality(TestParams):
         self.SW_ip = "192.168.99.50"  #FIXME: not ok: hard coded, never changes in our setup
         self.stick = TestParams.stick  # will retain the stick no. chosen to be written on
 
-    def run_command_locally(self, cmd):
+    @staticmethod
+    def run_command_locally(cmd):
         """
         Run a command locally and return it's exit code and value
         :param cmd: Command to run locally
         :return: Result with exit_code and output
         """
-        proc = Popen(args=cmd, stdout=PIPE, shell=True, executable='/bin/bash')
+        # TODO: redirect strerr to stdout
+        proc = Popen(args=cmd, stdout=PIPE, stderr=STDOUT, shell=True, executable='/bin/bash')
         retval = proc.communicate()[0]
         retcode = proc.returncode
 
