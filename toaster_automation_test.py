@@ -2034,6 +2034,291 @@ class toaster_cases(toaster_cases_base):
 
 
         ##############
+        #  CASE 1070 #
+        ##############
+    def test_1070(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_project_url)
+        columns = ['layer__name', 'layer__summary', 'layer__vcs_url', 'git_subdir', 'revision', 'dependencies', 'add-del-layers']
+        time.sleep(1)
+        self.driver.find_element_by_id("view-compatible-layers").click()
+        time.sleep(1)
+
+        #step 3
+        element = self.driver.find_element_by_css_selector('th.layer__name')
+        self.assertTrue("i class=\"icon-caret-down\" style=\"display: inline;\"" in element.get_attribute('innerHTML'), msg='Table not sorted by layer')
+
+        #step 4
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("checkbox-layer__vcs_url").click()
+        self.driver.find_element_by_id("checkbox-git_subdir").click()
+
+        self.driver.find_element_by_id("edit-columns-button").click()
+
+        #step 5
+        for column in columns:
+            element = self.driver.find_element_by_css_selector('th.%s' % column)
+            if column == 'layer__name':
+                self.assertTrue("a class=\"sorted\"" in element.get_attribute('innerHTML'), msg='%s column is sortable' %column)
+            else:
+                self.assertFalse("a class=\"sorted\"" in element.get_attribute('innerHTML'), msg='%s column is not sortable' %column)
+
+        #step 6-7
+        self.driver.find_element_by_xpath("//*[@id='layerstable']/thead/th[1]/a").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-layerstable").clear()
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("meta-intel")
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+        time.sleep(2)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='layer__name']")
+        values = [element.text for element in elements]
+
+        if is_list_inverted(values):
+            self.driver.find_element_by_xpath("//*[@id='layerstable']/thead/th[1]/a").click()
+            time.sleep(2)
+            elements = self.driver.find_elements_by_xpath("//td[@class='layer__name']")
+            values = [element.text for element in elements]
+            self.assertTrue(is_list_sequenced(values), msg=("Layer column not in order" ))
+        else:
+            self.assertTrue(is_list_sequenced(values), msg=("Layer column not sequenced"))
+            self.driver.find_element_by_xpath("//*[@id='layerstable']/thead/th[1]/a").click()
+            time.sleep(2)
+            elements = self.driver.find_elements_by_xpath("//td[@class='layer__name']")
+            values = [element.text for element in elements]
+            self.assertTrue(is_list_inverted(values), msg=("Layer column not inverted" ))
+
+        selected_layer = values[0]
+        self.driver.find_element_by_partial_link_text(selected_layer).click()
+        time.sleep(1)
+        self.driver.back()
+        time.sleep(2)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='layer__name']")
+        values2 = [element.text for element in elements]
+        self.assertEqual(values, values2, "Layer column is not sorted properly")
+        time.sleep(3)
+
+
+        ##############
+        #  CASE 1073 #
+        ##############
+    def test_1073(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_project_url)
+        layer_list = ['Layer', 'Summary', 'Subdirectory', 'Git repository URL','Git revision', 'Dependencies', 'Add | Remove']
+        time.sleep(1)
+        self.driver.find_element_by_id("view-compatible-layers").click()
+        time.sleep(1)
+
+        # step 3
+        self.assertTrue(self.driver.find_element_by_id("search-input-layerstable"), "Search input not found")
+        self.assertTrue(self.driver.find_element_by_id("search-submit-layerstable"), " Search button not found")
+        all_layers = self.driver.find_element_by_class_name("table-count-layerstable").text
+
+        # step 4
+        self.assertEqual("Search compatible layers", self.driver.find_element_by_id("search-input-layerstable").get_attribute("placeholder") \
+                         ,"Different placeholder text")
+
+        # step 5
+        self.driver.find_element_by_id("search-input-layerstable").clear()
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("c")
+        self.assertEqual("c",self.driver.find_element_by_id("search-input-layerstable").get_attribute("value"), \
+                         msg="Search string is not kept in the text input field")
+
+        self.driver.find_element_by_id("search-input-layerstable").clear()
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+        time.sleep(2)
+
+        # step 6
+        # returned results
+        self.assertEqual("core",self.driver.find_element_by_id("search-input-layerstable").get_attribute("value"), \
+                         msg="Search string is not kept in the text input field")
+
+        layers_after_search = self.driver.find_element_by_class_name("table-count-layerstable").text
+        self.assertNotEqual(all_layers,layers_after_search, msg="Same compatibles layers")
+
+        self.driver.find_element_by_xpath("//*[@id='table-chrome-layerstable']/div/div[1]/a/i").click()
+        time.sleep(2)
+
+        layers_after_clear_search = self.driver.find_element_by_class_name("table-count-layerstable").text
+        self.assertEqual(all_layers, layers_after_clear_search, msg="Different number of compatibles layers")
+
+        #no results
+        self.driver.find_element_by_id("search-input-layerstable").clear()
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("dkasashdsakjdhasjkdashdjk")
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+
+        time.sleep(2)
+
+        no_layers = self.driver.find_element_by_class_name("table-count-layerstable").text
+        if no_layers=="0":
+            self.driver.find_element_by_xpath("//*[@id='no-results-layerstable']/div/form/button[2]").click()
+            time.sleep(2)
+            layers_show_all = self.driver.find_element_by_class_name("table-count-layerstable").text
+            self.assertEqual(all_layers, layers_show_all, msg="Different number of compatibles layers")
+        else:
+            self.fail(msg='Search is not working properly')
+
+        # step 7
+        self.driver.find_element_by_id("edit-columns-button").click()
+        self.driver.find_element_by_id("checkbox-layer__vcs_url").click()
+        self.driver.find_element_by_id("checkbox-git_subdir").click()
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-layerstable").clear()
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+        time.sleep(2)
+
+        head_list = self.get_table_head_text('layerstable')
+        for item in layer_list:
+            self.assertTrue(item in head_list, msg=("%s not found in Directory structure table head" % item))
+
+        # step 8
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
+
+        self.driver.find_element_by_id("in_current_project").click()
+        self.driver.find_element_by_id("in_current_project:in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertIn("btn-primary", filter_class,msg = "Filter is not applied")
+
+        self.driver.find_element_by_id("search-input-layerstable").clear()
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+
+        time.sleep(2)
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
+
+        # bug 8125
+        self.driver.find_element_by_id("in_current_project").click()
+        self.driver.find_element_by_id("in_current_project:in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertIn("btn-primary", filter_class,msg = "Filter is not applied")
+
+        self.driver.find_element_by_xpath(".//*[@id='table-chrome-layerstable']/div/div[1]/a/i").click()
+        time.sleep(2)
+
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied after remove search - bug 8125")
+
+        ##############
+        #  CASE 1078 #
+        ##############
+    def test_1078(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_project_url)
+        time.sleep(1)
+
+        initial_layers = self.get_list_elements("layers-in-project-list")
+        self.driver.find_element_by_id("view-compatible-layers").click()
+        time.sleep(1)
+
+        #step 3
+        head_list = self.get_table_head_text('layerstable')
+        self.assertTrue('Add | Remove' in head_list, msg=("Add | Remove not found in Directory structure table head"))
+
+        # sep 4
+        layer = "meta-intel-iot-devkit"
+        self.driver.find_element_by_id("search-input-layerstable").clear()
+        self.driver.find_element_by_id("search-input-layerstable").send_keys(layer)
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+
+        time.sleep(3)
+        if layer in initial_layers:
+            remove_layer = self.driver.find_elements_by_css_selector("i.icon-trash")
+            remove_layer[0].click()
+
+        time.sleep(2)
+        add_layer = self.driver.find_elements_by_css_selector("i.icon-plus")
+        add_layer[0].click()
+
+        time.sleep(1)
+        dependecies_layers = self.get_list_elements("dependencies-list")
+        avail_options = self.driver.find_elements_by_xpath("//*[@id='dependencies-list']//*[@class='checkbox']")
+
+        unselected_layer = avail_options[0].text
+        avail_options[0].click()
+        time.sleep(2)
+        dependecies_layers.pop(0)
+        time.sleep(1)
+
+        # click Add layers
+        self.driver.find_element_by_xpath("//*[@id='dependencies-modal-form']//*[@type='submit']").click()
+        time.sleep(1)
+        message = self.driver.find_element_by_id("change-notification-msg").text
+
+        layers_added = dependecies_layers
+        layers_added.append(layer)
+
+        nr_layers=str(len(layers_added))
+        self.assertIn(nr_layers,message, "Different number layer in message %s " %nr_layers)
+
+        for elem in layers_added:
+            self.assertIn(elem, message, "Layer %s not found " %elem)
+
+        self.driver.find_element_by_partial_link_text('Configuration').click()
+        time.sleep(2)
+
+        project_layers = self.get_list_elements("layers-in-project-list")
+        self.assertNotIn(unselected_layer,project_layers, msg="Found unselected layer %s in Project Layers" %unselected_layer)
+
+        expected_layers = initial_layers + layers_added
+        self.assertEqual(Counter(expected_layers), Counter(project_layers),msg="Dependencies layers not added to the project")
+
+        self.driver.find_element_by_id("view-compatible-layers").click()
+        time.sleep(1)
+        for elem in layers_added:
+            self.driver.find_element_by_id("search-input-layerstable").clear()
+            self.driver.find_element_by_id("search-input-layerstable").send_keys(elem)
+            self.driver.find_element_by_id("search-submit-layerstable").click()
+            time.sleep(1)
+
+            remove_layer = self.driver.find_elements_by_css_selector("i.icon-trash")
+            for index in range(0, len(remove_layer)):
+                try:
+                    remove_layer[index].click()
+                except:
+                    print index
+
+            time.sleep(1)
+
+            message = self.driver.find_element_by_id("change-notification-msg").text
+
+            self.assertIn(elem, message, msg="Different layer removed: %s" %elem)
+            self.assertIn('removed', message, msg="Not found removed in notification message")
+
+        self.driver.find_element_by_partial_link_text('Configuration').click()
+        time.sleep(2)
+
+        project_layers = self.get_list_elements("layers-in-project-list")
+
+        for item in layers_added:
+            self.assertTrue(item not in project_layers, msg=("%s layer found in project layers after remove" % item))
+
+
+        ##############
         #  CASE 1079 #
         ##############
     def test_1079(self):
@@ -2153,6 +2438,127 @@ class toaster_cases(toaster_cases_base):
         self.assertEqual(invers, values3, msg="Default sorting was not restore")
 
 
+        ##############
+        #  CASE 1081 #
+        ##############
+    def test_1081(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_project_url)
+        target_list = ['Image recipe', 'Version', 'Description', 'Recipe file', 'Section', 'Layer', 'License', \
+                       'Git revision', 'Build']
+        time.sleep(1)
+
+        #step 2
+        self.driver.find_element_by_link_text("Image recipes").click()
+        time.sleep(1)
+
+        # step 3
+        self.assertTrue(self.driver.find_element_by_id("search-input-imagerecipestable"), "Search input not found")
+        self.assertTrue(self.driver.find_element_by_id("search-submit-imagerecipestable"), " Search button not found")
+        all_targets = self.driver.find_element_by_class_name("table-count-imagerecipestable").text
+
+        # step 4
+        self.assertEqual("Search compatible image recipes", \
+                         self.driver.find_element_by_id("search-input-imagerecipestable").get_attribute("placeholder") \
+                         ,"Different placeholder text")
+
+        # step 5
+        self.driver.find_element_by_id("search-input-imagerecipestable").clear()
+        self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("c")
+        self.assertEqual("c",self.driver.find_element_by_id("search-input-imagerecipestable").get_attribute("value"), \
+                         msg="Search string is not kept in the text input field")
+
+        self.driver.find_element_by_id("search-input-imagerecipestable").clear()
+        self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-imagerecipestable").click()
+        time.sleep(2)
+
+        # step 6
+        # returned results
+        self.assertEqual("core", self.driver.find_element_by_id("search-input-imagerecipestable").get_attribute("value"), \
+                         msg="Search string is not kept in the text input field")
+
+        targets_after_search = self.driver.find_element_by_class_name("table-count-imagerecipestable").text
+        self.assertNotEqual(all_targets, targets_after_search, msg="Same compatibles targets")
+
+        self.driver.find_element_by_xpath("//*[@id='table-chrome-imagerecipestable']/div/div[1]/a/i").click()
+        time.sleep(2)
+
+        targets_after_clear_search = self.driver.find_element_by_class_name("table-count-imagerecipestable").text
+        self.assertEqual(all_targets, targets_after_clear_search, msg="Different number of compatibles targets")
+
+        #no results
+        self.driver.find_element_by_id("search-input-imagerecipestable").clear()
+        self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("dkasashdsakjdhasjkdashdjk")
+        self.driver.find_element_by_id("search-submit-imagerecipestable").click()
+
+        time.sleep(3)
+        no_targets = self.driver.find_element_by_class_name("table-count-imagerecipestable").text
+        if no_targets=="0":
+            self.driver.find_element_by_xpath("//*[@id='no-results-imagerecipestable']/div/form/button[2]").click()
+            time.sleep(2)
+            targets_show_all = self.driver.find_element_by_class_name("table-count-imagerecipestable").text
+            self.assertEqual(all_targets, targets_show_all, msg="Different number of compatibles targets")
+        else:
+            self.fail(msg='Search is not working properly')
+
+        # step 7
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("checkbox-recipe-file").click()
+        self.driver.find_element_by_id("checkbox-section").click()
+        self.driver.find_element_by_id("checkbox-license").click()
+        self.driver.find_element_by_id("checkbox-layer_version__get_vcs_reference").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("edit-columns-button").click()
+
+        self.driver.find_element_by_id("search-input-imagerecipestable").clear()
+        self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-imagerecipestable").click()
+        time.sleep(1)
+
+        head_list = self.get_table_head_text('imagerecipestable')
+        for item in target_list:
+            self.assertTrue(item in head_list, msg=("%s not found in Directory structure table head" % item))
+
+        # step 8
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
+
+        self.driver.find_element_by_id("in_current_project").click()
+        self.driver.find_element_by_id("in_current_project:in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertIn("btn-primary", filter_class,msg = "Filter is not applied")
+
+        self.driver.find_element_by_id("search-input-imagerecipestable").clear()
+        self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-imagerecipestable").click()
+
+        time.sleep(2)
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
+
+        # bug 8125
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertIn("btn-primary", filter_class,msg = "Filter is not applied")
+
+        self.driver.find_element_by_xpath(".//*[@id='table-chrome-imagerecipestable']/div/div[1]/a/i").click()
+        time.sleep(2)
+
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied after remove search - bug 8125")
 
 
         ##############
@@ -2268,6 +2674,37 @@ class toaster_cases(toaster_cases_base):
         filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
         self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
 
+
+        ##############
+        #  CASE 1104 #
+        ##############
+    def test_1104(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_project_url)
+        time.sleep(0.5)
+
+        #step 4
+        builds = self.driver.find_element_by_partial_link_text("Builds (").text
+        nr_builds = int(filter(str.isdigit, repr(builds)))
+        self.driver.find_element_by_link_text(builds).click()
+        time.sleep(2)
+
+        # Step 5
+        default_head_table = ['Outcome', 'Recipe', 'Completed on', 'Failed tasks', 'Errors', 'Warnings', "Image files"]
+        head_list = self.get_table_head_text('projectbuildstable')
+        for item in default_head_table :
+            self.failUnless(item in head_list, msg=item+' is missing from table head.')
+
+        icon_up = self.driver.find_element_by_xpath("//*[@class='completed_on']//*[@class='icon-caret-up']").get_attribute('style')
+
+        self.assertIn("inline", icon_up ,msg = "Icon for completed on is down")
+        selector = "td[class='completed_on']"
+        column_list = self.get_text_from_elements(selector)
+
+        self.assertTrue(is_list_inverted(column_list), msg="Table is not sorted by Completed on column in descending order")
 
 
         ##############
@@ -2453,395 +2890,3 @@ class toaster_cases(toaster_cases_base):
             self.assertNotIn("btn-primary", filter.get_attribute('class'), msg='Filter is still applied after search')
 
 
-####################################################################################################
-# Starting backend tests ###########################################################################
-####################################################################################################
-
-        ##############
-        #  CASE 1066 #
-        ##############
-    def test_1066(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select count(name) from orm_project a, auth_user b where a.user_id = b.id and b.username='_anonuser';"
-        cursor.execute(query)
-        data = cursor.fetchone()
-        self.failUnless(data >= 1)
-
-
-        ##############
-        #  CASE 1071 #
-        ##############
-    def test_1071(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select name from orm_release;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        for i in range(0,4):
-            data[i] = data[i][0]
-        data.sort()
-        print data
-        json_parse = json.loads(open('toasterconf.json').read())
-        json_data = []
-        for i in range (0,4):
-            json_data.append(json_parse['releases'][i]['name'])
-        json_data.sort()
-        print json_data
-        self.failUnless(data == json_data)
-
-        ##############
-        #  CASE 1072 #
-        ##############
-    def test_1072(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select value from orm_toastersetting where name like 'DEFCONF%';"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        for i in range(0,6):
-            data[i] = data[i][0]
-        print data
-        json_parse = json.loads(open('toasterconf.json').read())
-        json_data=json_parse['config']
-        json_data = json_data.values()
-        print json_data
-        self.failUnless(data == json_data)
-
-
-        ##############
-        #  CASE 1074 #
-        ##############
-    def test_1074(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select name from orm_layersource;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        for i in range(0,3):
-            data[i] = data[i][0]
-        print data
-        json_parse = json.loads(open('toasterconf.json').read())
-        json_data = []
-        for i in range(0,3):
-            json_data.append(json_parse['layersources'][i]['name'])
-        print json_data
-        self.failUnless(set(data) == set(json_data))
-
-        ##############
-        #  CASE 1075 #
-        ##############
-    def test_1075(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select value from orm_toastersetting where name like 'DEFAULT_RELEASE';"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        data = data[0][0]
-        print data
-        json_parse = json.loads(open('toasterconf.json').read())
-        json_data = json_parse['defaultrelease']
-        print json_data
-        self.failUnless(set(data) == set(json_data))
-
-        ##############
-        #  CASE 1076 #
-        ##############
-    def test_1076(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-
-        print 'Checking branches for "Local Yocto Project"'
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select name from orm_branch where layer_source_id=1;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        lenght = len(data)
-        try:
-            for i in range(0,lenght):
-                data[i] = data[i][0]
-        except:
-            pass
-        print data
-        json_parse = json.loads(open('toasterconf.json').read())
-        json_location = json_parse['layersources'][0]['name']
-        print json_location
-        json_data = json_parse['layersources'][0]['branches']
-        print json_data
-        self.failUnless(set(data) == set(json_data))
-
-        print 'Checking branches for "OpenEmbedded"'
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select name from orm_branch where layer_source_id=3;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        lenght = len(data)
-        for i in range(0,lenght):
-            data[i] = data[i][0]
-        print data
-        json_parse = json.loads(open('toasterconf.json').read())
-        json_location = json_parse['layersources'][1]['name']
-        print json_location
-        json_data = json_parse['layersources'][1]['branches']
-        print json_data
-        self.failUnless(set(data) == set(json_data))
-
-        print 'Checking branches for "Imported layers"'
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select name from orm_branch where layer_source_id=2;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        lenght = len(data)
-        for i in range(0,lenght):
-            data[i] = data[i][0]
-        print data
-        json_parse = json.loads(open('toasterconf.json').read())
-        json_location = json_parse['layersources'][2]['name']
-        print json_location
-        json_data = json_parse['layersources'][2]['branches']
-        print json_data
-        self.failUnless(set(data) == set(json_data))
-
-
-        ##############
-        #  CASE 1077 #
-        ##############
-    def test_1077(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select name from orm_bitbakeversion;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        for i in range(0,4):
-            data[i] = data[i][0]
-        print data
-        json_parse = json.loads(open('toasterconf.json').read())
-        json_data = []
-        for i in range(0,4):
-            json_data.append(json_parse['bitbake'][i]['name'])
-        print json_data
-        self.failUnless(set(data) == set(json_data))
-
-        ##############
-        #  CASE 1083 #
-        ##############
-    def test_1083(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        self.driver.get(self.base_url)
-        self.driver.find_element_by_id("new-project-button").click()
-        self.driver.find_element_by_id("new-project-name").send_keys("new-test-project")
-        self.driver.find_element_by_id("create-project-button").click()
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select count(name) from orm_project where name = 'new-test-project';"
-        cursor.execute(query)
-        data = cursor.fetchone()
-        print 'data: %s' % data
-        self.failUnless(data >= 1)
-
-        ##############
-        #  CASE 1084 #
-        ##############
-    def test_1084(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        self.driver.get(self.base_url)
-        self.driver.find_element_by_id("new-project-button").click()
-        self.driver.find_element_by_id("new-project-name").send_keys("new-default-project")
-        self.driver.find_element_by_id("create-project-button").click()
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select a.name from orm_release a, orm_project b where a.id = b.release_id and b.name = 'new-default-project' limit 1;"
-        cursor.execute(query)
-        db_data = str(cursor.fetchone()[0])
-        json_parse = json.loads(open('toasterconf.json').read())
-        json_data = str(json_parse['defaultrelease'])
-        self.failUnless(db_data == json_data)
-
-        ##############
-        #  CASE 1088 #
-        ##############
-    def test_1088(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        self.driver.get(self.base_url)
-        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
-        self.driver.find_element_by_link_text('new-default-project').click()
-        self.driver.find_element_by_id('project-change-form-toggle').click()
-        self.driver.find_element_by_id('project-name-change-input').clear()
-        self.driver.find_element_by_id('project-name-change-input').send_keys('new-name')
-        self.driver.find_element_by_id('project-name-change-btn').click()
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select count(name) from orm_project where name = 'new-name';"
-        cursor.execute(query)
-        data = cursor.fetchone()[0]
-        self.failUnless(data == 1)
-        #reseting project name
-        self.driver.find_element_by_id('project-change-form-toggle').click()
-        self.driver.find_element_by_id('project-name-change-input').clear()
-        self.driver.find_element_by_id('project-name-change-input').send_keys('new-default-project')
-        self.driver.find_element_by_id('project-name-change-btn').click()
-
-
-        ##############
-        #  CASE 1089 #
-        ##############
-    def test_1089(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        self.driver.get(self.base_url)
-        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
-        self.driver.find_element_by_link_text('new-default-project').click()
-        self.driver.find_element_by_id('change-machine-toggle').click()
-        self.driver.find_element_by_id('machine-change-input').clear()
-        self.driver.find_element_by_id('machine-change-input').send_keys('qemuarm64')
-#        self.driver.find_element_by_id('machine-change-input').send_keys(Keys.RETURN)
-        self.driver.find_element_by_id('machine-change-btn').click()
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select count(id) from orm_projectvariable where name like 'machine' and value like 'qemuarm64';"
-        cursor.execute(query)
-        data = cursor.fetchone()[0]
-        self.failUnless(data == 1)
-        #resetting machine to default value
-        self.driver.find_element_by_id('change-machine-toggle').click()
-        self.driver.find_element_by_id('machine-change-input').clear()
-        self.driver.find_element_by_id('machine-change-input').send_keys('qemux86')
-        self.driver.find_element_by_id('machine-change-input').send_keys(Keys.RETURN)
-        self.driver.find_element_by_id('machine-change-btn').click()
-
-        ##############
-        #  CASE 1090 #
-        ##############
-    def test_1090(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select username from auth_user where is_superuser = 1;"
-        cursor.execute(query)
-        data = cursor.fetchall()
-        try:
-            data = data[0][0]
-        except:
-            pass
-        print data
-        self.failUnless(data == 'toaster_admin')
-
-        ##############
-        #  CASE 1091 #
-        ##############
-    def test_1091(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        self.driver.get(self.base_url)
-        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
-        self.driver.find_element_by_link_text('new-default-project').click()
-        self.driver.find_element_by_id('release-change-toggle').click()
-        dropdown = self.driver.find_element_by_css_selector('select')
-        for option in dropdown.find_elements_by_tag_name('option'):
-            if option.text == 'Local Yocto Project':
-                option.click()
-        self.driver.find_element_by_id('change-release-btn').click()
-        #wait for the changes to register in the DB
-        time.sleep(1)
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select count(*) from orm_layer_version a, orm_projectlayer b, orm_project c where a.\"commit\"=\"HEAD\" and a.id = b.layercommit_id and b.project_id=c.id and c.name='new-default-project';"
-        cursor.execute(query)
-        data = cursor.fetchone()[0]
-        #resetting release to default
-        self.driver.find_element_by_id('release-change-toggle').click()
-        dropdown = self.driver.find_element_by_css_selector('select')
-        for option in dropdown.find_elements_by_tag_name('option'):
-            if option.text == 'Yocto Project master':
-                option.click()
-        self.driver.find_element_by_id('change-release-btn').click()
-        #wait for the changes to register in the DB
-        time.sleep(1)
-        self.failUnless(data == 3)
-
-        ##############
-        #  CASE 1092 #
-        ##############
-    def test_1092(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select a.name, a.value from orm_projectvariable a, orm_project b where a.project_id = b.id and b.name = 'new-default-project';"
-        cursor.execute(query)
-        data = dict(cursor.fetchall())
-        print data
-        default_values = {u'IMAGE_INSTALL_append': u'', u'PACKAGE_CLASSES': u'package_rpm', u'MACHINE': u'qemux86', u'SDKMACHINE': u'x86_64', u'DISTRO': u'poky', u'IMAGE_FSTYPES': u'ext3 jffs2 tar.bz2'}
-        self.failUnless(data == default_values)
-
-        ##############
-        #  CASE 1093 #
-        ##############
-    def test_1093(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-
-        #get initial values
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select layercommit_id from orm_projectlayer a, orm_project b where a.project_id=b.id and b.name='new-default-project';"
-        cursor.execute(query)
-        data_initial = cursor.fetchall()
-        print data_initial
-
-        self.driver.maximize_window()
-        self.driver.get('localhost:8000')#self.base_url)
-        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
-        self.driver.find_element_by_link_text('new-default-project').click()
-        self.driver.find_element_by_id('release-change-toggle').click()
-        dropdown = self.driver.find_element_by_css_selector('select')
-        for option in dropdown.find_elements_by_tag_name('option'):
-            if option.text == 'Local Yocto Project':
-                option.click()
-        self.driver.find_element_by_id('change-release-btn').click()
-        #wait for the changes to register in the DB
-        time.sleep(1)
-
-        #get changed values
-        con=sqlite.connect('toaster.sqlite')
-        cursor = con.cursor()
-        query = "select layercommit_id from orm_projectlayer a, orm_project b where a.project_id=b.id and b.name='new-default-project';"
-        cursor.execute(query)
-        data_changed = cursor.fetchall()
-        print data_changed
-
-        #resetting release to default
-        self.driver.find_element_by_id('release-change-toggle').click()
-        dropdown = self.driver.find_element_by_css_selector('select')
-        for option in dropdown.find_elements_by_tag_name('option'):
-            if option.text == 'Yocto Project master':
-                option.click()
-        self.driver.find_element_by_id('change-release-btn').click()
-        #wait for the changes to register in the DB
-        time.sleep(1)
-        self.failUnless(data_initial != data_changed)
