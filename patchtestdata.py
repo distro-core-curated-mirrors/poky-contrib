@@ -101,10 +101,18 @@ class PatchTestArgs(object):
                             default='patchtest',
                             help="Test name to be used if results are posted. In case all items failed merged, then the test name is <--test-name>-merge-failure")
 
-        parser.add_argument('--keep-branch',
-                            dest='keepbranch',
-                            action='store_true',
-                            help="Keep the working branch after patchtest execution")
+        # Keeps --keep-branch and --no-post mutually exclusive
+        branch_group = parser.add_mutually_exclusive_group()
+
+        branch_group.add_argument('--keep-branch',
+                                  dest='keepbranch',
+                                  action='store_true',
+                                  help="Keep the working branch after patchtest execution")
+
+        branch_group.add_argument('--no-patch',
+                                  dest='nopatch',
+                                  action='store_true',
+                                  help="Do not patch the mbox/series")
 
         patchtest_tests_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'tests')
         parser.add_argument('--test-dir',
@@ -124,11 +132,6 @@ class PatchTestArgs(object):
                             dest='multiple',
                             action='store_true',
                             help="Test multiple items at once")
-
-        parser.add_argument('--no-patch',
-                            dest='nopatch',
-                            action='store_true',
-                            help="Do not patch the mbox/series")
 
         parser.add_argument('--debug', '-d',
                             action='store_true',
