@@ -977,15 +977,16 @@ class BuildInfoHelper(object):
         event: a TargetsAcquired event with a task property (e.g. "build")
         and a targetsList property (e.g. ["zlib", "dropbear"])
         """
-        if self.internal_state['build'].project.is_default:
-            targets = map(lambda target: target + ':' + event.task, event.targetsList)
+        targets = map(lambda target: target + ':' + event.task,
+                      event.targetsList)
 
-            target_information = {
-              'targets': targets,
-              'build': self.internal_state['build']
-            }
+        target_information = {
+            'targets': targets,
+            'build': self.internal_state['build']
+        }
 
-            self.internal_state['targets'] = self.orm_wrapper.get_or_create_targets(target_information)
+        self.internal_state['targets'] = \
+            self.orm_wrapper.get_or_create_targets(target_information)
 
     def update_build(self, event):
         """
