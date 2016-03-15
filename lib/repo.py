@@ -377,6 +377,13 @@ class Repo(object):
         )
 
     def merge(self):
+        # create the branch before merging
+        self._exec([
+            {'cmd':['git', 'checkout', self._branch]},
+            {'cmd':['git', 'checkout', '-b', self._branchname, self._commit]},
+        ])
+
+        # merge the items
         for item in self._mboxitems:
             try:
                 self._merge_item(item)
@@ -391,13 +398,6 @@ class Repo(object):
             if item.status == BaseMboxItem.MERGE_STATUS_MERGED_SUCCESSFULL:
                 return True
         return False
-
-    def setup(self):
-        """ Setup repository for patching """
-        self._exec([
-            {'cmd':['git', 'checkout', self._branch]},
-            {'cmd':['git', 'checkout', '-b', self._branchname, self._commit]},
-        ])
 
     def clean(self, keepbranch=False):
         """ Leaves the repo as it was before testing """

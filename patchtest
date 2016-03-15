@@ -54,21 +54,17 @@ def getResult(series, revision, mbox, nopatch, post):
             self.test_failure = False  # turns on in case of any testing failure
             self.test_error = False    # turns on in case of any exception raise
 
-            try:
-                self.repo.setup()
-            except:
-                self.error = True
-                self.stop()
-
-            try:
-                if not nopatch:
+            # merge items
+            if not nopatch:
+                try:
                     self.repo.merge()
+                    # if no items were merged, then stop
                     if self.repo.items and (not self.repo.any_merge()):
                         self.merge_failure = True
                         self.stop()
-            except:
-                self.error = True
-                self.stop()
+                except:
+                    self.error = True
+                    self.stop()
 
         def addError(self, test, err):
             self.test_error = True
@@ -98,7 +94,8 @@ def getResult(series, revision, mbox, nopatch, post):
             if not self.test_error and post:
                 self.repo.post(pti.testname, state, summary)
 
-            self.repo.clean(pti.keepbranch)
+            if not nopatch:
+                self.repo.clean(pti.keepbranch)
 
     return PatchTestResult
 
