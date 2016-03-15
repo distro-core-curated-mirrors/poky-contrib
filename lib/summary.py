@@ -53,13 +53,13 @@ class TemplateSummary(BaseSummary):
 
 ----------------------------------------------------------------------
 
-Thank you for your patch submission {% if resource %}of:
+Thank you for your patch submission of the following patch series to
+{{ project }} - this is an automated response.
 
-  {{ resource }}
+{% for resource in resources %} {{ resource }}
+{% endfor %}
 
-{% endif %}to {{ project }} - this is an automated {% if not resource %}
-{% endif %}response. {% if resource %}
-{% endif %}Results of some tests on the patch(es) are as follows:
+Results of some tests on the patch(es) are as follows:
 
 {% if testresults %}  Result Description
   ------ -------------------------------------------------------------
@@ -92,18 +92,16 @@ when sending the new version (i.e. [PATCH] -> [PATCH v2] -> [PATCH v3] ->
                                                               branchname=self._branchname,
                                                               commit=self._commit)
         else:
-            resource = None
+            resources = None
             testresults = [(result, test.shortDescription()) for result, test in self._results]
             try:
-                item = items[0]
-                resource = item.pretty_resource
+                resources = [item.pretty_resource for item in items]
                 raise AssertionError(item.resource)
-                print item.pretty_resource
             except:
                 pass
 
             content = Template(self.testtemplate).render(project=self._project,
                                                          mailinglist=self._mailinglist,
-                                                         resource=resource,
+                                                         resources=resources,
                                                          testresults=testresults)
         return content
