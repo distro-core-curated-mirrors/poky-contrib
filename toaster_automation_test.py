@@ -32,6 +32,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 import sqlite3 as sqlite
 from collections import Counter
+import subprocess
 
 
 ###########################################
@@ -2890,3 +2891,256 @@ class toaster_cases(toaster_cases_base):
             self.assertNotIn("btn-primary", filter.get_attribute('class'), msg='Filter is still applied after search')
 
 
+       ##############
+        #  CASE 1109 #
+        ##############
+    def test_1109(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_project_url)
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+        search_string = "core"
+
+        self.assertTrue(self.driver.find_element_by_id("search-input-projectbuildstable"), "Search input not found")
+        self.assertTrue(self.driver.find_element_by_id("search-submit-projectbuildstable"), " Search button not found")
+
+        #step 3
+        self.assertEqual("Search all project builds", \
+                         self.driver.find_element_by_id("search-input-projectbuildstable").get_attribute("placeholder") ,\
+                         "Different placeholder text")
+
+        #step 4
+        self.driver.find_element_by_id("search-input-projectbuildstable").clear()
+        self.driver.find_element_by_id("search-input-projectbuildstable").send_keys("c")
+        self.assertEqual("c", self.driver.find_element_by_id("search-input-projectbuildstable").get_attribute("value"), \
+                         msg="Search string is not kept in the text input field")
+
+        self.driver.find_element_by_id("search-input-projectbuildstable").clear()
+        self.driver.find_element_by_id("search-input-projectbuildstable").send_keys(search_string)
+        self.driver.find_element_by_id("search-submit-projectbuildstable").click()
+        time.sleep(1)
+
+        self.assertEqual(search_string, self.driver.find_element_by_id("search-input-projectbuildstable").get_attribute("value"), \
+                         msg="Search string is not kept in the text input field")
+
+        returned_builds = self.driver.find_element_by_css_selector(".page-header.top-air").text
+        nr_builds = int(filter(str.isdigit, repr(returned_builds)))
+        self.assertIn("project builds found", returned_builds, msg='Message after search not showing properly')
+
+        self.driver.find_element_by_xpath(".//*[@id='table-chrome-projectbuildstable']/div/div[1]/a/i").click()
+        time.sleep(1)
+        self.assertIn("All project builds", self.driver.find_element_by_css_selector(".page-header.top-air").text, \
+                      msg='Message after search not showing properly')
+
+        #step 5
+        self.driver.find_element_by_id("search-input-projectbuildstable").clear()
+        self.driver.find_element_by_id("search-input-projectbuildstable").send_keys('dkasashdsakjdhasjkdashdjk')
+        self.driver.find_element_by_id("search-submit-projectbuildstable").click()
+        time.sleep(1)
+        self.assertIn("No project builds found", self.driver.find_element_by_css_selector(".page-header.top-air").text, \
+                      msg='Search is not working properly')
+        self.driver.find_element_by_xpath(".//*[@id='no-results-projectbuildstable']/div/form/button[2]").click()
+        time.sleep(1)
+
+        # step 6
+        self.driver.find_element_by_id('edit-columns-button').click()
+        self.driver.find_element_by_id('checkbox-started_on').click()
+        self.driver.find_element_by_id('edit-columns-button').click()
+        time.sleep(1)
+
+        head_list = self.get_table_head_text('projectbuildstable')
+        time.sleep(1)
+
+        started_on = self.driver.find_element_by_css_selector('th.started_on')
+        self.driver.find_element_by_partial_link_text('Started on').click()
+        time.sleep(1)
+        self.assertTrue("<a class=\"sorted\" href=\"#\">" in started_on.get_attribute('innerHTML'), \
+                        msg='Table not sorted by started on column')
+
+        self.driver.find_element_by_id("search-input-projectbuildstable").clear()
+        self.driver.find_element_by_id("search-input-projectbuildstable").send_keys(search_string)
+        self.driver.find_element_by_id("search-submit-projectbuildstable").click()
+        time.sleep(1)
+
+        element_after_search = self.driver.find_element_by_css_selector('th.started_on')
+        self.assertTrue("<a class=\"sorted\" href=\"#\">" in element_after_search.get_attribute('innerHTML'), \
+                msg='Table not sorted by started on after search')
+
+        head_list_after_search = self.get_table_head_text('projectbuildstable')
+        self.assertEqual(head_list, head_list_after_search, msg='The table have different columns after search')
+
+        ##############
+        #  CASE 1393 #
+        ##############
+    def test_1393(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_project_url)
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text('core-image-minimal').click()
+        time.sleep(1)
+
+        #step 6
+        self.driver.find_element_by_partial_link_text('Tasks').click()
+        time.sleep(1)
+
+        #step 7
+        self.driver.find_element_by_xpath(".//*[@id='otable']/thead/tr/th[6]/div/a").click()
+        time.sleep(1)
+        avail_options = self.driver.find_elements_by_xpath("//*[@id='filter_outcome']//*[@class='radio'][not(@disabled)]")
+
+        for number in range(0, len(avail_options)):
+            if avail_options[number].text == 'Succeeded Tasks':
+                avail_options[number].click()
+                self.browser_delay()
+                # click "Apply"
+                self.driver.find_element_by_xpath("//*[@id='filter_outcome']//*[@type='submit']").click()
+                break
+        time.sleep(1)
+        try:
+            succeeded_tasks = self.driver.find_elements_by_xpath("//td[@class='task_name']/a")
+            succeeded_tasks[0].click()
+            time.sleep(1)
+            # step 8
+            task_log = self.driver.find_element_by_css_selector('.btn.btn-large')
+            task_log.click()
+            time.sleep(1)
+            self.assertTrue(task_log.get_attribute('href') != '', msg='Download link is empty!')
+            self.assertIn('tasklogfile', task_log.get_attribute('href'), msg='Is not the task log file')
+        except:
+            print "No succeeded tasks"
+            self.find_element_by_text("Show all tasks").click()
+            time.sleep(1)
+
+        # step 9
+        self.driver.get(self.base_project_url)
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text('core-image-minimal').click()
+        time.sleep(1)
+
+        #step 6
+        self.driver.find_element_by_partial_link_text('Tasks').click()
+        time.sleep(1)
+
+        #step 7
+        self.driver.find_element_by_xpath(".//*[@id='otable']/thead/tr/th[6]/div/a").click()
+        time.sleep(1)
+        avail_options = self.driver.find_elements_by_xpath("//*[@id='filter_outcome']//*[@class='radio'][not(@disabled)]")
+
+        for number in range(0, len(avail_options)):
+            if avail_options[number].text == 'Failed Tasks':
+                avail_options[number].click()
+                self.browser_delay()
+                # click "Apply"
+                self.driver.find_element_by_xpath("//*[@id='filter_outcome']//*[@type='submit']").click()
+
+                break
+        time.sleep(1)
+        try:
+            failed_tasks = self.driver.find_elements_by_xpath("//td[@class='task_name']/a")
+            failed_tasks[0].click()
+            time.sleep(1)
+            # step 10
+            task_log = self.driver.find_element_by_css_selector('.btn.btn-large')
+            task_log.click()
+            time.sleep(1)
+            self.assertTrue(task_log.get_attribute('href') != '', msg='Download link is empty!')
+            self.assertIn('tasklogfile', task_log.get_attribute('href'), msg='Is not the task log file')
+        except:
+            print "No failed tasks"
+            self.find_element_by_text("Show all tasks").click()
+            time.sleep(1)
+
+
+        ##############
+        #  CASE 1396 #
+        ##############
+    def test_1396(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+
+        self.driver.get(self.base_project_url)
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text('core-image-minimal').click()
+        time.sleep(1)
+
+        build_artifact = self.driver.find_element_by_xpath("//dl[@class='dl-horizontal']/dd/div/a[2]")
+        build_artifact.click()
+        time.sleep(2)
+
+        self.assertTrue(build_artifact.get_attribute('href') != '', msg='Download link is empty!')
+        self.assertIn('buildartifact', build_artifact.get_attribute('href'), msg='Is not the build artifact')
+        self.save_screenshot(screenshot_type='selenium', append_name='other_artifacts_download')
+        os.system('wget %s --no-proxy -P ./dld' %build_artifact.get_attribute('href'))
+
+        output = subprocess.check_output("ls -l ./dld | wc -l", shell=True)
+        self.assertTrue(output >= 1, msg='File was not downloaded')
+        os.system('rm -rf ./dld')
+
+        ##############
+        #  CASE 1397 #
+        ##############
+    def test_1397(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+
+        self.driver.get(self.base_project_url)
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text('core-image-minimal').click()
+        time.sleep(1)
+
+        download = self.driver.find_element_by_xpath("html/body/div[4]/div/div/div[2]/div[4]/div/dl/dd[3]/a[2]")
+        download.click()
+        time.sleep(2)
+
+        self.assertTrue(download.get_attribute('href') != '', msg='Download link is empty!')
+        self.assertIn('licensemanifest', download.get_attribute('href'), msg='Is not the license manifest')
+        self.save_screenshot(screenshot_type='selenium', append_name='licence_manifes_download')
+        os.system('wget %s --no-proxy -P ./dld' %download.get_attribute('href'))
+
+        output = subprocess.check_output("ls -l ./dld | wc -l", shell=True)
+        self.assertTrue(output >= 1, msg='File was not downloaded')
+        os.system('rm -rf ./dld')
+
+        ##############
+        #  CASE 1403 #
+        ##############
+    def test_1403(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_project_url)
+
+        default_image_list = ['Software recipe', 'Version', 'Description', 'Layer', 'Build']
+        time.sleep(0.5)
+
+        #step 3
+        self.driver.find_element_by_link_text("Software recipes").click()
+        time.sleep(0.5)
+
+        #step 4
+        l = self.get_table_data('softwarerecipestable', 10, 5)
+        self.assertTrue(l != [], msg="Image recipes table is not populated")
+
+        head_list = self.get_table_head_text('softwarerecipestable')
+        for item in default_image_list:
+            self.assertTrue(item in head_list, msg=("%s not found in Directory structure table head" % item))
