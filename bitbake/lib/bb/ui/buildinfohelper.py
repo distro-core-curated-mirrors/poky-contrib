@@ -1414,12 +1414,6 @@ class BuildInfoHelper(object):
 
 
     def store_log_event(self, event):
-        if event.levelno < formatter.WARNING:
-            return
-
-        if 'args' in vars(event):
-            event.msg = event.msg % event.args
-
         if not 'build' in self.internal_state:
             if self.brbe is None:
                 if not 'backlog' in self.internal_state:
@@ -1430,6 +1424,12 @@ class BuildInfoHelper(object):
                 br, _ = self.brbe.split(":")
                 buildrequest = BuildRequest.objects.get(pk = br)
                 self.internal_state['build'] = buildrequest.build
+
+        if event.levelno < formatter.WARNING:
+            return
+
+        if 'args' in vars(event):
+            event.msg = event.msg % event.args
 
         if 'build' in self.internal_state and 'backlog' in self.internal_state:
             # if we have a backlog of events, do our best to save them here
