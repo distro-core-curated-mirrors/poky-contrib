@@ -135,3 +135,7 @@ class FileChecksumCache(MultiProcessCache):
 
         checksums.sort(key=operator.itemgetter(1))
         return checksums
+
+    def foo():
+        ''''''
+        pass
