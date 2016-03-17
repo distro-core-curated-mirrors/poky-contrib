@@ -32,6 +32,7 @@ import logging
 import argparse
 import subprocess
 import time as t
+from tabulate import tabulate
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/lib')
 import scriptpath
@@ -309,19 +310,22 @@ def list_testsuite_by(criteria, keyword):
     # criteria: name, class, module, id, tag
     # keyword: a list of tests, classes, modules, ids, tags
 
-    ts = sorted([ (tc.tcid, tc.tctag, tc.tcname, tc.tcclass, tc.tcmodule) for tc in get_testsuite_by(criteria, keyword) ])
+    ts = sorted([(tc.tcid, tc.tctag, tc.tcname, tc.tcclass, tc.tcmodule) for tc in get_testsuite_by(criteria, keyword)])
+    test_list = []
 
-    print '%-4s\t%-20s\t%-60s\t%-25s\t%-20s' % ('id', 'tag', 'name', 'class', 'module')
-    print '_' * 150
     for t in ts:
         if isinstance(t[1], (tuple, list)):
-            print '%-4s\t%-20s\t%-60s\t%-25s\t%-20s' % (t[0], ', '.join(t[1]), t[2], t[3], t[4])
+            test_list.append((t[0], ', '.join(t[1]), t[2], t[3], t[4]))
         else:
-            print '%-4s\t%-20s\t%-60s\t%-25s\t%-20s' % t
-    print '_' * 150
+            test_list.append(t)
+
+    header = ['ID', 'TAG(s)', 'NAME', 'CLASS', 'MODULE']
+    print ''
+    print tabulate(test_list, header)
+    print '_' * 30
     print 'Filtering by:\t %s' % criteria
     print 'Looking for:\t %s' % ', '.join(str(x) for x in keyword)
-    print 'Total found:\t %s' % len(ts)
+    print 'Total found:\t %s\n' % len(ts)
 
 
 def list_tests():
@@ -329,15 +333,19 @@ def list_tests():
 
     ts = get_all_tests()
 
-    print '%-4s\t%-20s\t%-60s\t%-25s\t%-20s' % ('id', 'tag', 'name', 'class', 'module')
-    print '_' * 150
+    test_list = []
+
     for t in ts:
         if isinstance(t.tctag, (tuple, list)):
-            print '%-4s\t%-20s\t%-60s\t%-25s\t%-20s' % (t.tcid, ', '.join(t.tctag), t.tcname, t.tcclass, t.tcmodule)
+            test_list.append((t.tcid, ', '.join(t.tctag), t.tcname, t.tcclass, t.tcmodule))
         else:
-            print '%-4s\t%-20s\t%-60s\t%-25s\t%-20s' % (t.tcid, t.tctag, t.tcname, t.tcclass, t.tcmodule)
-    print '_' * 150
-    print 'Total found:\t %s' % len(ts)
+            test_list.append((t.tcid, t.tctag, t.tcname, t.tcclass, t.tcmodule))
+
+    header = ['ID', 'TAG(s)', 'NAME', 'CLASS', 'MODULE']
+    print ''
+    print tabulate(test_list, header)
+    print '_' * 30
+    print 'Total found:\t %s\n' % len(ts)
 
 
 def list_tags():
