@@ -1,7 +1,5 @@
 #!/bin/sh
 
-#set -x
-
 # required args
 REPODIR=$1
 REPOURL=$2
@@ -29,6 +27,7 @@ fi
 
 SCRIPTS_DIR=`dirname $0`
 PATCHTEST_BASE=`readlink -e $SCRIPTS_DIR/..`
+PATCHTEST_GITHOOKS="$PATCHTEST_BASE/hooks"
 GITPWDIR=$PATCHTEST_BASE/patchwork/git-pw
 
 cd $PATCHTEST_BASE
@@ -42,7 +41,14 @@ if [ ! -d $REPODIR ]; then
     git clone $REPOURL $REPODIR
 fi
 
+# set up the soft links for hooks
+REPO_GITHOOKS="$REPODIR/.git/hooks"
+[ -e $REPO_GITHOOKS ] && { ln -s $PATCHTEST_GITHOOKS/applypatch-msg $REPO_GITHOOKS; }
+[ -e $REPO_GITHOOKS ] && { ln -s $PATCHTEST_GITHOOKS/commit-msg $REPO_GITHOOKS; }
+
+# cd into the repository
 cd $REPODIR
+
 # pull latest changes the repo
 git pull
 

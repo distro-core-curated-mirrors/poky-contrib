@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# Appends the line '[Patchwork: $PTRESOURCE]' if environment PTRESOURCE variable
+# is present
+
+[ -z "$PTRESOURCE" ] || {
+    NEWMSG=$(sed -e \
+'/Signed-off-by:.*/i\
+[Patchwork: '"${PTRESOURCE}]"'\n' "$1")
+    echo "$NEWMSG" > $1
+}
+

@@ -373,7 +373,7 @@ class Repo(object):
 
         self._exec([
             {'cmd':['git', 'apply', '--check', '--verbose'], 'input':contents},
-            {'cmd':['git', 'am'], 'input':contents}]
+            {'cmd':['git', 'am'], 'input':contents, 'updateenv':{'PTRESOURCE':item.resource}}]
         )
 
     def merge(self):
