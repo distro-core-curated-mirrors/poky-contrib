@@ -18,7 +18,7 @@ class CmdException(Exception):
             value = self._cmd[name]
         return value
 
-def exec_cmd(cmd, cwd, ignore_error=False, input=None, strip=True):
+def exec_cmd(cmd, cwd, ignore_error=False, input=None, strip=True, updateenv={}):
     """
          Input:
 
@@ -28,6 +28,8 @@ def exec_cmd(cmd, cwd, ignore_error=False, input=None, strip=True):
                 ignore_error: if False, no exception is raised
                 strip: indicates if strip is done on the output (stdout and stderr)
                 input: input data to the command (stdin)
+                updateenv: environment variables to be appended to the current
+                process environment variables
 
             NOTE: keys 'ignore_error' and 'input' are optional; if not included,
             the defaults are the ones specify in the arguments
@@ -51,7 +53,8 @@ def exec_cmd(cmd, cwd, ignore_error=False, input=None, strip=True):
         'cmd':'',
         'ignore_error':ignore_error,
         'strip':strip,
-        'input':input
+        'input':input,
+        'updateenv':updateenv,
     }
 
     # update input values if necessary
@@ -62,12 +65,17 @@ def exec_cmd(cmd, cwd, ignore_error=False, input=None, strip=True):
     if not _cmd['cmd']:
         raise CmdException({'cmd':None, 'stderr':'no command given'})
 
+    # update the environment
+    env = os.environ
+    env.update(_cmd['updateenv'])
+
     _command = [str(e) for e in _cmd['cmd']]
     p = subprocess.Popen(_command,
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE,
-                         cwd=cwd)
+                         cwd=cwd,
+                         env=env)
 
     # execute the command and strip output
     (_stdout, _stderr) = p.communicate(_cmd['input'])
