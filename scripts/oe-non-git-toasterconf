@@ -1,0 +1,145 @@
+#!/bin/bash
+
+# Author: Sujith H <sujith.h@gmail.com>
+#
+# Copyright (c) 2016 Sujith H <sujith.h@gmail.com>
+
+# oe-non-git-toasterconf is a simple tool to create toasterconf.json
+# based on users bblayers.conf for non-git layer support. User needs
+# to populate the bblayers.conf with the layers required and run this
+# script to create toaserconf.json file. The toasterconf.json file will
+# be created inside the build directory.
+# 
+
+usage() {
+cat <<EOF
+Welcome to the utility to create toasterconf.json file for
+non-git layers. Below are the options required to run the script
+
+$0 <OPTION>
+
+Options:
+  -h, --help
+        Display this help and exit.
+  --confdir=<confdir>
+        Specify the conf directory where the local.conf and bblayers.conf resides.
+        The conf directory should be inside the build directory.
+        
+EOF
+}
+
+# Print error information and exit.
+echo_error () {
+  echo "ERROR: $1" >&2
+  exit 1
+}
+
+DEFAULTLAYERS=""
+
+while [ -n "$1" ]; do
+  case $1 in
+    --confdir=*)
+      confdir=$(echo $1 | sed -e 's#^--confdir=##' | xargs readlink -e)
+      [ -d "$confdir" ] || echo_error "Invalid argument to --confdir"
+      shift
+        ;;
+    --help|-h)
+      usage
+      exit 0
+        ;;
+    *)
+      echo "Invalid arguments $*"
+      echo_error "Try '$0 -h' for more information."
+        ;;    
+  esac
+done
+
+builddir=$(dirname "$confdir")
+
+[ -d "$builddir" ] || echo_error "$builddir doesn't exist"
+
+layersadded() {
+   tac "$confdir/bblayers.conf" | sed -e 's:^[ ]*"$:":g' | sed -e 's:?=:=:g' | 
+        sed -n -e '/^"/,/^BBLAYERS =/{ /^BBLAYERS =/d; /^"/d; p;}' |
+        awk {'print $1'}
+}
+
+#layersadded | tac
+
+MACHINE=$(grep "^MACHINE " "$confdir/local.conf" | sed -e 's:.*=::')
+DISTRO=$(grep "^DISTRO "  "$confdir/local.conf" | sed -e 's:.*=::')
+echo "MACHINE = $MACHINE && DISTRO = $DISTRO"
+
+cat <<EOF > "$builddir/toasterconf.json"
+{
+    "config": {
+        "MACHINE"    : "$MACHINE",
+        "DISTRO"     : "$DISTRO",
+        "IMAGE_INSTALL_append": "",
+        "PACKAGE_CLASSES": "package_rpm",
+    },
+    "layersources": [
+       {
+          "name": "Local Yocto Project",
+          "sourcetype": "local",
+          "apiurl": "../../",
+          "branches": ["HEAD"],
+          "layers": [
+EOF
+
+#Now its time to poulate layers
+for layer in $(layersadded | tac | tr '\n' ' '); do
+    name=$(basename "$layer")
+    DEFAULTLAYERS="$DEFAULTLAYERS$name, "
+    cat <<EOF >> "$builddir/toasterconf.json"
+              {
+                  "name": "$name",
+                  "local_path": "$layer",
+                  "vcs_url": "remote:origin",
+                  "dirpath": "$layer"
+              },
+EOF
+done
+
+sed -i '$ s/,$//' "$builddir/toasterconf.json"
+
+cat <<EOF >> "$builddir/toasterconf.json"
+            ]
+        },
+        {
+            "name": "Imported layers",
+            "sourcetype": "imported",
+            "apiurl": "",
+            "branches": ["HEAD"]
+
+        }
+    ],
+    "bitbake" : [
+        {
+            "name": "HEAD",
+            "giturl": "remote:origin",
+            "branch": "HEAD",
+            "dirpath": "bitbake"
+        }
+    ],
+
+    "defaultrelease": "local",
+
+    "releases": [
+        {
+            "name": "local",
+            "description": "Local Yocto Project",
+            "bitbake": "HEAD",
+            "branch": "HEAD",
+EOF
+
+DEFAULTLAYERS=$(echo "$DEFAULTLAYERS" | sed -e 's:, $::')
+
+cat <<EOF >> "$builddir/toasterconf.json"
+            "defaultlayers": [ $DEFAULTLAYERS ],
+            "layersourcepriority": { "Imported layers": 99, "Local Yocto Project" : 10 },
+            "helptext": "Toaster will run your builds with the version of the Yocto Project you have cloned or downloaded to your computer."
+        }
+    ]
+}
+EOF
