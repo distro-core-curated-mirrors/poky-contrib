@@ -253,10 +253,10 @@ def main(server, eventHandler, params):
 
                     buildinfohelper.store_targets(targets)
 
-            # when the build proper starts, we extract information about
-            # any layers and config data
-            if build_started:
-                buildinfohelper.update_build(event)
+                # when the build proper starts, we extract information about
+                # any layers and config data
+                if build_started:
+                    buildinfohelper.update_build(event)
                 continue
 
             if isinstance(event, (bb.build.TaskStarted, bb.build.TaskSucceeded, bb.build.TaskFailedSilent)):
