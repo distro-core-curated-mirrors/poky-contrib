@@ -46,6 +46,12 @@ import oeqa.utils.ftools as ftools
 from oeqa.utils.commands import runCmd, get_bb_var, get_test_layer
 from oeqa.selftest.base import oeSelfTest, get_available_machines
 
+# Global var
+builddir = os.environ.get("BUILDDIR")
+if builddir is None:
+    print("BUILDDIR isn't set. Did you forget to source your build environment setup script?")
+    sys.exit(1)
+
 def logger_create():
     log_file = "oe-selftest-" + t.strftime("%Y-%m-%d_%H:%M:%S") + ".log"
     if os.path.exists("oe-selftest.log"): os.remove("oe-selftest.log")
@@ -100,11 +106,6 @@ def preflight_check():
 
     log.info("Checking that everything is in order before running the tests")
 
-    if not os.environ.get("BUILDDIR"):
-        log.error("BUILDDIR isn't set. Did you forget to source your build environment setup script?")
-        return False
-
-    builddir = os.environ.get("BUILDDIR")
     if os.getcwd() != builddir:
         log.info("Changing cwd to %s" % builddir)
         os.chdir(builddir)
@@ -119,7 +120,6 @@ def preflight_check():
     return True
 
 def add_include():
-    builddir = os.environ.get("BUILDDIR")
     if "#include added by oe-selftest.py" \
         not in ftools.read_file(os.path.join(builddir, "conf/local.conf")):
             log.info("Adding: \"include selftest.inc\" in local.conf")
@@ -133,9 +133,6 @@ def add_include():
                     "\n#include added by oe-selftest.py\ninclude bblayers.inc")
 
 def remove_include():
-    builddir = os.environ.get("BUILDDIR")
-    if builddir is None:
-        return
     if "#include added by oe-selftest.py" \
         in ftools.read_file(os.path.join(builddir, "conf/local.conf")):
             log.info("Removing the include from local.conf")
