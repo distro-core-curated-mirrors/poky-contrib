@@ -112,10 +112,6 @@ def preflight_check():
 
     log.info("Checking that everything is in order before running the tests")
 
-    if os.getcwd() != builddir:
-        log.info("Changing cwd to %s" % builddir)
-        os.chdir(builddir)
-
     if not "meta-selftest" in get_bb_var("BBLAYERS"):
         log.error("You don't seem to have the meta-selftest layer in BBLAYERS")
         return False
