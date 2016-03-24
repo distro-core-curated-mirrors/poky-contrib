@@ -53,9 +53,15 @@ if builddir is None:
     sys.exit(1)
 
 def logger_create():
+    log_dir = os.path.join(builddir, "oe-selftest-log")
+    if not os.path.exists(log_dir):
+        os.mkdir(log_dir)
     log_file = "oe-selftest-" + t.strftime("%Y-%m-%d_%H:%M:%S") + ".log"
-    if os.path.exists("oe-selftest.log"): os.remove("oe-selftest.log")
-    os.symlink(log_file, "oe-selftest.log")
+    log_file = os.path.join(log_dir, log_file)
+    log_sym = os.path.join(log_dir, "oe-selftest.log")
+    if os.path.exists(log_sym):
+        os.remove(log_sym)
+    os.symlink(log_file, log_sym)
 
     log = logging.getLogger("selftest")
     log.setLevel(logging.DEBUG)
