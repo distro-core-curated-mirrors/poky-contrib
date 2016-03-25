@@ -4135,4 +4135,216 @@ class toaster_cases(toaster_cases_base):
         self.assertTrue(self.driver.find_element_by_id("dirtable"), msg="Can't find the directory structure table")
 
 
+        ##############
+        #  CASE 1412 #
+        ##############
+    def test_1412(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        # Step 4
+        self.driver.find_element_by_id('build-input').clear()
+        self.driver.find_element_by_id('build-input').send_keys('core-image-minimal core-image-sato')
+        self.driver.find_element_by_id('build-button').click()
+
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+
+        self.wait_until_build_finish(1, 50)
+
+        self.driver.find_element_by_partial_link_text("core-image-minimal (+1)").click()
+        time.sleep(1)
+
+        header_text = self.driver.find_element_by_class_name("page-header").text
+        self.assertIn("core-image-minimal",header_text, msg="core-image-minimal not found in header text")
+        self.assertIn("core-image-sato",header_text, msg="core-image-sato not found in header text")
+
+        navigation_list = self.get_list_elements("nav")
+        self.assertIn("core-image-minimal",navigation_list, msg="core-image-minimal not found in navigation list")
+        self.assertIn("core-image-sato",navigation_list, msg="core-image-sato not found in navigation list")
+
+        ##############
+        #  CASE 1413 #
+        ##############
+    def test_1413(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        change_distro = "poky-lsb"
+
+        # Step 4
+        self.driver.find_element_by_link_text("BitBake variables").click()
+
+        # Step 5
+        self.driver.find_element_by_id('change-distro-icon').click()
+
+        # Step 6
+        self.driver.find_element_by_id('new-distro').clear()
+        self.driver.find_element_by_id('new-distro').send_keys(change_distro)
+        self.driver.find_element_by_id('apply-change-distro').click()
+        time.sleep(2)
+        self.assertEqual(change_distro, self.driver.find_element_by_id("distro").text, msg="Distro was not changed")
+
+        # Step 7
+
+        self.driver.find_element_by_id('build-input').clear()
+        self.driver.find_element_by_id('build-input').send_keys('core-image-minimal')
+        self.driver.find_element_by_id('build-button').click()
+
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+
+        self.wait_until_build_finish(1, 50)
+
+        self.driver.find_element_by_partial_link_text("core-image-minimal").click()
+        time.sleep(2)
+
+        self.assertEqual(change_distro, self.find_element_by_text(change_distro).text, msg="Different distro in build summary")
+
+
+        ##############
+        #  CASE 1414 #
+        ##############
+    def test_1414(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        # Step 4
+        self.driver.find_element_by_link_text("BitBake variables").click()
+
+        # Step 5
+        self.driver.find_element_by_id('change-package_classes-icon').click()
+        time.sleep(2)
+
+        first_package = self.driver.find_element_by_id('package_class_1')
+        package_name1 =  first_package.text
+        first_package.click()
+
+        second_package = self.driver.find_element_by_id('package_class_2')
+        package_name2 =  second_package.text
+        second_package.click()
+
+        # click Save
+        self.driver.find_element_by_id('apply-change-package_classes').click()
+        time.sleep(2)
+
+        package = self.driver.find_element_by_id('package_classes').text
+
+        self.assertIn(package_name1, package, msg="%s not found in PACKAGE_CLASSES" %package_name1 )
+        self.assertIn(package_name2, package, msg="%s not found in PACKAGE_CLASSES" %package_name2 )
+
+        # Step 7
+
+        self.driver.find_element_by_id('build-input').clear()
+        self.driver.find_element_by_id('build-input').send_keys('core-image-minimal')
+        self.driver.find_element_by_id('build-button').click()
+
+        #bug
+        time.sleep(5)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+
+
+        self.wait_until_build_finish(1, 50)
+
+
+        self.driver.find_element_by_partial_link_text("core-image-minimal").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("Configuration").click()
+
+        self.driver.find_element_by_link_text("BitBake variables").click()
+
+        self.driver.find_element_by_id("search").clear()
+        self.driver.find_element_by_id("search").send_keys("PACKAGE_CLASSES")
+        self.driver.find_element_by_id("search-button").click()
+
+        selector = "td[class='variable_value']"
+        column_list = self.get_text_from_elements(selector)
+
+
+        self.assertIn(str(package_name1), str(column_list), msg="%s not found in PACKAGE_CLASSES" %package_name1)
+        self.assertIn(str(package_name2), str(column_list), msg="%s not found in PACKAGE_CLASSES" %package_name2)
+        self.assertIn("package_rpm", str(column_list), msg="package_rpm not found in PACKAGE_CLASSES")
+
+
+        ##############
+        #  CASE 1415 #
+        ##############
+    def test_1415(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        # Step 4
+        self.driver.find_element_by_link_text("BitBake variables").click()
+
+        # Step 5
+        self.driver.find_element_by_id('change-image_install-icon').click()
+        time.sleep(2)
+
+        self.driver.find_element_by_id('new-image_install').clear()
+        self.driver.find_element_by_id('new-image_install').send_keys('ssh')
+        self.driver.find_element_by_id('apply-change-image_install').click()
+        time.sleep(2)
+        self.assertEqual("ssh",self.driver.find_element_by_id('image_install').text, msg="ssh not found in IMAGE_INSTALL_append" )
+
+        # Step 6
+
+        self.driver.find_element_by_id('build-input').clear()
+        self.driver.find_element_by_id('build-input').send_keys('core-image-minimal')
+        self.driver.find_element_by_id('build-button').click()
+
+        #bug
+        time.sleep(5)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+
+        self.wait_until_build_finish(1, 75)
+
+        # Step 7
+
+
+        self.driver.find_element_by_partial_link_text("core-image-minimal").click()
+        time.sleep(1)
+
+        # Step 8
+        self.driver.find_element_by_link_text("Packages").click()
+
+        self.driver.find_element_by_id("search").clear()
+        self.driver.find_element_by_id("search").send_keys("ssh")
+        self.driver.find_element_by_id("search-button").click()
+        time.sleep(3)
+
+        header_text = self.driver.find_element_by_class_name("page-header").text
+        self.assertNotIn("No packages found", header_text, msg=("No packages found text"))
+
+
 
