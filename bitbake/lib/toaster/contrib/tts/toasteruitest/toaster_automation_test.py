@@ -31,7 +31,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 import sqlite3 as sqlite
-
+from collections import Counter
+import subprocess
 
 ###########################################
 #                                         #
@@ -684,9 +685,26 @@ class toaster_cases_base(unittest.TestCase):
                 v = self.driver.find_element_by_xpath(s).text
                 row_content.append(v)
                 column = column + 1
-                print("row_content=",row_content)
+                #print("row_content=",row_content)
             Lists.extend(row_content)
-            print Lists[row-1][0]
+            #print Lists[row-1][0]
+            row = row + 1
+        return Lists
+
+    def get_table_data_from_class(self, table_class, row_count, column_count):
+        row = 1
+        Lists = []
+        while row <= row_count:
+            column = 1
+            row_content=[]
+            while column <= column_count:
+                s= "//table[@class='" + table_class + "']/tbody/tr[" + str(row) +"]/td[" + str(column) + "]"
+                v = self.driver.find_element_by_xpath(s).text
+                row_content.append(v)
+                column = column + 1
+                #print("row_content=",row_content)
+            Lists.extend(row_content)
+            #print Lists[row-1][0]
             row = row + 1
         return Lists
 
@@ -747,6 +765,67 @@ class toaster_cases_base(unittest.TestCase):
         self.driver.quit()
         self.assertEqual([], self.verificationErrors)
 
+
+    def get_list_elements(self, ul_id):
+        elements = []
+        html_list = self.driver.find_element_by_id(ul_id)
+        items = html_list.find_elements_by_tag_name("li")
+        for item in items:
+            text = item.text
+            elements.append(text)
+
+        return elements
+
+
+    def get_editcolumns_list_elements_by_class(self, ul_class):
+        elements = []
+        html_list = self.driver.find_element_by_css_selector(ul_class)
+        items = html_list.find_elements_by_tag_name("li")
+        for item in items:
+            elements.append(item)
+
+        return elements
+
+    def wait_until_build_finish(self, count_increment, timeout):
+        self.driver.refresh()
+        #check progress bar is displayed to signal a build has started
+        try:
+            self.driver.find_element_by_xpath("//div[@class='progress']").is_displayed()
+        except:
+            print "Unable to start new build"
+            self.fail(msg="Unable to start new build")
+        count = 0
+        failflag = False
+        try:
+            self.driver.refresh()
+            time.sleep(1)
+            print "First check starting"
+            while (self.driver.find_element_by_xpath("//div[@class='progress']").is_displayed()):
+                #print "Looking for build in progress"
+                print 'Builds running for '+str(count)+' minutes'
+                count += count_increment
+                #timeout default is at 179 minutes(3 hours); see set_up method to change
+                if (count > timeout):
+                    failflag = True
+                    print 'Builds took longer than expected to complete; Failing due to possible build stuck.'
+                    self.fail()
+                time.sleep(count_increment*60)
+                self.driver.refresh()
+        except:
+           try:
+                if failflag:
+                    self.fail(msg="Builds took longer than expected to complete; Failing due to possible build stuck.")
+                print "Looking for successful build"
+                try:
+                    self.driver.find_element_by_xpath("//div[@class='alert build-result alert-success']").is_displayed()
+                except:
+                    self.driver.find_element_by_xpath("//div[@class='alert build-result alert-success project-name']").is_displayed()
+           except:
+                if failflag:
+                    self.fail(msg="Builds took longer than expected to complete; Failing due to possible build stuck.")
+                print 'Builds did not complete successfully'
+                self.fail(msg="Builds did not complete successfully.")
+        print "Builds complete!"
 
 ###################################################################
 #                                                                 #
@@ -1745,32 +1824,44 @@ class toaster_cases(toaster_cases_base):
         self.case_no = self.get_case_number()
         self.log.info(' CASE %s log: ' % str(self.case_no))
         self.driver.maximize_window()
+        #option_tobeselected = 3
         for item in ["Packages", "Recipes", "Tasks"]:
+            print item
             self.driver.get(self.base_url)
             self.driver.find_element_by_link_text("core-image-minimal").click()
-            self.driver.find_element_by_link_text(items).click()
+            self.driver.find_element_by_link_text(item).click()
 
             # this may be page specific. If future page content changes, try to replace it with new xpath
             xpath_showrows = "/html/body/div[4]/div/div/div[2]/div[2]/div[2]/div/div/div[2]/select"
             xpath_table = "html/body/div[4]/div/div/div[2]/div[2]/table/tbody"#"id=('otable')/tbody"
-            self.driver.find_element_by_xpath(xpath_showrows).click()
+            time.sleep(5)
+
+            #self.driver.find_element_by_xpath(xpath_showrows).click()
+            Select(self.driver.find_element_by_xpath(xpath_showrows)).select_by_value('50')
+            time.sleep(4)
             rows_displayed = int(self.driver.find_element_by_xpath(xpath_showrows + "/option[2]").text)
+            print 'rows='
+            print rows_displayed
 
             # not sure if this is a Selenium Select bug: If page is not refreshed here, "select(by visible text)" operation will go back to 100-row page
             # Sure we can use driver.get(url) to refresh page, but since page will vary, we use click link text here
-            self.driver.find_element_by_link_text(items).click()
-            Select(self.driver.find_element_by_css_selector("select.pagesize")).select_by_visible_text(str(rows_displayed))
-            self.failUnless(self.is_element_present(By.XPATH, xpath_table + "/tr[" + str(rows_displayed) +"]"))
-            self.failIf(self.is_element_present(By.XPATH, xpath_table + "/tr[" + str(rows_displayed+1) +"]"))
 
+            self.driver.find_element_by_link_text(item).click()
+            Select(self.driver.find_element_by_css_selector("select.pagesize")).select_by_visible_text(str(rows_displayed))
+
+            self.failUnless(self.is_element_present(By.XPATH, xpath_table + "/tr[" + str(rows_displayed) +"]"))
+            #.//*[@id=str(rows_displayed)]/td[1]/a
+
+            self.failIf(self.is_element_present(By.XPATH, xpath_table + "/tr[" + str(rows_displayed+1) +"]"))
             # click 1st package, then go back to check if it's still those rows shown.
-            self.driver.find_element_by_xpath(xpath_otable + "/tr[1]/td[1]/a").click()
+            self.driver.find_element_by_xpath(xpath_table + "/tr[1]/td[1]/a").click()
             time.sleep(3)
             self.driver.find_element_by_link_text(item).click()
-            self.assertTrue(self.is_element_present(By.XPATH, xpath_otable + "/tr[" + str(option_tobeselected) +"]"),\
-                            msg=("Row %d should exist" %option_tobeselected))
-            self.assertFalse(self.is_element_present(By.XPATH, xpath_otable + "/tr[" + str(option_tobeselected+1) +"]"),\
-                            msg=("Row %d should not exist" %(option_tobeselected+1)))
+            self.assertTrue(self.is_element_present(By.XPATH, xpath_table + "/tr[" + str(rows_displayed) +"]"),\
+                            msg=("Row %d should exist" %rows_displayed))
+
+            self.assertFalse(self.is_element_present(By.XPATH, xpath_table + "/tr[" + str(rows_displayed+1) +"]"),\
+                            msg=("Row %d should not exist" %(rows_displayed+1)))
 
 
 
@@ -2065,6 +2156,328 @@ class toaster_cases(toaster_cases_base):
 # Starting project tests ###########################################################################
 ####################################################################################################
 
+
+        ##############
+        #  CASE 1069 #
+        ##############
+    def test_1069(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        layer_list = ['Layer', 'Summary', 'Git revision', 'Dependencies', 'Add | Remove']
+        self.driver.find_element_by_partial_link_text("Layers").click()
+        time.sleep(1)
+
+        # step 3
+        self.driver.find_element_by_id('search-input-layerstable').send_keys('meta-yocto')
+        time.sleep(1)
+        self.driver.find_element_by_id('search-submit-layerstable').click()
+        time.sleep(1)
+
+        self.assertTrue(self.driver.find_element_by_partial_link_text('meta-yocto'), msg=("meta-yocto layer not find"))
+        self.assertTrue(self.driver.find_element_by_partial_link_text('meta-yocto-bsp'), msg=("meta-yocto-bsp layer not find"))
+        self.driver.find_element_by_id("search-input-layerstable").clear()
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+
+        head_list = self.get_table_head_text('layerstable')
+        time.sleep(1)
+        for item in layer_list:
+            self.assertTrue(item in head_list, msg=("%s not found in Directory structure table head" % item))
+
+        #step 5
+        layer_revision = self.driver.find_elements_by_class_name('revision')
+        layer_rev = layer_revision[1].text
+        self.driver.find_element_by_partial_link_text('Configuration').click()
+        time.sleep(1)
+        revision = self.driver.find_element_by_id("project-release-title").text
+        self.assertTrue(layer_rev in revision, msg=("revision difference"))
+        self.driver.find_element_by_partial_link_text("Layers").click()
+
+        #step 6-7
+        self.driver.find_element_by_id("search-input-layerstable").send_keys('e100-bsp')
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element_by_xpath(".//*[@id='layerstable']/tbody/tr/td[6]/a"), msg="no dependencies button")
+        self.driver.find_element_by_xpath(".//*[@id='layerstable']/tbody/tr/td[6]/a").click()
+        time.sleep(2)
+
+        #step 8
+        self.driver.find_element_by_id("search-input-layerstable").clear()
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+        self.driver.find_element_by_id("edit-columns-button").click()
+        self.driver.find_element_by_id("checkbox-layer__vcs_url").click()
+        self.driver.find_element_by_id("checkbox-git_subdir").click()
+        time.sleep(2)
+        self.assertTrue(self.driver.find_element_by_xpath(".//*[@id='layerstable']/tbody/tr[1]/td[3]/a[2]/i"), msg="git repository url not found")
+        self.assertTrue(self.driver.find_element_by_xpath(".//*[@id='layerstable']/tbody/tr[1]/td[4]/a[2]/i"), msg="subdirectory url not found")
+        time.sleep(2)
+
+
+        ##############
+        #  CASE 1079 #
+        ##############
+    def test_1079(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        default_image_list = ['Image recipe', 'Version', 'Description', 'Layer', 'Build']
+        time.sleep(0.5)
+
+        #step 3
+        self.driver.find_element_by_link_text("Image recipes").click()
+        time.sleep(0.5)
+
+        #step 4
+        l = self.get_table_data('imagerecipestable', 10, 5)
+        self.assertTrue(l != [], msg="Image recipes table is not populated")
+
+        head_list = self.get_table_head_text('imagerecipestable')
+        for item in default_image_list:
+            self.assertTrue(item in head_list, msg=("%s not found in Directory structure table head" % item))
+
+
+        ##############
+        #  CASE 1080 #
+        ##############
+    def test_1080(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        image_recipes_sortable_dict = {'Image recipe':'name', 'Section':'section', 'Layer':'layer_version__layer__name', 'License':'license'}
+        image_recipes_not_sortable_dict = {'Version':'version', 'Description':'get_description_or_summary', 'Recipe file':'recipe-file', \
+                                           'Git revision':'layer_version__get_vcs_reference', 'Build':'add-del-layers'}
+        time.sleep(0.5)
+
+        #step 2
+        self.driver.find_element_by_link_text("Image recipes").click()
+        time.sleep(0.5)
+
+        #step 3
+        element = self.driver.find_element_by_css_selector('th.name')
+        self.assertTrue("i class=\"icon-caret-down\" style=\"display: inline;\"" in element.get_attribute('innerHTML'),\
+                        msg='Table not sorted by Image recie')
+
+        #step 4
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("checkbox-recipe-file").click()
+        self.driver.find_element_by_id("checkbox-section").click()
+        self.driver.find_element_by_id("checkbox-license").click()
+        self.driver.find_element_by_id("checkbox-layer_version__get_vcs_reference").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("edit-columns-button").click()
+
+        #step 5
+        for column in image_recipes_sortable_dict:
+            element = self.driver.find_element_by_css_selector('th.%s' % image_recipes_sortable_dict[column])
+            time.sleep(1)
+            if column == 'Image recipe':
+                self.assertTrue("a class=\"sorted\"" in element.get_attribute('innerHTML'), msg='%s column is not sortable' %column)
+            else:
+                self.assertTrue("href=\"#\"" in element.get_attribute('innerHTML'), msg='%s column is not sortable' %column)
+
+        for column in image_recipes_not_sortable_dict:
+            element = self.driver.find_element_by_css_selector('th.%s' %image_recipes_not_sortable_dict[column])
+            time.sleep(1)
+            self.assertTrue("<span class=\"muted\">" in element.get_attribute('innerHTML'), msg='%s column is sortable' %column)
+
+        #step 6
+        e = self.driver.find_element_by_css_selector('th.%s' % image_recipes_sortable_dict['Image recipe'])
+        e.click()
+        time.sleep(1)
+        self.assertTrue("<i class=\"icon-caret-up\"" in e.get_attribute('innerHTML'),\
+                        msg='Image recipe is not sorted descendent')
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-imagerecipestable").clear()
+        self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("meta-intel")
+        self.driver.find_element_by_id("search-submit-imagerecipestable").click()
+        time.sleep(1)
+
+        #step 8
+        e = self.driver.find_element_by_css_selector('th.%s' % image_recipes_sortable_dict['Image recipe'])
+        self.assertTrue("<i class=\"icon-caret-up\"" in e.get_attribute('innerHTML'),\
+                        msg='Image recipe is not sorted descendent after search')
+
+        #continue step 6
+        elements = self.driver.find_elements_by_xpath("//td[@class='name']")
+        values = [element.text for element in elements]
+
+        selected_recipe = values[0]
+        self.driver.find_element_by_partial_link_text(selected_recipe).click()
+        time.sleep(1)
+        self.driver.back()
+        time.sleep(1)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='name']")
+        values2 = [element.text for element in elements]
+        self.assertEqual(values, values2, "Image Recipe column is not sorted properly")
+
+        #step 7
+        element = self.driver.find_element_by_css_selector('th.%s' % image_recipes_sortable_dict['Section'])
+        element.click()
+        time.sleep(1)
+        self.assertTrue("a class=\"sorted\"" in element.get_attribute('innerHTML'), msg='Table is not sort by Section')
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("checkbox-section").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(0.5)
+        elements = self.driver.find_elements_by_xpath("//td[@class='name']")
+        values3 = [element.text for element in elements]
+        invers = list(reversed(values))
+        self.assertEqual(invers, values3, msg="Default sorting was not restore")
+
+
+        ##############
+        #  CASE 1094 #
+        ##############
+    def test_1094(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("view-compatible-layers").click()
+        time.sleep(1)
+
+        # step 3
+        add_remove_element = self.driver.find_element_by_class_name("add-del-layers")
+        self.assertIn("<i class=\"icon-filter filtered\"></i>", add_remove_element.get_attribute('innerHTML'), \
+                      msg='Add|Remove filter dose not exist')
+
+        # step 4
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:not_in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:all").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+
+        # step 5
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
+
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertIn("btn-primary", filter_class,msg = "Filter is not applied")
+
+        self.driver.find_element_by_id("search-input-layerstable").clear()
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+
+        time.sleep(2)
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
+
+
+        ##############
+        #  CASE 1095 #
+        ##############
+    def test_1095(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("Image recipes").click()
+        time.sleep(1)
+
+        # step 3
+        build_element = self.driver.find_element_by_class_name("add-del-layers")
+        self.assertIn("<i class=\"icon-filter filtered\"></i>", build_element.get_attribute('innerHTML'), \
+                      msg='Build filter dose not exist')
+
+        # step 4
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:not_in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:all").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+
+        # step 5
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
+
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertIn("btn-primary", filter_class,msg = "Filter is not applied")
+
+        self.driver.find_element_by_id("search-input-imagerecipestable").clear()
+        self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-imagerecipestable").click()
+
+        time.sleep(2)
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
+
+
         ##############
         #  CASE 1100 #
         ##############
@@ -2105,6 +2518,7 @@ class toaster_cases(toaster_cases_base):
 
         button_enabled = self.driver.find_element_by_id("add-configvar-button").is_enabled()
         self.assertFalse((button_enabled), msg="Add variable button is enabled; it should not be")
+
 
         ##############
         #  CASE 1102 #
@@ -2329,6 +2743,294 @@ class toaster_cases(toaster_cases_base):
         new_variable_error_text = self.driver.find_element_by_id("new-variable-error-message").text
         self.assertTrue((new_variable_error_text == "This variable is already set in this page, edit its value instead"), msg="Error message missing when inputting existing variable name")
 
+
+        ##############
+        #  CASE 1105 #
+        ##############
+    def test_1105(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        project_builds_sortable_dict = {'Outcome':'outcome', 'Machine':'machine', 'Completed on':'completed_on', \
+                                        'Errors':'errors_no','Warnings':'warnings_no'}
+        project_builds_not_sortable_dict = {'Recipe':'target', 'Failed tasks':'failed_tasks', 'Time':'time', \
+                                        'Image files':'image_files'}
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+
+        # step 3
+        element = self.driver.find_element_by_css_selector('th.completed_on')
+        self.assertTrue("i class=\"icon-caret-up\" style=\"display: inline;\"" in element.get_attribute('innerHTML'), msg='Table not sorted by Image recie')
+        time.sleep(1)
+
+        # step 4
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("checkbox-machine").click()
+        self.driver.find_element_by_id("checkbox-started_on").click()
+        self.driver.find_element_by_id("checkbox-time").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(1)
+
+        # step 5
+        for column in project_builds_sortable_dict:
+            element = self.driver.find_element_by_css_selector('th.%s' % project_builds_sortable_dict[column])
+            time.sleep(1)
+            self.assertTrue("<i class=\"icon-caret-down\"" in element.get_attribute('innerHTML'), msg='%s column is not sortable' %column)
+            self.assertTrue("<i class=\"icon-caret-up\"" in element.get_attribute('innerHTML'), msg='%s column is not sortable' %column)
+            self.assertTrue("href=\"#\"" in element.get_attribute('innerHTML'), msg='%s column is not sortable' %column)
+
+        for column in project_builds_not_sortable_dict:
+            element = self.driver.find_element_by_css_selector('th.%s' %project_builds_not_sortable_dict[column])
+            time.sleep(1)
+            self.assertTrue("<span class=\"muted\">" in element.get_attribute('innerHTML'), msg='%s column is sortable' %column)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='completed_on']")
+        values = [element.text for element in elements]
+
+        #step 6
+        self.driver.find_element_by_xpath(".//*[@id='projectbuildstable']/thead/th[3]/a").click()
+        element = self.driver.find_element_by_css_selector('th.%s' % project_builds_sortable_dict['Machine'])
+        element.click()
+        time.sleep(1)
+        self.assertTrue("class=\"sorted\"" in element.get_attribute('innerHTML'), msg='Table is not sort by Machine')
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("checkbox-machine").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(0.5)
+        elements = self.driver.find_elements_by_xpath("//td[@class='completed_on']")
+        values2 = [element.text for element in elements]
+        self.assertEqual(values, values2, msg="Default sorting was not restore")
+
+
+        ##############
+        #  CASE 1106 #
+        ##############
+    def test_1106(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+
+        # step 3
+        head_list = self.get_table_head_text('projectbuildstable')
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(1)
+        all_editcolumns_elements = self.get_editcolumns_list_elements_by_class('.dropdown-menu.editcol')
+
+        checked_elements = []
+        for element in all_editcolumns_elements:
+            if ("checked=\"checked\"" in element.get_attribute('innerHTML')):
+                checked_elements.append(element.text)
+
+        self.assertEqual(Counter(head_list), Counter(checked_elements), msg="Checked columns from edit button doesn't "\
+                                                                            "match the columns currently being shown")
+
+        # step 4
+        for element in all_editcolumns_elements:
+            if element.text in ['Outcome', 'Recipe', 'Completed on']:
+                self.assertIn('class="checkbox muted"', element.get_attribute('innerHTML'), msg='%s column can be '\
+                                                                    'removed from the shown columns' %element.text)
+
+        # step 5
+        time.sleep(0.5)
+        self.driver.find_element_by_id("checkbox-machine").click()
+        self.driver.find_element_by_id("checkbox-started_on").click()
+        self.driver.find_element_by_id("checkbox-time").click()
+        self.driver.find_element_by_id("edit-columns-button").click()
+
+        time.sleep(0.5)
+        head_list = self.get_table_head_text('projectbuildstable')
+        for item in ['Machine', 'Started on', 'Time']:
+            self.assertIn(item, head_list, msg='%s items is not in table' %item)
+
+        time.sleep(0.5)
+        self.driver.find_element_by_id("edit-columns-button").click()
+        self.driver.find_element_by_id("checkbox-machine").click()
+        self.driver.find_element_by_id("checkbox-started_on").click()
+        self.driver.find_element_by_id("checkbox-time").click()
+        self.driver.find_element_by_id("edit-columns-button").click()
+
+        time.sleep(0.5)
+        head_list = self.get_table_head_text('projectbuildstable')
+        for item in ['Machine', 'Started on', 'Time']:
+            self.assertNotIn(item, head_list, msg='%s items is in table' %item)
+
+
+        ##############
+        #  CASE 1108 #
+        ##############
+    def test_1108(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("edit-columns-button").click()
+        self.driver.find_element_by_id("checkbox-started_on").click()
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(1)
+
+        # step 3
+        filters = []
+        filters.append(self.driver.find_element_by_id("outcome_filter"))
+        filters.append(self.driver.find_element_by_id("started_on_filter"))
+        filters.append(self.driver.find_element_by_id("completed_on_filter"))
+        filters.append(self.driver.find_element_by_id("failed_tasks_filter"))
+
+        for filter in filters:
+            self.assertIn("<i class=\"icon-filter filtered\"></i>", filter.get_attribute('innerHTML'), \
+                      msg='Filter does not exist')
+
+        # step 4
+        outcome = self.driver.find_element_by_id("outcome_filter")
+        outcome.click()
+        time.sleep(1)
+        self.driver.find_element_by_id("outcome_filter:successful_builds").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(1)
+        self.assertIn("btn-primary", outcome.get_attribute('class'), msg='Outcome filter was not applied')
+
+        failed_task = self.driver.find_element_by_id("failed_tasks_filter")
+        failed_task.click()
+        time.sleep(1)
+        self.driver.find_element_by_id("failed_tasks_filter:without_failed_tasks").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(1)
+
+        self.assertIn("btn-primary", failed_task.get_attribute('class'), msg='Failed task filter was not applied')
+        self.assertNotIn("btn-primary", outcome.get_attribute('class'), msg='Outcome filter is still applied')
+
+        # step 5
+        self.driver.find_element_by_id("search-input-projectbuildstable").clear()
+        self.driver.find_element_by_id("search-input-projectbuildstable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-projectbuildstable").click()
+
+        time.sleep(2)
+        for filter in filters:
+            self.assertNotIn("btn-primary", filter.get_attribute('class'), msg='Filter is still applied after search')
+
+
+        ##############
+        #  CASE 1109 #
+        ##############
+    def test_1109(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+        search_string = "core"
+
+        self.assertTrue(self.driver.find_element_by_id("search-input-projectbuildstable"), "Search input not found")
+        self.assertTrue(self.driver.find_element_by_id("search-submit-projectbuildstable"), " Search button not found")
+
+        #step 3
+        self.assertEqual("Search all project builds", \
+                         self.driver.find_element_by_id("search-input-projectbuildstable").get_attribute("placeholder") ,\
+                         "Different placeholder text")
+
+        #step 4
+        self.driver.find_element_by_id("search-input-projectbuildstable").clear()
+        self.driver.find_element_by_id("search-input-projectbuildstable").send_keys("c")
+        self.assertEqual("c", self.driver.find_element_by_id("search-input-projectbuildstable").get_attribute("value"), \
+                         msg="Search string is not kept in the text input field")
+
+        self.driver.find_element_by_id("search-input-projectbuildstable").clear()
+        self.driver.find_element_by_id("search-input-projectbuildstable").send_keys(search_string)
+        self.driver.find_element_by_id("search-submit-projectbuildstable").click()
+        time.sleep(1)
+
+        self.assertEqual(search_string, self.driver.find_element_by_id("search-input-projectbuildstable").get_attribute("value"), \
+                         msg="Search string is not kept in the text input field")
+
+        returned_builds = self.driver.find_element_by_css_selector(".page-header.top-air").text
+        nr_builds = int(filter(str.isdigit, repr(returned_builds)))
+        self.assertIn("project builds found", returned_builds, msg='Message after search not showing properly')
+
+        self.driver.find_element_by_xpath(".//*[@id='table-chrome-projectbuildstable']/div/div[1]/a/i").click()
+        time.sleep(1)
+        self.assertIn("All project builds", self.driver.find_element_by_css_selector(".page-header.top-air").text, \
+                      msg='Message after search not showing properly')
+
+        #step 5
+        self.driver.find_element_by_id("search-input-projectbuildstable").clear()
+        self.driver.find_element_by_id("search-input-projectbuildstable").send_keys('dkasashdsakjdhasjkdashdjk')
+        self.driver.find_element_by_id("search-submit-projectbuildstable").click()
+        time.sleep(1)
+        self.assertIn("No project builds found", self.driver.find_element_by_css_selector(".page-header.top-air").text, \
+                      msg='Search is not working properly')
+        self.driver.find_element_by_xpath(".//*[@id='no-results-projectbuildstable']/div/form/button[2]").click()
+        time.sleep(1)
+
+        # step 6
+        self.driver.find_element_by_id('edit-columns-button').click()
+        self.driver.find_element_by_id('checkbox-started_on').click()
+        self.driver.find_element_by_id('edit-columns-button').click()
+        time.sleep(1)
+
+        head_list = self.get_table_head_text('projectbuildstable')
+        time.sleep(1)
+
+        started_on = self.driver.find_element_by_css_selector('th.started_on')
+        self.driver.find_element_by_partial_link_text('Started on').click()
+        time.sleep(1)
+        self.assertTrue("<a class=\"sorted\" href=\"#\">" in started_on.get_attribute('innerHTML'), \
+                        msg='Table not sorted by started on column')
+
+        self.driver.find_element_by_id("search-input-projectbuildstable").clear()
+        self.driver.find_element_by_id("search-input-projectbuildstable").send_keys(search_string)
+        self.driver.find_element_by_id("search-submit-projectbuildstable").click()
+        time.sleep(1)
+
+        element_after_search = self.driver.find_element_by_css_selector('th.started_on')
+        self.assertTrue("<a class=\"sorted\" href=\"#\">" in element_after_search.get_attribute('innerHTML'), \
+                msg='Table not sorted by started on after search')
+
+        head_list_after_search = self.get_table_head_text('projectbuildstable')
+        self.assertEqual(head_list, head_list_after_search, msg='The table have different columns after search')
+
+
         ##############
         #  CASE 1110 #
         ##############
@@ -2427,6 +3129,7 @@ class toaster_cases(toaster_cases_base):
         except:
             self.fail(msg="Cannot find layer details tab")
 
+
         ##############
         #  CASE 1111 #
         ##############
@@ -2522,6 +3225,7 @@ class toaster_cases(toaster_cases_base):
         machine_text = self.driver.find_element_by_id("project-machine-name").text
         self.assertTrue((machine_text == "a500"), "Machine not changed after using 'Select machine' button")
 
+
         ##############
         #  CASE 1112 #
         ##############
@@ -2591,6 +3295,7 @@ class toaster_cases(toaster_cases_base):
         time.sleep(1)
 
         self.assertTrue((self.is_text_present("meta-selftest")), msg="Unable to verify layer was added to project")
+
 
         ##############
         #  CASE 1113 #
@@ -2757,6 +3462,371 @@ class toaster_cases(toaster_cases_base):
         except:
             self.Fail("Unable to delete custom description")
 
+
+        ##############
+        #  CASE 1140 #
+        ##############
+    def test_1140(self):
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get("http://localhost:8000/admin/")
+        time.sleep(2)
+
+        self.driver.find_element_by_id("id_username").send_keys("toaster_admin")
+        time.sleep(1)
+        self.driver.find_element_by_id("id_password").send_keys("qwe123")
+        time.sleep(1)
+        self.driver.find_element_by_xpath("//input[@value='Log in']").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("Build environments").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("BuildEnvironment object").click()
+        time.sleep(1)
+
+        sourcedir = self.driver.find_element_by_id("id_sourcedir").get_attribute('value')
+        builddir = self.driver.find_element_by_id("id_builddir").get_attribute('value')
+
+        builddir2 = str(builddir) + "2"
+
+        self.driver.find_element_by_link_text("Build environments").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("Add build environment").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("id_address").send_keys("2")
+        self.driver.find_element_by_id("id_sourcedir").send_keys(str(sourcedir))
+        self.driver.find_element_by_id("id_builddir").send_keys(str(builddir2))
+
+        options = Select(self.driver.find_element_by_id("id_betype"))
+        options.select_by_visible_text("local")
+
+        self.driver.find_element_by_xpath("//input[@value='Save']").click()
+        time.sleep(2)
+
+        self.driver.get(self.base_url)
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("build-input").send_keys("core-image-sato")
+        time.sleep(1)
+        self.driver.find_element_by_id("build-button").click()
+        time.sleep(2)
+
+        self.driver.find_element_by_id("build-input").send_keys("core-image-minimal")
+        time.sleep(1)
+        self.driver.find_element_by_id("build-button").click()
+        time.sleep(2)
+
+        progress_list = self.driver.find_elements_by_xpath("//div[@class='progress']")
+        self.assertTrue(len(progress_list) > 1,msg="Could not find 2 progress bars visible")
+
+        count = 1
+        self.timeout = 340
+        failflag = False
+        try:
+            self.driver.refresh()
+            time.sleep(1)
+            while (self.driver.find_element_by_xpath("//div[@class='progress']").is_displayed()):
+                print 'Build running for '+str(count)+' minutes'
+                count += 5
+                if (count > self.timeout):
+                    failflag = True
+                    print 'Build took longer than expected to complete; Failing due to possible build stuck.'
+                    self.fail()
+                time.sleep(300)
+                self.driver.refresh()
+        except:
+            if failflag:
+                self.fail(msg="Build took longer than expected to complete; Failing due to possible build stuck.")
+            print "Looking for successful builds"
+            build_list = self.driver.find_elements_by_xpath("//div[@class='alert build-result alert-success']")
+            self.assertTrue((len(build_list) > 1), msg="Could not find successful builds")
+
+
+        ##############
+        #  CASE 1393 #
+        ##############
+    def test_1393(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text('core-image-minimal').click()
+        time.sleep(1)
+
+        #step 6
+        self.driver.find_element_by_partial_link_text('Tasks').click()
+        time.sleep(1)
+
+        #step 7
+        self.driver.find_element_by_xpath(".//*[@id='otable']/thead/tr/th[6]/div/a").click()
+        time.sleep(1)
+        avail_options = self.driver.find_elements_by_xpath("//*[@id='filter_outcome']//*[@class='radio'][not(@disabled)]")
+
+        for number in range(0, len(avail_options)):
+            if avail_options[number].text == 'Succeeded Tasks':
+                avail_options[number].click()
+                self.browser_delay()
+                # click "Apply"
+                self.driver.find_element_by_xpath("//*[@id='filter_outcome']//*[@type='submit']").click()
+                break
+        time.sleep(1)
+        try:
+            succeeded_tasks = self.driver.find_elements_by_xpath("//td[@class='task_name']/a")
+            succeeded_tasks[0].click()
+            time.sleep(1)
+            # step 8
+            task_log = self.driver.find_element_by_css_selector('.btn.btn-large')
+            task_log.click()
+            time.sleep(1)
+            self.assertTrue(task_log.get_attribute('href') != '', msg='Download link is empty!')
+            self.assertIn('tasklogfile', task_log.get_attribute('href'), msg='Is not the task log file')
+        except:
+            print "No succeeded tasks"
+            self.find_element_by_text("Show all tasks").click()
+            time.sleep(1)
+
+        # step 9
+        self.driver.get(self.base_project_url)
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text('core-image-minimal').click()
+        time.sleep(1)
+
+        #step 6
+        self.driver.find_element_by_partial_link_text('Tasks').click()
+        time.sleep(1)
+
+        #step 7
+        self.driver.find_element_by_xpath(".//*[@id='otable']/thead/tr/th[6]/div/a").click()
+        time.sleep(1)
+        avail_options = self.driver.find_elements_by_xpath("//*[@id='filter_outcome']//*[@class='radio'][not(@disabled)]")
+
+        for number in range(0, len(avail_options)):
+            if avail_options[number].text == 'Failed Tasks':
+                avail_options[number].click()
+                self.browser_delay()
+                # click "Apply"
+                self.driver.find_element_by_xpath("//*[@id='filter_outcome']//*[@type='submit']").click()
+
+                break
+        time.sleep(1)
+        try:
+            failed_tasks = self.driver.find_elements_by_xpath("//td[@class='task_name']/a")
+            failed_tasks[0].click()
+            time.sleep(1)
+            # step 10
+            task_log = self.driver.find_element_by_css_selector('.btn.btn-large')
+            task_log.click()
+            time.sleep(1)
+            self.assertTrue(task_log.get_attribute('href') != '', msg='Download link is empty!')
+            self.assertIn('tasklogfile', task_log.get_attribute('href'), msg='Is not the task log file')
+        except:
+            print "No failed tasks"
+            self.find_element_by_text("Show all tasks").click()
+            time.sleep(1)
+
+
+        ##############
+        #  CASE 1394 #
+        ##############
+    def test_1394(self):
+
+        self.timeout = 15
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id('build-input').clear()
+        self.driver.find_element_by_id('build-input').send_keys('core-image-minimal:clean')
+        self.driver.find_element_by_id('build-button').click()
+        time.sleep(1)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+
+        time.sleep(1)
+        self.wait_until_build_finish(1, 30)
+
+        rebuild_elements = self.driver.find_elements_by_css_selector(".btn.btn-success.pull-right")
+        for element in rebuild_elements:
+            if "core-image-minimal:clean" in element.get_attribute('onclick'):
+                element.click()
+                break
+
+        time.sleep(1)
+        self.wait_until_build_finish(1, 30)
+
+        self.driver.find_element_by_partial_link_text('core-image-minimal:clean').click()
+        time.sleep(1)
+        nr_of_tasks = self.driver.find_element_by_xpath("//div[@class='well span4 dashboard-section'][2]/dl/dd[1]/a").text
+
+        self.assertEqual("1", nr_of_tasks, msg="The number of tasks executed is not 1")
+
+        self.driver.get(self.base_url)
+        time.sleep(1)
+
+        rebuild_elements = self.driver.find_elements_by_css_selector(".btn.btn-success.pull-right")
+        for element in rebuild_elements:
+            if "core-image-minimal:clean" in element.get_attribute('onclick'):
+                element.click()
+                break
+
+        time.sleep(1)
+        self.wait_until_build_finish(1, 30)
+
+        self.driver.find_element_by_partial_link_text('core-image-minimal:clean').click()
+        time.sleep(1)
+        nr_of_tasks = self.driver.find_element_by_xpath("//div[@class='well span4 dashboard-section'][2]/dl/dd[1]/a").text
+
+        self.assertEqual("1", nr_of_tasks, msg="The number of tasks executed is not 1")
+
+
+        ##############
+        #  CASE 1395 #
+        ##############
+    def test_1395(self):
+
+        self.timeout = 15
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text('Layers').click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-layerstable").clear()
+        self.driver.find_element_by_id("search-input-layerstable").send_keys("meta-intel")
+        self.driver.find_element_by_id("search-submit-layerstable").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("meta-intel").click()
+        time.sleep(1)
+        self.driver.find_element_by_id("add-remove-layer-btn").click()
+        time.sleep(1)
+        self.driver.find_element_by_id("machines-tab").click()
+
+        machines = self.driver.find_elements_by_css_selector(".btn.btn-block.select-machine-btn")
+        for machine in machines:
+            if "intel-core2-32" in machine.get_attribute("href"):
+                machine.click()
+                break
+
+        time.sleep(1)
+        self.assertIn("intel-core2-32", self.driver.find_element_by_id("project-machine-name").text, msg="Machine was not changed")
+
+        self.driver.find_element_by_id('build-input').clear()
+        self.driver.find_element_by_id('build-input').send_keys('core-image-minimal')
+        self.driver.find_element_by_id('build-button').click()
+        time.sleep(1)
+
+        self.wait_until_build_finish(1, 30)
+        self.driver.find_element_by_link_text('core-image-minimal').click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("Configuration").click()
+        time.sleep(1)
+
+
+        self.assertIn("meta-intel", self.get_table_data_from_class("table table-bordered table-hover", 4, 1), \
+                      msg="meta-intel layer not added to build")
+
+
+        ##############
+        #  CASE 1396 #
+        ##############
+    def test_1396(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text('core-image-minimal').click()
+        time.sleep(1)
+
+        build_artifact = self.driver.find_element_by_xpath("//dl[@class='dl-horizontal']/dd/div/a[2]")
+        build_artifact.click()
+        time.sleep(2)
+
+        self.assertTrue(build_artifact.get_attribute('href') != '', msg='Download link is empty!')
+        self.assertIn('buildartifact', build_artifact.get_attribute('href'), msg='Is not the build artifact')
+        self.save_screenshot(screenshot_type='selenium', append_name='other_artifacts_download')
+        os.system('wget %s --no-proxy -P ./dld' %build_artifact.get_attribute('href'))
+
+        output = subprocess.check_output("ls -l ./dld | wc -l", shell=True)
+        self.assertTrue(output >= 1, msg='File was not downloaded')
+        os.system('rm -rf ./dld')
+
+
+        ##############
+        #  CASE 1397 #
+        ##############
+    def test_1397(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text('core-image-minimal').click()
+        time.sleep(1)
+
+        download = self.driver.find_element_by_xpath("html/body/div[4]/div/div/div[2]/div[4]/div/dl/dd[3]/a[2]")
+        download.click()
+        time.sleep(2)
+
+        self.assertTrue(download.get_attribute('href') != '', msg='Download link is empty!')
+        self.assertIn('licensemanifest', download.get_attribute('href'), msg='Is not the license manifest')
+        self.save_screenshot(screenshot_type='selenium', append_name='licence_manifes_download')
+        os.system('wget %s --no-proxy -P ./dld' %download.get_attribute('href'))
+
+        output = subprocess.check_output("ls -l ./dld | wc -l", shell=True)
+        self.assertTrue(output >= 1, msg='File was not downloaded')
+        os.system('rm -rf ./dld')
+
+
         ##############
         #  CASE 1398 #
         ##############
@@ -2860,6 +3930,764 @@ class toaster_cases(toaster_cases_base):
             except:
                 layer = False
 
+
+        ##############
+        #  CASE 1399 #
+        ##############
+    def test_1399(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        img_recipe = 'core-image-minimal'
+        software_recipe = 'busybox'
+        self.driver.find_element_by_link_text("Image recipes").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-imagerecipestable").clear()
+        self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("core-image-efi")
+        self.driver.find_element_by_id("search-submit-imagerecipestable").click()
+        time.sleep(1)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='add-del-layers']")
+        time.sleep(1)
+        nr = 0
+        for element in elements:
+            if element.text == 'Add layer':
+                element.click()
+                break
+            nr += 1
+
+        time.sleep(1)
+
+        try:
+            self.driver.find_element_by_id("dependencies-modal")
+            time.sleep(1)
+            self.driver.find_element_by_xpath(".//*[@id='dependencies-modal-form']/div[3]/button[1]").click()
+        except:
+            print 'Only one dependency'
+
+        time.sleep(1)
+        self.driver.find_element_by_id("change-notification-msg")
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='add-del-layers']")
+        time.sleep(1)
+        self.assertEqual("Build recipe", elements[nr].text, msg='Add layer button did not become Build recipe.')
+
+        time.sleep(2)
+
+        self.driver.find_element_by_id("topbar-configuration-tab").click()
+        time.sleep(1)
+
+        layer = True
+        while (layer):
+            try:
+                delete_button = self.driver.find_element_by_xpath("//*[@id='layers-in-project-list']/li[4]/span")
+                delete_button.click()
+                self.driver.find_element_by_link_text("Configuration").click()
+            except:
+                layer = False
+
+        self.driver.find_element_by_link_text("Image recipes").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-imagerecipestable").clear()
+        self.driver.find_element_by_id("search-input-imagerecipestable").send_keys(img_recipe)
+        self.driver.find_element_by_id("search-submit-imagerecipestable").click()
+        time.sleep(1)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='name']")
+        time.sleep(1)
+        nr = 1
+        for element in elements:
+            if element.text == img_recipe:
+                break
+            nr += 1
+
+        self.driver.find_element_by_xpath(".//*[@id='imagerecipestable']/tbody/tr[%s]/td[9]/button[1]" %nr).click()
+        time.sleep(1)
+
+        self.wait_until_build_finish(1, 30)
+
+        # test software recipes
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("Software recipes").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
+        self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("3rd-gen-i5-i7-sinit")
+        self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
+        time.sleep(1)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='add-del-layers']")
+        time.sleep(1)
+        nr = 0
+        for element in elements:
+            if element.text == 'Add layer':
+                element.click()
+                break
+            nr += 1
+
+        time.sleep(1)
+        try:
+            self.driver.find_element_by_id("dependencies-modal")
+            time.sleep(1)
+            self.driver.find_element_by_xpath(".//*[@id='dependencies-modal-form']/div[3]/button[1]").click()
+        except:
+            print 'Only one dependency'
+
+        self.driver.find_element_by_id("change-notification-msg")
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='add-del-layers']")
+        time.sleep(1)
+        self.assertEqual("Build recipe", elements[nr].text, msg='Add layer button did not become Build recipe.')
+
+        time.sleep(2)
+
+        self.driver.find_element_by_id("topbar-configuration-tab").click()
+        time.sleep(1)
+
+        layer = True
+        while (layer):
+            try:
+                delete_button = self.driver.find_element_by_xpath("//*[@id='layers-in-project-list']/li[4]/span")
+                delete_button.click()
+                self.driver.find_element_by_link_text("Configuration").click()
+            except:
+                layer = False
+
+        self.driver.find_element_by_link_text("Software recipes").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
+        self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys(software_recipe)
+        self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
+        time.sleep(1)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='name']")
+        time.sleep(1)
+        nr = 1
+        for element in elements:
+            if element.text == software_recipe:
+                break
+            nr += 1
+
+        self.driver.find_element_by_xpath(".//*[@id='softwarerecipestable']/tbody/tr[%s]/td[9]/button[1]" %nr).click()
+        time.sleep(1)
+
+        self.wait_until_build_finish(1, 30)
+
+
+        ##############
+        #  CASE 1400 #
+        ##############
+    def test_1400(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+
+        self.driver.get(self.base_url)
+        machine = "intel-core2-32"
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("Machines").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-machinestable").clear()
+        self.driver.find_element_by_id("search-input-machinestable").send_keys(machine)
+        self.driver.find_element_by_id("search-submit-machinestable").click()
+        time.sleep(1)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='name']")
+        time.sleep(1)
+        nr = 0
+        for element in elements:
+            if element.text == machine:
+                if nr == 0:
+                    self.driver.find_element_by_xpath(".//*[@id='machinestable']/tbody/tr/td[6]/button").click()
+                else:
+                    self.driver.find_element_by_xpath(".//*[@id='machinestable']/tbody/tr[%s]/td[6]/button" % nr).click()
+                break
+            nr += 1
+
+        time.sleep(1)
+        try:
+            self.driver.find_element_by_id("dependencies-modal")
+            time.sleep(1)
+            self.driver.find_element_by_xpath(".//*[@id='dependencies-modal-form']/div[3]/button[1]").click()
+        except:
+            print 'Only one dependency'
+
+        self.driver.find_element_by_id("change-notification-msg")
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='add-del-layers']")
+        time.sleep(1)
+        self.assertEqual("Select machine", elements[nr].text, msg='Add layer button did not become select machine.')
+        time.sleep(1)
+
+        if nr == 0:
+            self.driver.find_element_by_xpath(".//*[@id='machinestable']/tbody/tr/td[6]/a").click()
+        else:
+            self.driver.find_element_by_xpath(".//*[@id='machinestable']/tbody/tr[%s]/td[6]/a" % nr).click()
+
+        time.sleep(1)
+
+        self.assertEqual(self.driver.find_element_by_id("project-machine-name").text, machine, msg="Machine was not changed")
+        time.sleep(1)
+
+        self.driver.find_element_by_xpath("//*[@id='layers-in-project-list']/li[4]/a").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("targets-tab").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-recipestable").click()
+        self.driver.find_element_by_id("search-input-recipestable").send_keys("libva")
+        self.driver.find_element_by_id("search-submit-recipestable").click()
+        time.sleep(1)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='name']")
+        time.sleep(1)
+        nr = 1
+        for element in elements:
+            if element.text == "libva":
+                break
+            nr += 1
+
+        time.sleep(1)
+        self.driver.find_element_by_xpath(".//*[@id='recipestable']/tbody/tr[%s]/td[4]/button" %nr).click()
+        time.sleep(2)
+
+        self.wait_until_build_finish(1, 120)
+
+
+        ##############
+        #  CASE 1401 #
+        ##############
+    def test_1401(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+
+        self.driver.get(self.base_url)
+        machine1 = "qemux86-64"
+        machine2 = "qemumips"
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("change-machine-toggle").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("machine-change-input").clear()
+        self.driver.find_element_by_id("machine-change-input").send_keys(machine1)
+        self.driver.find_element_by_id("machine-change-btn").click()
+        time.sleep(1)
+
+        self.assertEqual(machine1, self.driver.find_element_by_id("project-machine-name").text, msg="Machine was not changed")
+
+        self.driver.find_element_by_id("build-input").clear()
+        self.driver.find_element_by_id("build-input").send_keys("core-image-minimal")
+        time.sleep(0.5)
+        self.driver.find_element_by_id("build-button").click()
+        time.sleep(1)
+
+        self.wait_until_build_finish(1, 30)
+        self.driver.find_element_by_link_text('core-image-minimal').click()
+        time.sleep(1)
+
+        title = self.driver.find_element_by_class_name("page-header").text
+        self.assertIn(machine1, title, msg="On build summary page is a different machine")
+
+        self.driver.back()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("topbar-configuration-tab").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("change-machine-toggle").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("machine-change-input").clear()
+        self.driver.find_element_by_id("machine-change-input").send_keys(machine2)
+        self.driver.find_element_by_id("machine-change-btn").click()
+        time.sleep(1)
+
+        self.assertEqual(machine2, self.driver.find_element_by_id("project-machine-name").text, msg="Machine was not changed")
+
+        self.driver.find_element_by_id("build-input").clear()
+        self.driver.find_element_by_id("build-input").send_keys("core-image-sato")
+        time.sleep(0.5)
+        self.driver.find_element_by_id("build-button").click()
+        time.sleep(1)
+
+        self.wait_until_build_finish(1, 30)
+        self.driver.find_element_by_link_text('core-image-sato').click()
+        time.sleep(1)
+
+        title = self.driver.find_element_by_class_name("page-header").text
+        self.assertIn(machine2, title, msg="On build summary page is a different machine")
+
+
+        ##############
+        #  CASE 1402 #
+        ##############
+    def test_1402(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("BitBake variables").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_id("change-image_fstypes-icon").click()
+        time.sleep(1)
+
+        image_fstypes_list = self.driver.find_element_by_id("all-image_fstypes")
+        items = image_fstypes_list.find_elements_by_tag_name("label")
+        for item in items:
+            if (item.text == 'ext4') | (item.text == 'hddimg'):
+                if "checked=\"checked\"" not in item.get_attribute('innerHTML'):
+                    item.click()
+                    time.sleep(0.5)
+                else:
+                    print "WARNING: Posible that ext4 and hddimg images to be allready build"
+
+        self.driver.find_element_by_id("apply-change-image_fstypes").click()
+        time.sleep(1)
+
+        image_fstypes = self.driver.find_element_by_id("image_fstypes").text
+        self.assertIn("ext4", image_fstypes, msg="ext4 is not present in the Image fstypes")
+        self.assertIn("hddimg", image_fstypes, msg="hddimg is not present in the Image fstypes")
+
+        self.driver.find_element_by_id("build-input").clear()
+        self.driver.find_element_by_id("build-input").send_keys("core-image-minimal")
+        self.driver.find_element_by_id("build-button").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+
+        self.wait_until_build_finish(1, 30)
+
+
+        self.driver.find_element_by_link_text("core-image-minimal").click()
+        time.sleep(1)
+
+        self.assertTrue(self.driver.find_element_by_xpath("html/body/div[4]/div/div/div[2]/div[4]/div/dl/dd[4]/ul"),\
+                        msg="WARNING: This build did not create any image files - this TC will fail")
+
+        image_files_list = self.driver.find_element_by_xpath("html/body/div[4]/div/div/div[2]/div[4]/div/dl/dd[4]/ul")
+
+        elements = ""
+        items = image_files_list.find_elements_by_tag_name("li")
+        for item in items:
+            elements += item.text
+            elements += " "
+
+        self.assertIn("ext4", elements, msg="ext4 is not present in the build Image files")
+
+        other_artifacts_list = self.driver.find_element_by_xpath("html/body/div[4]/div/div/div[2]/div[5]/div/dl/dd/div")
+        items = other_artifacts_list.find_elements_by_tag_name("a")
+        for item in items:
+            elements += item.text
+            elements += " "
+        self.assertIn("hddimg", elements, msg="hddimg is not present in the build Image files (other artifacts) - Bug 8556")
+
+
+        ##############
+        #  CASE 1403 #
+        ##############
+    def test_1403(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        default_image_list = ['Software recipe', 'Version', 'Description', 'Layer', 'Build']
+        time.sleep(0.5)
+
+        #step 3
+        self.driver.find_element_by_link_text("Software recipes").click()
+        time.sleep(0.5)
+
+        #step 4
+        l = self.get_table_data('softwarerecipestable', 10, 5)
+        self.assertTrue(l != [], msg="Image recipes table is not populated")
+
+        head_list = self.get_table_head_text('softwarerecipestable')
+        for item in default_image_list:
+            self.assertTrue(item in head_list, msg=("%s not found in Directory structure table head" % item))
+
+
+        ##############
+        #  CASE 1404 #
+        ##############
+    def test_1404(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        image_recipes_sortable_dict = {'Software recipe':'name', 'Section':'section', 'Layer':'layer_version__layer__name', 'License':'license'}
+        image_recipes_not_sortable_dict = {'Version':'version', 'Description':'get_description_or_summary', 'Recipe file':'recipe-file', \
+                                           'Git revision':'layer_version__get_vcs_reference', 'Build':'add-del-layers'}
+        time.sleep(0.5)
+
+        #step 2
+        self.driver.find_element_by_link_text("Software recipes").click()
+        time.sleep(0.5)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='name']")
+        initial_values = [element.text for element in elements]
+        time.sleep(1)
+
+        #step 3
+        element = self.driver.find_element_by_css_selector('th.name')
+        self.assertTrue("i class=\"icon-caret-down\" style=\"display: inline;\"" in element.get_attribute('innerHTML'),\
+                        msg='Table not sorted by Image recie')
+
+        #step 4
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("checkbox-recipe-file").click()
+        self.driver.find_element_by_id("checkbox-section").click()
+        self.driver.find_element_by_id("checkbox-license").click()
+        self.driver.find_element_by_id("checkbox-layer_version__get_vcs_reference").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("edit-columns-button").click()
+
+        #step 5
+        for column in image_recipes_sortable_dict:
+            element = self.driver.find_element_by_css_selector('th.%s' % image_recipes_sortable_dict[column])
+            time.sleep(1)
+            if column == 'Software recipe':
+                self.assertTrue("a class=\"sorted\"" in element.get_attribute('innerHTML'), msg='%s column is not sortable' %column)
+            else:
+                self.assertTrue("href=\"#\"" in element.get_attribute('innerHTML'), msg='%s column is not sortable' %column)
+
+        for column in image_recipes_not_sortable_dict:
+            element = self.driver.find_element_by_css_selector('th.%s' %image_recipes_not_sortable_dict[column])
+            time.sleep(1)
+            self.assertTrue("<span class=\"muted\">" in element.get_attribute('innerHTML'), msg='%s column is sortable' %column)
+
+        #step 6
+        e = self.driver.find_element_by_css_selector('th.%s' % image_recipes_sortable_dict['Software recipe'])
+        e.click()
+        time.sleep(1)
+        self.assertTrue("<i class=\"icon-caret-up\"" in e.get_attribute('innerHTML'),\
+                        msg='Software recipe is not sorted descendent')
+        time.sleep(1)
+
+        self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
+        self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("meta-intel")
+        self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
+        time.sleep(1)
+
+        #step 8
+        e = self.driver.find_element_by_css_selector('th.%s' % image_recipes_sortable_dict['Software recipe'])
+        self.assertTrue("<i class=\"icon-caret-up\"" in e.get_attribute('innerHTML'),\
+                        msg='Software recipe is not sorted descendent after search')
+
+        #continue step 6
+        elements = self.driver.find_elements_by_xpath("//td[@class='name']")
+        values = [element.text for element in elements]
+
+        layers_elements = self.driver.find_elements_by_xpath("//td[@class='layer_version__layer__name']/a")
+        layers_elements[0].click()
+
+        time.sleep(1)
+        self.driver.back()
+        time.sleep(1)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='name']")
+        values2 = [element.text for element in elements]
+        self.assertEqual(values, values2, "Software Recipe column is not sorted properly")
+
+        #step 7
+        self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
+        self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
+
+        element = self.driver.find_element_by_xpath("//th[@class='section']/a")
+        element.click()
+        time.sleep(1)
+        self.assertTrue("sorted" in element.get_attribute('class'), msg='Table is not sort by Section')
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("checkbox-section").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(0.5)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='name']")
+        values3 = [element.text for element in elements]
+        self.assertEqual(initial_values, values3, msg="Default sorting was not restore")
+
+
+        ##############
+        #  CASE 1405 #
+        ##############
+    def test_1405(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        target_list = ['Software recipe', 'Version', 'Description', 'Recipe file', 'Section', 'Layer', 'License', \
+                       'Git revision', 'Build']
+        time.sleep(1)
+
+        #step 2
+        self.driver.find_element_by_link_text("Software recipes").click()
+        time.sleep(1)
+
+        # step 3
+        self.assertTrue(self.driver.find_element_by_id("search-input-softwarerecipestable"), "Search input not found")
+        self.assertTrue(self.driver.find_element_by_id("search-submit-softwarerecipestable"), " Search button not found")
+        all_targets = self.driver.find_element_by_class_name("table-count-softwarerecipestable").text
+
+        # step 4
+        self.assertEqual("Search compatible software recipes", \
+                         self.driver.find_element_by_id("search-input-softwarerecipestable").get_attribute("placeholder") \
+                         ,"Different placeholder text")
+
+        # step 5
+        self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
+        self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("c")
+        self.assertEqual("c",self.driver.find_element_by_id("search-input-softwarerecipestable").get_attribute("value"), \
+                         msg="Search string is not kept in the text input field")
+
+        self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
+        self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
+        time.sleep(2)
+
+        # step 6
+        # returned results
+        self.assertEqual("core", self.driver.find_element_by_id("search-input-softwarerecipestable").get_attribute("value"), \
+                         msg="Search string is not kept in the text input field")
+
+        targets_after_search = self.driver.find_element_by_class_name("table-count-softwarerecipestable").text
+        self.assertNotEqual(all_targets, targets_after_search, msg="Same compatibles targets")
+
+        self.driver.find_element_by_xpath("//*[@id='table-chrome-softwarerecipestable']/div/div[1]/a/i").click()
+        time.sleep(2)
+
+        targets_after_clear_search = self.driver.find_element_by_class_name("table-count-softwarerecipestable").text
+        self.assertEqual(all_targets, targets_after_clear_search, msg="Different number of compatibles targets")
+
+        #no results
+        self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
+        self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("dkasashdsakjdhasjkdashdjk")
+        self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
+
+        time.sleep(3)
+        no_targets = self.driver.find_element_by_class_name("table-count-softwarerecipestable").text
+        if no_targets=="0":
+            self.driver.find_element_by_xpath("//*[@id='no-results-softwarerecipestable']/div/form/button[2]").click()
+            time.sleep(2)
+            targets_show_all = self.driver.find_element_by_class_name("table-count-softwarerecipestable").text
+            self.assertEqual(all_targets, targets_show_all, msg="Different number of compatibles targets")
+        else:
+            self.fail(msg='Search is not working properly')
+
+        # step 7
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("checkbox-recipe-file").click()
+        self.driver.find_element_by_id("checkbox-section").click()
+        self.driver.find_element_by_id("checkbox-license").click()
+        self.driver.find_element_by_id("checkbox-layer_version__get_vcs_reference").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("edit-columns-button").click()
+
+        self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
+        self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
+        time.sleep(1)
+
+        head_list = self.get_table_head_text('softwarerecipestable')
+        for item in target_list:
+            self.assertTrue(item in head_list, msg=("%s not found in Directory structure table head" % item))
+
+        # step 8
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
+
+        self.driver.find_element_by_id("in_current_project").click()
+        self.driver.find_element_by_id("in_current_project:in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertIn("btn-primary", filter_class,msg = "Filter is not applied")
+
+        self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
+        self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
+
+        time.sleep(2)
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
+
+        # bug 8125
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertIn("btn-primary", filter_class,msg = "Filter is not applied")
+
+        self.driver.find_element_by_xpath(".//*[@id='table-chrome-softwarerecipestable']/div/div[1]/a/i").click()
+        time.sleep(2)
+
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied after remove search - bug 8125")
+
+
+        ##############
+        #  CASE 1406 #
+        ##############
+    def test_1406(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_link_text("Software recipes").click()
+        time.sleep(1)
+
+        # step 3
+        build_element = self.driver.find_element_by_class_name("add-del-layers")
+        self.assertIn("<i class=\"icon-filter filtered\"></i>", build_element.get_attribute('innerHTML'), \
+                      msg='Build filter dose not exist')
+
+        # step 4
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:not_in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:all").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+
+        # step 5
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
+
+        self.driver.find_element_by_id("in_current_project").click()
+        time.sleep(0.5)
+        self.driver.find_element_by_id("in_current_project:in_project").click()
+        self.driver.find_element_by_xpath("//*[@class='modal-footer']//*[@type='submit']").click()
+        time.sleep(2)
+
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertIn("btn-primary", filter_class,msg = "Filter is not applied")
+
+        self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
+        self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("core")
+        self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
+
+        time.sleep(2)
+        filter_class = self.driver.find_element_by_id("in_current_project").get_attribute("class")
+        self.assertNotIn("btn-primary", filter_class,msg = "Filter is applied")
+
+
+        ##############
+        #  CASE 1407 #
+        ##############
+    def test_1407(self):
+
+        self.case_no = self.get_case_number()
+        self.log.info(' CASE %s log: ' % str(self.case_no))
+        self.driver.maximize_window()
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(1)
+        self.driver.find_element_by_link_text("core-image-minimal").click()
+        time.sleep(1)
+
+        self.driver.find_element_by_xpath(".//*[@id='nav']/ul/li[3]/a").click()
+        time.sleep(1)
+
+        elements = self.driver.find_elements_by_xpath("//td[@class='package_name']")
+        elements[0].click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath(".//*[@id='otable']/tbody/tr[1]/td[1]/a").click()
+        time.sleep(1)
+        self.driver.find_element_by_xpath(".//*[@id='otable']/tbody/tr[1]/td[1]/a").click()
+        time.sleep(1)
+
+        self.assertTrue(self.driver.find_element_by_id("dirtable"), msg="Can't find the directory structure table")
+
+
         ##############
         #  CASE 1408 #
         ##############
@@ -2887,6 +4715,7 @@ class toaster_cases(toaster_cases_base):
         filtered_column = self.get_table_column_text("class", "description")
         if '' in filtered_column:
             self.fail(msg="At least one element in the description column is blank; filter failed!")
+
 
         ##############
         #  CASE 1409 #
@@ -2919,6 +4748,7 @@ class toaster_cases(toaster_cases_base):
         time.sleep(1)
 
         self.assertTrue(self.is_text_present("License"),msg="Could not confirm we reached a recipe page")
+
 
         ##############
         #  CASE 1410 #
@@ -2981,6 +4811,7 @@ class toaster_cases(toaster_cases_base):
         #close new tab
         self.driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL + 'w')
 
+
         ##############
         #  CASE 1411 #
         ##############
@@ -3005,85 +4836,5 @@ class toaster_cases(toaster_cases_base):
         if '' in sizes_list:
             self.fail(msg="At least one element in the sizes column is blank")
 
-        ##############
-        #  CASE 1140 #
-        ##############
-    def test_1140(self):
-        self.case_no = self.get_case_number()
-        self.log.info(' CASE %s log: ' % str(self.case_no))
-        self.driver.maximize_window()
-        self.driver.get("http://localhost:8000/admin/")
-        time.sleep(2)
 
-        self.driver.find_element_by_id("id_username").send_keys("toaster_admin")
-        time.sleep(1)
-        self.driver.find_element_by_id("id_password").send_keys("qwe123")
-        time.sleep(1)
-        self.driver.find_element_by_xpath("//input[@value='Log in']").click()
-        time.sleep(1)
 
-        self.driver.find_element_by_link_text("Build environments").click()
-        time.sleep(1)
-        self.driver.find_element_by_link_text("BuildEnvironment object").click()
-        time.sleep(1)
-
-        sourcedir = self.driver.find_element_by_id("id_sourcedir").get_attribute('value')
-        builddir = self.driver.find_element_by_id("id_builddir").get_attribute('value')
-
-        builddir2 = str(builddir) + "2"
-
-        self.driver.find_element_by_link_text("Build environments").click()
-        time.sleep(1)
-        self.driver.find_element_by_link_text("Add build environment").click()
-        time.sleep(1)
-    
-        self.driver.find_element_by_id("id_address").send_keys("2")
-        self.driver.find_element_by_id("id_sourcedir").send_keys(str(sourcedir))
-        self.driver.find_element_by_id("id_builddir").send_keys(str(builddir2))
-       
-        options = Select(self.driver.find_element_by_id("id_betype"))
-        options.select_by_visible_text("local")
-
-        self.driver.find_element_by_xpath("//input[@value='Save']").click()
-        time.sleep(2)
-
-        self.driver.get(self.base_url)
-        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
-        time.sleep(1)
-        self.driver.find_element_by_link_text("selenium-project").click()
-        time.sleep(1)
-
-        self.driver.find_element_by_id("build-input").send_keys("core-image-sato")
-        time.sleep(1)
-        self.driver.find_element_by_id("build-button").click()
-        time.sleep(2)
-
-        self.driver.find_element_by_id("build-input").send_keys("core-image-minimal")
-        time.sleep(1)
-        self.driver.find_element_by_id("build-button").click()
-        time.sleep(2)
-
-        progress_list = self.driver.find_elements_by_xpath("//div[@class='progress']")
-        self.assertTrue(len(progress_list) > 1,msg="Could not find 2 progress bars visible")
-
-        count = 1
-        self.timeout = 340
-        failflag = False
-        try:
-            self.driver.refresh()
-            time.sleep(1)
-            while (self.driver.find_element_by_xpath("//div[@class='progress']").is_displayed()):
-                print 'Build running for '+str(count)+' minutes'
-                count += 5
-                if (count > self.timeout):
-                    failflag = True
-                    print 'Build took longer than expected to complete; Failing due to possible build stuck.'
-                    self.fail()
-                time.sleep(300)
-                self.driver.refresh()
-        except:
-            if failflag:
-                self.fail(msg="Build took longer than expected to complete; Failing due to possible build stuck.")
-            print "Looking for successful builds"
-            build_list = self.driver.find_elements_by_xpath("//div[@class='alert build-result alert-success']")
-            self.assertTrue((len(build_list) > 1), msg="Could not find successful builds")
