@@ -406,7 +406,7 @@ class toaster_cases_base(unittest.TestCase):
             select = Select(self.driver.find_element_by_id("package_classes-select"))
             select.select_by_visible_text("package_rpm")
             first_box = self.driver.find_element_by_id("package_class_1_input")
-            second_box = self.driver.find_element_by_id("package_class_1_input")
+            second_box = self.driver.find_element_by_id("package_class_2_input")
             if (first_box.get_attribute("checked")):
                 first_box.click()
             if (second_box.get_attribute("checked")):
@@ -826,6 +826,10 @@ class toaster_cases_base(unittest.TestCase):
                 print 'Builds did not complete successfully'
                 self.fail(msg="Builds did not complete successfully.")
         print "Builds complete!"
+
+    def get_text_from_elements(self, css_selector):
+        elements = self.driver.find_elements_by_css_selector(css_selector)
+        return map(lambda x: x.text, elements)
 
 ###################################################################
 #                                                                 #
@@ -4068,10 +4072,14 @@ class toaster_cases(toaster_cases_base):
             time.sleep(1)
 
         # step 9
-        self.driver.get(self.base_project_url)
+        self.driver.get(self.base_url)
+
+        self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
         time.sleep(1)
+        self.driver.find_element_by_link_text("selenium-project").click()
+        time.sleep(1)
+
         self.driver.find_element_by_partial_link_text("Builds (").click()
-        time.sleep(1)
         self.driver.find_element_by_link_text('core-image-minimal').click()
         time.sleep(1)
 
@@ -4128,12 +4136,12 @@ class toaster_cases(toaster_cases_base):
         self.driver.find_element_by_id('build-input').clear()
         self.driver.find_element_by_id('build-input').send_keys('core-image-minimal:clean')
         self.driver.find_element_by_id('build-button').click()
-        time.sleep(1)
+        time.sleep(3)
         self.driver.find_element_by_partial_link_text("Builds (").click()
         time.sleep(1)
 
         time.sleep(1)
-        self.wait_until_build_finish(1, 30)
+        self.wait_until_build_finish(1, 60)
 
         rebuild_elements = self.driver.find_elements_by_css_selector(".btn.btn-success.pull-right")
         for element in rebuild_elements:
@@ -4142,7 +4150,7 @@ class toaster_cases(toaster_cases_base):
                 break
 
         time.sleep(1)
-        self.wait_until_build_finish(1, 30)
+        self.wait_until_build_finish(1, 60)
 
         self.driver.find_element_by_partial_link_text('core-image-minimal:clean').click()
         time.sleep(1)
@@ -4160,7 +4168,7 @@ class toaster_cases(toaster_cases_base):
                 break
 
         time.sleep(1)
-        self.wait_until_build_finish(1, 30)
+        self.wait_until_build_finish(1, 60)
 
         self.driver.find_element_by_partial_link_text('core-image-minimal:clean').click()
         time.sleep(1)
@@ -4211,9 +4219,10 @@ class toaster_cases(toaster_cases_base):
         self.driver.find_element_by_id('build-input').clear()
         self.driver.find_element_by_id('build-input').send_keys('core-image-minimal')
         self.driver.find_element_by_id('build-button').click()
-        time.sleep(1)
+        time.sleep(3)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 30)
+        self.wait_until_build_finish(1, 100)
         self.driver.find_element_by_link_text('core-image-minimal').click()
         time.sleep(1)
 
@@ -4384,7 +4393,7 @@ class toaster_cases(toaster_cases_base):
         self.driver.find_element_by_link_text("core-image-minimal").click()
         time.sleep(1)
 
-        download_log = self.driver.find_elements_by_xpath("//*[contains(text(), 'Download build log')]")
+        download_log = self.driver.find_element_by_xpath("//*[contains(text(), 'Download build log')]")
         self.assertTrue(download_log.is_displayed(), msg="Cannot find download log button")
 
         #resetting to defaults
@@ -4481,9 +4490,10 @@ class toaster_cases(toaster_cases_base):
             nr += 1
 
         self.driver.find_element_by_xpath(".//*[@id='imagerecipestable']/tbody/tr[%s]/td[9]/button[1]" %nr).click()
-        time.sleep(1)
+        time.sleep(3)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 30)
+        self.wait_until_build_finish(1, 100)
 
         # test software recipes
         self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
@@ -4553,9 +4563,10 @@ class toaster_cases(toaster_cases_base):
             nr += 1
 
         self.driver.find_element_by_xpath(".//*[@id='softwarerecipestable']/tbody/tr[%s]/td[9]/button[1]" %nr).click()
-        time.sleep(1)
+        time.sleep(3)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 30)
+        self.wait_until_build_finish(1, 100)
 
 
         ##############
@@ -4643,6 +4654,8 @@ class toaster_cases(toaster_cases_base):
         self.driver.find_element_by_xpath(".//*[@id='recipestable']/tbody/tr[%s]/td[4]/button" %nr).click()
         time.sleep(2)
 
+        self.driver.get("http://127.0.0.1:8000/toastergui/builds/")
+
         self.wait_until_build_finish(1, 120)
 
 
@@ -4678,9 +4691,10 @@ class toaster_cases(toaster_cases_base):
         self.driver.find_element_by_id("build-input").send_keys("core-image-minimal")
         time.sleep(0.5)
         self.driver.find_element_by_id("build-button").click()
-        time.sleep(1)
+        time.sleep(3)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 30)
+        self.wait_until_build_finish(1, 100)
         self.driver.find_element_by_link_text('core-image-minimal').click()
         time.sleep(1)
 
@@ -4698,6 +4712,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("machine-change-input").clear()
         self.driver.find_element_by_id("machine-change-input").send_keys(machine2)
+        time.sleep(1)
         self.driver.find_element_by_id("machine-change-btn").click()
         time.sleep(1)
 
@@ -4705,11 +4720,12 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("build-input").clear()
         self.driver.find_element_by_id("build-input").send_keys("core-image-sato")
-        time.sleep(0.5)
+        time.sleep(10)
         self.driver.find_element_by_id("build-button").click()
-        time.sleep(1)
+        time.sleep(3)
+        self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 30)
+        self.wait_until_build_finish(1, 100)
         self.driver.find_element_by_link_text('core-image-sato').click()
         time.sleep(1)
 
@@ -4763,7 +4779,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 30)
+        self.wait_until_build_finish(1, 100)
 
 
         self.driver.find_element_by_link_text("core-image-minimal").click()
@@ -5327,7 +5343,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 50)
+        self.wait_until_build_finish(1, 150)
 
         self.driver.find_element_by_partial_link_text("core-image-minimal (+1)").click()
         time.sleep(1)
@@ -5379,7 +5395,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 50)
+        self.wait_until_build_finish(1, 100)
 
         self.driver.find_element_by_partial_link_text("core-image-minimal").click()
         time.sleep(2)
@@ -5437,7 +5453,7 @@ class toaster_cases(toaster_cases_base):
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
 
-        self.wait_until_build_finish(1, 50)
+        self.wait_until_build_finish(1, 100)
 
 
         self.driver.find_element_by_partial_link_text("core-image-minimal").click()
@@ -5498,7 +5514,7 @@ class toaster_cases(toaster_cases_base):
         time.sleep(5)
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 75)
+        self.wait_until_build_finish(1, 100)
 
         # Step 7
 
