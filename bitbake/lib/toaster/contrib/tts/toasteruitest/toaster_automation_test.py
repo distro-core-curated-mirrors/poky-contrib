@@ -336,6 +336,7 @@ class toaster_cases_base(unittest.TestCase):
         self.setup_browser()
         self.driver.implicitly_wait(10)
         self.driver.get(self.base_url)
+        self.driver.maximize_window()
         self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
         time.sleep(1)
         self.driver.find_element_by_link_text("selenium-project").click()
@@ -3991,7 +3992,7 @@ class toaster_cases(toaster_cases_base):
         self.driver.find_element_by_id("build-input").send_keys("core-image-minimal")
         time.sleep(1)
         self.driver.find_element_by_id("build-button").click()
-        time.sleep(2)
+        time.sleep(10)
 
         progress_list = self.driver.find_elements_by_xpath("//div[@class='progress']")
         self.assertTrue(len(progress_list) > 1,msg="Could not find 2 progress bars visible")
@@ -4363,7 +4364,7 @@ class toaster_cases(toaster_cases_base):
             print "Unable to start new build"
             self.fail(msg="Unable to start new build")
         count = 1
-        self.timeout = 20
+        self.timeout = 50
         failflag = False
         try:
             self.driver.refresh()
@@ -4372,12 +4373,12 @@ class toaster_cases(toaster_cases_base):
             while (self.driver.find_element_by_xpath("//div[@class='progress']").is_displayed()):
                 #print "Looking for build in progress"
                 print 'Build running for '+str(count)+' minutes'
-                count += 1
+                count += 5
                 if (count > self.timeout):
                     failflag = True
                     print 'Build took longer than expected to complete; Failing due to possible build stuck.'
                     self.fail()
-                time.sleep(60)
+                time.sleep(300)
                 self.driver.refresh()
         except:
            try:
@@ -4389,23 +4390,6 @@ class toaster_cases(toaster_cases_base):
                 if failflag:
                     self.fail(msg="Build took longer than expected to complete; Failing due to possible build stuck.")
                 self.fail(msg="Could not find expected failed build")
-
-        self.driver.find_element_by_link_text("core-image-minimal").click()
-        time.sleep(1)
-
-        download_log = self.driver.find_element_by_xpath("//*[contains(text(), 'Download build log')]")
-        self.assertTrue(download_log.is_displayed(), msg="Cannot find download log button")
-
-        #resetting to defaults
-        self.driver.find_element_by_link_text("selenium-project").click()
-        layer = True
-        while (layer):
-            try:
-                delete_button = self.driver.find_element_by_xpath("//*[@id='layers-in-project-list']/li[4]/span")
-                delete_button.click()
-                self.driver.find_element_by_link_text("Configuration").click()
-            except:
-                layer = False
 
 
         ##############
