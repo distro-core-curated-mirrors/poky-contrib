@@ -38,4 +38,4 @@ Available drivers:
 e.g. to run the test suite with phantomjs where you have phantomjs installed
 in /home/me/apps/phantomjs:
 
-PATH=/home/me/apps/phantomjs/bin:$PATH TOASTER_TESTS_BROWSER=phantomjs manage.py test tests_browser
+PATH=/home/me/apps/phantomjs/bin:$PATH TOASTER_TESTS_BROWSER=phantomjs manage.py test tests.browser

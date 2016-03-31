@@ -21,7 +21,7 @@
 
 from django.core.urlresolvers import reverse
 from django.utils import timezone
-from toaster.tests_browser.selenium_helpers import SeleniumTestCase
+from selenium_helpers import SeleniumTestCase
 
 from orm.models import Build, Project
 
