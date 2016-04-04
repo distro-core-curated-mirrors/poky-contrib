@@ -214,6 +214,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
             # Nostamp tasks need an implicit taint so that they force any dependent tasks to run
             import uuid
             taint = str(uuid.uuid4())
+            bb.warn("taint %s for %s" % (taint, k))
             data = data + taint
             self.taints[k] = "nostamp:" + taint
 
@@ -238,9 +239,13 @@ class SignatureGeneratorBasic(SignatureGenerator):
             bb.fetch2.fetcher_parse_done()
 
     def dump_sigtask(self, fn, task, stampbase, runtime):
+        #import traceback
+        #bb.warn("here3 %s" % (task))
+        #bb.warn(str(traceback.extract_stack()))
+
+        referencestamp = stampbase
 
         k = fn + "." + task
-        referencestamp = stampbase
         if isinstance(runtime, str) and runtime.startswith("customfile"):
             sigfile = stampbase
             referencestamp = runtime[11:]
@@ -274,13 +279,18 @@ class SignatureGeneratorBasic(SignatureGenerator):
                 data['runtaskhashes'][dep] = self.taskhash[dep]
             data['taskhash'] = self.taskhash[k]
 
+        if "man" in fn:
+           bb.warn("%s %s %s" % (fn, task, stampbase))
+
         taint = self.read_taint(fn, task, referencestamp)
         if taint:
             data['taint'] = taint
+            bb.warn("Found taint %s" % taint)
 
         if runtime and k in self.taints:
             if 'nostamp:' in self.taints[k]:
                 data['taint'] = self.taints[k]
+                bb.warn("Found taint2 %s" % self.taints[k])
 
         fd, tmpfile = tempfile.mkstemp(dir=os.path.dirname(sigfile), prefix="sigtask.")
         try:
@@ -300,9 +310,12 @@ class SignatureGeneratorBasic(SignatureGenerator):
         if computed_basehash != self.basehash[k]:
             bb.error("Basehash mismatch %s verses %s for %s" % (computed_basehash, self.basehash[k], k))
         if k in self.taskhash:
-            computed_taskhash = calc_taskhash(data)
+            db = False
+            if task == "do_bootdirectdisk":
+                db = True
+            computed_taskhash = calc_taskhash(data,db)
             if computed_taskhash != self.taskhash[k]:
-                bb.error("Taskhash mismatch %s verses %s for %s" % (computed_taskhash, self.taskhash[k], k))
+                bb.error("Taskhash mismatch %s verses %s for %s %s" % (computed_taskhash, self.taskhash[k], k, sigfile))
 
 
     def dump_sigs(self, dataCache, options):
@@ -538,20 +551,32 @@ def calc_basehash(sigdata):
 
     return hashlib.md5(basedata).hexdigest()
 
-def calc_taskhash(sigdata):
+def calc_taskhash(sigdata, debug=False):
     data = sigdata['basehash']
+
+    if debug:
+        bb.warn("data1 %s" % data)
 
     for dep in sigdata['runtaskdeps']:
         data = data + sigdata['runtaskhashes'][dep]
 
+    if debug:
+        bb.warn("data2 %s" % data)
+
     for c in sigdata['file_checksum_values']:
         data = data + c[1]
+
+    if debug:
+        bb.warn("data3 %s" % data)
 
     if 'taint' in sigdata:
         if 'nostamp:' in sigdata['taint']:
             data = data + sigdata['taint'][8:]
         else:
             data = data + sigdata['taint']
+
+    if debug:
+        bb.warn("data4 %s" % data)
 
     return hashlib.md5(data).hexdigest()
 
