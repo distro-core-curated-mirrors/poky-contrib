@@ -251,18 +251,9 @@ def fork_off_task(worker, cfg, data, databuilder, workerdata, fn, task, taskname
                 os._exit(1)
             try:
                 if cfg.dry_run:
-                    #if not the_data.getVarFlag(taskname, 'nostamp', False) and not  the_data.getVarFlag(taskname, 'selfstamp', False):
-                    #    bb.build.make_stamp2(taskname,  the_data)
-                    the_data.setVar('BB_RUNTASK', taskname)
-                    the_data.setVar('BB_FILENAME', fn)
-                    the_data.setVar('BB_CURRENTTASK', taskname[3:])
-                    bb.event.fire(bb.build.TaskStarted(taskname, "", [], the_data), the_data)
-                    bb.event.fire(bb.build.TaskSucceeded(taskname, "", the_data), the_data)
-
                     return 0
                 return bb.build.exec_task(fn, taskname, the_data, cfg.profile)
-            except Exception as e:
-                bb.warn(str(e))
+            except:
                 os._exit(1)
         if not profiling:
             os._exit(child())
