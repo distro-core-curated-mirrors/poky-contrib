@@ -2190,6 +2190,7 @@ class toaster_cases(toaster_cases_base):
         self.assertTrue(self.driver.find_element_by_partial_link_text('meta-yocto'), msg=("meta-yocto layer not find"))
         self.assertTrue(self.driver.find_element_by_partial_link_text('meta-yocto-bsp'), msg=("meta-yocto-bsp layer not find"))
         self.driver.find_element_by_id("search-input-layerstable").clear()
+        time.sleep(1)
         self.driver.find_element_by_id("search-submit-layerstable").click()
 
         head_list = self.get_table_head_text('layerstable')
@@ -2208,6 +2209,7 @@ class toaster_cases(toaster_cases_base):
 
         #step 6-7
         self.driver.find_element_by_id("search-input-layerstable").send_keys('e100-bsp')
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-layerstable").click()
         time.sleep(1)
         self.assertTrue(self.driver.find_element_by_xpath(".//*[@id='layerstable']/tbody/tr/td[6]/a"), msg="no dependencies button")
@@ -2272,6 +2274,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-layerstable").clear()
         self.driver.find_element_by_id("search-input-layerstable").send_keys("meta-intel")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-layerstable").click()
         time.sleep(2)
 
@@ -2341,6 +2344,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-layerstable").clear()
         self.driver.find_element_by_id("search-input-layerstable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-layerstable").click()
         time.sleep(2)
 
@@ -2361,6 +2365,7 @@ class toaster_cases(toaster_cases_base):
         #no results
         self.driver.find_element_by_id("search-input-layerstable").clear()
         self.driver.find_element_by_id("search-input-layerstable").send_keys("dkasashdsakjdhasjkdashdjk")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-layerstable").click()
 
         time.sleep(2)
@@ -2383,6 +2388,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-layerstable").clear()
         self.driver.find_element_by_id("search-input-layerstable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-layerstable").click()
         time.sleep(2)
 
@@ -2404,6 +2410,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-layerstable").clear()
         self.driver.find_element_by_id("search-input-layerstable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-layerstable").click()
 
         time.sleep(2)
@@ -2453,6 +2460,7 @@ class toaster_cases(toaster_cases_base):
         layer = "meta-intel-iot-devkit"
         self.driver.find_element_by_id("search-input-layerstable").clear()
         self.driver.find_element_by_id("search-input-layerstable").send_keys(layer)
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-layerstable").click()
 
         time.sleep(3)
@@ -2502,6 +2510,7 @@ class toaster_cases(toaster_cases_base):
         for elem in layers_added:
             self.driver.find_element_by_id("search-input-layerstable").clear()
             self.driver.find_element_by_id("search-input-layerstable").send_keys(elem)
+            time.sleep(2)
             self.driver.find_element_by_id("search-submit-layerstable").click()
             time.sleep(1)
 
@@ -2623,6 +2632,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-imagerecipestable").clear()
         self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("meta-intel")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-imagerecipestable").click()
         time.sleep(1)
 
@@ -2698,11 +2708,13 @@ class toaster_cases(toaster_cases_base):
         # step 5
         self.driver.find_element_by_id("search-input-imagerecipestable").clear()
         self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("c")
+        time.sleep(2)
         self.assertEqual("c",self.driver.find_element_by_id("search-input-imagerecipestable").get_attribute("value"), \
                          msg="Search string is not kept in the text input field")
 
         self.driver.find_element_by_id("search-input-imagerecipestable").clear()
         self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-imagerecipestable").click()
         time.sleep(2)
 
@@ -2723,6 +2735,7 @@ class toaster_cases(toaster_cases_base):
         #no results
         self.driver.find_element_by_id("search-input-imagerecipestable").clear()
         self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("dkasashdsakjdhasjkdashdjk")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-imagerecipestable").click()
 
         time.sleep(3)
@@ -2747,6 +2760,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-imagerecipestable").clear()
         self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-imagerecipestable").click()
         time.sleep(1)
 
@@ -2768,6 +2782,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-imagerecipestable").clear()
         self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-imagerecipestable").click()
 
         time.sleep(2)
@@ -2846,6 +2861,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-layerstable").clear()
         self.driver.find_element_by_id("search-input-layerstable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-layerstable").click()
 
         time.sleep(2)
@@ -2908,6 +2924,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-imagerecipestable").clear()
         self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-imagerecipestable").click()
 
         time.sleep(2)
@@ -3071,6 +3088,7 @@ class toaster_cases(toaster_cases_base):
         self.assertFalse((edit_image_install_save_button.is_enabled()), msg="IMAGE_INSTALL_append save changes button still active with empty value; should not be")
 
         edit_image_install_element.send_keys("package1")
+        time.sleep(2)
         edit_image_install_save_button.click()
         time.sleep(1)
 
@@ -3409,6 +3427,7 @@ class toaster_cases(toaster_cases_base):
         # step 5
         self.driver.find_element_by_id("search-input-projectbuildstable").clear()
         self.driver.find_element_by_id("search-input-projectbuildstable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-projectbuildstable").click()
 
         time.sleep(2)
@@ -3451,6 +3470,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-projectbuildstable").clear()
         self.driver.find_element_by_id("search-input-projectbuildstable").send_keys(search_string)
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-projectbuildstable").click()
         time.sleep(1)
 
@@ -3469,6 +3489,7 @@ class toaster_cases(toaster_cases_base):
         #step 5
         self.driver.find_element_by_id("search-input-projectbuildstable").clear()
         self.driver.find_element_by_id("search-input-projectbuildstable").send_keys('dkasashdsakjdhasjkdashdjk')
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-projectbuildstable").click()
         time.sleep(1)
         self.assertIn("No project builds found", self.driver.find_element_by_css_selector(".page-header.top-air").text, \
@@ -3493,6 +3514,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-projectbuildstable").clear()
         self.driver.find_element_by_id("search-input-projectbuildstable").send_keys(search_string)
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-projectbuildstable").click()
         time.sleep(1)
 
@@ -3787,6 +3809,7 @@ class toaster_cases(toaster_cases_base):
         time.sleep(1)
 
         self.driver.find_element_by_id("search-input-layerstable").send_keys("meta-selftest")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-layerstable").click()
 
         self.driver.find_element_by_link_text("meta-selftest").click()
@@ -3837,7 +3860,7 @@ class toaster_cases(toaster_cases_base):
         self.assertTrue((self.is_text_present("Repository URL")), msg="Cannot find repository URL entry")
         self.assertTrue((self.is_text_present("Repository subdirectory")), msg="Cannot find repository subdirectory entry")
         self.assertTrue((self.is_text_present("Git revision")), msg="Cannot find git revision entry")
-        self.assertTrue((self.is_text_present("Layer dependencies")), msg="Cannot find layer dependencies entry") 
+        self.assertTrue((self.is_text_present("Layer dependencies")), msg="Cannot find layer dependencies entry")
 
         edit_repo_button = self.driver.find_element_by_xpath("//div[@id='information']/dl/dd/i")
         self.assertTrue(edit_repo_button.is_displayed(), msg="Unable to find edit repository URL button")
@@ -3970,7 +3993,9 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("id_address").send_keys("2")
         self.driver.find_element_by_id("id_sourcedir").send_keys(str(sourcedir))
+        time.sleep(2)
         self.driver.find_element_by_id("id_builddir").send_keys(str(builddir2))
+        time.sleep(2)
 
         options = Select(self.driver.find_element_by_id("id_betype"))
         options.select_by_visible_text("local")
@@ -4081,6 +4106,7 @@ class toaster_cases(toaster_cases_base):
         time.sleep(1)
 
         self.driver.find_element_by_partial_link_text("Builds (").click()
+        time.sleep(2)
         self.driver.find_element_by_link_text('core-image-minimal').click()
         time.sleep(1)
 
@@ -4136,6 +4162,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id('build-input').clear()
         self.driver.find_element_by_id('build-input').send_keys('core-image-minimal:clean')
+        time.sleep(2)
         self.driver.find_element_by_id('build-button').click()
         time.sleep(3)
         self.driver.find_element_by_partial_link_text("Builds (").click()
@@ -4151,7 +4178,7 @@ class toaster_cases(toaster_cases_base):
                 break
 
         time.sleep(1)
-        self.wait_until_build_finish(1, 60)
+        self.wait_until_build_finish(1, 100)
 
         self.driver.find_element_by_partial_link_text('core-image-minimal:clean').click()
         time.sleep(1)
@@ -4169,7 +4196,7 @@ class toaster_cases(toaster_cases_base):
                 break
 
         time.sleep(1)
-        self.wait_until_build_finish(1, 60)
+        self.wait_until_build_finish(1, 100)
 
         self.driver.find_element_by_partial_link_text('core-image-minimal:clean').click()
         time.sleep(1)
@@ -4199,6 +4226,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-layerstable").clear()
         self.driver.find_element_by_id("search-input-layerstable").send_keys("meta-intel")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-layerstable").click()
         time.sleep(1)
 
@@ -4219,11 +4247,12 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id('build-input').clear()
         self.driver.find_element_by_id('build-input').send_keys('core-image-minimal')
+        time.sleep(2)
         self.driver.find_element_by_id('build-button').click()
         time.sleep(3)
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 100)
+        self.wait_until_build_finish(1, 180)
         self.driver.find_element_by_link_text('core-image-minimal').click()
         time.sleep(1)
 
@@ -4322,6 +4351,7 @@ class toaster_cases(toaster_cases_base):
         time.sleep(1)
 
         self.driver.find_element_by_id("search-input-layerstable").send_keys("meta-acer")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-layerstable").click()
         time.sleep(2)
 
@@ -4341,6 +4371,7 @@ class toaster_cases(toaster_cases_base):
         time.sleep(1)
 
         self.driver.find_element_by_id("search-input-layerstable").send_keys("meta-oe")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-layerstable").click()
         time.sleep(2)
 
@@ -4415,6 +4446,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-imagerecipestable").clear()
         self.driver.find_element_by_id("search-input-imagerecipestable").send_keys("core-image-efi")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-imagerecipestable").click()
         time.sleep(1)
 
@@ -4462,6 +4494,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-imagerecipestable").clear()
         self.driver.find_element_by_id("search-input-imagerecipestable").send_keys(img_recipe)
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-imagerecipestable").click()
         time.sleep(1)
 
@@ -4477,7 +4510,7 @@ class toaster_cases(toaster_cases_base):
         time.sleep(3)
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 100)
+        self.wait_until_build_finish(1, 120)
 
         # test software recipes
         self.driver.find_element_by_css_selector("a[href='/toastergui/projects/']").click()
@@ -4490,6 +4523,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
         self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("3rd-gen-i5-i7-sinit")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
         time.sleep(1)
 
@@ -4535,6 +4569,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
         self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys(software_recipe)
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
         time.sleep(1)
 
@@ -4550,7 +4585,7 @@ class toaster_cases(toaster_cases_base):
         time.sleep(3)
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 100)
+        self.wait_until_build_finish(1, 120)
 
 
         ##############
@@ -4575,6 +4610,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-machinestable").clear()
         self.driver.find_element_by_id("search-input-machinestable").send_keys(machine)
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-machinestable").click()
         time.sleep(1)
 
@@ -4623,6 +4659,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-recipestable").click()
         self.driver.find_element_by_id("search-input-recipestable").send_keys("libva")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-recipestable").click()
         time.sleep(1)
 
@@ -4666,6 +4703,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("machine-change-input").clear()
         self.driver.find_element_by_id("machine-change-input").send_keys(machine1)
+        time.sleep(2)
         self.driver.find_element_by_id("machine-change-btn").click()
         time.sleep(1)
 
@@ -4673,12 +4711,12 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("build-input").clear()
         self.driver.find_element_by_id("build-input").send_keys("core-image-minimal")
-        time.sleep(0.5)
+        time.sleep(2)
         self.driver.find_element_by_id("build-button").click()
         time.sleep(3)
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 100)
+        self.wait_until_build_finish(1, 120)
         self.driver.find_element_by_link_text('core-image-minimal').click()
         time.sleep(1)
 
@@ -4704,12 +4742,12 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("build-input").clear()
         self.driver.find_element_by_id("build-input").send_keys("core-image-sato")
-        time.sleep(10)
+        time.sleep(2)
         self.driver.find_element_by_id("build-button").click()
         time.sleep(3)
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 100)
+        self.wait_until_build_finish(1, 120)
         self.driver.find_element_by_link_text('core-image-sato').click()
         time.sleep(1)
 
@@ -4758,12 +4796,13 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("build-input").clear()
         self.driver.find_element_by_id("build-input").send_keys("core-image-minimal")
+        time.sleep(2)
         self.driver.find_element_by_id("build-button").click()
-        time.sleep(1)
+        time.sleep(3)
 
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 100)
+        self.wait_until_build_finish(1, 120)
 
 
         self.driver.find_element_by_link_text("core-image-minimal").click()
@@ -4888,6 +4927,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
         self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("meta-intel")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
         time.sleep(1)
 
@@ -4972,6 +5012,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
         self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
         time.sleep(2)
 
@@ -4992,6 +5033,7 @@ class toaster_cases(toaster_cases_base):
         #no results
         self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
         self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("dkasashdsakjdhasjkdashdjk")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
 
         time.sleep(3)
@@ -5016,6 +5058,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
         self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
         time.sleep(1)
 
@@ -5037,6 +5080,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
         self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
 
         time.sleep(2)
@@ -5115,6 +5159,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search-input-softwarerecipestable").clear()
         self.driver.find_element_by_id("search-input-softwarerecipestable").send_keys("core")
+        time.sleep(2)
         self.driver.find_element_by_id("search-submit-softwarerecipestable").click()
 
         time.sleep(2)
@@ -5137,8 +5182,16 @@ class toaster_cases(toaster_cases_base):
         self.driver.find_element_by_link_text("selenium-project").click()
         time.sleep(1)
 
+        self.driver.find_element_by_id('build-input').clear()
+        self.driver.find_element_by_id('build-input').send_keys('core-image-minimal')
+        time.sleep(2)
+        self.driver.find_element_by_id('build-button').click()
+        time.sleep(3)
+
         self.driver.find_element_by_partial_link_text("Builds (").click()
-        time.sleep(1)
+
+        self.wait_until_build_finish(1, 150)
+
         self.driver.find_element_by_link_text("core-image-minimal").click()
         time.sleep(1)
 
@@ -5323,7 +5376,9 @@ class toaster_cases(toaster_cases_base):
         # Step 4
         self.driver.find_element_by_id('build-input').clear()
         self.driver.find_element_by_id('build-input').send_keys('core-image-minimal core-image-sato')
+        time.sleep(2)
         self.driver.find_element_by_id('build-button').click()
+        time.sleep(3)
 
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
@@ -5367,6 +5422,7 @@ class toaster_cases(toaster_cases_base):
         # Step 6
         self.driver.find_element_by_id('new-distro').clear()
         self.driver.find_element_by_id('new-distro').send_keys(change_distro)
+        time.sleep(2)
         self.driver.find_element_by_id('apply-change-distro').click()
         time.sleep(2)
         self.assertEqual(change_distro, self.driver.find_element_by_id("distro").text, msg="Distro was not changed")
@@ -5375,11 +5431,13 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id('build-input').clear()
         self.driver.find_element_by_id('build-input').send_keys('core-image-minimal')
+        time.sleep(2)
         self.driver.find_element_by_id('build-button').click()
+        time.sleep(3)
 
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 100)
+        self.wait_until_build_finish(1, 120)
 
         self.driver.find_element_by_partial_link_text("core-image-minimal").click()
         time.sleep(2)
@@ -5430,15 +5488,14 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id('build-input').clear()
         self.driver.find_element_by_id('build-input').send_keys('core-image-minimal')
+        time.sleep(2)
         self.driver.find_element_by_id('build-button').click()
 
         #bug
         time.sleep(5)
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-
-        self.wait_until_build_finish(1, 100)
-
+        self.wait_until_build_finish(1, 120)
 
         self.driver.find_element_by_partial_link_text("core-image-minimal").click()
         time.sleep(1)
@@ -5449,6 +5506,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search").clear()
         self.driver.find_element_by_id("search").send_keys("PACKAGE_CLASSES")
+        time.sleep(2)
         self.driver.find_element_by_id("search-button").click()
 
         selector = "td[class='variable_value']"
@@ -5484,6 +5542,7 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id('new-image_install').clear()
         self.driver.find_element_by_id('new-image_install').send_keys('ssh')
+        time.sleep(2)
         self.driver.find_element_by_id('apply-change-image_install').click()
         time.sleep(2)
         self.assertEqual("ssh",self.driver.find_element_by_id('image_install').text, msg="ssh not found in IMAGE_INSTALL_append" )
@@ -5492,17 +5551,16 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id('build-input').clear()
         self.driver.find_element_by_id('build-input').send_keys('core-image-minimal')
+        time.sleep(2)
         self.driver.find_element_by_id('build-button').click()
 
         #bug
         time.sleep(5)
         self.driver.find_element_by_partial_link_text("Builds (").click()
 
-        self.wait_until_build_finish(1, 100)
+        self.wait_until_build_finish(1, 120)
 
         # Step 7
-
-
         self.driver.find_element_by_partial_link_text("core-image-minimal").click()
         time.sleep(1)
 
@@ -5511,10 +5569,10 @@ class toaster_cases(toaster_cases_base):
 
         self.driver.find_element_by_id("search").clear()
         self.driver.find_element_by_id("search").send_keys("ssh")
+        time.sleep(2)
         self.driver.find_element_by_id("search-button").click()
         time.sleep(3)
 
         header_text = self.driver.find_element_by_class_name("page-header").text
         self.assertNotIn("No packages found", header_text, msg=("No packages found text"))
-
 
