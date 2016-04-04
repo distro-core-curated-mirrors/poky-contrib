@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bldcontrol', '0001_initial'),
+        ('bldcontrol', '0002_add_cancelling_state'),
     ]
 
     operations = [

@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('orm', '0004_provides'),
+        ('orm', '0005_task_field_separation'),
     ]
 
     operations = [
