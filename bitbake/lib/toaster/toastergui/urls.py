@@ -31,6 +31,10 @@ urlpatterns = patterns('toastergui.views',
             tables.AllBuildsTable.as_view(template_name="builds-toastertable.html"),
             name='all-builds'),
 
+        url(r'^minibuilds/$',
+            tables.MiniBuildsTable.as_view(template_name='minibuilds.html'),
+            name='minibuilds'),
+
         # build info navigation
         url(r'^build/(?P<build_id>\d+)$', 'builddashboard', name="builddashboard"),
 

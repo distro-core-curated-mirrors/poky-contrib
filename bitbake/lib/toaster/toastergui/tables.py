@@ -1535,3 +1535,45 @@ class ProjectBuildsTable(BuildsTable):
         context['project'] = project
 
         return context
+
+# TODO example for wiki
+# import any models you need for the table
+from orm.models import Build
+
+class MiniBuildsTable(ToasterTable):
+    def __init__(self, *args, **kwargs):
+        super(MiniBuildsTable, self).__init__(*args, **kwargs)
+        self.default_orderby = '-completed_on'
+        self.title = 'Mini Builds Table'
+
+    def setup_queryset(self, *args, **kwargs):
+        self.queryset = Build.objects.all()
+
+    def setup_columns(self, *args, **kwargs):
+        outcome_template = '''
+        {% if data.outcome == 0 %}
+          succeeded
+        {% else %}
+          failed
+        {% endif %}
+        '''
+
+        self.add_column(title='Completed on',
+                        help_text='The date and time when the build finished',
+                        hideable=False,
+                        orderable=True,
+                        static_data_name='completed_on',
+                        static_data_template='{{data.completed_on | date:"d/m/y H:i"}}')
+
+        self.add_column(title='Project',
+                        help_text='The project associated with this build',
+                        hideable=True,
+                        orderable=True,
+                        field_name='project__name')
+
+        self.add_column(title='Outcome',
+                        help_text='The outcome of the build',
+                        hideable=True,
+                        orderable=True,
+                        static_data_name='outcome',
+                        static_data_template=outcome_template)

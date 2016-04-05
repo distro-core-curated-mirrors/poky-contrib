@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extraheadcontent %}
+  <link rel="stylesheet" href="{% static 'css/jquery-ui.min.css' %}" type='text/css'>
+  <link rel="stylesheet" href="{% static 'css/jquery-ui.structure.min.css' %}" type='text/css'>
+  <link rel="stylesheet" href="{% static 'css/jquery-ui.theme.min.css' %}" type='text/css'>
+  <script src="{% static 'js/jquery-ui.min.js' %}"></script>
+{% endblock %}
+
+{% block title %}{{title}}{% endblock %}
+
+{% block pagecontent %}
+  <!--div class="row-fluid"-->
+    <h1 class="page-header top-air">{{title}}</h1>
+    {% url 'minibuilds' as xhr_table_url %}
+    {% include 'toastertable.html' %}
+  <!--/div-->
+{% endblock %}
