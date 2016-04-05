@@ -479,19 +479,16 @@ class ProjectPage(ToasterPage):
     bb_variables_option=PageElement(link_text="Bitbake variables")
     project_builds_option=PageElement(class_name="total-builds")
     import_layer_option=PageElement(link_text="Import layer")
-    import_layer_box=PageElement(id="import-layer-name")
-    import_git_repo_box=PageElement(id="layer-git-repo-url")
-    import_subdir_box=PageElement(id="layer-subdir")
-    import_revision_box=PageElement(id="layer-git-ref")
-    import_add_button=PageElement(id="import-and-add-btn")
-    build_input_box=PageElement(id="build-input")
-    build_button_option=PageElement(id="build-button")
-    release_change_option=PageElement(id="release-change-toggle")
-    release_change_form=PageElement(id="change-release-form")
-    release_change_button=PageElement(id="change-release-btn")
-    machine_change_option=PageElement(id="change-machine-toggle")
-    machine_change_box=PageElement(id="machine-change-input")
-    machine_change_button=PageElement(id="machine-change-btn")
+    import_layer_box=PageElement(id_="import-layer-name")
+    import_git_repo_box=PageElement(id_="layer-git-repo-url")
+    import_subdir_box=PageElement(id_="layer-subdir")
+    import_revision_box=PageElement(id_="layer-git-ref")
+    import_add_button=PageElement(id_="import-and-add-btn")
+    build_input_box=PageElement(id_="build-input")
+    build_button_option=PageElement(id_="build-button")
+    machine_change_option=PageElement(id_="change-machine-toggle")
+    machine_change_box=PageElement(id_="machine-change-input")
+    machine_change_button=PageElement(id_="machine-change-btn")
     
     def select_layers_option(self):
         self.layers_option.click()
@@ -513,11 +510,6 @@ class ProjectPage(ToasterPage):
         self.configuration_option.click()
         return ProjectPage(self.w)
     
-    def change_release(self, release):
-        self.relese_change_option.click()
-        self.release_change_form.send_keys(release)
-        self.release_change_button.click()
-    
     def change_machine(self, machine):
         self.machine_change_option.click()
         self.machine_change_box.send_keys(machine)
@@ -533,11 +525,11 @@ class ProjectPage(ToasterPage):
         
     
 class LayersPage(ProjectPage):
-    default_columns = ['Layer', 'Summary', 'Revision', 'Dependencies', 'Add/Delete']
+    default_columns = ['Layer', 'Summary', 'Git revision', 'Dependencies', 'Add | Remove']
     default_layers = ['meta-yocto-bsp', 'meta-yocto', 'openembedded-core']
     default_revision = 'HEAD'
-    search_text_field = PageElement(id="search-input-layerstable")
-    search_submit_button = PageElement(id="search-submit-layerstable")
+    search_text_field = PageElement(id_="search-input-layerstable")
+    search_submit_button = PageElement(id_="search-submit-layerstable")
     column_classes = {'Layer':'layer__name'}
     
     def display_all_layers_columns(self):
@@ -545,6 +537,7 @@ class LayersPage(ProjectPage):
     
     def search_for_layer(self, search_string):
         self.search_text_field.clear()
-        self.search_text_field.sendkeys(search_string)
+        self.search_text_field.send_keys(search_string)
         self.search_submit_button.click()
+        time.sleep(1)
     
