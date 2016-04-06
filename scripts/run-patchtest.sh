@@ -32,7 +32,7 @@ if [ ! -e $REPO/.patchtest/patchtest.lock ]; then
     git pull
     git submodule update --remote
     git pw poll-events | \
-	patchtest --branch master --post
+	patchtest --branch master
 else
     echo "patchtest currently executing, no events polled"
 fi
