@@ -27,7 +27,7 @@ RREPLACES_${PN} = "libnl2"
 RCONFLICTS_${PN} = "libnl2"
 FILES_${PN}-staticdev += "${libdir}/libnl/cli/*/*.a"
 
-PACKAGES += "${PN}-cli ${PN}-route ${PN}-nf ${PN}-genl ${PN}-idiag"
+PACKAGES =+ "${PN}-cli ${PN}-route ${PN}-nf ${PN}-genl ${PN}-idiag"
 FILES_${PN}-cli   = "${libdir}/libnl-cli-3.so.* \
                      ${libdir}/libnl/cli/*/*.so \
                      ${libdir}/libnl/cli/*/*.la \
