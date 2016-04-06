@@ -28,7 +28,9 @@ cd $REPO
 
 # make sure no patchtest lock exists
 if [ ! -e $REPO/.patchtest/patchtest.lock ]; then
+    # update patchtest and test suites submodules
     git pull
+    git submodule update --remote
     git pw poll-events | \
 	patchtest --branch master --post
 else
