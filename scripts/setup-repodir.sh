@@ -6,10 +6,10 @@ REPOURL=$2
 PWURL=$3
 PWPROJECT=$4
 PWUSER=$5
-PWPASSWORD=$6
+PWPASS=$6
 
 usage () {
-    echo "usage: $0 <REPODIR> <REPURL> <PWURL> <PWPROJECT> <PWUSER> <PWPASSWORD>"
+    echo "usage: $0 <REPODIR> <REPOURL> <PWURL> <PWPROJECT> <PWUSER> <PWPASS>"
     [ -n "$VIRTUALENV" ] && deactivate
     unset VIRTUALENV
     exit 1
@@ -21,7 +21,7 @@ if [ -z "$REPODIR" -o \
      -z "$PWURL" -o \
      -z "$PWPROJECT" -o \
      -z "$PWUSER" -o \
-     -z "$PWPASSWORD" ]; then
+     -z "$PWPASS" ]; then
     usage
 fi
 
@@ -43,8 +43,8 @@ fi
 
 # set up the soft links for hooks
 REPO_GITHOOKS="$REPODIR/.git/hooks"
-[ -e $REPO_GITHOOKS ] && { ln -s $PATCHTEST_GITHOOKS/applypatch-msg $REPO_GITHOOKS; }
-[ -e $REPO_GITHOOKS ] && { ln -s $PATCHTEST_GITHOOKS/commit-msg $REPO_GITHOOKS; }
+[ -e $REPO_GITHOOKS -a ! -e $REPO_GITHOOKS/applypatch-msg ] && { ln -s $PATCHTEST_GITHOOKS/applypatch-msg $REPO_GITHOOKS; }
+[ -e $REPO_GITHOOKS -a ! -e $REPO_GITHOOKS/commit-msg ] && { ln -s $PATCHTEST_GITHOOKS/commit-msg $REPO_GITHOOKS; }
 
 # cd into the repository
 cd $REPODIR
