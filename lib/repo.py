@@ -168,7 +168,8 @@ class MboxURLItem(BaseMboxItem):
             _url = urlparse(str(self.resource))
             _inst = "%s://%s" % (_url.scheme, _url.netloc)
             _series = self.args[0]
-            return "%s/series/%s" % (_inst, _series)
+            _revision = self.args[1]
+            return "%s/series/%s/#rev%s" % (_inst, _series, _revision)
 
 class MboxFileItem(BaseMboxItem):
     """ Mbox item based on a file"""
