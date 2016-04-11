@@ -58,16 +58,6 @@ git pull
 [ -n "$PWUSER" ] && git config patchwork.default.user $PWUSER
 [ -n "$PWPASSWORD" ] && git config patchwork.default.password $PWPASSWORD
 
-# poll all events
-while true; do
-    events=`git pw poll-events`
-    if [ -z "$events" ]; then
-	break;
-    fi
-    echo "Events polled:"
-    echo $events
-done
-
 deactivate && unset VIRTUALENV
 
 exit 0
