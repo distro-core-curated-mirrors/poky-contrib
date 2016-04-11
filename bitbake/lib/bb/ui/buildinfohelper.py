@@ -457,6 +457,11 @@ class ORMWrapper(object):
 
             raise NotExisting("Unidentified layer %s" % pformat(layer_information))
 
+    def _get_parent_path(self,s):
+        parent_path = "/".join(s.split("/")[:len(s.split("/")) - 1])
+        if len(parent_path) == 0:
+            parent_path = "/"
+        return parent_path
 
     def save_target_file_information(self, build_obj, target_obj, filedata):
         assert isinstance(build_obj, Build)
@@ -488,9 +493,7 @@ class ORMWrapper(object):
             if len(path) == 0:
                 continue
 
-            parent_path = "/".join(path.split("/")[:len(path.split("/")) - 1])
-            if len(parent_path) == 0:
-                parent_path = "/"
+            parent_path = self._get_parent_path(path)
             parent_obj = self._cached_get(Target_File, target = target_obj, path = parent_path, inodetype = Target_File.ITYPE_DIRECTORY)
             tf_obj = Target_File.objects.create(
                         target = target_obj,
@@ -508,7 +511,8 @@ class ORMWrapper(object):
             (user, group, size) = d[1:4]
             permission = d[0][1:]
             path = d[4].lstrip(".")
-            parent_path = "/".join(path.split("/")[:len(path.split("/")) - 1])
+            parent_path = self._get_parent_path(path)
+
             inodetype = Target_File.ITYPE_REGULAR
             if d[0].startswith('b'):
                 inodetype = Target_File.ITYPE_BLOCK
@@ -536,7 +540,7 @@ class ORMWrapper(object):
             path = d[4].lstrip(".")
             filetarget_path = d[6]
 
-            parent_path = "/".join(path.split("/")[:len(path.split("/")) - 1])
+            parent_path = self._get_parent_path(path)
             if not filetarget_path.startswith("/"):
                 # we have a relative path, get a normalized absolute one
                 filetarget_path = parent_path + "/" + filetarget_path
