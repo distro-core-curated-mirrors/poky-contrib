@@ -23,16 +23,16 @@ $(document).ready(function() {
   {% if objects.paginator.count == 0 %}
   <div class="alert">
     <h3>No {{search_what}} found</h3>
-    <form id="searchform" class="input-group">
+    <form id="searchform" class="input-append">
   {% else %}
-    <form id="searchform" class="navbar-search input-group pull-left">
+    <form id="searchform" class="navbar-search input-append pull-left">
   {% endif %}
 
       <input id="search" class="input-xlarge" type="text" placeholder="Search {{search_what}}" name="search" value="{% if request.GET.search %}{{request.GET.search}}{% endif %}">
       <input type="hidden" value="name:+" name="orderby">
       <input type="hidden" value="l" name="page">
   {% if request.GET.search %}
-      <a class="input-group-addon btn search-clear">
+      <a class="input-append-addon btn search-clear">
         <i class="glyphicon glyphicon-remove"></i>
       </a>
   {% endif %}
