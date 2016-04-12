@@ -247,7 +247,7 @@ function tableInit(ctx){
 
       /* Setup the filter button */
       if (col.filter_name){
-        var filterBtn = $('<a href="#" role="button" data-filter-on="' + col.filter_name + '" class="pull-right btn btn-mini" data-toggle="modal"><i class="icon-filter filtered"></i></a>');
+        var filterBtn = $('<a href="#" role="button" data-filter-on="' + col.filter_name + '" class="pull-right btn btn-xs" data-toggle="modal"><i class="glyphicon glyphicon-filter filtered"></i></a>');
 
         filterBtn.data('filter-name', col.filter_name);
         filterBtn.prop('id', col.filter_name);
@@ -297,7 +297,7 @@ function tableInit(ctx){
 
       filterBtn.tooltip({
           html: true,
-          title: '<button class="btn btn-small btn-primary" onClick=\'$("#clear-filter-btn-'+ ctx.tableName +'").click();\'>Clear filter</button>',
+          title: '<button class="btn btn-sm btn-primary" onClick=\'$("#clear-filter-btn-'+ ctx.tableName +'").click();\'>Clear filter</button>',
           placement: 'bottom',
           delay: {
             hide: 1500,
@@ -470,10 +470,10 @@ function tableInit(ctx){
                    '       for="' + filterName + '">' +
                    filterActionData.title +
                    '</label>' +
-                   '<input type="text" maxlength="10" class="input-small"' +
+                   '<input type="text" maxlength="10" class="input-sm"' +
                    '       data-date-from-for="' + filterName + '">' +
                    '<span class="help-inline">to</span>' +
-                   '<input type="text" maxlength="10" class="input-small"' +
+                   '<input type="text" maxlength="10" class="input-sm"' +
                    '       data-date-to-for="' + filterName + '">' +
                    '<span class="help-inline get-help">(yyyy-mm-dd)</span>' +
                    '</div>');

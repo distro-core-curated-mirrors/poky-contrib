@@ -26,17 +26,17 @@
   <h1 id="project-name-container">
     <span id="project-name">{{project.name}}</span>
 
-    <i class="icon-pencil" data-original-title="" id="project-change-form-toggle" title=""></i>
+    <i class="glyphicon glyphicon-pencil" data-original-title="" id="project-change-form-toggle" title=""></i>
 
     {% if project.is_default %}
         <i class="icon-question-sign get-help heading-help" title="" data-original-title="This project shows information about the builds you start from the command line while Toaster is running"></i>
     {% endif %}
   </h1>
   <form id="project-name-change-form" style="margin-bottom: 0px; display: none;">
-    <div class="input-append">
+    <div class="input-group">
       <input class="huge input-xxlarge" type="text" id="project-name-change-input" autocomplete="off" value="{{project.name}}">
-        <button id="project-name-change-btn" class="btn btn-large" type="button">Save</button>
-        <a href="#" id="project-name-change-cancel" class="btn btn-large btn-link">Cancel</a>
+        <button id="project-name-change-btn" class="btn btn-lg" type="button">Save</button>
+        <a href="#" id="project-name-change-cancel" class="btn btn-lg btn-link">Cancel</a>
     </div>
   </form>
 </div>
@@ -67,9 +67,9 @@
       <li class="pull-right">
         <form class="form-inline" style="margin-bottom:0px;">
           <i class="icon-question-sign get-help heading-help" data-placement="left" title="" data-original-title="Type the name of one or more recipes you want to build, separated by a space. You can also specify a task by appending a colon and a task name to the recipe name, like so: <code>busybox:clean</code>"></i>
-          <div class="input-append">
+          <div class="input-group">
             <input id="build-input" type="text" class="input-xlarge input-lg build-target-input" placeholder="Type the recipe you want to build" autocomplete="off" disabled>
-            <button id="build-button" class="btn btn-primary btn-large build-button" data-project-id="{{project.id}}" disabled>Build</button>
+            <button id="build-button" class="btn btn-primary btn-lg build-button" data-project-id="{{project.id}}" disabled>Build</button>
           </div>
         </form>
       </li>

@@ -63,7 +63,7 @@
 
     {% csrf_token %}
     <div id="loading-notification" class="alert lead text-center" style="display:none">
-      Loading <i class="fa-pulse icon-spinner"></i>
+      Loading <i class="fa-pulse glyphicon glyphicon-spinner"></i>
     </div>
 
     <div id="change-notification" class="alert lead alert-info" style="display:none">
@@ -73,7 +73,7 @@
 
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
-        <div class="container-fluid">
+        <div class="container">
           <a class="brand logo" href="#"><img src="{% static 'img/logo.png' %}" class="" alt="Yocto logo project"/></a>
           <span class="brand">
             <a href="/">Toaster</a>
@@ -87,7 +87,7 @@
                 class="active"
                 {% endif %}>
               <a href="{% url 'all-builds' %}">
-                <i class="icon-tasks"></i>
+                <i class="glyphicon glyphicon-tasks"></i>
                 All builds
               </a>
             </li>
@@ -104,7 +104,7 @@
           <ul class="nav pull-right">
             <li>
               <a target="_blank" href="http://www.yoctoproject.org/docs/latest/toaster-manual/toaster-manual.html">
-                <i class="icon-book"></i>
+                <i class="glyphicon glyphicon-book"></i>
                 Manual
               </a>
             </li>
@@ -117,8 +117,8 @@
       </div>
     </div>
 
-    <div class="container-fluid top-padded">
-      <div class="row-fluid">
+    <div class="container top-padded">
+      <div class="row">
         {% block pagecontent %}
         {% endblock %}
       </div>
