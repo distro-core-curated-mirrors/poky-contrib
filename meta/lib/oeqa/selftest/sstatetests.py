@@ -360,6 +360,8 @@ MULTILIBS = \"\"
             f = {}
             for root, dirs, files in os.walk(d):
                 for name in files:
+                    if "meta-environment" in root or "cross-canadian" in root:
+                        continue
                     if "do_build" not in name:
                         # 1.4.1+gitAUTOINC+302fca9f4c-r0.do_package_write_ipk.sigdata.f3a2a38697da743f0dbed8b56aafcf79
                         (_, task, _, shash) = name.rsplit(".", 3)
