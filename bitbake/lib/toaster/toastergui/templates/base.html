@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}" type='text/css'/>
     <link rel="stylesheet" href="{% static 'css/prettify.css' %}" type='text/css'/>
     <link rel="stylesheet" href="{% static 'css/default.css' %}" type='text/css'/>
+    <link rel="stylesheet" href="{% static 'css/bootstrap3-transition.css' %}" type='text/css' />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
@@ -73,7 +74,7 @@
 
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
-        <div class="container">
+        <div class="container-fluid">
           <a class="brand logo" href="#"><img src="{% static 'img/logo.png' %}" class="" alt="Yocto logo project"/></a>
           <span class="brand">
             <a href="/">Toaster</a>
@@ -117,7 +118,7 @@
       </div>
     </div>
 
-    <div class="container top-padded">
+    <div class="container-fluid top-padded">
       <div class="row">
         {% block pagecontent %}
         {% endblock %}

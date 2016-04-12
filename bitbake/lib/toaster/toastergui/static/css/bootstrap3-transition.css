@@ -1,0 +1,13 @@
+/* Changes to the top bar. Template: base.html */
+
+.navbar .brand {
+  padding: 5px 20px;
+}
+
+.logo {
+  padding-top: 2px !important;
+}
+
+.navbar .btn-group .btn#new-project-button {
+  margin-top: 5px;
+}
