@@ -55,12 +55,6 @@ pollevents () {
 	# remove git-pw timestamp file create by git-pw poll-events
 	rm .git-pw.*.poll.timestamp
 
-	# create timestamp folder(s) if these do not exit
-	timestamp_pathname=$(dirname $timestamp_filename)
-	if [ ! -d $timestamp_pathname ]; then
-	    mkdir -p $timestamp_pathname
-	fi
-
 	# if there are no events, create an empty timestamp
 	if [ -z "$events" ]; then
 	    > $timestamp_filename
@@ -101,31 +95,45 @@ PYTHONPATH="$PATCHTEST_BASE":"/usr/bin/python:$PYTHONPATH"
 
 cd $REPO
 
-REPO_PATCHTEST="$REPO/.patchtest"
-REPO_PATCHTEST_LOCK="$REPO_PATCHTEST/patchtest.lock"
-REPO_PATCHTEST_TS="$REPO_PATCHTEST/poll.timestamp"
+# Currently hardcode inside patchtest
+REPO_PATCHTEST=".patchtest"
+LOCK="patchtest.lock"
+LOG="patchtest.log"
+TS="patchtest.poll.timestamp"
+
+# create the patchtest dir inside repo (logging, locking and timestamp files are stored)
+if [ ! -d "$REPO/$REPO_PATCHTEST" ]; then
+    mkdir -p $REPO/$REPO_PATCHTEST
+fi
 
 # there are several types of events in patchwork, but we are just interested in series
 PW_SERIES_NEW_REVISION_EVENTS="series-new-revision"
 
+STARTDATE=$(date --iso-8601=seconds)
+echo "Start $0 at $STARTDATE" | tee -a $REPO/$REPO_PATCHTEST/$LOG
+
 # make sure no patchtest lock exists
-if [ ! -e $REPO_PATCHTEST_LOCK ]; then
+if [ ! -e "$REPO/$REPO_PATCHTEST/$LOCK" ]; then
 
     # update patchtest and test suites submodules
     git pull; git submodule update --remote
 
     # poll new series events
-    events=$(pollevents $REPO_PATCHTEST_TS $PW_SERIES_NEW_REVISION_EVENTS)
+    events=$(pollevents "$REPO/$REPO_PATCHTEST/$TS" $PW_SERIES_NEW_REVISION_EVENTS)
 
     # execute patchtest
     if [ -n "$events" ]; then
-	echo "$events" | patchtest --branch master
+	echo "$events" | tee -a "$REPO/$REPO_PATCHTEST/$LOG" | \
+	    patchtest --branch master
     else
-	echo "no new events"
+	echo "no new events" | tee -a $REPO/$REPO_PATCHTEST/$LOG
     fi
 else
-    echo "patchtest currently executing, no events polled"
+    echo "patchtest currently executing, no events polled" | tee -a $REPO/$REPO_PATCHTEST/$LOG
 fi
+
+FINISHDATE=$(date --iso-8601=seconds)
+echo "Finish $0 at $FINISHDATE" | tee -a $REPO/$REPO_PATCHTEST/$LOG
 
 deactivate
 
