@@ -188,7 +188,7 @@ if __name__ == '__main__':
         os.mknod(lockfile)
 
     # enable a file handle for logging
-    logfile = os.path.join(patchtestfolder, 'log')
+    logfile = os.path.join(patchtestfolder, 'patchtest.log')
     logger.addHandler(logging.FileHandler(logfile))
 
     # set debugging level
