@@ -2,7 +2,7 @@
 {% with data.package_dependencies_target.all_depends.count as dep_count %}
 {% load projecttags %}
 {% if dep_count %}
- <a data-content="<ul class='unstyled'>
+ <a data-content="<ul class='list-unstyled'>
    {% for dep in data.package_dependencies_target.all_depends|dictsort:'package.name' %}
   <li>{{dep.package.name}} {% if dep.package.size > 0 %}({{dep.package.size|filtered_filesizeformat}}){% endif %}</li>
     {% endfor %}

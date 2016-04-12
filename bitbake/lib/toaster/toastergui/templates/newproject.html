@@ -5,18 +5,18 @@
 {% block title %} Create a new project - Toaster {% endblock %}
 
 {% block pagecontent %}
-<div class="row-fluid">
+<div class="row">
     <div class="page-header">
           <h1>Create a new project</h1>
         </div>
-        <div class="container-fluid">
+        <div class="container">
     {% if alert %}
-      <div class="alert alert-error row-fluid" role="alert">{{alert}}</div>
+      <div class="alert alert-error row" role="alert">{{alert}}</div>
     {% endif %}
         </div>
 
-      <div class="row-fluid">
-        <div class="span6">
+      <div class="row">
+        <div class="col-md-6">
         <form method="POST">{% csrf_token %}
 
             <fieldset>
@@ -51,8 +51,8 @@
                 {% endfor %}
               </select>
                 {% for release in releases %}
-              <div class="row-fluid helptext" id="description-{{release.id}}" style="display: none">
-                <span class="help-block span5">{{release.helptext|safe}}</span>
+              <div class="row helptext" id="description-{{release.id}}" style="display: none">
+                <span class="help-block col-md-5">{{release.helptext|safe}}</span>
               </div>
                 {% endfor %}
             {% else %}
@@ -62,13 +62,13 @@
         {% endif %}
 
             <div class="form-actions">
-              <input type="submit" id="create-project-button" class="btn btn-primary btn-large" value="Create project"/>
+              <input type="submit" id="create-project-button" class="btn btn-primary btn-lg" value="Create project"/>
               <span class="help-inline" style="vertical-align:middle;">To create a project, you need to enter a project name</span>
             </div>
         </form>
         </div>
         <!--
-        <div class="span5 well">
+        <div class="col-md-5 well">
                 <span class="help-block">
                  <h4>Toaster project types</h4>
                  <p>With a <strong>build project</strong> you configure and run your builds from Toaster.</p>

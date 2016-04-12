@@ -24,13 +24,13 @@
 {# If this is not an imported layer then hide the edit ui #}
 {% if not layerversion.layer_source_id or layerversion.layer_source.sourcetype != layerversion.layer_source.TYPE_IMPORTED %}
 <style scoped>
- .icon-pencil {
+ .glyphicon glyphicon-pencil {
    display:none;
  }
 .delete-current-value{
   display: none;
 }
- li .icon-trash {
+ li .glyphicon glyphicon-trash {
    display:none;
  }
  .add-deps {
@@ -69,7 +69,7 @@
   });
 </script>
 
-<div class="row-fluid span11">
+<div class="row col-md-11">
   <div class="page-header">
     <h1>{{layerversion.layer.name}} <small class="commit"
           {% if layerversion.get_vcs_reference|length > 13 %}
@@ -80,7 +80,7 @@
 </div>
 
 <!-- container for tabs -->
-<div class="row-fluid span7 tabbable">
+<div class="row col-md-7 tabbable">
   <div class="alert alert-info lead" id="alert-area" style="display:none">
     <button type="button" class="close" id="dismiss-alert">&times;</button>
     <span id="alert-msg"></span>
@@ -99,13 +99,13 @@
   <div class="tab-content">
     <span class="button-place">
       {% if layerversion.id not in projectlayers %}
-      <button id="add-remove-layer-btn" data-directive="add" class="btn btn-large btn-block">
-        <span class="icon-plus"></span>
+      <button id="add-remove-layer-btn" data-directive="add" class="btn btn-lg btn-block">
+        <span class="glyphicon glyphicon-plus"></span>
         Add the {{layerversion.layer.name}} layer to your project
       </button>
       {% else %}
-      <button id="add-remove-layer-btn" data-directive="remove" class="btn btn-block btn-large btn-danger">
-        <span class="icon-trash"></span>
+      <button id="add-remove-layer-btn" data-directive="remove" class="btn btn-block btn-lg btn-danger">
+        <span class="glyphicon glyphicon-trash"></span>
         Remove the {{layerversion.layer.name}} layer from your project
       </button>
       {% endif %}
@@ -121,16 +121,16 @@
         <dd>
           <span class="current-value">{{layerversion.layer.vcs_url}}</span>
           {% if layerversion.get_vcs_link_url %}
-          <a href="{{layerversion.get_vcs_link_url}}/" class="icon-share get-info" target="_blank"></a>
+          <a href="{{layerversion.get_vcs_link_url}}/" class="glyphicon glyphicon-share get-info" target="_blank"></a>
           {% endif %}
           <form id="change-repo-form" class="control-group" style="display:none">
-            <div class="input-append">
+            <div class="input-group">
               <input type="text" class="input-xlarge" value="{{layerversion.layer.vcs_url}}">
                 <button data-layer-prop="vcs_url" class="btn change-btn" type="button">Save</button>
                 <a href="#" style="display:none" class="btn btn-link cancel">Cancel</a>
               </div>
             </form>
-            <i class="icon-pencil" ></i>
+            <i class="glyphicon glyphicon-pencil" ></i>
           </dd>
           <dt>
             <i class="icon-question-sign get-help" title="Subdirectory within the repository where the layer is located, if not in the root (usually only used if the repository contains more than one layer)"></i>
@@ -140,17 +140,17 @@
             <span class="muted" style="display:none">Not set</span>
             <span class="current-value">{{layerversion.dirpath}}</span>
             {% if layerversion.get_vcs_dirpath_link_url %}
-            <a href="{{layerversion.get_vcs_dirpath_link_url}}" class="icon-share get-info" target="_blank"></a>
+            <a href="{{layerversion.get_vcs_dirpath_link_url}}" class="glyphicon glyphicon-share get-info" target="_blank"></a>
             {% endif %}
             <form id="change-subdir-form" style="display:none;">
-              <div class="input-append">
+              <div class="input-group">
                 <input type="text" value="{{layerversion.dirpath}}">
                   <button data-layer-prop="dirpath" class="btn change-btn" type="button">Save</button>
                   <a href="#" style="display:none" class="btn btn-link cancel">Cancel</a>
                 </div>
               </form>
-              <i id="change-subdir" class="icon-pencil"></i>
-              <span class="icon-trash delete-current-value" data-toggle="tooltip" title="Delete"></span>
+              <i id="change-subdir" class="glyphicon glyphicon-pencil"></i>
+              <span class="glyphicon glyphicon-trash delete-current-value" data-toggle="tooltip" title="Delete"></span>
             </dd>
             <dt>
               <i class="icon-question-sign get-help" title="The Git branch, tag or commit"></i>
@@ -159,28 +159,28 @@
             <dd>
               <span class="current-value">{{layerversion.get_vcs_reference}}</span>
               <form style="display:none;">
-                <div class="input-append">
+                <div class="input-group">
                   <input type="text" value="{{layerversion.get_vcs_reference}}">
                     <button  data-layer-prop="commit" class="btn change-btn" type="button">Save</button>
                     <a href="#" style="display:none" class="btn btn-link cancel">Cancel</a>
                   </div>
                 </form>
-                <i class="icon-pencil"></i>
+                <i class="glyphicon glyphicon-pencil"></i>
               </dd>
               <dt>
                 <i class="icon-question-sign get-help" title="Other layers this layer depends upon"></i>
                 Layer dependencies
               </dt>
               <dd>
-                <ul class="unstyled current-value" id="layer-deps-list">
+                <ul class="list-unstyled current-value" id="layer-deps-list">
                   {% for ld in layerversion.dependencies.all %}
                   <li data-layer-id="{{ld.depends_on.id}}">
                     <a data-toggle="tooltip" title="{{ld.depends_on.layer.vcs_url}} | {{ld.depends_on.get_vcs_reference}}" href="{% url 'layerdetails' project.id ld.depends_on.id %}">{{ld.depends_on.layer.name}}</a>
-                    <span class="icon-trash " data-toggle="tooltip" title="Delete"></span>
+                    <span class="glyphicon glyphicon-trash " data-toggle="tooltip" title="Delete"></span>
                   </li>
                   {% endfor %}
                 </ul>
-                <div class="input-append add-deps">
+                <div class="input-group add-deps">
                   <input type="text" autocomplete="off" data-minLength="1" data-autocomplete="off"  placeholder="Type a layer name" id="layer-dep-input">
                     <a class="btn" id="add-layer-dependency-btn" >
                       Add layer
@@ -228,7 +228,7 @@
           </div> <!-- end tab content -->
         </div> <!-- end tabable -->
 
-        <div class="row-fluid span4 well"> <!-- info side panel -->
+        <div class="row col-md-4 well"> <!-- info side panel -->
           <h2>About {{layerversion.layer.name}}</h2>
           <dl class="item-info">
 
@@ -240,12 +240,12 @@
               <span class="muted" style="display:none">Not set</span>
               <span class="current-value">{{layerversion.layer.summary|default_if_none:''}}</span>
               <form style="display:none; margin-bottom:20px">
-                <textarea class="span12" rows="2">{% if layerversion.layer.summary %}{{layerversion.layer.summary}}{% endif %}</textarea>
+                <textarea class="col-md-12" rows="2">{% if layerversion.layer.summary %}{{layerversion.layer.summary}}{% endif %}</textarea>
                 <button class="btn change-btn" data-layer-prop="summary" type="button">Save</button>
                 <a href="#" class="btn btn-link cancel">Cancel</a>
               </form>
-              <i class="icon-pencil"></i>
-              <span class="icon-trash delete-current-value" data-toggle="tooltip" title="Delete"></span>
+              <i class="glyphicon glyphicon-pencil"></i>
+              <span class="glyphicon glyphicon-trash delete-current-value" data-toggle="tooltip" title="Delete"></span>
             </dd>
             <dt>
               Description
@@ -254,12 +254,12 @@
               <span class="muted" style="display:none">Not set</span>
               <span class="current-value">{{layerversion.layer.description|default_if_none:''}}</span>
               <form style="display:none; margin-bottom:20px">
-                <textarea class="span12" rows="6">{% if layerversion.layer.description %}{{layerversion.layer.description}}{% endif %}</textarea>
+                <textarea class="col-md-12" rows="6">{% if layerversion.layer.description %}{{layerversion.layer.description}}{% endif %}</textarea>
                 <button class="btn change-btn" data-layer-prop="description" type="button" >Save</button>
                 <a href="#" class="btn btn-link cancel">Cancel</a>
               </form>
-              <i class="icon-pencil"></i>
-              <span class="icon-trash delete-current-value" data-toggle="tooltip" title="Delete"></span>
+              <i class="glyphicon glyphicon-pencil"></i>
+              <span class="glyphicon glyphicon-trash delete-current-value" data-toggle="tooltip" title="Delete"></span>
             </dd>
             {% if layerversion.layer.up_id %}
             <dt>Layer index</dt>

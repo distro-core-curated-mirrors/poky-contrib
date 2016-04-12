@@ -12,13 +12,13 @@
 
 <!-- Begin container -->
 
-<div class="row span11">
+<div class="row col-md-11">
     <div class="page-header">
         <h1>{{object.name}}_{{object.version}}</h1>
     </div>
 </div>
 
-<div class="row span7 tabbable">
+<div class="row col-md-7 tabbable">
     <ul class="nav nav-pills">
         <li class="{{tab_states.1}}">
             <a href="#information" data-toggle="tab">
@@ -231,7 +231,7 @@
     </div>
 </div>
 
-<div class="row span4 well">
+<div class="row col-md-4 well">
     <h2>About {{object.name}}</h2>
     <dl class="item-info">
         {% if object.summary %}
