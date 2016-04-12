@@ -17,7 +17,7 @@ var libtoaster = (function (){
   function _makeTypeahead (jQElement, xhrUrl, xhrParams, selectedCB) {
     if (!xhrUrl || xhrUrl.length === 0)
       throw("No url to typeahead supplied");
-
+    return // FIXME
     var xhrReq;
 
     jQElement.typeahead({
