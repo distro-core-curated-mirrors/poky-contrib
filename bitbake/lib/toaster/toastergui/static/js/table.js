@@ -617,7 +617,7 @@ function tableInit(ctx){
             queryset on the table
           */
           var filterActionRadios = $('#filter-actions-' + ctx.tableName);
-          var filterApplyBtn = $('[data-role="filter-apply"]');
+          var filterApplyBtn = $('[data-cat="filter-apply"]');
 
           var setApplyButtonState = function (e, filterActionValue) {
             if (filterActionValue !== undefined) {
@@ -784,6 +784,7 @@ function tableInit(ctx){
 
     loadData(tableParams);
 
-    $(this).parent().modal('hide');
+
+    $('#filter-modal-'+ctx.tableName).modal('hide');
   });
 }

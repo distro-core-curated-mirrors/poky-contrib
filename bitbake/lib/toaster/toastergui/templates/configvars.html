@@ -79,52 +79,56 @@
 {% for variable in objects %}
     {% if variable.vhistory.count %}
     <div id="variable-{{variable.pk}}" class="modal hide fade" tabindex="-1" role="dialog">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3>History of {{variable.variable_name}}</h3>
-        </div>
-        <div class="modal-body">
-            {% if variable.variable_value %}
-              {% if variable.variable_value|length < 570 %}
-                <h4>{{variable.variable_name}} value is:</h4>
-                <p>
-                    {{variable.variable_value}}
-                </p>
-              {% else %}
-                <h4>{{variable.variable_name}} value is:</h4>
-                <p>
-                    <span>{{variable.variable_value|string_slice:':570'}}
-                        <span class="full"> {{variable.variable_value|string_slice:'570:'}}
-                        </span>
-                        <a class="btn btn-xs full-show">...</a>
-                    </span>
-                </p>
-                <a class="btn btn-xs full-hide">Collapse variable value <i class="icon-caret-up"></i>
-                </a>
-              {% endif %}
-            {% else %}
-                <div class="alert alert-info">The value of <strong>{{variable.variable_name}}</strong> is an empty string</div>
-            {% endif %}
-            <h4>The value was set in the following configuration files:</h4>
-            <table class="table table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th>Order</th>
-                        <th>Configuration file</th>
-                        <th>Operation</th>
-                        <th>Line number</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for vh in variable.vhistory.all %}
-                    <tr>
-                        <td>{{forloop.counter}}</td><td>{{vh.file_name}}</td><td>{{vh.operation}}</td><td>{{vh.line_number}}</td>
-                    </tr>
-                    {%endfor%}
-                </tbody>
-            </table>
-        </div>
-    </div>
+      <div class="modal-dialog">
+	<div class="modal-content">
+	  <div class="modal-header">
+	    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+	    <h3>History of {{variable.variable_name}}</h3>
+	  </div>
+	  <div class="modal-body">
+	    {% if variable.variable_value %}
+	    {% if variable.variable_value|length < 570 %}
+	    <h4>{{variable.variable_name}} value is:</h4>
+	    <p>
+	    {{variable.variable_value}}
+	    </p>
+	    {% else %}
+	    <h4>{{variable.variable_name}} value is:</h4>
+	    <p>
+	    <span>{{variable.variable_value|string_slice:':570'}}
+	      <span class="full"> {{variable.variable_value|string_slice:'570:'}}
+	      </span>
+	      <a class="btn btn-xs full-show">...</a>
+	    </span>
+	    </p>
+	    <a class="btn btn-xs full-hide">Collapse variable value <i class="icon-caret-up"></i>
+	    </a>
+	    {% endif %}
+	    {% else %}
+	    <div class="alert alert-info">The value of <strong>{{variable.variable_name}}</strong> is an empty string</div>
+	    {% endif %}
+	    <h4>The value was set in the following configuration files:</h4>
+	    <table class="table table-bordered table-hover">
+	      <thead>
+		<tr>
+		  <th>Order</th>
+		  <th>Configuration file</th>
+		  <th>Operation</th>
+		  <th>Line number</th>
+		</tr>
+	      </thead>
+	      <tbody>
+		{% for vh in variable.vhistory.all %}
+		<tr>
+		  <td>{{forloop.counter}}</td><td>{{vh.file_name}}</td><td>{{vh.operation}}</td><td>{{vh.line_number}}</td>
+		</tr>
+		{%endfor%}
+	      </tbody>
+	    </table>
+	  </div>
+	</div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
     {% endif %}
 {% endfor %}
 

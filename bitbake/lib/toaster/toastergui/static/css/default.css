@@ -48,8 +48,10 @@ dd li { line-height: 25px; }
 .item-info dd { line-height: 20px; margin-bottom: 10px; }
 
 /* Style the filter modal dialogs */
-.modal { width: 800px; margin-left: -400px; }
-.modal-footer .btn { float: left; }
+.modal-footer .btn {
+  float: left;
+ }
+
 .modal-body { max-height: 300px; }
 
 /* Hover style for the clear search icon */

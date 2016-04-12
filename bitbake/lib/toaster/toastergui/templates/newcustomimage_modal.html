@@ -12,21 +12,25 @@
   });
 </script>
 
-<div class="modal hide fade in" id="new-custom-image-modal" aria-hidden="false">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3>Name your custom image</h3>
-  </div>
-  <div class="modal-body">
-    <div class="row">
-      <span class="help-block col-md-8">Image names must be unique. They should not contain spaces or capital letters, and the only allowed special character is dash (-).<p></p>
-      </span></div>
-    <div class="control-group controls">
-      <input type="text" class="huge" placeholder="Type the custom image name" required>
-        <span class="help-block error" id="invalid-name-help" style="display:none"></span>
+<div class="modal fade" id="new-custom-image-modal" aria-hidden="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	<h3>Name your custom image</h3>
       </div>
-    </div>
-    <div class="modal-footer">
-      <button id="create-new-custom-image-btn" class="btn btn-primary btn-lg" data-original-title="" title="" disabled>Create custom image</button>
-    </div>
-</div>
+      <div class="modal-body">
+	<div class="row">
+	  <span class="help-block col-md-8">Image names must be unique. They should not contain spaces or capital letters, and the only allowed special character is dash (-).<p></p>
+	  </span></div>
+	  <div class="control-group controls">
+	    <input type="text" class="huge" placeholder="Type the custom image name" required>
+	    <span class="help-block error" id="invalid-name-help" style="display:none"></span>
+	  </div>
+      </div>
+      <div class="modal-footer">
+	<button id="create-new-custom-image-btn" class="btn btn-primary btn-lg" data-original-title="" title="" disabled>Create custom image</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
