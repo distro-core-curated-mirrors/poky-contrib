@@ -11,3 +11,13 @@
 .navbar .btn-group .btn#new-project-button {
   margin-top: 5px;
 }
+
+/* Changes to the tables pagination */
+
+.pagination {
+  margin: 0 0 40px 0;
+}
+
+.pagination-centered {
+  margin-left: 50%;
+}
