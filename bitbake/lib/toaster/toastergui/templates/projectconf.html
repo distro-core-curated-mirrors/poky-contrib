@@ -19,7 +19,7 @@
                 <span id="distro">{{distro}}</span>
                 <i class="glyphicon glyphicon-pencil" id="change-distro-icon"></i>
                 <form id="change-distro-form" style="display:none;">
-                    <div class="input-group">
+                    <div class="input-append">
                         <span  id="edit-distro-name-div" class="control-group">
                             <input type="text" id="new-distro" value="{{distro}}">
                             <button id="apply-change-distro" class="btn" type="button">Save</button>
@@ -43,7 +43,7 @@
                     <div class="row">
                         <span class="help-block col-md-4">To set DL_DIR type the absolute path of the download folder.</span>
                     </div>
-                    <div class="input-group" id="validate-dl_dir">
+                    <div class="input-append" id="validate-dl_dir">
                         <input type="text" class="input-xlarge" id="new-dl_dir" placeholder="Type absolute path of the DL_DIR folder">
                         <button id="apply-change-dl_dir" class="btn" type="button">Save</button>
                         <button id="cancel-change-dl_dir" type="button" class="btn btn-link">Cancel</button>
@@ -85,7 +85,7 @@
                     <div class="row">
                         <span class="help-block col-md-4">To set IMAGE_INSTALL_append to more than one package, type the package names separated by a space.</span>
                     </div>
-                    <div class="input-group">
+                    <div class="input-append">
                         <input type="text" class="input-xlarge" id="new-image_install" placeholder="Type one or more package names">
                         <button id="apply-change-image_install" class="btn" type="button">Save</button>
                         <button id="cancel-change-image_install" type="button" class="btn btn-link">Cancel</button>
@@ -142,7 +142,7 @@
                     <div class="row">
                         <span class="help-block col-md-4">To set SSTATE_DIR type the absolute path of the download folder.</span>
                     </div>
-                    <div class="input-group" id="validate-sstate_dir">
+                    <div class="input-append" id="validate-sstate_dir">
                         <input type="text" class="input-xlarge" id="new-sstate_dir" placeholder="Type absolute path of the SSTATE_DIR folder">
                         <span class="error">A valid directory name required</span>
                         <button id="apply-change-sstate_dir" class="btn" type="button">Save</button>
@@ -436,7 +436,7 @@
                     orightml += '    <span id="config_var_value_'+configvars_sorted[i][2]+'"></span>'
                     orightml += '    <i class="glyphicon glyphicon-pencil js-icon-pencil-config_var" x-data="'+configvars_sorted[i][2]+'"></i>'
                     orightml += '    <form id="change-config_var-form_'+configvars_sorted[i][2]+'" style="display:none;">'
-                    orightml += '        <div class="input-group">'
+                    orightml += '        <div class="input-append">'
                     orightml += '            <input type="text" class="input-xlarge js-new-config_var" id="new-config_var_'+configvars_sorted[i][2]+'" value="">'
                     orightml += '            <button class="btn js-apply-change-config_var" type="button" x-data="'+configvars_sorted[i][2]+':'+configvars_sorted[i][0]+'" disabled>Save</button>'
                     orightml += '            <button type="button" class="btn btn-link js-cancel-change-config_var" x-data="'+configvars_sorted[i][2]+'">Cancel</button>'

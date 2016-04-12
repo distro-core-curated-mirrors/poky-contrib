@@ -61,7 +61,7 @@
           <strong>Machine changes have a big impact on build outcome.</strong> You cannot really compare the builds for the new machine with the previous ones.
         </div>
 
-        <div class="input-group">
+        <div class="input-append">
           <input id="machine-change-input" autocomplete="off" value="" data-provide="typeahead" data-minlength="1" data-autocomplete="off" type="text">
             <button id="machine-change-btn" class="btn" type="button">Save</button> <a href="#" id="cancel-machine-change" class="btn btn-link">Cancel</a>
         </div>
@@ -121,10 +121,12 @@
       <form style="margin-top:20px">
         <!--div class="control-group error"-->
 
-        <div class="input-group">
-          <input id="layer-add-input" autocomplete="off" placeholder="Type a layer name" data-minlength="1" data-autocomplete="off" data-provide="typeahead" data-source="" type="text">
-            <button id="add-layer-btn" class="btn" disabled>Add</button>
-        </div>
+	<div class="col-lg-ff6">
+	  <div class="input-append">
+	    <input id="layer-add-input" autocomplete="off" placeholder="Type a layer name" data-minlength="1" data-autocomplete="off" data-provide="typeahead" data-source="" type="text">
+	      <button id="add-layer-btn" class="btn" disabled>Add</button>
+	  </div>
+	</div>
 
         <div id="import-alert" class="alert alert-info" style="display:none;">
           Toaster does not know about this layer. Please <a href="#">import it</a>

@@ -124,7 +124,7 @@
           <a href="{{layerversion.get_vcs_link_url}}/" class="glyphicon glyphicon-share get-info" target="_blank"></a>
           {% endif %}
           <form id="change-repo-form" class="control-group" style="display:none">
-            <div class="input-group">
+            <div class="input-append">
               <input type="text" class="input-xlarge" value="{{layerversion.layer.vcs_url}}">
                 <button data-layer-prop="vcs_url" class="btn change-btn" type="button">Save</button>
                 <a href="#" style="display:none" class="btn btn-link cancel">Cancel</a>
@@ -143,7 +143,7 @@
             <a href="{{layerversion.get_vcs_dirpath_link_url}}" class="glyphicon glyphicon-share get-info" target="_blank"></a>
             {% endif %}
             <form id="change-subdir-form" style="display:none;">
-              <div class="input-group">
+              <div class="input-append">
                 <input type="text" value="{{layerversion.dirpath}}">
                   <button data-layer-prop="dirpath" class="btn change-btn" type="button">Save</button>
                   <a href="#" style="display:none" class="btn btn-link cancel">Cancel</a>
@@ -159,7 +159,7 @@
             <dd>
               <span class="current-value">{{layerversion.get_vcs_reference}}</span>
               <form style="display:none;">
-                <div class="input-group">
+                <div class="input-append">
                   <input type="text" value="{{layerversion.get_vcs_reference}}">
                     <button  data-layer-prop="commit" class="btn change-btn" type="button">Save</button>
                     <a href="#" style="display:none" class="btn btn-link cancel">Cancel</a>
@@ -180,7 +180,7 @@
                   </li>
                   {% endfor %}
                 </ul>
-                <div class="input-group add-deps">
+                <div class="input-append add-deps">
                   <input type="text" autocomplete="off" data-minLength="1" data-autocomplete="off"  placeholder="Type a layer name" id="layer-dep-input">
                     <a class="btn" id="add-layer-dependency-btn" >
                       Add layer
