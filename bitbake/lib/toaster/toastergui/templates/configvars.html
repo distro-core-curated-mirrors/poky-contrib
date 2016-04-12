@@ -12,7 +12,7 @@
 
 {% block buildinfomain %}
 <!-- page title -->
-<div class="row-fluid span10">
+<div class="row col-md-10">
  <div class="page-header">
  <h1>
   {% if request.GET.filter and objects.paginator.count > 0 or request.GET.search and objects.paginator.count > 0 %}
@@ -27,7 +27,7 @@
 </div>
 
 <!-- configuration table -->
-<div class="row-fluid pull-right span10" id="navTab">
+<div class="row pull-right col-md-10" id="navTab">
   <ul class="nav nav-pills">
     <li class=""><a href="{% url 'configuration' build.id %}">Summary</a></li>
     <li class="active"><a href="#" >BitBake variables</a></li>
@@ -37,10 +37,10 @@
   <div id="variables" class="tab-pane">
 
   {% if objects.paginator.count == 0 %}
-  <div class="row-fluid">
+  <div class="row">
       <div class="alert">
-        <form class="no-results input-append" id="searchform">
-            <input id="search" name="search" class="input-xxlarge" type="text" value="{% if request.GET.search %}{{request.GET.search}}{% endif %}"/>{% if request.GET.search %}<a href="javascript:$('#search').val('');searchform.submit()" class="add-on btn" tabindex="-1"><i class="icon-remove"></i></a>{% endif %}
+        <form class="no-results input-group" id="searchform">
+            <input id="search" name="search" class="input-xxlarge" type="text" value="{% if request.GET.search %}{{request.GET.search}}{% endif %}"/>{% if request.GET.search %}<a href="javascript:$('#search').val('');searchform.submit()" class="input-group-addon btn" tabindex="-1"><i class="glyphicon glyphicon-remove"></i></a>{% endif %}
             <button class="btn" type="submit" value="Search">Search</button>
             <button class="btn btn-link" onclick="javascript:$('#search').val('');searchform.submit()">Show all variables</button>
         </form>
@@ -65,7 +65,7 @@
             {% if variable.description %}
                 {{variable.description}}
                 <a href="http://www.yoctoproject.org/docs/current/ref-manual/ref-manual.html#var-{{variable.variable_name|variable_parent_name}}" target="_blank">
-                <i class="icon-share get-info"></i></a>
+                <i class="glyphicon glyphicon-share get-info"></i></a>
             {% endif %}
         </td>
     </tr>
@@ -96,10 +96,10 @@
                     <span>{{variable.variable_value|string_slice:':570'}}
                         <span class="full"> {{variable.variable_value|string_slice:'570:'}}
                         </span>
-                        <a class="btn btn-mini full-show">...</a>
+                        <a class="btn btn-xs full-show">...</a>
                     </span>
                 </p>
-                <a class="btn btn-mini full-hide">Collapse variable value <i class="icon-caret-up"></i>
+                <a class="btn btn-xs full-hide">Collapse variable value <i class="icon-caret-up"></i>
                 </a>
               {% endif %}
             {% else %}

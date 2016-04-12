@@ -21,9 +21,9 @@
   });
 </script>
 
-<div class="row-fluid">
+<div class="row">
   <!-- only on config pages -->
-  <div id="config-nav" class="span2">
+  <div id="config-nav" class="col-md-2">
     <ul class="nav nav-list well">
       <li><a class="nav-parent" href="{% url 'project' project.id %}">Configuration</a></li>
       <li class="nav-header">Compatible metadata</li>
@@ -36,7 +36,7 @@
       <li><a href="{% url 'projectconf' project.id %}">BitBake variables</a></li>
     </ul>
   </div>
-  <div class="span10">
+  <div class="col-md-10">
     {% block projectinfomain %}{% endblock %}
   </div>
 </div>

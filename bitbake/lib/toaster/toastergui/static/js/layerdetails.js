@@ -98,7 +98,7 @@ function layerDetailsPageInit (ctx) {
     });
   });
 
-  $(".icon-pencil").click(function (){
+  $(".glyphicon glyphicon-pencil").click(function (){
     var mParent = $(this).parent("dd");
     mParent.prev().css("margin-top", "10px");
     mParent.children("form").slideDown();
@@ -134,7 +134,7 @@ function layerDetailsPageInit (ctx) {
         mParent.children(".delete-current-value").show();
       }
 
-      mParent.children(".icon-pencil").show();
+      mParent.children(".glyphicon glyphicon-pencil").show();
       mParent.prev().css("margin-top", "0px");
     });
   });
@@ -387,9 +387,9 @@ function layerDetailsPageInit (ctx) {
   });
 
 
-  layerDepsList.find(".icon-trash").click(layerDepRemoveClick);
+  layerDepsList.find(".glyphicon glyphicon-trash").click(layerDepRemoveClick);
   layerDepsList.find("a").tooltip();
-  $(".icon-trash").tooltip();
+  $(".glyphicon glyphicon-trash").tooltip();
   $(".commit").tooltip();
 
 }

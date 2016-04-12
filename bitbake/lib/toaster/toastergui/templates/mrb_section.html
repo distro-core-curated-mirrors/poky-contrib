@@ -45,8 +45,8 @@
             </a>
         </span>
       {% endif %}
-        <div class="row-fluid">
-          <div class="span3 lead">
+        <div class="row">
+          <div class="col-md-3 lead">
     {%if build.outcome == build.SUCCEEDED or build.outcome == build.FAILED %}
               <a href="{%url 'builddashboard' build.pk%}" class="{%if build.outcome == build.SUCCEEDED %}success{%else%}error{%endif%}">
     {% endif %}
@@ -79,7 +79,7 @@
     {% endif %}
             </div>
     {% if build.outcome == build.SUCCEEDED or build.outcome == build.FAILED %}
-            <div class="span2 lead">
+            <div class="col-md-2 lead">
                 {% if build.completed_on|format_build_date  %}
                     {{ build.completed_on|date:'d/m/y H:i' }}
                 {% else %}
@@ -88,12 +88,12 @@
             </div>
     {% endif %}
     {%if build.outcome == build.SUCCEEDED or build.outcome == build.FAILED %}
-            <div class="span2 lead">
+            <div class="col-md-2 lead">
       {% if  build.errors.count %}
                 <i class="icon-minus-sign red"></i> <a href="{%url 'builddashboard' build.pk%}#errors" class="error">{{build.errors.count}} error{{build.errors.count|pluralize}}</a>
       {% endif %}
             </div>
-            <div class="span2 lead">
+            <div class="col-md-2 lead">
       {% if  build.warnings.count %}
                 <i class="icon-warning-sign yellow"></i> <a href="{%url 'builddashboard' build.pk%}#warnings" class="warning">{{build.warnings.count}} warning{{build.warnings.count|pluralize}}</a>
       {% endif %}
@@ -131,15 +131,15 @@
             </div>
     {%endif%}
     {%if build.outcome == build.IN_PROGRESS %}
-    <div class="span4" style="display:none" id="cancelling-msg-{{build.buildrequest.pk}}">
+    <div class="col-md-4" style="display:none" id="cancelling-msg-{{build.buildrequest.pk}}">
       <p class="lead">Cancelling the build ...</p>
     </div>
-    <div class="span4 offset1 progress-info">
+    <div class="col-md-4 col-md-offset-1 progress-info">
       <div class="progress" id="build-pc-done-title-{{build.pk}}" style="margin-top:5px;" data-toggle="tooltip" title="{{build.completeper}}% of tasks complete">
         <div id="build-pc-done-bar-{{build.pk}}" style="width: {{build.completeper}}%;" class="bar"></div>
       </div>
     </div>
-    <div class="lead span3 progress-info"><span id="build-pc-done-{{build.pk}}">{{build.completeper}}</span>% of tasks complete</div>
+    <div class="lead col-md-3 progress-info"><span id="build-pc-done-{{build.pk}}">{{build.completeper}}</span>% of tasks complete</div>
     {# No build cancel for command line builds project #}
     {% if build.project.is_default %}
     <i class="icon-question-sign get-help get-help-blue pull-right" title="" data-original-title="Builds in this project cannot be cancelled from Toaster: they can only be cancelled from the command line"></i>
@@ -156,9 +156,13 @@
     {%endif%} {# end if in progress #}
 
     {% if build.outcome == build.CANCELLED %}
-      <div class="span4">
-        <p class="lead">Build cancelled</p>
-      </div>
+    <div class="col-md-4">
+      <p class="lead">Build cancelled</p>
+    </div>
+    <button class="btn btn-info pull-right run-again-btn"
+        data-request-url="{% url 'xhr_buildrequest' build.project.pk %}"
+        data-target='{{build.target_set.all|get_tasks|json}}'>
+      Rebuild
 
       {% if build.project.is_default %}
         <i class="icon-question-sign get-help get-help-blue pull-right" title=""

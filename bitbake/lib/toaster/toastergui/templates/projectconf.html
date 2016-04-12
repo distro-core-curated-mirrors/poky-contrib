@@ -17,9 +17,9 @@
             </dt>
             <dd class="lead">
                 <span id="distro">{{distro}}</span>
-                <i class="icon-pencil" id="change-distro-icon"></i>
+                <i class="glyphicon glyphicon-pencil" id="change-distro-icon"></i>
                 <form id="change-distro-form" style="display:none;">
-                    <div class="input-append">
+                    <div class="input-group">
                         <span  id="edit-distro-name-div" class="control-group">
                             <input type="text" id="new-distro" value="{{distro}}">
                             <button id="apply-change-distro" class="btn" type="button">Save</button>
@@ -38,12 +38,12 @@
             </dt>
             <dd class="lead">
                 <span id="dl_dir"{% if dl_dir %}{%else%} class="muted"{%endif%}>{% if dl_dir %}{{dl_dir}}{%else%}Not set{%endif%}</span>
-                <i class="icon-pencil" id="change-dl_dir-icon"></i>
+                <i class="glyphicon glyphicon-pencil" id="change-dl_dir-icon"></i>
                 <form id="change-dl_dir-form" style="display:none;">
-                    <div class="row-fluid">
-                        <span class="help-block span4">To set DL_DIR type the absolute path of the download folder.</span>
+                    <div class="row">
+                        <span class="help-block col-md-4">To set DL_DIR type the absolute path of the download folder.</span>
                     </div>
-                    <div class="input-append" id="validate-dl_dir">
+                    <div class="input-group" id="validate-dl_dir">
                         <input type="text" class="input-xlarge" id="new-dl_dir" placeholder="Type absolute path of the DL_DIR folder">
                         <button id="apply-change-dl_dir" class="btn" type="button">Save</button>
                         <button id="cancel-change-dl_dir" type="button" class="btn btn-link">Cancel</button>
@@ -60,7 +60,7 @@
             </dt>
             <dd class="lead">
                 <span id="image_fstypes">{{fstypes}}</span>
-                <i class="icon-pencil" id="change-image_fstypes-icon"></i>
+                <i class="glyphicon glyphicon-pencil" id="change-image_fstypes-icon"></i>
                 <form id="change-image_fstypes-form" style="display:none;">
                     <label>Type the image types you want to build:</label>
                     <div class="input-append" id="validate-image_fstypes">
@@ -84,13 +84,13 @@
             </dt>
             <dd class="lead">
                 <span id="image_install"{% if image_install_append %}{%else%} class="muted"{%endif%}>{% if image_install_append %}{{image_install_append}}{%else%}Not set{%endif%}</span>
-                <i class="icon-pencil" id="change-image_install-icon"></i>
-                <i class="icon-trash" id="delete-image_install-icon" {% if image_install_append %}{%else%}style="display:none;"{%endif%}></i>
+                <i class="glyphicon glyphicon-pencil" id="change-image_install-icon"></i>
+                <i class="glyphicon glyphicon-trash" id="delete-image_install-icon" {% if image_install_append %}{%else%}style="display:none;"{%endif%}></i>
                 <form id="change-image_install-form" style="display:none;">
-                    <div class="row-fluid">
-                        <span class="help-block span4">To set IMAGE_INSTALL_append to more than one package, type the package names separated by a space.</span>
+                    <div class="row">
+                        <span class="help-block col-md-4">To set IMAGE_INSTALL_append to more than one package, type the package names separated by a space.</span>
                     </div>
-                    <div class="input-append">
+                    <div class="input-group">
                         <input type="text" class="input-xlarge" id="new-image_install" placeholder="Type one or more package names">
                         <button id="apply-change-image_install" class="btn" type="button">Save</button>
                         <button id="cancel-change-image_install" type="button" class="btn btn-link">Cancel</button>
@@ -106,7 +106,7 @@
             </dt>
             <dd class="lead">
                 <span id="package_classes">{{package_classes}}</span>
-                <i id="change-package_classes-icon" class="icon-pencil"></i>
+                <i id="change-package_classes-icon" class="glyphicon glyphicon-pencil"></i>
                 <form id="change-package_classes-form" style="display:none;">
                     <label>
                         Root file system package format
@@ -142,12 +142,12 @@
             </dt>
             <dd class="lead">
                 <span id="sstate_dir"{% if sstate_dir %}{%else%} class="muted"{%endif%}>{% if sstate_dir %}{{sstate_dir}}{%else%}Not set{%endif%}</span>
-                <i class="icon-pencil" id="change-sstate_dir-icon"></i>
+                <i class="glyphicon glyphicon-pencil" id="change-sstate_dir-icon"></i>
                 <form id="change-sstate_dir-form" style="display:none;">
-                    <div class="row-fluid">
-                        <span class="help-block span4">To set SSTATE_DIR type the absolute path of the download folder.</span>
+                    <div class="row">
+                        <span class="help-block col-md-4">To set SSTATE_DIR type the absolute path of the download folder.</span>
                     </div>
-                    <div class="input-append" id="validate-sstate_dir">
+                    <div class="input-group" id="validate-sstate_dir">
                         <input type="text" class="input-xlarge" id="new-sstate_dir" placeholder="Type absolute path of the SSTATE_DIR folder">
                         <span class="error">A valid directory name required</span>
                         <button id="apply-change-sstate_dir" class="btn" type="button">Save</button>
@@ -159,7 +159,7 @@
             {% endif %}
         </dl>
 
-        <!-- <ul class="unstyled configuration-list" id="configvar-list"> -->
+        <!-- <ul class="list-unstyled configuration-list" id="configvar-list"> -->
         <dl id="configvar-list">
             <!-- the added configuration variables are inserted here -->
         </dl>
@@ -175,11 +175,11 @@
             <input type="hidden" class="js-config-managed-name" value="{{b}}">
         {% endfor %}
 
-        <div class="row-fluid">
+        <div class="row">
           <form id="variable-form">
             <fieldset style="padding-left:0px;">
                 <legend>Add variable</legend>
-                <div class="span3" style="margin-left:0px;">
+                <div class="col-md-3" style="margin-left:0px;">
                     <span  id="add-configvar-name-div" class="control-group">
                       <label>
                         Variable
@@ -197,7 +197,7 @@
                         <button id="add-configvar-button" class="btn save" type="button" disabled>Add variable</button>
                     </div>
                 </div>
-                <div class="span5 help-block">
+                <div class="col-md-5 help-block">
                     <h5>Some variables are reserved from Toaster</h5>
                     <p>Toaster cannot set any variables that impact 1) the configuration of the build servers,
                     or 2) where artifacts produced by the build are stored. Such variables include: </p>
@@ -420,12 +420,12 @@
                     }
                 }
                 if (var_context == undefined) {
-                    orightml += '<div> <dt><span id="config_var_entry_'+configvars_sorted[i][2]+'" class="js-config-var-name"></span><i class="icon-trash js-icon-trash-config_var" id="config_var_trash_'+configvars_sorted[i][2]+'" x-data="'+configvars_sorted[i][2]+'"></i> </dt>'
+                    orightml += '<div> <dt><span id="config_var_entry_'+configvars_sorted[i][2]+'" class="js-config-var-name"></span><i class="glyphicon glyphicon-trash js-icon-trash-config_var" id="config_var_trash_'+configvars_sorted[i][2]+'" x-data="'+configvars_sorted[i][2]+'"></i> </dt>'
                     orightml += '<dd class="lead">'
                     orightml += '    <span id="config_var_value_'+configvars_sorted[i][2]+'"></span>'
-                    orightml += '    <i class="icon-pencil js-icon-pencil-config_var" x-data="'+configvars_sorted[i][2]+'"></i>'
+                    orightml += '    <i class="glyphicon glyphicon-pencil js-icon-pencil-config_var" x-data="'+configvars_sorted[i][2]+'"></i>'
                     orightml += '    <form id="change-config_var-form_'+configvars_sorted[i][2]+'" style="display:none;">'
-                    orightml += '        <div class="input-append">'
+                    orightml += '        <div class="input-group">'
                     orightml += '            <input type="text" class="input-xlarge js-new-config_var" id="new-config_var_'+configvars_sorted[i][2]+'" value="">'
                     orightml += '            <button class="btn js-apply-change-config_var" type="button" x-data="'+configvars_sorted[i][2]+':'+configvars_sorted[i][0]+'" disabled>Save</button>'
                     orightml += '            <button type="button" class="btn btn-link js-cancel-change-config_var" x-data="'+configvars_sorted[i][2]+'">Cancel</button>'
