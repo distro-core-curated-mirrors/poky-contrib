@@ -106,7 +106,7 @@
 <div class="row col-md-11">
   <div class="col-md-8">
     <div class="button-place btn-group" style="width: 100%">
-      <a class="btn btn-lg col-md-6 build-custom-image" href="#" style="width: 50%">
+      <a class="btn btn-large col-md-6 build-custom-image" href="#" style="width: 50%">
         Build {{recipe.name}}
       </a>
       <a href="{% url 'customrecipedownload' project.id recipe.id %}" class="btn btn-large span6" style="width: 50%"
@@ -129,9 +129,9 @@
           <li>Build the recipe</li>
           <li>Once the build completes, come back to this page and search for the package</li>
         </ol>
-        <form class="input-group no-results">
+        <form class="input-append no-results">
           <input type="text" class="input-xlarge no-results-search-input" id="no-results-search-input-{{table_name}}" name="search" placeholder="Search {{title|lower}}" />
-          <a href="#" class="input-group-addon btn" id="no-results-remove-search-btn" tabindex="-1">
+          <a href="#" class="input-append-addon btn" id="no-results-remove-search-btn" tabindex="-1">
             <i class="glyphicon glyphicon-remove"></i>
           </a>
           <button class="btn search-submit-{{table_name}}">Search</button>
@@ -145,7 +145,7 @@
         <h2> Add | Remove packages </h2>
         <div class="alert alert-info air">
           <p class="lead">Toaster has no package information for {{recipe.name}}. To generate package information, build {{recipe.name}}</p>
-          <button class="btn btn-info btn-lg build-custom-image" style="margin:20px 0 10px 0;">Build {{recipe.name}}</button>
+          <button class="btn btn-info btn-large build-custom-image" style="margin:20px 0 10px 0;">Build {{recipe.name}}</button>
         </div>
         {% else %}
         {# ToasterTable for Adding remove packages #}

@@ -66,8 +66,8 @@
   {% if objects.paginator.count == 0 %}
   <div class="row">
       <div class="alert">
-        <form class="no-results input-group" id="searchform">
-            <input id="search" name="search" class="input-xxlarge" type="text" value="{{request.GET.search}}"/>{% if request.GET.search %}<a href="javascript:$('#search').val('');searchform.submit()" class="input-group-addon btn" tabindex="-1"><i class="glyphicon glyphicon-remove"></i></a>{% endif %}
+        <form class="no-results input-append" id="searchform">
+            <input id="search" name="search" class="input-xxlarge" type="text" value="{{request.GET.search}}"/>{% if request.GET.search %}<a href="javascript:$('#search').val('');searchform.submit()" class="input-append-addon btn" tabindex="-1"><i class="glyphicon glyphicon-remove"></i></a>{% endif %}
             <button class="btn" type="submit" value="Search">Search</button>
             <button class="btn btn-link" onclick="javascript:$('#search').val('');searchform.submit()">Show all tasks</button>
         </form>
