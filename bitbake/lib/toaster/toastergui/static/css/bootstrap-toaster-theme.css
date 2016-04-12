@@ -21,19 +21,19 @@
 .input-block-level {
   display: block;
   width: 100%;
-  min-height: 20px + 10px;
+  min-height: 30px;
   -webkit-box-sizing: border-box;
      -moz-box-sizing: border-box;
           box-sizing: border-box;
 }
 p {
-  margin: 0 0 20px / 2;
+  margin: 0 0 10px;
 }
 .lead {
   margin-bottom: 20px;
-  font-size: 14px * 1.5;
+  font-size: 21px;
   font-weight: 200;
-  line-height: 20px * 1.5;
+  line-height: 30px;
 }
 small {
   font-size: 85%;
@@ -118,31 +118,31 @@ h6 small {
 h1,
 h2,
 h3 {
-  line-height: 20px * 2;
+  line-height: 40px;
 }
 h1 {
-  font-size: 14px * 2.75;
+  font-size: 38.5px;
 }
 h2 {
-  font-size: 14px * 2.25;
+  font-size: 31.5px;
 }
 h3 {
-  font-size: 14px * 1.75;
+  font-size: 24.5px;
 }
 h4 {
-  font-size: 14px * 1.25;
+  font-size: 17.5px;
 }
 h5 {
   font-size: 14px;
 }
 h6 {
-  font-size: 14px * .85;
+  font-size: 11.9px;
 }
 h1 small {
-  font-size: 14px * 1.75;
+  font-size: 24.5px;
 }
 h2 small {
-  font-size: 14px * 1.25;
+  font-size: 17.5px;
 }
 h3 small {
   font-size: 14px;
@@ -151,14 +151,14 @@ h4 small {
   font-size: 14px;
 }
 .page-header {
-  padding-bottom: (20px / 2) - 1;
+  padding-bottom: 9px;
   margin: 20px 0 30px;
   border-bottom: 1px solid #eee;
 }
 ul,
 ol {
   padding: 0;
-  margin: 0 0 20px / 2 25px;
+  margin: 0 0 10px 25px;
 }
 ul ul,
 ul ol,
@@ -200,7 +200,7 @@ dt {
   font-weight: bold;
 }
 dd {
-  margin-left: 20px / 2;
+  margin-left: 10px;
 }
 .dl-horizontal {
   *zoom: 1;
@@ -216,7 +216,7 @@ dd {
 }
 .dl-horizontal dt {
   float: left;
-  width: 180px - 20;
+  width: 160px;
   overflow: hidden;
   clear: left;
   text-align: right;
@@ -248,7 +248,7 @@ blockquote {
 }
 blockquote p {
   margin-bottom: 0;
-  font-size: 14px * 1.25;
+  font-size: 17.5px;
   font-weight: 300;
   line-height: 1.25;
 }
@@ -353,14 +353,14 @@ legend {
   width: 100%;
   padding: 0;
   margin-bottom: 20px;
-  font-size: 14px * 1.5;
-  line-height: 20px * 2;
+  font-size: 21px;
+  line-height: 40px;
   color: #333;
   border: 0;
   border-bottom: 1px solid #e5e5e5;
 }
 legend small {
-  font-size: 20px * .75;
+  font-size: 15px;
   color: #999;
 }
 label,
@@ -401,7 +401,7 @@ input[type="color"],
 .uneditable-input {
   display: inline-block;
   padding: 4px 6px;
-  margin-bottom: 20px / 2;
+  margin-bottom: 10px;
   font-size: 14px;
   line-height: 20px;
   color: #555;
@@ -490,9 +490,9 @@ input[type="checkbox"] {
 }
 select,
 input[type="file"] {
-  height: 20px + 10px;
+  height: 30px;
   /* For IE7, add top margin to align select with labels */
-  line-height: 20px + 10px;
+  line-height: 30px;
   /* In IE7, the height of the select element cannot be changed by height, only font-size */
 
   *margin-top: 4px;
@@ -621,7 +621,7 @@ textarea,
 input.span12,
 textarea.span12,
 .uneditable-input.span12 {
-  width: ((60px) * 12) + (20px * (12 - 1)) - 14;
+  width: 926px;
 }
 .controls-row {
   *zoom: 1;
@@ -832,7 +832,7 @@ select:focus:invalid:focus {
 }
 .help-block {
   display: block;
-  margin-bottom: 20px / 2;
+  margin-bottom: 10px;
 }
 .help-inline {
   display: inline-block;
@@ -846,7 +846,7 @@ select:focus:invalid:focus {
 .input-append,
 .input-prepend {
   display: inline-block;
-  margin-bottom: 20px / 2;
+  margin-bottom: 10px;
   font-size: 0;
   white-space: nowrap;
   vertical-align: middle;
@@ -1100,7 +1100,7 @@ input.search-query {
   margin-left: 0;
 }
 .control-group {
-  margin-bottom: 20px / 2;
+  margin-bottom: 10px;
 }
 legend + .control-group {
   margin-top: 20px;
@@ -1123,7 +1123,7 @@ legend + .control-group {
 }
 .form-horizontal .control-label {
   float: left;
-  width: 180px - 20;
+  width: 160px;
   padding-top: 5px;
   text-align: right;
 }
@@ -1146,7 +1146,7 @@ legend + .control-group {
 .form-horizontal .uneditable-input + .help-block,
 .form-horizontal .input-prepend + .help-block,
 .form-horizontal .input-append + .help-block {
-  margin-top: 20px / 2;
+  margin-top: 10px;
 }
 .form-horizontal .form-actions {
   padding-left: 180px;
@@ -1303,73 +1303,73 @@ table th[class*="span"],
 .table td.span1,
 .table th.span1 {
   float: none;
-  width: ((60px) * 1) + (20px * (1 - 1)) - 16;
+  width: 44px;
   margin-left: 0;
 }
 .table td.span2,
 .table th.span2 {
   float: none;
-  width: ((60px) * 2) + (20px * (2 - 1)) - 16;
+  width: 124px;
   margin-left: 0;
 }
 .table td.span3,
 .table th.span3 {
   float: none;
-  width: ((60px) * 3) + (20px * (3 - 1)) - 16;
+  width: 204px;
   margin-left: 0;
 }
 .table td.span4,
 .table th.span4 {
   float: none;
-  width: ((60px) * 4) + (20px * (4 - 1)) - 16;
+  width: 284px;
   margin-left: 0;
 }
 .table td.span5,
 .table th.span5 {
   float: none;
-  width: ((60px) * 5) + (20px * (5 - 1)) - 16;
+  width: 364px;
   margin-left: 0;
 }
 .table td.span6,
 .table th.span6 {
   float: none;
-  width: ((60px) * 6) + (20px * (6 - 1)) - 16;
+  width: 444px;
   margin-left: 0;
 }
 .table td.span7,
 .table th.span7 {
   float: none;
-  width: ((60px) * 7) + (20px * (7 - 1)) - 16;
+  width: 524px;
   margin-left: 0;
 }
 .table td.span8,
 .table th.span8 {
   float: none;
-  width: ((60px) * 8) + (20px * (8 - 1)) - 16;
+  width: 604px;
   margin-left: 0;
 }
 .table td.span9,
 .table th.span9 {
   float: none;
-  width: ((60px) * 9) + (20px * (9 - 1)) - 16;
+  width: 684px;
   margin-left: 0;
 }
 .table td.span10,
 .table th.span10 {
   float: none;
-  width: ((60px) * 10) + (20px * (10 - 1)) - 16;
+  width: 764px;
   margin-left: 0;
 }
 .table td.span11,
 .table th.span11 {
   float: none;
-  width: ((60px) * 11) + (20px * (11 - 1)) - 16;
+  width: 844px;
   margin-left: 0;
 }
 .table td.span12,
 .table th.span12 {
   float: none;
-  width: ((60px) * 12) + (20px * (12 - 1)) - 16;
+  width: 924px;
   margin-left: 0;
 }
 .table tbody tr.success > td {
@@ -1488,7 +1488,7 @@ table th[class*="span"],
 }
 .btn-large {
   padding: 11px 19px;
-  font-size: 14px * 1.25;
+  font-size: 17.5px;
           border-radius: 6px;
 
   -webkit-border-radius: 6px;
@@ -1500,7 +1500,7 @@ table th[class*="span"],
 }
 .btn-small {
   padding: 2px 10px;
-  font-size: 14px * .85;
+  font-size: 11.9px;
           border-radius: 3px;
 
   -webkit-border-radius: 3px;
@@ -1516,7 +1516,7 @@ table th[class*="span"],
 }
 .btn-mini {
   padding: 0 6px;
-  font-size: 14px * .75;
+  font-size: 10.5px;
           border-radius: 3px;
 
   -webkit-border-radius: 3px;
@@ -2298,7 +2298,7 @@ input[type="submit"].btn.btn-mini {
 }
 .navbar .btn,
 .navbar .btn-group {
-  margin-top: (40px - 30px) / 2;
+  margin-top: 5px;
 }
 .navbar .btn-group .btn,
 .navbar .input-prepend .btn,
@@ -2325,7 +2325,7 @@ input[type="submit"].btn.btn-mini {
 .navbar-form select,
 .navbar-form .radio,
 .navbar-form .checkbox {
-  margin-top: (40px - 30px) / 2;
+  margin-top: 5px;
 }
 .navbar-form input,
 .navbar-form select,
@@ -2350,7 +2350,7 @@ input[type="submit"].btn.btn-mini {
 .navbar-search {
   position: relative;
   float: left;
-  margin-top: (40px - 30px) / 2;
+  margin-top: 5px;
   margin-bottom: 0;
 }
 .navbar-search .search-query {
