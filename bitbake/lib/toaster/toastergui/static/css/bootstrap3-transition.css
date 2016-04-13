@@ -18,6 +18,10 @@
   margin-left: 50%;
 }
 
+select[class^="pagesize-"]{
+  margin-bottom: 0;
+}
+
 /* Modal dialog */
 .modal-footer {
   background-color: #f5f5f5;
