@@ -6,7 +6,7 @@
 {% block title %} {{layerversion.layer.name}} - {{project.name}} - Toaster {% endblock %}
 {% block pagecontent %}
 
-<div class="section">
+<div class="row">
   <ul class="breadcrumb">
     <li>
       <a href="{% url 'project' project.id %}">{{project.name}}</a>
@@ -69,18 +69,21 @@
   });
 </script>
 
-<div class="row col-md-11">
-  <div class="page-header">
-    <h1>{{layerversion.layer.name}} <small class="commit"
+<div class="row">
+  <div class="col-md-12">
+    <div class="page-header">
+      <h1>{{layerversion.layer.name}} <small class="commit"
           {% if layerversion.get_vcs_reference|length > 13 %}
-        data-toggle="tooltip" title="{{layerversion.get_vcs_reference}}"
-        {% endif %}>
-        ({{layerversion.get_vcs_reference|truncatechars:13}})</small></h1>
+          data-toggle="tooltip" title="{{layerversion.get_vcs_reference}}"
+          {% endif %}>
+          ({{layerversion.get_vcs_reference|truncatechars:13}})</small></h1>
+    </div>
   </div>
 </div>
 
+<div class="row">
 <!-- container for tabs -->
-<div class="row col-md-7 tabbable">
+<div class="col-md-8 tabbable">
   <div class="alert alert-info lead" id="alert-area" style="display:none">
     <button type="button" class="close" id="dismiss-alert">&times;</button>
     <span id="alert-msg"></span>
@@ -99,12 +102,12 @@
   <div class="tab-content">
     <span class="button-place">
       {% if layerversion.id not in projectlayers %}
-      <button id="add-remove-layer-btn" data-directive="add" class="btn btn-lg btn-block">
+      <button id="add-remove-layer-btn" data-directive="add" class="btn btn-large btn-block">
         <span class="glyphicon glyphicon-plus"></span>
         Add the {{layerversion.layer.name}} layer to your project
       </button>
       {% else %}
-      <button id="add-remove-layer-btn" data-directive="remove" class="btn btn-block btn-lg btn-danger">
+      <button id="add-remove-layer-btn" data-directive="remove" class="btn btn-block btn-large btn-danger">
         <span class="icon-trash"></span>
         Remove the {{layerversion.layer.name}} layer from your project
       </button>
@@ -228,15 +231,16 @@
           </div> <!-- end tab content -->
         </div> <!-- end tabable -->
 
-        <div class="row col-md-4 well"> <!-- info side panel -->
-          <h2>About {{layerversion.layer.name}}</h2>
-          <dl class="item-info">
+        <div class="col-md-4"> <!-- info side panel -->
+          <div class="well">
+            <h2>About {{layerversion.layer.name}}</h2>
+            <dl class="item-info">
 
-            <dt>
+              <dt>
               Summary
               <i class="icon-question-sign get-help" title="One-line description of the layer"></i>
-            </dt>
-            <dd>
+              </dt>
+              <dd>
               <span class="muted" style="display:none">Not set</span>
               <span class="current-value">{{layerversion.layer.summary|default_if_none:''}}</span>
               <form style="display:none; margin-bottom:20px">
@@ -249,8 +253,8 @@
             </dd>
             <dt>
               Description
-            </dt>
-            <dd>
+              </dt>
+              <dd>
               <span class="muted" style="display:none">Not set</span>
               <span class="current-value">{{layerversion.layer.description|default_if_none:''}}</span>
               <form style="display:none; margin-bottom:20px">
@@ -266,10 +270,12 @@
             <dd>
               <a href="http://layers.openembedded.org/layerindex/branch/{{layerversion.up_branch.name}}/layer/{{layerversion.layer.name}}">layer index link</a>
 
-          </dd>
-          {% endif %}
+              </dd>
+              {% endif %}
 
-        </dl>
+            </dl>
+        </div>
       </div>
+</div>
 
       {% endblock %}

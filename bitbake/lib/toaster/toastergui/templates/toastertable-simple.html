@@ -26,7 +26,7 @@
 
 {% include 'toastertable-filter.html' %}
 
-<div class="row" id="no-results-{{table_name}}" style="display:none">
+<div id="no-results-{{table_name}}" style="display:none">
   <div class="alert">
     <form class="no-results input-append">
       <input class="input-xlarge" id="new-search-input-{{table_name}}" name="search" type="text" placeholder="Search {{title|lower}}" value="{% if request.GET.search %}{{request.GET.search}}{% endif %}"/>
@@ -41,7 +41,7 @@
 </div>
 <div id="table-container-{{table_name}}" style="visibility: hidden">
   <!-- control header -->
-  <div class="row" id="table-chrome-{{table_name}}">
+  <div id="table-chrome-{{table_name}}">
       <div class="navbar-search input-append pull-left">
 
         <input class="input-xlarge" id="search-input-{{table_name}}" name="search" type="text" placeholder="Search {{title|lower}}" value="{% if request.GET.search %}{{request.GET.search}}{% endif %}"/>
