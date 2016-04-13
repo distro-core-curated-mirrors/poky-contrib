@@ -35,6 +35,10 @@ ul.configuration-list {
 
 /* Breadcrumbs */
 
+.breadcrumb {
+  padding: 8px 0;
+}
+
 .breadcrumb > li + li::before {
   content: "";
 }
@@ -61,4 +65,18 @@ fieldset[disabled] .btn-primary:focus,
 fieldset[disabled] .btn-primary:hover {
   background-color: #04c;
   border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+}
+
+/* Table search input field */
+
+.navbar-search {
+  width: 60%;
+}
+
+.navbar-search .input-append {
+  width: 90%;
+}
+
+.navbar-search .input-append input[type="text"] {
+  width: 80%;
 }

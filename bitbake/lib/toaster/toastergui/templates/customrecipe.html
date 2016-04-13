@@ -4,7 +4,7 @@
 {% load static %}
 {% block pagecontent %}
 
-<div class="section">
+<div class="row">
   <ul class="breadcrumb">
     <li>
       <a href="{% url 'project' project.id %}">{{project.name}}</a>
@@ -88,21 +88,22 @@
 </div><!-- /.modal -->
 <!-- end package dependencies modal -->
 
-
-<div class="row col-md-11">
-  <div class="alert alert-success lead" id="image-created-notification" style="margin-top: 15px; display: none">
-    <button type="button" data-dismiss="alert" class="close">x</button>
-    Your custom image <strong>{{recipe.name}}</strong> has been created. You can now add or remove packages as needed.
-  </div>
-  <div class="page-header air">
-    <h1>
-      {{recipe.name}}
-      <small>({{recipe.layer_version.layer.name}})</small>
-    </h1>
+<div class="row">
+  <div class="col-md-12">
+    <div class="alert alert-success lead" id="image-created-notification" style="margin-top: 15px; display: none">
+      <button type="button" data-dismiss="alert" class="close">x</button>
+      Your custom image <strong>{{recipe.name}}</strong> has been created. You can now add or remove packages as needed.
+    </div>
+    <div class="page-header">
+      <h1>
+        {{recipe.name}}
+        <small>({{recipe.layer_version.layer.name}})</small>
+      </h1>
+    </div>
   </div>
 </div>
 
-<div class="row col-md-11">
+<div class="row">
   <div class="col-md-8">
     <div class="button-place btn-group" style="width: 100%">
       <a class="btn btn-large col-md-6 build-custom-image" href="#" style="width: 50%">
@@ -148,76 +149,77 @@
       </div>
       </div>
     </div>
-    <div class="col-md-4 well">
-      <h2 style="margin-bottom:20px;">About {{recipe.name}}</h2>
+    <div class="col-md-4">
+      <div class="well">
+        <h2 style="margin-bottom:20px;">About {{recipe.name}}</h2>
 
-      <dl>
-        <dt>
+        <dl>
+          <dt>
           Approx. packages included
           <i class="icon-question-sign get-help" title="" data-original-title="The number of packages included is based on information from previous builds and from parsing layers, so we can never be sure it is 100% accurate"></i>
-        </dt>
-        <dd id="total-num-packages">{{recipe.get_all_packages.count}}</dd>
-        <dt>
+          </dt>
+          <dd id="total-num-packages">{{recipe.get_all_packages.count}}</dd>
+          <dt>
           Approx. package size
           <i class="icon-question-sign get-help" title="" data-original-title="Package size is based on information from previous builds, so we can never be sure it is 100% accurate"></i>
-        </dt>
-        <dd id="total-size-packages">{{approx_pkg_size.size__sum|filtered_filesizeformat}}</dd>
-        {% if last_build %}
-        <dt>Last build</dt>
-        <dd>
+          </dt>
+          <dd id="total-size-packages">{{approx_pkg_size.size__sum|filtered_filesizeformat}}</dd>
+          {% if last_build %}
+          <dt>Last build</dt>
+          <dd>
           <i class="icon-ok-sign success"></i>
           <a href="{% url 'projectbuilds' project.id%}">{{last_build.completed_on|date:"d/m/y H:i"}}</a>
-        </dd>
-        {% endif %}
-        <dt>Layer</dt>
-        <dd><a href="{% url 'layerdetails' project.id recipe.layer_version.pk %}">{{recipe.layer_version.layer.name}}</a></dd>
-        <dt>Based on</dt>
-        <dd><a href="{% url 'recipedetails' project.id recipe.base_recipe.pk %}">{{recipe.base_recipe.name}}</a></dd>
-        {% if recipe.get_last_successful_built_target %}
-        {% with recipe.get_last_successful_built_target as last_build_target %}
-        <dt>Last build</dt>
-        <dd>
+          </dd>
+          {% endif %}
+          <dt>Layer</dt>
+          <dd><a href="{% url 'layerdetails' project.id recipe.layer_version.pk %}">{{recipe.layer_version.layer.name}}</a></dd>
+          <dt>Based on</dt>
+          <dd><a href="{% url 'recipedetails' project.id recipe.base_recipe.pk %}">{{recipe.base_recipe.name}}</a></dd>
+          {% if recipe.get_last_successful_built_target %}
+          {% with recipe.get_last_successful_built_target as last_build_target %}
+          <dt>Last build</dt>
+          <dd>
           <i class="icon-ok-sign success"></i>
           <a href="{% url 'builddashboard' last_build_target.build.pk %}">
             {{last_build_target.build.completed_on|date:"d/m/y H:i"}}</a>
-        </dd>
-        {% endwith %}
-        {% endif %}
-        <dt>Recipe file</dt>
-        <dd>
+          </dd>
+          {% endwith %}
+          {% endif %}
+          <dt>Recipe file</dt>
+          <dd>
           <code>{{recipe.name}}_{{recipe.version}}.bb</code>
           <a href="{% url 'customrecipedownload' project.pk recipe.pk %}"><i class="glyphicon glyphicon-share" title="" data-original-title="View recipe file"></i></a>
-        </dd>
-        <dt>Layer</dt>
-        <dd><a href="{% url 'layerdetails' project.id recipe.layer_version.pk %}">{{recipe.layer_version.layer.name}}</a></dd>
-        {% if recipe.summary %}
-        <dt>
+          </dd>
+          <dt>Layer</dt>
+          <dd><a href="{% url 'layerdetails' project.id recipe.layer_version.pk %}">{{recipe.layer_version.layer.name}}</a></dd>
+          {% if recipe.summary %}
+          <dt>
           Summary
-        </dt>
-        <dd>
+          </dt>
+          <dd>
           {{recipe.summary}}
-        </dd>
-        {% endif %}
-        {% if recipe.description %}
-        <dt>
+          </dd>
+          {% endif %}
+          {% if recipe.description %}
+          <dt>
           Description
-        </dt>
-        <dd>
+          </dt>
+          <dd>
           {{recipe.description}}
-        </dd>
-        {% endif %}
-        <dt>Version</dt>
-        <dd>
+          </dd>
+          {% endif %}
+          <dt>Version</dt>
+          <dd>
           {{recipe.version}}
-        </dd>
-        {% if recipe.section %}
-        <dt>Section</dt>
-        <dd>
+          </dd>
+          {% if recipe.section %}
+          <dt>Section</dt>
+          <dd>
           {{recipe.section}}
-        </dd>
-        {% endif %}
-        <dt>License</dt>
-        <dd>
+          </dd>
+          {% endif %}
+          <dt>License</dt>
+          <dd>
           {{recipe.license}}
           <i class="icon-question-sign get-help" title="" data-original-title="All custom images have their license set to MIT. This is because the license applies only to the recipe (.bb) file, and not to the image itself. To see which licenses apply to the image you must check the license manifest generated with each build"></i>
           </dd>
@@ -226,6 +228,7 @@
       <i class="icon-trash no-tooltip"></i>
       <a href="#" class="error" id="delete">Delete custom image</a>
         -->
+      </div>
     </div>
   </div>
 
