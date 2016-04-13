@@ -33,6 +33,17 @@ ul.configuration-list {
   margin-left: 0px;
 }
 
+/* Breadcrumbs */
+
+.breadcrumb > li + li::before {
+  content: "";
+}
+
+.breadcrumb .divider {
+  color: #999;
+  padding-left: 10px;
+}
+
 .configuration-list .checkbox {
   margin-top: 0;
 }
