@@ -247,6 +247,36 @@ fakeroot python populate_packages_prepend () {
             update_useradd_package(pkg)
 }
 
+python emit_pkgdata_append () {
+
+    from oe import useradd
+
+    useradd_packages = d.getVar('USERADD_PACKAGES')
+    useraddparser = useradd.build_useradd_parser()
+    groupaddparser = useradd.build_groupadd_parser()
+    for pkg in useradd_packages.split():
+        useraddparams = d.getVar('USERADD_PARAM_%s' % pkg) or ""
+        for param in useradd.split_commands(useraddparams):
+            uaargs = useraddparser.parse_args(useradd.split_args(param))
+            useradd_emit_user(uaargs.LOGIN, d)
+        groupadd = d.getVar('GROUPADD_PARAM_%s' % pkg) or ""
+        for param in useradd.split_commands(groupadd):
+            gaargs = groupaddparser.parse_args(useradd.split_args(param))
+            groupadd_emit_user(gaargs.GROUP, d)
+}
+
+def useradd_emit_user(user, d):
+    pkgdatadir = d.getVar('PKGDESTWORK') + "/users/"
+    bb.utils.mkdirhier(pkgdatadir)
+    with open(pkgdatadir + user, 'w') as f:
+        f.write(d.getVar("PN"))
+
+def groupadd_emit_user(group, d):
+    pkgdatadir = d.getVar('PKGDESTWORK') + "/groups/"
+    bb.utils.mkdirhier(pkgdatadir)
+    with open(pkgdatadir + group, 'w') as f:
+        f.write(d.getVar("PN"))
+
 # Use the following to extend the useradd with custom functions
 USERADDEXTENSION ?= ""
 
