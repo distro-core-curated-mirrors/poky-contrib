@@ -17,7 +17,7 @@
             </dt>
             <dd class="lead">
                 <span id="distro">{{distro}}</span>
-                <i class="glyphicon glyphicon-pencil" id="change-distro-icon"></i>
+                <i class="icon-pencil" id="change-distro-icon"></i>
                 <form id="change-distro-form" style="display:none;">
                     <div class="input-append">
                         <span  id="edit-distro-name-div" class="control-group">
@@ -38,7 +38,7 @@
             </dt>
             <dd class="lead">
                 <span id="dl_dir"{% if dl_dir %}{%else%} class="muted"{%endif%}>{% if dl_dir %}{{dl_dir}}{%else%}Not set{%endif%}</span>
-                <i class="glyphicon glyphicon-pencil" id="change-dl_dir-icon"></i>
+                <i class="icon-pencil" id="change-dl_dir-icon"></i>
                 <form id="change-dl_dir-form" style="display:none;">
                     <div class="row">
                         <span class="help-block col-md-4">To set DL_DIR type the absolute path of the download folder.</span>
@@ -60,7 +60,7 @@
             </dt>
             <dd class="lead">
                 <span id="image_fstypes">{{fstypes}}</span>
-                <i class="glyphicon glyphicon-pencil" id="change-image_fstypes-icon"></i>
+                <i class="icon-pencil" id="change-image_fstypes-icon"></i>
                 <form id="change-image_fstypes-form" style="display:none;">
                     <label>Type the image types you want to build:</label>
                     <div class="input-append" id="validate-image_fstypes">
@@ -84,8 +84,8 @@
             </dt>
             <dd class="lead">
                 <span id="image_install"{% if image_install_append %}{%else%} class="muted"{%endif%}>{% if image_install_append %}{{image_install_append}}{%else%}Not set{%endif%}</span>
-                <i class="glyphicon glyphicon-pencil" id="change-image_install-icon"></i>
-                <i class="glyphicon glyphicon-trash" id="delete-image_install-icon" {% if image_install_append %}{%else%}style="display:none;"{%endif%}></i>
+                <i class="icon-pencil" id="change-image_install-icon"></i>
+                <i class="icon-trash" id="delete-image_install-icon" {% if image_install_append %}{%else%}style="display:none;"{%endif%}></i>
                 <form id="change-image_install-form" style="display:none;">
                     <div class="row">
                         <span class="help-block col-md-4">To set IMAGE_INSTALL_append to more than one package, type the package names separated by a space.</span>
@@ -106,7 +106,7 @@
             </dt>
             <dd class="lead">
                 <span id="package_classes">{{package_classes}}</span>
-                <i id="change-package_classes-icon" class="glyphicon glyphicon-pencil"></i>
+                <i id="change-package_classes-icon" class="icon-pencil"></i>
                 <form id="change-package_classes-form" style="display:none;">
                     <label>
                         Root file system package format
@@ -142,7 +142,7 @@
             </dt>
             <dd class="lead">
                 <span id="sstate_dir"{% if sstate_dir %}{%else%} class="muted"{%endif%}>{% if sstate_dir %}{{sstate_dir}}{%else%}Not set{%endif%}</span>
-                <i class="glyphicon glyphicon-pencil" id="change-sstate_dir-icon"></i>
+                <i class="icon-pencil" id="change-sstate_dir-icon"></i>
                 <form id="change-sstate_dir-form" style="display:none;">
                     <div class="row">
                         <span class="help-block col-md-4">To set SSTATE_DIR type the absolute path of the download folder.</span>
@@ -420,10 +420,10 @@
                     }
                 }
                 if (var_context == undefined) {
-                    orightml += '<div> <dt><span id="config_var_entry_'+configvars_sorted[i][2]+'" class="js-config-var-name"></span><i class="glyphicon glyphicon-trash js-icon-trash-config_var" id="config_var_trash_'+configvars_sorted[i][2]+'" x-data="'+configvars_sorted[i][2]+'"></i> </dt>'
+                    orightml += '<div> <dt><span id="config_var_entry_'+configvars_sorted[i][2]+'" class="js-config-var-name"></span><i class="icon-trash js-icon-trash-config_var" id="config_var_trash_'+configvars_sorted[i][2]+'" x-data="'+configvars_sorted[i][2]+'"></i> </dt>'
                     orightml += '<dd class="lead">'
                     orightml += '    <span id="config_var_value_'+configvars_sorted[i][2]+'"></span>'
-                    orightml += '    <i class="glyphicon glyphicon-pencil js-icon-pencil-config_var" x-data="'+configvars_sorted[i][2]+'"></i>'
+                    orightml += '    <i class="icon-pencil js-icon-pencil-config_var" x-data="'+configvars_sorted[i][2]+'"></i>'
                     orightml += '    <form id="change-config_var-form_'+configvars_sorted[i][2]+'" style="display:none;">'
                     orightml += '        <div class="input-append">'
                     orightml += '            <input type="text" class="input-xlarge js-new-config_var" id="new-config_var_'+configvars_sorted[i][2]+'" value="">'

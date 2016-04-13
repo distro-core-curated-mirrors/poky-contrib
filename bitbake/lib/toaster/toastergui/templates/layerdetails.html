@@ -24,13 +24,13 @@
 {# If this is not an imported layer then hide the edit ui #}
 {% if not layerversion.layer_source_id or layerversion.layer_source.sourcetype != layerversion.layer_source.TYPE_IMPORTED %}
 <style scoped>
- .glyphicon glyphicon-pencil {
+ .icon-pencil {
    display:none;
  }
 .delete-current-value{
   display: none;
 }
- li .glyphicon glyphicon-trash {
+ li .icon-trash {
    display:none;
  }
  .add-deps {
@@ -105,7 +105,7 @@
       </button>
       {% else %}
       <button id="add-remove-layer-btn" data-directive="remove" class="btn btn-block btn-lg btn-danger">
-        <span class="glyphicon glyphicon-trash"></span>
+        <span class="icon-trash"></span>
         Remove the {{layerversion.layer.name}} layer from your project
       </button>
       {% endif %}
@@ -130,7 +130,7 @@
                 <a href="#" style="display:none" class="btn btn-link cancel">Cancel</a>
               </div>
             </form>
-            <i class="glyphicon glyphicon-pencil" ></i>
+            <i class="icon-pencil" ></i>
           </dd>
           <dt>
             <i class="icon-question-sign get-help" title="Subdirectory within the repository where the layer is located, if not in the root (usually only used if the repository contains more than one layer)"></i>
@@ -149,8 +149,8 @@
                   <a href="#" style="display:none" class="btn btn-link cancel">Cancel</a>
                 </div>
               </form>
-              <i id="change-subdir" class="glyphicon glyphicon-pencil"></i>
-              <span class="glyphicon glyphicon-trash delete-current-value" data-toggle="tooltip" title="Delete"></span>
+              <i id="change-subdir" class="icon-pencil"></i>
+              <span class="icon-trash delete-current-value" data-toggle="tooltip" title="Delete"></span>
             </dd>
             <dt>
               <i class="icon-question-sign get-help" title="The Git branch, tag or commit"></i>
@@ -165,7 +165,7 @@
                     <a href="#" style="display:none" class="btn btn-link cancel">Cancel</a>
                   </div>
                 </form>
-                <i class="glyphicon glyphicon-pencil"></i>
+                <i class="icon-pencil"></i>
               </dd>
               <dt>
                 <i class="icon-question-sign get-help" title="Other layers this layer depends upon"></i>
@@ -176,7 +176,7 @@
                   {% for ld in layerversion.dependencies.all %}
                   <li data-layer-id="{{ld.depends_on.id}}">
                     <a data-toggle="tooltip" title="{{ld.depends_on.layer.vcs_url}} | {{ld.depends_on.get_vcs_reference}}" href="{% url 'layerdetails' project.id ld.depends_on.id %}">{{ld.depends_on.layer.name}}</a>
-                    <span class="glyphicon glyphicon-trash " data-toggle="tooltip" title="Delete"></span>
+                    <span class="icon-trash " data-toggle="tooltip" title="Delete"></span>
                   </li>
                   {% endfor %}
                 </ul>
@@ -244,8 +244,8 @@
                 <button class="btn change-btn" data-layer-prop="summary" type="button">Save</button>
                 <a href="#" class="btn btn-link cancel">Cancel</a>
               </form>
-              <i class="glyphicon glyphicon-pencil"></i>
-              <span class="glyphicon glyphicon-trash delete-current-value" data-toggle="tooltip" title="Delete"></span>
+              <i class="icon-pencil"></i>
+              <span class="icon-trash delete-current-value" data-toggle="tooltip" title="Delete"></span>
             </dd>
             <dt>
               Description
@@ -258,8 +258,8 @@
                 <button class="btn change-btn" data-layer-prop="description" type="button" >Save</button>
                 <a href="#" class="btn btn-link cancel">Cancel</a>
               </form>
-              <i class="glyphicon glyphicon-pencil"></i>
-              <span class="glyphicon glyphicon-trash delete-current-value" data-toggle="tooltip" title="Delete"></span>
+              <i class="icon-pencil"></i>
+              <span class="icon-trash delete-current-value" data-toggle="tooltip" title="Delete"></span>
             </dd>
             {% if layerversion.layer.up_id %}
             <dt>Layer index</dt>
