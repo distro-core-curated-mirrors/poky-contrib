@@ -22,3 +22,13 @@
 .modal-footer {
   background-color: #f5f5f5;
 }
+
+/* Project configuration page */
+
+ul.configuration-list {
+  margin-left: 0px;
+}
+
+.configuration-list .checkbox {
+  margin-top: 0;
+}
