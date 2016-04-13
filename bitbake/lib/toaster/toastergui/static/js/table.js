@@ -266,7 +266,7 @@ function tableInit(ctx){
       tableHeadRow.append(header);
 
       /* Now setup the checkbox state and click handler */
-      var toggler = $('<li><label class="checkbox">'+col.title+'<input type="checkbox" id="checkbox-'+ col.field_name +'" class="col-toggle" value="'+col.field_name+'" /></label></li>');
+      var toggler = $('<li><label class="checkbox"><input type="checkbox" id="checkbox-'+ col.field_name +'" class="col-toggle" value="'+col.field_name+'" />'+col.title+'</label></li>');
 
       var togglerInput = toggler.find("input");
 
