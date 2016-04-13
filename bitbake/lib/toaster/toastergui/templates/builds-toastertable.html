@@ -13,6 +13,7 @@
 
 {% block pagecontent %}
 
+<div class="row">
   <div class="col-md-12">
     {% with mru=mru mrb_type=mrb_type %}
       {% include 'mrb_section.html' %}
@@ -25,6 +26,7 @@
     {% url 'builds' as xhr_table_url %}
     {% include 'toastertable.html' %}
   </div>
+</div>
 
   <script>
     $(document).ready(function () {
