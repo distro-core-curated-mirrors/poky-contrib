@@ -4,7 +4,7 @@
 {% load static %}
 {% block pagecontent %}
 
-<div class="section">
+<div class="row">
   <ul class="breadcrumb">
     <li>
       <a href="{% url 'project' project.id %}">{{project.name}}</a>
@@ -51,37 +51,39 @@
 
 {% include 'newcustomimage_modal.html' %}
 
-<div class="row col-md-11">
-  <div class="alert alert-success lead" id="image-created-notification" style="margin-top: 15px; display: none">
-    <button type="button" data-dismiss="alert" class="close">x</button>
-    Your custom image <strong>{{recipe.name}}</strong> has been created. You can now add or remove packages as needed.
-  </div>
-  <div class="page-header air">
-    <h1>
-      {{recipe.name}}
-      <small>({{recipe.layer_version.layer.name}})</small>
-    </h1>
+<div class="row">
+  <div class="col-md-12">
+    <div class="alert alert-success lead" id="image-created-notification" style="margin-top: 15px; display: none">
+      <button type="button" data-dismiss="alert" class="close">x</button>
+      Your custom image <strong>{{recipe.name}}</strong> has been created. You can now add or remove packages as needed.
+    </div>
+    <div class="page-header">
+      <h1>
+        {{recipe.name}}
+        <small>({{recipe.layer_version.layer.name}})</small>
+      </h1>
+    </div>
   </div>
 </div>
 
-<div class="row col-md-11">
+<div class="row">
   <div class="col-md-8">
     <div class="button-place btn-group" id="customise-build-btns"
         style="width: 100%;
       {% if not in_project %}
       display:none;
       {% endif %}">
-      <button class="btn btn-lg col-md-6 build-recipe-btn" style="width: 50%">
+      <button class="btn btn-large col-md-6 build-recipe-btn" style="width: 50%">
         Build {{recipe.name}}
       </button>
       {% if recipe.is_image %}
-      <button class="btn btn-lg col-md-6 customise-btn" data-recipe="{{recipe.pk}}" style="width: 50%">
+      <button class="btn btn-large col-md-6 customise-btn" data-recipe="{{recipe.pk}}" style="width: 50%">
         Customise {{recipe.name}}
       </button>
       {% endif %}
     </div>
     <div class="button-place">
-      <button class="btn btn-block btn-lg" id="add-layer-btn"
+      <button class="btn btn-block btn-large" id="add-layer-btn"
           style="width:100%;
           {% if in_project %}
           display:none;
@@ -106,7 +108,7 @@
        style="display:none"
       {% endif %} >
         <p class="lead">Toaster has no package information for {{recipe.name}}. To generate package information, build {{recipe.name}}</p>
-        <button class="btn btn-info btn-lg build-recipe-btn" style="margin:20px 0 10px 0;">Build {{recipe.name}}</button>
+        <button class="btn btn-info btn-large build-recipe-btn" style="margin:20px 0 10px 0;">Build {{recipe.name}}</button>
       </div>
 
       <div class="alert alert-info air" id="packages-alert"
@@ -119,58 +121,60 @@
       </div>
     </div>
   </div>
-  <div class="col-md-4 well">
-    <h2 style="margin-bottom:20px;">About {{recipe.name}}</h2>
-    <dl>
-      <dt>
+  <div class="col-md-4">
+    <div class="well">
+      <h2 style="margin-bottom:20px;">About {{recipe.name}}</h2>
+      <dl>
+        <dt>
         Approx. packages included
         <i class="icon-question-sign get-help" title="" data-original-title="The number of packages included is based on information from previous builds and from parsing layers, so we can never be sure it is 100% accurate"></i>
-      </dt>
-      <dd class="no-packages">{{packages.count}}</dd>
-      <dt>
+        </dt>
+        <dd class="no-packages">{{packages.count}}</dd>
+        <dt>
         Approx. package size
         <i class="icon-question-sign get-help" title="" data-original-title="Package size is based on information from previous builds, so we can never be sure it is 100% accurate"></i>
-      </dt>
-      <dd>{{approx_pkg_size.size__sum|filtered_filesizeformat}}</dd>
-      {% if last_build %}
-      <dt>Last build</dt>
-      <dd>
+        </dt>
+        <dd>{{approx_pkg_size.size__sum|filtered_filesizeformat}}</dd>
+        {% if last_build %}
+        <dt>Last build</dt>
+        <dd>
         <i class="icon-ok-sign success"></i>
         <a href="{% url 'projectbuilds' project.id%}">{{last_build.completed_on|date:"d/m/y H:i"}}</a>
-      </dd>
-      {% endif %}
-      <dt>Recipe file</dt>
-      <dd>
+        </dd>
+        {% endif %}
+        <dt>Recipe file</dt>
+        <dd>
         <code>{{recipe.file_path|cut_path_prefix:recipe.layer_version.local_path}}</code>
         <a href="{{recipe.get_vcs_recipe_file_link_url}}"><i class="glyphicon glyphicon-share" title="" data-original-title="View recipe file"></i></a>
-      </dd> 
-      <dt>Layer</dt>
-      <dd><a href="{% url 'layerdetails' project.id recipe.layer_version.pk %}">{{recipe.layer_version.layer.name}}</a></dd>
-      <dt>
+        </dd> 
+        <dt>Layer</dt>
+        <dd><a href="{% url 'layerdetails' project.id recipe.layer_version.pk %}">{{recipe.layer_version.layer.name}}</a></dd>
+        <dt>
         Summary
-      </dt>
-      <dd>
+        </dt>
+        <dd>
         {{recipe.summary}}
-      </dd>
-      <dt>
+        </dd>
+        <dt>
         Description
-      </dt>
-      <dd>
+        </dt>
+        <dd>
         {{recipe.description}}
-      </dd>
-      <dt>Version</dt>
-      <dd>
+        </dd>
+        <dt>Version</dt>
+        <dd>
         {{recipe.version}}
-      </dd>
-      <dt>Section</dt>
-      <dd>
+        </dd>
+        <dt>Section</dt>
+        <dd>
         {{recipe.section}}
-      </dd>
-      <dt>License</dt>
-      <dd>
+        </dd>
+        <dt>License</dt>
+        <dd>
         {{recipe.license}}
-      </dd>
-    </dl>
+        </dd>
+      </dl>
+    </div>
   </div>
 </div>
 
