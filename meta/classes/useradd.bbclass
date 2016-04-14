@@ -3,7 +3,7 @@ inherit useradd_base
 # base-passwd-cross provides the default passwd and group files in the
 # target sysroot, and shadow -native and -sysroot provide the utilities
 # and support files needed to add and modify user and group accounts
-DEPENDS_append_class-target = " base-files shadow-native shadow-sysroot shadow"
+DEPENDS_append_class-target = " base-files shadow-native shadow-sysroot shadow base-passwd"
 
 # This preinstall function can be run in four different contexts:
 #
