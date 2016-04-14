@@ -32,7 +32,7 @@ def makedirs(dirname):
         if err.errno != errno.EEXIST:
             raise
 
-class Disk:
+class Disk(object):
     """
     Generic base object for a disk.
     """

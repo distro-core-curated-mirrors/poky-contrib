@@ -92,7 +92,7 @@ def cannedpathtype(arg):
         raise ArgumentTypeError("file not found: %s" % arg)
     return result
 
-class KickStart(object):
+class KickStart():
     """"Kickstart parser implementation."""
 
     def __init__(self, confpath):
