@@ -105,3 +105,14 @@ fieldset[disabled] .btn-primary:hover {
 .navbar-search.input-append {
   margin-bottom: 20px;
 }
+
+/* Modal dialogs */
+
+.modal-dialog {
+  width: 700px;
+}
+
+.modal-body {
+  overflow-y: scroll;
+  max-height: 350px;
+}

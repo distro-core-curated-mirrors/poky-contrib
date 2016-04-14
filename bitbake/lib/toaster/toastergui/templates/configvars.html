@@ -12,7 +12,7 @@
 
 {% block buildinfomain %}
 <!-- page title -->
-<div class="row col-md-10">
+<div class="col-md-10">
  <div class="page-header">
  <h1>
   {% if request.GET.filter and objects.paginator.count > 0 or request.GET.search and objects.paginator.count > 0 %}
@@ -24,10 +24,9 @@
   {%endif%}
  </h1>
  </div>
-</div>
 
 <!-- configuration table -->
-<div class="row pull-right col-md-10" id="navTab">
+<div id="navTab">
   <ul class="nav nav-pills">
     <li class=""><a href="{% url 'configuration' build.id %}">Summary</a></li>
     <li class="active"><a href="#" >BitBake variables</a></li>
@@ -78,7 +77,7 @@
 <!-- file list popups -->
 {% for variable in objects %}
     {% if variable.vhistory.count %}
-    <div id="variable-{{variable.pk}}" class="modal hide fade" tabindex="-1" role="dialog">
+    <div id="variable-{{variable.pk}}" class="modal in fade" tabindex="-1" role="dialog">
       <div class="modal-dialog">
 	<div class="modal-content">
 	  <div class="modal-header">
@@ -98,10 +97,10 @@
 	    <span>{{variable.variable_value|string_slice:':570'}}
 	      <span class="full"> {{variable.variable_value|string_slice:'570:'}}
 	      </span>
-	      <a class="btn btn-xs full-show">...</a>
+	      <a class="btn btn-mini full-show">...</a>
 	    </span>
 	    </p>
-	    <a class="btn btn-xs full-hide">Collapse variable value <i class="icon-caret-up"></i>
+	    <a class="btn btn-mini full-hide">Collapse variable value <i class="icon-caret-up"></i>
 	    </a>
 	    {% endif %}
 	    {% else %}
@@ -133,5 +132,7 @@
 {% endfor %}
 
 </div> <!-- buildinfomain -->
+
+</div> <!-- end 10-column section -->
 
 {% endblock %}
