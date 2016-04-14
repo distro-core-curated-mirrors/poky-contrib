@@ -5,9 +5,8 @@
 {% block pagecontent %}
 
 
- <div class="">
+ <div class="row">
 <!-- Breadcrumbs -->
-    <div class="section">
         <ul class="breadcrumb" id="breadcrumb">
             <li><a href="{% project_url build.project %}">{{build.project.name}}</a></li>
             {% if not build.project.is_default %}
@@ -29,7 +28,7 @@
             $('#breadcrumb > li:last > span').remove();
         });
         </script>
-    </div>
+  </div>
 
     <div class="row">
 
