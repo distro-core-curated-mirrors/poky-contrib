@@ -76,13 +76,13 @@
   </table>
 
   <!-- Pagination controls -->
-  <div class="pagination pagination-centered" id="pagination-{{table_name}}">
-    <ul class="pagination" style="display: block-inline">
+  <div id="pagination-{{table_name}}">
+    <ul class="pagination pagination-centered">
     </ul>
 
     <div class="pull-right">
-      <span class="help-inline" style="padding-top:5px;">Show rows:</span>
-      <select style="margin-top:5px;margin-bottom:0px;" class="pagesize-{{table_name}}">
+      <span class="help-inline">Show rows:</span>
+      <select class="pagesize-{{table_name}}">
         {% with "10 25 50 100 150" as list%}
         {% for i in list.split %}
         <option value="{{i}}">{{i}}</option>
