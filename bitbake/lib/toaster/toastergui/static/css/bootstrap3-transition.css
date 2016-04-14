@@ -82,6 +82,10 @@ fieldset[disabled] .btn-primary:hover {
   width: 80%;
 }
 
+#search {
+  width: 60%;
+}
+
 /* Definition lists in the layer details page */
 
 #information .dl-horizontal dd {
