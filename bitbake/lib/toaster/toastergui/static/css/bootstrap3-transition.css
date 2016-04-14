@@ -19,7 +19,7 @@
 }
 
 
-select[class^="pagesize-"]{
+select[class^="pagesize"] {
   margin-bottom: 0;
 }
 
