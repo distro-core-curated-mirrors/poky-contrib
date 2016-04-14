@@ -7,7 +7,7 @@
 {# only paginate if 10 or more rows unfiltered, all pages #}
 {% if object_count >= 10 %}
 <div>
-  <ul class="pagination pagination-centered">
+  <ul class="pagination">
 {%if objects.has_previous %}
     <li><a href="javascript:reload_params({'page':{{objects.previous_page_number}}})">&laquo;</a></li>
 {%else%}
