@@ -805,7 +805,7 @@ class FetchLatestVersionTest(FetcherTest):
                 pupver = ud.method.latest_versionstring(ud, self.d)
                 verstring = pupver[0]
                 r = bb.utils.vercmp_string(v, verstring)
-                self.assertTrue(r == -1 or r == 0, msg="Package %s, version: %s <= %s" % (k[0], v, verstring))
+                self.assertTrue(r == -1 or r == 0, msg="Package %s, version: %s <= %s for %s" % (k[0], v, verstring, k[1]))
 
 
 class FetchCheckStatusTest(FetcherTest):
