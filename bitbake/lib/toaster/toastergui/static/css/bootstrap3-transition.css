@@ -97,3 +97,7 @@ fieldset[disabled] .btn-primary:hover {
 div[id^="table-chrome-"] .navbar-search {
   margin-bottom: 20px;
 }
+
+div[id^="table-chrome-"] .navbar-inner > .navbar-search {
+  margin-bottom: 0px;
+}
