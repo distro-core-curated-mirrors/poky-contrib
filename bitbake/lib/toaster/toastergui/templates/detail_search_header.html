@@ -18,7 +18,7 @@ $(document).ready(function() {
   });
 });
 </script>
-<div class="row">
+
 {% if objects.paginator.count > 10 or request.GET.search %}
   {% if objects.paginator.count == 0 %}
   <div class="alert">
@@ -65,4 +65,4 @@ $(document).ready(function() {
   </div>
   {% endif %}
 {% endif %}
-</div> {# row #}
+

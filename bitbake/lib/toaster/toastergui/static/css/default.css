@@ -100,7 +100,7 @@ td > .success:hover { text-decoration: underline; }
 th > a, th > span { font-weight: normal; }
 
 /* Force long strings like commit hashes to wrap */
-.iscommit { white-space: pre-wrap; word-break: break-all; word-wrap: break-word;}
+.iscommit { word-break: break-all; word-wrap: break-word;}
 
 /* Make the popovers scrollable if they are too long */
 .popover-content { max-height: 30em; overflow-y: scroll; }
