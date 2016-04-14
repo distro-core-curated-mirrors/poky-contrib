@@ -96,12 +96,12 @@ fieldset[disabled] .btn-primary:hover {
   width: 200px;
 }
 
-/* Table controls in layer details pages */
+/* Table controls */
 
-div[id^="table-chrome-"] .navbar-search {
-  margin-bottom: 20px;
+.navbar-inner > .navbar-search .input-append {
+  margin-bottom: 5px;
 }
 
-div[id^="table-chrome-"] .navbar-inner > .navbar-search {
-  margin-bottom: 0px;
+.navbar-search.input-append {
+  margin-bottom: 20px;
 }
