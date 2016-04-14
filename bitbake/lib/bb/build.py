@@ -581,7 +581,7 @@ def _exec_task(fn, task, d, quieterr):
             for func in (postfuncs or '').split():
                 exec_func(func, localdata)
         except FuncFailed as exc:
-            if quieterr:
+            if 0: #quieterr:
                 event.fire(TaskFailedSilent(task, logfn, localdata), localdata)
             else:
                 errprinted = errchk.triggered
@@ -643,7 +643,7 @@ def exec_task(fn, task, d, profile = False):
 
     except Exception:
         from traceback import format_exc
-        if not quieterr:
+        if 1: #not quieterr:
             logger.error("Build of %s failed" % (task))
             logger.error(format_exc())
             failedevent = TaskFailed(task, None, d, True)

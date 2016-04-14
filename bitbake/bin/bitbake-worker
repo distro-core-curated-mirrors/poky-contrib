@@ -246,7 +246,7 @@ def fork_off_task(worker, cfg, data, databuilder, workerdata, fn, task, taskname
                     subprocess.check_output("taskset -pc %s %s" % (setcpu, os.getpid()), shell=True)
 
             except Exception as exc:
-                if not quieterrors:
+                if 1 or not quieterrors:
                     logger.critical(str(exc))
                 os._exit(1)
             try:
