@@ -88,11 +88,11 @@ fieldset[disabled] .btn-primary:hover {
 
 /* Definition lists in the layer details page */
 
-#information .dl-horizontal dd {
+.dl-horizontal dd {
   margin-left: 220px;
 }
 
-#information .dl-horizontal dt {
+.dl-horizontal dt {
   width: 200px;
 }
 
