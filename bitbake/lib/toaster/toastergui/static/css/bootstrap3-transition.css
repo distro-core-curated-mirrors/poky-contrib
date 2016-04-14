@@ -34,6 +34,10 @@ ul.configuration-list {
   margin-left: 0px;
 }
 
+.configuration-list .checkbox {
+  margin-top: 0;
+}
+
 /* Breadcrumbs */
 
 .breadcrumb {
@@ -41,16 +45,12 @@ ul.configuration-list {
 }
 
 .breadcrumb > li + li::before {
-  content: "";
+  content: none;
 }
 
 .breadcrumb .divider {
   color: #999;
-  padding-left: 10px;
-}
-
-.configuration-list .checkbox {
-  margin-top: 0;
+  padding: 0 5px;
 }
 
 /* Remove the hovering from the .btn-primary buttons when they are disabled */
