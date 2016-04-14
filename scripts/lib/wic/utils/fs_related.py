@@ -27,7 +27,7 @@ def makedirs(dirname):
     """
     try:
         os.makedirs(dirname)
-    except OSError, err:
+    except OSError as err:
         if err.errno != errno.EEXIST:
             raise
 
