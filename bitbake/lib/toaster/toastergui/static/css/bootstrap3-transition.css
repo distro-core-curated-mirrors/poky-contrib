@@ -154,12 +154,16 @@ fieldset[disabled] .btn-primary:hover {
 
 /* Table buttons */
 
-td > .btn {
+td .btn {
   white-space: normal;
 }
 
 th.add-del-layers {
   width: 18%;
+}
+
+th.add_rm_pkg_btn {
+  width: 20%;
 }
 
 /* Popover content */
