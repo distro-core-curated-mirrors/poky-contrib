@@ -157,6 +157,13 @@ fieldset[disabled] .btn-primary:hover {
   margin: 10px;
 }
 
+/* Table cell notifications */
+
+.inline-notification,
+#temp-inline-notify {
+  padding: 10px;
+}
+
 /* Table buttons */
 
 td .btn {
