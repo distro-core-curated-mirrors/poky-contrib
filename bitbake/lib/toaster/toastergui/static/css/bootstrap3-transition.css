@@ -111,3 +111,30 @@ fieldset[disabled] .btn-primary:hover {
   overflow-y: scroll;
   max-height: 350px;
 }
+
+/* Typeahead */
+
+.tt-menu {
+  width: 120%;
+  padding: 10px 8px;
+}
+
+.tt-suggestion {
+  padding: 3px 8px;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tt-suggestion.active,
+.tt-suggestion:hover {
+  background-color: #0081c2;
+  color: white;
+}
+
+/* Build form */
+
+#build-input {
+  width: 20em;
+}
