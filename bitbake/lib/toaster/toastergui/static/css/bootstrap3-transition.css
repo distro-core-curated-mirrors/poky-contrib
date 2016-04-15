@@ -154,3 +154,17 @@ td > .btn {
 th.add-del-layers {
   width: 18%;
 }
+
+/* Popover content */
+
+.popover-content > ul {
+  margin-left: 0;
+}
+
+h3.popover-title {
+  line-height: 20px;
+}
+
+.popover {
+  max-width: 400px;
+}
