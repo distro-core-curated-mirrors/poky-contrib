@@ -50,18 +50,18 @@
   </div>
 
 {% if build.errors.count %}
-<div class="accordion" id="errors">
-  <div class="accordion-group">
-    <div class="accordion-heading">
-            <a class="accordion-toggle error toggle-errors">
+<div class="panel-group" id="errors">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <a class="panel-title error toggle-errors" href="#">
          <h2 id="error-toggle">
            <i class="icon-minus-sign"></i>
            {{build.errors.count}} error{{build.errors.count|pluralize}}
          </h2>
       </a>
     </div>
-    <div class="accordion-body collapse in" id="collapse-errors">
-      <div class="accordion-inner">
+    <div class="panel-collapse collapse in" id="collapse-errors">
+      <div class="panel-body">
         <div class="col-md-10">
           {% for error in build.errors %}
             <div class="alert alert-error" data-error="{{ error.id }}">
@@ -239,20 +239,21 @@
             </dl>
     </div>
   </div>
+</div>
 
 {% if build.warnings.count %}
-<div class="accordion" id="warnings">
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle warning toggle-warnings">
+<div class="panel-group" id="warnings">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <a class="panel-title warning toggle-warnings" href="#">
         <h2 id="warning-toggle">
           <i class="icon-warning-sign"></i>
           {{build.warnings.count}} warning{{build.warnings.count|pluralize}}
         </h2>
       </a>
     </div>
-    <div class="accordion-body collapse" id="collapse-warnings">
-      <div class="accordion-inner">
+    <div class="panel-collapse collapse" id="collapse-warnings">
+      <div class="panel-body">
         <div class="col-md-10">
           {% for warning in logmessages %}{% if warning.level == 1 %}
             <div class="alert alert-warning">

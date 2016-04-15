@@ -190,3 +190,21 @@ h3.popover-title {
 .popover {
   max-width: 400px;
 }
+
+/* Errors and warnings accordions */
+
+#errors .panel-heading,
+#warnings .panel-heading {
+  background-color: transparent;
+}
+
+a.toggle-errors:hover,
+a.toggle-warnings:hover,
+a.warning:focus {
+  text-decoration: none;
+}
+
+a.toggle-errors:focus,
+a.toggle-warnings:focus {
+  outline: none;
+}
