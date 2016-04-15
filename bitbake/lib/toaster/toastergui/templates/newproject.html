@@ -6,17 +6,14 @@
 
 {% block pagecontent %}
 <div class="row">
+  <div class="col-md-12">
     <div class="page-header">
           <h1>Create a new project</h1>
         </div>
-        <div class="container">
     {% if alert %}
-      <div class="alert alert-error row" role="alert">{{alert}}</div>
+      <div class="alert alert-error" role="alert">{{alert}}</div>
     {% endif %}
-        </div>
 
-      <div class="row">
-        <div class="col-md-6">
         <form method="POST">{% csrf_token %}
 
             <fieldset>
@@ -50,23 +47,26 @@
                      >{{release.description}}</option>
                 {% endfor %}
               </select>
+              <div class="row">
+                <div class="col-md-4">
                 {% for release in releases %}
-              <div class="row helptext" id="description-{{release.id}}" style="display: none">
-                <span class="help-block col-md-5">{{release.helptext|safe}}</span>
-              </div>
+                  <div class="helptext" id="description-{{release.id}}" style="display: none">
+                    <span class="help-block">{{release.helptext|safe}}</span>
+                  </div>
                 {% endfor %}
             {% else %}
               <input type="hidden" name="projectversion" value="{{releases.0.id}}"/>
             {% endif %}
+                </div>
+              </div>
             </fieldset>
         {% endif %}
-
-            <div class="form-actions">
-              <input type="submit" id="create-project-button" class="btn btn-primary btn-lg" value="Create project"/>
+            <div class="air">
+              <input type="submit" id="create-project-button" class="btn btn-primary btn-large" value="Create project"/>
               <span class="help-inline" style="vertical-align:middle;">To create a project, you need to enter a project name</span>
             </div>
+
         </form>
-        </div>
         <!--
         <div class="col-md-5 well">
                 <span class="help-block">
@@ -81,7 +81,7 @@
                  <p>If you create a <strong>build project</strong>, you will need to select a <strong>release</strong>,
                  which is the version of the build system you want to use to run your builds.</p>
              </div> -->
-        </div>
+      </div>
     </div>
 
     <script type="text/javascript">
