@@ -166,6 +166,12 @@ th.add_rm_pkg_btn {
   width: 20%;
 }
 
+/* Edit columsn menu */
+
+.dropdown-menu {
+  min-width: 200px;
+}
+
 /* Popover content */
 
 .popover-content > ul {
