@@ -26,15 +26,13 @@
 </div>
 
 {% if objects.paginator.count == 0 %}
-  <div class="row">
-      <div class="alert">
-        <form class="no-results input-append" id="searchform">
-            <input id="search" name="search" class="input-xxlarge" type="text" value="{%if request.GET.search%}{{request.GET.search}}{%endif%}"/>{% if request.GET.search %}<a href="javascript:$('#search').val('');searchform.submit()" class="input-append-addon btn" tabindex="-1"><i class="glyphicon glyphicon-remove"></i></a>{% endif %}
-            <button class="btn" type="submit" value="Search">Search</button>
-            <button class="btn btn-link" onclick="javascript:$('#search').val('');searchform.submit()">Show all recipes</button>
-        </form>
-      </div>
-  </div>
+<div class="alert">
+  <form class="no-results input-append" id="searchform">
+    <input id="search" name="search" class="input-xxlarge" type="text" value="{%if request.GET.search%}{{request.GET.search}}{%endif%}"/>{% if request.GET.search %}<a href="javascript:$('#search').val('');searchform.submit()" class="input-append-addon btn" tabindex="-1"><i class="glyphicon glyphicon-remove"></i></a>{% endif %}
+    <button class="btn" type="submit" value="Search">Search</button>
+    <button class="btn btn-link" onclick="javascript:$('#search').val('');searchform.submit()">Show all recipes</button>
+  </form>
+</div>
 
 {% else %}
 {% include "basetable_top.html" %}

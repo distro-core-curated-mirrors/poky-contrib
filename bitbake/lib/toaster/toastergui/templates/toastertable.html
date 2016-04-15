@@ -25,10 +25,10 @@
 
 {% include 'toastertable-filter.html' %}
 
-<div class="row" id="no-results-{{table_name}}" style="display:none">
+<div id="no-results-{{table_name}}" style="display:none">
   <div class="alert">
     <form class="no-results input-append">
-      <input id="new-search-input-{{table_name}}" name="search" type="text" placeholder="Search {{title|lower}}" value="{%if request.GET.search %}{{request.GET.search}}{%endif%}"/>
+      <input class="input-xlarge" id="new-search-input-{{table_name}}" name="search" type="text" placeholder="Search {{title|lower}}" value="{%if request.GET.search %}{{request.GET.search}}{%endif%}"/>
       <a href="#" class="input-append-addon btn remove-search-btn-{{table_name}}" tabindex="-1">
         <i class="glyphicon glyphicon-remove"></i>
       </a>
