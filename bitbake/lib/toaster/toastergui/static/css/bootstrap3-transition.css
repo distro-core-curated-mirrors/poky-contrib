@@ -138,3 +138,9 @@ fieldset[disabled] .btn-primary:hover {
 #build-input {
   width: 20em;
 }
+
+/* Clear filter tooltips in toastertables */
+
+.tooltip .btn-small {
+  margin: 10px;
+}
