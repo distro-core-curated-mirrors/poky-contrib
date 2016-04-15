@@ -144,3 +144,13 @@ fieldset[disabled] .btn-primary:hover {
 .tooltip .btn-small {
   margin: 10px;
 }
+
+/* Table buttons */
+
+td > .btn {
+  white-space: normal;
+}
+
+th.add-del-layers {
+  width: 18%;
+}
