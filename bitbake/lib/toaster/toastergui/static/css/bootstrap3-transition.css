@@ -208,3 +208,24 @@ a.toggle-errors:focus,
 a.toggle-warnings:focus {
   outline: none;
 }
+
+/* Landing page */
+
+.jumbotron p {
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+.jumbotron ul {
+  margin-left: 10px;
+  font-size: 21px;
+  font-weight: 200;
+}
+
+.jumbotron ul > li {
+  line-height: 30px;
+}
+
+.jumbotron .img-thumbnail {
+  padding: 0;
+}
