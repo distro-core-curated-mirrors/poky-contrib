@@ -25,7 +25,7 @@
 webserverKillAll()
 {
     local pidfile
-    for pidfile in ${BUILDDIR}/.toastermain.pid ${BUILDDIR}/.runbuilds.pid; do
+    for pidfile in ${TOASTER_DIR}/.toastermain.pid ${TOASTER_DIR}/.runbuilds.pid; do
         if [ -f ${pidfile} ]; then
             pid=`cat ${pidfile}`
             while kill -0 $pid 2>/dev/null; do
@@ -43,9 +43,9 @@ webserverKillAll()
 webserverStartAll()
 {
     # do not start if toastermain points to a valid process
-    if ! cat "${BUILDDIR}/.toastermain.pid" 2>/dev/null | xargs -I{} kill -0 {} ; then
+    if ! cat "${TOASTER_DIR}/.toastermain.pid" 2>/dev/null | xargs -I{} kill -0 {} ; then
         retval=1
-        rm "${BUILDDIR}/.toastermain.pid"
+        rm "${TOASTER_DIR}/.toastermain.pid"
     fi
 
     retval=0
@@ -68,14 +68,14 @@ webserverStartAll()
     echo "Starting webserver..."
 
     $MANAGE runserver "0.0.0.0:$WEB_PORT" \
-           </dev/null >>${BUILDDIR}/toaster_web.log 2>&1 \
-           & echo $! >${BUILDDIR}/.toastermain.pid
+           </dev/null >>${TOASTER_DIR}/toaster_web.log 2>&1 \
+           & echo $! >${TOASTER_DIR}/.toastermain.pid
 
     sleep 1
 
-    if ! cat "${BUILDDIR}/.toastermain.pid" | xargs -I{} kill -0 {} ; then
+    if ! cat "${TOASTER_DIR}/.toastermain.pid" | xargs -I{} kill -0 {} ; then
         retval=1
-        rm "${BUILDDIR}/.toastermain.pid"
+        rm "${TOASTER_DIR}/.toastermain.pid"
     else
         echo "Webserver address:  http://0.0.0.0:$WEB_PORT/"
     fi
@@ -91,9 +91,9 @@ stop_system()
     # prevent reentry
     if [ $INSTOPSYSTEM -eq 1 ]; then return; fi
     INSTOPSYSTEM=1
-    if [ -f ${BUILDDIR}/.toasterui.pid ]; then
-        kill `cat ${BUILDDIR}/.toasterui.pid` 2>/dev/null
-        rm ${BUILDDIR}/.toasterui.pid
+    if [ -f ${TOASTER_DIR}/.toasterui.pid ]; then
+        kill `cat ${TOASTER_DIR}/.toasterui.pid` 2>/dev/null
+        rm ${TOASTER_DIR}/.toasterui.pid
     fi
     webserverKillAll
     # unset exported variables
@@ -136,6 +136,22 @@ export BBBASEDIR=`dirname $TOASTER`/..
 MANAGE=$BBBASEDIR/lib/toaster/manage.py
 OEROOT=`bitbake -e | grep COREBASE= | awk -F= '{print $2}' | tr -d '"'`
 
+# this defines the dir toaster will use for
+# 1) clones of layers (in _toaster_clones )
+# 2) the sqlite db if that is being used.
+# 3) pid's we need to clean up on exit/shutdown
+# 4) the web server log file
+# note: for future. in order to make this an arbitrary directory, we need to
+# make sure that the toaster.sqlite file doesn't default to `pwd`
+# like it currently does.
+# Note that the default builddir for cli builds is set from BUILDDIR; this is
+# the directory where log files default to;
+# toaster UI logs go to the build directory for their project, or to
+# BUILDDIR for cli builds.
+if [ "x" = "x$TOASTER_DIR" ] ; then
+    export TOASTER_DIR=`realpath $BUILDDIR`
+fi
+
 # this is the configuraton file we are using for toaster
 # we are using the same logic that oe-setup-builddir uses
 # (based on TEMPLATECONF and .templateconf) to determine
@@ -167,15 +183,6 @@ if [ ! -f $TOASTER_CONF ]; then
     echo "$TOASTER_CONF configuration file not found. Set TOASTER_CONF to specify file or fix .templateconf"
     return 1
 fi
-
-# this defines the dir toaster will use for
-# 1) clones of layers (in _toaster_clones )
-# 2) the build dir (in build)
-# 3) the sqlite db if that is being used.
-# 4) pid's we need to clean up on exit/shutdown
-# note: for future. in order to make this an arbitrary directory, we need to
-# make sure that the toaster.sqlite file doesn't default to `pwd` like it currently does.
-export TOASTER_DIR=`pwd`
 
 WEBSERVER=1
 WEB_PORT="8000"
@@ -209,16 +216,6 @@ if [ -z "$BUILDDIR" ] ||  ! which bitbake >/dev/null 2>&1 ; then
     return 2
 fi
 
-# this defines the dir toaster will use for
-# 1) clones of layers (in _toaster_clones )
-# 2) the build dir (in build)
-# 3) the sqlite db if that is being used.
-# 4) pid's we need to clean up on exit/shutdown
-# note: for future. in order to make this an arbitrary directory, we need to
-# make sure that the toaster.sqlite file doesn't default to `pwd`
-# like it currently does.
-export TOASTER_DIR=`dirname $BUILDDIR`
-
 # Determine the action. If specified by arguments, fine, if not, toggle it
 if [ "$CMD" = "start" ] ; then
     if [ -n "$BBSERVER" ]; then
@@ -245,7 +242,7 @@ case $CMD in
         fi
 
         # kill Toaster web server if it's alive
-        if [ -e $BUILDDIR/.toastermain.pid ] && kill -0 `cat $BUILDDIR/.toastermain.pid`; then
+        if [ -e $TOASTER_DIR/.toastermain.pid ] && kill -0 `cat $TOASTER_DIR/.toastermain.pid`; then
             echo "Warning: bitbake appears to be dead, but the Toaster web server is running." 1>&2
             echo " Something fishy is going on." 1>&2
             echo "Cleaning up the web server to start from a clean slate."
@@ -263,7 +260,7 @@ case $CMD in
         fi
         export BITBAKE_UI='toasterui'
         export DATABASE_URL=`$MANAGE get-dburl`
-        $MANAGE runbuilds & echo $! >${BUILDDIR}/.runbuilds.pid
+        $MANAGE runbuilds & echo $! >${TOASTER_DIR}/.runbuilds.pid
         # set fail safe stop system on terminal exit
         trap stop_system SIGHUP
         echo "Successful ${CMD}."
