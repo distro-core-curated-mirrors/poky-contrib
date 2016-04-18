@@ -71,7 +71,7 @@ class DiskImage(Disk):
         if self.device is not None:
             return
 
-        blocks = self.size / 1024
+        blocks = self.size // 1024
         if self.size - blocks * 1024:
             blocks += 1
 
