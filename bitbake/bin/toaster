@@ -134,7 +134,7 @@ fi
 
 export BBBASEDIR=`dirname $TOASTER`/..
 MANAGE=$BBBASEDIR/lib/toaster/manage.py
-OEROOT=`dirname $TOASTER`/../..
+OEROOT=`bitbake -e | grep COREBASE= | awk -F= '{print $2}' | tr -d '"'`
 
 # this is the configuraton file we are using for toaster
 # we are using the same logic that oe-setup-builddir uses
