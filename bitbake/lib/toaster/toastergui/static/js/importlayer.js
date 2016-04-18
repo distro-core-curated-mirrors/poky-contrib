@@ -105,7 +105,8 @@ function importLayerPageInit (ctx) {
       }, null);
   });
 
-  importAndAddBtn.click(function(){
+  importAndAddBtn.click(function(e){
+    e.preventDefault();
     /* This is a list of the names from layerDeps for the layer deps
      * modal dialog body
      */
