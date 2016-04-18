@@ -75,7 +75,7 @@ class Command(BaseCommand):
                 if bvo.giturl is None:
                     logger.error("The toaster config file references the local git repo, but Toaster cannot detect it.\nYour local configuration for bitbake version %s is invalid. Make sure that the toasterconf.json file is correct." % bvi['name'])
 
-            if bvo.giturl is None:
+            if bvo.giturl is None or bvo.giturl == '':
                 bvo.giturl = bvi['giturl']
             bvo.branch = bvi['branch']
             bvo.dirpath = bvi['dirpath']
