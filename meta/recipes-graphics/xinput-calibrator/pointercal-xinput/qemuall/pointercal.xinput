@@ -1,0 +1,3 @@
+# Qemu-specific empty pointercal.xinput that prevents calibration of
+# the emulated PS2 device (which shows up as a "absolute coordinate
+# device" in XListInputDevices())
