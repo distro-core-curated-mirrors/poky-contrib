@@ -219,6 +219,17 @@ function tableInit(ctx){
         var title = $('<a href=\"#\" ></a>');
 
         title.data('field-name', col.field_name);
+
+        // track the direction of the ordering to apply when this column
+        // is clicked (desc/asc); this enables us to apply the correct
+        // orderby direction if the sort reverts to the default, e.g.
+        // when the current column being used for sorting is hidden
+        var direction = 'asc';
+        if ('-' + col.field_name === tableData.default_orderby) {
+          direction = 'desc';
+        }
+        title.attr('data-orderby-direction', direction);
+
         title.text(col.title);
         title.click(sortColumnClicked);
 
@@ -239,10 +250,12 @@ function tableInit(ctx){
           }
         }
 
-       if (col.field_name === tableData.default_orderby){
-         title.addClass("default-orderby");
-       }
-
+        // remove leading "-" (used for reverse default orderby)
+        var default_orderby = tableData.default_orderby;
+        default_orderby = default_orderby.replace(/^\-/, "");
+        if (col.field_name === default_orderby){
+          title.addClass("default-orderby");
+        }
       } else {
         /* Not orderable */
         header.css("font-weight", "normal");
@@ -346,19 +359,36 @@ function tableInit(ctx){
   function sortColumnClicked(e){
     e.preventDefault();
 
+    var fieldName = $(this).data('field-name');
+    var alreadySorted = $(this).hasClass('sorted');
+
     /* We only have one sort at a time so remove any existing sort indicators */
     $("#"+ctx.tableName+" th .icon-caret-down").hide();
     $("#"+ctx.tableName+" th .icon-caret-up").hide();
     $("#"+ctx.tableName+" th a").removeClass("sorted");
 
-    var fieldName = $(this).data('field-name');
+    var sortDescending = false;
 
-    /* if we're already sorted sort the other way */
-    if (tableParams.orderby === fieldName &&
-        tableParams.orderby.indexOf('-') === -1) {
+    if (alreadySorted) {
+      // if we're already sorted by this column, sort the other way
+      if (tableParams.orderby.indexOf('-') === -1) {
+        // currently sorted in ascending order, so reverse it
+        sortDescending = true;
+      }
+    }
+    else {
+      // set the sort order according to the default sort order for this field
+      if ($(this).attr('data-orderby-direction') === 'desc') {
+        sortDescending = true;
+      }
+    }
+
+    // apply the sort
+    if (sortDescending) {
       tableParams.orderby = '-' + $(this).data('field-name');
       $(this).parent().children('.icon-caret-up').show();
-    } else {
+    }
+    else {
       tableParams.orderby = $(this).data('field-name');
       $(this).parent().children('.icon-caret-down').show();
     }
