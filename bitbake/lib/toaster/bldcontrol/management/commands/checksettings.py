@@ -1,17 +1,8 @@
 from django.core.management.base import NoArgsCommand, CommandError
-from django.db import transaction
-from bldcontrol.bbcontroller import getBuildEnvironmentController, ShellCmdException
 from bldcontrol.models import BuildRequest, BuildEnvironment, BRError
 from orm.models import ToasterSetting, Build
 import os
 import traceback
-
-def DN(path):
-    if path is None:
-        return ""
-    else:
-        return os.path.dirname(path)
-
 
 class Command(NoArgsCommand):
     args = ""
@@ -19,40 +10,6 @@ class Command(NoArgsCommand):
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
-        self.guesspath = DN(DN(DN(DN(DN(DN(DN(__file__)))))))
-
-    def _find_first_path_for_file(self, startdirectory, filename, level=0):
-        if level < 0:
-            return None
-        dirs = []
-        for i in os.listdir(startdirectory):
-            j = os.path.join(startdirectory, i)
-            if os.path.isfile(j):
-                if i == filename:
-                    return startdirectory
-            elif os.path.isdir(j):
-                dirs.append(j)
-        for j in dirs:
-            ret = self._find_first_path_for_file(j, filename, level - 1)
-            if ret is not None:
-                return ret
-        return None
-
-    def _recursive_list_directories(self, startdirectory, level=0):
-        if level < 0:
-            return []
-        dirs = []
-        try:
-            for i in os.listdir(startdirectory):
-                j = os.path.join(startdirectory, i)
-                if os.path.isdir(j):
-                    dirs.append(j)
-        except OSError:
-            pass
-        for j in dirs:
-            dirs = dirs + self._recursive_list_directories(j, level - 1)
-        return dirs
-
 
     def _verify_build_environment(self):
         # provide a local build env. This will be extended later to include non local
@@ -94,12 +51,10 @@ class Command(NoArgsCommand):
                     print "\n -- Validation: The build directory must to be set to an absolute path."
                     is_changed = _update_builddir()
 
-
                 if is_changed:
                     print "\nBuild configuration saved"
                     be.save()
                     return True
-
 
                 if be.needs_import:
                     try:
@@ -119,7 +74,6 @@ class Command(NoArgsCommand):
                         print "Failure while trying to import the toaster config file %s: %s" %\
                             (config_file, e)
                         traceback.print_exc(e)
-
                 return is_changed
 
             while _verify_be():
@@ -149,8 +103,6 @@ class Command(NoArgsCommand):
         Build.objects.filter(outcome=Build.IN_PROGRESS).update(outcome=Build.FAILED, completed_on=timezone.now())
 
         return 0
-
-
 
     def handle_noargs(self, **options):
         retval = 0

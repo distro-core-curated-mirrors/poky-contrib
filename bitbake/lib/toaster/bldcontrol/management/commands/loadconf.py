@@ -4,10 +4,14 @@ from orm.models import BitbakeVersion, Release, ReleaseDefaultLayer, ReleaseLaye
 from django.db import IntegrityError
 import os
 
-from checksettings import DN
-
 import logging
 logger = logging.getLogger("toaster")
+
+def DN(path):
+    if path is None:
+        return ""
+    else:
+        return os.path.dirname(path)
 
 def _reduce_canon_path(path):
     components = []
