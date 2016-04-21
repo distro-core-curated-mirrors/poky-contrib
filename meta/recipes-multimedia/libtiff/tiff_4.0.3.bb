@@ -29,6 +29,7 @@ SRC_URI = "ftp://ftp.remotesensing.org/pub/libtiff/tiff-${PV}.tar.gz \
            file://CVE-2014-9655.patch \
            file://CVE-2014-9655-1.patch \
            file://CVE-2014-9655-3.patch \
+           file://CVE-2015-8665-8683.patch \
            "
 
 SRC_URI[md5sum] = "051c1068e6a0627f461948c365290410"
