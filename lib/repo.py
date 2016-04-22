@@ -206,17 +206,13 @@ class Repo(object):
 
     def __init__(self, repodir, commit=None, branch=None, mbox=None, series=None, revision=None):
         self._repodir = repodir
-        self._commit = commit
-        self._branch = branch
         self._mbox = mbox
+
         self._stashed = False
         self._mboxitems = []
 
         # get current branch name, so we can checkout at the end
-        self._current_branch = self._get_branch()
-
-        # get user branch name and commit id, if not given
-        # current branch and HEAD is take
+        self._current_branch = self._get_current_branch()
         self._branch = branch or self._current_branch
         self._commit = self._get_commitid(commit or 'HEAD')
         self._branchname = "%s_%s" % (Repo.prefix, os.getpid())
@@ -322,7 +318,7 @@ class Repo(object):
 
         return results
 
-    def _get_branch(self, commit='HEAD'):
+    def _get_current_branch(self, commit='HEAD'):
         cmd = {'cmd':['git', 'rev-parse', '--abbrev-ref', commit]}
         return self._exec(cmd)[0]['stdout']
 
