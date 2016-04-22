@@ -128,6 +128,45 @@ def logger_create(name):
     logger.setLevel(logging.INFO)
     return logger
 
+def get_subject_prefix(data):
+    prefix = ""
+    pattern1 = re.compile("(?<=Subject: )(\[.*\])")
+
+    for subject in data.split('\n'):
+        match1 = pattern1.search(subject)
+        if match1:
+            prefix = match1.group(1)
+            break
+
+    return prefix
+
+def valid_branch(branch):
+    """ Check if branch is valid name """
+    lbranch = branch.lower()
+
+    invalid  = lbranch.startswith('patch') or \
+               lbranch.startswith('rfc') or \
+               lbranch.startswith('resend') or \
+               re.search('^v\d+', lbranch) or \
+               re.search('^\d+/\d+', lbranch)
+
+    return not invalid
+
+def get_branch(data):
+    """ Get the branch name from mbox """
+    fullprefix = get_subject_prefix(data)
+    branch, branches, valid_branches = None, [], []
+
+    if fullprefix:
+        prefix = fullprefix.strip('[]')
+        branches = [ b.strip() for b in prefix.split(',')]
+        valid_branches = [b for b in branches if valid_branch(b)]
+
+    if len(valid_branches):
+        branch = valid_branches[0]
+
+    return branch
+
 # Patchwork - automated patch tracking system
 # Copyright (C) 2008 Jeremy Kerr <jk@ozlabs.org>
 #

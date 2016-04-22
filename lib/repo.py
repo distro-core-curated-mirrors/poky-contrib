@@ -132,6 +132,8 @@ class BaseMboxItem(object):
 
     status = property(getstatus, setstatus)
 
+    def getbranch(self):
+        return utils.get_branch(self.contents)
 
 class MboxURLItem(BaseMboxItem):
     """ Mbox item based on a URL"""
@@ -207,15 +209,7 @@ class Repo(object):
     def __init__(self, repodir, commit=None, branch=None, mbox=None, series=None, revision=None):
         self._repodir = repodir
         self._mbox = mbox
-
-        self._stashed = False
-        self._mboxitems = []
-
-        # get current branch name, so we can checkout at the end
-        self._current_branch = self._get_current_branch()
-        self._branch = branch or self._current_branch
-        self._commit = self._get_commitid(commit or 'HEAD')
-        self._branchname = "%s_%s" % (Repo.prefix, os.getpid())
+        self._series_revision = self._get_series_revisions(series, revision)
 
         try:
             self.repo = git.Repo(self._repodir)
@@ -233,10 +227,18 @@ class Repo(object):
             logger.error('patchwork url/project configuration is not available')
             raise Exception
 
-        self._series_revision = self._get_series_revisions(series, revision)
-        self._mailinglist = self._get_mailinglist()
+        # create the items
+        self._mboxitems = self._create_items()
 
-        self._loaditems()
+        # get current branch name, so we can checkout at the end
+        self._current_branch = self._get_current_branch()
+
+        # branch to be used for testing, priority: branch provided by
+        # user, branch defined in item/items or current branch
+        self._branch = branch or self._get_items_branch() or self._current_branch
+        self._commit = self._get_commitid(commit or self._branch)
+        self._branchname = "%s_%s" % (Repo.prefix, os.getpid())
+        self._mailinglist = self._get_mailinglist()
 
         # for debugging purposes, print all repo parameters
         logger.debug("Parameters")
@@ -281,16 +283,18 @@ class Repo(object):
             logger.warn("Mailing list could not be fetched")
         return ml
 
-    def _loaditems(self):
+    def _create_items(self):
         """ Load MboxItems to be tested """
+        _mboxitems = []
         if self._mbox:
             for _eachitem in self._mbox:
-                self._mboxitems.append(MboxFileItem(_eachitem))
+                _mboxitems.append(MboxFileItem(_eachitem))
         elif self._series_revision:
             fullurl = "%s" % self._url
             fullurl +="/api/1.0/series/%s/revisions/%s/mbox/"
             for s,r in self._series_revision:
-                self._mboxitems.append(MboxURLItem(fullurl, (s,r)))
+                _mboxitems.append(MboxURLItem(fullurl, (s,r)))
+        return _mboxitems
 
     def _exec(self, cmds):
         _cmds = []
@@ -321,6 +325,32 @@ class Repo(object):
     def _get_current_branch(self, commit='HEAD'):
         cmd = {'cmd':['git', 'rev-parse', '--abbrev-ref', commit]}
         return self._exec(cmd)[0]['stdout']
+
+    def _get_items_branch(self):
+        branch = None
+        branches = [b.getbranch() for b in self._mboxitems]
+        if branches and all(branches):
+            head, tail = branches[0], branches[1:]
+            if tail:
+                # in case of multiple items, all items should target
+                # the same branch
+                if all(map(lambda b: head == b, tail)):
+                    branch = head
+            else:
+                branch = head
+
+        if branch:
+            logger.debug('branch name detected on mbox: %s' % branch)
+            # now check if the branch that the item is refering to actually exists on the repo
+            res = self._exec({'cmd':['git', 'branch', '--remote', '--list', '*/%s' % branch]})
+            remote_branch = res[0]['stdout']
+            if remote_branch:
+                logger.debug('Remote branch to be used: %s' % remote_branch)
+                branch = remote_branch
+            else:
+                branch = None
+
+        return branch
 
     def _get_commitid(self, commit='HEAD'):
         cmd = {'cmd':['git', 'rev-parse', '--short', commit]}
