@@ -2,7 +2,8 @@
 # changes incompatibly
 POKY_BBLAYERS_CONF_VERSION = "2"
 
-BBPATH = "${TOPDIR}"
+BBPATH_EXTRA ??= ""
+BBPATH = "${BBPATH_EXTRA}${TOPDIR}"
 BBFILES ?= ""
 
 BBLAYERS ?= " \
