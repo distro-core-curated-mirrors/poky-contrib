@@ -87,4 +87,10 @@ function projectTopBarInit(ctx) {
         window.location.replace(libtoaster.ctx.projectBuildsUrl);
     }, null);
   });
+
+  /* Call makeProjectNameValidation function */
+  libtoaster.makeProjectNameValidation($("#project-name-change-input"),
+      $("#hint-error-project-name"), $("#validate-project-name"),
+      $("#project-name-change-btn"));
+
 }
