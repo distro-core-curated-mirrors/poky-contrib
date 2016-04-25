@@ -1261,6 +1261,7 @@ class BBCooker:
         """
         Build the file matching regexp buildfile
         """
+        bb.event.fire(bb.event.BuildInit(), self.expanded_data)
 
         # Too many people use -b because they think it's how you normally
         # specify a target to be built, so show a warning
@@ -1363,6 +1364,11 @@ class BBCooker:
         """
         Attempt to build the targets specified
         """
+
+        # build a list of target:task strings in format
+        # ['zlib:do_build', 'mpfr-native:do_build', ...]
+        packages = map(lambda target: "%s:do_%s" % (target, task), targets)
+        bb.event.fire(bb.event.BuildInit(packages), self.expanded_data)
 
         def buildTargetsIdle(server, rq, abort):
             msg = None
