@@ -30,8 +30,8 @@ RDEPENDS_${PN}-base = "\
     matchbox-keyboard-im \
     matchbox-config-gtk \
     xcursor-transparent-theme \
-    sato-icon-theme \
     gnome-theme-adwaita \
+    adwaita-icon-theme \
     settings-daemon \
     shutdown-desktop \
     libsdl \
