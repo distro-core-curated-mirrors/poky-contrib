@@ -103,6 +103,7 @@ _evt_list = [
     "bb.command.CommandFailed",
     "bb.cooker.CookerExit",
     "bb.event.BuildCompleted",
+    "bb.event.BuildInit",
     "bb.event.BuildStarted",
     "bb.event.CacheLoadCompleted",
     "bb.event.CacheLoadProgress",
@@ -231,19 +232,15 @@ def main(server, eventHandler, params):
             # pylint: disable=protected-access
             # the code will look into the protected variables of the event; no easy way around this
 
-            # we treat ParseStarted as the first event of toaster-triggered
-            # builds; that way we get the Build Configuration included in the log
-            # and any errors that occur before BuildStarted is fired
-            if isinstance(event, bb.event.ParseStarted):
+            # create a build object in buildinfohelper from either BuildInit (if available)
+            # or BuildStarted (for jethro and previous versions)
+            if isinstance(event, (bb.event.BuildStarted, bb.event.BuildInit)):
                 if not (build_log and build_log_file_path):
                     build_log, build_log_file_path = _open_build_log(log_dir)
-                continue
-
-            if isinstance(event, bb.event.BuildStarted):
-                if not (build_log and build_log_file_path):
-                    build_log, build_log_file_path = _open_build_log(log_dir)
-
-                buildinfohelper.store_started_build(event, build_log_file_path)
+                    buildinfohelper.store_started_build(event, build_log_file_path)
+                # get additional data from BuildStarted
+                if isinstance(event, bb.event.BuildStarted):
+                    buildinfohelper.save_build_layers_and_variables(event)
                 continue
 
             if isinstance(event, (bb.build.TaskStarted, bb.build.TaskSucceeded, bb.build.TaskFailedSilent)):
