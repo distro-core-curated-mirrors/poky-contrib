@@ -1015,7 +1015,17 @@ class BuildInfoHelper(object):
 
         self.internal_state['build'] = build_obj
 
+        # create target information
+        target_information = {}
+        target_information['targets'] = event._pkgs
+        target_information['build'] = build_obj
+
+        self.internal_state['targets'] = self.orm_wrapper.get_or_create_targets(target_information)
+
+    def save_build_layers_and_variables(self, event):
         # save layer version information for this build
+        build_obj = self.internal_state['build']
+
         if not 'lvs' in self.internal_state:
             logger.error("Layer version information not found; Check if the bitbake server was configured to inherit toaster.bbclass.")
         else:
@@ -1023,13 +1033,6 @@ class BuildInfoHelper(object):
                 self.orm_wrapper.get_update_layer_version_object(build_obj, layer_obj, self.internal_state['lvs'][layer_obj])
 
             del self.internal_state['lvs']
-
-        # create target information
-        target_information = {}
-        target_information['targets'] = event._pkgs
-        target_information['build'] = build_obj
-
-        self.internal_state['targets'] = self.orm_wrapper.get_or_create_targets(target_information)
 
         # Save build configuration
         data = self.server.runCommand(["getAllKeysWithFlags", ["doc", "func"]])[0]
