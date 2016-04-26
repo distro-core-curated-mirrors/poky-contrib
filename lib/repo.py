@@ -209,7 +209,6 @@ class Repo(object):
     def __init__(self, repodir, commit=None, branch=None, mbox=None, series=None, revision=None):
         self._repodir = repodir
         self._mbox = mbox
-        self._series_revision = self._get_series_revisions(series, revision)
 
         try:
             self.repo = git.Repo(self._repodir)
@@ -226,6 +225,8 @@ class Repo(object):
         except:
             logger.error('patchwork url/project configuration is not available')
             raise Exception
+
+        self._series_revision = self._get_series_revisions(series, revision)
 
         # create the items
         self._mboxitems = self._create_items()
