@@ -124,7 +124,7 @@ if [ ! -e "$REPO/$REPO_PATCHTEST/$LOCK" ]; then
     # execute patchtest
     if [ -n "$events" ]; then
 	echo "$events" | tee -a "$REPO/$REPO_PATCHTEST/$LOG" | \
-	    patchtest --branch master
+	    patchtest
     else
 	echo "no new events" | tee -a $REPO/$REPO_PATCHTEST/$LOG
     fi
