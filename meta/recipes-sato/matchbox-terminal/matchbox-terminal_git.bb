@@ -6,9 +6,9 @@ LICENSE = "GPLv2+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f \
                     file://main.c;endline=20;md5=96e39176d9e355639a0b8b1c7a840820"
 
-DEPENDS = "gtk+ vte"
+DEPENDS = "gtk+3 vte"
 SECTION = "x11/utils"
-SRCREV = "452bca253492a97a587f440289b9ab27d217353e"
+SRCREV = "00638a1056d5a34e74ce469091aaebcb47daa039"
 PV = "0.0+git${SRCPV}"
 
 SRC_URI = "git://git.yoctoproject.org/${BPN}"
@@ -17,4 +17,4 @@ S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig distro_features_check
 
-ANY_OF_DISTRO_FEATURES = "${GTK2DISTROFEATURES}"
+ANY_OF_DISTRO_FEATURES = "${GTK3DISTROFEATURES}"
