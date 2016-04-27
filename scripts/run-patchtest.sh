@@ -2,6 +2,23 @@
 
 REPO=$1
 
+msg () {
+    [ -n "$1" ] && { echo "$1" | tee -a $REPO/$REPO_PATCHTEST/$LOG; }
+}
+
+start() {
+    STARTDATE=$(date --iso-8601=seconds)
+    msg "Start $0 at $STARTDATE"
+}
+
+finish () {
+    FINISHDATE=$(date --iso-8601=seconds)
+    msg "Finish $0 at $FINISHDATE"
+    deactivate
+    [ -n "$1" ] && { exit $1; }
+    exit 0
+}
+
 # Poll new events and update timestamp
 # Pseudocode:
 #
@@ -70,15 +87,15 @@ pollevents () {
     echo "$events"
 }
 
-if [ -z $REPO ]; then
-    echo "Please call the current script with a path to a repository directory"
-    exit 1
-fi
+[ -z "$REPO" ] && { \
+    echo "Please call the current script with a path to a repository directory" | tee -a $REPO/$REPO_PATCHTEST/$LOG;
+    finish 1;
+}
 
-if [ ! -d $REPO ]; then
-    echo "Repository project does not exist, correct the path"
-    exit 1
-fi
+[ ! -d $REPO ] && { \
+    echo "Repository project does not exist, correct the path" | tee -a $REPO/$REPO_PATCHTEST/$LOG;
+    finish 1;
+}
 
 SCRIPTS_DIR=`dirname $0`
 
@@ -102,18 +119,22 @@ LOG="patchtest.log"
 TS="patchtest.poll.timestamp"
 
 # create the patchtest dir inside repo (logging, locking and timestamp files are stored)
-if [ ! -d "$REPO/$REPO_PATCHTEST" ]; then
-    mkdir -p $REPO/$REPO_PATCHTEST
-fi
+[ ! -d "$REPO/$REPO_PATCHTEST" ] && { mkdir -p $REPO/$REPO_PATCHTEST; }
 
 # there are several types of events in patchwork, but we are just interested in series
 PW_SERIES_NEW_REVISION_EVENTS="series-new-revision"
 
-STARTDATE=$(date --iso-8601=seconds)
-echo "Start $0 at $STARTDATE" | tee -a $REPO/$REPO_PATCHTEST/$LOG
+start
+{
+    # make sure patchwork instance is alive
+    $PATCHTEST_SCRIPTS/patchwork-alive.py -C $REPO || { \
+        msg "patchwork instance is not alive, check $REPO/.git/config"; finish 1; \
+    }
 
-# make sure no patchtest lock exists
-if [ ! -e "$REPO/$REPO_PATCHTEST/$LOCK" ]; then
+    # make sure no patchtest lock exists
+    [ -e "$REPO/$REPO_PATCHTEST/$LOCK" ] && { \
+        msg "patchtest currently executing, no events polled"; finish 1; \
+    }
 
     # update patchtest and test suites submodules
     git pull; git submodule update --remote
@@ -123,18 +144,9 @@ if [ ! -e "$REPO/$REPO_PATCHTEST/$LOCK" ]; then
 
     # execute patchtest
     if [ -n "$events" ]; then
-	echo "$events" | tee -a "$REPO/$REPO_PATCHTEST/$LOG" | \
-	    patchtest
+	msg "$events" | patchtest
     else
-	echo "no new events" | tee -a $REPO/$REPO_PATCHTEST/$LOG
+	msg "no new events"
     fi
-else
-    echo "patchtest currently executing, no events polled" | tee -a $REPO/$REPO_PATCHTEST/$LOG
-fi
-
-FINISHDATE=$(date --iso-8601=seconds)
-echo "Finish $0 at $FINISHDATE" | tee -a $REPO/$REPO_PATCHTEST/$LOG
-
-deactivate
-
-exit 0
+}
+finish
