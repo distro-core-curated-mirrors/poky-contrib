@@ -80,10 +80,10 @@ class PatchTestArgs(object):
                             default=[],
                             help='The revisions to patch and test, latest if omitted. Add --no-patch if no patching is done into the repository')
 
-        parser.add_argument('--post',
-                            dest='post',
-                            action='store_true',
-                            help="Post results to patchwork")
+        parser.add_argument('--include-post-users',
+                            dest='include_post_users',
+                            default='',
+                            help="Regular expression that indicated the submitters that patchtest can POST")
 
         parser.add_argument('--mbox', '-m',
                             nargs='*',

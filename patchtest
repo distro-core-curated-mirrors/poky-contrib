@@ -6,6 +6,7 @@ import unittest
 import fileinput
 import logging
 import traceback
+import re
 
 # Include current path so test cases can see it
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -21,7 +22,7 @@ logger = utils.logger_create('patchtest')
 import repo
 import summary
 
-def getResult(series, revision, mbox, nopatch, post):
+def getResult(series, revision, mbox, nopatch, include_post_users):
 
     class PatchTestResult(unittest.TextTestResult):
         """ Formats the summary and post result at the end """
@@ -115,8 +116,17 @@ def getResult(series, revision, mbox, nopatch, post):
             else:
                 state = PatchTestResult.PATCHWORK_RESULT_SUCCESS
 
-            if not self.test_error and post:
-                self.repo.post(pti.testname, state, summary)
+            if not self.test_error:
+                if include_post_users:
+                    # Check submitter regex (include_post_users) to check if system
+                    # can post
+                    for item in self.repo.items:
+                        if item.submitter:
+                            if re.search(include_post_users, item.submitter):
+                                logger.info('POSTing summary to %s' % item.pretty_resource)
+                                logger.info('Item\'s submitter %s' % item.submitter)
+                                self.repo.post(pti.testname, state, summary)
+                                break
 
             if not nopatch:
                 self.repo.clean(pti.keepbranch)
@@ -185,11 +195,11 @@ def run(series=[], revision=[], mbox=[]):
     unittest.installHandler()
 
     # run pre-merge tests. Pre-merge tests are those to be executed previous merging
-    premerge_resultklass = getResult(series, revision, mbox, nopatch=True, post=False)
+    premerge_resultklass = getResult(series, revision, mbox, nopatch=True, include_post_users=None)
     _runner(premerge_resultklass, 'pretest')
 
     # run standard tests
-    postmerge_resultklass = getResult(series, revision, mbox, pti.nopatch, pti.post)
+    postmerge_resultklass = getResult(series, revision, mbox, pti.nopatch, pti.include_post_users)
     _runner(postmerge_resultklass)
 
 if __name__ == '__main__':

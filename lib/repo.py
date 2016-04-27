@@ -7,6 +7,7 @@ import requests
 import unidiff
 import urllib2
 import codecs
+import json
 from utils import parse_patch as _pw_parse
 from urlparse import urlparse
 
@@ -34,6 +35,8 @@ class BaseMboxItem(object):
         self._contents = ''
         self._status = BaseMboxItem.MERGE_STATUS_NOT_MERGED
 
+        self._submitter = ''
+
         self._keyvals = {}
         self._patchdiff = ''
         self._commentbuf = ''
@@ -41,6 +44,10 @@ class BaseMboxItem(object):
 
     @property
     def contents(self):
+        raise(NotImplementedError, 'Please do not instantiate MboxItem; patch reading method depends on Mbox type')
+
+    @property
+    def submitter(self):
         raise(NotImplementedError, 'Please do not instantiate MboxItem; patch reading method depends on Mbox type')
 
     @property
@@ -135,6 +142,7 @@ class BaseMboxItem(object):
     def getbranch(self):
         return utils.get_branch(self.contents)
 
+
 class MboxURLItem(BaseMboxItem):
     """ Mbox item based on a URL"""
 
@@ -172,6 +180,18 @@ class MboxURLItem(BaseMboxItem):
             _series = self.args[0]
             _revision = self.args[1]
             return "%s/series/%s/#rev%s" % (_inst, _series, _revision)
+
+    @property
+    def submitter(self):
+        if not self._submitter:
+            params = {'related':'expand'}
+            _r = requests.get(self.resource.rstrip('/mbox/'), params=params)
+            _jsonr = json.loads(_r.text)
+            try:
+                self._submitter = _jsonr['patches'][0]['submitter']['name']
+            except:
+                logger.error('Submitter could not be fetched from %s' % self.resource)
+        return self._submitter
 
 class MboxFileItem(BaseMboxItem):
     """ Mbox item based on a file"""
