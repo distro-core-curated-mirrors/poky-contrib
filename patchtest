@@ -44,15 +44,35 @@ def getResult(series, revision, mbox, nopatch, post):
                 'series': series,
                 'revision': revision,
             }
-            self.repo = pti.repo = repo.Repo(**repoargs)
+
+            # Indicates if repo instance was created succesfully.
+            # If True, no tests are executed
+            self.repo_error    = False
+
+            # Indicates if test cases raise exception.
+            # If True, trace is shown, pending tests are executed but No POST is done
+            self.test_error    = False
+
+            # Indicates if all items failed the merging phase
+            # If True, no tests are done
+            self.merge_failure = False
+
+            # Indicates failures on tests
+            self.test_failure  = False
+
+            try:
+                self.repo = pti.repo = repo.Repo(**repoargs)
+            except:
+                self.repo_error = True
+
+            if self.repo_error:
+                self.stop()
+                return
+
             self.summary = summary.TemplateSummary(self.repo.project,
                                                    self.repo.mailinglist,
                                                    self.repo.branch,
                                                    self.repo.commit)
-
-            self.merge_failure = False # turns on in case all items failed the merging phase
-            self.test_failure = False  # turns on in case of any testing failure
-            self.test_error = False    # turns on in case of any exception raise
 
             # merge items
             if not nopatch:
@@ -82,6 +102,10 @@ def getResult(series, revision, mbox, nopatch, post):
             self.summary.addSkip(test)
 
         def stopTestRun(self):
+
+            if self.repo_error:
+                return
+
             summary = self.summary.generate(self.repo.items, self.merge_failure)
             logger.info(summary)
 
