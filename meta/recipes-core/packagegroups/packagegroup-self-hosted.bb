@@ -191,7 +191,7 @@ RDEPENDS_packagegroup-self-hosted-graphics = "\
     adwaita-icon-theme \
     xdg-utils \
     epiphany \
-    leafpad \
+    l3afpad \
     pcmanfm \
     vte \
     "
