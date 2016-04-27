@@ -210,6 +210,7 @@ class Repo(object):
         self._repodir = repodir
         self._mbox = mbox
 
+        # check if repo is controlled by GIT
         try:
             self.repo = git.Repo(self._repodir)
         except git.exc.InvalidGitRepositoryError:
@@ -218,12 +219,20 @@ class Repo(object):
 
         config = self.repo.config_reader()
 
+        # check if git-pw config is present
         try:
             patchwork_section = 'patchwork "%s"' % 'default'
             self._url = config.get(patchwork_section, 'url')
             self._project = config.get(patchwork_section, 'project')
         except:
             logger.error('patchwork url/project configuration is not available')
+            raise Exception
+
+        # check patchwork instance is alive
+        try:
+            requests.get("%s/api/1.0" % self._url)
+        except:
+            logger.error('patchwork instance is not alive: %s' % self._url)
             raise Exception
 
         self._series_revision = self._get_series_revisions(series, revision)
