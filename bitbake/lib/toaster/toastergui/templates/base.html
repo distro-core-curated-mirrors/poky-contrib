@@ -59,7 +59,7 @@
     {% endblock %}
   </head>
 
-  <body style="height: 100%">
+  <body>
 
     {% csrf_token %}
     <div id="loading-notification" class="alert lead text-center" style="display:none">
@@ -122,7 +122,7 @@
       </div>
     </nav>
 
-    <div class="container-fluid top-padded">
+    <div class="container-fluid">
       {% block pagecontent %}
       {% endblock %}
     </div>

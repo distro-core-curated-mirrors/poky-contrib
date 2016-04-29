@@ -1,5 +1,8 @@
 /* New Toaster custom css file for Bootstrap 3 */
 
+/* Set required top body padding for the fixed top navbard */
+body { padding-top: 50px; }
+
 /* Style the Yocto Project logo */
 img.logo { height: 30px; vertical-align: bottom; }
 
