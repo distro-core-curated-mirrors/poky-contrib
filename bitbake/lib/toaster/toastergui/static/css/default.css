@@ -3,9 +3,21 @@
 /* Style the Yocto Project logo */
 img.logo { height: 30px; vertical-align: bottom; }
 
-/* Style the Toaster name in the top navbar */
-.navbar-brand { float: initial; }
+/* Style the Yocto Project logo and the Toaster name in the top navbar */
+.toaster-navbar-brand { float: left; margin: 7px 25px 0 0; }
+.toaster-navbar-brand a.brand { color: #777; height: 50px; padding: 15px 5px 15px 15px; font-size: 20px; line-height: 25px; display: inline; }
+.toaster-navbar-brand > a { text-decoration: none; }
+.toaster-navbar-brand > a.brand:hover { color: #5e5e5e; }
 
 /* Style the debugging information in the top navbar */
-.glyphicon-info-sign { color: #777; font-size: 16px; margin-top: 18px; margin-left: -5px; }
+.glyphicon-info-sign { color: #777; font-size: 16px; }
 .glyphicon-info-sign:hover { color: #999; cursor: pointer; }
+
+/* Override the negative right margin for the navbar-right class */
+#new-project-button { margin-right: 0; }
+
+/* Increase popovers width to fit commit SHAs */
+.popover { min-width: 350px; }
+
+/* Increase bottom margin of definition lists inside popovers for the Toaster version information in the top navbar */
+.popover-content dd { margin-bottom: 15px; }

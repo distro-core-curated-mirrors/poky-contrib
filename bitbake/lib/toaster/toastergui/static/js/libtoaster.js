@@ -564,7 +564,7 @@ $(document).ready(function() {
     $(".icon-download-alt").tooltip({ container: 'body', html: true, delay: { show: 200 } });
 
     // initialise popover for debug information
-    $(".icon-info-sign").popover( { placement: 'bottom', html: true, container: 'body' });
+    $(".glyphicon-info-sign").popover( { placement: 'bottom', html: true, container: 'body' });
 
     // linking directly to tabs
     $(function(){
