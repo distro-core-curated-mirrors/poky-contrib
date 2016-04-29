@@ -193,6 +193,7 @@
           </dd>
           {% endwith %}
           {% endif %}
+          {% if base_recipe_file %}
           <dt>Recipe file</dt>
           <dd>
           <code>{{recipe.name}}_{{recipe.version}}.bb</code>
