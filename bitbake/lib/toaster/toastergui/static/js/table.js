@@ -251,7 +251,7 @@ function tableInit(ctx){
       tableHeadRow.append(header);
 
       /* Now setup the checkbox state and click handler */
-      var toggler = $('<li><label class="checkbox"><input type="checkbox" id="checkbox-'+ col.field_name +'" class="col-toggle" value="'+col.field_name+'" />'+col.title+'</label></li>');
+      var toggler = $('<li><div class="checkbox"><label><input type="checkbox" id="checkbox-'+ col.field_name +'" class="col-toggle" value="'+col.field_name+'" />'+col.title+'</label></div></li>');
 
       var togglerInput = toggler.find("input");
 
@@ -261,7 +261,8 @@ function tableInit(ctx){
       if (col.hideable){
         togglerInput.click(colToggleClicked);
       } else {
-        toggler.find("label").addClass("muted");
+        toggler.find("label").addClass("text-muted");
+        toggler.find("label").parent().addClass("disabled");
         togglerInput.attr("disabled", "disabled");
       }
 
