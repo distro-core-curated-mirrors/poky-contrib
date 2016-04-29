@@ -24,3 +24,18 @@ img.logo { height: 30px; vertical-align: bottom; }
 
 /* Increase bottom margin of definition lists inside popovers for the Toaster version information in the top navbar */
 .popover-content dd { margin-bottom: 15px; }
+
+/* Style our build results */
+.build-result .progress { margin-bottom: 0; }
+.alert-link.build-warnings,
+.glyphicon-warning-sign.build-warnings { color: #8a6d3b; }
+.build-result .project-name { margin-top: -10px; margin-bottom: 5px; }
+
+/* Styles for the help information */
+.get-help-green { color: #468847; }
+.get-help-green:hover { color: #347132; cursor: pointer; }
+.get-help-blue { color: #3A87AD; }
+.get-help-blue:hover { color: #005580; cursor: pointer; }
+.get-help-red { color: #B94A48; }
+.get-help-red:hover { color: #943A38; cursor: pointer; }
+
