@@ -72,12 +72,12 @@ def build_image(args, config, basepath, workspace):
     return result
 
 def build_image_task(config, basepath, workspace, image, add_packages=None, task=None, extra_append=None):
-    appendfile = os.path.join(config.workspace_path, 'appends',
-                              '%s.bbappend' % image)
-
     # remove <image>.bbappend to make sure setup_tinfoil doesn't
     # break because of it
-    if os.path.isfile(appendfile):
+    target_basename = config.get('SDK', 'target_basename', '')
+    if target_basename:
+        appendfile = os.path.join(config.workspace_path, 'appends',
+                                  '%s.bbappend' % target_basename)
         os.unlink(appendfile)
 
     tinfoil = setup_tinfoil(basepath=basepath)
@@ -87,6 +87,14 @@ def build_image_task(config, basepath, workspace, image, add_packages=None, task
         return (1, None)
     if not bb.data.inherits_class('image', rd):
         raise TargetNotImageError()
+
+    # Get the actual filename used and strip the .bb and full path
+    target_basename = rd.getVar('FILE', True)
+    target_basename = os.path.basename(target_basename).rsplit('.', 1)[0]
+    config.set('SDK', 'target_basename', target_basename)
+
+    appendfile = os.path.join(config.workspace_path, 'appends',
+                              '%s.bbappend' % target_basename)
 
     outputdir = None
     try:
