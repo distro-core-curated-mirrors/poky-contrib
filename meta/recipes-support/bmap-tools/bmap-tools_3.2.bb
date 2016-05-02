@@ -15,10 +15,28 @@ SRC_URI[sha256sum] = "cc6c7f7dc0a37e2a32deb127308e24e6c4b80bfb54f3803c308efab02b
 
 RDEPENDS_${PN} = "python-core python-compression"
 
-inherit setuptools
+inherit setuptools deploy
 
 BBCLASSEXTEND = "native"
 
 do_install_append_class-native() {
     sed -i -e 's|^#!.*/usr/bin/env python|#! /usr/bin/env nativepython|' ${D}${bindir}/bmaptool
 }
+
+do_deploy[sstate-outputdirs] = "${DEPLOY_DIR_TOOLS}"
+do_deploy[stamp-extra-info] = ""
+do_deploy_class-native() {
+    cp bmaptool __main__.py
+    python -m zipfile -c bmaptool.zip bmaptools __main__.py
+    echo '#!/usr/bin/env python' | cat - bmaptool.zip > bmaptool-standalone
+    install -d ${DEPLOYDIR}
+    install -m 0755 bmaptool-standalone ${DEPLOYDIR}/bmaptool-${PV}
+    rm -f ${DEPLOYDIR}/bmaptool
+    ln -sf ./bmaptool-${PV} ${DEPLOYDIR}/bmaptool
+}
+
+do_deploy() {
+    :
+}
+
+addtask deploy before do_package after do_install
