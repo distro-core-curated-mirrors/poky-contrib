@@ -11,7 +11,8 @@ def create_socket(url, d):
 def get_proxies(d):
     proxies = {}
     for key in ['http', 'https', 'ftp', 'ftps', 'no', 'all']:
-        proxy = d.getVar(key + '_proxy', True)
+        key_proxy = key + '_proxy'
+        proxy = os.environ.get(key_proxy) or d.getVar(key_proxy, True)
         if proxy:
             proxies[key] = proxy
     return proxies
