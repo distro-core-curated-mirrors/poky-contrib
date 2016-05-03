@@ -43,6 +43,7 @@ from orm.models import Package, Package_File, Target_Installed_Package, Target_F
 from orm.models import Task_Dependency, Package_Dependency
 from orm.models import Recipe_Dependency, Provides
 from orm.models import Project, CustomImagePackage, CustomImageRecipe
+from orm.database_writer import DatabaseWriter
 
 from bldcontrol.models import BuildEnvironment, BuildRequest
 
@@ -74,18 +75,18 @@ class ORMWrapper(object):
         self.layer_version_built = []
         self.task_objects = {}
         self.recipe_objects = {}
+        self.database_writer = DatabaseWriter()
 
     ####### START: methods which write to the database
 
     def get_or_create_default_project(self):
-        return Project.objects.get_or_create_default_project()
+        return self.database_writer.get_or_create_default_project()
 
     def save_object(self, obj):
-        method_to_call = getattr(obj, 'save')
-        return method_to_call()
+        return self.database_writer.save_object(obj)
 
     def bulk_create(self, clazz, data):
-        clazz.objects.bulk_create(data)
+        return self.database_writer.bulk_create(clazz, data)
 
     ####### END: methods which write to the database
 
@@ -1615,3 +1616,5 @@ class BuildInfoHelper(object):
         # being incorrectly attached to the previous Toaster-triggered build;
         # see https://bugzilla.yoctoproject.org/show_bug.cgi?id=9021
         self.brbe = None
+
+        logger.info('********************* DATABASE WRITER STATS: %s' % self.orm_wrapper.database_writer.method_calls)
