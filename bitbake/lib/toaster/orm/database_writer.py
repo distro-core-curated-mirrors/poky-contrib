@@ -20,7 +20,10 @@ import collections
 import logging
 logger = logging.getLogger("ToasterLogger")
 
+from django.core import serializers
+
 from orm.models import Project
+from dbqueue.tasks import save_object, bulk_create, get_or_create_default_project
 
 class DatabaseWriter(object):
     """
@@ -45,25 +48,31 @@ class DatabaseWriter(object):
     def get_or_create_default_project(self):
         """
         Get or create the default Project model instance
-        """
         logger.info('DATABASE WRITER: get_or_create_default_project()')
         self.record_method_call('get_or_create_default_project')
         return Project.objects.get_or_create_default_project()
+        """
+        self.record_method_call('get_or_create_default_project')
+        return get_or_create_default_project()
 
     def save_object(self, obj):
         """
         Call save() on the Django Model object obj
-        """
         logger.info('DATABASE WRITER: save_object(); class: %s' % obj.__class__.__name__)
         self.record_method_call('save_object')
         method_to_call = getattr(obj, 'save')
         return method_to_call()
+        """
+        self.record_method_call('save_object')
+        return save_object(obj)
 
-    def bulk_create(self, clazz, data):
+    def bulk_create(self, clazz, objs):
         """
         Call bulk_create() on the Django Model class clazz, passing data
         (list of model instances)
-        """
         logger.info('DATABASE WRITER: bulk_create(); class: %s' % clazz.__name__)
         self.record_method_call('bulk_create', data)
         return clazz.objects.bulk_create(data)
+        """
+        self.record_method_call('bulk_create', objs)
+        return bulk_create.delay(clazz, objs)

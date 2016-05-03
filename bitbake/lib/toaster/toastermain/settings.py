@@ -38,6 +38,27 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+# Celery settings
+import djcelery
+djcelery.setup_loader()
+
+# adapted from http://redislite.readthedocs.io/en/latest/topic/using_with_existing_modules.html
+# monkey patch Redis to use redislite
+from redislite import Redis
+import redislite.patch
+redislite.patch.patch_redis()
+
+REDIS_DB_PATH = 'toaster.dbqueue.redis'
+redislite.patch.patch_redis_Redis(REDIS_DB_PATH)
+rdb = Redis(REDIS_DB_PATH)
+REDIS_SOCKET_PATH = 'redis+socket://%s' % rdb.socket_file
+
+BROKER_URL = REDIS_SOCKET_PATH
+CELERY_RESULT_BACKEND = REDIS_SOCKET_PATH
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
@@ -272,6 +293,8 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'bldcollector',
     'toastermain',
+    'djcelery',
+    'dbqueue',
 )
 
 
