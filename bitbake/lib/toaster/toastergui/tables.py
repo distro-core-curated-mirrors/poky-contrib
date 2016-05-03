@@ -1109,19 +1109,17 @@ class BuildsTable(ToasterTable):
 
     def setup_columns(self, *args, **kwargs):
         outcome_template = '''
-        <a href="{% url "builddashboard" data.id %}">
-            {% if data.outcome == data.SUCCEEDED %}
-                <i class="icon-ok-sign success"></i>
-            {% elif data.outcome == data.FAILED %}
-                <i class="icon-minus-sign error"></i>
-            {% endif %}
-        </a>
+        {% if data.outcome == data.SUCCEEDED %}
+            <span class="glyphicon glyphicon-ok-circle"></span>
+        {% elif data.outcome == data.FAILED %}
+            <span class="glyphicon glyphicon-minus-sign"></span>
+        {% endif %}
 
         {% if data.cooker_log_path %}
             &nbsp;
             <a href="{% url "build_artifact" data.id "cookerlog" data.id %}">
-               <i class="icon-download-alt get-help"
-               data-original-title="Download build log"></i>
+               <span class="glyphicon glyphicon-download-alt get-help"
+               data-original-title="Download build log"></span>
             </a>
         {% endif %}
         '''
@@ -1136,27 +1134,21 @@ class BuildsTable(ToasterTable):
         '''
 
         machine_template = '''
-        <a href="{% url "builddashboard" data.id %}">
-            {{data.machine}}
-        </a>
+        {{data.machine}}
         '''
 
         started_on_template = '''
-        <a href="{% url "builddashboard" data.id %}">
-            {{data.started_on | date:"d/m/y H:i"}}
-        </a>
+        {{data.started_on | date:"d/m/y H:i"}}
         '''
 
         completed_on_template = '''
-        <a href="{% url "builddashboard" data.id %}">
-            {{data.completed_on | date:"d/m/y H:i"}}
-        </a>
+        {{data.completed_on | date:"d/m/y H:i"}}
         '''
 
         failed_tasks_template = '''
         {% if data.failed_tasks.count == 1 %}
             <a href="{% url "task" data.id data.failed_tasks.0.id %}">
-                <span class="error">
+                <span class="text-danger">
                     {{data.failed_tasks.0.recipe.name}}.{{data.failed_tasks.0.task_name}}
                 </span>
             </a>
@@ -1167,14 +1159,14 @@ class BuildsTable(ToasterTable):
             </a>
         {% elif data.failed_tasks.count > 1 %}
             <a href="{% url "tasks" data.id %}?filter=outcome%3A{{extra.Task.OUTCOME_FAILED}}">
-                <span class="error">{{data.failed_tasks.count}} tasks</span>
+                <span class="text-danger">{{data.failed_tasks.count}} tasks</span>
             </a>
         {% endif %}
         '''
 
         errors_template = '''
         {% if data.errors_no %}
-            <a class="errors.count error" href="{% url "builddashboard" data.id %}#errors">
+            <a class="errors.count text-danger" href="{% url "builddashboard" data.id %}#errors">
                 {{data.errors_no}} error{{data.errors_no|pluralize}}
             </a>
         {% endif %}
@@ -1182,7 +1174,7 @@ class BuildsTable(ToasterTable):
 
         warnings_template = '''
         {% if data.warnings_no %}
-            <a class="warnings.count warning" href="{% url "builddashboard" data.id %}#warnings">
+            <a class="warnings.count text-warning" href="{% url "builddashboard" data.id %}#warnings">
                 {{data.warnings_no}} warning{{data.warnings_no|pluralize}}
             </a>
         {% endif %}
@@ -1197,9 +1189,7 @@ class BuildsTable(ToasterTable):
 
         image_files_template = '''
         {% if data.outcome == extra.Build.SUCCEEDED %}
-          <a href="{% url "builddashboard" data.id %}#images">
             {{data.get_image_file_extensions}}
-          </a>
         {% endif %}
         '''
 
@@ -1417,10 +1407,10 @@ class AllBuildsTable(BuildsTable):
             {{data.project.name}}
         </a>
         {% if data.project.is_default %}
-            <i class="icon-question-sign get-help hover-help" title=""
+            <span class="glyphicon glyphicon-question-sign get-help hover-help" title=""
                data-original-title="This project shows information about
                the builds you start from the command line while Toaster is
-               running" style="visibility: hidden;"></i>
+               running" style="visibility: hidden;"></span>
         {% endif %}
         '''
 
