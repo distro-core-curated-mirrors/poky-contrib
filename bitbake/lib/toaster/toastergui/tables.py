@@ -848,26 +848,22 @@ class ProjectsTable(ToasterTable):
         last_activity_on_template = '''
         {% load project_url_tag %}
         <span data-project-field="updated">
-          <a href="{% project_url data %}">
             {{data.updated | date:"d/m/y H:i"}}
-          </a>
         </span>
         '''
 
         release_template = '''
         <span data-project-field="release">
           {% if data.release %}
-            <a href="{% url 'project' data.id %}#project-details">
-                {{data.release.name}}
-            </a>
+            {{data.release.name}}
           {% elif data.is_default %}
-            <span class="muted">Not applicable</span>
-            <i class="icon-question-sign get-help hover-help"
-               data-original-title="This project does not have a release set.
+            <span class="text-muted">Not applicable</span>
+            <span class="glyphicon glyphicon-question-sign get-help hover-help"
+               title="This project does not have a release set.
                It simply collects information about the builds you start from
                the command line while Toaster is running"
                style="visibility: hidden;">
-            </i>
+            </span>
           {% else %}
             No release available
           {% endif %}
@@ -877,16 +873,14 @@ class ProjectsTable(ToasterTable):
         machine_template = '''
         <span data-project-field="machine">
           {% if data.is_default %}
-            <span class="muted">Not applicable</span>
-            <i class="icon-question-sign get-help hover-help"
-               data-original-title="This project does not have a machine
+            <span class="text-muted">Not applicable</span>
+            <span class="glyphicon glyphicon-question-sign get-help hover-help"
+               title="This project does not have a machine
                set. It simply collects information about the builds you
                start from the command line while Toaster is running"
-               style="visibility: hidden;"></i>
+               style="visibility: hidden;"></span>
           {% else %}
-            <a href="{% url 'project' data.id %}#machine-distro">
-              {{data.get_current_machine_name}}
-            </a>
+            {{data.get_current_machine_name}}
           {% endif %}
         </span>
         '''
@@ -896,20 +890,16 @@ class ProjectsTable(ToasterTable):
           <a href="{% url 'projectbuilds' data.id %}">
             {{data.get_number_of_builds}}
           </a>
-        {% else %}
-          <span class="muted">0</span>
         {% endif %}
         '''
 
         last_build_outcome_template = '''
         {% if data.get_number_of_builds > 0 %}
-          <a href="{% url 'builddashboard' data.get_last_build_id %}">
-            {% if data.get_last_outcome == extra.Build.SUCCEEDED %}
-              <i class="icon-ok-sign success"></i>
-            {% elif data.get_last_outcome == extra.Build.FAILED %}
-              <i class="icon-minus-sign error"></i>
-            {% endif %}
-          </a>
+          {% if data.get_last_outcome == extra.Build.SUCCEEDED %}
+            <span class="glyphicon glyphicon-ok-circle"></span>
+          {% elif data.get_last_outcome == extra.Build.FAILED %}
+            <span class="glyphicon glyphicon-minus-sign"></span>
+          {% endif %}
         {% endif %}
         '''
 
@@ -923,7 +913,7 @@ class ProjectsTable(ToasterTable):
 
         errors_template = '''
         {% if data.get_number_of_builds > 0 and data.get_last_errors > 0 %}
-          <a class="errors.count error"
+          <a class="errors.count text-danger"
              href="{% url "builddashboard" data.get_last_build_id %}#errors">
             {{data.get_last_errors}} error{{data.get_last_errors | pluralize}}
           </a>
@@ -932,7 +922,7 @@ class ProjectsTable(ToasterTable):
 
         warnings_template = '''
         {% if data.get_number_of_builds > 0 and data.get_last_warnings > 0 %}
-          <a class="warnings.count warning"
+          <a class="warnings.count text-warning"
              href="{% url "builddashboard" data.get_last_build_id %}#warnings">
             {{data.get_last_warnings}} warning{{data.get_last_warnings | pluralize}}
           </a>
@@ -941,9 +931,7 @@ class ProjectsTable(ToasterTable):
 
         image_files_template = '''
         {% if data.get_number_of_builds > 0 and data.get_last_outcome == extra.Build.SUCCEEDED %}
-          <a href="{% url "builddashboard" data.get_last_build_id %}#images">
-            {{data.get_last_build_extensions}}
-          </a>
+          {{data.get_last_build_extensions}}
         {% endif %}
         '''
 
@@ -979,7 +967,7 @@ class ProjectsTable(ToasterTable):
                         static_data_name='machine',
                         static_data_template=machine_template)
 
-        self.add_column(title='Number of builds',
+        self.add_column(title='Builds',
                         help_text='The number of builds which have been run \
                                    for the project',
                         hideable=False,
