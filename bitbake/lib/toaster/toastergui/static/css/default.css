@@ -32,6 +32,8 @@ img.logo { height: 30px; vertical-align: bottom; }
 .build-result .project-name { margin-top: -10px; margin-bottom: 5px; }
 
 /* Styles for the help information */
+.get-help { color: #CCCCCC; }
+.get-help:hover { color: #999999; cursor: pointer; }
 .get-help-green { color: #468847; }
 .get-help-green:hover { color: #347132; cursor: pointer; }
 .get-help-blue { color: #3A87AD; }
@@ -50,3 +52,16 @@ span[class^="remove-search-btn-"]:hover { color: #333; }
 
 /* Override the default font-weight for labels: it's a bit too much */
 label { font-weight: normal; }
+
+/* Firefox workaround for awkward fieldset styling. See http://getbootstrap.com/css/#tables-responsive */
+@-moz-document url-prefix() { fieldset { display: table-cell; } }
+
+/* Table heading sortable / not sortable states */
+thead > tr > th > a { font-weight: normal; }
+thead > tr > th > a.sorted { font-weight: bold; color: #333; }
+
+/* Give some extra space to the 'clear filter' buttons */
+.tooltip .btn { margin: 5px; }
+
+/* In table headings, separate the help bubble from the column heading */
+thead > tr > th > .glyphicon-question-sign { margin-right: 5px; }

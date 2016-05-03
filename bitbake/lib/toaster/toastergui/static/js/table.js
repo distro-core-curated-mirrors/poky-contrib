@@ -169,7 +169,7 @@ function tableInit(ctx){
     if (tableChromeDone === true)
       return;
 
-    var tableHeadRow = table.find("thead");
+    var tableHeadRow = table.find("thead > tr");
     var editColMenu = $("#table-chrome-"+ctx.tableName).find(".editcol");
 
     tableHeadRow.html("");
@@ -190,7 +190,7 @@ function tableInit(ctx){
 
       /* Setup the help text */
       if (col.help_text.length > 0) {
-        var help_text = $('<i class="icon-question-sign get-help"> </i>');
+        var help_text = $('<span class="glyphicon glyphicon-question-sign get-help"> </span>');
         help_text.tooltip({title: col.help_text});
         header.append(help_text);
       }
@@ -227,12 +227,12 @@ function tableInit(ctx){
       } else {
         /* Not orderable */
         header.css("font-weight", "normal");
-        header.append('<span class="muted">' + col.title + '</span> ');
+        header.append('<span class="text-muted">' + col.title + '</span> ');
       }
 
       /* Setup the filter button */
       if (col.filter_name){
-        var filterBtn = $('<a href="#" role="button" data-filter-on="' + col.filter_name + '" class="pull-right btn btn-mini" data-toggle="modal"><i class="glyphicon glyphicon-filter filtered"></i></a>');
+        var filterBtn = $('<a href="#" role="button" data-filter-on="' + col.filter_name + '" class="pull-right btn btn-link btn-xs" data-toggle="modal"><i class="glyphicon glyphicon-filter filtered"></i></a>');
 
         filterBtn.data('filter-name', col.filter_name);
         filterBtn.prop('id', col.filter_name);
@@ -279,11 +279,12 @@ function tableInit(ctx){
   /* Toggles the active state of the filter button */
   function filterBtnActive(filterBtn, active){
     if (active) {
+      filterBtn.removeClass("btn-link");
       filterBtn.addClass("btn-primary");
 
       filterBtn.tooltip({
           html: true,
-          title: '<button class="btn btn-small btn-primary" onClick=\'$("#clear-filter-btn-'+ ctx.tableName +'").click();\'>Clear filter</button>',
+          title: '<button class="btn btn-sm btn-primary" onClick=\'$("#clear-filter-btn-'+ ctx.tableName +'").click();\'>Clear filter</button>',
           placement: 'bottom',
           delay: {
             hide: 1500,
@@ -292,6 +293,7 @@ function tableInit(ctx){
       });
     } else {
       filterBtn.removeClass("btn-primary");
+      filterBtn.addClass("btn-link");
       filterBtn.tooltip('destroy');
     }
   }
