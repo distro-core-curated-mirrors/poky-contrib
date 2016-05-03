@@ -7,7 +7,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=2d5025d4aa3495befef8f17206a5b0a1 \
 require avahi.inc
 
 inherit python-dir pythonnative distro_features_check
-ANY_OF_DISTRO_FEATURES = "${GTK2DISTROFEATURES}"
+ANY_OF_DISTRO_FEATURES = "${GTK3DISTROFEATURES}"
 
 PACKAGECONFIG ??= "dbus python"
 PACKAGECONFIG[python] = "--enable-python,--disable-python,python-native python"
@@ -15,9 +15,9 @@ PACKAGECONFIG[python] = "--enable-python,--disable-python,python-native python"
 SRC_URI[md5sum] = "22b5e705d3eabb31d26f2e1e7b074013"
 SRC_URI[sha256sum] = "d54991185d514a0aba54ebeb408d7575b60f5818a772e28fa0e18b98bc1db454"
 
-DEPENDS += "avahi gtk+ libglade"
+DEPENDS += "avahi gtk+3"
 
-AVAHI_GTK = "--enable-gtk --disable-gtk3 --disable-pygtk"
+AVAHI_GTK = "--disable-gtk --enable-gtk3 --disable-pygtk"
 
 S = "${WORKDIR}/avahi-${PV}"
 
