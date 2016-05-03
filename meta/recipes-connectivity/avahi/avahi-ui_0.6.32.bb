@@ -7,14 +7,14 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=2d5025d4aa3495befef8f17206a5b0a1 \
 require avahi.inc
 
 inherit distro_features_check
-ANY_OF_DISTRO_FEATURES = "${GTK2DISTROFEATURES}"
+ANY_OF_DISTRO_FEATURES = "${GTK3DISTROFEATURES}"
 
 SRC_URI[md5sum] = "22b5e705d3eabb31d26f2e1e7b074013"
 SRC_URI[sha256sum] = "d54991185d514a0aba54ebeb408d7575b60f5818a772e28fa0e18b98bc1db454"
 
-DEPENDS += "avahi gtk+ libglade"
+DEPENDS += "avahi gtk+3"
 
-AVAHI_GTK = "--enable-gtk --disable-gtk3 --disable-pygtk"
+AVAHI_GTK = "--disable-gtk --enable-gtk3 --disable-pygtk"
 
 S = "${WORKDIR}/avahi-${PV}"
 
@@ -29,7 +29,7 @@ FILES_${PN}-utils = "${bindir}/b* ${datadir}/applications/b*"
 FILES_avahi-discover = "${datadir}/applications/avahi-discover.desktop \
                         ${datadir}/avahi/interfaces/avahi-discover* \
                         ${bindir}/avahi-discover-standalone \
-                        ${datadir}/avahi/interfaces/avahi-discover.glade"
+                        "
 
 do_install_append () {
 	rm ${D}${sysconfdir} -rf
@@ -50,8 +50,7 @@ do_install_append () {
 	rm ${D}${libdir}/pkgconfig/avahi-c*
 	rm ${D}${libdir}/pkgconfig/avahi-g*
 	rm ${D}${sbindir} -rf
-	rm ${D}${datadir}/avahi/a*
-	rm ${D}${datadir}/avahi/s*
+	rm ${D}${datadir}/avahi -rf
 	rm ${D}${datadir}/locale/ -rf
 	rm ${D}${datadir}/dbus* -rf
 	rm ${D}${mandir}/man1/a*
