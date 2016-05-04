@@ -217,7 +217,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
         if taint:
             data = data + taint
             self.taints[k] = taint
-            logger.warn("%s is tainted from a forced run" % k)
+            logger.warning("%s is tainted from a forced run" % k)
 
         h = hashlib.md5(data.encode("latin1")).hexdigest()
         self.taskhash[k] = h
