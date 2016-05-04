@@ -21,15 +21,13 @@
 {%if mru and mru.count > 0%}
 
   {%if mrb_type == 'project' %}
-      <div class="page-header">
-        <h2>
-          Latest project builds
+  <h2>
+    Latest project builds
 
-      {% if project.is_default %}
-          <span class="glyphicon glyphicon-question-sign get-help heading-help" title="" data-original-title="Builds in this project cannot be started from Toaster: they are started from the command line"></span>
-      {% endif %}
-        </h2>
-      </div>
+    {% if project.is_default %}
+    <span class="glyphicon glyphicon-question-sign get-help heading-help" title="" data-original-title="Builds in this project cannot be started from Toaster: they are started from the command line"></span>
+    {% endif %}
+  </h2>
   {% else %}
     <div class="page-header">
       <h1>

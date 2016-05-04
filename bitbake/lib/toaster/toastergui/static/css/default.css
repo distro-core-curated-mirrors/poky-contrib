@@ -121,3 +121,9 @@ h3 > .glyphicon-question-sign { font-size: 14px; }
 #layers-in-project-list .tooltip-inner  { max-width: 600px; }
 #no-layers-in-project { margin-top: 20px; }
 #no-layers-in-project ul { margin-top: 10px; }
+
+/* Create a class for additional top margin that we can use in headings */
+.top-air { margin-top: 40px; }
+
+/* Add some bottom margin to our h2's */
+h2 { margin-bottom: 25px; }
