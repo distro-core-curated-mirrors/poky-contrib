@@ -75,14 +75,21 @@ function tableInit(ctx){
 
     if (tableData.total === 0){
       tableContainer.hide();
-      if ($("#no-results-special-"+ctx.tableName).length > 0) {
-        /* use this page's special no-results form instead of the default */
-        $("#no-results-search-input-"+ctx.tableName).val(tableParams.search);
-        $("#no-results-special-"+ctx.tableName).show();
-        $("#results-found-"+ctx.tableName).hide();
-      } else {
-        $("#new-search-input-"+ctx.tableName).val(tableParams.search);
-        $("#no-results-"+ctx.tableName).show();
+      /* No results caused by a search returning nothing */
+      if (tableParams.search) {
+        if ($("#no-results-special-"+ctx.tableName).length > 0) {
+          /* use this page's special no-results form instead of the default */
+          $("#no-results-search-input-"+ctx.tableName).val(tableParams.search);
+          $("#no-results-special-"+ctx.tableName).show();
+          $("#results-found-"+ctx.tableName).hide();
+        } else {
+          $("#new-search-input-"+ctx.tableName).val(tableParams.search);
+          $("#no-results-"+ctx.tableName).show();
+        }
+      }
+      else {
+        /* No results caused by there being no data */
+        $("#empty-state-"+ctx.tableName).show();
       }
       table.trigger("table-done", [tableData.total, tableParams]);
 
@@ -90,6 +97,7 @@ function tableInit(ctx){
     } else {
       tableContainer.show();
       $("#no-results-"+ctx.tableName).hide();
+      $("#empty-state-"+ctx.tableName).hide();
     }
 
     setupTableChrome(tableData);

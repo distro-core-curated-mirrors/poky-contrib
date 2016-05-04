@@ -1424,6 +1424,7 @@ class ProjectBuildsTable(BuildsTable):
         super(ProjectBuildsTable, self).__init__(*args, **kwargs)
         self.title = 'All project builds'
         self.mrb_type = 'project'
+        self.empty_state = "This project has no builds"
 
         # set from the querystring
         self.project_id = None
@@ -1465,5 +1466,12 @@ class ProjectBuildsTable(BuildsTable):
         project = Project.objects.get(pk=self.project_id)
         context['mru'] = Build.get_recent(project)
         context['project'] = project
+
+        self.setup_queryset(**kwargs)
+        if self.queryset.count() == 0 and \
+           project.build_set.filter(outcome=Build.IN_PROGRESS).count() > 0:
+            context['build_in_progress_none_completed'] = True
+        else:
+            context['build_in_progress_none_completed'] = False
 
         return context
