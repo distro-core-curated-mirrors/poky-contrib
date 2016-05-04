@@ -68,8 +68,56 @@ thead > tr > th > a.sorted { font-weight: bold; color: #333; }
 /* In table headings, separate the help bubble from the column heading */
 thead > tr > th > .glyphicon-question-sign { margin-right: 5px; }
 
-/* Style build outcome and download icons */
+/* Style build outcome in tables, download, remove and change icons */
 tbody > tr > td > .glyphicon-ok-circle { color: #3c763d; }
 tbody > tr > td > .glyphicon-minus-sign { color: #a94442; }
-.glyphicon-download-alt { color: #337ab7; }
-.glyphicon-download-alt:hover { color: #23527c; }
+.glyphicon-download-alt,
+.glyphicon-edit { color: #337ab7; }
+.glyphicon-download-alt:hover,
+.glyphicon-edit:hover { color: #23527c; cursor: pointer }
+.glyphicon-trash { color: #a94442; }
+.glyphicon-trash:hover { color: #843534; cursor: pointer; }
+
+/* Set the font size for icons inside headings and lead paragraphs */
+h1 > .glyphicon-edit,
+p.lead .glyphicon { font-size: 16px; }
+
+h3 > .glyphicon-question-sign { font-size: 14px; }
+
+/* Create a class for wells without background colour */
+.well-transparent { background-color: transparent; }
+
+/* Create a class for the left navigation headers */
+.nav-header { display: block; font-size: 12px; font-weight: bold; line-height: 20px; color: #999; text-transform: uppercase; margin-top: 20px !important; margin-bottom: 15px; padding-left: 15px; }
+
+/* Increase the tabs padding and margin in the project pages to fit the build form and the main content */
+#project-topbar .nav-tabs > li > a { padding: 15px; }
+#project-topbar { margin-bottom: 20px; }
+
+/* Style the project name change form in the project pages */
+#project-name-change-input { width: 20em; }
+
+/* Style the build form in the project pages */
+#project-topbar .input-lg { width: 18em; }
+#project-topbar form .glyphicon { top: 15px; right: 4px; }
+#build-button { padding: 10px 30px; }
+
+/* Style the form links in the project page (all machines, all layers, etc) */
+.form-link { margin-top: 10px; }
+
+/* Style the most built recipes list in the project page */
+#freq-build-list .checkbox input[type="checkbox"] { position: relative; margin: 0 10px 0 0; vertical-align: middle; }
+#freq-build-list { margin-top: 20px; }
+#freq-build-list label { padding-left: 0; }
+#freq-build-btn { margin-top: 10px; }
+#no-most-built { margin-top: 20px; }
+
+/* Style the layers section in the project page */
+#layer-container .form-inline { margin-top: 20px; }
+#layer-add-input { width: 17em; }
+#layers-in-project-list { margin-top: 20px; }
+#layers-in-project-list > li { line-height: 38px; }
+#layers-in-project-list .glyphicon-trash { font-size: 16px; margin-left: 7px; }
+#layers-in-project-list .tooltip-inner  { max-width: 600px; }
+#no-layers-in-project { margin-top: 20px; }
+#no-layers-in-project ul { margin-top: 10px; }

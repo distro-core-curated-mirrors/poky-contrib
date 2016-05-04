@@ -24,7 +24,7 @@ $(document).ready(function(){
 
   <!-- only on config pages -->
   <div id="config-nav" class="col-md-2">
-    <ul class="nav nav-list well">
+    <ul class="nav nav-pills nav-stacked">
       <li><a class="nav-parent" href="{% url 'project' project.id %}">Configuration</a></li>
       <li class="nav-header">Compatible metadata</li>
       <li><a href="{% url 'projectcustomimages' project.id %}">Custom images</a></li>

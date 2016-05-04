@@ -557,8 +557,8 @@ $(document).ready(function() {
     // show task type and outcome in task details pages
     $(".task-info").tooltip({ container: 'body', html: true, delay: {show: 200}, placement: 'right' });
 
-    // initialise the tooltips for the icon-pencil icons
-    $(".icon-pencil").tooltip({ container: 'body', html: true, delay: {show: 400}, title: "Change" });
+    // initialise the tooltips for the edit icons
+    $(".glyphicon-edit").tooltip({ container: 'body', html: true, delay: {show: 400}, title: "Change" });
 
     // initialise the tooltips for the download icons
     $(".icon-download-alt").tooltip({ container: 'body', html: true, delay: { show: 200 } });

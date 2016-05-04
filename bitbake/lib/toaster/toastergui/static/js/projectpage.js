@@ -145,7 +145,7 @@ function projectPageInit(ctx) {
     for (var i in layers){
       var layerObj = layers[i];
 
-      var projectLayer = $("<li><a></a><span class=\"icon-trash\" data-toggle=\"tooltip\" title=\"Remove\"></span></li>");
+      var projectLayer = $("<li><a></a><span class=\"glyphicon glyphicon-trash\" data-toggle=\"tooltip\" title=\"Remove\"></span></li>");
 
       projectLayer.data('layer', layerObj);
       projectLayer.children("span").tooltip();
@@ -208,7 +208,7 @@ function projectPageInit(ctx) {
     }
 
     for (var i in recipes){
-      var freqTargetCheck = $('<li><label class="checkbox"><input type="checkbox" /><span class="freq-target-name"></span></label></li>');
+      var freqTargetCheck = $('<li><div class="checkbox"><label><input type="checkbox" /><span class="freq-target-name"></span></label></li>');
       freqTargetCheck.find(".freq-target-name").text(recipes[i]);
       freqTargetCheck.find("input").val(recipes[i]);
       freqTargetCheck.click(function(){
