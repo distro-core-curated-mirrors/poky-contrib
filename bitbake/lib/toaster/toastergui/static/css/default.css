@@ -151,3 +151,9 @@ legend { border: none; }
 #duplicate-layer-info dl { margin-top: 10px; }
 #duplicate-layer-info dd { margin-bottom: 10px; }
 .help-inline { color: #737373; margin-left: 10px; }
+
+/* Give some padding to the in-cell tooltips we use for notifications in tables */
+td > .tooltip-inner { padding: 10px; }
+
+/* Set sane widths for table columns */
+#newcustomimagestable .get_description_or_summary { width: 30%; }
