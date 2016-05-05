@@ -127,3 +127,10 @@ h3 > .glyphicon-question-sign { font-size: 14px; }
 
 /* Add some bottom margin to our h2's */
 h2 { margin-bottom: 25px; }
+
+/* Style the typeahead */
+.tt-menu { min-width: 400px; padding-bottom: 10px; }
+.tt-suggestion { padding: 5px 10px; }
+.tt-suggestion:hover,
+.tt-suggestion:active { background-color: #f5f5f5; cursor: pointer; }
+	
