@@ -1436,7 +1436,6 @@ class ProjectBuildsTable(BuildsTable):
         super(ProjectBuildsTable, self).__init__(*args, **kwargs)
         self.title = 'All project builds'
         self.mrb_type = 'project'
-        self.empty_state = "This project has no builds"
 
         # set from the querystring
         self.project_id = None
@@ -1461,7 +1460,6 @@ class ProjectBuildsTable(BuildsTable):
         """
         self.project_id = kwargs['pid']
         super(ProjectBuildsTable, self).setup_queryset(*args, **kwargs)
-
         project = Project.objects.get(pk=self.project_id)
         self.queryset = self.queryset.filter(project=project)
 
@@ -1474,6 +1472,14 @@ class ProjectBuildsTable(BuildsTable):
         """
         self.project_id = kwargs['pid']
         context = super(ProjectBuildsTable, self).get_context_data(**kwargs)
+
+        empty_state_template = '''
+        This project has no builds.
+        <a href="{% url 'projectimagerecipes' data.pid %}">
+        Choose a recipe to build</a>
+        '''
+        context['empty_state'] = self.render_static_data(empty_state_template,
+                                                         kwargs)
 
         project = Project.objects.get(pk=self.project_id)
         context['mru'] = Build.get_recent(project)
