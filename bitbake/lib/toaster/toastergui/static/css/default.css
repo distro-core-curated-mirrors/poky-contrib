@@ -42,7 +42,8 @@ img.logo { height: 30px; vertical-align: bottom; }
 .get-help-red:hover { color: #843534; cursor: pointer; }
 
 /* Styles for our table controls */
-.form-control[id^="search-input-"] { width: 30em; }
+.form-control[id^="search-input-"],
+.form-control[id^="new-search-input-"] { width: 30em; }
 #edit-columns-button { margin-right: 30px; }
 .navbar-default[id^="table-chrome-"] { background-color: transparent; }
 [id^="table-chrome-collapse-"] .navbar-form { margin-left: -15px; }

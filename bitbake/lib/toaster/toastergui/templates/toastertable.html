@@ -30,13 +30,15 @@
 </div>
 
 <div id="no-results-{{table_name}}" style="display:none">
-  <div class="alert">
-    <form class="no-results input-append">
-      <input class="input-xlarge" id="new-search-input-{{table_name}}" name="search" type="text" placeholder="Search {{title|lower}}" value="{%if request.GET.search %}{{request.GET.search}}{%endif%}"/>
-      <a href="#" class="input-append-addon btn remove-search-btn-{{table_name}}" tabindex="-1">
-        <i class="glyphicon glyphicon-remove"></i>
-      </a>
-      <button class="btn search-submit-{{table_name}}">
+  <div class="alert alert-warning">
+    <form class="form-inline">
+			<div class="form-group">
+				<div class="btn-group">
+					<input class="form-control" id="new-search-input-{{table_name}}" name="search" type="text" placeholder="Search {{title|lower}}" value="{%if request.GET.search %}{{request.GET.search}}{%endif%}"/>
+					<span class="remove-search-btn-{{table_name}} glyphicon glyphicon-remove-circle" tabindex="-1"></a>
+				</div>
+			</div>
+      <button class="btn btn-default search-submit-{{table_name}}">
         Search
       </button>
       <button class="btn btn-link show-all-{{table_name}} remove-search-btn-{{table_name}}">
