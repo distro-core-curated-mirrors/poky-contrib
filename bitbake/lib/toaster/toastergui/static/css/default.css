@@ -73,6 +73,7 @@ tbody > tr > td > .glyphicon-ok-circle { color: #3c763d; }
 tbody > tr > td > .glyphicon-minus-sign { color: #a94442; }
 .glyphicon-download-alt,
 .glyphicon-edit { color: #337ab7; }
+.failed_tasks .glyphicon-download-alt { margin-left: 5px; } 
 .glyphicon-download-alt:hover,
 .glyphicon-edit:hover { color: #23527c; cursor: pointer }
 .glyphicon-trash { color: #a94442; }

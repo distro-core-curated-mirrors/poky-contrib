@@ -1135,15 +1135,15 @@ class BuildsTable(ToasterTable):
 
         failed_tasks_template = '''
         {% if data.failed_tasks.count == 1 %}
-            <a href="{% url "task" data.id data.failed_tasks.0.id %}">
-                <span class="text-danger">
-                    {{data.failed_tasks.0.recipe.name}}.{{data.failed_tasks.0.task_name}}
+            <a class="text-danger" href="{% url "task" data.id data.failed_tasks.0.id %}">
+                <span>
+                    {{data.failed_tasks.0.recipe.name}} {{data.failed_tasks.0.task_name}}
                 </span>
             </a>
             <a href="{% url "build_artifact" data.id "tasklogfile" data.failed_tasks.0.id %}">
-                <i class="icon-download-alt"
-                   data-original-title="Download task log file">
-                </i>
+                <span class="glyphicon glyphicon-download-alt get-help"
+                   title="Download task log file">
+                </span>
             </a>
         {% elif data.failed_tasks.count > 1 %}
             <a href="{% url "tasks" data.id %}?filter=outcome%3A{{extra.Task.OUTCOME_FAILED}}">
