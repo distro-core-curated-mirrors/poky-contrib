@@ -156,7 +156,9 @@ legend { border: none; }
 td > .tooltip-inner { padding: 10px; }
 
 /* Set sane widths for table columns */
-#newcustomimagestable .get_description_or_summary { width: 30%; }
+#newcustomimagestable .get_description_or_summary,
+#imagerecipestable .get_description_or_summary,
+#softwarerecipestable .get_description_or_summary { width: 30%; }
 
 /* Override the rather ugly default code styles */
 code { color: #333; background-color: transparent; }

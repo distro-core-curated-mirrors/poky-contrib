@@ -319,10 +319,10 @@ class RecipesTable(ToasterTable):
 
     def __init__(self, *args, **kwargs):
         super(RecipesTable, self).__init__(*args, **kwargs)
-        self.empty_state = "Toaster has no recipe information. To generate recipe information you can configure a layer source then run a build."
+        self.empty_state = "Toaster has no recipe information. To generate recipe information you need to run a build."
 
     build_col = { 'title' : "Build",
-            'help_text' : "Add or delete recipes to and from your project",
+            'help_text' : "Before building a recipe, you might need to add the corresponding layer to your project",
             'hideable' : False,
             'filter_name' : "in_current_project",
             'static_data_name' : "add-del-layers",
@@ -384,7 +384,7 @@ class RecipesTable(ToasterTable):
         recipe_file_template = '''
         <code>{{data.file_path}}</code>
         <a href="{{data.get_vcs_recipe_file_link_url}}" target="_blank">
-          <i class="icon-share get-info"></i>
+          <span class="glyphicon glyphicon-new-window"></i>
         </a>
          '''
 
