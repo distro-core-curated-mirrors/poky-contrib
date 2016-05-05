@@ -507,7 +507,8 @@ class CustomImagesTable(ToasterTable):
         recipe_file_template = '''
         {% if data.get_base_recipe_file %}
         <code>{{data.name}}_{{data.version}}.bb</code>
-        <a href="{% url 'customrecipedownload' extra.pid data.pk %}" class="icon-download-alt get-help" title="Download recipe file"></a>
+        <a href="{% url 'customrecipedownload' extra.pid data.pk %}"
+        class="glyphicon glyphicon-download-alt get-help" title="Download recipe file"></a>
         {% endif %}'''
 
         self.add_column(title="Recipe file",
@@ -515,18 +516,20 @@ class CustomImagesTable(ToasterTable):
                         static_data_template=recipe_file_template)
 
         approx_packages_template = '''
+        {% if data.get_all_packages.count > 0 %}
         <a href="{% url 'customrecipe' extra.pid data.id %}">
           {{data.get_all_packages.count}}
-        </a>'''
+        </a>
+        {% endif %}'''
 
-        self.add_column(title="Approx packages",
+        self.add_column(title="Packages",
                         static_data_name='approx_packages',
                         static_data_template=approx_packages_template)
 
 
         build_btn_template = '''
         <button data-recipe-name="{{data.name}}"
-        class="btn btn-block build-recipe-btn" style="margin-top: 5px;" >
+        class="btn btn-default btn-block build-recipe-btn">
         Build
         </button>'''
 

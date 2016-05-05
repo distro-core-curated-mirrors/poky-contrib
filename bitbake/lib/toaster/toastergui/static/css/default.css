@@ -76,7 +76,7 @@ tbody > tr > td > .glyphicon-minus-sign { color: #a94442; }
 .glyphicon-edit { color: #337ab7; }
 .failed_tasks .glyphicon-download-alt { margin-left: 5px; } 
 .glyphicon-download-alt:hover,
-.glyphicon-edit:hover { color: #23527c; cursor: pointer }
+.glyphicon-edit:hover { color: #23527c; cursor: pointer; text-decoration: none; }
 .glyphicon-trash { color: #a94442; }
 .glyphicon-trash:hover { color: #843534; cursor: pointer; }
 
@@ -157,3 +157,6 @@ td > .tooltip-inner { padding: 10px; }
 
 /* Set sane widths for table columns */
 #newcustomimagestable .get_description_or_summary { width: 30%; }
+
+/* Override the rather ugly default code styles */
+code { color: #333; background-color: transparent; }
