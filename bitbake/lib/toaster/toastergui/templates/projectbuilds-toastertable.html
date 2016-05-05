@@ -38,6 +38,14 @@
 
       tableElt.on("table-done", function (e, total, tableParams) {
         var title = "All project builds";
+				
+				if (total === 0) {
+					titleElt.hide();
+				} 
+				else {
+					titleElt.show()
+					titleElt.text(title);
+				}
 
         if (tableParams.search || tableParams.filter) {
           if (total === 0) {
@@ -46,15 +54,10 @@
           else if (total > 0) {
             title = total + " project build" + (total > 1 ? 's' : '') + " found";
           }
-        }
 
-				if (total === 0) {
-					titleElt.hide();
-				} 
-				else {
-					titleElt.show()
+					titleElt.show();
 					titleElt.text(title);
-				}
+        }
 
       });
 
