@@ -34,6 +34,7 @@ import traceback
 import errno
 import signal
 import ast
+import collections
 from subprocess import getstatusoutput
 from contextlib import contextmanager
 from ctypes import cdll
@@ -188,7 +189,7 @@ def explode_dep_versions2(s):
     "DEPEND1 (optional version) DEPEND2 (optional version) ..."
     and return a dictionary of dependencies and versions.
     """
-    r = {}
+    r = collections.OrderedDict()
     l = s.replace(",", "").split()
     lastdep = None
     lastcmp = ""
