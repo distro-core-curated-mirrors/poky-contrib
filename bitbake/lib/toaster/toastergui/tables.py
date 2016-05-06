@@ -118,7 +118,7 @@ class LayersTable(ToasterTable):
         </a>
         {% if data.get_vcs_link_url %}
         <a target="_blank" href="{{ data.get_vcs_link_url }}">
-           <i class="icon-share get-info"></i>
+           <span class="glyphicon glyphicon-new-window"></span>
         </a>
         {% endif %}
         '''
@@ -135,7 +135,7 @@ class LayersTable(ToasterTable):
         </a>
         {% if data.dirpath and data.get_vcs_dirpath_link_url %}
         <a target="_blank" href="{{ data.get_vcs_dirpath_link_url }}">
-          <i class="icon-share get-info"></i>
+          <span class="glyphicon glyphicon-new-window"></span>
         </a>
         {% endif %}'''
 
@@ -166,8 +166,8 @@ class LayersTable(ToasterTable):
         deps_template = '''
         {% with ods=data.dependencies.all%}
         {% if ods.count %}
-            <a class="btn" title="<a href='{% url "layerdetails" extra.pid data.id %}'>{{data.layer.name}}</a> dependencies"
-        data-content="<ul class='unstyled'>
+            <a class="btn btn-default" title="<a href='{% url "layerdetails" extra.pid data.id %}'>{{data.layer.name}}</a> dependencies"
+        data-content="<ul class='list-unstyled'>
         {% for i in ods%}
         <li><a href='{% url "layerdetails" extra.pid i.depends_on.pk %}'>{{i.depends_on.layer.name}}</a></li>
         {% endfor %}
