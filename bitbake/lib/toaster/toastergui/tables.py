@@ -196,7 +196,7 @@ class MachinesTable(ToasterTable):
 
     def __init__(self, *args, **kwargs):
         super(MachinesTable, self).__init__(*args, **kwargs)
-        self.empty_state = "No machines maybe you need to do a build?"
+        self.empty_state = "Toaster has no machine information for this project. Sadly, 			   machine information cannot be obtained from builds, so this 				  page will remain empty."
         self.title = "Compatible machines"
         self.default_orderby = "name"
 
@@ -264,7 +264,7 @@ class MachinesTable(ToasterTable):
                         field_name="layer_version__get_vcs_reference")
 
         machine_file_template = '''<code>conf/machine/{{data.name}}.conf</code>
-        <a href="{{data.get_vcs_machine_file_link_url}}" target="_blank"><i class="icon-share get-info"></i></a>'''
+        <a href="{{data.get_vcs_machine_file_link_url}}" target="_blank"><span class="glyphicon glyphicon-new-window"></i></a>'''
 
         self.add_column(title="Machine file",
                         hidden=True,
