@@ -67,6 +67,7 @@ newbuild()
 	echo "  $curdir/poky/meta \\" >> $bblayers
 	echo "  $curdir/poky/meta-yocto \\" >> $bblayers
 	echo "  $curdir/poky/meta-yocto-bsp \\" >> $bblayers
+	echo "  $curdir/poky/meta-crops \\" >> $bblayers
 	echo "  $curdir/poky/meta-zephyr-sdk \\" >> $bblayers
 	echo "  \" " >> $bblayers
 	echo "BBLAYERS_NON_REMOVABLE ?= \" \\" >> $bblayers
@@ -79,6 +80,9 @@ newbuild()
 	setconf_var "DL_DIR" "$curdir/downloads" $localconf
 	setconf_var "SDKMACHINE" "i686" $localconf
 	setconf_var "DISTRO" "zephyr-sdk" $localconf
+	if [ -z ${SSTATE_MIRROR_URI+x} ]; then
+		setconf_var "SSTATE_MIRRORS" "file://.* $SSTATE_MIRROR_URI/PATH" $localconf
+	fi
 }
 
 ##############################################################################
