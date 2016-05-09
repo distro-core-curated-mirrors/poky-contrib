@@ -307,7 +307,11 @@ class LayerMachinesTable(MachinesTable):
         self.add_column(title="Description",
                         field_name="description")
 
-        select_btn_template = '<a href="{% url "project" extra.pid %}?setMachine={{data.name}}" class="btn btn-block select-machine-btn" {% if extra.in_prj == 0%}disabled="disabled"{%endif%}>Select machine</a>'
+        select_btn_template = '''
+        <a href="{% url "project" extra.pid %}?setMachine={{data.name}}"
+        class="btn btn-default btn-block select-machine-btn
+        {% if extra.in_prj == 0%}disabled{%endif%}">Select machine</a>
+        '''
 
         self.add_column(title="Select machine",
                         static_data_name="add-del-layers",
@@ -455,7 +459,11 @@ class LayerRecipesTable(RecipesTable):
         self.add_column(title="Description",
                         field_name="get_description_or_summary")
 
-        build_recipe_template ='<button class="btn btn-block build-recipe-btn" data-recipe-name="{{data.name}}" {%if extra.in_prj == 0 %}disabled="disabled"{%endif%}>Build recipe</button>'
+        build_recipe_template = '''
+        <a class="btn btn-default btn-block build-recipe-btn
+        {%if extra.in_prj == 0 %}disabled{%endif%}" 
+        data-recipe-name="{{data.name}}">Build recipe</a>
+        '''
 
         self.add_column(title="Build recipe",
                         static_data_name="add-del-layers",

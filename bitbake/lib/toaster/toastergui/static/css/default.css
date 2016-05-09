@@ -22,8 +22,13 @@ img.logo { height: 30px; vertical-align: bottom; }
 /* Increase popovers width to fit commit SHAs */
 .popover { max-width: 350px; }
 
-/* Increase bottom margin of definition lists inside popovers for the Toaster version information in the top navbar */
-.popover-content dd { margin-bottom: 15px; }
+/* Increase bottom margin of definition lists inside popovers for the Toaster version information in the top navbar, and also inside the right hand columns of our details pages */
+.popover-content dd,
+.well dd { margin-bottom: 15px; }
+
+/* Style the horizonal definition lists */
+.dl-horizontal dt { width: 200px; line-height: 25px; }
+.dl-horizontal dd { margin-left: 220px; line-height: 25px; }
 
 /* Style our build results */
 .build-result .progress { margin-bottom: 0; }
@@ -52,6 +57,8 @@ span[class^="remove-search-btn-"] { position: absolute; right: 5px; top: 0; bott
 span[class^="remove-search-btn-"]:hover { color: #333; }
 [id^="pagination-"] .pagination,
 [id^="pagination-"] .navbar-form { margin-top: 0; }
+[id^="table-chrome-"] .navbar-form { margin-left: -15px; margin-right: -15px; }
+[id^="table-chrome-"] .detail-page-contols { padding-left: 0; padding-right: 0; }
 
 /* Override the default font-weight for labels: it's a bit too much */
 label { font-weight: normal; }
@@ -111,6 +118,7 @@ h3 > .glyphicon-question-sign { font-size: 14px; }
 
 /* Style the most built recipes list in the project page */
 #freq-build-list .checkbox input[type="checkbox"] { position: relative; margin: 0 10px 0 0; vertical-align: middle; }
+#freq-build-list.lead > li { line-height: 25px; }
 #freq-build-list { margin-top: 20px; }
 #freq-build-list label { padding-left: 0; }
 #freq-build-btn { margin-top: 10px; }
@@ -119,15 +127,21 @@ h3 > .glyphicon-question-sign { font-size: 14px; }
 /* Style the layers section in the project page and the layer dependencies in the import layer form */
 #layer-container .form-inline { margin-top: 20px; }
 #layer-add-input { width: 17em; }
-#layers-in-project-list,
-#layer-deps-list { margin-top: 20px; }
-#layers-in-project-list > li,
-#layer-deps-list > li { line-height: 38px; }
-#layers-in-project-list .glyphicon-trash,
-#layer-deps-list .glyphicon-trash { font-size: 16px; margin-left: 7px; }
+ul.lead { margin-top: 20px; }
+ul.lead > li { line-height: 38px; }
+ul.lead .glyphicon-trash,
+ul.lead .glyphicon-trash { font-size: 16px; margin-left: 7px; }
 #layers-in-project-list .tooltip-inner  { max-width: 600px; }
 #no-layers-in-project { margin-top: 20px; }
 #no-layers-in-project ul { margin-top: 10px; }
+
+/* Style the layer information icons in the layer details pages */
+dd .glyphicon-trash,
+dd .glyphicon-edit { margin-left: 5px; }
+
+/* Style the forms and definition lists in the layer details pages */
+#change-repo-form .form-control { width: 17em; }
+#information dd > form { margin-bottom: 5px; margin-top: 5px; }
 
 /* Create a class for additional top margin that we can use in headings */
 .top-air { margin-top: 40px; }
@@ -161,8 +175,10 @@ td > .tooltip-inner { padding: 10px; }
 #newcustomimagestable .get_description_or_summary,
 #imagerecipestable .get_description_or_summary,
 #softwarerecipestable .get_description_or_summary,
-#machinestable .description,
 #layerstable .layer__summary { width: 30%; }
+#recipestable .get_description_or_summary { width: 40%; }
+#machinestable .name { white-space: nowrap; }
+#machinestable .description { width: 45%; }
 
 /* Override the rather ugly default code styles */
 code { color: #333; background-color: transparent; }
@@ -171,3 +187,14 @@ code { color: #333; background-color: transparent; }
 .breadcrumb > li + li::before { content: none; }
 .breadcrumb { background-color: transparent; padding-left: 0; padding-top: 15px; }
 .breadcrumb .divider { color: #777; margin: 0 5px; }
+
+/* Reduce top margin for the page-header class */
+.page-header { margin-top: 30px; }
+
+/* Set some space around the layer button in the layer details pages */
+.tab-content { margin-top: 20px; }
+.tab-pane { margin-top: 20px; }
+
+/* Style the new window icons */
+.glyphicon-new-window:hover { text-decoration: none; }
+.dl-horizontal > dd > .glyphicon-new-window { margin-left: 5px; }
