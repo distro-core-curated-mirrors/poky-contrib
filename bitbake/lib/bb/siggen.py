@@ -159,8 +159,9 @@ class SignatureGeneratorBasic(SignatureGenerator):
             taskdeps = self._build_data(fn, d)
         except bb.parse.SkipRecipe:
             raise
-        except:
+        except Exception as e:
             bb.warn("Error during finalise of %s" % fn)
+            bb.error(str(e))
             raise
 
         #Slow but can be useful for debugging mismatched basehashes

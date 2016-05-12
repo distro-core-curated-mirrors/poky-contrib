@@ -363,6 +363,7 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
         raise
     except Exception as e:
         bb.warn("Exception during build_dependencies for %s" % key)
+        bb.warn(str(e))
         raise
     return deps, value
     #bb.note("Variable %s references %s and calls %s" % (key, str(deps), str(execs)))
