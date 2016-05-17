@@ -50,6 +50,7 @@ img.logo { height: 30px; vertical-align: bottom; }
 .form-control[id^="search-input-"],
 .form-control[id^="new-search-input-"] { width: 30em; }
 #search-input-selectpackagestable,
+#search-input-packagestable,
 .form-control[id^="no-results-search-input-"]{ width: 20em; }
 #edit-columns-button { margin-right: 30px; }
 .navbar-default[id^="table-chrome-"] { background-color: transparent; }
