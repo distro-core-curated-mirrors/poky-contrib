@@ -84,8 +84,14 @@ class ORMWrapper(object):
     def get(self, clazz, **kwargs):
         return clazz.objects.get(**kwargs)
 
+    def filter(self, clazz, **kwargs):
+        return clazz.objects.filter(**kwargs)
+
     def create(self, clazz, **kwargs):
         return clazz.objects.create(**kwargs)
+
+    def bulk_create(self, clazz, objs):
+        return clazz.objects.bulk_create(objs)
 
     def save(self, obj):
         obj.save()
@@ -418,7 +424,7 @@ class ORMWrapper(object):
                     # we matched the BRLayer, but we need the layer_version that generated this BR; reverse of the Project.schedule_build()
                     #logger.debug(1, "Matched %s to BRlayer %s" % (pformat(layer_information["local_path"]), localdirname))
 
-                    for pl in buildrequest.project.projectlayer_set.filter(layercommit__layer__name = brl.name):
+                    for pl in buildrequest.project.projectlayer_set.filter(layercommit__layer__name=brl.name):
                         if pl.layercommit.layer.vcs_url == brl.giturl :
                             layer = pl.layercommit.layer
                             layer = self.save(layer)
@@ -612,7 +618,7 @@ class ORMWrapper(object):
                             path = targetpath,
                             size = targetfilesize))
                     if len(packagefile_objects):
-                        Package_File.objects.bulk_create(packagefile_objects)
+                        self.bulk_create(Package_File, packagefile_objects)
                 except KeyError as e:
                     errormsg += "  stpi: Key error, package %s key %s \n" % ( p, e )
 
@@ -644,7 +650,7 @@ class ORMWrapper(object):
                                    "because %s is an unknown package", p, px)
 
         if len(packagedeps_objs) > 0:
-            Package_Dependency.objects.bulk_create(packagedeps_objs)
+            self.bulk_create(Package_Dependency, packagedeps_objs)
         else:
             logger.info("No package dependencies created")
 
@@ -659,11 +665,13 @@ class ORMWrapper(object):
 
     def save_artifact_information(self, build_obj, file_name, file_size):
         # we skip the image files from other builds
-        if Target_Image_File.objects.filter(file_name = file_name).count() > 0:
+        target_image_files = self.filter(Target_Image_File, file_name=file_name)
+        if target_image_files.count() > 0:
             return
 
         # do not update artifacts found in other builds
-        if BuildArtifact.objects.filter(file_name = file_name).count() > 0:
+        build_artifacts = self.filter(BuildArtifact, file_name=file_name)
+        if build_artifacts.count() > 0:
             return
 
         self.create(BuildArtifact, build=build_obj,
@@ -734,7 +742,7 @@ class ORMWrapper(object):
                                         path = path,
                                         size = package_info['FILES_INFO'][path] ))
         if len(packagefile_objects):
-            Package_File.objects.bulk_create(packagefile_objects)
+            self.bulk_create(Package_File, packagefile_objects)
 
         def _po_byname(p):
             if built_package:
@@ -777,7 +785,7 @@ class ORMWrapper(object):
                     depends_on = _po_byname(p), dep_type = Package_Dependency.TYPE_RCONFLICTS))
 
         if len(packagedeps_objs) > 0:
-            Package_Dependency.objects.bulk_create(packagedeps_objs)
+            self.bulk_create(Package_Dependency, packagedeps_objs)
 
         return bp_object
 
@@ -815,7 +823,7 @@ class ORMWrapper(object):
                                 line_number = vh['line'],
                                 operation = vh['op']))
                 if len(varhist_objects):
-                    VariableHistory.objects.bulk_create(varhist_objects)
+                    self.bulk_create(VariableHistory, varhist_objects)
 
 
 class MockEvent(object):
@@ -1354,7 +1362,7 @@ class BuildInfoHelper(object):
                                                dep_type=Recipe_Dependency.TYPE_DEPENDS)
                 recipedeps_objects.append(recipe_dep)
 
-        Recipe_Dependency.objects.bulk_create(recipedeps_objects)
+        self.orm_wrapper.bulk_create(Recipe_Dependency, recipedeps_objects)
 
         # save all task information
         def _save_a_task(taskdesc):
@@ -1385,7 +1393,7 @@ class BuildInfoHelper(object):
                 else:
                     dep = tasks[taskdep]
                 taskdeps_objects.append(Task_Dependency( task = target, depends_on = dep ))
-        Task_Dependency.objects.bulk_create(taskdeps_objects)
+        self.orm_wrapper.bulk_create(Task_Dependency, taskdeps_objects)
 
         if len(errormsg) > 0:
             logger.warning("buildinfohelper: dependency info not identify recipes: \n%s", errormsg)
