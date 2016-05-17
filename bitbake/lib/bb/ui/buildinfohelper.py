@@ -83,6 +83,10 @@ class ORMWrapper(object):
 
     def get(self, clazz, **kwargs):
         return clazz.objects.get(**kwargs)
+
+    def save(self, obj):
+        obj.save()
+        return obj
     ### END DB ACCESSORS
 
     def _timestamp_to_datetime(self, secs):
@@ -128,13 +132,13 @@ class ORMWrapper(object):
             build = buildrequest.build
             logger.info("Updating existing build, with %s", build_info)
             build.project = prj
-            build.machine=build_info['machine']
-            build.distro=build_info['distro']
-            build.distro_version=build_info['distro_version']
-            build.cooker_log_path=build_info['cooker_log_path']
-            build.build_name=build_info['build_name']
-            build.bitbake_version=build_info['bitbake_version']
-            build.save()
+            build.machine = build_info['machine']
+            build.distro = build_info['distro']
+            build.distro_version = build_info['distro_version']
+            build.cooker_log_path = build_info['cooker_log_path']
+            build.build_name = build_info['build_name']
+            build.bitbake_version = build_info['bitbake_version']
+            build = self.save(build)
 
         else:
             build = Build.objects.create(
@@ -152,7 +156,7 @@ class ORMWrapper(object):
 
         if buildrequest is not None:
             buildrequest.build = build
-            buildrequest.save()
+            self.save(buildrequest)
 
         return build
 
@@ -172,7 +176,7 @@ class ORMWrapper(object):
                 obj.is_image = False
                 if task:
                     obj.task = task
-                obj.save()
+                obj = self.save(obj)
             result.append(obj)
         return result
 
@@ -196,11 +200,11 @@ class ORMWrapper(object):
 
         build.completed_on = timezone.now()
         build.outcome = outcome
-        build.save()
+        return self.save(build)
 
     def update_target_set_license_manifest(self, target, license_manifest_path):
         target.license_manifest_path = license_manifest_path
-        target.save()
+        self.save(target)
 
     def update_task_object(self, build, task_name, recipe_name, task_stats):
         """
@@ -221,7 +225,7 @@ class ORMWrapper(object):
             task_to_update.disk_io_write = task_stats['disk_io_write']
             task_to_update.disk_io = task_stats['disk_io_read'] + task_stats['disk_io_write']
 
-        task_to_update.save()
+        self.save(task_to_update)
 
     def get_update_task_object(self, task_information, must_exist = False):
         assert 'build' in task_information
@@ -263,7 +267,7 @@ class ORMWrapper(object):
                 object_changed = True
 
         if object_changed:
-            task_object.save()
+            task_object = self.save(task_object)
         return task_object
 
 
@@ -283,7 +287,7 @@ class ORMWrapper(object):
                     vars(recipe_object)[v] = recipe_information[v]
 
             if object_changed:
-                recipe_object.save()
+                self.save(recipe_object)
 
         recipe, created = self.get_or_create(
             Recipe, layer_version=recipe_information['layer_version'],
@@ -329,7 +333,7 @@ class ORMWrapper(object):
             # update it with the new build information
             logger.debug("We found our layer from toaster")
             layer_obj.local_path = layer_version_information['local_path']
-            layer_obj.save()
+            layer_obj = self.save(layer_obj)
             self.layer_version_objects.append(layer_obj)
 
             # create a new copy of this layer version as a snapshot for
@@ -414,7 +418,7 @@ class ORMWrapper(object):
                     for pl in buildrequest.project.projectlayer_set.filter(layercommit__layer__name = brl.name):
                         if pl.layercommit.layer.vcs_url == brl.giturl :
                             layer = pl.layercommit.layer
-                            layer.save()
+                            layer = self.save(layer)
                             return layer
 
             raise NotExisting("Unidentified layer %s" % pformat(layer_information))
@@ -437,7 +441,7 @@ class ORMWrapper(object):
                                             group = '',
                                             permission = '',
                                             inodetype = Target_File.ITYPE_DIRECTORY)
-        tf_obj.save()
+        tf_obj = self.save(tf_obj)
 
         # insert directories, ordered by name depth
         for d in sorted(dirs, key=lambda x:len(x[-1].split("/"))):
@@ -493,7 +497,7 @@ class ORMWrapper(object):
                                   path=parent_path,
                                   inodetype=Target_File.ITYPE_DIRECTORY)
             tf_obj.directory = parent_obj
-            tf_obj.save()
+            tf_obj = self.save(tf_obj)
 
         # we insert symlinks
         for d in syms:
@@ -613,7 +617,7 @@ class ORMWrapper(object):
 
             # save disk installed size
             packagedict[p]['object'].installed_size = packagedict[p]['size']
-            packagedict[p]['object'].save()
+            packagedict[p]['object'] = self.save(packagedict[p]['object'])
 
             if built_package:
                 Target_Installed_Package.objects.create(target = target_obj, package = packagedict[p]['object'])
@@ -674,7 +678,7 @@ class ORMWrapper(object):
             if v in log_information.keys():
                 vars(log_object)[v] = log_information[v]
 
-        return log_object.save()
+        return self.save(log_object)
 
 
     def save_build_package_information(self, build_obj, package_info, recipes,
@@ -716,7 +720,7 @@ class ORMWrapper(object):
         bp_object.size = int(package_info['PKGSIZE'])
         bp_object.section = package_info['SECTION']
         bp_object.license = package_info['LICENSE']
-        bp_object.save()
+        bp_object = self.save(bp_object)
 
         # save any attached file information
         packagefile_objects = []
@@ -737,7 +741,7 @@ class ORMWrapper(object):
 
             if created:
                 pkg.size = -1
-                pkg.save()
+                pkg = self.save(pkg)
             return pkg
 
         packagedeps_objs = []
@@ -1056,7 +1060,8 @@ class BuildInfoHelper(object):
 
     def update_build_information(self, event, errors, warnings, taskfailures):
         if 'build' in self.internal_state:
-            self.orm_wrapper.update_build_object(self.internal_state['build'], errors, warnings, taskfailures)
+            self.internal_state['build'] = self.orm_wrapper.update_build_object(
+                self.internal_state['build'], errors, warnings, taskfailures)
 
 
     def store_license_manifest_path(self, event):
@@ -1235,7 +1240,7 @@ class BuildInfoHelper(object):
         build = self.internal_state['build']
         if build:
             build.outcome = Build.CANCELLED
-            build.save()
+            self.internal_state['build'] = self.orm_wrapper.save(build)
 
     def store_dependency_information(self, event):
         assert '_depgraph' in vars(event)
@@ -1252,7 +1257,7 @@ class BuildInfoHelper(object):
                 layer_version_obj = self._get_layer_version_for_path(path[1:]) # paths start with a ^
                 assert layer_version_obj is not None
                 layer_version_obj.priority = priority
-                layer_version_obj.save()
+                layer_version_obj = self.orm_wrapper.save(layer_version_obj)
 
         # save recipe information
         self.internal_state['recipes'] = {}
@@ -1311,7 +1316,7 @@ class BuildInfoHelper(object):
                 for t in self.internal_state['targets']:
                     if pn == t.target:
                         t.is_image = True
-                        t.save()
+                        self.orm_wrapper.save(t)
             self.internal_state['recipes'][pn] = recipe
 
         # we'll not get recipes for key w/ values listed in ASSUME_PROVIDED
@@ -1399,14 +1404,14 @@ class BuildInfoHelper(object):
         br_id, be_id = self.brbe.split(":")
         be = self.orm_wrapper.get(BuildEnvironment, pk=be_id)
         be.lock = BuildEnvironment.LOCK_LOCK
-        be.save()
+        be = self.orm_wrapper.save(be)
         br = self.orm_wrapper.get(BuildRequest, pk=br_id)
 
         # if we're 'done' because we got cancelled update the build outcome
         if br.state == BuildRequest.REQ_CANCELLING:
             logger.info("Build cancelled")
             br.build.outcome = Build.CANCELLED
-            br.build.save()
+            br.build = self.orm_wrapper.save(br.build)
             self.internal_state['build'] = br.build
             errorcode = 0
 
@@ -1415,7 +1420,7 @@ class BuildInfoHelper(object):
             br.state = BuildRequest.REQ_COMPLETED
         else:
             br.state = BuildRequest.REQ_FAILED
-        br.save()
+        self.orm_wrapper.save(br)
 
 
     def store_log_error(self, text):
