@@ -84,6 +84,9 @@ class ORMWrapper(object):
     def get(self, clazz, **kwargs):
         return clazz.objects.get(**kwargs)
 
+    def create(self, clazz, **kwargs):
+        return clazz.objects.create(**kwargs)
+
     def save(self, obj):
         obj.save()
         return obj
@@ -141,16 +144,16 @@ class ORMWrapper(object):
             build = self.save(build)
 
         else:
-            build = Build.objects.create(
-                                    project = prj,
-                                    machine=build_info['machine'],
-                                    distro=build_info['distro'],
-                                    distro_version=build_info['distro_version'],
-                                    started_on=build_info['started_on'],
-                                    completed_on=build_info['started_on'],
-                                    cooker_log_path=build_info['cooker_log_path'],
-                                    build_name=build_info['build_name'],
-                                    bitbake_version=build_info['bitbake_version'])
+            build = self.create(Build,
+                                project=prj,
+                                machine=build_info['machine'],
+                                distro=build_info['distro'],
+                                distro_version=build_info['distro_version'],
+                                started_on=build_info['started_on'],
+                                completed_on=build_info['started_on'],
+                                cooker_log_path=build_info['cooker_log_path'],
+                                build_name=build_info['build_name'],
+                                bitbake_version=build_info['bitbake_version'])
 
         logger.debug(1, "buildinfohelper: build is created %s" % build)
 
@@ -303,7 +306,7 @@ class ORMWrapper(object):
                 built_recipe, c = self.get_or_create(
                     Recipe, layer_version=built_layer,
                     file_path=recipe_information['file_path'],
-                    pathflags = recipe_information['pathflags'])
+                    pathflags=recipe_information['pathflags'])
                 update_recipe_obj(built_recipe)
                 break
 
@@ -434,14 +437,14 @@ class ORMWrapper(object):
         # always create the root directory as a special case;
         # note that this is never displayed, so the owner, group,
         # size, permission are irrelevant
-        tf_obj = Target_File.objects.create(target = target_obj,
-                                            path = '/',
-                                            size = 0,
-                                            owner = '',
-                                            group = '',
-                                            permission = '',
-                                            inodetype = Target_File.ITYPE_DIRECTORY)
-        tf_obj = self.save(tf_obj)
+        tf_obj = self.create(Target_File,
+                             target=target_obj,
+                             path='/',
+                             size=0,
+                             owner='',
+                             group='',
+                             permission='',
+                             inodetype=Target_File.ITYPE_DIRECTORY)
 
         # insert directories, ordered by name depth
         for d in sorted(dirs, key=lambda x:len(x[-1].split("/"))):
@@ -460,16 +463,15 @@ class ORMWrapper(object):
             parent_obj = self.get(
                 Target_File, target=target_obj, path=parent_path,
                 inodetype=Target_File.ITYPE_DIRECTORY)
-            tf_obj = Target_File.objects.create(
-                        target = target_obj,
-                        path = unicode(path, 'utf-8'),
-                        size = size,
-                        inodetype = Target_File.ITYPE_DIRECTORY,
-                        permission = permission,
-                        owner = user,
-                        group = group,
-                        directory = parent_obj)
-
+            tf_obj = self.create(Target_File,
+                                 target=target_obj,
+                                 path=unicode(path, 'utf-8'),
+                                 size=size,
+                                 inodetype=Target_File.ITYPE_DIRECTORY,
+                                 permission=permission,
+                                 owner=user,
+                                 group=group,
+                                 directory=parent_obj)
 
         # we insert files
         for d in files:
@@ -485,14 +487,14 @@ class ORMWrapper(object):
             if d[0].startswith('p'):
                 inodetype = Target_File.ITYPE_FIFO
 
-            tf_obj = Target_File.objects.create(
-                        target = target_obj,
-                        path = unicode(path, 'utf-8'),
-                        size = size,
-                        inodetype = inodetype,
-                        permission = permission,
-                        owner = user,
-                        group = group)
+            tf_obj = self.create(Target_File,
+                                 target=target_obj,
+                                 path=unicode(path, 'utf-8'),
+                                 size=size,
+                                 inodetype=inodetype,
+                                 permission=permission,
+                                 owner=user,
+                                 group=group)
             parent_obj = self.get(Target_File, target=target_obj,
                                   path=parent_path,
                                   inodetype=Target_File.ITYPE_DIRECTORY)
@@ -531,17 +533,16 @@ class ORMWrapper(object):
                                   path=parent_path,
                                   inodetype=Target_File.ITYPE_DIRECTORY)
 
-            tf_obj = Target_File.objects.create(
-                        target = target_obj,
-                        path = unicode(path, 'utf-8'),
-                        size = size,
-                        inodetype = Target_File.ITYPE_SYMLINK,
-                        permission = permission,
-                        owner = user,
-                        group = group,
-                        directory = parent_obj,
-                        sym_target = filetarget_obj)
-
+            tf_obj = self.create(Target_File,
+                                 target=target_obj,
+                                 path=unicode(path, 'utf-8'),
+                                 size=size,
+                                 inodetype=Target_File.ITYPE_SYMLINK,
+                                 permission=permission,
+                                 owner=user,
+                                 group=group,
+                                 directory=parent_obj,
+                                 sym_target=filetarget_obj)
 
     def save_target_package_information(self, build_obj, target_obj, packagedict, pkgpnmap, recipes, built_package=False):
         assert isinstance(build_obj, Build)
@@ -620,7 +621,9 @@ class ORMWrapper(object):
             packagedict[p]['object'] = self.save(packagedict[p]['object'])
 
             if built_package:
-                Target_Installed_Package.objects.create(target = target_obj, package = packagedict[p]['object'])
+                self.create(Target_Installed_Package,
+                            target=target_obj,
+                            package=packagedict[p]['object'])
 
         packagedeps_objs = []
         for p in packagedict:
@@ -649,9 +652,10 @@ class ORMWrapper(object):
             logger.warning("buildinfohelper: target_package_info could not identify recipes: \n%s", errormsg)
 
     def save_target_image_file_information(self, target_obj, file_name, file_size):
-        Target_Image_File.objects.create( target = target_obj,
-                            file_name = file_name,
-                            file_size = file_size)
+        self.create(Target_Image_File,
+                    target=target_obj,
+                    file_name=file_name,
+                    file_size=file_size)
 
     def save_artifact_information(self, build_obj, file_name, file_size):
         # we skip the image files from other builds
@@ -662,17 +666,18 @@ class ORMWrapper(object):
         if BuildArtifact.objects.filter(file_name = file_name).count() > 0:
             return
 
-        BuildArtifact.objects.create(build = build_obj, file_name = file_name, file_size = file_size)
+        self.create(BuildArtifact, build=build_obj,
+                    file_name=file_name, file_size=file_size)
 
     def create_logmessage(self, log_information):
         assert 'build' in log_information
         assert 'level' in log_information
         assert 'message' in log_information
 
-        log_object = LogMessage.objects.create(
-                        build = log_information['build'],
-                        level = log_information['level'],
-                        message = log_information['message'])
+        log_object = self.create(LogMessage,
+                                 build=log_information['build'],
+                                 level=log_information['level'],
+                                 message=log_information['message'])
 
         for v in vars(log_object):
             if v in log_information.keys():
@@ -796,10 +801,11 @@ class ORMWrapper(object):
                 value = vardump[k]['v']
                 if value is None:
                     value = ''
-                variable_obj = Variable.objects.create( build = build_obj,
-                    variable_name = k,
-                    variable_value = value,
-                    description = desc)
+                variable_obj = self.create(Variable,
+                                           build=build_obj,
+                                           variable_name=k,
+                                           variable_value=value,
+                                           description=desc)
 
                 varhist_objects = []
                 for vh in vardump[k]['history']:
