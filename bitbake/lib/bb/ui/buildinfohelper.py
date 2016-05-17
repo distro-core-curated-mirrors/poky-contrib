@@ -84,6 +84,12 @@ class ORMWrapper(object):
     def get(self, clazz, **kwargs):
         return clazz.objects.get(**kwargs)
 
+    def get_buildrequest_layers(self, buildrequest):
+        return buildrequest.brlayer_set.all()
+
+    def get_project_layers(self, buildrequest, buildrequest_layer):
+        return buildrequest.project.projectlayer_set.filter(layercommit__layer__name=buildrequest_layer.name)
+
     def filter(self, clazz, **kwargs):
         return clazz.objects.filter(**kwargs)
 
@@ -96,6 +102,10 @@ class ORMWrapper(object):
     def save(self, obj):
         obj.save()
         return obj
+
+    def remove_package_dependencies(self, package):
+        package.package_dependencies_target.all().delete()
+        package.package_dependencies_source.all().delete()
     ### END DB ACCESSORS
 
     def _timestamp_to_datetime(self, secs):
@@ -408,7 +418,7 @@ class ORMWrapper(object):
 
             # note that this is different
             buildrequest = self.get(BuildRequest, pk=br_id)
-            for brl in buildrequest.brlayer_set.all():
+            for brl in self.get_buildrequest_layers(buildrequest):
                 localdirname = os.path.join(bc.getGitCloneDirectory(brl.giturl, brl.commit), brl.dirpath)
                 # we get a relative path, unless running in HEAD mode where the path is absolute
                 if not localdirname.startswith("/"):
@@ -424,7 +434,7 @@ class ORMWrapper(object):
                     # we matched the BRLayer, but we need the layer_version that generated this BR; reverse of the Project.schedule_build()
                     #logger.debug(1, "Matched %s to BRlayer %s" % (pformat(layer_information["local_path"]), localdirname))
 
-                    for pl in buildrequest.project.projectlayer_set.filter(layercommit__layer__name=brl.name):
+                    for pl in self.get_project_layers(buildrequest, buildrequest_layer):
                         if pl.layercommit.layer.vcs_url == brl.giturl :
                             layer = pl.layercommit.layer
                             layer = self.save(layer)
@@ -581,8 +591,8 @@ class ORMWrapper(object):
 
                 # Clear the Package_Dependency objects as we're going to update
                 # the CustomImagePackage with the latest dependency information
-                packagedict[p]['object'].package_dependencies_target.all().delete()
-                packagedict[p]['object'].package_dependencies_source.all().delete()
+                self.remove_package_dependencies(packagedict[p]['object'])
+
                 try:
                     recipe = self.get(Recipe,
                                       name=built_recipe.name,
