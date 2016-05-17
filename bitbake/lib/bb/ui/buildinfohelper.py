@@ -74,52 +74,16 @@ class ORMWrapper(object):
         self.task_objects = {}
         self.recipe_objects = {}
 
-    @staticmethod
-    def _build_key(**kwargs):
-        key = "0"
-        for k in sorted(kwargs.keys()):
-            if isinstance(kwargs[k], models.Model):
-                key += "-%d" % kwargs[k].id
-            else:
-                key += "-%s" % str(kwargs[k])
-        return key
+    ### START DB ACCESSORS
+    def get_or_create_default_project(self):
+        return Project.objects.get_or_create_default_project()
 
+    def get_or_create(self, clazz, **kwargs):
+        return clazz.objects.get_or_create(**kwargs)
 
-    def _cached_get_or_create(self, clazz, **kwargs):
-        """ This is a memory-cached get_or_create. We assume that the objects will not be created in the
-            database through any other means.
-        """
-
-        assert issubclass(clazz, models.Model), "_cached_get_or_create needs to get the class as first argument"
-
-        key = ORMWrapper._build_key(**kwargs)
-        dictname = "objects_%s" % clazz.__name__
-        if not dictname in vars(self).keys():
-            vars(self)[dictname] = {}
-
-        created = False
-        if not key in vars(self)[dictname].keys():
-            vars(self)[dictname][key], created = \
-                clazz.objects.get_or_create(**kwargs)
-
-        return (vars(self)[dictname][key], created)
-
-
-    def _cached_get(self, clazz, **kwargs):
-        """ This is a memory-cached get. We assume that the objects will not change  in the database between gets.
-        """
-        assert issubclass(clazz, models.Model), "_cached_get needs to get the class as first argument"
-
-        key = ORMWrapper._build_key(**kwargs)
-        dictname = "objects_%s" % clazz.__name__
-
-        if not dictname in vars(self).keys():
-            vars(self)[dictname] = {}
-
-        if not key in vars(self)[dictname].keys():
-            vars(self)[dictname][key] = clazz.objects.get(**kwargs)
-
-        return vars(self)[dictname][key]
+    def get(self, clazz, **kwargs):
+        return clazz.objects.get(**kwargs)
+    ### END DB ACCESSORS
 
     def _timestamp_to_datetime(self, secs):
         """
@@ -148,15 +112,15 @@ class ORMWrapper(object):
         if brbe is not None:            # this build was triggered by a request from a user
             logger.debug(1, "buildinfohelper: brbe is %s" % brbe)
             br, _ = brbe.split(":")
-            buildrequest = BuildRequest.objects.get(pk = br)
+            buildrequest = self.get(BuildRequest, pk=br)
             prj = buildrequest.project
 
         elif project_id is not None:    # this build was triggered by an external system for a specific project
             logger.debug(1, "buildinfohelper: project is %s" % prj)
-            prj = Project.objects.get(pk = project_id)
+            prj = self.get(Project, pk=project_id)
 
         else:                           # this build was triggered by a legacy system, or command line interactive mode
-            prj = Project.objects.get_or_create_default_project()
+            prj = self.get_or_create_default_project()
             logger.debug(1, "buildinfohelper: project is not specified, defaulting to %s" % prj)
 
 
@@ -192,8 +156,7 @@ class ORMWrapper(object):
 
         return build
 
-    @staticmethod
-    def get_or_create_targets(target_info):
+    def get_or_create_targets(self, target_info):
         result = []
         for target in target_info['targets']:
             task = ''
@@ -203,8 +166,8 @@ class ORMWrapper(object):
                 task = task[3:]
             if task == 'build':
                 task = ''
-            obj, created = Target.objects.get_or_create(build=target_info['build'],
-                                                        target=target)
+            obj, created = self.get_or_create(
+                Target, build=target_info['build'], target=target)
             if created:
                 obj.is_image = False
                 if task:
@@ -244,11 +207,8 @@ class ORMWrapper(object):
         Find the task for build which matches the recipe and task name
         to be stored
         """
-        task_to_update = Task.objects.get(
-            build = build,
-            task_name = task_name,
-            recipe__name = recipe_name
-        )
+        task_to_update = self.get(
+            Task, build=build, task_name=task_name, recipe__name=recipe_name)
 
         if 'started' in task_stats and 'ended' in task_stats:
             task_to_update.started = self._timestamp_to_datetime(task_stats['started'])
@@ -269,11 +229,11 @@ class ORMWrapper(object):
         assert 'task_name' in task_information
 
         # we use must_exist info for database look-up optimization
-        task_object, created = self._cached_get_or_create(Task,
-                        build=task_information['build'],
-                        recipe=task_information['recipe'],
-                        task_name=task_information['task_name']
-                        )
+        task_object, created = self.get_or_create(
+            Task, build=task_information['build'],
+            recipe=task_information['recipe'],
+            task_name=task_information['task_name'])
+
         if created and must_exist:
             task_information['debug'] = "build id %d, recipe id %d" % (task_information['build'].pk, task_information['recipe'].pk)
             raise NotExisting("Task object created when expected to exist", task_information)
@@ -290,8 +250,11 @@ class ORMWrapper(object):
             task_object.outcome = Task.OUTCOME_CACHED
             object_changed = True
 
-            outcome_task_setscene = Task.objects.get(task_executed=True, build = task_object.build,
-                                    recipe = task_object.recipe, task_name=task_object.task_name+"_setscene").outcome
+            task_name = task_object.task_name + "_setscene"
+
+            outcome_task_setscene = self.get(
+                Task, task_executed=True, build=task_object.build,
+                recipe=task_object.recipe, task_name=task_name).outcome
             if outcome_task_setscene == Task.OUTCOME_SUCCESS:
                 task_object.sstate_result = Task.SSTATE_RESTORED
                 object_changed = True
@@ -322,8 +285,10 @@ class ORMWrapper(object):
             if object_changed:
                 recipe_object.save()
 
-        recipe, created = self._cached_get_or_create(Recipe, layer_version=recipe_information['layer_version'],
-                                     file_path=recipe_information['file_path'], pathflags = recipe_information['pathflags'])
+        recipe, created = self.get_or_create(
+            Recipe, layer_version=recipe_information['layer_version'],
+            file_path=recipe_information['file_path'],
+            pathflags=recipe_information['pathflags'])
 
         update_recipe_obj(recipe)
 
@@ -331,10 +296,10 @@ class ORMWrapper(object):
         # Create a copy of the recipe for historical puposes and update it
         for built_layer in self.layer_version_built:
             if built_layer.layer == recipe_information['layer_version'].layer:
-                built_recipe, c = self._cached_get_or_create(Recipe,
-                        layer_version=built_layer,
-                        file_path=recipe_information['file_path'],
-                        pathflags = recipe_information['pathflags'])
+                built_recipe, c = self.get_or_create(
+                    Recipe, layer_version=built_layer,
+                    file_path=recipe_information['file_path'],
+                    pathflags = recipe_information['pathflags'])
                 update_recipe_obj(built_recipe)
                 break
 
@@ -345,7 +310,7 @@ class ORMWrapper(object):
         # history copy of the recipe.
         if  recipe_information['layer_version'].build is not None and \
             recipe_information['layer_version'].build.project == \
-                Project.objects.get_or_create_default_project():
+                self.get_or_create_default_project():
             return recipe
 
         if built_recipe is None:
@@ -369,14 +334,12 @@ class ORMWrapper(object):
 
             # create a new copy of this layer version as a snapshot for
             # historical purposes
-            layer_copy, c = Layer_Version.objects.get_or_create(
-                build=build_obj,
-                layer=layer_obj.layer,
+            layer_copy, c = self.get_or_create(
+                Layer_Version, build=build_obj, layer=layer_obj.layer,
                 up_branch=layer_obj.up_branch,
                 branch=layer_version_information['branch'],
                 commit=layer_version_information['commit'],
-                local_path=layer_version_information['local_path'],
-            )
+                local_path=layer_version_information['local_path'])
 
             logger.info("created new historical layer version %d",
                         layer_copy.pk)
@@ -395,17 +358,16 @@ class ORMWrapper(object):
         # If we're doing a command line build then associate this new layer with the
         # project to avoid it 'contaminating' toaster data
         project = None
-        if build_obj.project == Project.objects.get_or_create_default_project():
+        if build_obj.project == self.get_or_create_default_project():
             project = build_obj.project
 
-        layer_version_object, _ = Layer_Version.objects.get_or_create(
-                                  build = build_obj,
-                                  layer = layer_obj,
-                                  branch = layer_version_information['branch'],
-                                  commit = layer_version_information['commit'],
-                                  priority = layer_version_information['priority'],
-                                  local_path = layer_version_information['local_path'],
-                                  project=project)
+        layer_version_object, _ = self.get_or_create(
+            Layer_Version, build=build_obj, layer=layer_obj,
+            branch=layer_version_information['branch'],
+            commit=layer_version_information['commit'],
+            priority=layer_version_information['priority'],
+            local_path=layer_version_information['local_path'],
+            project=project)
 
         self.layer_version_objects.append(layer_version_object)
 
@@ -416,9 +378,9 @@ class ORMWrapper(object):
         assert 'layer_index_url' in layer_information
 
         if brbe is None:
-            layer_object, _ = Layer.objects.get_or_create(
-                                name=layer_information['name'],
-                                layer_index_url=layer_information['layer_index_url'])
+            layer_object, _ = self.get_or_create(
+                Layer, name=layer_information['name'],
+                layer_index_url=layer_information['layer_index_url'])
             return layer_object
         else:
             # we are under managed mode; we must match the layer used in the Project Layer
@@ -432,7 +394,7 @@ class ORMWrapper(object):
             # but we can only match on the layer name, so the worst thing can happen is a mis-identification of the layer, not a total failure
 
             # note that this is different
-            buildrequest = BuildRequest.objects.get(pk = br_id)
+            buildrequest = self.get(BuildRequest, pk=br_id)
             for brl in buildrequest.brlayer_set.all():
                 localdirname = os.path.join(bc.getGitCloneDirectory(brl.giturl, brl.commit), brl.dirpath)
                 # we get a relative path, unless running in HEAD mode where the path is absolute
@@ -491,7 +453,9 @@ class ORMWrapper(object):
             parent_path = "/".join(path.split("/")[:len(path.split("/")) - 1])
             if len(parent_path) == 0:
                 parent_path = "/"
-            parent_obj = self._cached_get(Target_File, target = target_obj, path = parent_path, inodetype = Target_File.ITYPE_DIRECTORY)
+            parent_obj = self.get(
+                Target_File, target=target_obj, path=parent_path,
+                inodetype=Target_File.ITYPE_DIRECTORY)
             tf_obj = Target_File.objects.create(
                         target = target_obj,
                         path = unicode(path, 'utf-8'),
@@ -525,7 +489,9 @@ class ORMWrapper(object):
                         permission = permission,
                         owner = user,
                         group = group)
-            parent_obj = self._cached_get(Target_File, target = target_obj, path = parent_path, inodetype = Target_File.ITYPE_DIRECTORY)
+            parent_obj = self.get(Target_File, target=target_obj,
+                                  path=parent_path,
+                                  inodetype=Target_File.ITYPE_DIRECTORY)
             tf_obj.directory = parent_obj
             tf_obj.save()
 
@@ -550,14 +516,16 @@ class ORMWrapper(object):
                 filetarget_path = "/".join(fcpl)
 
             try:
-                filetarget_obj = Target_File.objects.get(
-                                     target = target_obj,
-                                     path = unicode(filetarget_path, 'utf-8'))
+                filetarget_path = unicode(filetarget_path, 'utf-8')
+                filetarget_obj = self.get(Target_File, target=target_obj,
+                                          path=filetarget_path)
             except Target_File.DoesNotExist:
                 # we might have an invalid link; no way to detect this. just set it to None
                 filetarget_obj = None
 
-            parent_obj = Target_File.objects.get(target = target_obj, path = parent_path, inodetype = Target_File.ITYPE_DIRECTORY)
+            parent_obj = self.get(Target_File, target=target_obj,
+                                  path=parent_path,
+                                  inodetype=Target_File.ITYPE_DIRECTORY)
 
             tf_obj = Target_File.objects.create(
                         target = target_obj,
@@ -592,25 +560,26 @@ class ORMWrapper(object):
             built_recipe = recipes[pkgpnmap[p]['PN']]
 
             if built_package:
-                packagedict[p]['object'], created = Package.objects.get_or_create( build = build_obj, name = searchname )
+                packagedict[p]['object'], created = self.get_or_create(
+                    Package, build=build_obj, name=searchname)
+
                 recipe = built_recipe
             else:
-                packagedict[p]['object'], created = \
-                        CustomImagePackage.objects.get_or_create(name=searchname)
+                packagedict[p]['object'], created = self.get_or_create(
+                    CustomImagePackage, name=searchname)
+
                 # Clear the Package_Dependency objects as we're going to update
                 # the CustomImagePackage with the latest dependency information
                 packagedict[p]['object'].package_dependencies_target.all().delete()
                 packagedict[p]['object'].package_dependencies_source.all().delete()
                 try:
-                    recipe = self._cached_get(
-                        Recipe,
-                        name=built_recipe.name,
-                        layer_version__build=None,
-                        layer_version__up_branch=
-                        built_recipe.layer_version.up_branch,
-                        file_path=built_recipe.file_path,
-                        version=built_recipe.version
-                    )
+                    recipe = self.get(Recipe,
+                                      name=built_recipe.name,
+                                      layer_version__build=None,
+                                      layer_version__up_branch=
+                                      built_recipe.layer_version.up_branch,
+                                      file_path=built_recipe.file_path,
+                                      version=built_recipe.version)
                 except (Recipe.DoesNotExist,
                         Recipe.MultipleObjectsReturned) as e:
                     logger.info("We did not find one recipe for the"
@@ -719,18 +688,19 @@ class ORMWrapper(object):
             pname = package_info['OPKGN']
 
         if built_package:
-            bp_object, _ = Package.objects.get_or_create( build = build_obj,
-                                                         name = pname )
+            bp_object, _ = self.get_or_create(Package,
+                                              build=build_obj,
+                                              name=pname)
             recipe = built_recipe
         else:
-            bp_object, created = \
-                    CustomImagePackage.objects.get_or_create(name=pname)
+            bp_object, created = self.get_or_create(CustomImagePackage,
+                                                    name=pname)
             try:
-                recipe = self._cached_get(Recipe,
-                                          name=built_recipe.name,
-                                          layer_version__build=None,
-                                          file_path=built_recipe.file_path,
-                                          version=built_recipe.version)
+                recipe = self.get(Recipe,
+                                  name=built_recipe.name,
+                                  layer_version__build=None,
+                                  file_path=built_recipe.file_path,
+                                  version=built_recipe.version)
 
             except (Recipe.DoesNotExist, Recipe.MultipleObjectsReturned):
                 logger.debug("We did not find one recipe for the configuration"
@@ -759,10 +729,11 @@ class ORMWrapper(object):
 
         def _po_byname(p):
             if built_package:
-                pkg, created = Package.objects.get_or_create(build=build_obj,
-                                                             name=p)
+                pkg, created = self.get_or_create(Package,
+                                                  build=build_obj,
+                                                  name=p)
             else:
-                pkg, created = CustomImagePackage.objects.get_or_create(name=p)
+                pkg, created = self.get_or_create(CustomImagePackage, name=p)
 
             if created:
                 pkg.size = -1
@@ -814,9 +785,9 @@ class ORMWrapper(object):
             if desc is None:
                 desc = ''
             if len(desc):
-                HelpText.objects.get_or_create(build=build_obj,
-                                               area=HelpText.VARIABLE,
-                                               key=k, text=desc)
+                self.get_or_create(
+                    HelpText, build=build_obj, area=HelpText.VARIABLE,
+                    key=k, text=desc)
             if not bool(vardump[k]['func']):
                 value = vardump[k]['v']
                 if value is None:
@@ -935,8 +906,11 @@ class BuildInfoHelper(object):
         logger.warning("Could not match layer version for recipe path %s : %s", path, self.orm_wrapper.layer_version_objects)
 
         #mockup the new layer
-        unknown_layer, _ = Layer.objects.get_or_create(name="Unidentified layer", layer_index_url="")
-        unknown_layer_version_obj, _ = Layer_Version.objects.get_or_create(layer = unknown_layer, build = self.internal_state['build'])
+        unknown_layer, _ = self.orm_wrapper.get_or_create(
+            Layer, name="Unidentified layer", layer_index_url="")
+        unknown_layer_version_obj, _ = self.orm_wrapper.get_or_create(
+            Layer_Version, layer=unknown_layer,
+            build=self.internal_state['build'])
 
         # append it so we don't run into this error again and again
         self.orm_wrapper.layer_version_objects.append(unknown_layer_version_obj)
@@ -1031,7 +1005,8 @@ class BuildInfoHelper(object):
         target_information['targets'] = event._pkgs
         target_information['build'] = build_obj
 
-        self.internal_state['targets'] = self.orm_wrapper.get_or_create_targets(target_information)
+        self.internal_state['targets'] = self.orm_wrapper.get_or_create_targets(
+            target_information)
 
         # Save build configuration
         data = self.server.runCommand(["getAllKeysWithFlags", ["doc", "func"]])[0]
@@ -1041,7 +1016,7 @@ class BuildInfoHelper(object):
 
         if self.brbe is not None:
             _, be_id = self.brbe.split(":")
-            be = BuildEnvironment.objects.get(pk = be_id)
+            be = self.orm_wrapper.get(BuildEnvironment, pk=be_id)
             path_prefixes.append(be.builddir)
 
         for layer in sorted(self.orm_wrapper.layer_version_objects, key = lambda x:len(x.local_path), reverse=True):
@@ -1355,8 +1330,8 @@ class BuildInfoHelper(object):
                 if 'providermap' in event._depgraph and dep in event._depgraph['providermap']:
                     deprecipe = event._depgraph['providermap'][dep][0]
                     dependency = self.internal_state['recipes'][deprecipe]
-                    via = Provides.objects.get_or_create(name=dep,
-                                                         recipe=dependency)[0]
+                    via = self.orm_wrapper.get_or_create(
+                        Provides, name=dep, recipe=dependency)[0]
                 elif dep in self.internal_state['recipes']:
                     dependency = self.internal_state['recipes'][dep]
                 else:
@@ -1422,10 +1397,10 @@ class BuildInfoHelper(object):
     def _store_build_done(self, errorcode):
         logger.info("Build exited with errorcode %d", errorcode)
         br_id, be_id = self.brbe.split(":")
-        be = BuildEnvironment.objects.get(pk = be_id)
+        be = self.orm_wrapper.get(BuildEnvironment, pk=be_id)
         be.lock = BuildEnvironment.LOCK_LOCK
         be.save()
-        br = BuildRequest.objects.get(pk = br_id)
+        br = self.orm_wrapper.get(BuildRequest, pk=br_id)
 
         # if we're 'done' because we got cancelled update the build outcome
         if br.state == BuildRequest.REQ_CANCELLING:
@@ -1475,7 +1450,7 @@ class BuildInfoHelper(object):
                 return
             else:   # we're under Toaster control, the build is already created
                 br, _ = self.brbe.split(":")
-                buildrequest = BuildRequest.objects.get(pk = br)
+                buildrequest = self.orm_wrapper.get(BuildRequest, pk=br)
                 self.internal_state['build'] = buildrequest.build
 
         if 'build' in self.internal_state and 'backlog' in self.internal_state:
