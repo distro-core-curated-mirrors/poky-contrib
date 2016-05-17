@@ -725,7 +725,8 @@ class PackagesTable(ToasterTable):
 
         self.add_column(title="License",
                         field_name="license",
-                        orderable=True)
+                        orderable=True,
+                        hidden=True)
 
 
         self.add_column(title="Dependencies",

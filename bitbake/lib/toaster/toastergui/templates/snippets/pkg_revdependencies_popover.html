@@ -6,7 +6,7 @@
    {% for dep in data.package_dependencies_target.all_depends|dictsort:'package.name' %}
   <li>{{dep.package.name}} {% if dep.package.size > 0 %}({{dep.package.size|filtered_filesizeformat}}){% endif %}</li>
     {% endfor %}
-  </ul>" title="" class="btn" data-original-title="
+  </ul>" class="btn btn-default" title="
   <strong>{{data.name}}</strong> reverse dependencies - <strong>{{data.package_dependencies_target.get_total_revdeps_size.package_id__size__sum|filtered_filesizeformat}}</strong>">
     {{dep_count}}
 </a>

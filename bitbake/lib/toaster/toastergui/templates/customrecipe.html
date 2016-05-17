@@ -5,7 +5,6 @@
 {% block pagecontent %}
 
 {% with recipe.get_base_recipe_file as base_recipe_file %}
-<div class="row">
   <ul class="breadcrumb">
     <li>
       <a href="{% url 'project' project.id %}">{{project.name}}</a>
@@ -18,7 +17,6 @@
       {{recipe.name}} ({{recipe.layer_version.layer.name}})
     </li>
   </ul>
-</div>
 
 <script src="{% static 'js/customrecipe.js' %}"></script>
 <script>
@@ -89,28 +87,24 @@
 </div><!-- /.modal -->
 <!-- end package dependencies modal -->
 
-<div class="row">
-  <div class="col-md-12">
-    <div class="alert alert-success lead" id="image-created-notification" style="margin-top: 15px; display: none">
-      <button type="button" data-dismiss="alert" class="close">x</button>
-      Your custom image <strong>{{recipe.name}}</strong> has been created. You can now add or remove packages as needed.
-    </div>
-    <div class="page-header">
-      <h1>
-        {{recipe.name}}
-        <small>({{recipe.layer_version.layer.name}})</small>
-      </h1>
-    </div>
-  </div>
+<div class="alert alert-success lead" id="image-created-notification" style="margin-top: 15px; display: none">
+	<button type="button" data-dismiss="alert" class="close">x</button>
+	Your custom image <strong>{{recipe.name}}</strong> has been created. You can now add or remove packages as needed.
+</div>
+<div class="page-header">
+	<h1>
+		{{recipe.name}}
+		<small>({{recipe.layer_version.layer.name}})</small>
+	</h1>
 </div>
 
 <div class="row">
   <div class="col-md-8">
     <div class="button-place btn-group" style="width: 100%">
-      <a class="btn btn-large col-md-6 build-custom-image" href="#" style="width: 50%">
+      <a class="btn btn-default btn-lg build-custom-image" href="#" style="width: 50%">
         Build {{recipe.name}}
       </a>
-      <a href="{% url 'customrecipedownload' project.id recipe.id %}" class="btn btn-large span6" style="width: 50%"
+      <a href="{% url 'customrecipedownload' project.id recipe.id %}" class="btn btn-default btn-lg" style="width: 50%"
         {% if not base_recipe_file %}
         disabled="disabled"
         {% endif %}>
@@ -121,61 +115,64 @@
         {% endif %}
       </a>
     </div>
-    <div id="no-results-special-{{table_name}}" class="air" style="display:none;">
-      <div class="alert">
+    <div id="no-results-special-{{table_name}}" class="top-air" style="display:none;">
+      <div class="alert alert-warning">
         <h3>No packages found</h3>
-        <p>You might consider <a href={% url 'projectsoftwarerecipes' project.id %}>searching the list of recipes</a> instead. If you find a recipe that matches the name of the package you want:</p>
+				<p>You might consider <a href={% url 'projectsoftwarerecipes' project.id %}>searching the list of recipes</a> instead.</p> 
+				<p>If you find a recipe that matches the name of the package you want:</p>
         <ol>
           <li>Add the layer providing the recipe to your project</li>
           <li>Build the recipe</li>
           <li>Once the build completes, come back to this page and search for the package</li>
         </ol>
-        <form class="input-append no-results">
-          <input type="text" class="input-xlarge no-results-search-input" id="no-results-search-input-{{table_name}}" name="search" placeholder="Search {{title|lower}}" />
-          <a href="#" class="input-append-addon btn" id="no-results-remove-search-btn" tabindex="-1">
-            <i class="glyphicon glyphicon-remove"></i>
-          </a>
-          <button class="btn search-submit-{{table_name}}">Search</button>
+        <form class="form-inline no-results">
+					<div class="form-group">
+						<div class="btn-group">
+							<input type="text" class="form-control no-results-search-input" id="no-results-search-input-{{table_name}}" name="search" placeholder="Search {{title|lower}}" />
+							<span class="remove-search-btn-{{table_name}} glyphicon glyphicon-remove-circle" id="no-results-remove-search-btn" tabindex="-1"></span>
+						</div>
+					</div>
+          <button class="btn btn-default search-submit-{{table_name}}">Search</button>
           <button class="btn btn-link" id="no-results-show-all-packages">Show all packages</button>
         </form>
-      </div>
-      </div>
+			</div>
+    </div>
       <div id="results-found-{{table_name}}">
-      <div id="packages-table">
-        {% if recipe.get_all_packages.count == 0 and last_build == None %}
-        <h2> Add | Remove packages </h2>
-        <div class="alert alert-info air">
-          <p class="lead">Toaster has no package information for {{recipe.name}}. To generate package information, build {{recipe.name}}</p>
-          <button class="btn btn-info btn-large build-custom-image" style="margin:20px 0 10px 0;">Build {{recipe.name}}</button>
-        </div>
-        {% else %}
-        {# ToasterTable for Adding remove packages #}
-        {% url 'recipeselectpackages' project.id recipe.id as xhr_table_url %}
-        <h2>{{title}} (<span class="table-count-{{table_name}}">0</span>) </h2>
-        {% include "toastertable.html" %}
-        {% endif %}
-      </div>
+				<div id="packages-table">
+					{% if recipe.get_all_packages.count == 0 and last_build == None %}
+					<h2> Add | Remove packages </h2>
+					<div class="alert alert-info">
+						<p class="lead">Toaster has no package information for {{recipe.name}}. To generate package information, build {{recipe.name}}</p>
+						<button class="btn btn-info btn-lg build-custom-image" style="margin:20px 0 10px 0;">Build {{recipe.name}}</button>
+					</div>
+					{% else %}
+					{# ToasterTable for Adding remove packages #}
+					{% url 'recipeselectpackages' project.id recipe.id as xhr_table_url %}
+					<h2>{{title}} (<span class="table-count-{{table_name}}">0</span>) </h2>
+					{% include "toastertable.html" %}
+					{% endif %}
+				</div>
       </div>
     </div>
     <div class="col-md-4">
       <div class="well">
-        <h2 style="margin-bottom:20px;">About {{recipe.name}}</h2>
+        <h2>About {{recipe.name}}</h2>
 
         <dl>
           <dt>
           Approx. packages included
-          <i class="icon-question-sign get-help" title="" data-original-title="The number of packages included is based on information from previous builds and from parsing layers, so we can never be sure it is 100% accurate"></i>
+          <span class="glyphicon glyphicon-question-sign get-help" title="" data-original-title="The number of packages included is based on information from previous builds and from parsing layers, so we can never be sure it is 100% accurate"></span>
           </dt>
           <dd id="total-num-packages">{{recipe.get_all_packages.count}}</dd>
           <dt>
           Approx. package size
-          <i class="icon-question-sign get-help" title="" data-original-title="Package size is based on information from previous builds, so we can never be sure it is 100% accurate"></i>
+          <span class="glyphicon glyphicon-question-sign get-help" title="Package size is based on information from previous builds, so we can never be sure it is 100% accurate"></span>
           </dt>
           <dd id="total-size-packages">{{approx_pkg_size.size__sum|filtered_filesizeformat}}</dd>
           {% if last_build %}
           <dt>Last build</dt>
           <dd>
-          <i class="icon-ok-sign success"></i>
+          <span class="glyphicon glyphicon-ok-circle"></span>
           <a href="{% url 'projectbuilds' project.id%}">{{last_build.completed_on|date:"d/m/y H:i"}}</a>
           </dd>
           {% endif %}
@@ -187,7 +184,7 @@
           {% with recipe.get_last_successful_built_target as last_build_target %}
           <dt>Last build</dt>
           <dd>
-          <i class="icon-ok-sign success"></i>
+          <span class="glyphicon glyphicon-ok-circle"></span>
           <a href="{% url 'builddashboard' last_build_target.build.pk %}">
             {{last_build_target.build.completed_on|date:"d/m/y H:i"}}</a>
           </dd>
@@ -197,7 +194,7 @@
           <dt>Recipe file</dt>
           <dd>
           <code>{{recipe.name}}_{{recipe.version}}.bb</code>
-          <a href="{% url 'customrecipedownload' project.pk recipe.pk %}"><i class="icon-download-alt" title="Download recipe file"></i></a>
+          <a href="{% url 'customrecipedownload' project.pk recipe.pk %}"><span class="glyphicon glyphicon-download-alt" data-toggle="tooltip" title="Download recipe file"></span></a>
         </dd>
         {% endif %}
         <dt>Layer</dt>
@@ -231,7 +228,7 @@
           <dt>License</dt>
           <dd>
           {{recipe.license}}
-          <i class="icon-question-sign get-help" title="" data-original-title="All custom images have their license set to MIT. This is because the license applies only to the recipe (.bb) file, and not to the image itself. To see which licenses apply to the image you must check the license manifest generated with each build"></i>
+          <span class="glyphicon glyphicon-question-sign get-help" title="All custom images have their license set to MIT. This is because the license applies only to the recipe (.bb) file, and not to the image itself. To see which licenses apply to the image you must check the license manifest generated with each build"></i>
           </dd>
       </dl>
       <!--
