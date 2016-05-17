@@ -16,6 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from rest_framework import routers
 from django.conf.urls import patterns, include, url
 from django.views.generic import RedirectView, TemplateView
 
@@ -23,6 +24,10 @@ from django.http import HttpResponseBadRequest
 from toastergui import tables
 from toastergui import typeaheads
 from toastergui import api
+from toastergui import db_api
+
+router = routers.DefaultRouter()
+router.register(r'recipes', db_api.DefaultProjectViewSet, 'default')
 
 urlpatterns = patterns('toastergui.views',
         # landing page
@@ -187,4 +192,7 @@ urlpatterns = patterns('toastergui.views',
 
           # default redirection
         url(r'^$', RedirectView.as_view(url='landing', permanent=True)),
+
+        # Wire up our db API using automatic URL routing
+        url(r'^db_api/', include(router.urls, namespace='db_api')),
 )
