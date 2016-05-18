@@ -94,7 +94,7 @@ tbody > tr > td > .glyphicon-minus-sign { color: #a94442; }
 .btn-danger > .glyphicon-trash:hover { color: #fff; }
 .glyphicon-trash:hover { color: #843534; cursor: pointer; }
 
-/* Set the font size for icons inside headings and lead paragraphs */
+/* Set the font size for icons inside headings, lead paragraphs and definition lists */
 h1 > .glyphicon-edit,
 p.lead .glyphicon { font-size: 16px; }
 h2 > .glyphicon-question-sign,
@@ -147,6 +147,25 @@ dd .glyphicon-edit { margin-left: 5px; }
 /* Style the forms and definition lists in the layer details pages */
 #change-repo-form .form-control { width: 17em; }
 #information dd > form { margin-bottom: 5px; margin-top: 5px; }
+
+/* Style the forms and definition lists in the BitBake variables page */
+.variable-list { margin-bottom: 20px; }
+dd.variable-list form { margin-top: 10px; }
+#new-dl_dir,
+#filter-image_fstypes,
+#new-image_install,
+#new-sstate_dir { width: 20em; }
+#package_classes-select { width: 10em; }
+.scrolling { border: 1px solid #dddddd; height: 154px; overflow: auto; padding: 0 10px; width: 27.5%; margin-bottom: 10px; margin-top: 10px; }
+.scrolling.has-error { border-color: #a94442; }
+.help-block.text-danger { color: #a94442; }
+.tooltip-inner code { color: #fff; }
+dd.variable-list .glyphicon-question-sign { font-size: 14px; }
+dd.variable-list .glyphicon-edit { font-size: 16px; }
+dt .glyphicon-trash { margin-left: 5px; font-size: 16px; }
+#change-package_classes-form .checkbox { margin-top: 5px; }
+#variable-form h5 { margin-top: 0; }
+#variable-form .col-md-5 { padding-left: 45px; }
 
 /* Create a class for additional top margin that we can use in headings */
 .top-air { margin-top: 40px; }

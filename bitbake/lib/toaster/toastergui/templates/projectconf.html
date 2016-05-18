@@ -7,72 +7,66 @@
 
 <h2>Bitbake variables</h2>
 
-    <div style="padding-left:19px;">
+    <div>
 
-        <dl class="dl-vertical">
+        <dl>
             {% if distro_defined %}
             <dt>
                 <span class="js-config-var-name js-config-var-managed-name">DISTRO</span>
-                <i class="icon-question-sign get-help" title="The short name of the distribution. If the variable is blank, meta/conf/distro/defaultsetup.conf will be used. <br /><a href='http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-DISTRO' target='_blank'>Read more in the manual</a>"></i>
+                <span class="glyphicon glyphicon-question-sign get-help" title="The short name of the distribution. If the variable is blank, meta/conf/distro/defaultsetup.conf will be used"></span>
             </dt>
-            <dd class="lead">
-                <span id="distro">{{distro}}</span>
-                <i class="icon-pencil" id="change-distro-icon"></i>
-                <form id="change-distro-form" style="display:none;">
-                    <div class="input-append">
-                        <span  id="edit-distro-name-div" class="control-group">
-                            <input type="text" id="new-distro" value="{{distro}}">
-                            <button id="apply-change-distro" class="btn" type="button">Save</button>
-                            <button id="cancel-change-distro" type="button" class="btn btn-link">Cancel</button>
-                        </span>
-                        <span class="help-block error" id="distro-error-message"></span>
-                    </div>
-                </form>
+            <dd class="variable-list">
+							<span class="lead" id="distro">{{distro}}</span>
+							<span class="glyphicon glyphicon-edit" id="change-distro-icon"></span>
+							<form id="change-distro-form" class="form-inline" style="display:none;">
+								<div id="edit-distro-name-div" class="form-group">
+									<input type="text" class="form-control" id="new-distro" value="{{distro}}">
+								</div>
+								<button id="apply-change-distro" class="btn btn-default" type="button">Save</button>
+								<button id="cancel-change-distro" type="button" class="btn btn-link">Cancel</button>
+								<span class="help-block" id="distro-error-message"></span>
+							</form>
             </dd>
             {% endif %}
 
             {% if dl_dir_defined %}
             <dt>
                 <span class="js-config-var-name js-config-var-managed-name">DL_DIR</span>
-                <i class="icon-question-sign get-help" title="Absolute path to the directory used to store downloads required for your builds. By default, Toaster projects share the same downloads directory.<br /><a href='http://www.yoctoproject.org/docs/2.1/ref-manual/ref-manual.html#var-DL_DIR' target='_blank'>Read more in the manual</a>"></i>
+                <span class="glyphicon glyphicon-question-sign get-help" title="Absolute path to the directory used to store downloads required for your builds. By default, Toaster projects share the same downloads directory"></span>
             </dt>
-            <dd class="lead">
-                <span id="dl_dir"{% if dl_dir %}{%else%} class="muted"{%endif%}>{% if dl_dir %}{{dl_dir}}{%else%}Not set{%endif%}</span>
-                <i class="icon-pencil" id="change-dl_dir-icon"></i>
-                <form id="change-dl_dir-form" style="display:none;">
-                    <div class="row">
-                        <span class="help-block col-md-4">To set DL_DIR type the absolute path of the download folder.</span>
-                    </div>
-                    <div class="input-append" id="validate-dl_dir">
-                        <input type="text" class="input-xlarge" id="new-dl_dir" placeholder="Type absolute path of the DL_DIR folder">
-                        <button id="apply-change-dl_dir" class="btn" type="button">Save</button>
-                        <button id="cancel-change-dl_dir" type="button" class="btn btn-link">Cancel</button>
-			</br><span class="help-block error" id="hintError-dl_dir">A valid directory cannot include spaces or any of these characters: . \ ? % * : | " " < ></span>
-                    </div>
-                </form>
+            <dd class="variable-list">
+							<span id="dl_dir" class="lead {% if not dl_dir %} text-muted {% endif %}">{% if dl_dir %}{{dl_dir}}{%else%}Not set{%endif%}</span>
+              <span class="glyphicon glyphicon-edit" id="change-dl_dir-icon"></span>
+              <form id="change-dl_dir-form" class="form-inline" style="display:none;">
+                <div class="form-group" id="validate-dl_dir">
+									<input type="text" class="form-control" id="new-dl_dir" placeholder="Type an absolute path">
+								</div>
+                <button id="apply-change-dl_dir" class="btn btn-default" type="button">Save</button>
+                <button id="cancel-change-dl_dir" type="button" class="btn btn-link">Cancel</button>
+								<p class="help-block" id="hintError-dl_dir">A valid directory cannot include spaces or any of these characters: . \ ? % * : | " " < ></p>
+              </form>
             </dd>
             {% endif %}
 
             {% if fstypes_defined %}
             <dt>
                 <span class="js-config-var-name js-config-var-managed-name">IMAGE_FSTYPES</span>
-                <i class="icon-question-sign get-help" title="Formats of root file system images that you want to have created <br /><a href='http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-IMAGE_FSTYPES' target='_blank'>Read more in the manual</a>"></i>
+                <span class="glyphicon glyphicon-question-sign get-help" title="Formats of root file system images that you want to create"></span>
             </dt>
-            <dd class="lead">
-                <span id="image_fstypes">{{fstypes}}</span>
-                <i class="icon-pencil" id="change-image_fstypes-icon"></i>
+            <dd class="variable-list">
+                <span class="lead" id="image_fstypes">{{fstypes}}</span>
+                <span class="glyphicon glyphicon-edit" id="change-image_fstypes-icon"></span>
                 <form id="change-image_fstypes-form" style="display:none;">
                     <label>Type the image types you want to build:</label>
-                    <div class="input-append" id="validate-image_fstypes">
-                        <input type="text" class="input-xlarge" id="new-imagefs_types">
-                        <button id="apply-change-image_fstypes" type="button" class="btn">Save</button>
+                    <div class="form-group" id="validate-image_fstypes">
+                        <input type="text" class="form-control "id="new-imagefs_types">
+                        <button id="apply-change-image_fstypes" type="button" class="btn btn-default">Save</button>
                         <button id="cancel-change-image_fstypes" type="button" class="btn btn-link">Cancel</button>
                     </div>
-                    <p class="help-block error" style="display:none;margin-top:10px;" id="hintError-image-fs_type">A valid image type cannot include underscores</p>
+                    <p class="help-block text-danger" id="hintError-image-fs_type">A valid image type cannot include underscores</p>
                     <label>Or choose from known image types:</label>
-                    <input id="filter-image_fstypes" type="text" placeholder="Search image types" class="span4">
-                    <div id="all-image_fstypes" class="scrolling">
-                    </div>
+                    <input id="filter-image_fstypes" type="text" placeholder="Search image types" class="form-control">
+                    <div id="all-image_fstypes" class="scrolling"></div>
                 </form>
             </dd>
             {% endif %}
@@ -80,21 +74,23 @@
             {% if image_install_append_defined %}
             <dt>
                 <span class="js-config-var-name js-config-var-managed-name">IMAGE_INSTALL_append</span>
-                <i class="icon-question-sign get-help" title="Specifies additional packages to install into an image. If your build creates more than one image, the packages will be installed in <strong>all of them</strong> <br /><a href='http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-IMAGE_INSTALL' target='_blank'>Read more in the manual</a>"></i>
+                <span class="glyphicon glyphicon-question-sign get-help" title="Specifies additional packages to install into an image. If your build creates more than one image, the packages will be installed in all of them"></span>
             </dt>
-            <dd class="lead">
-                <span id="image_install"{% if image_install_append %}{%else%} class="muted"{%endif%}>{% if image_install_append %}{{image_install_append}}{%else%}Not set{%endif%}</span>
-                <i class="icon-pencil" id="change-image_install-icon"></i>
-                <i class="icon-trash" id="delete-image_install-icon" {% if image_install_append %}{%else%}style="display:none;"{%endif%}></i>
-                <form id="change-image_install-form" style="display:none;">
-                    <div class="row">
-                        <span class="help-block col-md-4">To set IMAGE_INSTALL_append to more than one package, type the package names separated by a space.</span>
-                    </div>
-                    <div class="input-append">
-                        <input type="text" class="input-xlarge" id="new-image_install" placeholder="Type one or more package names">
-                        <button id="apply-change-image_install" class="btn" type="button">Save</button>
-                        <button id="cancel-change-image_install" type="button" class="btn btn-link">Cancel</button>
-                    </div>
+            <dd class="variable-list">
+						<span id="image_install" class="lead {% if not image_install_append %} text-muted {%endif%}">{% if image_install_append %}{{image_install_append}}{%else%}Not set{%endif%}</span>
+                <span class="glyphicon glyphicon-edit" id="change-image_install-icon"></span>
+                <span class="glyphicon glyphicon-trash" id="delete-image_install-icon" {% if image_install_append %}{%else%}style="display:none;"{%endif%}></span>
+                <form id="change-image_install-form" class="form-inline" style="display:none;">
+									<div class="row">
+										<div class="col-md-4">
+											<span class="help-block">To set IMAGE_INSTALL_append to more than one package, type the package names separated by a space.</span>
+										</div>
+									</div>
+                  <div class="form-group">
+										<input type="text" class="form-control" id="new-image_install" placeholder="Type one or more package names">
+									</div>
+									<button id="apply-change-image_install" class="btn btn-default" type="button">Save</button>
+                  <button id="cancel-change-image_install" type="button" class="btn btn-link">Cancel</button>  
                 </form>
             </dd>
             {% endif %}
@@ -102,35 +98,41 @@
             {% if package_classes_defined %}
             <dt>
                 <span class="js-config-var-name js-config-var-managed-name">PACKAGE_CLASSES</span>
-                <i class="icon-question-sign get-help" title="Specifies the package manager to use when packaging data <br /><a href='http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-PACKAGE_CLASSES' target='_blank'>Read more in the manual</a>"></i>
+                <span class="glyphicon glyphicon-question-sign get-help" title="Specifies the package manager to use when packaging data"></span>
             </dt>
-            <dd class="lead">
-                <span id="package_classes">{{package_classes}}</span>
-                <i id="change-package_classes-icon" class="icon-pencil"></i>
+            <dd class="variable-list">
+                <span class="lead" id="package_classes">{{package_classes}}</span>
+                <span id="change-package_classes-icon" class="glyphicon glyphicon-edit"></span>
                 <form id="change-package_classes-form" style="display:none;">
-                    <label>
+									<div class="form-group">
+										<label class="control-label">
                         Root file system package format
-                        <i class="icon-question-sign get-help" title="The package format used to generate the root file system. Options are <code>dev</code>, <code>ipk</code> and <code>rpm</code>"></i>
+                        <span class="glyphicon glyphicon-question-sign get-help" title="The package format used to generate the root file system. Options are <code>deb</code>, <code>ipk</code> and <code>rpm</code>"></i>
                     </label>
-                    <select id="package_classes-select">
+                    <select id="package_classes-select" class="form-control">
                         <option>package_deb</option>
                         <option>package_ipk</option>
                         <option>package_rpm</option>
                     </select>
-                    <label>
+									</div>
+									<div class="form-group">
+										<label class="control-label">
                         Additional package formats
-                        <i class="icon-question-sign get-help" title="Extra package formats to build"></i>
+                        <span class="glyphicon glyphicon-question-sign get-help" title="Extra package formats to build"></span>
                     </label>
-                    <label class="checkbox" id="package_class_1">
+										<div class="checkbox">
+											<label id="package_class_1">
                         <input type="checkbox" id="package_class_1_input"> package_deb
-                    </label>
-                    <label class="checkbox" id="package_class_2">
+											</label>
+										</div>
+										<div class="checkbox">
+											<label id="package_class_2">
                         <input type="checkbox" id="package_class_2_input"> package_ipk
-                    </label>
-                    <div style="padding-top:10px;">
-                        <button id="apply-change-package_classes" type="button" class="btn">Save</button>
-                        <button id="cancel-change-package_classes" type="button" class="btn btn-link">Cancel</button>
-                    </div>
+											</label>
+										</div>
+									</div>
+									<button id="apply-change-package_classes" type="button" class="btn btn-default">Save</button>
+                  <button id="cancel-change-package_classes" type="button" class="btn btn-link">Cancel</button>
                 </form>
             </dd>
             {% endif %}
@@ -138,22 +140,18 @@
             {% if sstate_dir_defined %}
             <dt>
                 <span class="js-config-var-name js-config-var-managed-name">SSTATE_DIR</span>
-                <i class="icon-question-sign get-help" title="Absolute path to the directory used to store shared state cache files. These files are reused across the builds, which makes the builds faster. By default, Toaster projects share the same cache directory.<br /><a href='http://www.yoctoproject.org/docs/2.1/ref-manual/ref-manual.html#var-SSTATE_DIR' target='_blank'>Read more in the manual</a>"></i>
+                <span class="glyphicon glyphicon-question-sign get-help" title="Absolute path to the directory used to store shared state cache files. These files are reused across the builds, which makes the builds faster. By default, Toaster projects share the same cache directory"></span>
             </dt>
-            <dd class="lead">
-                <span id="sstate_dir"{% if sstate_dir %}{%else%} class="muted"{%endif%}>{% if sstate_dir %}{{sstate_dir}}{%else%}Not set{%endif%}</span>
-                <i class="icon-pencil" id="change-sstate_dir-icon"></i>
-                <form id="change-sstate_dir-form" style="display:none;">
-                    <div class="row">
-                        <span class="help-block col-md-4">To set SSTATE_DIR type the absolute path of the download folder.</span>
-                    </div>
-                    <div class="input-append" id="validate-sstate_dir">
-                        <input type="text" class="input-xlarge" id="new-sstate_dir" placeholder="Type absolute path of the SSTATE_DIR folder">
-                        <span class="error">A valid directory name required</span>
-                        <button id="apply-change-sstate_dir" class="btn" type="button">Save</button>
-                        <button id="cancel-change-sstate_dir" type="button" class="btn btn-link">Cancel</button>
-			</br><p class="help-block error" id="hintError-sstate_dir">A valid directory cannot include spaces or any of these characters: . \ ? % * : | " " < ></span>
-                    </div>
+            <dd class="variable-list">
+                <span id="sstate_dir" class="lead {% if not sstate_dir %} text-muted {% endif %}">{% if sstate_dir %}{{sstate_dir}}{%else%}Not set{%endif%}</span>
+                <span class="glyphicon glyphicon-edit" id="change-sstate_dir-icon"></span>
+                <form class="form-inline" id="change-sstate_dir-form" style="display:none;">
+                    <div class="form-group" id="validate-sstate_dir">
+                      <input type="text" class="form-control" id="new-sstate_dir" placeholder="Type an absolute path">
+										</div>
+                    <button id="apply-change-sstate_dir" class="btn btn-default" type="button">Save</button>
+                    <button id="cancel-change-sstate_dir" type="button" class="btn btn-link">Cancel</button>
+										<p class="help-block" id="hintError-sstate_dir">A valid directory cannot include spaces or any of these characters: . \ ? % * : | " " < ></p>
                 </form>
             </dd>
             {% endif %}
@@ -175,46 +173,47 @@
             <input type="hidden" class="js-config-managed-name" value="{{b}}">
         {% endfor %}
 
-        <div class="row">
-          <form id="variable-form">
-            <fieldset style="padding-left:0px;">
-                <legend>Add variable</legend>
-                <div class="col-md-3" style="margin-left:0px;">
-                    <span  id="add-configvar-name-div" class="control-group">
-                      <label>
-                        Variable
-                        <i title="" class="icon-question-sign get-help"
-                           data-original-title="Variable names are case sensitive,
-                           cannot have spaces, and can only include letters, numbers, underscores
-                           and dashes"></i>
-                      </label>
-                      <input type="text" placeholder="Type variable name" id="variable">
-                      <span class="help-block error" id="new-variable-error-message"></span>
-                    </span>
-                    <label>Value</label>
-                    <input id="value" type="text" placeholder="Type variable value"><p>
-                    <div>
-                        <button id="add-configvar-button" class="btn save" type="button" disabled>Add variable</button>
-                    </div>
-                </div>
-                <div class="col-md-5 help-block">
-                    <h5>Some variables are reserved from Toaster</h5>
-                    <p>Toaster cannot set any variables that impact 1) the configuration of the build servers,
-                    or 2) where artifacts produced by the build are stored. Such variables include: </p>
-                    <p>
-                    <code><a href="http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-BB_DISKMON_DIRS" target="_blank">BB_DISKMON_DIRS</a></code>
-                    <code><a href="http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-BB_NUMBER_THREADS" target="_blank">BB_NUMBER_THREADS</a></code>
-                    <code>CVS_PROXY_HOST</code>
-                    <code>CVS_PROXY_PORT</code>
-                    <code><a href="http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-PARALLEL_MAKE" target="_blank">PARALLEL_MAKE</a></code>
-                    <code><a href="http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-SSTATE_MIRRORS" target="_blank">SSTATE_MIRRORS</a></code>
-                    <code><a href="http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-TMPDIR" target="_blank">TMPDIR</a></code></p>
-                    <p>Plus the following standard shell environment variables:</p>
-                    <p><code>http_proxy</code> <code>ftp_proxy</code> <code>https_proxy</code> <code>all_proxy</code></p>
-                </div>
-            </fieldset>
-          </form>
-        </div>
+				<form id="variable-form">
+					<fieldset>
+						<legend>Add variable</legend>
+						<div class="row">
+							<div class="col-md-3">
+								<div id="add-configvar-name-div" class="form-group">
+									<label class="control-label">
+										Variable
+										<span class="glyphicon glyphicon-question-sign get-help"
+											title="Variable names are case sensitive,
+											cannot have spaces, and can only include letters, numbers, underscores
+											and dashes"></span>
+									</label>
+									<input type="text" class="form-control" placeholder="Type the variable name" id="variable">
+								</div>
+								<p class="help-block" id="new-variable-error-message"></p>
+								<div class="form-group">
+									<label clas="control-label">Value</label>
+									<input id="value" type="text" class="form-control" placeholder="Type the variable value">
+								</div>
+								<button id="add-configvar-button" class="btn btn-default save" type="button" disabled>Add variable</button>
+							</div>
+							<div class="col-md-5 help-block">
+								<h5>Some variables cannot be set from Toaster</h5>
+								<p>Toaster cannot set any variables that impact 1) the configuration of the build servers,
+								or 2) where artifacts produced by the build are stored. Such variables include: </p>
+								<p>
+								<code><a href="http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-BB_DISKMON_DIRS" target="_blank">BB_DISKMON_DIRS</a></code>
+								<code><a href="http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-BB_NUMBER_THREADS" target="_blank">BB_NUMBER_THREADS</a></code>
+								<code>CVS_PROXY_HOST</code>
+								<code>CVS_PROXY_PORT</code>
+								<code><a href="http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-PARALLEL_MAKE" target="_blank">PARALLEL_MAKE</a></code>
+								<code><a href="http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-SSTATE_MIRRORS" target="_blank">SSTATE_MIRRORS</a></code>
+								<code><a href="http://www.yoctoproject.org/docs/1.6.1/ref-manual/ref-manual.html#var-TMPDIR" target="_blank">TMPDIR</a></code></p>
+								<p>Plus the following standard shell environment variables:</p>
+								<p><code>http_proxy</code> <code>ftp_proxy</code> <code>https_proxy</code> <code>all_proxy</code></p>
+							</div>
+						</div>
+					</fieldset>
+				</form>
+      </div>
 
     </div>
 
@@ -235,7 +234,7 @@
             var existing_configvars = document.getElementsByClassName('js-config-var-name');
             for (var i = 0, length = existing_configvars.length; i < length; i++) {
                 if (existing_configvars[i].innerHTML.toUpperCase() == variable.toUpperCase()) {
-                    error_msg = "This variable is already set in this page, edit its value instead";
+                    error_msg = "This variable is already set in this page. Edit its value instead";
                 }
             }
 
@@ -270,9 +269,8 @@
                 $(".save").attr("disabled","disabled");
 
                 // add one (and only one) error class append
-                var d = document.getElementById("add-configvar-name-div");
-                d.className = d.className.replace(" error","");
-                d.className = d.className + " error";
+								$("#add-configvar-name-div").addClass("has-error");
+								$("#new-variable-error-message").addClass("text-danger");
 
                 return false;
             } else if (0 == variable.length) {
@@ -280,8 +278,7 @@
                 return false;
             }
 
-            var d = document.getElementById("add-configvar-name-div");
-            d.className = d.className.replace(" error","");
+						$("#add-configvar-name-div").removeClass("has-error");
 
             // now set the "Save" enablement if 'value' also passes
             if (value.trim().length > 0) {
@@ -314,17 +311,32 @@
                 $("#apply-change-distro").attr("disabled","disabled");
 
                 // add one (and only one) error class append
-                var d = document.getElementById("edit-distro-name-div");
-                d.className = d.className.replace(" error","");
-                d.className = d.className + " error";
+                $("#change-distro-form").addClass("has-error");
 
                 return false;
             }
 
-            var d = document.getElementById("edit-distro-name-div");
-            d.className = d.className.replace(" error","");
+						$("#change-distro-form").removeClass("has-error");
             $("#apply-change-distro").removeAttr("disabled");
             return true;
+        }
+
+        // Test to insure at least one FS Type is checked
+        function enableFsTypesSave() {
+            var any_checked = 0;
+            $(".fs-checkbox-fstypes:checked").each(function(){
+                any_checked = 1;
+            });
+            if ( 0 == any_checked ) {
+                $("#apply-change-image_fstypes").attr("disabled","disabled");
+								$('.scrolling').addClass('has-error');
+                $('#fstypes-error-message').show();
+            }
+            else {
+                $("#apply-change-image_fstypes").removeAttr("disabled");
+								$('.scrolling').removeClass('has-error');
+                $('#fstypes-error-message').hide();
+            }
         }
 
         // Preset or reset the Package Class checkbox labels
@@ -350,26 +362,36 @@
 
             // change variable value
             $('.js-icon-pencil-config_var').click(function (evt) {
-                var pk = evt.target.attributes["x-data"].value;
-                var current_val = $("span#config_var_value_"+pk).text();
-                $('.js-icon-pencil-config_var, .js-icon-trash-config_var, #config_var_value_'+pk).hide();
-                $("#change-config_var-form_"+pk).slideDown();
-                $("input#new-config_var_"+pk).val(current_val);
+                var pk = $(this).attr("x-data");
+                var current_val = $("#config_var_value_"+pk).text();
+                $("#config_var_value_"+pk).hide();
+								$("#config_var_trash_"+pk).hide();
+								$(".js-icon-pencil-config_var[x-data="+pk+"]").hide();
+								$("#change-config_var-form_"+pk).slideDown();
+                $("#new-config_var_"+pk).val(current_val);
+								if ( $("#new-config_var_"+pk).val().length ) {
+									$("#apply-change-config_var_"+pk).removeAttr("disabled");
+								} 
+								else { 
+									$("#apply-change-config_var_"+pk).attr("disabled");
+								}
             });
 
             $('.js-cancel-change-config_var').click(function (evt) {
                 var pk = evt.target.attributes["x-data"].value;
                 $("#change-config_var-form_"+pk).slideUp(function() {
-                    $('.js-icon-pencil-config_var, .js-icon-trash-config_var, #config_var_value_'+pk).show();
+										$("#config_var_trash_"+pk).show();
+                    $('#config_var_value_'+pk).show();
+										$(".js-icon-pencil-config_var[x-data="+pk+"]").show();
                 });
             });
 
             $(".js-new-config_var").on('input', function(){
                 if ($(this).val().length == 0) {
-                    $(".js-apply-change-config_var").attr("disabled","disabled");
+                    $(this).parent("div").next(".btn-default").attr("disabled","disabled");
                 }
                 else {
-                    $(".js-apply-change-config_var").removeAttr("disabled");
+                    $(this).parent("div").next(".btn-default").removeAttr("disabled");
                 }
             });
 
@@ -379,25 +401,22 @@
                 var variable = xdata[1];
                 var val      = $('#new-config_var_'+pk).val();
                 postEditAjaxRequest({"configvarChange" : variable+':'+val});
-                $('#config_var_value_'+pk).parent().removeClass('muted');
-                $("#change-config_var-form_"+pk).slideUp(function() {
-                    $('.js-icon-pencil-config_var, .js-icon-trash-config_var, #config_var_value_'+pk).show();
-                });
+                $("#change-config_var-form_"+pk).slideUp();
+								$("#config_var_trash_"+pk).fadeIn();
+                $('#config_var_value_'+pk).fadeIn();
+								$(".js-icon-pencil-config_var[x-data="+pk+"]").fadeIn();
             });
 
             // delete variable
             $(".js-icon-trash-config_var").click(function (evt) {
-                var xdata    = evt.target.attributes["x-data"].value.split(":");
-                var pk       = xdata[0];
-
-                // hide the dangling trash tooltip
-                $('#config_var_trash_'+pk).hide();
-
+								var pk = $(this).attr("x-data");
+                
                 // fade out the variable+value div, then refresh the variable list
-                $('#config_var_entry_'+pk).parent().parent().fadeOut(1000, function(){
-                     postEditAjaxRequest({"configvarDel": evt.target.attributes["x-data"].value});
-                });
-
+								$(this).fadeOut(); 
+								$(this).tooltip("hide");
+								$("config_var_entry_"+pk).fadeOut();
+								$('#config_var_value_'+pk).parent("dd").fadeOut();
+								postEditAjaxRequest({"configvarDel": evt.target.attributes["x-data"].value});
             });
 
         }
@@ -420,18 +439,17 @@
                     }
                 }
                 if (var_context == undefined) {
-                    orightml += '<div> <dt><span id="config_var_entry_'+configvars_sorted[i][2]+'" class="js-config-var-name"></span><i class="icon-trash js-icon-trash-config_var" id="config_var_trash_'+configvars_sorted[i][2]+'" x-data="'+configvars_sorted[i][2]+'"></i> </dt>'
-                    orightml += '<dd class="lead">'
-                    orightml += '    <span id="config_var_value_'+configvars_sorted[i][2]+'"></span>'
-                    orightml += '    <i class="icon-pencil js-icon-pencil-config_var" x-data="'+configvars_sorted[i][2]+'"></i>'
-                    orightml += '    <form id="change-config_var-form_'+configvars_sorted[i][2]+'" style="display:none;">'
-                    orightml += '        <div class="input-append">'
-                    orightml += '            <input type="text" class="input-xlarge js-new-config_var" id="new-config_var_'+configvars_sorted[i][2]+'" value="">'
-                    orightml += '            <button class="btn js-apply-change-config_var" type="button" x-data="'+configvars_sorted[i][2]+':'+configvars_sorted[i][0]+'" disabled>Save</button>'
+                    orightml += '<dt><span id="config_var_entry_'+configvars_sorted[i][2]+'" class="js-config-var-name"></span><span class="glyphicon glyphicon-trash js-icon-trash-config_var" id="config_var_trash_'+configvars_sorted[i][2]+'" x-data="'+configvars_sorted[i][2]+'"></span> </dt>'
+                    orightml += '<dd class="variable-list">'
+                    orightml += '    <span class="lead" id="config_var_value_'+configvars_sorted[i][2]+'"></span>'
+										orightml += '    <span class="glyphicon glyphicon-edit js-icon-pencil-config_var" x-data="'+configvars_sorted[i][2]+'"></span>'
+                    orightml += '    <form class="form-inline" id="change-config_var-form_'+configvars_sorted[i][2]+'" style="display:none;">'
+                    orightml += '        <div class="form-group">'
+										orightml += '            <input type="text" class="form-control js-new-config_var" id="new-config_var_'+configvars_sorted[i][2]+'" value=""></div>'
+                    orightml += '            <button id="apply-change-config_var_'+configvars_sorted[i][2]+'" class="btn btn-default js-apply-change-config_var" type="button" x-data="'+configvars_sorted[i][2]+':'+configvars_sorted[i][0]+'" disabled>Save</button>'
                     orightml += '            <button type="button" class="btn btn-link js-cancel-change-config_var" x-data="'+configvars_sorted[i][2]+'">Cancel</button>'
-                    orightml += '        </div>'
                     orightml += '    </form>'
-                    orightml += '</dd> </div>'
+                    orightml += '</dd>'
                 }
             }
 
@@ -453,7 +471,7 @@
         }
 
         function onEditAjaxSuccess(data, textstatus) {
-            // console.log("XHR returned:", data, "(" + textstatus + ")");
+            console.log("XHR returned:", data, "(" + textstatus + ")");
             if (data.error != "ok") {
                 alert("error on request:\n" + data.error);
                 return;
@@ -504,6 +522,7 @@
                 $('#change-distro-icon, #distro').hide();
                 $("#change-distro-form").slideDown();
                 $("#new-distro").val( $('#distro').text() );
+								$("#apply-change-distro").removeAttr("disabled");
             });
 
             $('#cancel-change-distro').click(function(){
@@ -512,8 +531,7 @@
 
                     // reset any dangling error state
                     $('#distro-error-message').text("");
-                    var d = document.getElementById("edit-distro-name-div");
-                    d.className = d.className.replace(" error","");
+										$("#change-distro-form").removeClass("has-error");
                 });
             });
 
@@ -538,13 +556,21 @@
             // change DL_DIR variable
             $('#change-dl_dir-icon').click(function() {
                 $('#hintError-dl_dir').hide();
-	        // preset the edit value
-                var current_val = $("span#dl_dir").text().trim();
+								$('#change-dl_dir-form').removeClass('has-error');
+								// preset the edit value
+                var current_val = $("#dl_dir").text().trim();
                 if (current_val == "Not set") {
                     current_val="";
                     $("#apply-change-dl_dir").attr("disabled","disabled");
                 }
                 $("input#new-dl_dir").val(current_val);
+								// enable / disable the save button based on the input value
+								if ( current_val.length ) {
+									$("#apply-change-dl_dir").removeAttr("disabled");
+								}
+								else {
+									$("#apply-change-dl_dir").attr("disabled","disabled");
+								}
 
                 $('#change-dl_dir-icon, #dl_dir').hide();
                 $("#change-dl_dir-form").slideDown();
@@ -566,11 +592,11 @@
 	            var invalidDir = re.test(input.val());
 		    console.log(invalidDir);
                     if ( invalidDir ) {
-                        $('#validate-dl_dir').removeClass('control-group error');
+                        $('#change-dl_dir-form').removeClass('has-error');
 			$("#apply-change-dl_dir").removeAttr("disabled");
                         $('#hintError-dl_dir').hide();
                     } else {
-                        $('#validate-dl_dir').addClass('control-group error');
+                        $('#change-dl_dir-form').addClass('has-error');
 			$("#apply-change-dl_dir").attr("disabled","disabled");
                         $('#hintError-dl_dir').show();
                     }
@@ -643,18 +669,18 @@
                 if ("  " != fstypes) {
                     for (var i = 0, length = fstypes_list.length; i < length; i++) {
                         if (0 <= fstypes.indexOf(" "+fstypes_list[i].value+" ")) {
-                             html += '<label class="checkbox"><input type="checkbox" class="fs-checkbox-fstypes" value="'+fstypes_list[i].value+'" checked="checked">'+fstypes_list[i].value+'</label>\n';
+												html += '<div class="checkbox"><label><input type="checkbox" class="fs-checkbox-fstypes" value="'+fstypes_list[i].value+'" checked="checked">'+fstypes_list[i].value+'</label></div>';
                         }
                     }
                 }
                 // Add the un-checked boxes second
                 for (var i = 0, length = fstypes_list.length; i < length; i++) {
                     if (0  > fstypes.indexOf(" "+fstypes_list[i].value+" ")) {
-                        html += '<label class="checkbox"><input type="checkbox" class="fs-checkbox-fstypes" value="'+fstypes_list[i].value+'">'+fstypes_list[i].value+'</label>\n';
+										html += '<div class="checkbox"><label><input type="checkbox" class="fs-checkbox-fstypes" value="'+fstypes_list[i].value+'">'+fstypes_list[i].value+'</label></div>';
                     }
                 }
                 // Add the 'no search matches' line last
-                html += '<label id="no-match-fstypes">No image types found</label>\n';
+                html += '<label id="no-match-fstypes" class="text-muted">No image types found</label>\n';
                 // Display the list
                 document.getElementById("all-image_fstypes").innerHTML = html;
                 $('#no-match-fstypes').hide();
@@ -741,6 +767,7 @@
                 } else {
                     // insure these non-empty values have single space prefix
                     current_val=" " + current_val;
+										$("#apply-change-image_install").removeAttr("disabled");
                 }
                 $("input#new-image_install").val(current_val);
 
@@ -772,7 +799,7 @@
                 var value = " " + $('#new-image_install').val().trim();
                 postEditAjaxRequest({"configvarChange" : 'IMAGE_INSTALL_append:'+value});
                 $('#image_install').text(value);
-                $('#image_install').removeClass('muted');
+                $('#image_install').removeClass('text-muted');
                 $("#change-image_install-form").slideUp(function () {
                     $('#image_install, #change-image_install-icon').show();
                     if (value.length > -1) {
@@ -787,7 +814,7 @@
                 $(this).tooltip('hide');
                 postEditAjaxRequest({"configvarChange" : 'IMAGE_INSTALL_append:'+''});
                 $('#image_install').parent().fadeOut(1000, function(){
-                    $('#image_install').addClass('muted');
+                    $('#image_install').addClass('text-muted');
                     $('#image_install').text('Not set');
                     $('#delete-image_install-icon').hide();
                     $('#image_install').parent().fadeIn(1000);
@@ -888,6 +915,14 @@
                     $("#apply-change-sstate_dir").attr("disabled","disabled");
                 }
                 $("input#new-sstate_dir").val(current_val);
+								
+								// enable / disable the save button based on the input value
+								if ( current_val.length ) {
+									$("#apply-change-sstate_dir").removeAttr("disabled");
+								}
+								else {
+									$("#apply-change-sstate_dir").attr("disabled","disabled");
+								}
 
                 $('#change-sstate_dir-icon, #sstate_dir').hide();
                 $("#change-sstate_dir-form").slideDown();
@@ -909,11 +944,11 @@
 	            var invalidDir = re.test(input.val());
 		    console.log(invalidDir);
                     if ( invalidDir ) {
-                        $('#validate-sstate_dir').removeClass('control-group error');
+                        $('#change-sstate_dir-form').removeClass('has-error');
 			$("#apply-change-sstate_dir").removeAttr("disabled");
                         $('#hintError-sstate_dir').hide();
                     } else {
-                        $('#validate-sstate_dir').addClass('control-group error');
+                        $('#change-sstate_dir-form').addClass('has-error');
 			$("#apply-change-sstate_dir").attr("disabled","disabled");
                         $('#hintError-sstate_dir').show();
                     }
@@ -924,7 +959,7 @@
                 var value = $('#new-sstate_dir').val().trim();
                 postEditAjaxRequest({"configvarChange" : 'SSTATE_DIR:'+value});
                 $('#sstate_dir').text(value);
-                $('#sstate_dir').removeClass('muted');
+                $('#sstate_dir').removeClass('text-muted');
                 $("#change-sstate_dir-form").slideUp(function () {
                     $('#sstate_dir, #change-sstate_dir-icon').show();
                });
