@@ -16,20 +16,9 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from rest_framework import viewsets
-from rest_framework.response import Response
-from rest_framework.decorators import list_route
-
+from rest_framework import serializers
 from orm.models import Project
-from toastergui.db_api_serializers import ProjectSerializer
 
-class ProjectViewSet(viewsets.ModelViewSet):
-    @list_route()
-    def default(self, request):
-        """
-        Return the default (cli builds) project;
-        accessible at /toastergui/db_api/projects/default/
-        """
-        project = Project.objects.get_or_create_default_project()
-        serializer = ProjectSerializer(project)
-        return Response(serializer.data)
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project

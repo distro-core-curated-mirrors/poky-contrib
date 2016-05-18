@@ -26,8 +26,10 @@ from toastergui import typeaheads
 from toastergui import api
 from toastergui import db_api
 
+# routes for the db API; note that routes registered here will be prefixed
+# with /db_api/
 router = routers.DefaultRouter()
-router.register(r'recipes', db_api.DefaultProjectViewSet, 'default')
+router.register(r'projects', db_api.ProjectViewSet, 'projects')
 
 urlpatterns = patterns('toastergui.views',
         # landing page
@@ -192,7 +194,7 @@ urlpatterns = patterns('toastergui.views',
 
           # default redirection
         url(r'^$', RedirectView.as_view(url='landing', permanent=True)),
-
-        # Wire up our db API using automatic URL routing
-        url(r'^db_api/', include(router.urls, namespace='db_api')),
 )
+
+# Wire up our db API using automatic URL routing
+urlpatterns += url(r'^db_api/', include(router.urls, namespace='db_api')),

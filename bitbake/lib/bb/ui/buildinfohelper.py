@@ -54,7 +54,6 @@ from datetime import datetime, timedelta
 
 from django.db import transaction, connection
 
-
 # pylint: disable=invalid-name
 # the logger name is standard throughout BitBake
 logger = logging.getLogger("ToasterLogger")
@@ -73,10 +72,11 @@ class ORMWrapper(object):
         self.layer_version_built = []
         self.task_objects = {}
         self.recipe_objects = {}
+        self.api_client = ToasterApiClient()
 
     ### START DB ACCESSORS
     def get_or_create_default_project(self):
-        return Project.objects.get_or_create_default_project()
+        return self.api_client.get_default_project()
 
     def get_or_create(self, clazz, **kwargs):
         return clazz.objects.get_or_create(**kwargs)
