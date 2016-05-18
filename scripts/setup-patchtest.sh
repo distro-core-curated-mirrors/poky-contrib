@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -x
-
 SCRIPTS_DIR=`dirname $0`
 PATCHTEST_BASE=`readlink -e $SCRIPTS_DIR/..`
 REQUIREMENTS_FILENAME='requirements.txt'
