@@ -84,6 +84,9 @@ class ORMWrapper(object):
     def get(self, clazz, **kwargs):
         return clazz.objects.get(**kwargs)
 
+    def get_by_pk(self, clazz, pk):
+        return self.api_client.get_by_pk(clazz, pk)
+
     def get_buildrequest_layers(self, buildrequest):
         return buildrequest.brlayer_set.all()
 
@@ -134,8 +137,8 @@ class ORMWrapper(object):
         buildrequest = None
         if brbe is not None:            # this build was triggered by a request from a user
             logger.debug(1, "buildinfohelper: brbe is %s" % brbe)
-            br, _ = brbe.split(":")
-            buildrequest = self.get(BuildRequest, pk=br)
+            br_pk, _ = brbe.split(":")
+            buildrequest = self.get_by_pk(BuildRequest, br_pk)
             prj = buildrequest.project
 
         elif project_id is not None:    # this build was triggered by an external system for a specific project
@@ -189,6 +192,7 @@ class ORMWrapper(object):
                 task = task[3:]
             if task == 'build':
                 task = ''
+
             obj, created = self.get_or_create(
                 Target, build=target_info['build'], target=target)
             if created:

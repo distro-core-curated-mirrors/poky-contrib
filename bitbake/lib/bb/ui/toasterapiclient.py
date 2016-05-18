@@ -16,25 +16,25 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-os.environ["DJANGO_SETTINGS_MODULE"] = "toaster.toastermain.settings"
-
 import sys
 import os
 import logging
 
 import django
 import requests
-from rest_framework.reverse import reverse
+from django.core import serializers
+from django.core.urlresolvers import reverse
 from rest_framework.parsers import JSONParser
-
-from orm.models import Project
 
 def _configure_paths():
     """ Add toaster to sys path for importing modules """
     sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'toaster'))
 _configure_paths()
 
+os.environ["DJANGO_SETTINGS_MODULE"] = "toaster.toastermain.settings"
 django.setup()
+
+from orm.models import Project
 
 logger = logging.getLogger("ToasterLogger")
 
@@ -42,6 +42,7 @@ class ToasterApiClient(object):
     """
     Client for the Toaster database API
     """
+
     def __init__(self, endpoint='http://localhost:8000'):
         self.endpoint = endpoint
         self.json_parser = JSONParser()
@@ -52,23 +53,30 @@ class ToasterApiClient(object):
             'Accept': 'application/json'
         }
 
-    def _get(self, view_name):
-        url = "%s%s" % (self.endpoint, reverse(view_name))
-        response = requests.get(url, headers=self.json_headers, stream=True)
+    def _get(self, view_name, args=(), params={}):
+        url = "%s%s" % (self.endpoint, reverse(view_name, args=args))
+
+        # use stream=True so that the Django REST Framework JSON parser can
+        # do its job on the response.raw property
+        response = requests.get(url,
+                                headers=self.json_headers,
+                                params=params,
+                                stream=True)
         return response
 
-    def _parse_response(self, response):
-        """
-        Parse response with JSON stream to Python dict
-
-        response: must have been fetched with stream=True, so that it has a raw
-        stream property
-
-        returns a Python dict
-        """
-        return self.json_parser.parse(response.raw)
-
     def get_default_project(self):
-        response = self._get('db_api:projects-default')
-        data = self._parse_response(response)
+        view_name = 'db_api:projects-default'
+        response = self._get(view_name)
+        data = self.json_parser.parse(response.raw)
         return Project(**data)
+
+    def get_by_pk(self, clazz, pk):
+        """
+        Get an object of class clazz, using pk for lookup
+        """
+        view_name = 'db_api:generic-detail'
+        params = {'class_name': clazz.__name__}
+        response = self._get(view_name, args=(pk,), params=params)
+        objects = serializers.deserialize('json', response.json())
+        obj = next(objects).object
+        return obj
