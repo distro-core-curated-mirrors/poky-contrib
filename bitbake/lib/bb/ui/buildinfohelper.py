@@ -46,6 +46,8 @@ from orm.models import Project, CustomImagePackage, CustomImageRecipe
 
 from bldcontrol.models import BuildEnvironment, BuildRequest
 
+from toasterapiclient import ToasterApiClient
+
 from bb.msg import BBLogFormatter as formatter
 from django.db import models
 from pprint import pformat
@@ -78,37 +80,35 @@ class ORMWrapper(object):
     def get_or_create_default_project(self):
         return self.api_client.get_default_project()
 
-    def get_or_create(self, clazz, **kwargs):
-        return clazz.objects.get_or_create(**kwargs)
-
-    def get(self, clazz, **kwargs):
-        return clazz.objects.get(**kwargs)
-
     def get_by_pk(self, clazz, pk):
         return self.api_client.get_by_pk(clazz, pk)
 
+    def get_or_create(self, clazz, **kwargs):
+        return self.api_client.get_or_create(clazz, **kwargs)
+
+    def get(self, clazz, **kwargs):
+        return self.api_client.get(clazz, **kwargs)
+
     def get_buildrequest_layers(self, buildrequest):
-        return buildrequest.brlayer_set.all()
+        return self.api_client.get_buildrequest_layers(buildrequest)
 
     def get_project_layers(self, buildrequest, buildrequest_layer):
-        return buildrequest.project.projectlayer_set.filter(layercommit__layer__name=buildrequest_layer.name)
+        return self.api_client.get_project_layers(buildrequest, buildrequest_layer)
 
     def filter(self, clazz, **kwargs):
-        return clazz.objects.filter(**kwargs)
+        return self.api_client.filter(clazz, **kwargs)
 
     def create(self, clazz, **kwargs):
-        return clazz.objects.create(**kwargs)
+        return self.api_client.create(clazz, **kwargs)
 
     def bulk_create(self, clazz, objs):
-        return clazz.objects.bulk_create(objs)
+        return self.api_client.bulk_create(clazz, objs)
 
     def save(self, obj):
-        obj.save()
-        return obj
+        return self.api_client.save(obj)
 
     def remove_package_dependencies(self, package):
-        package.package_dependencies_target.all().delete()
-        package.package_dependencies_source.all().delete()
+        self.api_client.remove_package_dependencies(package)
     ### END DB ACCESSORS
 
     def _timestamp_to_datetime(self, secs):

@@ -80,3 +80,33 @@ class ToasterApiClient(object):
         objects = serializers.deserialize('json', response.json())
         obj = next(objects).object
         return obj
+
+    # methods still to be converted
+    def get_or_create(self, clazz, **kwargs):
+        return clazz.objects.get_or_create(**kwargs)
+
+    def get(self, clazz, **kwargs):
+        return clazz.objects.get(**kwargs)
+
+    def get_buildrequest_layers(self, buildrequest):
+        return buildrequest.brlayer_set.all()
+
+    def get_project_layers(self, buildrequest, buildrequest_layer):
+        return buildrequest.project.projectlayer_set.filter(layercommit__layer__name=buildrequest_layer.name)
+
+    def filter(self, clazz, **kwargs):
+        return clazz.objects.filter(**kwargs)
+
+    def create(self, clazz, **kwargs):
+        return clazz.objects.create(**kwargs)
+
+    def bulk_create(self, clazz, objs):
+        return clazz.objects.bulk_create(objs)
+
+    def save(self, obj):
+        obj.save()
+        return obj
+
+    def remove_package_dependencies(self, package):
+        package.package_dependencies_target.all().delete()
+        package.package_dependencies_source.all().delete()
