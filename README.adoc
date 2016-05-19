@@ -3,11 +3,13 @@
 Patchtest can run on either a host or a guest machine. If patchtest is intented
 to be run automatically, it makes sense to run it inside a guest machine.
 On this guide, guest installation/executing is done using https://www.vagrantup.com/[vagrant]
-with libvirt as provider and kvm/qemu as kernel/user-space hypervisors.
+with libvirt as provider and kvm/qemu as kernel/user-space hypervisors. Patchtest installation
+and execution depends on where patchtest will be executed (host or guest),
+so the following two sections present both targets.
 
-[[host-installation]]
 === Host
 
+[[host-installation]]
 [source,shell]
 ----
 host:~$ sudo apt-get update
@@ -91,14 +93,14 @@ Provisioning the new machine will take some time: it will execute all steps ment
 ----
 host:vagrant-patchtest$ vagrant ssh
 guest:~$ cd /vagrant/patchtest
-guest:patchtest$ git subcommand add https://github.com/lsandoval/patchtest-sample-test-suite tests/sample
+guest:patchtest$ git submodule add https://github.com/lsandoval/patchtest-sample-test-suite tests/sample
 guest:patchtest$ scripts/setup-patchtest.sh
 guest:patchtest$ exit
 host:vagrant-patchtest$
 ----
 
-Under the vagrant-patchtest folder, run the following command every time you need to
-process new series
+Under the vagrant-patchtest folder, run the following command every time you need to process latest
+(if case there are) series
 
 [source,shell]
 ----
