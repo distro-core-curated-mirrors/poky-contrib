@@ -1,0 +1,106 @@
+== Patchtest
+
+Patchtest can run on either a host or a guest machine. If patchtest is intented
+to be run automatically, it makes sense to run it inside a guest machine.
+On this guide, guest installation/executing is done using https://www.vagrantup.com/[vagrant]
+with libvirt as provider and kvm/qemu as kernel/user-space hypervisors.
+
+[[host-installation]]
+=== Host
+
+[source,shell]
+----
+host:~$ sudo apt-get update
+host:~$ sudo apt-get install -y git python python-virtualenv python-pip
+----
+
+Then, define the following variables manually
+
+[source,shell]
+----
+host:~$ REPODIR=""   #<Define where you want the repository to be located>
+host:~$ REPOURL=""   #<Define the repository's git URL>
+host:~$ PWURL=""     #<Define where the Patchwork's URL>
+host:~$ PWPROJECT="" #<Define patchwork's related project>
+host:~$ PWUSER=""    #<Define the Patchwork's user>
+host:~$ PWPASS=""    #<Define the PWUSER's password>
+----
+
+For example, these settings correspond to the http://git.yoctoproject.org/cgit/cgit.cgi/poky/[poky]
+project
+
+[source,shell]
+----
+host:~$ REPODIR="$HOME/poky"
+host:~$ REPOURL="http://git.yoctoproject.org/git/poky"
+host:~$ PWURL="http://patchwork.openembedded.org/"
+host:~$ PWPROJECT="oe-core"
+host:~$ PWUSER="xxxx"
+host:~$ PWPASS="yyyy"
+----
+
+finally, clone the patchtest repository and install the test suite as submodule
+
+[source,shell]
+----
+host:~$ git clone ssh://git@git.yoctoproject.org/patchtest
+host:~$ cd patchtest
+host:patchtest$ git subcommand add https://github.com/lsandoval/patchtest-sample-test-suite tests/sample
+host:patchtest$ scripts/setup-patchtest.sh
+host:patchtest$ scripts/setup-repodir.sh $REPODIR $REPOURL $PWURL $PWPROJECT $PWUSER $PWPASS
+----
+
+https://github.com/lsandoval/patchtest-sample-test-suite[A sample test suite] is provided for demo purposes
+(a template) but for real purposes, create a test suite targeting your project purposes.
+
+Under the patchtest folder, run the following command every time you need to process
+latest (if case there are) series
+
+[source,shell]
+----
+REPODIR="$HOME/poky"
+host:patchtest$ scripts/run-patchtest.sh $REPODIR
+----
+
+=== Guest
+
+Install http://wiki.qemu.org/Main_Page[qemu] and https://libvirt.org/[libvirt] on your system.
+Then install vagrant (check main page for installation instructions) and the following plugin
+
+[source,shell]
+----
+host:~$ vagrant plugin install vagrant-libvirt
+----
+
+Vagrant needs a base folder, which is the folder to be shared between host and guest, so
+create one and clone patchtest from it
+
+[source,shell]
+----
+host:~$ mkdir vagrant-patchtest
+host:~$ cd vagrant-patchtest
+host:vagrant-patchtest$ git clone ssh://git@git.yoctoproject.org/patchtest
+host:vagrant-patchtest$ cp patchtest/vagrant/Vagrantfile .
+host:vagrant-patchtest$ vagrant up --provider libvirt
+----
+
+Provisioning the new machine will take some time: it will execute all steps mentioned on the
+<<host-installation, Host installation>> automatically. Finally, connect to it and install the test suite as submodule
+
+[source,shell]
+----
+host:vagrant-patchtest$ vagrant ssh
+guest:~$ cd /vagrant/patchtest
+guest:patchtest$ git subcommand add https://github.com/lsandoval/patchtest-sample-test-suite tests/sample
+guest:patchtest$ scripts/setup-patchtest.sh
+guest:patchtest$ exit
+host:vagrant-patchtest$
+----
+
+Under the vagrant-patchtest folder, run the following command every time you need to
+process new series
+
+[source,shell]
+----
+host:vagrant-patchtest$ vagrant provision
+----
