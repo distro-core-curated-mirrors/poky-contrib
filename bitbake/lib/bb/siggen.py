@@ -140,9 +140,6 @@ class SignatureGeneratorBasic(SignatureGenerator):
         self.gendeps[fn] = gendeps
         self.lookupcache[fn] = lookupcache
 
-        for task in tasklist:
-            self.dump_sigtask(fn, task, d.getVar("STAMP", True), False)
-
         return taskdeps
 
     def finalise(self, fn, d, variant):
