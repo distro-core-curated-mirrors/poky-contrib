@@ -149,7 +149,7 @@
     {% if build.project.is_default %}
     <span class="glyphicon glyphicon-question-sign get-help get-help-blue pull-right" title="Builds in this project cannot be cancelled from Toaster: they can only be cancelled from the command line"></span>
     {% else %}
-      <a href="#" class="cancel-build-btn pull-right"
+      <a href="#" class="cancel-build-btn pull-right alert-link"
           data-buildrequest-id={{build.buildrequest.pk}}
           data-request-url="{% url 'xhr_buildrequest' build.project.pk %}" >
         <span class="glyphicon glyphicon-remove-circle"></span>
