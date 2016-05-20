@@ -117,7 +117,7 @@
                   " title="Builds in this project cannot be started from Toaster: they are started from the command line">
                   </span>
               {% else %}
-                  <a href="#" class="run-again-btn
+                  <a href="#" class="run-again-btn alert-link
                       {% if build.outcome == build.SUCCEEDED %}
                           success
                       {% elif build.outcome == build.FAILED %}
@@ -165,7 +165,7 @@
       Build cancelled
     </div>
     <div class="col-md-3">
-      <a href="#" class="info pull-right run-again-btn"
+      <a href="#" class="info pull-right run-again-btn alert-link"
         data-request-url="{% url 'xhr_buildrequest' build.project.pk %}"
         data-target='{{build.target_set.all|get_tasks|json}}'>
         <span class="glyphicon glyphicon-repeat"></span>
