@@ -407,6 +407,9 @@ function tableInit(ctx){
     var hasNoRecords = (Number(filterActionData.count) == 0);
 
     var actionStr = '<div class="radio">' +
+										'<label class="filter-title' +
+										(hasNoRecords ? ' text-muted' : '') + '"' +
+										'       for="' + filterName + '">' +
                     '<input type="radio" name="filter"' +
                     '       value="' + filterName + '"';
 
@@ -417,11 +420,8 @@ function tableInit(ctx){
     actionStr += ' id="' + filterName + '">' +
                  '<input type="hidden" name="filter_value" value="on"' +
                  '       data-value-for="' + filterName + '">' +
-                 '<label class="filter-title' +
-                 (hasNoRecords ? ' muted' : '') + '"' +
-                 '       for="' + filterName + '">' +
-                 filterActionData.title +
-                 ' (' + filterActionData.count + ')' +
+								 filterActionData.title +
+								 ' (' + filterActionData.count + ')' +
                  '</label>' +
                  '</div>';
 
@@ -457,22 +457,23 @@ function tableInit(ctx){
    */
   function createActionDateRange(filterName, filterValue, filterActionData) {
     var action = $('<div class="radio">' +
+                   '<label class="filter-title"' +
+                   '       for="' + filterName + '">' +
                    '<input type="radio" name="filter"' +
                    '       value="' + filterName + '" ' +
                    '       id="' + filterName + '">' +
                    '<input type="hidden" name="filter_value" value=""' +
                    '       data-value-for="' + filterName + '">' +
-                   '<label class="filter-title"' +
-                   '       for="' + filterName + '">' +
                    filterActionData.title +
                    '</label>' +
-                   '<input type="text" maxlength="10" class="input-sm"' +
+									 '<div class="form-inline form-group date-filter-controls">' +
+                   '<input type="text" maxlength="10" class="form-control"' +
                    '       data-date-from-for="' + filterName + '">' +
-                   '<span class="help-inline">to</span>' +
-                   '<input type="text" maxlength="10" class="input-sm"' +
+                   '<span>to</span>' +
+                   '<input type="text" maxlength="10" class="form-control"' +
                    '       data-date-to-for="' + filterName + '">' +
                    '<span class="help-inline get-help">(yyyy-mm-dd)</span>' +
-                   '</div>');
+                   '</div></div>');
 
     var radio = action.find('[type="radio"]');
     var value = action.find('[data-value-for]');
@@ -654,7 +655,7 @@ function tableInit(ctx){
             if (action) {
               // Setup the current selected filter; default to 'all' if
               // no current filter selected
-              var radioInput = action.children('input[name="filter"]');
+              var radioInput = action.find('input[name="filter"]');
               if ((tableParams.filter &&
                   tableParams.filter === radioInput.val()) ||
                   filterActionData.action_name == 'all') {

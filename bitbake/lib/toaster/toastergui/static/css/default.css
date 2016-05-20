@@ -226,3 +226,8 @@ code { color: #333; background-color: transparent; }
 
 /* Style the special no results message in the custom image details page */
 [id^="no-results-special-"] > .alert-warning > ol { margin-top: 10px; }
+
+/* Style the content of modal dialogs */
+.modal-footer { text-align: left; }
+.date-filter-controls { margin-top: 10px; }
+.date-filter-controls span { margin: 0 10px; }
