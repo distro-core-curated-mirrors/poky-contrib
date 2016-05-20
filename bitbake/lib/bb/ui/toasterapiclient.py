@@ -19,6 +19,7 @@
 import sys
 import os
 import logging
+import json
 
 import django
 import requests
@@ -53,6 +54,27 @@ class ToasterApiClient(object):
             'Accept': 'application/json'
         }
 
+        # number of method calls
+        self.method_calls = {}
+
+        # model classes touched
+        self.touched_models = []
+
+    def _record_method_call(self, method_name, clazz=None):
+        """
+        Models can either be a single model or a list of models/dictionaries
+        used to created models
+        """
+        if clazz:
+            class_name = clazz.__name__
+            if not class_name in self.touched_models:
+                self.touched_models.append(class_name)
+
+        if not method_name in self.method_calls:
+            self.method_calls[method_name] = 0
+
+        self.method_calls[method_name] += 1
+
     def _get(self, view_name, args=(), params={}):
         url = "%s%s" % (self.endpoint, reverse(view_name, args=args))
 
@@ -64,7 +86,19 @@ class ToasterApiClient(object):
                                 stream=True)
         return response
 
+    def dump_stats(self):
+        print('')
+        print('************************** DATABASE ACCESS STATS')
+        print('')
+        print('Method calls:')
+        print(json.dumps(self.method_calls, indent=2))
+        print('')
+        print('Model classes for create/bulk_create/get_or_create/filter:')
+        print(json.dumps(self.touched_models, indent=2))
+        print('')
+
     def get_default_project(self):
+        self._record_method_call('get_or_create_default_project', Project)
         view_name = 'db_api:projects-default'
         response = self._get(view_name)
         data = self.json_parser.parse(response.raw)
@@ -74,6 +108,7 @@ class ToasterApiClient(object):
         """
         Get an object of class clazz, using pk for lookup
         """
+        self._record_method_call('get_by_pk', clazz)
         view_name = 'db_api:generic-detail'
         params = {'class_name': clazz.__name__}
         response = self._get(view_name, args=(pk,), params=params)
@@ -83,30 +118,45 @@ class ToasterApiClient(object):
 
     # methods still to be converted
     def get_or_create(self, clazz, **kwargs):
-        return clazz.objects.get_or_create(**kwargs)
+        obj = clazz.objects.get_or_create(**kwargs)
+        self._record_method_call('get_or_create', clazz)
+        return obj
 
     def get(self, clazz, **kwargs):
-        return clazz.objects.get(**kwargs)
+        obj = clazz.objects.get(**kwargs)
+        self._record_method_call('get')
+        return obj
 
     def get_buildrequest_layers(self, buildrequest):
-        return buildrequest.brlayer_set.all()
+        layers = buildrequest.brlayer_set.all()
+        self._record_method_call('get_buildrequest_layers')
+        return layers
 
     def get_project_layers(self, buildrequest, buildrequest_layer):
-        return buildrequest.project.projectlayer_set.filter(layercommit__layer__name=buildrequest_layer.name)
+        layers = buildrequest.project.projectlayer_set.filter(layercommit__layer__name=buildrequest_layer.name)
+        self._record_method_call('get_project_layers')
+        return layers
 
     def filter(self, clazz, **kwargs):
+        self._record_method_call('filter', clazz)
         return clazz.objects.filter(**kwargs)
 
     def create(self, clazz, **kwargs):
-        return clazz.objects.create(**kwargs)
+        obj = clazz.objects.create(**kwargs)
+        self._record_method_call('create', clazz)
+        return obj
 
-    def bulk_create(self, clazz, objs):
-        return clazz.objects.bulk_create(objs)
+    def bulk_create(self, clazz, dicts):
+        objs = clazz.objects.bulk_create(dicts)
+        self._record_method_call('bulk_create', clazz)
+        return objs
 
     def save(self, obj):
+        self._record_method_call('save', obj.__class__)
         obj.save()
         return obj
 
     def remove_package_dependencies(self, package):
+        self._record_method_call('remove_package_dependencies')
         package.package_dependencies_target.all().delete()
         package.package_dependencies_source.all().delete()

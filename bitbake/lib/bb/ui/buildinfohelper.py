@@ -1537,3 +1537,5 @@ class BuildInfoHelper(object):
         # being incorrectly attached to the previous Toaster-triggered build;
         # see https://bugzilla.yoctoproject.org/show_bug.cgi?id=9021
         self.brbe = None
+
+        self.orm_wrapper.api_client.dump_stats()
