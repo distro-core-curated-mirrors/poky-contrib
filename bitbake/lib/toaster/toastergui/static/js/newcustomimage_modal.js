@@ -22,14 +22,17 @@ function newCustomImageModalInit(){
   var nameInput = imgCustomModal.find('input');
 
   var invalidNameMsg = "Image names cannot contain spaces or capital letters. The only allowed special character is dash (-).";
-  var duplicateNameMsg = "A recipe with this name already exists. Image names must be unique.";
+  var duplicateNameMsg = "An image with this name already exists. Image names must be unique.";
   var duplicateImageInProjectMsg = "An image with this name already exists in this project."
   var invalidBaseRecipeIdMsg = "Please select an image to customise.";
-
-  // capture clicks on radio buttons inside the modal; when one is selected,
-  // set the recipe on the modal
+	
+	// capture clicks on radio buttons inside the modal; when one is selected,
+	// set the recipe on the modal
   imgCustomModal.on("click", "[name='select-image']", function (e) {
     clearRecipeError();
+		$(".radio").each(function(){
+			$(this).removeClass("has-error");
+		});
 
     var recipeId = $(e.target).attr('data-recipe');
     imgCustomModal.data('recipe', recipeId);
@@ -42,6 +45,9 @@ function newCustomImageModalInit(){
 
     if (!baseRecipeId) {
       showRecipeError(invalidBaseRecipeIdMsg);
+			$(".radio").each(function(){
+				$(this).addClass("has-error");
+			});
       return;
     }
 
@@ -71,7 +77,7 @@ function newCustomImageModalInit(){
   function showNameError(text){
     invalidNameHelp.text(text);
     invalidNameHelp.show();
-    nameInput.parent().addClass('error');
+    nameInput.parent().addClass('has-error');
   }
 
   function showRecipeError(text){
@@ -92,11 +98,11 @@ function newCustomImageModalInit(){
     if (nameInput.val().search(/[^a-z|0-9|-]/) != -1){
       showNameError(invalidNameMsg);
       newCustomImgBtn.prop("disabled", true);
-      nameInput.parent().addClass('error');
+      nameInput.parent().addClass('has-error');
     } else {
       invalidNameHelp.hide();
       newCustomImgBtn.prop("disabled", false);
-      nameInput.parent().removeClass('error');
+      nameInput.parent().removeClass('has-error');
     }
   });
 }
@@ -134,15 +140,29 @@ function newCustomImageModalSetRecipes(baseRecipes) {
     for (var i = 0; i < baseRecipes.length; i++) {
       var recipe = baseRecipes[i];
       imageSelectRadiosContainer.append(
-        '<label class="radio" data-role="image-radio">' +
-        recipe.name +
-        '<input type="radio" class="form-control" name="select-image" ' +
+        '<div class="radio"><label data-role="image-radio">' +
+        '<input type="radio" name="select-image" ' +
         'data-recipe="' + recipe.id + '">' +
-        '</label>'
+        recipe.name +
+        '</label></div>'
       );
     }
 
-    // show the radio button container
+		// select the first radio button as default selection. Radio button
+		// groups should always display with an option checked		
+		imageSelectRadiosContainer.find("input:radio:first").attr("checked", "checked");
+
+		// check which radio button is selected by default inside the modal,
+		// and set the recipe on the modal accordingly
+		imageSelectRadiosContainer.find("input:radio").each(function(){
+			if ( $(this).is(":checked") ) {
+				var recipeId = $(this).attr("data-recipe");
+				imgCustomModal.data("recipe", recipeId);
+			}
+		}); 
+    
+		// show the radio button container
     imageSelector.show();
-  }
+	 
+  }	
 }
