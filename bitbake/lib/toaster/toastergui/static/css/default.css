@@ -242,3 +242,6 @@ code { color: #333; background-color: transparent; }
 /* Style the new project form */
 #new-project-name { width: 33%; }
 #projectversion { width: 20%; margin-bottom: 10px; }
+
+/* Style the Toaster screenshot in the landing page */
+.img-thumbnail { padding: 0; }

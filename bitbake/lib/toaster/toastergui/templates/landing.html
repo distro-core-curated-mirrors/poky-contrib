@@ -15,13 +15,13 @@
               <p>A web interface to <a href="http://www.openembedded.org">OpenEmbedded</a> and <a href="http://www.yoctoproject.org/tools-resources/projects/bitbake">BitBake</a>, the <a href="http://www.yoctoproject.org">Yocto Project</a> build system.</p>
 
 		          {% if lvs_nos %}
-		            <p>
-		              <a class="btn btn-primary btn-large" href="{% url 'newproject' %}">
+		            <p class="top-air">
+		              <a class="btn btn-primary btn-lg" href="{% url 'newproject' %}">
 			              To start building, create your first Toaster project
 		              </a>
 		            </p>
 		          {% else %}
-                <div class="alert alert-info lead air">
+                <div class="alert alert-info lead top-air">
                   Toaster has no layer information. Without layer information, you cannot run builds. To generate layer information you can:
                   <ul>
                     <li>
@@ -34,7 +34,7 @@
                 </div>
               {% endif %}
 
-              <ul class="list-unstyled">
+              <ul class="list-unstyled lead">
                 <li>
                   <a href="http://www.yoctoproject.org/docs/latest/toaster-manual/toaster-manual.html">
                     Read the Toaster manual
@@ -50,7 +50,7 @@
             </div>
 
             <div class="col-md-6">
-              <img alt="Yocto Project" class="img-thumbnail" src="{% static 'img/toaster_bw.png' %}"/>
+              <img alt="Yocto Project Toaster" class="img-thumbnail" src="{% static 'img/toaster_bw.png' %}"/>
             </div>
 
         </div>
