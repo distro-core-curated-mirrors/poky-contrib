@@ -17,9 +17,9 @@
 </script>
 
 <div class="col-md-12">
-  <div class="alert alert-success lead" id="project-created-notification" style="margin-top:15px; display:none">
+  <div class="alert alert-success change-notification" id="project-created-notification" style="display:none">
     <button type="button" class="close" data-dismiss="alert">×</button>
-  Your project <strong>{{project.name}}</strong> has been created. You can now <a href="{% url 'projectmachines' project.id %}">select your target machine</a> and <a href="{% url 'projectimagerecipes' project.id %}">choose image recipes</a> to build.
+		<p>Your project <strong>{{project.name}}</strong> has been created. You can now <a class="alert-link" href="{% url 'projectmachines' project.id %}">select your target machine</a> and <a class="alert-link" href="{% url 'projectimagerecipes' project.id %}">choose image recipes</a> to build.</p>
   </div>
   <!-- project name -->
   <div class="page-header">

@@ -75,7 +75,7 @@ function projectPageInit(ctx) {
       imported = JSON.parse(imported);
 
     if (imported.deps_added.length === 0) {
-      message = "You have imported <strong><a href=\""+imported.imported_layer.layerdetailurl+"\">"+imported.imported_layer.name+"</a></strong> and added it to your project.";
+      message = "You have imported <strong><a class=\"alert-link\" href=\""+imported.imported_layer.layerdetailurl+"\">"+imported.imported_layer.name+"</a></strong> and added it to your project.";
     } else {
 
       var links = "<a href=\""+imported.imported_layer.layerdetailurl+"\">"+imported.imported_layer.name+"</a>, ";
@@ -285,7 +285,7 @@ function projectPageInit(ctx) {
         machineChangeCancel.click();
 
         /* Show the alert message */
-        var message = $('<span class="lead">You have changed the machine to: <strong><span id="notify-machine-name"></span></strong></span>');
+        var message = $('<span>You have changed the machine to: <strong><span id="notify-machine-name"></span></strong></span>');
         message.find("#notify-machine-name").text(currentMachineAddSelection);
         libtoaster.showChangeNotification(message);
     },

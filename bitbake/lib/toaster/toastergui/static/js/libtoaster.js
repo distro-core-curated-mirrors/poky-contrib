@@ -300,11 +300,11 @@ var libtoaster = (function () {
     var alertMsg;
 
     if (layerDepsList.length > 0 && add === true) {
-      alertMsg = $("<span>You have added <strong>"+(layerDepsList.length+1)+"</strong> layers to your project: <a id=\"layer-affected-name\"></a> and its dependencies </span>");
+      alertMsg = $("<span>You have added <strong>"+(layerDepsList.length+1)+"</strong> layers to your project: <a class=\"alert-link\" id=\"layer-affected-name\"></a> and its dependencies </span>");
 
       /* Build the layer deps list */
       layerDepsList.map(function(layer, i){
-        var link = $("<a></a>");
+        var link = $("<a class=\"alert-link\"></a>");
 
         link.attr("href", layer.layerdetailurl);
         link.text(layer.name);
@@ -316,9 +316,9 @@ var libtoaster = (function () {
         alertMsg.append(link);
       });
     } else if (layerDepsList.length === 0 && add === true) {
-      alertMsg = $("<span>You have added <strong>1</strong> layer to your project: <a id=\"layer-affected-name\"></a></span></span>");
+      alertMsg = $("<span>You have added <strong>1</strong> layer to your project: <a class=\"alert-link\" id=\"layer-affected-name\"></a></span></span>");
     } else if (add === false) {
-      alertMsg = $("<span>You have removed <strong>1</strong> layer from your project: <a id=\"layer-affected-name\"></a></span>");
+      alertMsg = $("<span>You have removed <strong>1</strong> layer from your project: <a class=\"alert-link\" id=\"layer-affected-name\"></a></span>");
     }
 
     alertMsg.children("#layer-affected-name").text(layer.name);

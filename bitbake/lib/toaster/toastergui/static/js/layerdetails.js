@@ -297,7 +297,7 @@ function layerDetailsPageInit (ctx) {
 
       setLayerInCurrentPrj(add);
 
-      $("#alert-area").show();
+      libtoaster.showChangeNotification(alertMsg);
     });
   });
 
