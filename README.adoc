@@ -7,7 +7,12 @@ with libvirt as provider and kvm/qemu as kernel/user-space hypervisors. Patchtes
 and execution depends on where patchtest will be executed (host or guest),
 so the following two sections present both targets.
 
+[[host]]
 === Host
+
+WARNING: Testing series coming from patchwork without inspection may be risky on a insufficiently secured
+environment; if this is the case, consider executing patchtest in a guest machine as indicated on the
+<<guest, guest >> section.
 
 [[host-installation]]
 [source,shell]
@@ -64,6 +69,7 @@ REPODIR="$HOME/poky"
 host:patchtest$ scripts/run-patchtest.sh $REPODIR
 ----
 
+[[guest]]
 === Guest
 
 Install http://wiki.qemu.org/Main_Page[qemu] and https://libvirt.org/[libvirt] on your system.
