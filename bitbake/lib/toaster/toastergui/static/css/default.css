@@ -239,4 +239,6 @@ code { color: #333; background-color: transparent; }
 
 .alert-success.change-notification { -webkit-box-shadow: 0 0 10px #3c763d; -moz-box-shadow: 0 0 10px #3c763d; box-shadow: 0 0 10px #3c763d; }
 
-
+/* Style the new project form */
+#new-project-name { width: 33%; }
+#projectversion { width: 20%; margin-bottom: 10px; }
