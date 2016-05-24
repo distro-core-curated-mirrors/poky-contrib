@@ -154,7 +154,8 @@ dd.variable-list form { margin-top: 10px; }
 #new-dl_dir,
 #filter-image_fstypes,
 #new-image_install,
-#new-sstate_dir { width: 20em; }
+#new-sstate_dir,
+#new-imagefs_types { width: 20em; }
 #package_classes-select { width: 10em; }
 .scrolling { border: 1px solid #dddddd; height: 154px; overflow: auto; padding: 0 10px; width: 27.5%; margin-bottom: 10px; margin-top: 10px; }
 .scrolling.has-error { border-color: #a94442; }
