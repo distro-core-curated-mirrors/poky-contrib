@@ -393,11 +393,11 @@ var libtoaster = (function () {
                   data.results[0].name === projectName) {
                 // This project name exists hence show the error and disable
                 // the save button
-                ctrlGrpValidateProjectName.addClass('control-group error');
+                ctrlGrpValidateProjectName.addClass('has-error');
                 hintError.show();
                 enableOrDisableBtn.attr('disabled', 'disabled');
               } else {
-                ctrlGrpValidateProjectName.removeClass('control-group error');
+                ctrlGrpValidateProjectName.removeClass('has-error');
                 hintError.hide();
                 enableOrDisableBtn.removeAttr('disabled');
               }
