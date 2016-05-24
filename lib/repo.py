@@ -1,225 +1,12 @@
 import os
 import utils
 import git
-import re
 import logging
 import requests
-import unidiff
-import urllib2
-import codecs
 import json
-from utils import parse_patch as _pw_parse
-from urlparse import urlparse
+from mboxitem import MboxItem, MboxURLItem, MboxFileItem
 
 logger = logging.getLogger('patchtest')
-
-class BaseMboxItem(object):
-    """ mbox item containing all data extracted from an mbox, and methods
-        to extract this data. This base class and should be inherited
-        from, not directly instantiated.
-    """
-    MERGE_STATUS_INVALID = 'INVALID'
-    MERGE_STATUS_NOT_MERGED = 'NOTMERGED'
-    MERGE_STATUS_MERGED_SUCCESSFULL = 'PASS'
-    MERGE_STATUS_MERGED_FAIL = 'FAIL'
-    MERGE_STATUS = (MERGE_STATUS_INVALID,
-                    MERGE_STATUS_NOT_MERGED,
-                    MERGE_STATUS_MERGED_SUCCESSFULL,
-                    MERGE_STATUS_MERGED_FAIL)
-
-    def __init__(self, resource, args=None, forcereload=False):
-        self._resource = resource
-        self._args = args
-        self._forcereload = forcereload
-
-        self._contents = ''
-        self._status = BaseMboxItem.MERGE_STATUS_NOT_MERGED
-
-        self._submitter = ''
-
-        self._keyvals = {}
-        self._patchdiff = ''
-        self._commentbuf = ''
-        self._changes = None
-
-    @property
-    def contents(self):
-        raise(NotImplementedError, 'Please do not instantiate MboxItem; patch reading method depends on Mbox type')
-
-    @property
-    def submitter(self):
-        raise(NotImplementedError, 'Please do not instantiate MboxItem; patch reading method depends on Mbox type')
-
-    @property
-    def is_empty(self):
-        _cnt = self.contents
-        return not(_cnt.strip())
-
-    def _load_diff_comment(self):
-        """
-        Use the patchwork parser to generate a patchdiff (the actual patch)
-        and a comment buffer (the patch metadata) for this object
-        """
-        _contents = self.contents
-        if self._forcereload or (not self._patchdiff or not self._commentbuf):
-            self._patchdiff, self._commentbuf = _pw_parse(_contents)
-
-    @property
-    def diff(self):
-        if self._forcereload or (not self._patchdiff):
-            self._load_diff_comment()
-        return self._patchdiff
-
-    @property
-    def comments(self):
-        if self._forcereload or (not self._commentbuf):
-            self._load_diff_comment()
-        return self._commentbuf
-
-    @property
-    def keyvals(self):
-        if self._forcereload or (not self._keyvals):
-            self._parse_keyvals()
-        return self._keyvals
-
-    def _parse_keyvals(self, pattern='^([\w-]+):\s+(.*)$'):
-        """
-        Parse key-value pairs out of this item's patch metadata
-        """
-        _cmt = self.comments
-        cmt_seps = ('---', 'diff')
-        cmt_head = _cmt
-
-        for _sep in cmt_seps:
-            sep_index = _cmt.find(_sep)
-            if sep_index >= 0:
-                cmt_head = _cmt[:sep_index]
-                break
-
-        for _line in [ _.strip() for _ in cmt_head.splitlines()[1:] ]:
-            _m = re.match(pattern, _line)
-            if _m and _m.groups():
-                _k, _v = _m.groups()
-                utils.dict_append_new(self._keyvals, _k, _v)
-            else:
-                if _line:
-                    utils.dict_append_new(self._keyvals, 'Description', _line)
-
-    @property
-    def changes(self):
-        raise(NotImplementedError, 'Please do not instantiate MboxItem; patch change scanning depends on Mbox type')
-
-    def getresource(self):
-        resource = self._resource
-        if self._args:
-            resource %= self._args
-        return resource
-
-    def setresource(self, resouce):
-        self._resource = resource
-
-    resource = property(getresource, setresource)
-
-    def getargs(self):
-        return self._args
-
-    def setargs(self, args):
-        self._args = args
-
-    args = property(getargs, setargs)
-
-    def getstatus(self):
-        return self._status
-
-    def setstatus(self, status):
-        if not status in BaseMboxItem.MERGE_STATUS:
-            logger.warn('Status (%s) not valid' % status)
-        else:
-            self._status = status
-
-    status = property(getstatus, setstatus)
-
-    def getbranch(self):
-        return utils.get_branch(self.contents)
-
-
-class MboxURLItem(BaseMboxItem):
-    """ Mbox item based on a URL"""
-
-    @property
-    def contents(self):
-        if self._forcereload or (not self._contents):
-            logger.debug('Reading %s contents' % self.resource)
-            try:
-                _r = requests.get(self.resource)
-                self._contents = _r.text
-            except:  #XXX: narrow down to more specific exceptions
-                logger.warn("Request to %s failed" % self.resource)
-        return self._contents
-
-    @property
-    def changes(self):
-        if self._forcereload or (not self._changes):
-            try:
-                _url = urllib2.urlopen(self.resource)
-            except:  #XXX: narrow down to more specific exceptions
-                logger.warn("Request to %s failed" % self.resource)
-            try:
-                self._changes = unidiff.PatchSet(_url)
-            except:  #XXX: narrow down to more specific exceptions
-                logger.warn("Parsing %s failed" % self.resource)
-        return self._changes
-
-    @property
-    def pretty_resource(self):
-        if not self.resource:
-            return ''
-        else:
-            _url = urlparse(str(self.resource))
-            _inst = "%s://%s" % (_url.scheme, _url.netloc)
-            _series = self.args[0]
-            _revision = self.args[1]
-            return "%s/series/%s/#rev%s" % (_inst, _series, _revision)
-
-    @property
-    def submitter(self):
-        if not self._submitter:
-            params = {'related':'expand'}
-            _r = requests.get(self.resource.rstrip('/mbox/'), params=params)
-            _jsonr = json.loads(_r.text)
-            try:
-                self._submitter = _jsonr['patches'][0]['submitter']['name']
-            except:
-                logger.error('Submitter could not be fetched from %s' % self.resource)
-        return self._submitter
-
-class MboxFileItem(BaseMboxItem):
-    """ Mbox item based on a file"""
-
-    @property
-    def contents(self):
-        if self._forcereload or (not self._contents):
-            logger.debug('Reading %s contents' % self.resource)
-            try:
-                with open(self.resource) as _f:
-                    self._contents = _f.read()
-            except IOError:
-                logger.warn("Reading the mbox %s failed" % self.resource)
-        return self._contents
-
-    @property
-    def changes(self):
-        if self._forcereload or (not self._changes):
-            try:
-                with codecs.open(self.resource) as _f:
-                    self._changes = unidiff.PatchSet(_f)
-            except IOError:
-                logger.warn("Reading the mbox %s failed" % self.resource)
-        return self._changes
-
-    @property
-    def pretty_resource(self):
-        return "%s" % os.path.basename(self.resource) if self.resource else 'a patch file'
 
 class Repo(object):
 
@@ -444,15 +231,15 @@ class Repo(object):
         for item in self._mboxitems:
             try:
                 self._merge_item(item)
-                item.status = BaseMboxItem.MERGE_STATUS_MERGED_SUCCESSFULL
+                item.status = MboxItem.MERGE_STATUS_MERGED_SUCCESSFULL
             except utils.CmdException as ce:
-                item.status = BaseMboxItem.MERGE_STATUS_MERGED_FAIL
+                item.status = MboxItem.MERGE_STATUS_MERGED_FAIL
             except:
-                item.status = BaseMboxItem.MERGE_STATUS_INVALID
+                item.status = MboxItem.MERGE_STATUS_INVALID
 
     def any_merge(self):
         for item in self._mboxitems:
-            if item.status == BaseMboxItem.MERGE_STATUS_MERGED_SUCCESSFULL:
+            if item.status == MboxItem.MERGE_STATUS_MERGED_SUCCESSFULL:
                 return True
         return False
 

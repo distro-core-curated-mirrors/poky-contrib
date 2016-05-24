@@ -64,6 +64,7 @@ def getResult(series, revision, mbox, nopatch, post_submitters):
             try:
                 self.repo = pti.repo = repo.Repo(**repoargs)
             except:
+                logger.error(traceback.print_exc())
                 self.repo_error = True
 
             if self.repo_error:
@@ -123,8 +124,6 @@ def getResult(series, revision, mbox, nopatch, post_submitters):
                     for item in self.repo.items:
                         if item.submitter:
                             if re.search(post_submitters, item.submitter):
-                                logger.info('POSTing summary to %s' % item.pretty_resource)
-                                logger.info('Item\'s submitter %s' % item.submitter)
                                 self.repo.post(pti.testname, state, summary)
                                 break
 

@@ -2,6 +2,9 @@ import os
 import utils
 from tabulate import tabulate
 from jinja2 import Template
+import logging
+
+logger = logging.getLogger('patchtest')
 
 class BaseSummary(object):
     FAIL = 'FAIL'
@@ -17,12 +20,15 @@ class BaseSummary(object):
         self._results = list()
 
     def addFailure(self, test):
+        logger.debug("FAILURE: %s " % test.shortDescription())
         self._results.append((self.FAIL, test))
 
     def addSuccess(self, test):
+        logger.debug("SUCCESS: %s " % test.shortDescription())
         self._results.append((self.SUCCESS, test))
 
     def addSkip(self, test):
+        logger.debug("SKIP: %s " % test.shortDescription())
         self._results.append((self.SKIP, test))
 
     def generate(self, items, mergefailure=False):
@@ -54,11 +60,10 @@ class TemplateSummary(BaseSummary):
 ----------------------------------------------------------------------
 
 Thank you for your patch submission of the following patch series to
-{{ project }} - this is an automated response.
+{{ project }} - this is an automated response:
 
 {% for resource in resources %} {{ resource }}
 {% endfor %}
-
 Results of some tests on the patch(es) are as follows:
 
 {% if testresults %}  Result Description
@@ -94,12 +99,7 @@ when sending the new version (i.e. [PATCH] -> [PATCH v2] -> [PATCH v3] ->
         else:
             resources = None
             testresults = [(result, test.shortDescription()) for result, test in self._results]
-            try:
-                resources = [item.pretty_resource for item in items]
-                raise AssertionError(item.resource)
-            except:
-                pass
-
+            resources = [item.resource for item in items]
             content = Template(self.testtemplate).render(project=self._project,
                                                          mailinglist=self._mailinglist,
                                                          resources=resources,
