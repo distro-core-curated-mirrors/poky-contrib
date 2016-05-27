@@ -359,7 +359,7 @@ def create_recipe(args):
         if args.binary:
             # Assume the archive contains the directory structure verbatim
             # so we need to extract to a subdirectory
-            fetchuri += ';subdir=%s' % os.path.splitext(os.path.basename(urlparse.urlsplit(fetchuri).path))[0]
+            fetchuri += ';subdir=${BP}'
         srcuri = fetchuri
         rev_re = re.compile(';rev=([^;]+)')
         res = rev_re.search(srcuri)
@@ -570,7 +570,7 @@ def create_recipe(args):
         lines_before.append('SRCREV = "%s"' % srcrev)
     lines_before.append('')
 
-    if srcsubdir:
+    if srcsubdir and not args.binary:
         lines_before.append('S = "${WORKDIR}/%s"' % srcsubdir)
         lines_before.append('')
 
