@@ -199,14 +199,15 @@ build_fat_img() {
 	FAT_SECTORS=$(expr $(expr $(expr $FAT_BYTES + 511) / 512) \* 2)
 	SECTORS=$(expr $SECTORS + $(expr $DIR_SECTORS + $FAT_SECTORS))
 
-	# Determine the final size in blocks accounting for some padding
-	BLOCKS=$(expr $(expr $SECTORS / 2) + ${BOOTIMG_EXTRA_SPACE})
+	# Determine the final size accounting for some padding
+	SECTORS=$(expr $SECTORS + $(expr ${BOOTIMG_EXTRA_SPACE} \* 2))
 
 	# Ensure total sectors is an integral number of sectors per
-	# track or mcopy will complain. Sectors are 512 bytes, and we
-	# generate images with 32 sectors per track. This calculation is
-	# done in blocks, thus the mod by 16 instead of 32.
-	BLOCKS=$(expr $BLOCKS + $(expr 16 - $(expr $BLOCKS % 16)))
+	# track or mcopy will complain. Sectors are 512 bytes, and current
+	# mkdosfs generates images with 63 sectors per track. Use 2*63
+	# as the mod to ensure result is divisible by two.
+	SECTORS=$(expr $SECTORS + $(expr 126 - $(expr $SECTORS % 126)))
+	BLOCKS=$(expr $SECTORS / 2)
 
 	# mkdosfs will sometimes use FAT16 when it is not appropriate,
 	# resulting in a boot failure from SYSLINUX. Use FAT32 for
