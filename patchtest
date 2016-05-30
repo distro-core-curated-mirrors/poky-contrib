@@ -175,6 +175,7 @@ def _runner(resultklass, prefix=None):
 
     # if there are no test cases, just quit
     if not ntc:
+        logger.warn('No test cases found with prefix "%s", quitting' % loader.testMethodPrefix)
         return
 
     logger.info('Executing %s tests with prefix "%s"' % (ntc, loader.testMethodPrefix))
