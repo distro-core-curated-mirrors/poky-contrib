@@ -9,11 +9,12 @@ SECTION = "x11"
 DEPENDS = ""
 RCONFLICTS_${PN} = "matchbox-common"
 
-SRCREV = "810b0b08eb79e4685202da2ec347b990bb467e07"
-PV = "0.1+git${SRCPV}"
-PR = "r1"
+#commit for 0.2 tag
+SRCREV = "37886756886786bc65cbcbedb43c3c07b2c761e6"
+PV = "0.2"
 
 SRC_URI = "git://git.yoctoproject.org/${BPN}"
+SRC_URI = "git://github.com/jku/matchbox-desktop-sato;branch=gtk3"
 
 S = "${WORKDIR}/git"
 
