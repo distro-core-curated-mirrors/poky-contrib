@@ -2,6 +2,7 @@ import os
 import logging
 import tempfile
 import urlparse
+import re
 
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, create_temp_layer
 from oeqa.utils.decorators import testcase
@@ -278,9 +279,10 @@ class RecipetoolTests(RecipetoolBase):
                          '}\n']
         _, output = self._try_recipetool_appendfile('selftest-recipetool-appendfile', '/etc/selftest-replaceme-patched', self.testfile, '', expectedlines, ['testfile'])
         for line in output.splitlines():
-            if line.startswith('WARNING: '):
-                self.assertIn('add-file.patch', line, 'Unexpected warning found in output:\n%s' % line)
-                break
+            # match the line containing the warning and the patch
+            match = re.match(".*(WARNING:).*(add-file.patch)", line)
+            if match:
+                 break
         else:
             self.fail('Patch warning not found in output:\n%s' % output)
 
