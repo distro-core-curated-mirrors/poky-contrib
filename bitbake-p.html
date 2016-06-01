@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" src="options_var.js"></script>
+    <script type="text/javascript">
+    
+    // Load the Visualization API and the piechart package.
+    google.load('visualization', '1', {'packages':['corechart']});
+      
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.setOnLoadCallback(drawChart);
+
+    var url_chart1 = url_chart1_bb_p
+    var url_chart2 = url_chart2_bb_p
+
+function drawChart() {
+    var jsonData = $.ajax({
+      url: url_chart1,
+      dataType:"json",
+      async: false
+    }).responseText;
+    var data = new google.visualization.DataTable(jsonData);
+    var options = global_opt;
+    var chart1 = new google.visualization.LineChart(document.getElementById('chart_div'));
+
+    var jsonData2 = $.ajax({
+      url: url_chart2,
+      dataType:"json",
+      async: false
+    }).responseText;
+    var data2 = new google.visualization.DataTable(jsonData2);
+    var options2 = global_opt;
+    var chart2 = new google.visualization.LineChart(document.getElementById('chart_div2'));
+
+  chart1.draw(data, options);
+  chart2.draw(data2, options2);
+}
+
+    </script>
+  </head>
+
+  <body>
+    <!--Div that will hold the pie chart-->
+bitbake -p #ubuntu12
+    <div id="chart_div" style="height: 700px;"></div>
+bitbake -p #fedora19
+    <div id="chart_div2" style="height: 700px;"></div>
+  </body>
+</html>
