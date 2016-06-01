@@ -19,8 +19,11 @@ inherit distro_features_check
 # The matchbox-theme-sato requires x11 in DISTRO_FEATURES
 REQUIRED_DISTRO_FEATURES = "x11"
 
-SRC_URI = "file://session"
+SRC_URI = "file://session \
+           file://index.theme"
 S = "${WORKDIR}"
+
+FILES_${PN} += "${datadir}/themes/Sato/index.theme"
 
 do_install() {
 	# This is the set of machine features that the script has markers for
@@ -34,6 +37,7 @@ do_install() {
 		fi
 	done
 
+	install -D ${S}/index.theme ${D}/${datadir}/themes/Sato/index.theme
 	install -d ${D}/${sysconfdir}/matchbox
 	sed -f "$SCRIPT" ${S}/session > ${D}/${sysconfdir}/matchbox/session
         chmod +x ${D}/${sysconfdir}/matchbox/session
@@ -45,6 +49,7 @@ pkg_postinst_${PN} () {
 		gconftool-2 --config-source=xml::$D${sysconfdir}/gconf/gconf.xml.defaults --direct --type $1 --set /desktop/poky/interface/$2 "$3"
 	}
 	set_value string theme Adwaita
+	set_value string matchbox_theme Sato
 	set_value string icon_theme Sato
 	set_value bool touchscreen true
 	set_value string font_name "Sans 9"
