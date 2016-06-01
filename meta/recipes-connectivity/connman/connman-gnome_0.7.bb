@@ -21,7 +21,7 @@ SRC_URI = "git://github.com/connectivity/connman-gnome.git \
 S = "${WORKDIR}/git"
 
 inherit autotools-brokensep gtk-icon-cache pkgconfig distro_features_check
-ANY_OF_DISTRO_FEATURES = "${GTK2DISTROFEATURES}"
+ANY_OF_DISTRO_FEATURES = "${GTK3DISTROFEATURES}"
 
 RDEPENDS_${PN} = "connman"
 
