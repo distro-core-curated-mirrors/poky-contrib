@@ -1,0 +1,82 @@
+Performance Milestone
+=======================
+
+
+The project aims to have a graphical overview over the build performance test: https://wiki.yoctoproject.org/wiki/Performance_Test
+The live charts can be viewed at https://wiki.yoctoproject.org/charts/perf_milestone/performance_test.html
+
+
+Prerequisites
+============
+
+We need data from two (Hardware identical) machines that run build performance.
+
+The data is generated via csv format: 
+fedora19,master:c7e614c438706fb3ed7520b4990ebb3973366942,uninative-1.0-169-gc7e614c,1:30:12,7:27.00,1:25:31,3:23.66,0:27.07,0:17.69,0:01.78,4:28.30,25590480,5405308,1279889,4769608
+fedora19,master:c7e614c438706fb3ed7520b4990ebb3973366942,uninative-1.0-169-gc7e614c,1:30:01,7:27.26,1:25:44,3:24.37,0:27.04,0:17.68,0:01.92,4:11.60,25588624,5405368,1280057,4769776
+fedora19,master:c7e614c438706fb3ed7520b4990ebb3973366942,uninative-1.0-169-gc7e614c,1:30:29,7:23.39,1:25:26,3:24.23,0:27.30,0:17.80,0:01.78,4:51.89,25588940,5405428,1279918,4769694
+
+
+The first entry is the machine name, followed by the branch:commit info, the git-describe info, and then followed by all the measurements
+
+
+How to add new entries to the charts
+=====================================
+The charts require the csv format shown above.
+The scripts that generate the charts won't work if other branch is listed than master. e.g:  jethro:2718e843b3502afa1e21510bb6b9c4720f75124c. The scripts just won't work. In the case of testing other branches than master, you need to replace the branch name with master.
+
+To display correctly the entries, we use the git-descirbe field. Since it may not be updated, this field also must be replaced. e.g. replace:
+uninative-1.0-169-gc7e614c
+
+with:
+yocto_2.2_M1.rc1
+
+this will ensure a correct represntation of what the data shows.
+
+
+If the build performance test failed for some reason, the data will show 0 instead of the actual time. e.g.:
+fedora19,master:c7e614c438706fb3ed7520b4990ebb3973366942,uninative-1.0-169-gc7e614c,0,0,0,3:24.23,0:27.30,0:17.80,0:01.78,4:51.89,25588940,5405428,1279918,4769694
+
+This will cause the chart generating scripts to fail. run ./clean-csv.py file to delete the lines with "0" times:
+
+	Usage: ./clean-csv.py <input_file> <output_file>
+
+To create charts for all the measurements run the following script:
+
+	$ ./run_jgen.sh
+
+it will create all the graphs for the following tests:
+	bitbake core-image-sato 
+	bitbake core-image-sato -c rootfs 
+	bitbake core-image-sato (rm_work) 
+	bitbake -p 
+	bitbake virtual/kernel 
+	bitbake -p (rm -rf cache/ tmp/cache/) 
+	bitbake -p (rm -rf tmp/cache/) 
+
+
+To update a chart for only a measurement, you need to call the jgen.sh script:
+	$ ./jgen.sh
+	Usage:  jgen.sh [-h]
+			jgen.sh [-v <value>] [-f <file1> <file2>]
+
+	Options:
+			-h
+					Display help.
+			-f <file1> <file2>
+					Use <file> as input file. The <file> must be in *.csv format.
+			-v <value>
+					Value for type of build. Value reference:
+							 3 - bitbakecore-image-sato
+							 4 - bitbake virtual/kernel
+							 5 - bitbake core-image-sato (rm_work)
+							 6 - bitbake core-image-sato -c rootfs
+							 7 - bitbake -p (rm -rf cache/ tmp/cache/)
+							 8 - bitbake -p (rm -rf tmp/cache)
+							 9 - bitbake -p
+							10 - size of tmp dir
+							11 - size of tmp dir (rm_work)
+
+
+To upload the charts, a web server needs to be installed.
+To upload them to the www.yoctoproject.org, please contact michael@yoctoproject.org for access and instructions.
