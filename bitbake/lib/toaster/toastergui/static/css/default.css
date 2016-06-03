@@ -22,6 +22,9 @@ img.logo { height: 30px; vertical-align: bottom; }
 /* Increase popovers width to fit commit SHAs */
 .popover { max-width: 350px; }
 
+/* Set a limit to popover height to handle long dependency lists */
+.popover-content { max-height: 350px; overflow: scroll; }
+
 /* Increase bottom margin of definition lists inside popovers for the Toaster version information in the top navbar, and also inside the right hand columns of our details pages */
 .popover-content dd,
 .item-info dd { margin-bottom: 15px; }
@@ -55,7 +58,7 @@ img.logo { height: 30px; vertical-align: bottom; }
 #edit-columns-button { margin-right: 30px; }
 .navbar-default[id^="table-chrome-"] { background-color: transparent; }
 [id^="table-chrome-collapse-"] .navbar-form { margin-left: -15px; }
-.dropdown-menu.editcol { padding-left: 10px; min-width: 180px; }
+.dropdown-menu.editcol { padding-left: 10px; min-width: 200px; }
 span[class^="remove-search-btn-"] { position: absolute; right: 5px; top: 0; bottom: 0; height: 14px; margin: auto; font-size: 14px; cursor: pointer; color: #777;}
 span[class^="remove-search-btn-"]:hover { color: #333; }
 #no-results-special-selectpackagestable .form-inline { margin-top: 20px; }
@@ -273,3 +276,6 @@ h2.panel-title { font-size: 30px; }
 /* Style the wells in the build dashboard */
 .dashboard-section h3 { margin-top: 10px; margin-bottom: 20px; }
 .col-md-4.dashboard-section dd { margin-bottom: 10px; }
+
+/* Make the help in tables insivisble until you hover over the right cell */ 
+.hover-help { visibility: hidden; }

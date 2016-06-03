@@ -75,8 +75,8 @@ class BuiltPackagesTableBase(tables.PackagesTable):
                     {%% endif %%}
                     ''' % {'value': val})
 
-        add_pkg_link_to = ['name', 'version', 'size', 'license']
-        add_recipe_link_to = ['recipe__name', 'recipe__version']
+        add_pkg_link_to = ['name']
+        add_recipe_link_to = ['recipe__name']
 
         # Add the recipe and pkg build links to the required columns
         for column in self.columns:
@@ -160,7 +160,7 @@ class InstalledPackagesTable(BuildTablesMixin, BuiltPackagesTableBase):
     """ Show all packages installed in an image """
     def __init__(self, *args, **kwargs):
         super(InstalledPackagesTable, self).__init__(*args, **kwargs)
-        self.title = "Installed Packages"
+        self.title = "Packages Included"
         self.default_orderby = "name"
 
     def make_package_list(self, target):
@@ -213,11 +213,11 @@ class InstalledPackagesTable(BuildTablesMixin, BuiltPackagesTableBase):
              ' extra.target_id data.pk %}">{{data.name}}</a>'
              '{% if data.installed_name and data.installed_name !='
              ' data.name %}'
-             '<span class="muted"> as {{data.installed_name}}</span>'
-             ' <i class="icon-question-sign get-help hover-help"'
+             '<span class="text-muted"> as {{data.installed_name}}</span>'
+             ' <span class="glyphicon glyphicon-question-sign get-help hover-help"'
              ' title="{{data.name}} was renamed at packaging time and'
              ' was installed in your image as {{data.installed_name}}'
-             '"></i>{% endif %} ')
+             '"></span>{% endif %} ')
 
         for column in self.columns:
             if column['static_data_name'] == 'name':
