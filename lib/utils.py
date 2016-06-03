@@ -1,6 +1,7 @@
 import os
 import subprocess
 import logging
+import sys
 
 def dict_append_new(d, k, v):
     if k in d:
@@ -122,7 +123,7 @@ def all_succeed(results):
 
 def logger_create(name):
     logger = logging.getLogger(name)
-    loggerhandler = logging.StreamHandler()
+    loggerhandler = logging.StreamHandler(sys.stdout)
     loggerhandler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
     logger.addHandler(loggerhandler)
     logger.setLevel(logging.INFO)
