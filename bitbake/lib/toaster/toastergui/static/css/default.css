@@ -24,9 +24,9 @@ img.logo { height: 30px; vertical-align: bottom; }
 
 /* Increase bottom margin of definition lists inside popovers for the Toaster version information in the top navbar, and also inside the right hand columns of our details pages */
 .popover-content dd,
-.well dd { margin-bottom: 15px; }
+.item-info dd { margin-bottom: 15px; }
 
-/* Style the horizonal definition lists */
+/* Style the horizontal definition lists */
 .dl-horizontal dt { width: 200px; line-height: 25px; }
 .dl-horizontal dd { margin-left: 220px; line-height: 25px; }
 
@@ -246,3 +246,30 @@ code { color: #333; background-color: transparent; }
 
 /* Style the Toaster screenshot in the landing page */
 .img-thumbnail { padding: 0; }
+
+/* Set the layout for the build information pages */
+
+#nav { margin-top: 10px; }
+.page-header.build-data { margin-top: 0px; }
+.build-data > h1 { margin-top: 8px; }
+
+/* Style the build outcome information in the build dashboard */
+.log { margin-left: 30px; }
+.show-warnings { font-weight: 700; color: #8a6d3b; }
+.show-warnings:hover { color: #66512c; } 
+
+/* Style the errors and warnings information in the build dashboard */
+#errors .panel-heading { background-color: transparent; color: #843534; }
+#warnings .panel-heading { background-color: transparent; color: #8a6d3b; }
+#warnings .panel-heading a:hover { color: #66512c; }
+h2.panel-title { font-size: 30px; }
+.alert-danger pre,
+.alert-warning pre { background-color: transparent; border: none; }
+.alert-danger pre { color: #a94442; }
+#error-info pre,
+#warning-info pre { white-space: pre-wrap; }
+.alert-warning pre { color: #8a6d3b; } 
+
+/* Style the wells in the build dashboard */
+.dashboard-section h3 { margin-top: 10px; margin-bottom: 20px; }
+.col-md-4.dashboard-section dd { margin-bottom: 10px; }
