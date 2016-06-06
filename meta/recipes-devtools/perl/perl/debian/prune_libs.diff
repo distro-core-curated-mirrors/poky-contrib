@@ -13,21 +13,21 @@ Patch-Name: debian/prune_libs.diff
  Configure | 5 ++---
  1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/Configure b/Configure
-index 0a405d3..6fcc3bc 100755
---- a/Configure
-+++ b/Configure
-@@ -1454,8 +1454,7 @@ libswanted_uselargefiles=''
- : set usesocks on the Configure command line to enable socks.
+Index: perl-5.24.0/Configure
+===================================================================
+--- perl-5.24.0.orig/Configure
++++ perl-5.24.0/Configure
+@@ -1479,8 +1479,7 @@ archname=''
+ usereentrant='undef'
  : List of libraries we want.
  : If anyone needs extra -lxxx, put those in a hint file.
--libswanted="cl pthread socket bind inet nsl nm ndbm gdbm dbm db malloc dl ld"
+-libswanted="cl pthread socket bind inet nsl ndbm gdbm dbm db malloc dl ld"
 -libswanted="$libswanted sun m crypt sec util c cposix posix ucb bsd BSD"
 +libswanted='gdbm gdbm_compat db dl m c crypt'
  : We probably want to search /usr/shlib before most other libraries.
  : This is only used by the lib/ExtUtils/MakeMaker.pm routine extliblist.
  glibpth=`echo " $glibpth " | sed -e 's! /usr/shlib ! !'`
-@@ -23593,7 +23592,7 @@ sunos*X4*)
+@@ -24007,7 +24006,7 @@ sunos*X4*)
      ;;
  *) case "$usedl" in
      $define|true|[yY]*)

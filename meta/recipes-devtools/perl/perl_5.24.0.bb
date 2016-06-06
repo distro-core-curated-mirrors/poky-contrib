@@ -71,8 +71,8 @@ SRC_URI_append_class-target = " \
             file://test/ext-DynaLoader-t-DynaLoader.t-fix-calling-dl_findfil.patch \
            "
 
-SRC_URI[md5sum] = "6671e4829cbaf9cecafa9a84f141b0a3"
-SRC_URI[sha256sum] = "9e87317d693ce828095204be0d09af8d60b8785533fadea1a82b6f0e071e5c79"
+#SRC_URI[md5sum] = "efcba89f8a2b9901959911332b8d46a9"
+#SRC_URI[sha256sum] = "3688bebb818c52fddad8fdebb95c2cf2cbb7ab22dcca70e18f261642791093fe"
 
 inherit perlnative siteinfo
 
