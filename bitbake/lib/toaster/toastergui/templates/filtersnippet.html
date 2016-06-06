@@ -17,25 +17,27 @@
 	</div>
 	<div class="modal-body">
 	  <p>{{f.label}}</p>
-	  <label class="radio">
-	    <input type="radio" name="filter" {%if request.GET.filter%}{{f.options|check_filter_status:request.GET.filter}} {%else%} checked {%endif%} value="" data-key="{{key}}">  All {%if filter_search_display%}{{filter_search_display|title}}{%else%}{{objectname|title}}{%endif%}
-	  </label>
+		<div class="radio">
+			<label>
+				<input type="radio" name="filter" {%if request.GET.filter%}{{f.options|check_filter_status:request.GET.filter}} {%else%} checked {%endif%} value="" data-key="{{key}}">  All {%if filter_search_display%}{{filter_search_display|title}}{%else%}{{objectname|title}}{%endif%}
+			</label>
+		</div>
 	  {% for option in f.options %}
+			<div class="radio">
 	  {% if option.1 == 'daterange' %}
-	  <div class="form-inline">
-	    <label class="radio">
+	    <label>
 	      <input type="radio" name="filter" id="filter_value_{{key}}" {%if key == daterange_selected %}checked{%endif%} value="{{option.1}}" data-key="{{key}}"> {{option.0}}
-	      {% else %}
+				{% else %}
 	      {% if 1 %}
-	      <label class="radio">
-		<input type="radio" name="filter" {%if request.GET.filter == option.1 %}checked{%endif%}  value="{{option.1}}" data-key="{{key}}"> {{option.0}}
+	      <label>
+					<input type="radio" name="filter" {%if request.GET.filter == option.1 %}checked{%endif%}  value="{{option.1}}" data-key="{{key}}"> {{option.0}}
 		{% comment "do not disable radio selections by count for now" %}{% else %}
-		<label class="radio muted">
+		<label class="text-muted">
 		  <input type="radio" name="filter" disabled {%if request.GET.filter == option.1 %}checked{%endif%}  value="{{option.1}}" data-key="{{key}}"> {{option.0}}
 		  {% endcomment %}{% endif %}
 		  {% endif %}
 		  {% if option.3 %}<i class="icon-question-sign get-help" data-placement="right" title="{{option.3}}"></i>{% endif %}
-		</label>
+	</label></div>
 		{% if option.1 == 'daterange' %}
 		<input type="text" id="date_from_{{key}}" name="date_from_{{key}}" disabled class="input-sm" /><label class="help-inline">to</label>
 		<input type="text" id="date_to_{{key}}" name="date_to_{{key}}" disabled class="input-sm"  />
@@ -50,12 +52,18 @@
 	  {% endif %}
 	</div>
 	<div class="modal-footer">
-	  <button type="submit" class="btn btn-primary" data-key="{{key}}">Apply</button>
-	  {% if request.GET.filter %}
-	  {% if request.GET.filter|string_remove_regex:':.*' != f.options.0.1|string_remove_regex:':.*' %}
-	  <span class="help-inline pull-left">You can only apply one filter to the table. This filter will override the current filter.</span>
-	  {% endif %}
-	  {% endif %}
+		<div class="row">
+			<div class="col-md-6">
+				<button type="submit" class="btn btn-primary" data-key="{{key}}">Apply</button>
+			</div>
+			<div class="col-md-6">
+				{% if request.GET.filter %}
+				{% if request.GET.filter|string_remove_regex:':.*' != f.options.0.1|string_remove_regex:':.*' %}
+				<p class="text-right text-muted">You can only apply one filter to the table. This filter will override the current filter.</p>
+				{% endif %}
+				{% endif %}
+			</div>
+		</div>	
 	</div>
       </form>
     </div><!-- /.modal-content -->

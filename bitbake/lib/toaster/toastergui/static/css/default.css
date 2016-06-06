@@ -25,6 +25,13 @@ img.logo { height: 30px; vertical-align: bottom; }
 /* Set a limit to popover height to handle long dependency lists */
 .popover-content { max-height: 350px; overflow: scroll; }
 
+/* Set a limit to modal dialogs height to handle long variable history */
+[id^="variable-"] .modal-content { max-height: 550px; overflow-y: scroll; }
+
+/* Make sure long values in variable history do not make the modal dialogs
+ * scroll horizontally */
+[id^="variable-"] .modal-content p { word-break: break-all; }
+
 /* Increase bottom margin of definition lists inside popovers for the Toaster version information in the top navbar, and also inside the right hand columns of our details pages */
 .popover-content dd,
 .item-info dd { margin-bottom: 15px; }
@@ -51,18 +58,20 @@ img.logo { height: 30px; vertical-align: bottom; }
 
 /* Styles for our table controls */
 .form-control[id^="search-input-"],
-.form-control[id^="new-search-input-"] { width: 30em; }
+.form-control[id^="new-search-input-"],
+#search{ width: 30em; }
 #search-input-selectpackagestable,
 #search-input-packagestable,
-.form-control[id^="no-results-search-input-"]{ width: 20em; }
+.form-control[id^="no-results-search-input-"] { width: 20em; }
 #edit-columns-button { margin-right: 30px; }
-.navbar-default[id^="table-chrome-"] { background-color: transparent; }
+.navbar-default[id^="table-chrome-"],
+#variables .navbar-default { background-color: transparent; }
 [id^="table-chrome-collapse-"] .navbar-form { margin-left: -15px; }
 .dropdown-menu.editcol { padding-left: 10px; min-width: 200px; }
 span[class^="remove-search-btn-"] { position: absolute; right: 5px; top: 0; bottom: 0; height: 14px; margin: auto; font-size: 14px; cursor: pointer; color: #777;}
 span[class^="remove-search-btn-"]:hover { color: #333; }
-#no-results-special-selectpackagestable .form-inline { margin-top: 20px; }
-[id^="pagination-"] .pagination,
+#no-results-special-selectpackagestable .form-inline { margin-top: 20px; } 
+[id^="pagination-"] .pagination, 
 [id^="pagination-"] .navbar-form { margin-top: 0; }
 [id^="table-chrome-"] .navbar-form { margin-left: -15px; margin-right: -15px; }
 [id^="table-chrome-"] .detail-page-contols { padding-left: 0; padding-right: 0; }
@@ -208,6 +217,13 @@ td > .tooltip-inner,
 #recipestable .get_description_or_summary { width: 40%; }
 #machinestable .name { white-space: nowrap; }
 #machinestable .description { width: 45%; }
+#otable .variable_value,
+#otable .file { word-break: break-all; width: 25%; }
+[id^="variable-"] .file { word-break: break-all; }
+
+/* For the tables still not ported to ToasterTables, style the table headings
+ * that are not sortable */
+th > span.text-muted { font-weight: normal; }
 
 /* Override the rather ugly default code styles */
 code { color: #333; background-color: transparent; }
