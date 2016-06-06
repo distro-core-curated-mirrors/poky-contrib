@@ -35,22 +35,21 @@ class BaseSummary(object):
         raise Exception
 
 class TabulateSummary(BaseSummary):
-    merge_header = ['Merge Status', 'Item']
-    result_header = ['Result', 'Test Description']
-    tablefmt = 'simple'
 
-    def generate(self, items):
-        text = str()
-        merge_results = [[item.status, item.resource] for item in items]
-        if merge_results:
-            text += "\n\n%s\n" % tabulate(merge_results, self.merge_header, tablefmt=self.tablefmt)
+    def generate(self, items, mergefailure=False):
+        header = []
+        content = ''
+        if mergefailure:
+            header = ['Merge Result', 'Resource']
+            test_results = [(item.status, item.resource) for item in items]
+        else:
+            header = ['Test Result', 'Test ID']
+            test_results = [(result, test.id()) for result, test in self._results]
 
-        test_results = [(result, test.shortDescription()) for result, test in self._results]
         if test_results:
-            text += "\n\n%s\n" % tabulate(test_results, self.result_header, tablefmt=self.tablefmt)
+            content = "\n%s" % tabulate(test_results, header)
 
-        return text
-
+        return content
 
 class TemplateSummary(BaseSummary):
 

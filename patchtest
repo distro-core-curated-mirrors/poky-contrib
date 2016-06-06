@@ -71,7 +71,7 @@ def getResult(series, revision, mbox, nopatch, post_submitters):
                 self.stop()
                 return
 
-            self.summary = summary.TemplateSummary(self.repo.project,
+            self.summary = summary.TabulateSummary(self.repo.project,
                                                    self.repo.mailinglist,
                                                    self.repo.branch,
                                                    self.repo.commit)
