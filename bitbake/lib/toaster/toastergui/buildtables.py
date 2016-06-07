@@ -246,9 +246,7 @@ class BuiltRecipesTable(BuildTablesMixin):
             '</a>'
 
         recipe_version_tmpl =\
-            '<a href="{% url "recipe" extra.build.pk data.pk %}">'\
-            '{{data.version}}'\
-            '</a>'
+            '{{data.version}}'
 
         recipe_file_tmpl =\
             '{{data.file_path}}'\
@@ -265,10 +263,10 @@ class BuiltRecipesTable(BuildTablesMixin):
         {% with deps=data.r_dependencies_recipe.all %}
         {% with count=deps|length %}
         {% if count %}
-        <a class="btn" title="
+        <a class="btn btn-default" title="
         <a href='{% url "recipe" extra.build.pk data.pk %}#dependencies'>
         {{data.name}}</a> dependencies"
-        data-content="<ul class='unstyled'>
+        data-content="<ul class='list-unstyled'>
         {% for dep in deps|dictsort:"depends_on.name"%}
         <li><a href='{% url "recipe" extra.build.pk dep.depends_on.pk %}'>
         {{dep.depends_on.name}}</a></li>
@@ -283,11 +281,11 @@ class BuiltRecipesTable(BuildTablesMixin):
         {% with revs=data.r_dependencies_depends.all %}
         {% with count=revs|length %}
         {% if count %}
-        <a class="btn"
+        <a class="btn btn-default"
         title="
         <a href='{% url "recipe" extra.build.pk data.pk %}#brought-in-by'>
         {{data.name}}</a> reverse dependencies"
-        data-content="<ul class='unstyled'>
+        data-content="<ul class='list-unstyled'>
         {% for dep in revs|dictsort:"recipe.name" %}
         <li>
         <a href='{% url "recipe" extra.build.pk dep.recipe.pk %}'>
@@ -313,24 +311,24 @@ class BuiltRecipesTable(BuildTablesMixin):
 
         self.add_column(title="Dependencies",
                         static_data_name="dependencies",
-                        static_data_template=depends_on_tmpl,
-                        hidden=True)
+                        static_data_template=depends_on_tmpl)
 
         self.add_column(title="Reverse dependencies",
                         static_data_name="revdeps",
                         static_data_template=rev_depends_tmpl,
                         help_text='Recipe build-time reverse dependencies'
-                        ' (i.e. the recipes that depend on this recipe)',
-                        hidden=True)
+                        ' (i.e. the recipes that depend on this recipe)')
 
         self.add_column(title="Recipe file",
                         field_name="file_path",
                         static_data_name="file_path",
-                        static_data_template=recipe_file_tmpl)
+                        static_data_template=recipe_file_tmpl,
+                        hidden=True)
 
         self.add_column(title="Section",
                         field_name="section",
-                        orderable=True)
+                        orderable=True,
+                        hidden=True)
 
         self.add_column(title="License",
                         field_name="license",
@@ -347,11 +345,13 @@ class BuiltRecipesTable(BuildTablesMixin):
 
         self.add_column(title="Layer branch",
                         field_name="layer_version__branch",
-                        orderable=True)
+                        orderable=True,
+                        hidden=True)
 
         self.add_column(title="Layer commit",
                         static_data_name="commit",
-                        static_data_template=git_rev_template)
+                        static_data_template=git_rev_template,
+                        hidden=True)
 
 
 class BuildTasksTable(BuildTablesMixin):
