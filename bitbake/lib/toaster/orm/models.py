@@ -1410,19 +1410,22 @@ class Branch(models.Model):
 
 # Layer class synced with layerindex.LayerItem
 class Layer(models.Model):
-    layer_source = models.ForeignKey(LayerSource, null = True, default = None)  # from where did we got this layer
-    up_id = models.IntegerField(null = True, default = None)                    # id of layer in the remote source
-    up_date = models.DateTimeField(null = True, default = None)
+    # from where did we get this layer
+    layer_source = models.ForeignKey(LayerSource, null=True, default=None)
+    # id of layer in the remote source
+    up_id = models.IntegerField(null=True, default=None)
+    up_date = models.DateTimeField(null=True, default=None)
 
     name = models.CharField(max_length=100)
     layer_index_url = models.URLField()
-    vcs_url = GitURLField(default = None, null = True)
-    vcs_web_url = models.URLField(null = True, default = None)
-    vcs_web_tree_base_url = models.URLField(null = True, default = None)
-    vcs_web_file_base_url = models.URLField(null = True, default = None)
+    vcs_url = GitURLField(default=None, null=True)
+    vcs_web_url = models.URLField(null=True, default=None)
+    vcs_web_tree_base_url = models.URLField(null=True, default=None)
+    vcs_web_file_base_url = models.URLField(null=True, default=None)
 
-    summary = models.TextField(help_text='One-line description of the layer', null = True, default = None)
-    description = models.TextField(null = True, default = None)
+    summary = models.TextField(help_text='One-line description of the layer',
+                               null=True, default=None)
+    description = models.TextField(null=True, default=None)
 
     def __unicode__(self):
         return "%s / %s " % (self.name, self.layer_source)
@@ -1436,35 +1439,51 @@ class Layer_Version(models.Model):
     """
     A Layer_Version either belongs to a single project or no project
     """
-    search_allowed_fields = ["layer__name", "layer__summary", "layer__description", "layer__vcs_url", "dirpath", "up_branch__name", "commit", "branch"]
-    build = models.ForeignKey(Build, related_name='layer_version_build', default = None, null = True)
+    search_allowed_fields = ["layer__name", "layer__summary",
+                             "layer__description", "layer__vcs_url",
+                             "dirpath", "up_branch__name",
+                             "commit", "branch"]
+
+    build = models.ForeignKey(Build, related_name='layer_version_build',
+                              default=None, null=True)
     layer = models.ForeignKey(Layer, related_name='layer_version_layer')
+    up_date = models.DateTimeField(null=True, default=None)
 
-    layer_source = models.ForeignKey(LayerSource, null = True, default = None)                   # from where did we get this Layer Version
-    up_id = models.IntegerField(null = True, default = None)        # id of layerbranch in the remote source
-    up_date = models.DateTimeField(null = True, default = None)
-    up_branch = models.ForeignKey(Branch, null = True, default = None)
+    # from where did we get this Layer Version
+    layer_source = models.ForeignKey(LayerSource, null=True, default=None)
+    # id of layerbranch in the remote source
+    up_id = models.IntegerField(null=True, default=None)
+    up_branch = models.ForeignKey(Branch, null=True, default=None)
+    # LayerBranch.actual_branch
+    branch = models.CharField(max_length=80, null=True, default=None)
+    # LayerBranch.vcs_last_rev
+    commit = models.CharField(max_length=100, null=True, default=None)
+    # LayerBranch.vcs_subdir
+    dirpath = models.CharField(max_length=255, null=True, default=None)
 
-    branch = models.CharField(max_length=80)            # LayerBranch.actual_branch
-    commit = models.CharField(max_length=100)           # LayerBranch.vcs_last_rev
-    dirpath = models.CharField(max_length=255, null = True, default = None)          # LayerBranch.vcs_subdir
-    priority = models.IntegerField(default = 0)         # if -1, this is a default layer
+    # if -1, this is a default layer
+    priority = models.IntegerField(default=0)
 
-    local_path = models.FilePathField(max_length=1024, default = "/")  # where this layer was checked-out
+    # where this layer was checked-out
+    local_path = models.FilePathField(max_length=1024, default="/")
 
-    project = models.ForeignKey('Project', null = True, default = None)   # Set if this layer is project-specific; always set for imported layers, and project-set branches
+    # Set if this layer is project-specific
+    project = models.ForeignKey('Project', null=True, default=None)
 
-    # code lifted, with adaptations, from the layerindex-web application https://git.yoctoproject.org/cgit/cgit.cgi/layerindex-web/
+    # code lifted, with adaptations, from the layerindex-web
+    # application https://git.yoctoproject.org/cgit/cgit.cgi/layerindex-web/
     def _handle_url_path(self, base_url, path):
-        import re, posixpath
+        import re
+        import posixpath
         if base_url:
             if self.dirpath:
                 if path:
                     extra_path = self.dirpath + '/' + path
                     # Normalise out ../ in path for usage URL
                     extra_path = posixpath.normpath(extra_path)
-                    # Minor workaround to handle case where subdirectory has been added between branches
-                    # (should probably support usage URL per branch to handle this... sigh...)
+                    # Minor workaround to handle case where subdirectory has
+                    # been added between branches (should probably support
+                    # usage URL per branch to handle this... sigh...)
                     if extra_path.startswith('../'):
                         extra_path = extra_path[3:]
                 else:
@@ -1474,7 +1493,8 @@ class Layer_Version(models.Model):
             branchname = self.up_branch.name
             url = base_url.replace('%branch%', branchname)
 
-            # If there's a % in the path (e.g. a wildcard bbappend) we need to encode it
+            # If there's a % in the path (e.g. a wildcard bbappend)
+            # we need to encode it
             if extra_path:
                 extra_path = extra_path.replace('%', '%25')
 
@@ -1496,7 +1516,8 @@ class Layer_Version(models.Model):
     def get_vcs_file_link_url(self, file_path=""):
         if self.layer.vcs_web_file_base_url is None:
             return None
-        return self._handle_url_path(self.layer.vcs_web_file_base_url, file_path)
+        return self._handle_url_path(self.layer.vcs_web_file_base_url,
+                                     file_path)
 
     def get_vcs_dirpath_link_url(self):
         if self.layer.vcs_web_tree_base_url is None:
@@ -1505,8 +1526,9 @@ class Layer_Version(models.Model):
 
     def get_equivalents_wpriority(self, project):
         layer_versions = project.get_all_compatible_layer_versions()
-        filtered = layer_versions.filter(layer__name = self.layer.name)
-        return filtered.order_by("-layer_source__releaselayersourcepriority__priority")
+        filtered = layer_versions.filter(layer__name=self.layer.name)
+        return filtered.order_by(
+            "-layer_source__releaselayersourcepriority__priority")
 
     def get_vcs_reference(self):
         if self.branch is not None and len(self.branch) > 0:
@@ -1531,7 +1553,9 @@ class Layer_Version(models.Model):
 
         project = Project.objects.get(pk=project_id)
         result = []
-        projectlvers = [player.layercommit for player in project.projectlayer_set.all()]
+        projectlvers = [player.layercommit
+                        for player in project.projectlayer_set.all()]
+
         for dep in gen_layerdeps(self, project):
             # filter out duplicates and layers already belonging to the project
             if dep not in result + projectlvers:
@@ -1540,7 +1564,15 @@ class Layer_Version(models.Model):
         return sorted(result, key=lambda x: x.layer.name)
 
     def __unicode__(self):
-        return "%d %s (VCS %s, Project %s)" % (self.pk, str(self.layer), self.get_vcs_reference(), self.build.project if self.build is not None else "No project")
+
+        if self.build and self.build.project:
+            project = self.build.project
+        else:
+            project = "All"
+
+        return "%d %s (VCS %s, Project %s)" % (self.pk, str(self.layer),
+                                               self.get_vcs_reference(),
+                                               project)
 
     class Meta:
         unique_together = ("layer_source", "up_id")
