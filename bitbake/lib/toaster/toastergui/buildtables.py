@@ -426,9 +426,7 @@ class BuildTasksTable(BuildTablesMixin):
             '</a>'
 
         recipe_version_tmpl =\
-            '<a href="{% url "recipe" extra.build.pk data.recipe.pk %}">'\
-            '{{data.recipe.version}}'\
-            '</a>'
+            '{{data.recipe.version}}'
 
         def task_link_tmpl(val):
             return ('<a name="task-{{data.order}}"'
@@ -438,7 +436,13 @@ class BuildTasksTable(BuildTablesMixin):
 
         self.add_column(title="Order",
                         static_data_name="order",
-                        static_data_template=task_link_tmpl('{{data.order}}'),
+                        static_data_template='{{data.order}}',
+                        orderable=True)
+
+        self.add_column(title="Task",
+                        static_data_name="task_name",
+                        static_data_template=task_link_tmpl(
+                            "{{data.task_name}}"),
                         orderable=True)
 
         self.add_column(title="Recipe",
@@ -450,31 +454,24 @@ class BuildTasksTable(BuildTablesMixin):
                         static_data_name='recipe__version',
                         static_data_template=recipe_version_tmpl)
 
-        self.add_column(title="Task",
-                        static_data_name="task_name",
-                        static_data_template=task_link_tmpl(
-                            "{{data.task_name}}"),
-                        orderable=True)
-
         self.add_column(title="Executed",
                         static_data_name="task_executed",
-                        static_data_template=task_link_tmpl(
-                            "{{data.get_executed_display}}"),
+                        static_data_template='{{data.get_executed_display}}',
                         filter_name='execution_outcome',
                         orderable=True)
 
         self.static_context_extra['OUTCOME_FAILED'] = Task.OUTCOME_FAILED
-        outcome_tmpl = task_link_tmpl("{{data.outcome_text}}")
+        outcome_tmpl = '{{data.outcome_text}}'
         outcome_tmpl = ('%s '
                         '{%% if data.outcome = extra.OUTCOME_FAILED %%}'
                         '<a href="{%% url "build_artifact" extra.build.pk '
                         '          "tasklogfile" data.pk %%}">'
-                        ' <i class="icon-download-alt" '
-                        '    title="Download task log file"></i>'
+                        ' <span class="glyphicon glyphicon-download-alt get-help" '
+                        '    title="Download task log file"></span>'
                         '</a> {%% endif %%}'
-                        '<i class="icon-question-sign get-help '
+                        '<span class="glyphicon glyphicon-question-sign get-help '
                         'hover-help" style="visibility: hidden;" '
-                        'title="{{data.get_outcome_help}}"></i>'
+                        'title="{{data.get_outcome_help}}"></span>'
                         ) % outcome_tmpl
 
         self.add_column(title="Outcome",
@@ -483,10 +480,11 @@ class BuildTasksTable(BuildTablesMixin):
                         filter_name="task_outcome",
                         orderable=True)
 
+        self.toggle_columns['sstate_result'] = len(self.columns)
+
         self.add_column(title="Cache attempt",
                         static_data_name="sstate_result",
-                        static_data_template=task_link_tmpl(
-                            "{{data.sstate_text}}"),
+                        static_data_template='{{data.sstate_text}}',
                         filter_name="sstate_outcome",
                         orderable=True)
 
@@ -542,6 +540,7 @@ class BuildTimeTable(BuildTasksTable):
         super(BuildTimeTable, self).setup_columns(**kwargs)
 
         self.columns[self.toggle_columns['order']]['hidden'] = True
+        self.columns[self.toggle_columns['sstate_result']]['hidden'] = True
         self.columns[self.toggle_columns['elapsed_time']]['hidden'] = False
 
 
@@ -556,6 +555,7 @@ class BuildCPUTimeTable(BuildTasksTable):
         super(BuildCPUTimeTable, self).setup_columns(**kwargs)
 
         self.columns[self.toggle_columns['order']]['hidden'] = True
+        self.columns[self.toggle_columns['sstate_result']]['hidden'] = True
         self.columns[self.toggle_columns['cpu_time_sys']]['hidden'] = False
         self.columns[self.toggle_columns['cpu_time_user']]['hidden'] = False
 
@@ -571,4 +571,5 @@ class BuildIOTable(BuildTasksTable):
         super(BuildIOTable, self).setup_columns(**kwargs)
 
         self.columns[self.toggle_columns['order']]['hidden'] = True
+        self.columns[self.toggle_columns['sstate_result']]['hidden'] = True
         self.columns[self.toggle_columns['disk_io']]['hidden'] = False
