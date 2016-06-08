@@ -85,9 +85,6 @@ label { font-weight: normal; }
 
 /* Table heading sortable / not sortable states */
 thead > tr > th > a { font-weight: normal; }
-				<a class="input-append-addon btn search-clear">
-					<i class="glyphicon glyphicon-remove"></i>
-				</a>
 thead > tr > th > a.sorted { font-weight: bold; color: #333; }
 
 /* Give some extra space to the 'clear filter' buttons */
