@@ -74,7 +74,8 @@ span[class^="remove-search-btn-"]:hover { color: #333; }
 [id^="pagination-"] .pagination, 
 [id^="pagination-"] .navbar-form { margin-top: 0; }
 [id^="table-chrome-"] .navbar-form { margin-left: -15px; margin-right: -15px; }
-[id^="table-chrome-"] .detail-page-contols { padding-left: 0; padding-right: 0; }
+[id^="table-chrome-"] .detail-page-contols,
+#packages-built .detail-page-controls { padding-left: 0; padding-right: 0; }
 
 /* Override the default font-weight for labels: it's a bit too much */
 label { font-weight: normal; }
@@ -84,6 +85,9 @@ label { font-weight: normal; }
 
 /* Table heading sortable / not sortable states */
 thead > tr > th > a { font-weight: normal; }
+				<a class="input-append-addon btn search-clear">
+					<i class="glyphicon glyphicon-remove"></i>
+				</a>
 thead > tr > th > a.sorted { font-weight: bold; color: #333; }
 
 /* Give some extra space to the 'clear filter' buttons */
