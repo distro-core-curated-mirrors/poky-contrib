@@ -59,7 +59,7 @@
                         <th>Version</th>
                         <th class='sizecol col-md-2'>Size</th>
                         <th>
-                            <i class="icon-question-sign get-help" title="Five relationship types exist: recommends, suggests, provides, replaces and conflicts"></i>
+                            <span class="glyphicon glyphicon-question-sign get-help" title="Five relationship types exist: recommends, suggests, provides, replaces and conflicts"></span>
                             Relationship type
                         </th>
                     </tr>
@@ -86,17 +86,17 @@
                                 <td class='sizecol'>{{other_dep.size|filtered_filesizeformat}}&nbsp;</td>
                                 <td>
                                     {{other_dep.dep_type_display}}
-                                    <i class="icon-question-sign get-help hover-help" title="{{other_dep.dep_type_help}}" ></i>
+                                    <span class="glyphicon glyphicon-question-sign get-help hover-help" title="{{other_dep.dep_type_help}}" ></span>
                                 </td>
                             </tr>
                         {% else %}
-                            <tr class="muted">
+                            <tr class="text-muted">
                                 <td>{{other_dep.name}}</td>
                                 <td>{{other_dep.version}}</td>
                                 <td></td>
                                 <td>
                                     {{other_dep.dep_type_display}}
-                                    <i class="icon-question-sign get-help hover-help" title="{{other_dep.dep_type_help}}" ></i>
+                                    <span class="glyphicon glyphicon-question-sign get-help hover-help" title="{{other_dep.dep_type_help}}" ></span>
                                 </td>
                             </tr>
                         {% endif %}

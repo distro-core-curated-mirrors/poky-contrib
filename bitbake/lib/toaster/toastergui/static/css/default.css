@@ -111,7 +111,8 @@ tbody > tr > td > .glyphicon-minus-sign { color: #a94442; }
 h1 > .glyphicon-edit,
 p.lead .glyphicon { font-size: 16px; }
 h2 > .glyphicon-question-sign,
-h3 > .glyphicon-question-sign { font-size: 14px; }
+h3 > .glyphicon-question-sign,
+.heading-help { font-size: 14px; }
 
 /* Create a class for wells without background colour */
 .well-transparent { background-color: transparent; }
