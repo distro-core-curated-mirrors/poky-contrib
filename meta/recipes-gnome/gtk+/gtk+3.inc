@@ -29,7 +29,9 @@ EXTRA_OECONF += " \
                  --enable-modules \
                  --disable-cups \
                  --disable-colord \
-"
+                 WAYLAND_PROTOCOLS_SYSROOT_DIR=${STAGING_DIR}/${MACHINE} \
+                 "
+EXTRA_OECONF[vardepsexclude] = "MACHINE"
 
 do_compile_prepend() {
         export GIR_EXTRA_LIBS_PATH="${B}/gdk/.libs"
@@ -41,7 +43,7 @@ PACKAGECONFIG ??= "${@bb.utils.contains("DISTRO_FEATURES", "x11", "x11", "", d)}
 
 PACKAGECONFIG[x11] = "--enable-x11-backend,--disable-x11-backend,at-spi2-atk fontconfig libx11 libxext libxcursor libxi libxdamage libxrandr libxrender libxcomposite libxfixes"
 PACKAGECONFIG[glx] = "--enable-glx,--disable-glx,,libgl"
-PACKAGECONFIG[wayland] = "--enable-wayland-backend,--disable-wayland-backend,wayland libxkbcommon virtual/mesa wayland-native"
+PACKAGECONFIG[wayland] = "--enable-wayland-backend,--disable-wayland-backend,wayland wayland-protocols libxkbcommon virtual/mesa wayland-native"
 
 do_install_append() {
 	mv ${D}${bindir}/gtk-update-icon-cache ${D}${bindir}/gtk-update-icon-cache-3.0
@@ -71,6 +73,7 @@ FILES_${PN}_append = " ${bindir}/gtk-update-icon-cache-3.0 \
 FILES_${PN}-dev += " \
                     ${datadir}/gtk-3.0/gtkbuilder.rng \
                     ${datadir}/gtk-3.0/include \
+                    ${datadir}/gettext/its \
                     ${libdir}/gtk-3.0/include \
                     ${libdir}/gtk-3.0/${LIBV}/loaders/*.la \
                     ${libdir}/gtk-3.0/${LIBV}/immodules/*.la \
@@ -80,6 +83,7 @@ FILES_${PN}-dev += " \
                     ${bindir}/gtk-builder-convert \
                     ${bindir}/gtk-encode-symbolic-svg \
                     ${bindir}/gtk-builder-tool \
+                    ${bindir}/gtk-query-settings \
                     "
 
 GTKBASE_RRECOMMENDS ?= "liberation-fonts \
@@ -94,6 +98,7 @@ GTKGLIBC_RRECOMMENDS ?= "${GTKBASE_RRECOMMENDS} glibc-gconv-iso8859-1"
 
 RRECOMMENDS_${PN} = "${GTKBASE_RRECOMMENDS}"
 RRECOMMENDS_${PN}_libc-glibc = "${GTKGLIBC_RRECOMMENDS}"
+RRECOMMENDS_${PN}-dev += "wayland-protocols"
 
 PACKAGES_DYNAMIC += "^gtk3-immodule-.* ^gtk3-printbackend-.*"
 
