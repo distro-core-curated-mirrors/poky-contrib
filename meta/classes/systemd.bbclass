@@ -181,13 +181,18 @@ PACKAGESPLITFUNCS_prepend = "systemd_populate_packages "
 
 python rm_systemd_unitdir (){
     import shutil
+
+    def rm_unitdir (unitdir):
+        if os.path.exists(unitdir):
+            shutil.rmtree(unitdir)
+        parentdir = os.path.dirname(unitdir)
+        while (os.path.exists(parentdir) and not os.listdir(parentdir)):
+            os.rmdir(parentdir)
+            parentdir = os.path.dirname(parentdir)
+
     if not bb.utils.contains('DISTRO_FEATURES', 'systemd', True, False, d):
-        systemd_unitdir = oe.path.join(d.getVar("D", True), d.getVar('systemd_unitdir', True))
-        if os.path.exists(systemd_unitdir):
-            shutil.rmtree(systemd_unitdir)
-        systemd_libdir = os.path.dirname(systemd_unitdir)
-        if (os.path.exists(systemd_libdir) and not os.listdir(systemd_libdir)):
-            os.rmdir(systemd_libdir)
+        rm_unitdir (oe.path.join(d.getVar("D", True), d.getVar('systemd_system_unitdir', True)))
+        rm_unitdir (oe.path.join(d.getVar("D", True), d.getVar('systemd_user_unitdir', True)))
 }
 do_install[postfuncs] += "rm_systemd_unitdir "
 
