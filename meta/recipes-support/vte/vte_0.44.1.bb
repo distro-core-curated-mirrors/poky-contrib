@@ -13,6 +13,7 @@ ANY_OF_DISTRO_FEATURES = "${GTK3DISTROFEATURES}"
 PACKAGECONFIG[gnutls] = "--with-gnutls,--without-gnutls,gnutls"
 
 CFLAGS += "-D_GNU_SOURCE"
+LDFLAGS_append = " -lssp_nonshared"
 
 # Enable vala only if gobject-introspection is enabled
 EXTRA_OECONF = "--enable-vala=auto"
