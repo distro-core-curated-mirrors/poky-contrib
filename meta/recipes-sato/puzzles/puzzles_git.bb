@@ -23,6 +23,8 @@ S = "${WORKDIR}/git"
 
 inherit autotools-brokensep distro_features_check pkgconfig
 
+CFLAGS_append = " -Wno-deprecated-declarations"
+
 PACKAGECONFIG ??= "gtk3"
 PACKAGECONFIG[gtk2] = "--with-gtk=2,,gtk+,"
 PACKAGECONFIG[gtk3] = "--with-gtk=3,,gtk+3,"
