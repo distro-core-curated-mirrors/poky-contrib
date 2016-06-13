@@ -119,7 +119,7 @@
                 Image files
             </dt>
             <dd>
-                <ul class="list-unstyled" data-links="image-artifacts">
+                <ul class="list-unstyled">
                     {% for i in target.imageFiles|dictsort:"suffix" %}
                         <li>
                             <a href="{% url 'build_artifact' build.pk 'imagefile' i.id %}">
