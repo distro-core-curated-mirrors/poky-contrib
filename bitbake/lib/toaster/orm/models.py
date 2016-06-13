@@ -806,9 +806,6 @@ class Target_Image_File(models.Model):
 
     @property
     def suffix(self):
-        """
-        Suffix for image file, minus leading "."
-        """
         for suffix in Target_Image_File.SUFFIXES:
             if self.file_name.endswith(suffix):
                 return suffix
