@@ -30,8 +30,8 @@ from django.db import IntegrityError, Error
 from django.shortcuts import render, redirect, get_object_or_404
 from orm.models import Build, Target, Task, Layer, Layer_Version, Recipe, LogMessage, Variable
 from orm.models import Task_Dependency, Recipe_Dependency, Package, Package_File, Package_Dependency
-from orm.models import Target_Installed_Package, Target_File, Target_Image_File, CustomImagePackage
-from orm.models import TargetKernelFile, TargetSDKFile
+from orm.models import Target_Installed_Package, Target_File, Target_Image_File, BuildArtifact, CustomImagePackage
+from orm.models import TargetArtifactFile
 from orm.models import BitbakeVersion, CustomImageRecipe
 from bldcontrol import bbcontroller
 from django.views.decorators.cache import cache_control
@@ -507,22 +507,13 @@ def builddashboard( request, build_id ):
                 'size': i.file_size,
                 'suffix': i.suffix
             })
-        if len(image_files) > 0:
-            target_has_images = True
-        elem['targetHasImages'] = target_has_images
+        if t.is_image and (len(imageFiles) <= 0 or len(t.license_manifest_path) <= 0):
+            targetHasNoImages = True
+        elem[ 'imageFiles' ] = imageFiles
+        elem[ 'targetHasNoImages' ] = targetHasNoImages
+        elem['target_artifacts'] = t.targetartifactfile_set.all()
 
-        elem['imageFiles'] = image_files
-        elem['target_kernel_artifacts'] = t.targetkernelfile_set.all()
-
-        target_sdk_files = t.targetsdkfile_set.all()
-        target_sdk_artifacts_count = target_sdk_files.count()
-        elem['target_sdk_artifacts_count'] = target_sdk_artifacts_count
-        elem['target_sdk_artifacts'] = target_sdk_files
-
-        if target_has_images or target_sdk_artifacts_count > 0:
-            has_artifacts = True
-
-        targets.append(elem)
+        targets.append( elem )
 
     ##
     # how many packages in this build - ignore anonymous ones
@@ -2310,6 +2301,10 @@ if True:
 
         elif artifact_type == "targetsdkartifact":
             target = TargetSDKFile.objects.get(pk=artifact_id)
+            file_name = target.file_name
+
+        elif artifact_type == "targetartifactfile":
+            target = TargetArtifactFile.objects.get(pk=artifact_id)
             file_name = target.file_name
 
         elif artifact_type == "licensemanifest":

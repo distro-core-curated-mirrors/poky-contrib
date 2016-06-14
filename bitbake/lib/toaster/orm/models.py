@@ -459,11 +459,9 @@ class Build(models.Model):
 
     def get_image_file_extensions(self):
         """
-        Get string of file name extensions for images produced by this build;
+        Get list of file name extensions for images produced by this build;
         note that this is the actual list of extensions stored on Target objects
         for this build, and not the value of IMAGE_FSTYPES.
-
-        Returns comma-separated string, e.g. "vmdk, ext4"
         """
         extensions = []
 
@@ -627,19 +625,13 @@ class Target(models.Model):
 
     def get_similar_targets(self):
         """
-        Get target sfor the same machine, task and target name
+        Get targets for the same machine, task and target name
         (e.g. 'core-image-minimal') from a successful build for this project
         (but excluding this target).
 
-        Note that we only look for targets built by this project because
-        projects can have different configurations from each other, and put
-        their artifacts in different directories.
-
-        The possibility of error when retrieving candidate targets
-        is minimised by the fact that bitbake will rebuild artifacts if MACHINE
-        (or various other variables) change. In this case, there is no need to
-        clone artifacts from another target, as those artifacts will have
-        been re-generated for this target anyway.
+        Note that we look for targets built by this project because projects
+        can have different configurations from each other, and put their
+        artifacts in different directories.
         """
         query = ~Q(pk=self.pk) & \
             Q(target=self.target) & \
@@ -657,54 +649,29 @@ class Target(models.Model):
         similar_target = None
 
         candidates = self.get_similar_targets()
-        if candidates.count() == 0:
+        if candidates.count() < 1:
             return similar_target
 
         task_subquery = Q(task=self.task)
 
         # we can look for a 'build' task if this task is a 'populate_sdk_ext'
-        # task, as the latter also creates images; and vice versa; note that
+        # task, as it will have created images; and vice versa; note that
         # 'build' targets can have their task set to '';
         # also note that 'populate_sdk' does not produce image files
         image_tasks = [
             '', # aka 'build'
             'build',
-            'image',
             'populate_sdk_ext'
         ]
         if self.task in image_tasks:
             task_subquery = Q(task__in=image_tasks)
 
-        # annotate with the count of files, to exclude any targets which
-        # don't have associated files
-        candidates = candidates.annotate(num_files=Count('target_image_file'))
-
         query = task_subquery & Q(num_files__gt=0)
 
-        candidates = candidates.filter(query)
-
-        if candidates.count() > 0:
-            candidates.order_by('build__completed_on')
-            similar_target = candidates.last()
-
-        return similar_target
-
-    def get_similar_target_with_sdk_files(self):
-        """
-        Get the most recent similar target with TargetSDKFiles associated
-        with it, for the purpose of cloning those files onto this target.
-        """
-        similar_target = None
-
-        candidates = self.get_similar_targets()
-        if candidates.count() == 0:
-            return similar_target
-
         # annotate with the count of files, to exclude any targets which
         # don't have associated files
-        candidates = candidates.annotate(num_files=Count('targetsdkfile'))
-
-        query = Q(task=self.task) & Q(num_files__gt=0)
+        candidates = candidates.annotate(
+            num_files=Count('target_image_file'))
 
         candidates = candidates.filter(query)
 
@@ -714,10 +681,11 @@ class Target(models.Model):
 
         return similar_target
 
-    def clone_image_artifacts_from(self, target):
+    def clone_artifacts_from(self, target):
         """
-        Make clones of the Target_Image_Files and TargetKernelFile objects
-        associated with Target target, then associate them with this target.
+        Make clones of the BuildArtifacts, Target_Image_Files and
+        TargetArtifactFile objects associated with Target target, then
+        associate them with this target.
 
         Note that for Target_Image_Files, we only want files from the previous
         build whose suffix matches one of the suffixes defined in this
@@ -725,9 +693,9 @@ class Target(models.Model):
         Target_Image_File object for an ext4 image being associated with a
         target for a project which didn't produce an ext4 image (for example).
 
-        Also sets the license_manifest_path and package_manifest_path
-        of this target to the same path as that of target being cloned from, as
-        the manifests are also build artifacts but are treated differently.
+        Also sets the license_manifest_path of this target to the same path
+        as that of target being cloned from, as the license manifest path is
+        also a build artifact but is treated differently.
         """
 
         image_fstypes = self.build.get_image_fstypes()
@@ -743,45 +711,18 @@ class Target(models.Model):
             image_file.target = self
             image_file.save()
 
-        kernel_files = target.targetkernelfile_set.all()
-        for kernel_file in kernel_files:
-            kernel_file.pk = None
-            kernel_file.target = self
-            kernel_file.save()
+        artifact_files = target.targetartifactfile_set.all()
+        for artifact_file in artifact_files:
+            artifact_file.pk = None
+            artifact_file.target = self
+            artifact_file.save()
 
         self.license_manifest_path = target.license_manifest_path
-        self.package_manifest_path = target.package_manifest_path
         self.save()
 
-    def clone_sdk_artifacts_from(self, target):
-        """
-        Clone TargetSDKFile objects from target and associate them with this
-        target.
-        """
-        sdk_files = target.targetsdkfile_set.all()
-        for sdk_file in sdk_files:
-            sdk_file.pk = None
-            sdk_file.target = self
-            sdk_file.save()
-
-    def has_images(self):
-        """
-        Returns True if this target has one or more image files attached to it.
-        """
-        return self.target_image_file_set.all().count() > 0
-
-# kernel artifacts for a target: bzImage and modules*
-class TargetKernelFile(models.Model):
-    target = models.ForeignKey(Target)
-    file_name = models.FilePathField()
-    file_size = models.IntegerField()
-
-    @property
-    def basename(self):
-        return os.path.basename(self.file_name)
-
-# SDK artifacts for a target: sh and manifest files
-class TargetSDKFile(models.Model):
+# an Artifact is anything that results from a target being built, and may
+# be of interest to the user, and is not an image file
+class TargetArtifactFile(models.Model):
     target = models.ForeignKey(Target)
     file_name = models.FilePathField()
     file_size = models.IntegerField()
