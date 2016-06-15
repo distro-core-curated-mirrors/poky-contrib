@@ -27,9 +27,15 @@ as a build eventlog, and the ToasterUI is used to process events in the file
 and log data in the database
 """
 
-import os
-import sys, logging
+# This command takes a filename as a single parameter. The filename is read
+# as a build eventlog, and the ToasterUI is used to process events in the file
+# and log data in the database
+
+import sys
+import json
+import pickle
 import codecs
+
 from collections import namedtuple
 
 # mangle syspath to allow easy import of modules
@@ -38,14 +44,6 @@ sys.path.insert(0, join(dirname(dirname(abspath(__file__))), 'lib'))
 
 import bb.cooker
 from bb.ui import toasterui
-
-class EventPlayer:
-    """Emulate a connection to a bitbake server."""
-
-    def __init__(self, eventfile, variables):
-        self.eventfile = eventfile
-        self.variables = variables
-        self.eventmask = []
 
     def waitEvent(self, _timeout):
         """Read event from the file."""
