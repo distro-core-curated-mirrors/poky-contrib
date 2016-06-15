@@ -30,6 +30,7 @@ and log data in the database
 import os
 import sys, logging
 import codecs
+from collections import namedtuple
 
 # mangle syspath to allow easy import of modules
 from os.path import join, dirname, abspath
@@ -205,23 +206,15 @@ class EventPlayer:
 
         self.events = FileReadEventsServerConnection.EventReader(self)
 
-
-
-
-def main(argv):
-    with open(argv[-1]) as eventfile:
-        # load variables from the first line
-        variables = json.loads(eventfile.readline().strip())['allvariables']
-
-        params = namedtuple('ConfigParams', ['observe_only'])(True)
-        player = EventPlayer(eventfile, variables)
-
-        return toasterui.main(player, player, params)
-
 # run toaster ui on our mock bitbake class
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: %s <event file>" % os.path.basename(sys.argv[0]))
         sys.exit(1)
 
-    sys.exit(main(sys.argv))
+    file_name = sys.argv[-1]
+    mock_connection = FileReadEventsServerConnection(file_name)
+    configParams = namedtuple('ConfigParams', ['observe_only'])(True)
+
+    # run the main program and set exit code to the returned value
+    sys.exit(toasterui.main(mock_connection.connection, mock_connection.events, configParams))
