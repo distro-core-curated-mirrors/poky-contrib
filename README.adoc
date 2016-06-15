@@ -52,7 +52,7 @@ finally, clone the patchtest repository and install the test suite as submodule
 ----
 host:~$ git clone ssh://git@git.yoctoproject.org/patchtest
 host:~$ cd patchtest
-host:patchtest$ git subcommand add https://github.com/lsandoval/patchtest-sample-test-suite tests/sample
+host:patchtest$ git submodule add https://github.com/lsandoval/patchtest-sample-test-suite tests/sample
 host:patchtest$ scripts/setup-patchtest.sh
 host:patchtest$ scripts/setup-repodir.sh $REPODIR $REPOURL $PWURL $PWPROJECT $PWUSER $PWPASS
 ----

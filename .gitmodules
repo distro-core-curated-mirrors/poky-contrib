@@ -1,3 +1,6 @@
 [submodule "patchwork"]
 	path = patchwork
 	url = https://github.com/dlespiau/patchwork.git
+[submodule "patchtest-oe"]
+	path = patchtest-oe
+	url = ssh://git@git.yoctoproject.org/patchtest-oe
