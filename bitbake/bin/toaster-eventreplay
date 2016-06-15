@@ -28,12 +28,8 @@ and log data in the database
 """
 
 import os
-import sys
-import json
-import pickle
+import sys, logging
 import codecs
-
-from collections import namedtuple
 
 # mangle syspath to allow easy import of modules
 from os.path import join, dirname, abspath
@@ -168,7 +164,8 @@ class EventPlayer:
             try:
                 event_data = json.loads(line.strip())
                 event_class = _import_class(event_data['class'])
-                event_object = pickle.loads(json.loads(event_data['vars']))
+                event_str = event_data['vars'].encode('utf-8')
+                event_object = pickle.loads(codecs.decode(event_str, 'base64'))
             except ValueError as e:
                 print("Failed loading ", line)
                 raise e
