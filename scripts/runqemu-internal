@@ -438,15 +438,27 @@ config_qemumips() {
 }
 
 config_qemuppc() {
-    set_mem_size 256
-    QEMU=qemu-system-ppc
-    MACHINE_SUBTYPE=mac99
-    CPU_SUBTYPE=G4
+    case "$MACHINE" in
+        qemuppc)
+            set_mem_size 256
+            QEMU=qemu-system-ppc
+            MACHINE_SUBTYPE=mac99
+            CPU_SUBTYPE=G4
+            MODEL=pcnet
+        ;;
+        qemuppc64)
+            set_mem_size 1024
+            QEMU=qemu-system-ppc64
+            MACHINE_SUBTYPE=pseries
+            CPU_SUBTYPE=POWER7
+            MODEL=e1000
+        ;;
+    esac
     QEMU_UI_OPTIONS="$QEMU_UI_OPTIONS"
     if [ "$SLIRP_ENABLED" = "yes" ]; then
         QEMU_NETWORK_CMD=""
     else
-        QEMU_NETWORK_CMD="-net nic,model=pcnet $QEMU_TAP_CMD"
+        QEMU_NETWORK_CMD="-net nic,model=$MODEL $QEMU_TAP_CMD"
     fi
     if [ "${FSTYPE:0:3}" = "ext" -o "$FSTYPE" = "btrfs" -o "$FSTYPE" = "wic" ]; then
         KERNCMDLINE="root=$DROOT rw console=ttyS0 console=tty $KERNEL_NETWORK_CMD mem=$QEMU_MEMORY"
@@ -543,7 +555,7 @@ case "$MACHINE" in
     "qemumips" | "qemumipsel" | "qemumips64")
         config_qemumips
         ;;
-    "qemuppc")
+    "qemuppc" | "qemuppc64")
         config_qemuppc
         ;;
     "qemush4")
