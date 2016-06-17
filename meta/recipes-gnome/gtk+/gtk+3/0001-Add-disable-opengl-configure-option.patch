@@ -1,4 +1,4 @@
-From c77afa19881d955d759879aeae8bbd88613dd4fe Mon Sep 17 00:00:00 2001
+From 91814d22387370e47384206e67729a26a5729192 Mon Sep 17 00:00:00 2001
 From: Jussi Kukkonen <jussi.kukkonen@intel.com>
 Date: Thu, 16 Jun 2016 15:11:34 +0300
 Subject: [PATCH] Add --disable-opengl configure option
@@ -28,7 +28,7 @@ Signed-off-by: Jussi Kukkonen <jussi.kukkonen@intel.com>
  gdk/gdkgl.c                       | 10 +++++++
  gdk/gdkglcontext.c                |  6 ++++
  gdk/gdkwindow.c                   | 14 +++++++++-
- gdk/x11/Makefile.am               | 28 ++++++++++++++++---
+ gdk/x11/Makefile.am               | 29 ++++++++++++++++---
  gdk/x11/gdkdisplay-x11.c          |  6 ++--
  gdk/x11/gdkscreen-x11.c           |  5 ++++
  gdk/x11/gdkwindow-x11.c           |  4 +++
@@ -41,7 +41,7 @@ Signed-off-by: Jussi Kukkonen <jussi.kukkonen@intel.com>
  gtk/inspector/general.c           |  6 ++++
  tests/Makefile.am                 | 10 +++++--
  testsuite/gtk/objects-finalize.c  |  2 ++
- 21 files changed, 257 insertions(+), 78 deletions(-)
+ 21 files changed, 258 insertions(+), 78 deletions(-)
  create mode 100644 gdk/x11/gdkx-with-gl-context.h
  create mode 100644 gdk/x11/gdkx-without-gl-context.h
  delete mode 100644 gdk/x11/gdkx.h
@@ -412,7 +412,7 @@ index c34c113..3025e96 100644
            cairo_region_destroy (opaque_region);
  
 diff --git a/gdk/x11/Makefile.am b/gdk/x11/Makefile.am
-index c488a31..d0aa7ce 100644
+index c488a31..576f8e1 100644
 --- a/gdk/x11/Makefile.am
 +++ b/gdk/x11/Makefile.am
 @@ -39,8 +39,6 @@ libgdk_x11_la_SOURCES = 	\
@@ -424,7 +424,7 @@ index c488a31..d0aa7ce 100644
  	gdkkeys-x11.c		\
  	gdkmain-x11.c		\
  	gdkproperty-x11.c	\
-@@ -53,14 +51,30 @@ libgdk_x11_la_SOURCES = 	\
+@@ -53,14 +51,31 @@ libgdk_x11_la_SOURCES = 	\
  	gdkwindow-x11.h		\
  	gdkxftdefaults.c	\
  	gdkxid.c		\
@@ -449,14 +449,15 @@ index c488a31..d0aa7ce 100644
 +endif
 +
 +BUILT_SOURCES = gdkx.h
-+
++.PHONY: gdkx.h
 +gdkx.h:
-+	$(AM_V_GEN) cd $(srcdir) && cp $(GDKX_HEADER) gdkx.h
++	$(AM_V_GEN) cd $(srcdir) \
++	&& (cmp -s $(GDKX_HEADER) gdkx.h || cp $(GDKX_HEADER) gdkx.h )
 +
  libgdkx11include_HEADERS = 	\
  	gdkx-autocleanups.h	\
  	gdkx11applaunchcontext.h \
-@@ -74,7 +88,6 @@ libgdkx11include_HEADERS = 	\
+@@ -74,7 +89,6 @@ libgdkx11include_HEADERS = 	\
  	gdkx11display.h		\
  	gdkx11displaymanager.h	\
  	gdkx11dnd.h		\
@@ -464,7 +465,7 @@ index c488a31..d0aa7ce 100644
  	gdkx11keys.h		\
  	gdkx11property.h	\
  	gdkx11screen.h		\
-@@ -83,9 +96,16 @@ libgdkx11include_HEADERS = 	\
+@@ -83,9 +97,16 @@ libgdkx11include_HEADERS = 	\
  	gdkx11visual.h		\
  	gdkx11window.h
  
