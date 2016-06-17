@@ -34,6 +34,7 @@ import time
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import NoSuchElementException, \
         StaleElementReferenceException, TimeoutException
 
@@ -49,6 +50,10 @@ def create_selenium_driver(browser='chrome'):
         )
     elif browser == 'firefox':
         return webdriver.Firefox()
+    elif browser == 'marionette':
+        capabilities = DesiredCapabilities.FIREFOX
+        capabilities['marionette'] = True
+        return webdriver.Firefox(capabilities=capabilities)
     elif browser == 'ie':
         return webdriver.Ie()
     elif browser == 'phantomjs':
