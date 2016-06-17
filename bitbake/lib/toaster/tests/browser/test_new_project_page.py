@@ -80,7 +80,7 @@ class TestNewProjectPage(SeleniumTestCase):
         """
         Should not be able to create a new project whose name is the same
         as an existing project
-       """
+        """
 
         project_name = "dupproject"
 
@@ -99,10 +99,6 @@ class TestNewProjectPage(SeleniumTestCase):
 
         self.assertTrue(("Project names must be unique" in element.text),
                         "Did not find unique project name error message")
-
-        # Try and click it anyway, if it submits we'll have a new project in
-        # the db and assert then
-        self.click("#create-project-button")
 
         self.assertTrue(
             (Project.objects.filter(name=project_name).count() == 1),
