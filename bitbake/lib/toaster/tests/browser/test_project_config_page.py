@@ -116,3 +116,100 @@ class TestProjectConfigsPage(SeleniumTestCase):
                checkbox.click()
                self.assertTrue(("cpio" not in element.text),
                                "Image still present in the textbox")
+
+
+    def test_download_dir(self):
+        """
+        Validate the allowed and disallowed types in the directory field for DL_DIR
+        """
+
+        ProjectVariable.objects.get_or_create(project = self.project1, name = "DL_DIR")
+        url = reverse('projectconf', args=(self.project1.id,));
+        self.get(url);
+
+        self.click('#change-dl_dir-icon')
+
+        self.wait_until_visible('#new-dl_dir')
+
+        self.enter_text('#new-dl_dir', "2")
+
+        element = self.wait_until_visible('#hintError-initialChar-dl_dir')
+
+        self.assertTrue(("A valid directory should either start with a / or it can have variable" in element.text),
+                         "Directory name looks good")
+
+        self.driver.find_element_by_id('new-dl_dir').clear()
+        self.enter_text('#new-dl_dir', '/foo/bar a')
+
+        element = self.wait_until_visible('#hintError-dl_dir')
+
+        self.assertTrue(("A valid directory cannot include spaces or any of these characters" in element.text),
+                        "Directory name looks good")
+
+        self.driver.find_element_by_id('new-dl_dir').clear()
+        self.enter_text('#new-dl_dir', '/bar/foo')
+
+        hidden_element = self.driver.find_element_by_id('hintError-dl_dir')
+        self.assertEqual(hidden_element.is_displayed(), False)
+
+        self.driver.find_element_by_id('new-dl_dir').clear()
+        self.enter_text('#new-dl_dir', '${TOPDIR}/down foo')
+
+        element = self.wait_until_visible('#hintError-dl_dir')
+
+        self.assertTrue(("A valid directory cannot include spaces or any of these characters" in element.text),
+                        "Directory name looks good")
+
+        self.driver.find_element_by_id('new-dl_dir').clear()
+        self.enter_text('#new-dl_dir', '${TOPDIR}/down')
+
+        hidden_element = self.driver.find_element_by_id('hintError-dl_dir')
+        self.assertEqual(hidden_element.is_displayed(), False)
+
+    def test_sstate_dir(self):
+        """
+        Validate the allowed and disallowed types in the directory field for SSTATE_DIR
+        """
+
+        ProjectVariable.objects.get_or_create(project = self.project1, name = "SSTATE_DIR")
+        url = reverse('projectconf', args=(self.project1.id,));
+        self.get(url);
+
+        self.click('#change-sstate_dir-icon')
+
+        self.wait_until_visible('#new-sstate_dir')
+
+        self.enter_text('#new-sstate_dir', "2")
+
+        element = self.wait_until_visible('#hintError-initialChar-sstate_dir')
+
+        self.assertTrue(("A valid directory should either start with a / or it can have variable" in element.text),
+                        "Directory name looks good")
+
+        self.driver.find_element_by_id('new-sstate_dir').clear()
+        self.enter_text('#new-sstate_dir', '/foo/bar a')
+
+        element = self.wait_until_visible('#hintError-sstate_dir')
+
+        self.assertTrue(("A valid directory cannot include spaces or any of these characters" in element.text),
+                        "Directory name looks good")
+
+        self.driver.find_element_by_id('new-sstate_dir').clear()
+        self.enter_text('#new-sstate_dir', '/bar/foo')
+
+        hidden_element = self.driver.find_element_by_id('hintError-sstate_dir')
+        self.assertEqual(hidden_element.is_displayed(), False)
+
+        self.driver.find_element_by_id('new-sstate_dir').clear()
+        self.enter_text('#new-sstate_dir', '${TOPDIR}/down foo')
+
+        element = self.wait_until_visible('#hintError-sstate_dir')
+
+        self.assertTrue(("A valid directory cannot include spaces or any of these characters" in element.text),
+                        "Directory name looks good")
+
+        self.driver.find_element_by_id('new-sstate_dir').clear()
+        self.enter_text('#new-sstate_dir', '${TOPDIR}/down')
+
+        hidden_element = self.driver.find_element_by_id('hintError-sstate_dir')
+        self.assertEqual(hidden_element.is_displayed(), False)
