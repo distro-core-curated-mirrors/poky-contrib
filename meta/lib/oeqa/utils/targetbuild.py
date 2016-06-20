@@ -121,8 +121,8 @@ class SDKBuildProject(BuildProject):
         #Change targetdir to project folder
         self.targetdir = self.targetdir + self.fname
 
-    def run_configure(self, configure_args=''):
-        return super(SDKBuildProject, self).run_configure(configure_args=(configure_args or '$CONFIGURE_FLAGS'), extra_cmds=' gnu-configize; ')
+    def run_configure(self, configure_args='', extra_cmds=' gnu-configize; '):
+        return super(SDKBuildProject, self).run_configure(configure_args=(configure_args or '$CONFIGURE_FLAGS'), extra_cmds=extra_cmds)
 
     def run_install(self, install_args=''):
         return super(SDKBuildProject, self).run_install(install_args=(install_args or "DESTDIR=%s/../install" % self.targetdir))
@@ -135,4 +135,3 @@ class SDKBuildProject(BuildProject):
     def _run(self, cmd):
         self.log("Running . %s; " % self.sdkenv + cmd)
         return subprocess.call(". %s; " % self.sdkenv + cmd, shell=True)
-
