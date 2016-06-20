@@ -94,7 +94,7 @@ var libtoaster = (function () {
 
     /* Flatten the array of targets into a space spearated list */
     if (targets instanceof Array){
-      targets = targets.reduce(function(prevV, nextV){
+      targets = targets.reduce(function(prev, next){
         return prev + ' ' + next;
       });
     }
