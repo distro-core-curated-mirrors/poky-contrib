@@ -18,11 +18,13 @@ from patchtestdata import PatchTestInput as pti
 
 import utils
 logger = utils.logger_create('patchtest')
+info = logger.info
+error = logger.error
 
 import repo
 import summary
 
-def getResult(series, revision, mbox, nopatch, post_submitters):
+def getResult(series, revision, mbox, nopatch, post_submitters, print_values):
 
     class PatchTestResult(unittest.TextTestResult):
         """ Formats the summary and post result at the end """
@@ -96,6 +98,11 @@ def getResult(series, revision, mbox, nopatch, post_submitters):
         def addFailure(self, test, err):
             self.test_failure = True
             self.summary.addFailure(test)
+            if print_values:
+                (_, value, _) = err
+                error(value)
+            else:
+                error(test.id())
 
         def addSuccess(self, test):
             self.summary.addSuccess(test)
@@ -195,11 +202,11 @@ def run(series=[], revision=[], mbox=[]):
     unittest.installHandler()
 
     # run pre-merge tests. Pre-merge tests are those to be executed previous merging
-    premerge_resultklass = getResult(series, revision, mbox, nopatch=True, post_submitters=None)
+    premerge_resultklass = getResult(series, revision, mbox, nopatch=True, post_submitters=None, print_values=pti.print_values)
     _runner(premerge_resultklass, 'pretest')
 
     # run standard tests
-    postmerge_resultklass = getResult(series, revision, mbox, pti.nopatch, pti.post_submitters)
+    postmerge_resultklass = getResult(series, revision, mbox, pti.nopatch, pti.post_submitters, print_values=pti.print_values)
     _runner(postmerge_resultklass)
 
 if __name__ == '__main__':

@@ -141,6 +141,12 @@ class PatchTestArgs(object):
                             action='store_true',
                             help='Print only errors')
 
+        parser.add_argument('--print-failure-value',
+                            action='store_true',
+                            dest='print_values',
+                            help='Print only errors')
+
+
         return parser
 
 # Class used as a namespace to share data from patchtest to the test suites
