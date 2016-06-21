@@ -104,12 +104,6 @@ def getResult(series, revision, mbox, nopatch, post_submitters, print_values):
             else:
                 error(test.id())
 
-        def addSuccess(self, test):
-            self.summary.addSuccess(test)
-
-        def addSkip(self, test, msg):
-            self.summary.addSkip(test)
-
         def stopTestRun(self):
 
             if self.repo_error:
