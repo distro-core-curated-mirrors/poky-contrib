@@ -68,28 +68,13 @@ class PatchTestArgs(object):
     def get_parser(cls):
         parser = argparse.ArgumentParser()
 
-        parser.add_argument('--series', '-s',
-                            nargs='*',
-                            dest='series',
-                            default=[],
-                            help='The series ids to patch and test. Add --no-patch if no patching is done into the repository')
-
-        parser.add_argument('--revision', '-r',
-                            nargs='*',
-                            dest='revision',
-                            default=[],
-                            help='The revisions to patch and test, latest if omitted. Add --no-patch if no patching is done into the repository')
+        parser.add_argument('patch', metavar='PATCH',
+                            help='The patch to be tested by patchtest')
 
         parser.add_argument('--post-submitters', '-p',
                             dest='post_submitters',
                             default='',
                             help="Regular expression that indicated the submitters that patchtest can POST")
-
-        parser.add_argument('--mbox', '-m',
-                            nargs='*',
-                            dest='mbox',
-                            default=[],
-                            help='mbox files to patch and test. Add --no-patch if no patching is done into the repository')
 
         parser.add_argument('-C',
                             dest='repodir',
@@ -127,11 +112,6 @@ class PatchTestArgs(object):
         parser.add_argument('--commit', '-c',
                             dest='commit',
                             help="Commit ID used by patchtest to branch from. By default, it uses HEAD.")
-
-        parser.add_argument('--multiple',
-                            dest='multiple',
-                            action='store_true',
-                            help="Test multiple items at once")
 
         parser.add_argument('--debug', '-d',
                             action='store_true',

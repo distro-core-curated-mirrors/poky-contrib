@@ -4,11 +4,7 @@ from utils import get_branch
 
 logger = logging.getLogger('patchtest')
 
-class MboxItem(object):
-    """ mbox item containing all data extracted from an mbox, and methods
-        to extract this data. This base class and should be inherited
-        from, not directly instantiated.
-    """
+class Patch(object):
     MERGE_STATUS_INVALID = 'INVALID'
     MERGE_STATUS_NOT_MERGED = 'NOTMERGED'
     MERGE_STATUS_MERGED_SUCCESSFULL = 'PASS'
@@ -18,74 +14,40 @@ class MboxItem(object):
                     MERGE_STATUS_MERGED_SUCCESSFULL,
                     MERGE_STATUS_MERGED_FAIL)
 
-    def __init__(self, resource, args=None, forcereload=False):
-        self._resource = resource
-        self._args = args
+    def __init__(self, path, forcereload=False):
+        self._path = path
         self._forcereload = forcereload
 
-        self._contents = ''
-        self._status = MboxItem.MERGE_STATUS_NOT_MERGED
-
-    @property
-    def contents(self):
-        raise(NotImplementedError, 'Please do not instantiate MboxItem')
-
-    @property
-    def is_empty(self):
-        return not(self.contents.strip())
-
-    def getresource(self):
-        resource = self._resource
-        if self._args:
-            resource %= self._args
-        return resource
-    def setresource(self, resouce):
-        self._resource = resource
-    resource = property(getresource, setresource)
-
-    def getargs(self):
-        return self._args
-    def setargs(self, args):
-        self._args = args
-    args = property(getargs, setargs)
-
-    def getstatus(self):
-        return self._status
-    def setstatus(self, status):
-        if not status in MboxItem.MERGE_STATUS:
-            logger.warn('Status (%s) not valid' % status)
-        else:
-            self._status = status
-    status = property(getstatus, setstatus)
-
-    def getbranch(self):
-        return get_branch(self.contents)
-
-class MboxURLItem(MboxItem):
-    """ Mbox item based on a URL"""
+        self._contents = None
+        self._branch = None
+        self._merge_status = Patch.MERGE_STATUS_NOT_MERGED
 
     @property
     def contents(self):
         if self._forcereload or (not self._contents):
-            logger.debug('Reading %s contents' % self.resource)
+            logger.debug('Reading %s contents' % self._path)
             try:
-                _r = requests.get(self.resource)
-                self._contents = _r.text
-            except requests.RequestException:
-                logger.warn("Request to %s failed" % self.resource)
-        return self._contents
-
-class MboxFileItem(MboxItem):
-    """ Mbox item based on a file"""
-
-    @property
-    def contents(self):
-        if self._forcereload or (not self._contents):
-            logger.debug('Reading %s contents' % self.resource)
-            try:
-                with open(self.resource) as _f:
+                with open(self._path) as _f:
                     self._contents = _f.read()
             except IOError:
                 logger.warn("Reading the mbox %s failed" % self.resource)
         return self._contents
+
+    @property
+    def path(self):
+        return self._path
+
+    @property
+    def branch(self):
+        if not self._branch:
+            self._branch = get_branch(self.contents)
+        return self._branch
+
+    def setmergestatus(self, status):
+        self._merge_status = status
+
+    def getmergestatus(self):
+        return self._merge_status
+
+    merge_status = property(getmergestatus, setmergestatus)
 

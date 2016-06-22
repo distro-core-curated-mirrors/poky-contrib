@@ -24,7 +24,7 @@ error = logger.error
 import repo
 import summary
 
-def getResult(series, revision, mbox, nopatch, post_submitters, print_values):
+def getResult(patch, nopatch, post_submitters, print_values):
 
     class PatchTestResult(unittest.TextTestResult):
         """ Formats the summary and post result at the end """
@@ -43,9 +43,7 @@ def getResult(series, revision, mbox, nopatch, post_submitters, print_values):
                 'repodir': pti.repodir,
                 'commit': pti.commit,
                 'branch': pti.branch,
-                'mbox': mbox,
-                'series': series,
-                'revision': revision,
+                'patch': patch,
             }
 
             # Indicates if repo instance was created succesfully.
@@ -73,17 +71,12 @@ def getResult(series, revision, mbox, nopatch, post_submitters, print_values):
                 self.stop()
                 return
 
-            self.summary = summary.TabulateSummary(self.repo.project,
-                                                   self.repo.mailinglist,
-                                                   self.repo.branch,
-                                                   self.repo.commit)
+            self.summary = summary.TabulateSummary()
 
             # merge items
             if not nopatch:
                 try:
-                    self.repo.merge()
-                    # if no items were merged, then stop
-                    if self.repo.items and (not self.repo.any_merge()):
+                    if not self.repo.merge():
                         self.merge_failure = True
                         self.stop()
                 except:
@@ -109,7 +102,8 @@ def getResult(series, revision, mbox, nopatch, post_submitters, print_values):
             if self.repo_error:
                 return
 
-            summary = self.summary.generate(self.repo.items, self.merge_failure)
+            #summary = self.summary.generate(self.repo.items, self.merge_failure)
+            summary = None
             logger.info(summary)
 
             state = None
@@ -138,29 +132,7 @@ def main():
     if not sys.stdin.isatty():
         pti.namespace_stdin(fileinput.input('-'))
 
-    # these variables contain either items from stdin or command line arguments
-    listseries = list(pti.series)
-    listrevision = list(pti.revision)
-    listmbox = list(pti.mbox)
-
-    if pti.multiple:
-        # run tests on top of all input patches (mbox or series)
-        run(listseries, listrevision, listmbox)
-    else:
-        # run tests for each input patch (mbox or series)
-        if listseries:
-            # check if lengths match, if not pad revisions with None
-            difflength = len(listseries) - len(listrevision)
-            listrevision.extend([None] * difflength)
-
-            for series, revision in zip(listseries, listrevision):
-                run(series=[series], revision=[revision])
-        elif listmbox:
-            for mbox in listmbox:
-                run(mbox=[mbox])
-        else:
-            # no input given, just run
-            run()
+    run(pti.patch)
 
     return 0
 
@@ -190,17 +162,17 @@ def _runner(resultklass, prefix=None):
         if repo:
             pti.repo.clean(False)
 
-def run(series=[], revision=[], mbox=[]):
+def run(patch):
     """ Load, setup and run pre and post-merge tests """
     # Get the result class and install the control-c handler
     unittest.installHandler()
 
     # run pre-merge tests. Pre-merge tests are those to be executed previous merging
-    premerge_resultklass = getResult(series, revision, mbox, nopatch=True, post_submitters=None, print_values=pti.print_values)
+    premerge_resultklass = getResult(patch, nopatch=True, post_submitters=None, print_values=pti.print_values)
     _runner(premerge_resultklass, 'pretest')
 
     # run standard tests
-    postmerge_resultklass = getResult(series, revision, mbox, pti.nopatch, pti.post_submitters, print_values=pti.print_values)
+    postmerge_resultklass = getResult(patch, pti.nopatch, pti.post_submitters, print_values=pti.print_values)
     _runner(postmerge_resultklass)
 
 if __name__ == '__main__':
