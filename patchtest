@@ -35,7 +35,7 @@ def getResult(patch, nopatch, post_submitters, print_values):
         PATCHWORK_RESULT_WARNING = 'warning'
 
         shouldStop = True
-        longMessage = True
+        longMessage = False
 
         def startTestRun(self):
             # let's create the repo already, it can be used later on
@@ -104,7 +104,6 @@ def getResult(patch, nopatch, post_submitters, print_values):
 
             #summary = self.summary.generate(self.repo.items, self.merge_failure)
             summary = None
-            logger.info(summary)
 
             state = None
             if self.test_failure or self.merge_failure:
@@ -142,8 +141,7 @@ def _runner(resultklass, prefix=None):
         logger.warn('No test cases found with prefix "%s", quitting' % loader.testMethodPrefix)
         return 0
 
-    logger.info('Executing %s tests with prefix "%s"' % (ntc, loader.testMethodPrefix))
-    runner = unittest.TextTestRunner(resultclass=resultklass)
+    runner = unittest.TextTestRunner(resultclass=resultklass, verbosity=0)
 
     try:
         result = runner.run(suite)
@@ -203,8 +201,6 @@ if __name__ == '__main__':
     if pti.debug:
         logger.setLevel(logging.DEBUG)
         print logger.getEffectiveLevel()
-    elif pti.quiet:
-        logger.setLevel(logging.ERROR)
 
     try:
         ret = main()

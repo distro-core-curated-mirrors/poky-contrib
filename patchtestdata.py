@@ -92,10 +92,6 @@ class PatchTestArgs(object):
                             action='store_true',
                             help='Enable debug output')
 
-        parser.add_argument('--quiet', '-q',
-                            action='store_true',
-                            help='Print only errors')
-
         parser.add_argument('--print-failure-value',
                             action='store_true',
                             dest='print_values',
