@@ -1,4 +1,2 @@
-GitPython
-requests
 tabulate
 jinja2
