@@ -208,6 +208,8 @@ def buildcfg_vars(d):
         if value is not None:
             yield '%-17s = "%s"' % (var, value)
 
+    yield '%-17s = "%s"' % ("GCC_VERSION", d.getVar("GCCVERSION").strip('%'))
+
 def buildcfg_neededvars(d):
     needed_vars = oe.data.typed_value("BUILDCFG_NEEDEDVARS", d)
     pesteruser = []
