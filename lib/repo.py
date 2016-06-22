@@ -4,7 +4,7 @@ import git
 import logging
 import requests
 import json
-from mboxitem import Patch
+from patch import Patch
 
 logger = logging.getLogger('patchtest')
 info=logger.info
