@@ -11,53 +11,28 @@ import os
 import argparse
 import json
 import collections
+from tempfile import mkstemp
+import logging
+
+logger=logging.getLogger('patchtest')
+info=logger.info
 
 # Data store commonly used to share values between pre and post-merge tests
 PatchTestDataStore = collections.defaultdict(str)
 
 class PatchTestStdIn(object):
-    """ Generate PatchTestData from standard input"""
+    """Gather patch data from standard input"""
+
     @classmethod
     def namespace_stdin(cls, inputlines):
-        cls.series = []
-        cls.revision = []
-        cls.mbox = []
-        for line in inputlines:
-            try:
-                obj = json.loads(line)
-                series, revision = cls.get_series_revision(obj)
-                if series and revision:
-                    cls.series.append(series)
-                    cls.revision.append(revision)
-            except ValueError:
-                # we try the input as a mbox path
-                mbox_path = line.strip()
-                if mbox_path:
-                    cls.mbox.append(mbox_path)
-
-    @classmethod
-    def get_series_revision(cls, obj):
-        # variables to hold possible series/revision ids
-        series, revision = None, None
-
-        if not obj:
-            return series, revision
-
-        # json objects ared different depending on the git pw subcommand
-        if obj.has_key('series'):
-            # this is an event (git pw poll-events)
-            if obj.has_key('parameters'):
-                if obj['parameters'].has_key('revision'):
-                    series, revision = obj['series'], obj['parameters']['revision']
-        elif obj.has_key('id'):
-            # this is a series (git pw list -j)
-            if obj.has_key('version'):
-                series, revision = obj['id'], obj['version']
-
-        return series, revision
+        (_, patch) = mkstemp()
+        with open(patch,'w') as patchfd:
+            for line in inputlines:
+                patchfd.write(line)
+        return patch
 
 class PatchTestArgs(object):
-    """ Generate PatchTestData from an argument parser"""
+    """Abstract the patchtest argument parser"""
 
     @classmethod
     def set_namespace(cls):
@@ -125,7 +100,6 @@ class PatchTestArgs(object):
                             action='store_true',
                             dest='print_values',
                             help='Print only errors')
-
 
         return parser
 

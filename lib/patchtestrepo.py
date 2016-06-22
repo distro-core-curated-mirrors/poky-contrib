@@ -4,7 +4,7 @@ import git
 import logging
 import requests
 import json
-from patch import Patch
+from patchtestpatch import Patch
 
 logger = logging.getLogger('patchtest')
 info=logger.info
