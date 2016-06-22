@@ -127,15 +127,6 @@ def getResult(patch, nopatch, post_submitters, print_values):
 
     return PatchTestResult
 
-def main():
-    # read the stdin if mbox/series/revision are passed this way
-    if not sys.stdin.isatty():
-        pti.namespace_stdin(fileinput.input('-'))
-
-    run(pti.patch)
-
-    return 0
-
 def _runner(resultklass, prefix=None):
     # load test with the corresponding prefix
     loader = unittest.TestLoader()
@@ -174,6 +165,15 @@ def run(patch):
     # run standard tests
     postmerge_resultklass = getResult(patch, pti.nopatch, pti.post_submitters, print_values=pti.print_values)
     _runner(postmerge_resultklass)
+
+def main():
+    # read the stdin if mbox/series/revision are passed this way
+    if not sys.stdin.isatty():
+        pti.namespace_stdin(fileinput.input('-'))
+
+    run(pti.patch)
+
+    return 0
 
 if __name__ == '__main__':
     ret = 1
