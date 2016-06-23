@@ -75,8 +75,25 @@ class Repo(object):
         return self._exec(cmd)[0]['stdout']
 
     def _get_commitid(self, commit='HEAD'):
-        cmd = {'cmd':['git', 'rev-parse', '--short', commit]}
-        return self._exec(cmd)[0]['stdout']
+        out = None
+        try:
+            cmd = {'cmd':['git', 'rev-parse', '--short', commit]}
+            out = self._exec(cmd)[0]['stdout']
+        except utils.CmdException as ce:
+            # try getting the commit under any remotes
+            cmd = {'cmd':['git', 'remote']}
+            remotes = self._exec(cmd)[0]['stdout']
+            for remote in remotes.splitlines():
+                cmd = {'cmd':['git', 'rev-parse', '--short', '%s/%s' % (remote, commit)]}
+                try:
+                    out = self._exec(cmd)[0]['stdout']
+                    break
+                except:
+                    pass
+            else:
+                logger.error('commit (%s) not found on any remote')
+
+        return out
 
     def merge(self):
         # create the branch before merging
