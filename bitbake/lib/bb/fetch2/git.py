@@ -142,6 +142,8 @@ class Git(FetchMethod):
         gitsrcname = '%s%s' % (ud.host.replace(':', '.'), ud.path.replace('/', '.').replace('*', '.'))
         if gitsrcname.startswith('.'):
             gitsrcname = gitsrcname[1:]
+        if gitsrcname.endswith('.'):
+            gitsrcname = gitsrcname[:-1]
 
         # for rebaseable git repo, it is necessary to keep mirror tar ball
         # per revision, so that even the revision disappears from the

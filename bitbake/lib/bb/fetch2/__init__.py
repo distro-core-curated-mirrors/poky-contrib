@@ -865,6 +865,8 @@ def build_mirroruris(origud, mirrors, ld):
     replacements["PATH"] = origud.path
     replacements["BASENAME"] = origud.path.split("/")[-1]
     replacements["MIRRORNAME"] = origud.host.replace(':','.') + origud.path.replace('/', '.').replace('*', '.')
+    if replacements["MIRRORNAME"].endswith('.'):
+        replacements["MIRRORNAME"] = replacements["MIRRORNAME"][:-1]
 
     def adduri(ud, uris, uds, mirrors):
         for line in mirrors:
