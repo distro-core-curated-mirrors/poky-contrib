@@ -12,7 +12,7 @@ BBCLASSEXTEND = "native nativesdk"
 PR = "r1"
 
 # QEMU_TARGETS is overridable variable
-QEMU_TARGETS ?= "arm aarch64 i386 mips mipsel mips64 mips64el ppc sh4 x86_64"
+QEMU_TARGETS ?= "arm aarch64 i386 mips mipsel mips64 mips64el ppc ppc64 sh4 x86_64"
 
 SRC_URI = "\
     file://powerpc_rom.bin \
