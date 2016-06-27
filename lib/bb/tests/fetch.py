@@ -230,6 +230,36 @@ class URITest(unittest.TestCase):
             'query': {},
             'relative': False
         },
+        "git://example.net/path/example": {
+            'uri': 'git://example.net/path/example',
+            'scheme': 'git',
+            'hostname': 'example.net',
+            'port': None,
+            'hostport': 'example.net',
+            'path': '/path/example',
+            'userinfo': '',
+            'userinfo': '',
+            'username': '',
+            'password': '',
+            'params': {},
+            'query': {},
+            'relative': False
+        },
+        "git://example.net/path/example/": {
+            'uri': 'git://example.net/path/example',
+            'scheme': 'git',
+            'hostname': 'example.net',
+            'port': None,
+            'hostport': 'example.net',
+            'path': '/path/example',
+            'userinfo': '',
+            'userinfo': '',
+            'username': '',
+            'password': '',
+            'params': {},
+            'query': {},
+            'relative': False
+        },
         "http://somesite.net;someparam=1": {
             'uri': 'http://somesite.net;someparam=1',
             'scheme': 'http',
@@ -393,6 +423,10 @@ class MirrorUriTest(FetcherTest):
             : "git://somewhere.org/somedir/mtd-utils.git;tag=1234567890123456789012345678901234567890;protocol=http", 
         ("git://git.invalid.infradead.org/foo/mtd-utils.git;tag=1234567890123456789012345678901234567890", "git://.*/.*", "git://somewhere.org/somedir/MIRRORNAME;protocol=http") 
             : "git://somewhere.org/somedir/git.invalid.infradead.org.foo.mtd-utils.git;tag=1234567890123456789012345678901234567890;protocol=http", 
+        ("git://example.net/path/example;tag=1234567890123456789012345678901234567890", "git://.*/.*", "git://path/MIRRORNAME")
+            : "git://path/example.net.path.example;tag=1234567890123456789012345678901234567890",
+        ("git://example.net/path/example/;tag=1234567890123456789012345678901234567890", "git://.*/.*", "git://path/MIRRORNAME")
+            : "git://path/example.net.path.example;tag=1234567890123456789012345678901234567890",
 
         #Renaming files doesn't work
         #("http://somewhere.org/somedir1/somefile_1.2.3.tar.gz", "http://somewhere.org/somedir1/somefile_1.2.3.tar.gz", "http://somewhere2.org/somedir3/somefile_2.3.4.tar.gz") : "http://somewhere2.org/somedir3/somefile_2.3.4.tar.gz"

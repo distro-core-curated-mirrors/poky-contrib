@@ -72,6 +72,7 @@ import re
 import bb
 import errno
 from   bb    import data
+from   bb.fetch2 import encodeurl
 from   bb.fetch2 import FetchMethod
 from   bb.fetch2 import runfetchcmd
 from   bb.fetch2 import logger
@@ -95,6 +96,13 @@ class Git(FetchMethod):
         init git specific variable within url data
         so that the git method like latest_revision() can work
         """
+        # Sanitize the path, to ensure it does not end in a '/'.
+        # Git does this internally, so really all this does is affect any
+        # bitbake mirror paths, as '/' is translated to a '.'.
+        if ud.path.endswith('/'):
+            ud.path = ud.path[:-1]
+            ud.url = encodeurl((ud.type, ud.host, ud.path, ud.user, ud.pswd, ud.parm))
+
         if 'protocol' in ud.parm:
             ud.proto = ud.parm['protocol']
         elif not ud.host:
