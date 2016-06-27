@@ -24,7 +24,7 @@ error = logger.error
 from patchtestrepo import Repo
 import summary
 
-def getResult(patch, nopatch, post_submitters, pfailures):
+def getResult(patch, nopatch, post_submitters, pfailures, quiet=False):
 
     class PatchTestResult(unittest.TextTestResult):
         """ Formats the summary and post result at the end """
@@ -91,14 +91,15 @@ def getResult(patch, nopatch, post_submitters, pfailures):
         def addFailure(self, test, err):
             self.test_failure = True
             self.summary.addFailure(test)
-            info('FAIL %s' % test.id())
+            if not quiet:
+                info('FAIL %s' % test.id())
 
         def addSuccess(self, test):
-            if not pfailures:
+            if not quiet and not pfailures:
                 info('PASS %s' % test.id())
 
         def addSkip(self, test, reason):
-            if not pfailures:
+            if not quiet and not pfailures:
                 info('SKIP %s' % test.id())
 
         def stopTestRun(self):
@@ -164,7 +165,7 @@ def run(patch):
     unittest.installHandler()
 
     # run pre-merge tests. Pre-merge tests are those to be executed previous merging
-    premerge_resultklass = getResult(patch, nopatch=True, post_submitters=None, pfailures=pti.pfailures)
+    premerge_resultklass = getResult(patch, nopatch=True, post_submitters=None, pfailures=pti.pfailures, quiet=True)
     _runner(premerge_resultklass, 'pretest')
 
     # run standard tests
