@@ -69,10 +69,10 @@ class PatchTestArgs(object):
                                   action='store_true',
                                   help="Keep the working branch after patchtest execution")
 
-        branch_group.add_argument('--no-patch',
-                                  dest='nopatch',
+        branch_group.add_argument('--no-apply',
+                                  dest='noapply',
                                   action='store_true',
-                                  help="Do not patch the mbox/series")
+                                  help="Do not apply the patch into the repo")
 
         patchtest_tests_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'tests')
         parser.add_argument('--test-dir',
