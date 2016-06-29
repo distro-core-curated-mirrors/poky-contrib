@@ -160,7 +160,7 @@ def _lv_to_dict(prj, x = None):
     return {"id": x.pk,
             "name": x.layer.name,
             "tooltip": "%s | %s" % (x.layer.vcs_url,x.get_vcs_reference()),
-            "detail": "(%s" % x.layer.vcs_url + (")" if x.up_branch == None else " | "+x.get_vcs_reference()+")"),
+            "detail": "(%s" % x.layer.vcs_url + (")" if x.release == None else " | "+x.get_vcs_reference()+")"),
             "giturl": x.layer.vcs_url,
             "layerdetailurl" : reverse('layerdetails', args=(prj.id,x.pk)),
             "revision" : x.get_vcs_reference(),
@@ -1275,7 +1275,7 @@ if True:
     from django.contrib.auth import authenticate, login
     from django.contrib.auth.decorators import login_required
 
-    from orm.models import Branch, LayerSource, ToasterSetting, Release, Machine, LayerVersionDependency
+    from orm.models import LayerSource, ToasterSetting, Release, Machine, LayerVersionDependency
     from bldcontrol.models import BuildRequest
 
     import traceback
@@ -1654,9 +1654,6 @@ if True:
           post_data[key] = val.strip()
 
 
-        # We need to know what release the current project is so that we
-        # can set the imported layer's up_branch_id
-
         try:
             layer, layer_created = Layer.objects.get_or_create(name=post_data['name'])
         except MultipleObjectsReturned:
@@ -1745,7 +1742,6 @@ if True:
                          "deps_added": layers_added }
 
         return HttpResponse(jsonfilter(json_response), content_type = "application/json")
-
 
     @xhr_response
     def xhr_customrecipe(request):
