@@ -208,7 +208,10 @@ IMAGE_CMD_wic () {
 	fi
 
 	BUILDDIR="${TOPDIR}" wic create "$wks" --vars "${STAGING_DIR_TARGET}/imgdata/" -e "${IMAGE_BASENAME}" -o "$out/" ${WIC_CREATE_EXTRA_ARGS}
-	mv "$out/build/$(basename "${wks%.wks}")"*.direct "$out${IMAGE_NAME_SUFFIX}.wic"
+	for img in $out/build/$(basename "${wks%.wks}")*.direct; do
+		device=$(echo "$img" | sed -e 's/.*[0-9]\{12\}-\(.\+\).direct/\1/')
+		mv "$img" "$out${IMAGE_NAME_SUFFIX}-${device}.wic"
+	done
 	rm -rf "$out/"
 }
 IMAGE_CMD_wic[vardepsexclude] = "WKS_FULL_PATH WKS_FILES"
