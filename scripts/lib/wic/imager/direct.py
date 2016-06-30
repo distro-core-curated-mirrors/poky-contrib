@@ -315,7 +315,7 @@ class DirectImageCreator(BaseImageCreator):
             full_path = self._full_path(self.__imgdir, disk_name, "direct")
             msger.debug("Assembling disk %s as %s with size %s bytes" \
                         % (disk_name, full_path, disk['min_size']))
-            self.__image.assemble(full_path)
+            self.__image.assemble(full_path, disk_name)
 
     def finalize(self):
         """

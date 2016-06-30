@@ -337,10 +337,12 @@ class Image():
                 except:
                     pass
 
-    def assemble(self, image_file):
+    def assemble(self, image_file, disk):
         msger.debug("Installing partitions")
 
         for part in self.partitions:
+            if disk != part['disk_name']:
+                continue
             source = part['source_file']
             if source:
                 # install source_file contents into a partition
