@@ -97,6 +97,12 @@ class PatchTestArgs(object):
                             dest='pfailures',
                             help='Print just failures')
 
+        parser.add_argument('--raw', '-r',
+                            action='store_true',
+                            dest='raw',
+                            help='Print errors coming from the test suite')
+
+
         return parser
 
 # Class used as a namespace to share data from patchtest to the test suites

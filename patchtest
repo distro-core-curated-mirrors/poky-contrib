@@ -24,7 +24,7 @@ error = logger.error
 from patchtestrepo import Repo
 import summary
 
-def getResult(patch, noapply, post_submitters, pfailures, quiet=False):
+def getResult(patch, noapply, post_submitters, pfailures, raw=False):
 
     class PatchTestResult(unittest.TextTestResult):
         """ Formats the summary and post result at the end """
@@ -91,16 +91,24 @@ def getResult(patch, noapply, post_submitters, pfailures, quiet=False):
         def addFailure(self, test, err):
             self.test_failure = True
             self.summary.addFailure(test)
-            if not quiet:
-                info('FAIL %s' % test.id())
+            if raw:
+                print(err[1])
+            else:
+                print('{:10} {:<50}'.format('FAIL', test.id()))
 
         def addSuccess(self, test):
-            if not quiet and not pfailures:
-                info('PASS %s' % test.id())
+            if not pfailures:
+                if raw:
+                    print(test)
+                else:
+                    print('{:10} {:<50}'.format('PASS', test.id()))
 
         def addSkip(self, test, reason):
-            if not quiet and not pfailures:
-                info('SKIP %s' % test.id())
+            if not pfailures:
+                if raw:
+                    print(test)
+                else:
+                    print('{:10} {:<50}'.format('SKIP', test.id()))
 
         def stopTestRun(self):
 
@@ -143,7 +151,6 @@ def _runner(resultklass, prefix=None):
 
     # if there are no test cases, just quit
     if not ntc:
-        logger.warn('No test cases found with prefix "%s", quitting' % loader.testMethodPrefix)
         return 0
 
     runner = unittest.TextTestRunner(resultclass=resultklass, verbosity=0)
@@ -165,11 +172,11 @@ def run(patch):
     unittest.installHandler()
 
     # run pre-merge tests. Pre-merge tests are those to be executed previous merging
-    premerge_resultklass = getResult(patch, noapply=True, post_submitters=None, pfailures=pti.pfailures, quiet=True)
+    premerge_resultklass = getResult(patch, noapply=True, post_submitters=None, pfailures=pti.pfailures, raw=pti.raw)
     _runner(premerge_resultklass, 'pretest')
 
     # run standard tests
-    postmerge_resultklass = getResult(patch, pti.noapply, pti.post_submitters, pfailures=pti.pfailures)
+    postmerge_resultklass = getResult(patch, pti.noapply, pti.post_submitters, pfailures=pti.pfailures, raw=pti.raw)
     return _runner(postmerge_resultklass)
 
 def main():
