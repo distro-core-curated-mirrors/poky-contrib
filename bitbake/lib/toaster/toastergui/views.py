@@ -472,20 +472,13 @@ def builddashboard( request, build_id ):
     tgts = Target.objects.filter( build_id = build_id ).order_by( 'target' );
 
     # set up custom target list with computed package and image data
-    targets = []
+    targets = [ ]
     ntargets = 0
 
-    # True if at least one target for this build has an SDK artifact
-    # or image file
-    has_artifacts = False
-
+    targetHasNoImages = False
     for t in tgts:
-        elem = {}
-        elem['target'] = t
-
-        target_has_images = False
-        image_files = []
-
+        elem = { }
+        elem[ 'target' ] = t
         npkg = 0
         pkgsz = 0
         package = None
@@ -534,7 +527,7 @@ def builddashboard( request, build_id ):
     context = {
             'build'           : build,
             'project'         : build.project,
-            'hasArtifacts'    : has_artifacts,
+            'hasImages'       : build.has_images(),
             'ntargets'        : ntargets,
             'targets'         : targets,
             'recipecount'     : recipeCount,

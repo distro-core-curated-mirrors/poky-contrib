@@ -449,19 +449,13 @@ class Build(models.Model):
                 break
         return has_images
 
-    def has_image_recipes(self):
-        """
-        Returns True if a build has any targets which were built from
-        image recipes.
-        """
-        image_recipes = self.get_image_recipes()
-        return len(image_recipes) > 0
-
     def get_image_file_extensions(self):
         """
-        Get list of file name extensions for images produced by this build;
+        Get string of file name extensions for images produced by this build;
         note that this is the actual list of extensions stored on Target objects
         for this build, and not the value of IMAGE_FSTYPES.
+
+        Returns comma-separated string, e.g. "vmdk, ext4"
         """
         extensions = []
 
@@ -761,6 +755,12 @@ class Target(models.Model):
             sdk_file.target = self
             sdk_file.save()
 
+    def has_images(self):
+        """
+        Returns True if this target has one or more image files attached to it.
+        """
+        return self.target_image_file_set.all().count() > 0
+
 # kernel artifacts for a target: bzImage and modules*
 class TargetKernelFile(models.Model):
     target = models.ForeignKey(Target)
@@ -797,6 +797,9 @@ class Target_Image_File(models.Model):
 
     @property
     def suffix(self):
+        """
+        Suffix for image file, minus leading "."
+        """
         for suffix in Target_Image_File.SUFFIXES:
             if self.file_name.endswith(suffix):
                 return suffix
