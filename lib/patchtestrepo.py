@@ -91,6 +91,7 @@ class Repo(object):
                 except:
                     pass
             else:
+                out = None
                 logger.error('commit (%s) not found on any remote')
 
         return out
