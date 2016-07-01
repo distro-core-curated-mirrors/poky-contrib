@@ -108,7 +108,7 @@ def exec_cmds(cmds, cwd):
 
 def logger_create(name):
     logger = logging.getLogger(name)
-    loggerhandler = logging.StreamHandler(sys.stdout)
+    loggerhandler = logging.StreamHandler()
     loggerhandler.setFormatter(logging.Formatter("%(message)s"))
     logger.addHandler(loggerhandler)
     logger.setLevel(logging.INFO)
