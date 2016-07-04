@@ -103,19 +103,12 @@
         {% if not target.targetHasNoImages %}
           <dl class="dl-horizontal">
             <dt>
-                <span class="glyphicon glyphicon-question-sign get-help" title="The location in disk of the license manifest, a document listing all packages installed in your image and their licenses"></span>
-                License manifest
+              Manifests
             </dt>
 
             <dd>
-              <a data-link="license-manifest" href="{% url 'build_artifact' build.pk 'licensemanifest' target.target.pk %}">License manifest</a>
+              <a href="{% url 'build_artifact' build.pk 'licensemanifest' target.target.pk %}">License manifest</a>
             </dd>
-
-            {% if target.target.package_manifest_path %}
-              <dd>
-                <a data-link="package-manifest" href="{% url 'build_artifact' build.pk 'packagemanifest' target.target.pk %}">Package manifest</a>
-              </dd>
-            {% endif %}
           </dl>
 
           <dl class="dl-horizontal">
