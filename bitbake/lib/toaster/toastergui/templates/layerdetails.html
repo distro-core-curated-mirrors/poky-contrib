@@ -58,7 +58,7 @@
 
     $(document).ready(function(){
       var ctx = {
-        xhrUpdateLayerUrl : "{% url 'xhr_layer' project.id layerversion.pk %}",
+        xhrUpdateLayerUrl : "{% url 'xhr_layer' layerversion.pk %}",
         layerVersion : {
           name : "{{layerversion.layer.name}}",
           id : {{layerversion.id}},
