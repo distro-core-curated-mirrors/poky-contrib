@@ -29,6 +29,9 @@ from django.views.generic import View
 from django.core.urlresolvers import reverse
 
 
+def error_response(error):
+    return JsonResponse({"error": error})
+
 
 class XhrBuildRequest(View):
 
@@ -138,9 +141,6 @@ class XhrLayer(View):
             or
               {"error": <error message>}
         """
-
-        def error_response(error):
-            return JsonResponse({"error": error})
 
         try:
             # We currently only allow Imported layers to be edited
