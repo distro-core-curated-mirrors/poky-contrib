@@ -4,6 +4,7 @@ from sys import exit
 from argparse import ArgumentParser
 from subprocess import check_output, PIPE, Popen
 from json import loads
+from scripts_utils import past
 
 def main(since, testdir):
     cmd='git pw poll-events --since %s --name series-new-revision' % args.since
@@ -20,7 +21,7 @@ def main(since, testdir):
         print 'testing series/revision %s/%s' % (series, revision)
         cmd = 'git pw mbox %s --revision %s' % (series, revision)
         patch = check_output(cmd, shell=True)
-        cmd = 'patchtest - --branch master --test-dir %s' % args.testdir
+        cmd = 'patchtest - --branch master --test-dir %s -f' % args.testdir
         p = Popen(cmd.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
         results, stderr = p.communicate(patch)
         print results
@@ -29,8 +30,16 @@ def main(since, testdir):
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Runs patchtest from series coming from patchwork since the given date")
-    parser.add_argument('since', type=str, help='Poll series since the specify date')
+
     parser.add_argument('testdir', help='Path to test suite')
+
+    monthsago = 3
+    parser.add_argument('--since',
+                        type=str,
+                        dest='since',
+                        default=past(monthsago),
+                        help='Poll series since the specify date. Defaults to %s months ago' % monthsago)
+
     args = parser.parse_args()
 
     ret=1
