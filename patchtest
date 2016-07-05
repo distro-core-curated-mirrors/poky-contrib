@@ -94,17 +94,17 @@ def getResult(patch, noapply, post_submitters, pfailures, raw=False):
             if raw:
                 print(err[1])
             else:
-                print('{:10} {:<50}'.format('FAIL', test.id()))
+                print('{} {}'.format('FAIL', test.id()))
 
         def addSuccess(self, test):
             if not pfailures:
                 if not raw:
-                    print('{:10} {:<50}'.format('PASS', test.id()))
+                    print('{} {}'.format('PASS', test.id()))
 
         def addSkip(self, test, reason):
             if not pfailures:
                 if not raw:
-                    print('{:10} {:<50}'.format('SKIP', test.id()))
+                    print('{} {}'.format('SKIP', test.id()))
 
         def stopTestRun(self):
 
