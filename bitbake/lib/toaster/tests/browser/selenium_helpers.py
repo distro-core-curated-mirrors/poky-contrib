@@ -128,4 +128,93 @@ class SeleniumTestCase(StaticLiveServerTestCase):
     static files are served correctly in a Selenium test run context; see
     https://docs.djangoproject.com/en/1.9/ref/contrib/staticfiles/#specialized-test-case-to-support-live-testing
     """
-    pass
+
+    @classmethod
+    def setUpClass(cls):
+        """ Create a webdriver driver at the class level """
+
+        super(SeleniumTestCase, cls).setUpClass()
+
+        # instantiate the Selenium webdriver once for all the test methods
+        # in this test case
+        cls.driver = create_selenium_driver()
+        cls.driver.maximize_window()
+
+    @classmethod
+    def tearDownClass(cls):
+        """ Clean up webdriver driver """
+
+        cls.driver.quit()
+        super(SeleniumTestCase, cls).tearDownClass()
+
+    def get(self, url):
+        """
+        Selenium requires absolute URLs, so convert Django URLs returned
+        by resolve() or similar to absolute ones and get using the
+        webdriver instance.
+
+        url: a relative URL
+        """
+        abs_url = '%s%s' % (self.live_server_url, url)
+        self.driver.get(abs_url)
+
+    def find(self, selector):
+        """ Find single element by CSS selector """
+        return self.driver.find_element_by_css_selector(selector)
+
+    def find_all(self, selector):
+        """ Find all elements matching CSS selector """
+        return self.driver.find_elements_by_css_selector(selector)
+
+    def element_exists(self, selector):
+        """
+        Return True if one element matching selector exists,
+        False otherwise
+        """
+        return len(self.find_all(selector)) == 1
+
+    def focused_element(self):
+        """ Return the element which currently has focus on the page """
+        return self.driver.switch_to.active_element
+
+    def wait_until_present(self, selector):
+        """ Wait until element matching CSS selector is on the page """
+        is_present = lambda driver: self.find(selector)
+        msg = 'An element matching "%s" should be on the page' % selector
+        element = Wait(self.driver).until(is_present, msg)
+        return element
+
+    def wait_until_visible(self, selector):
+        """ Wait until element matching CSS selector is visible on the page """
+        is_visible = lambda driver: self.find(selector).is_displayed()
+        msg = 'An element matching "%s" should be visible' % selector
+        Wait(self.driver).until(is_visible, msg)
+        return self.find(selector)
+
+    def wait_until_focused(self, selector):
+        """ Wait until element matching CSS selector has focus """
+        is_focused = \
+            lambda driver: self.find(selector) == self.focused_element()
+        msg = 'An element matching "%s" should be focused' % selector
+        Wait(self.driver).until(is_focused, msg)
+        return self.find(selector)
+
+    def enter_text(self, selector, value):
+        """ Insert text into element matching selector """
+        # note that keyup events don't occur until the element is clicked
+        # (in the case of <input type="text"...>, for example), so simulate
+        # user clicking the element before inserting text into it
+        field = self.click(selector)
+
+        field.send_keys(value)
+        return field
+
+    def click(self, selector):
+        """ Click on element which matches CSS selector """
+        element = self.wait_until_visible(selector)
+        element.click()
+        return element
+
+    def get_page_source(self):
+        """ Get raw HTML for the current page """
+        return self.driver.page_source
