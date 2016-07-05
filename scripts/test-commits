@@ -13,14 +13,11 @@ usage() {
     echo
 }
 
-[ -z $origin ] || { usage; exit -1; }
-[ -z $test_suite ] || { usage; exit -1; }
-
-tmp=$(mktemp)
+[ -z $origin ]     && { usage; exit -1; }
+[ -z $test_suite ] && { usage; exit -1; }
 
 for commit in $(git rev-list $origin..HEAD --reverse); do
-    git format-patch "$commit^1..$commit" --stdout > $tmp
-    patchtest --commit "$commit^1" -m $tmp --test-dir $test_suite
+    git format-patch "$commit^1..$commit" --stdout | \
+    patchtest - --commit "$commit^1" --test-dir $test_suite -f
 done
 
-rm $tmp
