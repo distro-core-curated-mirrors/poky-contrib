@@ -46,11 +46,6 @@ class PatchTestArgs(object):
         parser.add_argument('patch', metavar='PATCH',
                             help='The patch to be tested by patchtest')
 
-        parser.add_argument('--post-submitters', '-p',
-                            dest='post_submitters',
-                            default='',
-                            help="Regular expression that indicated the submitters that patchtest can POST")
-
         parser.add_argument('-C',
                             dest='repodir',
                             default=os.getcwd(),
@@ -61,7 +56,6 @@ class PatchTestArgs(object):
                             default='patchtest',
                             help="Test name to be used if results are posted. In case all items failed merged, then the test name is <--test-name>-merge-failure")
 
-        # Keeps --keep-branch and --no-post mutually exclusive
         branch_group = parser.add_mutually_exclusive_group()
 
         branch_group.add_argument('--keep-branch',

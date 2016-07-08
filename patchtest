@@ -24,15 +24,10 @@ error = logger.error
 from patchtestrepo import Repo
 import summary
 
-def getResult(patch, noapply, post_submitters, pfailures, raw=False):
+def getResult(patch, noapply, pfailures, raw=False):
 
     class PatchTestResult(unittest.TextTestResult):
         """ Formats the summary and post result at the end """
-
-        PATCHWORK_RESULT_FAILURE = 'failure'
-        PATCHWORK_RESULT_SUCCESS = 'success'
-        PATCHWORK_RESULT_PENDING = 'pending'
-        PATCHWORK_RESULT_WARNING = 'warning'
 
         shouldStop = True
         longMessage = False
@@ -111,25 +106,6 @@ def getResult(patch, noapply, post_submitters, pfailures, raw=False):
             if self.repo_error:
                 return
 
-            #summary = self.summary.generate(self.repo.items, self.merge_failure)
-            summary = None
-
-            state = None
-            if self.test_failure or self.merge_failure:
-                state = PatchTestResult.PATCHWORK_RESULT_FAILURE
-            else:
-                state = PatchTestResult.PATCHWORK_RESULT_SUCCESS
-
-            if not self.test_error:
-                if post_submitters:
-                    # Check submitter regex (post_users) to check if system
-                    # can post
-                    for item in self.repo.items:
-                        if item.submitter:
-                            if re.search(post_submitters, item.submitter):
-                                self.repo.post(pti.testname, state, summary)
-                                break
-
             if not noapply:
                 self.repo.clean(pti.keepbranch)
 
@@ -168,11 +144,11 @@ def run(patch):
     unittest.installHandler()
 
     # run pre-merge tests. Pre-merge tests are those to be executed previous merging
-    premerge_resultklass = getResult(patch, noapply=True, post_submitters=None, pfailures=pti.pfailures, raw=pti.raw)
+    premerge_resultklass = getResult(patch, noapply=True, pfailures=pti.pfailures, raw=pti.raw)
     _runner(premerge_resultklass, 'pretest')
 
     # run standard tests
-    postmerge_resultklass = getResult(patch, pti.noapply, pti.post_submitters, pfailures=pti.pfailures, raw=pti.raw)
+    postmerge_resultklass = getResult(patch, pti.noapply, pfailures=pti.pfailures, raw=pti.raw)
     return _runner(postmerge_resultklass)
 
 def main():

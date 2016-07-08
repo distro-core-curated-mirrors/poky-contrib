@@ -19,10 +19,13 @@ class Repo(object):
         self._patch = Patch(patch)
         self._current_branch = self._get_current_branch()
 
-        # branch to be used for testing, priority: branch provided by
-        # user, branch defined in item/items or current branch
-        self._branch = branch or self._patch.branch or self._current_branch
-        self._commit = self._get_commitid(commit or self._branch)
+        self._branch = self._get_commitid(branch) or \
+                       self._get_commitid(self._patch.branch) or \
+                       self._current_branch
+
+        self._commit = self._get_commitid(commit) or \
+                       self._get_commitid('HEAD')
+
         self._branchname = "%s_%s" % (Repo.prefix, os.getpid())
 
         # for debugging purposes, print all repo parameters
@@ -74,11 +77,14 @@ class Repo(object):
         cmd = {'cmd':['git', 'rev-parse', '--abbrev-ref', commit]}
         return self._exec(cmd)[0]['stdout']
 
-    def _get_commitid(self, commit='HEAD'):
-        out = None
+    def _get_commitid(self, commit):
+
+        if not commit:
+            return None
+
         try:
             cmd = {'cmd':['git', 'rev-parse', '--short', commit]}
-            out = self._exec(cmd)[0]['stdout']
+            return self._exec(cmd)[0]['stdout']
         except utils.CmdException as ce:
             # try getting the commit under any remotes
             cmd = {'cmd':['git', 'remote']}
@@ -86,15 +92,11 @@ class Repo(object):
             for remote in remotes.splitlines():
                 cmd = {'cmd':['git', 'rev-parse', '--short', '%s/%s' % (remote, commit)]}
                 try:
-                    out = self._exec(cmd)[0]['stdout']
-                    break
-                except:
+                    return self._exec(cmd)[0]['stdout']
+                except utils.CmdException:
                     pass
-            else:
-                out = None
-                logger.error('commit (%s) not found on any remote')
 
-        return out
+        return None
 
     def merge(self):
         # create the branch before merging
@@ -129,19 +131,3 @@ class Repo(object):
             cmds.append({'cmd':['git', 'branch', '-D', self._branchname], 'ignore_error':True})
 
         self._exec(cmds)
-
-    def post(self, testname, state, summary):
-        # TODO: for the moment, all elements on self._series_revision share the same
-        # result. System should post independent results for each _series_revision
-        for series, revision in self._series_revision:
-            cmd = {'cmd':['git', 'pw', 'post-result',
-                          series,
-                          testname,
-                          state,
-                          '--summary', summary,
-                          '--revision', revision]}
-            try:
-                self._exec(cmd)
-            except utils.CmdException:
-                logger.warn('POST requests cannot be done to %s' % self._url)
-
