@@ -1,30 +1,59 @@
 #!/usr/bin/env python
 
-from sys import exit
+from sys import exit, stderr
 from argparse import ArgumentParser
-from subprocess import check_output, PIPE, Popen
+from subprocess import check_output, PIPE, Popen, CalledProcessError
 from json import loads
 from scripts_utils import past
+from collections import OrderedDict
+import logging
+
+def logger_create(name):
+    logger = logging.getLogger(name)
+    loggerhandler = logging.StreamHandler()
+    loggerhandler.setFormatter(logging.Formatter("%(message)s"))
+    logger.addHandler(loggerhandler)
+    logger.setLevel(logging.INFO)
+    return logger
+
+logger = logger_create('test-series')
+error = logger.error
+
+def last_rev(events):
+    """ Take last revisions from the new-series events"""
+    listseries = OrderedDict()
+
+    for event in events.splitlines():
+        series = loads(event)
+        s, r     = series['series'], series['parameters']['revision']
+        listseries.update({s:r})
+
+    return listseries
 
 def main(since, testdir):
+
     cmd='git pw poll-events --since %s --name series-new-revision' % args.since
+
     try:
-        allseries = check_output(cmd, shell=True)
+        allseriesrev = check_output(cmd, shell=True)
+        lastseriesrevs = last_rev(allseriesrev)
     except CalledProcessError as cpe:
         print 'make sure you have patchwork git-pw installed'
         return 1
 
-    for jsonseries in allseries.splitlines():
-        dictseries = loads(jsonseries)
-        series = dictseries['series']
-        revision = dictseries['parameters']['revision']
-        print 'testing series/revision %s/%s' % (series, revision)
-        cmd = 'git pw mbox %s --revision %s' % (series, revision)
-        patch = check_output(cmd, shell=True)
-        cmd = 'patchtest - --branch master --test-dir %s -f' % args.testdir
-        p = Popen(cmd.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    patchtestcmd = 'patchtest - --branch master --test-dir %s --raw --no-apply' % args.testdir
+
+    for series, revision in lastseriesrevs.iteritems():
+        gitpwcmd = 'git pw mbox %s --revision %s' % (series, revision)
+        patch = check_output(gitpwcmd, shell=True)
+        p = Popen(patchtestcmd.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
         results, stderr = p.communicate(patch)
-        print results
+        error('Exception from %s %s' % (series, revision))
+        error(stderr)
+
+        if results:
+            for result in results.splitlines():
+                print '{}'.format(result)
 
     return 0
 
