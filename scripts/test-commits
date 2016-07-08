@@ -18,6 +18,6 @@ usage() {
 
 for commit in $(git rev-list $origin..HEAD --reverse); do
     git format-patch "$commit^1..$commit" --stdout | \
-    patchtest - --commit "$commit^1" --test-dir $test_suite -f
+    patchtest - --commit "$commit^1" --test-dir $test_suite --raw
 done
 
