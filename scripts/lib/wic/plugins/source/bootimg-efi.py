@@ -101,7 +101,7 @@ class BootimgEFIPlugin(SourcePlugin):
         initrd = ""
 
         if source_params['initrd']:
-        initrd = source_params['initrd']
+            initrd = source_params['initrd']
             # obviously we need to have a common common deploy var
             bootimg_dir = get_bitbake_var("DEPLOY_DIR_IMAGE")
             if not bootimg_dir:
@@ -139,7 +139,7 @@ class BootimgEFIPlugin(SourcePlugin):
             boot_conf += "options LABEL=Boot root=%s %s\n" % \
                              (creator.rootdev, bootloader.append)
 
-           if initrd:
+            if initrd:
                 boot_conf += "initrd /%s\n" % initrd
 
         msger.debug("Writing systemd-boot config %s/hdd/boot/loader/entries/boot.conf" \
@@ -182,7 +182,7 @@ class BootimgEFIPlugin(SourcePlugin):
         In this case, prepare content for an EFI (grub) boot partition.
         """
         if not bootimg_dir:
-        bootimg_dir = get_bitbake_var("DEPLOY_DIR_IMAGE")
+            bootimg_dir = get_bitbake_var("DEPLOY_DIR_IMAGE")
             if not bootimg_dir:
                  msger.error("Couldn't find DEPLOY_DIR_IMAGE, exiting\n")
             bootimg_dir += "/artifacts"

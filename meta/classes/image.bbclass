@@ -129,6 +129,14 @@ do_rootfs[vardeps] += "${@rootfs_variables(d)}"
 
 do_build[depends] += "virtual/kernel:do_deploy"
 
+def build_wic(d):
+    if bb.utils.contains("IMAGE_FSTYPES", "wic", "wic", "0", d) == "wic":
+         return "boot-binary-artifacts"
+    return ""
+
+IMAGE_TYPE_wic = "${@build_wic(d)}"
+inherit ${IMAGE_TYPE_wic}
+
 def build_live(d):
     if bb.utils.contains("IMAGE_FSTYPES", "live", "live", "0", d) == "0": # live is not set but hob might set iso or hddimg
         d.setVar('NOISO', bb.utils.contains('IMAGE_FSTYPES', "iso", "0", "1", d))

@@ -333,10 +333,10 @@ class IsoImagePlugin(SourcePlugin):
 
         # Support using a different initrd other than default
         if source_params['initrd']:
-        initrd = source_params['initrd']
-        if not hdd_dir:
-            msger.error("Couldn't find DEPLOY_DIR_IMAGE, exiting\n")
-        cp_cmd = "cp %s/%s %s" % (hdd_dir, initrd, cr_workdir)
+            initrd = source_params['initrd']
+            if not hdd_dir:
+                msger.error("Couldn't find DEPLOY_DIR_IMAGE, exiting\n")
+            cp_cmd = "cp %s/%s %s" % (hdd_dir, initrd, cr_workdir)
         else:
             # Prepare initial ramdisk
             initrd = "%s/initrd" % hdd_dir
