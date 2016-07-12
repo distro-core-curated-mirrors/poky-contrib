@@ -130,6 +130,9 @@ do_rootfs[vardeps] += "${@rootfs_variables(d)}"
 do_build[depends] += "virtual/kernel:do_deploy"
 
 def build_live(d):
+    if bb.utils.contains("IMAGE_FSTYPES", "live-artifacts-only", "live-artifacts-only", "0", d) == "live-artifacts-only":
+         return "image-live-artifacts"
+
     if bb.utils.contains("IMAGE_FSTYPES", "live", "live", "0", d) == "0": # live is not set but hob might set iso or hddimg
         d.setVar('NOISO', bb.utils.contains('IMAGE_FSTYPES', "iso", "0", "1", d))
         d.setVar('NOHDD', bb.utils.contains('IMAGE_FSTYPES', "hddimg", "0", "1", d))

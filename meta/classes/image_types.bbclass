@@ -270,6 +270,8 @@ python () {
                 bb.build.addtask('do_write_wks_template', 'do_image_wic', None, d)
 }
 
+IMAGE_CMD_live-artifacts-only = " "
+
 EXTRA_IMAGECMD = ""
 
 inherit siteinfo
