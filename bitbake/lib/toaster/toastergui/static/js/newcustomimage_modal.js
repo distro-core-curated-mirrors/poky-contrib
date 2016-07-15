@@ -25,7 +25,11 @@ function newCustomImageModalInit(){
   var duplicateNameMsg = "An image with this name already exists. Image names must be unique.";
   var duplicateImageInProjectMsg = "An image with this name already exists in this project."
   var invalidBaseRecipeIdMsg = "Please select an image to customise.";
-	
+
+  // set button to "submit" state and enable text entry so user can
+  // enter the custom recipe name
+  showSubmitState();
+
   /* capture clicks on radio buttons inside the modal; when one is selected,
    * set the recipe on the modal
    */
@@ -40,6 +44,9 @@ function newCustomImageModalInit(){
   });
 
   newCustomImgBtn.click(function(e){
+    // disable the button and text entry
+    showLoadingState();
+
     e.preventDefault();
 
     var baseRecipeId = imgCustomModal.data('recipe');
@@ -69,11 +76,28 @@ function newCustomImageModalInit(){
           }
         } else {
           imgCustomModal.modal('hide');
+          imgCustomModal.one('hidden.bs.modal', showSubmitState);
           window.location.replace(ret.url + '?notify=new');
         }
       });
     }
   });
+
+  // enable text entry, show "Create image" button text
+  function showSubmitState() {
+    newCustomImgBtn.find('[data-role="loading-state"]').hide();
+    newCustomImgBtn.find('[data-role="submit-state"]').show();
+    newCustomImgBtn.removeAttr('disabled');
+    nameInput.removeAttr('disabled');
+  }
+
+  // disable text entry, show "Creating image..." button text
+  function showLoadingState() {
+    newCustomImgBtn.find('[data-role="submit-state"]').hide();
+    newCustomImgBtn.find('[data-role="loading-state"]').show();
+    newCustomImgBtn.attr('disabled', 'disabled');
+    nameInput.attr('disabled', 'disabled');
+  }
 
   function showNameError(text){
     invalidNameHelp.text(text);
@@ -167,6 +191,5 @@ function newCustomImageModalSetRecipes(baseRecipes) {
 
     // show the radio button container
     imageSelector.show();
-	 
-  }	
+  }
 }
