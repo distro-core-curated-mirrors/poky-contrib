@@ -574,6 +574,7 @@ def preserved_envvars_exported():
         'TERM',
         'USER',
         'LC_ALL',
+        'BBSERVER',
     ]
 
 def preserved_envvars():
