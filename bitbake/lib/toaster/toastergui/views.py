@@ -1450,7 +1450,7 @@ if True:
         freqtargets = tmp
 
         layers = [{"id": x.layercommit.pk, "orderid": x.pk, "name" : x.layercommit.layer.name,
-                   "vcs_url": x.layercommit.layer.vcs_url, "vcs_reference" : x.layercommit.get_vcs_reference(),
+                   "vcs_url": x.layercommit.layer.vcs_url, "local_source_dir": x.layercommit.layer.local_source_dir, "vcs_reference" : x.layercommit.get_vcs_reference(),
                    "url": x.layercommit.layer.layer_index_url, "layerdetailurl": x.layercommit.get_detailspage_url(prj.pk),
                    # This branch name is actually the release
                    "branch" : {"name" : x.layercommit.get_vcs_reference(),
@@ -1662,7 +1662,7 @@ if True:
         prj = Project.objects.get(pk=request.POST['project_id'])
 
         # Strip trailing/leading whitespace from all values
-        # put into a new dict because POST one is immutable
+        # put into a new dict because POST one is immutable.
         post_data = dict()
         for key,val in request.POST.items():
           post_data[key] = val.strip()
@@ -1683,6 +1683,7 @@ if True:
             if layer_created:
                 layer.layer_source = layer_source
                 layer.vcs_url = post_data['vcs_url']
+                layer.local_source_dir = post_data['local_source_dir']
                 layer.up_date = timezone.now()
                 layer.save()
             else:
