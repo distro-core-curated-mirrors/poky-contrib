@@ -86,16 +86,16 @@ class PatchTestArgs(object):
                             action='store_true',
                             help='Enable debug output')
 
-        parser.add_argument('--failures', '-f',
-                            action='store_true',
-                            dest='pfailures',
-                            help='Print just failures')
+        json_group = parser.add_mutually_exclusive_group()
+        json_group.add_argument('--failures', '-f',
+                                action='store_true',
+                                dest='pfailures',
+                                help='Print failures values coming from the test suite. WARNING: it wont print any PASS/SKIP test')
 
-        parser.add_argument('--raw', '-r',
-                            action='store_true',
-                            dest='raw',
-                            help='Print errors coming from the test suite')
-
+        json_group.add_argument('--json', '-j',
+                                action='store_true',
+                                dest='json',
+                                help='Print output in JSON format')
 
         return parser
 

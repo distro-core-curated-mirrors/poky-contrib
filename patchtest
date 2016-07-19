@@ -7,6 +7,7 @@ import fileinput
 import logging
 import traceback
 import re
+from json import dumps
 
 # Include current path so test cases can see it
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -24,7 +25,7 @@ error = logger.error
 from patchtestrepo import Repo
 import summary
 
-def getResult(patch, noapply, pfailures, raw=False):
+def getResult(patch, noapply, pfailures, json):
 
     class PatchTestResult(unittest.TextTestResult):
         """ Formats the summary and post result at the end """
@@ -86,20 +87,26 @@ def getResult(patch, noapply, pfailures, raw=False):
         def addFailure(self, test, err):
             self.test_failure = True
             self.summary.addFailure(test)
-            if raw:
+            if pfailures:
                 print(err[1])
+            elif json:
+                print(dumps([('testid', test.id()), ('status', 'FAIL')]))
             else:
                 print('{} {}'.format('FAIL', test.id()))
 
         def addSuccess(self, test):
             if not pfailures:
-                if not raw:
+                if json:
+                    print(dumps([('testid', test.id()), ('status', 'PASS')]))
+                else:
                     print('{} {}'.format('PASS', test.id()))
 
         def addSkip(self, test, reason):
             if not pfailures:
-                if not raw:
-                    print('{} {}'.format('SKIP', test.id()))
+                if json:
+                    print(dumps([('testid', test.id()), ('status', 'SKIP')]))
+                else:
+                    print('{} {}'.format('PASS', test.id()))
 
         def stopTestRun(self):
 
@@ -144,11 +151,11 @@ def run(patch):
     unittest.installHandler()
 
     # run pre-merge tests. Pre-merge tests are those to be executed previous merging
-    premerge_resultklass = getResult(patch, noapply=True, pfailures=pti.pfailures, raw=pti.raw)
+    premerge_resultklass = getResult(patch=patch, noapply=True, pfailures=pti.pfailures, json=pti.json)
     _runner(premerge_resultklass, 'pretest')
 
     # run standard tests
-    postmerge_resultklass = getResult(patch, pti.noapply, pfailures=pti.pfailures, raw=pti.raw)
+    postmerge_resultklass = getResult(patch=patch, noapply=pti.noapply, pfailures=pti.pfailures, json=pti.json)
     return _runner(postmerge_resultklass)
 
 def main():
