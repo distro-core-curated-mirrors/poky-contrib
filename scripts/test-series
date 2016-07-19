@@ -41,7 +41,7 @@ def main(since, testdir):
         print 'make sure you have patchwork git-pw installed'
         return 1
 
-    patchtestcmd = 'patchtest - --branch master --test-dir %s --raw --no-apply' % args.testdir
+    patchtestcmd = 'patchtest - --branch master --test-dir %s -f' % args.testdir
 
     for series, revision in lastseriesrevs.iteritems():
         gitpwcmd = 'git pw mbox %s --revision %s' % (series, revision)

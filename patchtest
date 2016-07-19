@@ -25,7 +25,7 @@ error = logger.error
 from patchtestrepo import Repo
 import summary
 
-def getResult(patch, noapply, pfailures, json):
+def getResult(patch, merge, pfailures, json):
 
     class PatchTestResult(unittest.TextTestResult):
         """ Formats the summary and post result at the end """
@@ -70,7 +70,7 @@ def getResult(patch, noapply, pfailures, json):
             self.summary = summary.TabulateSummary()
 
             # merge items
-            if not noapply:
+            if merge:
                 try:
                     if not self.repo.merge():
                         self.merge_failure = True
@@ -113,7 +113,7 @@ def getResult(patch, noapply, pfailures, json):
             if self.repo_error:
                 return
 
-            if not noapply:
+            if merge:
                 self.repo.clean(pti.keepbranch)
 
     return PatchTestResult
@@ -151,11 +151,11 @@ def run(patch):
     unittest.installHandler()
 
     # run pre-merge tests. Pre-merge tests are those to be executed previous merging
-    premerge_resultklass = getResult(patch=patch, noapply=True, pfailures=pti.pfailures, json=pti.json)
+    premerge_resultklass = getResult(patch=patch, merge=False, pfailures=pti.pfailures, json=pti.json)
     _runner(premerge_resultklass, 'pretest')
 
     # run standard tests
-    postmerge_resultklass = getResult(patch=patch, noapply=pti.noapply, pfailures=pti.pfailures, json=pti.json)
+    postmerge_resultklass = getResult(patch=patch, merge=pti.merge, pfailures=pti.pfailures, json=pti.json)
     return _runner(postmerge_resultklass)
 
 def main():
