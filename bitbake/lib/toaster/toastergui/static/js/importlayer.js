@@ -10,6 +10,7 @@ function importLayerPageInit (ctx) {
   var layerDepInput = $("#layer-dependency");
   var layerNameCtrl = $("#layer-name-ctrl");
   var duplicatedLayerName = $("#duplicated-layer-name-hint");
+  var localDirPath = $("#local-dir-path");
 
   var layerDeps = {};
   var layerDepsDeps = {};
@@ -168,6 +169,7 @@ function importLayerPageInit (ctx) {
         dir_path: $("#layer-subdir").val(),
         project_id: libtoaster.ctx.projectId,
         layer_deps: layerDepsCsv,
+        local_source_dir: $('#local-dir-path').val(),
       };
 
       $.ajax({
@@ -301,4 +303,58 @@ function importLayerPageInit (ctx) {
     }
   });
 
+  $('input:radio[name="repo"]').change(function() {
+     if ($('input[name=repo]:checked').val() == "local") {
+       $('#git-repo').hide();
+       $('#import-git-layer-and-add-hint').hide();
+       $('#local-dir').show();
+       $('#import-local-dir-and-add-hint').show();
+       if (localDirPath.val().trim().length == 0) {
+         $('#local-dir').addClass('has-error');
+         $('#hintError-dir-abs-path').show();
+         $('#hintError-dir-path-starts-with-slash').show();
+         $('#import-and-add-btn').attr("disabled","disabled");
+       }
+     } else {
+       $('#local-dir').hide();
+       $('#import-local-dir-and-add-hint').hide();
+       $('#git-repo').show();
+       $('#import-git-layer-and-add-hint').show();
+     }
+  });
+
+  localDirPath.on('input', function(){
+    if ($(this).val().trim().length == 0) {
+      $('#import-and-add-btn').attr("disabled","disabled");
+      $('#local-dir').addClass('has-error');
+      $('#hintError-dir-abs-path').show();
+      $('#hintError-dir-path-starts-with-slash').show();
+    } else {
+      var input = $(this);
+      var reBeginWithSlash = /^\//;
+      var reCheckVariable = /^\$/;
+      var re = /([ <>\\|":\.%\?\*]+)/;
+
+      var invalidDir = re.test(input.val());
+      var invalidSlash = reBeginWithSlash.test(input.val());
+      var invalidVar = reCheckVariable.test(input.val());
+
+      if (!invalidSlash && !invalidVar) {
+        $('#local-dir').addClass('has-error');
+        $('#import-and-add-btn').attr("disabled","disabled");
+        $('#hintError-dir-abs-path').show();
+        $('#hintError-dir-path-starts-with-slash').show();
+      } else if (invalidDir) {
+        $('#local-dir').addClass('has-error');
+        $('#import-and-add-btn').attr("disabled","disabled");
+        $('#hintError-dir-path').show();
+      } else {
+        $('#local-dir').removeClass('has-error');
+        $('#import-and-add-btn').removeAttr("disabled");
+        $('#hintError-dir-abs-path').hide();
+        $('#hintError-dir-path-starts-with-slash').hide();
+        $('#hintError-dir-path').hide();
+      }
+    }
+  });
 }
