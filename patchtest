@@ -106,7 +106,7 @@ def getResult(patch, merge, pfailures, json):
                 if json:
                     print(dumps([('testid', test.id()), ('status', 'SKIP')]))
                 else:
-                    print('{} {}'.format('PASS', test.id()))
+                    print('{} {}'.format('SKIP', test.id()))
 
         def stopTestRun(self):
 
