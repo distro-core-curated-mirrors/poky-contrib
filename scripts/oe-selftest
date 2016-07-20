@@ -49,6 +49,9 @@ from oeqa.utils.commands import runCmd, get_bb_var, get_test_layer
 from oeqa.selftest.base import oeSelfTest, get_available_machines
 
 try:
+    if not os.path.isdir('unittest-xml-reporting'):
+        runCmd("git clone https://github.com/xmlrunner/unittest-xml-reporting.git")
+    sys.path.insert(1, os.path.join(os.getcwd(),"unittest-xml-reporting"))
     import xmlrunner
     from xmlrunner.result import _XMLTestResult as TestResult
     from xmlrunner import XMLTestRunner as _TestRunner
@@ -519,6 +522,8 @@ def main():
             testslist = ts
         else:
             testslist = get_tests(exclusive_modules=(args.run_tests or []), include_hidden=False)
+            testslist = ['oeqa.selftest.bbtests.BitbakeTests.test_bitbake_g','oeqa.selftest.bbtests.BitbakeTests.test_environment','oeqa.selftest.bbtests.BitbakeTests.test_dry_run']
+            log.warn("testlist = {0}".format(testslist))
 
         suite = unittest.TestSuite()
         loader = unittest.TestLoader()
