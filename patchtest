@@ -7,7 +7,7 @@ import fileinput
 import logging
 import traceback
 import re
-from json import dumps
+from json import dumps, loads
 
 # Include current path so test cases can see it
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -25,13 +25,36 @@ error = logger.error
 from patchtestrepo import Repo
 import summary
 
-def getResult(patch, merge, pfailures, json):
+def getResult(patch, merge, json):
 
     class PatchTestResult(unittest.TextTestResult):
         """ Formats the summary and post result at the end """
 
-        shouldStop = True
+        shouldStop  = True
         longMessage = False
+
+        success     = 'PASS'
+        fail        = 'FAIL'
+        skip        = 'SKIP'
+
+        class JSON(object):
+            """ Formats results in JSON format"""
+            status = 'status'
+            data   = 'data'
+            def __init__(self, status, obj):
+                self._status = status
+                self._data   = str(obj)
+                self._out    = dict([(self.status,status),(self.data,'')])
+
+            def __str__(self):
+                d = self._data
+                # data may be in json format, so try decoding it
+                # before inserting it into self._out
+                try:
+                    self._out[self.data] = loads(self._data)
+                except ValueError:
+                    pass
+                return dumps(self._out)
 
         def startTestRun(self):
             # let's create the repo already, it can be used later on
@@ -87,26 +110,22 @@ def getResult(patch, merge, pfailures, json):
         def addFailure(self, test, err):
             self.test_failure = True
             self.summary.addFailure(test)
-            if pfailures:
-                print(err[1])
-            elif json:
-                print(dumps([('testid', test.id()), ('status', 'FAIL')]))
+            if json:
+                print(self.JSON(self.fail, err[1]))
             else:
-                print('{} {}'.format('FAIL', test.id()))
+                print('{} {}'.format(self.fail, test.id()))
 
         def addSuccess(self, test):
-            if not pfailures:
-                if json:
-                    print(dumps([('testid', test.id()), ('status', 'PASS')]))
-                else:
-                    print('{} {}'.format('PASS', test.id()))
+            if json:
+                print(self.JSON(self.success, test))
+            else:
+                print('{} {}'.format(self.success, test.id()))
 
         def addSkip(self, test, reason):
-            if not pfailures:
-                if json:
-                    print(dumps([('testid', test.id()), ('status', 'SKIP')]))
-                else:
-                    print('{} {}'.format('SKIP', test.id()))
+            if json:
+                print(self.JSON(self.skip, test))
+            else:
+                print('{} {}'.format(self.skip, test.id()))
 
         def stopTestRun(self):
 
@@ -151,11 +170,11 @@ def run(patch):
     unittest.installHandler()
 
     # run pre-merge tests. Pre-merge tests are those to be executed previous merging
-    premerge_resultklass = getResult(patch=patch, merge=False, pfailures=pti.pfailures, json=pti.json)
+    premerge_resultklass = getResult(patch=patch, merge=False, json=pti.json)
     _runner(premerge_resultklass, 'pretest')
 
     # run standard tests
-    postmerge_resultklass = getResult(patch=patch, merge=pti.merge, pfailures=pti.pfailures, json=pti.json)
+    postmerge_resultklass = getResult(patch=patch, merge=pti.merge, json=pti.json)
     return _runner(postmerge_resultklass)
 
 def main():
