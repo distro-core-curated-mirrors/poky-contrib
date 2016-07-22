@@ -307,8 +307,8 @@ function importLayerPageInit (ctx) {
      if ($('input[name=repo]:checked').val() == "local") {
        $('#git-repo').hide();
        $('#import-git-layer-and-add-hint').hide();
-       $('#local-dir').show();
-       $('#import-local-dir-and-add-hint').show();
+       $('#local-dir').fadeIn();
+       $('#import-local-dir-and-add-hint').fadeIn();
        if (localDirPath.val().trim().length == 0) {
          $('#local-dir').addClass('has-error');
          $('#hintError-dir-abs-path').show();
@@ -318,8 +318,8 @@ function importLayerPageInit (ctx) {
      } else {
        $('#local-dir').hide();
        $('#import-local-dir-and-add-hint').hide();
-       $('#git-repo').show();
-       $('#import-git-layer-and-add-hint').show();
+       $('#git-repo').fadeIn();
+       $('#import-git-layer-and-add-hint').fadeIn();
      }
   });
 
