@@ -52,5 +52,5 @@ public abstract class FiniteStateWizard extends Wizard {
      * Retrive the model object from the wizard.
      * @return
      */
-    public abstract Map getModel();
+    public abstract Map<String, Object> getModel();
 }
