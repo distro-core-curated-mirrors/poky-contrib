@@ -1,11 +1,31 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+# ex:ts=4:sw=4:sts=4:et
+# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
-# The only purpose of this module is to pass data from patchtest to
-# the test suites (PatchTestInput) and between test suites (PatchTestDataStore).
-
-# Strictly speaking, unit test should be isolated from outside,
-# but patchtest test suites uses command line input data (series, mboxes,
-# etc).
+# patchtestdata: module used to share command line arguments between
+#                patchtest & test suite and a data store between test cases
+#
+# Copyright (C) 2016 Intel Corporation
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# Author: Leo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+#
+# NOTE: Strictly speaking, unit test should be isolated from outside,
+#       but patchtest test suites uses command line input data and
+#       pretest and test test cases may use the datastore defined
+#       on this module
 
 import os
 import argparse
