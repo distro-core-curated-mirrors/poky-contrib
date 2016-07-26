@@ -1,37 +1,18 @@
-From 3ed3d559cfda60795b20e699232c1437a15ba52a Mon Sep 17 00:00:00 2001
-From: Robert Yang <liezhi.yang@windriver.com>
-Date: Fri, 22 Jul 2016 01:12:45 -0700
-Subject: [PATCH] configure.ac: AC_SUBST(mkdir_p)
+Upstream-Status: Inappropriate [configuration]
 
-The newest po/Makefile.in.in uses @mkdir_p@, if confiure.ac uses
-AM_INIT_AUTOMAKE(), the AC_SUBST(mkdir_p) would run automatically, but
-e2fsprogs doesn't have Makefile.am, so it can't use that. Manualy run
-AC_SUBST(mkdir_p) to fix the problem.
-
-Upstream-Status: Pending
-
-Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
----
- configure.ac | 6 ++++++
- 1 file changed, 6 insertions(+)
+Signed-off-by: Mei Lei <lei.mei@intel.com>
 
 diff --git a/configure.ac b/configure.ac
-index 67d7231..4dfa26f 100644
+index c1fe224..f5ac628 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1443,6 +1443,12 @@ LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
- AC_SUBST(CFLAGS_SHLIB)
- AC_SUBST(CFLAGS_STLIB)
- AC_SUBST(LDFLAGS_SHLIB)
-+
-+dnl
-+dnl For po/Makefile.in.in's @mkdir_p@
-+dnl
-+AC_SUBST([mkdir_p], ['$(MKDIR_P)'])
-+
+@@ -1374,7 +1374,8 @@ if test -n "$WITH_DIET_LIBC" ; then
+ 	INCLUDES="$INCLUDES -D_REENTRANT"
+ fi
+ AC_SUBST(INCLUDES)
+-AM_MKINSTALLDIRS
++MKINSTALLDIRS="mkdir -p"
++AC_SUBST(MKINSTALLDIRS)
  dnl
- dnl Make our output files, being sure that we create the some miscellaneous 
- dnl directories
--- 
-2.9.0
-
+ dnl Build CFLAGS
+ dnl

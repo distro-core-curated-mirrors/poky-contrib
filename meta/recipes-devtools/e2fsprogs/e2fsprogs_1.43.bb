@@ -1,6 +1,8 @@
 require e2fsprogs.inc
 
-SRC_URI += " \
+PR = "r1"
+
+SRC_URI += "file://acinclude.m4 \
             file://remove.ldconfig.call.patch \
             file://quiet-debugfs.patch \
             file://run-ptest \
@@ -9,19 +11,21 @@ SRC_URI += " \
             file://Revert-mke2fs-enable-the-metadata_csum-and-64bit-fea.patch \
 "
 
-SRCREV = "48203a389d2d9f45dd0768f0963cb2b3ffbc12df"
+SRCREV = "d6adf070b0e85f209c0d7f310188b134b5cb7180"
 UPSTREAM_CHECK_GITTAGREGEX = "v(?P<pver>\d+\.\d+(\.\d+)*)$"
 
 EXTRA_OECONF += "--libdir=${base_libdir} --sbindir=${base_sbindir} \
                 --enable-elf-shlibs --disable-libuuid --disable-uuidd \
                 --disable-libblkid --enable-verbose-makecmds"
 
-EXTRA_OECONF_append_class-target = " --enable-hardening"
-
 EXTRA_OECONF_darwin = "--libdir=${base_libdir} --sbindir=${base_sbindir} --enable-bsd-shlibs"
 
 PACKAGECONFIG ??= ""
 PACKAGECONFIG[fuse] = '--enable-fuse2fs,--disable-fuse2fs,fuse'
+
+do_configure_prepend () {
+	cp ${WORKDIR}/acinclude.m4 ${S}/
+}
 
 do_install () {
 	oe_runmake 'DESTDIR=${D}' install
