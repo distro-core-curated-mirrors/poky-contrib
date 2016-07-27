@@ -88,11 +88,21 @@ class PatchTestArgs(object):
                                   action='store_true',
                                   help="Merge the patch into the repository.")
 
-        patchtest_tests_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'tests')
-        parser.add_argument('--test-dir',
-                            dest='testdir',
-                            default=patchtest_tests_dir,
-                            help="Directory where tests are located")
+        startdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'tests')
+        parser.add_argument('--start-directory', '-s',
+                            dest='startdir',
+                            default=startdir,
+                            help="Directory to start discover")
+
+        parser.add_argument('--pattern', '-p',
+                            dest='pattern',
+                            default='test*.py',
+                            help="Pattern to match test files")
+
+        parser.add_argument('--top-level-directory', '-t',
+                            dest='topdir',
+                            default=None,
+                            help="Top level directory of project (defaults to start directory")
 
         parser.add_argument('--branch', '-b',
                             dest='branch',

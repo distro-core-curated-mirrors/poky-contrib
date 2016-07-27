@@ -166,7 +166,7 @@ def _runner(resultklass, prefix=None):
         loader.testMethodPrefix = prefix
 
     # create the suite with discovered tests and the corresponding runner
-    suite = loader.discover(os.path.abspath(pti.testdir))
+    suite = loader.discover(start_dir=pti.startdir, pattern=pti.pattern, top_level_dir=pti.topdir)
     ntc = suite.countTestCases()
 
     # if there are no test cases, just quit
@@ -216,6 +216,10 @@ if __name__ == '__main__':
     if pti.debug:
         logger.setLevel(logging.DEBUG)
         print logger.getEffectiveLevel()
+
+    # if topdir not define, default it to startdir
+    if not pti.topdir:
+        pti.topdir = pti.startdir
 
     try:
         ret = main()
