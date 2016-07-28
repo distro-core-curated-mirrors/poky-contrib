@@ -61,19 +61,19 @@ def getResult(patch, merge, json):
 
         class JSON(object):
             """ Formats results in JSON format"""
-            status = 'status'
-            data   = 'data'
+            status  = 'status'
+            results = 'results'
             def __init__(self, status, obj):
-                self._status = status
-                self._data   = str(obj)
-                self._out    = dict([(self.status,status),(self.data,'')])
+                self._status  = status
+                self._results = str(obj)
+                self._out     = dict([(self.status,status),(self.results,'')])
 
             def __str__(self):
-                d = self._data
-                # data may be in json format, so try decoding it
+                d = self._results
+                # results may be in json format, so try decoding it
                 # before inserting it into self._out
                 try:
-                    self._out[self.data] = loads(self._data)
+                    self._out[self.results] = loads(self._results)
                 except ValueError:
                     pass
                 return dumps(self._out)
