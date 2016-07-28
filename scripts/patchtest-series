@@ -50,9 +50,9 @@ def last_rev(events):
 
     return listseries
 
-def main(since, testdir):
+def main(since, repodir, startdir):
 
-    cmd='git pw poll-events --since %s --name series-new-revision' % args.since
+    cmd='cd %s; git pw poll-events --since %s --name series-new-revision' % (repodir, since)
 
     try:
         allseriesrev = check_output(cmd, shell=True)
@@ -61,10 +61,10 @@ def main(since, testdir):
         print 'make sure you have patchwork git-pw installed'
         return 1
 
-    patchtestcmd = 'patchtest - --branch master --test-dir %s -f' % args.testdir
+    patchtestcmd = 'patchtest - --branch master -C %s --start-dir %s' % (repodir, startdir)
 
     for series, revision in lastseriesrevs.iteritems():
-        gitpwcmd = 'git pw mbox %s --revision %s' % (series, revision)
+        gitpwcmd = 'cd %s; git pw mbox %s --revision %s' % (repodir, series, revision)
         patch = check_output(gitpwcmd, shell=True)
         p = Popen(patchtestcmd.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
         results, stderr = p.communicate(patch)
@@ -79,21 +79,14 @@ def main(since, testdir):
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Runs patchtest from series coming from patchwork since the given date")
-
-    parser.add_argument('testdir', help='Path to test suite')
-
-    monthsago = 3
-    parser.add_argument('--since',
-                        type=str,
-                        dest='since',
-                        default=past(monthsago),
-                        help='Poll series since the specify date. Defaults to %s months ago' % monthsago)
-
+    parser.add_argument('since',    help='Poll series since the specify date')
+    parser.add_argument('repodir',  help='Repository directory')
+    parser.add_argument('startdir', help='Path to test suite start directory')
     args = parser.parse_args()
 
     ret=1
     try:
-        ret = main(args.since, args.testdir)
+        ret = main(args.since, args.repodir, args.startdir)
     except:
         import traceback
         traceback.print_exc(5)

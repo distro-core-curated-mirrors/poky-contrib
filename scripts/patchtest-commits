@@ -1,9 +1,8 @@
-#!/bin/bash -eur
+#!/bin/bash -eu
 # ex:ts=4:sw=4:sts=4:et
 # -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
-# test-commits: run patchtest from a origin commit (since) and report
-#               raw results
+# patchtest-commits: run patchtest from a since commit (since) and report
 #
 # Copyright (C) 2016 Intel Corporation
 #
@@ -20,24 +19,37 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-origin=$1
-test_suite=$2
-
 usage() {
     echo -e "Runs patchtest starting at certain commit using the specified test suite"
-    echo -e "\$ $0 <since commit> <path to test suite>"
+    echo -e "\$ $(basename $0) <since commit> <repository> <path to the discover start directory on the test suite>"
     echo
     echo -e "For example, test last 10 commits"
     echo
-    echo -e "\$ $0 HEAD~10 $HOME/patchtest-oe/tests"
+    echo -e "\$ $(basename $0) HEAD~10 $HOME/poky $HOME/patchtest-oe/tests"
     echo
+    exit 1
 }
 
-[ -z $origin ]     && { usage; exit -1; }
-[ -z $test_suite ] && { usage; exit -1; }
+#Check the number of arguments
+NUMARGS=$#
+if [ ! $NUMARGS -eq 3 ]; then
+    usage
+fi
 
-for commit in $(git rev-list $origin..HEAD --reverse); do
-    git format-patch "$commit^1..$commit" --stdout | \
-    patchtest - --commit "$commit^1" --test-dir $test_suite -f -m
-done
+since=$1
+repo_dir=$(readlink -ev $2)
+start_dir=$(readlink -ev $3)
+
+[ ! -d $repo_dir ]  && { echo "Repository does not exit"; usage; }
+[ ! -d $start_dir ] && { echo "Test suite starting directory does not exist"; usage; }
+
+old_dir=$PWD
+
+( cd $repo_dir;
+  for commit in $(git rev-list $since..HEAD --reverse); do
+     echo "Testing commit ${commit}"
+     git format-patch "$commit^1..$commit" --stdout | \
+     patchtest - --commit "$commit^1" -C $repo_dir -s $start_dir --merge
+  done
+)
 
