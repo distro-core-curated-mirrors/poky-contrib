@@ -50,7 +50,7 @@ def last_rev(events):
 
     return listseries
 
-def main(since, repodir, startdir):
+def main(since, repodir, startdir, json):
 
     cmd='cd %s; git pw poll-events --since %s --name series-new-revision' % (repodir, since)
 
@@ -61,13 +61,22 @@ def main(since, repodir, startdir):
         print 'make sure you have patchwork git-pw installed'
         return 1
 
-    patchtestcmd = 'patchtest - --branch master -C %s --start-dir %s' % (repodir, startdir)
+    argjson = '-j' if json else ''
+    patchtestcmd = 'patchtest - --branch master -C %s --start-dir %s %s' % (repodir, startdir, argjson)
+
+    pwurl = check_output('cd %s; git config --get patchwork.default.url' % repodir, shell=True)
+    pwpro = check_output('cd %s; git config --get patchwork.default.project' % repodir, shell=True)
+
+    print 'Patchwork URL: %s Patchwork Project: %s' % (pwurl, pwpro)
 
     for series, revision in lastseriesrevs.iteritems():
+        print 'Testing series %s revision %s' % (series, revision)
+
         gitpwcmd = 'cd %s; git pw mbox %s --revision %s' % (repodir, series, revision)
         patch = check_output(gitpwcmd, shell=True)
         p = Popen(patchtestcmd.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
         results, stderr = p.communicate(patch)
+
         error('Exception from %s %s' % (series, revision))
         error(stderr)
 
@@ -82,11 +91,13 @@ if __name__ == '__main__':
     parser.add_argument('since',    help='Poll series since the specify date')
     parser.add_argument('repodir',  help='Repository directory')
     parser.add_argument('startdir', help='Path to test suite start directory')
+    parser.add_argument('--json', '-j', action='store_true', dest='json', help='Print results in JSON format')
+
     args = parser.parse_args()
 
     ret=1
     try:
-        ret = main(args.since, args.repodir, args.startdir)
+        ret = main(args.since, args.repodir, args.startdir, args.json)
     except:
         import traceback
         traceback.print_exc(5)
