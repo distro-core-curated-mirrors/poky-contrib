@@ -71,11 +71,6 @@ class PatchTestArgs(object):
                             default=os.getcwd(),
                             help="Name of the repository where testing is done")
 
-        parser.add_argument('--test-name',
-                            dest='testname',
-                            default='patchtest',
-                            help="Test name to be used if results are posted. In case all items failed merged, then the test name is <--test-name>-merge-failure")
-
         branch_group = parser.add_mutually_exclusive_group()
 
         branch_group.add_argument('--keep-branch',

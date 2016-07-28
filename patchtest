@@ -45,13 +45,11 @@ info = logger.info
 error = logger.error
 
 from patchtestrepo import Repo
-import summary
 
 def getResult(patch, merge, json):
 
     class PatchTestResult(unittest.TextTestResult):
-        """ Formats the summary and post result at the end """
-
+        """ Patchtest TextTestResult """
         shouldStop  = True
         longMessage = False
 
@@ -112,8 +110,6 @@ def getResult(patch, merge, json):
                 self.stop()
                 return
 
-            self.summary = summary.TabulateSummary()
-
             # merge items
             if merge:
                 try:
@@ -131,7 +127,6 @@ def getResult(patch, merge, json):
 
         def addFailure(self, test, err):
             self.test_failure = True
-            self.summary.addFailure(test)
             if json:
                 print(self.JSON(self.fail, err[1]))
             else:
