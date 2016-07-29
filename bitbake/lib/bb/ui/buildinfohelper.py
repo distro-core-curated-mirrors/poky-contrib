@@ -476,6 +476,12 @@ class ORMWrapper(object):
                             layer.save()
                             return layer
 
+                # We need to match the layer which is imported locally
+                # For layers imported locally, we don't have commit, vcs_url etc.
+                if os.path.isdir(layer_information['local_path']) and os.path.exists(os.path.join(layer_information['local_path'],"conf/layer.conf")):
+                    if brl.layer_version.layer.local_source_dir == layer_information['local_path']:
+                        return brl.layer_version
+
             raise NotExisting("Unidentified layer %s" % pformat(layer_information))
 
 
@@ -957,6 +963,16 @@ class BuildInfoHelper(object):
             # we can match to the recipe file path
             if path.startswith(lvo.local_path):
                 return lvo
+
+        #Before we create Unidentified layer, we need to check if the layer is imported
+        #locally. Because we now support local import of layers.
+        localLayer = Layer.objects.get(local_source_dir=path.rstrip("/"))
+        localLayerVersion = None
+        if isinstance(localLayer, Layer):
+            localLayerVersion = Layer_Version.objects.get(layer_id=localLayer.id)
+            if localLayerVersion not in self.orm_wrapper.layer_version_objects:
+                self.orm_wrapper.layer_version_objects.append(localLayerVersion)
+            return localLayerVersion
 
         #if we get here, we didn't read layers correctly; dump whatever information we have on the error log
         logger.warning("Could not match layer version for recipe path %s : %s", path, self.orm_wrapper.layer_version_objects)
