@@ -24,7 +24,6 @@ from sys import exit, stderr
 from argparse import ArgumentParser
 from subprocess import check_output, PIPE, Popen, CalledProcessError
 from json import loads
-from scripts_utils import past
 from collections import OrderedDict
 import logging
 
@@ -77,8 +76,9 @@ def main(since, repodir, startdir, json):
         p = Popen(patchtestcmd.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
         results, stderr = p.communicate(patch)
 
-        error('Exception from %s %s' % (series, revision))
-        error(stderr)
+        # print the exception in case there was any
+        if 'Traceback' in stderr:
+            error(stderr)
 
         if results:
             for result in results.splitlines():
