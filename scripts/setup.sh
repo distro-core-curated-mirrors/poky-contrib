@@ -282,6 +282,11 @@ echo -e "\nPlease wait. Installing OSGI.COMPATIBILITY.PLUGINS.FEATURE.FEATURE.GR
 COMPAT_VER="1.0.0"
 update_feature_remote ${UPDATE_SITE} org.eclipse.osgi.compatibility.plugins.feature.feature.group ${COMPAT_VER}
 
+#SWTBOT automated UI testing
+echo -e "\nPlease wait. Installing SWTBOT features"
+# VERSION="x.y.z"
+# update_feature_remote ${MAIN_SITE} org.eclipse.swtbot.whatever.its.called ${VERSION}
+
 echo -e "\nYour build environment is successfully created."
 echo -e "\nPlease execute the following command to build the plugins and their documentation."
 echo -e "\nThe build log will be stored at `pwd`/build.log."

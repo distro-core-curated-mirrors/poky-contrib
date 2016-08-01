@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.yocto.crops</groupId>
+		<artifactId>crops-parent</artifactId>
+		<version>0.3.0-SNAPSHOT</version>
+		<relativePath>../../../pom.xml</relativePath>
+	</parent>
+
+	<version>0.1.0-SNAPSHOT</version>
+	<artifactId>org.yocto.crops.poky.tests.ui</artifactId>
+	<packaging>eclipse-test-plugin</packaging>
+
+	<properties>
+		<tycho.test.jvmArgs>-Xmx800m</tycho.test.jvmArgs>
+		<tycho.surefire.timeout>900</tycho.surefire.timeout>
+	</properties>
+
+
+	<profiles>
+		<profile>
+			<!-- Ignore optional deps to swt.macosx -->
+			<id>ignore-mac-deps-on-other-os-and-skip-swtbot-tests</id>
+			<activation>
+				<os>
+					<family>!mac</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>target-platform-configuration</artifactId>
+						<configuration>
+							<dependency-resolution>
+								<optionalDependencies>ignore</optionalDependencies>
+							</dependency-resolution>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-compiler-plugin</artifactId>
+						<configuration>
+							<optionalDependencies>ignore</optionalDependencies>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-surefire-plugin</artifactId>
+						<version>${tycho-version}</version>
+						<configuration>
+							<!-- skipTests>true</skipTests -->
+							<!-- useUIHarness>true</useUIHarness -->
+							<useUIThread>false</useUIThread>
+							<!-- kill test JVM if tests take more than 10 minutes (600 seconds) 
+								to finish -->
+							<forkedProcessTimeoutInSeconds>${tycho.surefire.timeout}</forkedProcessTimeoutInSeconds>
+							<argLine>${tycho.test.jvmArgs}</argLine>
+							<includes>
+								<include>**/AllIntegrationTests.class</include>
+							</includes>
+							<excludes>
+								<exclude>**/*SWTBotTest.class</exclude>
+							</excludes>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>mac</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<properties>
+				<!-- Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=388084 -->
+				<!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
+				<tycho.test.jvmArgs>-Xmx800m -XstartOnFirstThread</tycho.test.jvmArgs>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>target-platform-configuration</artifactId>
+						<configuration>
+							<environments>
+								<environment>
+									<os>macosx</os>
+									<ws>cocoa</ws>
+									<arch>x86_64</arch>
+								</environment>
+							</environments>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-surefire-plugin</artifactId>
+						<configuration>
+							<!-- skipTests>true</skipTests -->
+							<useUIHarness>true</useUIHarness>
+							<useUIThread>false</useUIThread>
+							<!-- kill test JVM if tests take more than 10 minutes (600 seconds) to 
+								finish -->
+							<forkedProcessTimeoutInSeconds>${tycho.surefire.timeout}</forkedProcessTimeoutInSeconds>
+							<argLine>${tycho.test.jvmArgs}</argLine>
+							<!-- execute all tests on Mac -->
+							<includes>
+								<include>**/AllIntegrationTests.class</include>
+							</includes>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>
