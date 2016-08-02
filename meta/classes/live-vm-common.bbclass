@@ -10,10 +10,20 @@ def set_live_vm_vars(d, suffix):
         elif d.getVar(var_with_suffix, True):
             d.setVar(var, d.getVar(var_with_suffix, True))
 
+def rmc_boot(d):
+    if d.getVar('EFI', True):
+        rmc = bb.utils.contains("DISTRO_FEATURES", "rmc", "1", "0", d)
+        efi_provider = d.getVar('EFI_PROVIDER', True)
+        if rmc == "1" and bb.utils.contains("RMC_EFI_PROVIDER_LIST", efi_provider, True, False, d):
+            return "rmc-%s" % efi_provider
+        else:
+            return efi_provider
+    else:
+        return ""
 
 EFI = "${@bb.utils.contains("MACHINE_FEATURES", "efi", "1", "0", d)}"
 EFI_PROVIDER ?= "grub-efi"
-EFI_CLASS = "${@bb.utils.contains("MACHINE_FEATURES", "efi", "${EFI_PROVIDER}", "", d)}"
+EFI_CLASS = "${@rmc_boot(d)}"
 
 # Include legacy boot if MACHINE_FEATURES includes "pcbios" or if it does not
 # contain "efi". This way legacy is supported by default if neither is
