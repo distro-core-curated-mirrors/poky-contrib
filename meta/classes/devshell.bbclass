@@ -40,6 +40,7 @@ def devpyshell(d):
     import select
     import signal
     import termios
+    import time
 
     m, s = os.openpty()
     sname = os.ttyname(s)
@@ -147,6 +148,9 @@ python do_devpyshell() {
     except SystemExit:
         # Stop the SIGTERM above causing an error exit code    
         return
+    except Exception as e:
+        import traceback
+        bb.error(traceback.format_exc())
     finally:
         return
 }
