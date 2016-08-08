@@ -158,13 +158,11 @@ mount_and_boot() {
     mkdir $ROOT_MOUNT
     mknod /dev/loop0 b 7 0 2>/dev/null
 
-    if ! mount -o rw,loop,noatime,nodiratime /run/media/$ROOT_DISK/$ISOLINUX/$ROOT_IMAGE $ROOT_MOUNT ; then
-	fatal "Could not mount rootfs image"
-    fi
+    # We remount boot-media as read-only so that kernel won't mark it as dirty.
+    mount -no remount,ro /run/media/$ROOT_DISK
 
-    if touch $ROOT_MOUNT/bin 2>/dev/null; then
-	# The root image is read-write, directly boot it up.
-	boot_live_root
+    if ! mount -o ro,loop,noatime,nodiratime /run/media/$ROOT_DISK/$ISOLINUX/$ROOT_IMAGE $ROOT_MOUNT ; then
+	fatal "Could not mount rootfs image"
     fi
 
     # determine which unification filesystem to use
