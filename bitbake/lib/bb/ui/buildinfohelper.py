@@ -44,7 +44,7 @@ from orm.models import Task_Dependency, Package_Dependency
 from orm.models import Recipe_Dependency, Provides
 from orm.models import Project, CustomImagePackage, CustomImageRecipe
 
-from bldcontrol.models import BuildEnvironment, BuildRequest
+from bldcontrol.models import BuildEnvironment, BuildRequest, BRLayer
 
 from bb.msg import BBLogFormatter as formatter
 from django.db import models
@@ -436,48 +436,41 @@ class ORMWrapper(object):
         assert 'name' in layer_information
         assert 'layer_index_url' in layer_information
 
+        # From command line builds we have no brbe as the request is directly
+        # from bitbake
         if brbe is None:
-            layer_object, _ = Layer.objects.get_or_create(
-                                name=layer_information['name'],
-                                layer_index_url=layer_information['layer_index_url'])
+
+            # If we don't have git commit sha then we're using a non-git
+            # layer so set the layer_source_dir to identify it as such
+            if not layer_information['version']['commit']:
+                local_source_dir = layer_information["local_path"]
+            else:
+                local_source_dir = None
+
+            layer_object, _ = \
+                Layer.objects.get_or_create(
+                    name=layer_information['name'],
+                    local_source_dir=local_source_dir,
+                    layer_index_url=layer_information['layer_index_url'])
             return layer_object
         else:
-            # we are under managed mode; we must match the layer used in the Project Layer
             br_id, be_id = brbe.split(":")
+            buildrequest = BuildRequest.objects.get(pk=br_id)
+            try:
+                br_layer = buildrequest.brlayer_set.get(
+                    name=layer_information['name'])
+            except BRLayer.DoesNotExist:
+                # name is determined by the git name so if a
+                # local layer we try instead to use the local_path
+                try:
+                    br_layer = buildrequest.brlayer_set.get(
+                        local_source_dir=layer_information["local_path"])
 
-            # find layer by checkout path;
-            from bldcontrol import bbcontroller
-            bc = bbcontroller.getBuildEnvironmentController(pk = be_id)
+                except BRLayer.DoesNotExist:
+                    raise NotExisting(
+                        "Unidentified layer %s" % pformat(layer_information))
 
-            # we might have a race condition here, as the project layers may change between the build trigger and the actual build execution
-            # but we can only match on the layer name, so the worst thing can happen is a mis-identification of the layer, not a total failure
-
-            # note that this is different
-            buildrequest = BuildRequest.objects.get(pk = br_id)
-            for brl in buildrequest.brlayer_set.all():
-                localdirname = os.path.join(bc.getGitCloneDirectory(brl.giturl, brl.commit), brl.dirpath)
-                # we get a relative path, unless running in HEAD mode where the path is absolute
-                if not localdirname.startswith("/"):
-                    localdirname = os.path.join(bc.be.sourcedir, localdirname)
-                #logger.debug(1, "Localdirname %s lcal_path %s" % (localdirname, layer_information['local_path']))
-                if localdirname.startswith(layer_information['local_path']):
-                  # If the build request came from toaster this field
-                  # should contain the information from the layer_version
-                  # That created this build request.
-                    if brl.layer_version:
-                        return brl.layer_version
-
-                    # we matched the BRLayer, but we need the layer_version that generated this BR; reverse of the Project.schedule_build()
-                    #logger.debug(1, "Matched %s to BRlayer %s" % (pformat(layer_information["local_path"]), localdirname))
-
-                    for pl in buildrequest.project.projectlayer_set.filter(layercommit__layer__name = brl.name):
-                        if pl.layercommit.layer.vcs_url == brl.giturl :
-                            layer = pl.layercommit.layer
-                            layer.save()
-                            return layer
-
-            raise NotExisting("Unidentified layer %s" % pformat(layer_information))
-
+            return br_layer.layer_version.layer
 
     def save_target_file_information(self, build_obj, target_obj, filedata):
         assert isinstance(build_obj, Build)
@@ -957,6 +950,9 @@ class BuildInfoHelper(object):
             # we can match to the recipe file path
             if path.startswith(lvo.local_path):
                 return lvo
+            if lvo.layer.local_source_dir and \
+               path.startswith(lvo.layer.local_source_dir):
+                return lvo
 
         #if we get here, we didn't read layers correctly; dump whatever information we have on the error log
         logger.warning("Could not match layer version for recipe path %s : %s", path, self.orm_wrapper.layer_version_objects)
@@ -1027,8 +1023,14 @@ class BuildInfoHelper(object):
         self.internal_state['lvs'] = {}
         for layer in layerinfos:
             try:
-                self.internal_state['lvs'][self.orm_wrapper.get_update_layer_object(layerinfos[layer], self.brbe)] = layerinfos[layer]['version']
-                self.internal_state['lvs'][self.orm_wrapper.get_update_layer_object(layerinfos[layer], self.brbe)]['local_path'] = layerinfos[layer]['local_path']
+                toaster_layer = self.orm_wrapper.get_update_layer_object(
+                    layerinfos[layer], self.brbe)
+                self.internal_state['lvs'][toaster_layer] = \
+                        layerinfos[layer]['version']
+
+                self.internal_state['lvs'][toaster_layer]['local_path'] = \
+                        layerinfos[layer]['local_path']
+
             except NotExisting as nee:
                 logger.warning("buildinfohelper: cannot identify layer exception:%s ", nee)
 
