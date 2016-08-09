@@ -27,7 +27,7 @@ Usage: source toaster start|stop [webport=<address:port>] [noweb]
 webserverKillAll()
 {
     local pidfile
-    for pidfile in ${BUILDDIR}/.toastermain.pid ${BUILDDIR}/.runbuilds.pid; do
+    for pidfile in ${TOASTER_DIR}/.toastermain.pid ${TOASTER_DIR}/.runbuilds.pid; do
         if [ -f ${pidfile} ]; then
             pid=`cat ${pidfile}`
             while kill -0 $pid 2>/dev/null; do
@@ -45,9 +45,9 @@ webserverKillAll()
 webserverStartAll()
 {
     # do not start if toastermain points to a valid process
-    if ! cat "${BUILDDIR}/.toastermain.pid" 2>/dev/null | xargs -I{} kill -0 {} ; then
+    if ! cat "${TOASTER_DIR}/.toastermain.pid" 2>/dev/null | xargs -I{} kill -0 {} ; then
         retval=1
-        rm "${BUILDDIR}/.toastermain.pid"
+        rm "${TOASTER_DDIR}/.toastermain.pid"
     fi
 
     retval=0
@@ -70,14 +70,14 @@ webserverStartAll()
     echo "Starting webserver..."
 
     $MANAGE runserver "$ADDR_PORT" \
-           </dev/null >>${BUILDDIR}/toaster_web.log 2>&1 \
-           & echo $! >${BUILDDIR}/.toastermain.pid
+           </dev/null >>${TOASTER_DIR}/toaster_web.log 2>&1 \
+           & echo $! >${TOASTER_DIR}/.toastermain.pid
 
     sleep 1
 
-    if ! cat "${BUILDDIR}/.toastermain.pid" | xargs -I{} kill -0 {} ; then
+    if ! cat "${TOASTER_DIR}/.toastermain.pid" | xargs -I{} kill -0 {} ; then
         retval=1
-        rm "${BUILDDIR}/.toastermain.pid"
+        rm "${TOASTER_DIR}/.toastermain.pid"
     else
         echo "Toaster development webserver started at http://$ADDR_PORT"
         echo -e "\nYou can now run 'bitbake <target>' on the command line and monitor your build in Toaster.\nYou can also use a Toaster project to configure and run a build.\n"
@@ -94,9 +94,9 @@ stop_system()
     # prevent reentry
     if [ $INSTOPSYSTEM -eq 1 ]; then return; fi
     INSTOPSYSTEM=1
-    if [ -f ${BUILDDIR}/.toasterui.pid ]; then
-        kill `cat ${BUILDDIR}/.toasterui.pid` 2>/dev/null
-        rm ${BUILDDIR}/.toasterui.pid
+    if [ -f ${TOASTER_DIR}/.toasterui.pid ]; then
+        kill `cat ${TOASTER_DIR}/.toasterui.pid` 2>/dev/null
+        rm ${TOASTER_DIR}/.toasterui.pid
     fi
     webserverKillAll
     # unset exported variables
@@ -170,14 +170,6 @@ if [ ! -f $TOASTER_CONF ]; then
     return 1
 fi
 
-# this defines the dir toaster will use for
-# 1) clones of layers (in _toaster_clones )
-# 2) the build dir (in build)
-# 3) the sqlite db if that is being used.
-# 4) pid's we need to clean up on exit/shutdown
-# note: for future. in order to make this an arbitrary directory, we need to
-# make sure that the toaster.sqlite file doesn't default to `pwd` like it currently does.
-export TOASTER_DIR=`pwd`
 
 WEBSERVER=1
 ADDR_PORT="localhost:8000"
@@ -232,7 +224,8 @@ fi
 # note: for future. in order to make this an arbitrary directory, we need to
 # make sure that the toaster.sqlite file doesn't default to `pwd`
 # like it currently does.
-export TOASTER_DIR=`dirname $BUILDDIR`
+export TOASTER_DIR=${BUILDDIR}/toaster
+mkdir -p $TOASTER_DIR
 
 # Determine the action. If specified by arguments, fine, if not, toggle it
 if [ "$CMD" = "start" ] ; then
@@ -249,7 +242,6 @@ fi
 echo "The system will $CMD."
 
 # Execute the commands
-
 case $CMD in
     start )
         # check if addr:port is not in use
@@ -260,7 +252,7 @@ case $CMD in
         fi
 
         # kill Toaster web server if it's alive
-        if [ -e $BUILDDIR/.toastermain.pid ] && kill -0 `cat $BUILDDIR/.toastermain.pid`; then
+        if [ -e $TOASTER_DIR/.toastermain.pid ] && kill -0 `cat $TOASTER_DIR/.toastermain.pid`; then
             echo "Warning: bitbake appears to be dead, but the Toaster web server is running." 1>&2
             echo " Something fishy is going on." 1>&2
             echo "Cleaning up the web server to start from a clean slate."
@@ -277,7 +269,8 @@ case $CMD in
             return 4
         fi
         export BITBAKE_UI='toasterui'
-        $MANAGE runbuilds & echo $! >${BUILDDIR}/.runbuilds.pid
+	$MANAGE runbuilds & echo $! >${TOASTER_DIR}/.runbuilds.pid
+
         # set fail safe stop system on terminal exit
         trap stop_system SIGHUP
         echo "Successful ${CMD}."
