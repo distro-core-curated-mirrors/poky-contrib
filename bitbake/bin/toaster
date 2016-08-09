@@ -258,7 +258,9 @@ case $CMD in
             return 4
         fi
         export BITBAKE_UI='toasterui'
-	$MANAGE runbuilds & echo $! >${TOASTER_DIR}/.runbuilds.pid
+        $MANAGE runbuilds \
+           </dev/null >>${TOASTER_DIR}/toaster_runbuilds.log 2>&1 \
+	    & echo $! >${TOASTER_DIR}/.runbuilds.pid
 
         # set fail safe stop system on terminal exit
         trap stop_system SIGHUP
