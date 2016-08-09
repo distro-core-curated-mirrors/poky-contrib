@@ -79,7 +79,7 @@ class BuildTest(unittest.TestCase):
         LoadConfigCommand()._import_layer_config(config_file)
 
         os.environ['TOASTER_DIR'] = \
-            os.path.abspath(os.environ['BUILDDIR'] + "/../")
+            os.path.abspath(os.environ['BUILDDIR'] + "/toaster")
 
         os.environ['BBBASEDIR'] = \
             subprocess.check_output('which bitbake', shell=True)
