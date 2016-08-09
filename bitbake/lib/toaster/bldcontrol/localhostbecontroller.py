@@ -255,7 +255,7 @@ class LocalhostBEController(BuildEnvironmentController):
         layers = self.setLayers(bitbake, layers, targets)
 
         # init build environment from the clone
-        builddir = '%s-toaster-%d' % (self.be.builddir, bitbake.req.project.id)
+        builddir = '%s/build-toaster-%d' % (self.be.builddir, bitbake.req.project.id)
         oe_init = os.path.join(self.pokydirname, 'oe-init-build-env')
         # init build environment
         self._shellcmd("bash -c 'source %s %s'" % (oe_init, builddir),
