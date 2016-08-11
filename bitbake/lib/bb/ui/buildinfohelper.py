@@ -1174,7 +1174,16 @@ class BuildInfoHelper(object):
                 evdata[artifact_path])
 
     def update_build_information(self, event, errors, warnings, taskfailures):
-        self._ensure_build()
+        # don't use _ensure_build() here, as this method may be called
+        # twice, on both BuildCompleted *and* CommandFailed; if we use
+        # _ensure_build() here, we get a new bogus build object, because
+        # close() (called for both BuildCompleted and CommandFailed)
+        # will have already removed the build object from the internal
+        # state; instead, only update the build information if a build is
+        # already in the internal state
+        if not self.internal_state['build']:
+            return
+
         self.orm_wrapper.update_build_stats_and_outcome(
             self.internal_state['build'], errors, warnings, taskfailures)
 
@@ -1530,7 +1539,6 @@ class BuildInfoHelper(object):
             logger.info("Build cancelled")
             br.build.outcome = Build.CANCELLED
             br.build.save()
-            self.internal_state['build'] = br.build
             errorcode = 0
 
         if errorcode == 0:
@@ -1912,11 +1920,11 @@ class BuildInfoHelper(object):
         if not connection.features.autocommits_when_autocommit_is_off:
             transaction.set_autocommit(True)
 
+        # unset the internal Build object to prevent it being reused for the
+        # next build
+        self.internal_state['build'] = None
+
         # unset the brbe; this is to prevent subsequent command-line builds
         # being incorrectly attached to the previous Toaster-triggered build;
         # see https://bugzilla.yoctoproject.org/show_bug.cgi?id=9021
         self.brbe = None
-
-        # unset the internal Build object to prevent it being reused for the
-        # next build
-        self.internal_state['build'] = None

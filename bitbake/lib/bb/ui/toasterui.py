@@ -387,7 +387,6 @@ def main(server, eventHandler, params):
                 # reset ready for next BuildStarted
                 build_log = None
 
-                # update the build info helper on BuildCompleted, not on CommandXXX
                 buildinfohelper.update_build_information(event, errors, warnings, taskfailures)
 
                 brbe = buildinfohelper.brbe
