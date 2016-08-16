@@ -96,7 +96,7 @@ process_filename() {
 		    error "conflicting FSTYPE types [$FSTYPE] and [$EXT]"
 		fi
 		;;
-	/hddimg/|/hdddirect/|/vmdk/|/wic/|/qcow2/|/vdi/)
+	/hddimg/|/hdddirect/|/vmdk/|/wic/|/qcow2/|/vdi/|/otaimg/)
 		FSTYPE=$EXT
 		VM=$filename
 		ROOTFS=$filename
@@ -128,7 +128,7 @@ while true; do
         "ext"[234] | "jffs2" | "nfs" | "btrfs")
             check_fstype_conflicts $arg
             ;;
-        "hddimg" | "hdddirect" | "wic" | "vmdk" | "qcow2" | "vdi" | "iso")
+        "hddimg" | "hdddirect" | "wic" | "vmdk" | "qcow2" | "vdi" | "iso" | "otaimg")
             check_fstype_conflicts $arg
             IS_VM="true"
             ;;
@@ -446,6 +446,29 @@ findimage() {
     echo "Couldn't find a $machine rootfs image in $where."
     exit 1
 }
+
+# Bios is necessary when using otaimg, look for it
+if [ "$FSTYPE" = "otaimg" ]; then
+    setup_path_vars 1
+    bios_option=`expr "$SCRIPT_QEMU_OPT" : '.*\(-bios\)'`
+    echo "bios_option: $bios_option"
+    if [ -z $bios_option ]; then
+        echo "LOOK FOR BIOS at ${DEPLOY_DIR_IMAGE}"
+        # if -bios wasn't specified explicitly, try to look at the default location
+        if [ -e "${DEPLOY_DIR_IMAGE}/u-boot.rom" ]; then
+            SCRIPT_QEMU_OPT="$SCRIPT_QEMU_OPT -bios ${DEPLOY_DIR_IMAGE}/u-boot.rom"
+        else
+            error "OTA image requires specifying u-boot as BIOS"
+        fi
+    fi
+fi
+
+
+# Kernel command line is stored in compressed format as u-boot environment
+#   which breaks determining drive interface with grep in runqemu-internal
+if [ "$FSTYPE" = "otaimg" ]; then
+    FORCE_DRIVE_IF="ide"
+fi
 
 if [ -e "$ROOTFS" -a -z "$FSTYPE" ]; then
     # Extract the filename extension

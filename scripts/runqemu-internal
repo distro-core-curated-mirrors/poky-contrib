@@ -705,16 +705,37 @@ echo "Running $QEMU..."
 if [ "$IS_VM" = "true" ]; then
     # Check root=/dev/sdX or root=/dev/vdX
     [ ! -e "$VM" ] && error "VM image is not found!"
-    if grep -q 'root=/dev/sd' $VM; then
-        echo "Using scsi drive"
-        VM_DRIVE="-drive if=none,id=hd,file=$VM -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd"
-    elif grep -q 'root=/dev/hd' $VM; then
-        echo "Using ide drive"
-        VM_DRIVE="$VM"
-    else
-        echo "Using virtio block drive"
-        VM_DRIVE="-drive if=virtio,file=$VM"
-    fi
+
+    case "$FORCE_DRIVE_IF" in
+        "ide")
+            echo "Using ide drive"
+            VM_DRIVE="$VM"
+	    ;;
+	"scsi")
+            echo "Using scsi drive"
+            VM_DRIVE="-drive if=none,id=hd,file=$VM -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd"
+	    ;;
+	"virtio")
+            echo "Using virtio block drive"
+            VM_DRIVE="-drive if=virtio,file=$VM"
+	    ;;
+	"")
+            if grep -q 'root=/dev/sd' $VM; then
+                echo "Using scsi drive"
+                VM_DRIVE="-drive if=none,id=hd,file=$VM -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd"
+            elif grep -q 'root=/dev/hd' $VM; then
+                echo "Using ide drive"
+                VM_DRIVE="$VM"
+            else
+                echo "Using virtio block drive"
+                VM_DRIVE="-drive if=virtio,file=$VM"
+            fi
+	    ;;
+	*)
+	    error "Invalid drive interface: $FORCE_DRIVE_IF"
+        ;;
+    esac
+
     QEMU_FIRE="$QEMUBIN $VM_DRIVE $QEMUOPTIONS $SERIALOPTS -no-reboot $SCRIPT_QEMU_OPT $SCRIPT_QEMU_EXTRA_OPT"
     echo $QEMU_FIRE
     LD_PRELOAD="$GL_LD_PRELOAD" $QEMU_FIRE
