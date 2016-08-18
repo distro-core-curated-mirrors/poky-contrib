@@ -66,22 +66,15 @@ class PatchTestArgs(object):
         parser.add_argument('patch', metavar='PATCH',
                             help='The patch to be tested by patchtest')
 
-        parser.add_argument('-C',
+        parser.add_argument('--repo-dir', '-r',
                             dest='repodir',
                             default=os.getcwd(),
-                            help="Name of the repository where testing is done")
+                            help="Name of the repository where patch is merged")
 
-        branch_group = parser.add_mutually_exclusive_group()
-
-        branch_group.add_argument('--keep-branch',
-                                  dest='keepbranch',
-                                  action='store_true',
-                                  help="Keep the working branch after patchtest execution")
-
-        branch_group.add_argument('--merge', '-m',
-                                  dest='merge',
-                                  action='store_true',
-                                  help="Merge the patch into the repository.")
+        parser.add_argument('--top-level-directory', '-t',
+                            dest='topdir',
+                            default=None,
+                            help="Top level directory of project (defaults to start directory)")
 
         startdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'tests')
         parser.add_argument('--start-directory', '-s',
@@ -94,27 +87,32 @@ class PatchTestArgs(object):
                             default='test*.py',
                             help="Pattern to match test files")
 
-        parser.add_argument('--top-level-directory', '-t',
-                            dest='topdir',
-                            default=None,
-                            help="Top level directory of project (defaults to start directory")
-
-        parser.add_argument('--branch', '-b',
-                            dest='branch',
+        parser.add_argument('--base-branch', '-b',
+                            dest='basebranch',
                             help="Branch name used by patchtest to branch from. By default, it uses the current one.")
 
-        parser.add_argument('--commit', '-c',
-                            dest='commit',
+        parser.add_argument('---base-commit', '-c',
+                            dest='basecommit',
                             help="Commit ID used by patchtest to branch from. By default, it uses HEAD.")
+
+        parser.add_argument('--merge-branch-name',
+                            dest='merge_branchname',
+                            default=None,
+                            help="Branch name to be used to merge (if possible) the patch")
 
         parser.add_argument('--debug', '-d',
                             action='store_true',
                             help='Enable debug output')
 
         parser.add_argument('--json', '-j',
-                           action='store_true',
-                           dest='json',
-                           help='Print results in JSON format')
+                            action='store_true',
+                            dest='json',
+                            help='Print results in JSON format')
+
+        parser.add_argument('--keep-merge-branch',
+                            action='store_true',
+                            dest='keep_mergebranch',
+                            help='Keep branch merge branch')
 
         return parser
 

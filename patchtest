@@ -46,7 +46,7 @@ error = logger.error
 
 from patchtestrepo import Repo
 
-def getResult(patch, merge, json):
+def getResult(mergepatch):
 
     class PatchTestResult(unittest.TextTestResult):
         """ Patchtest TextTestResult """
@@ -80,24 +80,14 @@ def getResult(patch, merge, json):
             # let's create the repo already, it can be used later on
             repoargs = {
                 'repodir': pti.repodir,
-                'commit': pti.commit,
-                'branch': pti.branch,
-                'patch': patch,
+                'commit': pti.basecommit,
+                'branch': pti.basebranch,
+                'merge_branchname': pti.merge_branchname,
+                'patch': pti.patch,
             }
 
-            # Indicates if repo instance was created succesfully.
-            # If True, no tests are executed
             self.repo_error    = False
-
-            # Indicates if test cases raise exception.
-            # If True, trace is shown, pending tests are executed but No POST is done
             self.test_error    = False
-
-            # Indicates if all items failed the merging phase
-            # If True, no tests are done
-            self.merge_failure = False
-
-            # Indicates failures on tests
             self.test_failure  = False
 
             try:
@@ -105,20 +95,11 @@ def getResult(patch, merge, json):
             except:
                 logger.error(traceback.print_exc())
                 self.repo_error = True
-
-            if self.repo_error:
                 self.stop()
                 return
 
-            # merge items
-            if merge:
-                try:
-                    if not self.repo.merge():
-                        self.merge_failure = True
-                        self.stop()
-                except:
-                    self.error = True
-                    self.stop()
+            if mergepatch:
+                self.repo.merge()
 
         def addError(self, test, err):
             self.test_error = True
@@ -127,30 +108,31 @@ def getResult(patch, merge, json):
 
         def addFailure(self, test, err):
             self.test_failure = True
-            if json:
+            if pti.json:
                 print(self.JSON(self.fail, err[1]))
             else:
                 print('{} {}'.format(self.fail, test.id()))
 
         def addSuccess(self, test):
-            if json:
+            if pti.json:
                 print(self.JSON(self.success, test))
             else:
                 print('{} {}'.format(self.success, test.id()))
 
         def addSkip(self, test, reason):
-            if json:
+            if pti.json:
                 print(self.JSON(self.skip, test))
             else:
                 print('{} {}'.format(self.skip, test.id()))
 
         def stopTestRun(self):
 
+            # in case there was an error on repo object creation, just return
             if self.repo_error:
                 return
-
-            if merge:
-                self.repo.clean(pti.keepbranch)
+            else:
+                if mergepatch:
+                    self.repo.clean(pti.keep_mergebranch)
 
     return PatchTestResult
 
@@ -175,8 +157,6 @@ def _runner(resultklass, prefix=None):
     except:
         logger.error(traceback.print_exc())
         logger.error('patchtest failed, removing patchtest branch')
-        if repo:
-            pti.repo.clean(False)
         return 1
 
     return 0
@@ -186,13 +166,13 @@ def run(patch):
     # Get the result class and install the control-c handler
     unittest.installHandler()
 
-    # run pre-merge tests. Pre-merge tests are those to be executed previous merging
-    premerge_resultklass = getResult(patch=patch, merge=False, json=pti.json)
+    # run pre-merge tests, meaning those methods with 'pretest' as prefix
+    premerge_resultklass = getResult(mergepatch=False)
     _runner(premerge_resultklass, 'pretest')
 
-    # run standard tests
-    postmerge_resultklass = getResult(patch=patch, merge=pti.merge, json=pti.json)
-    return _runner(postmerge_resultklass)
+    # run post-merge tests, meaning those methods with 'test' as prefix
+    postmerge_resultklass = getResult(mergepatch=True)
+    return _runner(postmerge_resultklass, 'test')
 
 def main():
     patch = pti.patch

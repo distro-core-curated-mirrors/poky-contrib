@@ -35,7 +35,7 @@ class Repo(object):
     # prefixes used for temporal branches/stashes
     prefix = 'patchtest'
 
-    def __init__(self, patch, repodir, commit=None, branch=None):
+    def __init__(self, patch, repodir, commit=None, branch=None, merge_branchname=None):
         self._repodir = repodir
         self._patch = Patch(patch)
         self._current_branch = self._get_current_branch()
@@ -47,13 +47,16 @@ class Repo(object):
         self._commit = self._get_commitid(commit) or \
                        self._get_commitid('HEAD')
 
-        self._branchname = "%s_%s" % (Repo.prefix, os.getpid())
+        self._mergebranch = merge_branchname or ("%s_%s" % (Repo.prefix, os.getpid()))
+
+        self._patchmerged = False
 
         # for debugging purposes, print all repo parameters
         logger.debug("Parameters")
         logger.debug("\tRepository: %s" % self._repodir)
-        logger.debug("\tCommit: %s" % self._commit)
-        logger.debug("\tBranch: %s" % self._branch)
+        logger.debug("\tBase Commit: %s" % self._commit)
+        logger.debug("\tBase Branch: %s" % self._branch)
+        logger.debug("\tMergebranch: %s" % self._mergebranch)
         logger.debug("\tPatch: %s" % self._patch)
 
     @property
@@ -120,35 +123,26 @@ class Repo(object):
         return None
 
     def merge(self):
-        # create the branch before merging
-        self._exec([
-            {'cmd':['git', 'checkout', self._branch]},
-            {'cmd':['git', 'checkout', '-b', self._branchname, self._commit]},
-        ])
-
-        if not self._patch.contents:
-            logger.error('Contents are empty')
-            raise Exception
+        # try patching
         try:
-            self._exec([
-                {'cmd':['git', 'apply', '--check', '--verbose'], 'input':self._patch.contents},
-                {'cmd':['git', 'am'], 'input':self._patch.contents, 'updateenv':{'PTRESOURCE':self._patch.path}}]
-                )
-            self._patch.merge_status = Patch.MERGE_STATUS_MERGED_SUCCESSFULL
+            self._exec([{'cmd': ['git', 'checkout', self._commit]},
+                        {'cmd': ['git', 'apply', '--check', '--verbose'], 'input': self._patch.contents}])
         except utils.CmdException as ce:
-            self._patch.merge_status = Patch.MERGE_STATUS_MERGED_FAIL
-        except Exception as e:
-            self._patch.merge_status = Patch.MERGE_STATUS_INVALID
+            # if fail move back to base branch
+            logger.error('Patch cannot be merged on top %s' % self._commit)
+            self._exec({'cmd':['git', 'checkout', '%s' % self._current_branch]})
+            return False
 
-        return self._patch.merge_status == Patch.MERGE_STATUS_MERGED_SUCCESSFULL
+        # create the branch and am (apply) patch
+        self._exec([{'cmd': ['git', 'checkout', '-b', self._mergebranch, self._commit]},
+                    {'cmd': ['git', 'am'], 'input': self._patch.contents, 'updateenv': {'PTRESOURCE':self._patch.path}}])
 
-    def clean(self, keepbranch=False):
-        """ Leaves the repo as it was before testing """
-        cmds = [
-            {'cmd':['git', 'checkout', '%s' % self._current_branch]},
-        ]
+        self._patchmerged = True
+        return True
 
-        if not keepbranch:
-            cmds.append({'cmd':['git', 'branch', '-D', self._branchname], 'ignore_error':True})
+    def clean(self, keep_mergebranch):
+        cmds = [{'cmd':['git', 'checkout', '%s' % self._current_branch]}]
+        if self._patchmerged and not keep_mergebranch:
+            cmds.append({'cmd':['git', 'branch', '-D', self._mergebranch], 'ignore_error':True})
 
         self._exec(cmds)
