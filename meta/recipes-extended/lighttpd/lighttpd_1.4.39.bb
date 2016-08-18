@@ -26,8 +26,11 @@ SRC_URI = "http://download.lighttpd.net/lighttpd/releases-1.4.x/lighttpd-${PV}.t
 SRC_URI[md5sum] = "63c7563be1c7a7a9819a51f07f1af8b2"
 SRC_URI[sha256sum] = "7eb9a1853c3d6dd5851682b0733a729ba4158d6bdff80974d5ef5f1f6887365b"
 
-PACKAGECONFIG ??= "openssl"
+PACKAGECONFIG ??= "openssl \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'ipv6', 'ipv6', '', d)} \
+"
 PACKAGECONFIG[openssl] = "--with-openssl, --without-openssl, openssl"
+PACKAGECONFIG[ipv6] = "--enable-ipv6,--disable-ipv6,"
 
 EXTRA_OECONF = " \
              --without-bzip2 \
