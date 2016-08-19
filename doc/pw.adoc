@@ -1,0 +1,32 @@
+[[pw]]
+=== Patchwork and `git-pw`
+
+New series can be fetched from a 'patchwork' instance using `git-pw` tool
+but first some configurations are needed on the target repository.
+For the 'OE-core' case, set the following
+
+[source,shell]
+----
+$ cd $OECORE
+$ git config patchwork.default.url http://patchwork.openembedded.org
+$ git config patchwork.default.project oe-core
+----
+
+and fetch and test in the same command line
+
+[source,shell]
+----
+$ git pw mbox 1487 | patchtest - --test-dir $SUITE
+----
+
+'patchwork' can also store test results, thus two more configurations are needed
+in order to post results.
+
+[source,shell]
+----
+$ git config patchwork.default.user <service account>
+$ git config patchwork.default.pass <service password>
+----
+
+where the service account is a dedicated patchwork account configured to be a maintainer for a specific patchwork
+project, in this case 'OpenEmbedded Core Layer'.

@@ -1,0 +1,78 @@
+[[guest]]
+=== Host installation and Guest execution: a **secure** approach
+
+This method is the recommended way when patch testing is done automatically, i.e. through a 'cronjob'. However,
+if you want to test patches your own patches, the <<host,host>> approach is a better option, making it easier and
+faster the code cycle ('code-test-code').
+
+* As in the <<host, host>> section, follow the steps <<env-vars, environment variables setting>> and <<cloning, cloning>>.
+
+* TODO: include `chmod` lines to remove write permission into the  '$BASE' folders, so guest can not touch it.
+
+* Poll new series events from the patchwork instance, previously configured as shown <<pw, Patchwork>> section.
+
+[source, shell]
+----
+$ $PT/scripts/poll $OECORE $BASE
+----
+
+The above script will create a new folder under '$BASE' containing the mboxes for every
+new series-revision polled. The link 'latest-series' will point to the new folder.
+
+* Using the https://www.yoctoproject.org/[Yocto Project] system, create a 'qemu' machine including
+the 'meta-patchtest' layer (located on this repository).
+[NOTE]
+In case of trouble, please refer to the main Yocto Project https://www.yoctoproject.org/documentation[documentation]
+for more information, specially the Yocto Project Quick Start Guide document.
+
+[source,shell]
+----
+$ cd $BASE
+$ git clone git://git.yoctoproject.org/poky
+$ cd poky
+$ . oe-init-build-env
+$ echo "BBLAYERS += \"$PT/meta-patchtest\"' >> conf/bblayers.conf
+$ bitbake core-image-patchtest
+----
+
+* Launch (from the Poky 'build' folder) the 'qemu' machine with the following parameters
+
+[source, shell]
+----
+$ runqemu qemux86 \
+	core-image-patchtest \
+	nographic \
+	kvm \
+	qemuparams="-fsdev local,id=test_dev,path=$BASE,security_model=mapped \
+	            -device virtio-9p-pci,fsdev=test_dev,mount_tag=test_mount"
+----
+
+The 'qemu' parameters indicate the shared folder ('$BASE') between host and guest,
+containing all necessary data for patchtest to be run in isolation. This folder
+is now a (paravirtualized) filesystem using 
+https://www.kernel.org/doc/ols/2010/ols2010-pages-109-120.pdf[VirtFS].
+With this model, host view shows QEMU as the owner of all files created by any user 
+(including root) on the guest hence provides complete isolation and security
+[1].
+
+* The machine, once launched, will automatically execute 'patchtest'
+with all the new series and results stored in the 'latest-results' folder.
+
+* TODO: we should avoid this step, using a 'qemu' parameter to take
+a clean image for every run.
+For security reasons, remove the 'qemu' machine
+
+[source,shell]
+----
+$ cd $POKY/build
+$ bitbake -c cleanall core-image-minimal
+----
+
+* Finally, in case results need to be posted into the 'patchwork' instance, execute the following script
+
+[source, shell]
+----
+build$ $PTOE/scripts/post $OECORE $BASE/latest-results
+----
+
+where '$BASE/latest-results' contains previous results executed on guest.

@@ -1,0 +1,63 @@
+[[host]]
+=== Host Installation and Execution
+[WARNING]
+Testing series coming from 'patchwork' without inspection may be risky on a insufficiently secured
+environment; if this is the case, it is [red]#strongly recommended# to execute patchtest in a guest machine
+as indicated on the <<guest, guest >> section.
+
+[[env-vars]]
+* Define the following environment variables
+
+[source,shell]
+----
+$ BASE=$PWD/pt
+$ PW=$BASE/patchwork
+$ PT=$BASE/patchtest
+$ PTOE=$BASE/patchtest-oe
+$ SUITE=$PTOE/tests
+$ OECORE=$BASE/openembedded-core
+-----
+
+[[cloning]]
+* Clone repositories
+[NOTE]
+In case your already have the repositories, make sure you update them before testing.
+The 'patchtest' and in this case the suite, are live projects and checks are being added
+constantly.
+
+[source,shell]
+----
+$ mkdir $BASE
+$ git clone https://github.com/dlespiau/patchwork.git $PW
+$ git clone ssh://git@git.yoctoproject.org/patchtest $PT
+$ git clone ssh://git@git.yoctoproject.org/patchtest-oe $PTOE
+$ git clone git://git.openembedded.org/openembedded-core $OECORE
+$ export PATH="$PATH:$PW/git-pw/:$PT"
+----
+
+[[path]]
+* Append tool paths into the environment 'PATH' variable
+
+[source,shell]
+----
+$ export PATH="$PATH:$PW/git-pw/:$PT"
+----
+
+[[requirements]]
+* Install `git-pw` and test suite python requirements using 'pip'
+[NOTE]
+You can use your distribution package manager instead of 'pip' to install
+the requirements
+
+[source,shell]
+----
+$ cd $PW/git-pw; pip install -r requirements.txt
+$ cd $PWOE; pip install -r requirements.txt
+----
+
+The tool is ready to be used. It is worth mentioned again that the above
+steps consider the 'OE-core' and its corresponding suite 'patchtest-oe'
+as examples. Any other project/suite can be configured in a similar way,
+just the upstream links would change, but the rest of the instructions
+remain valid. Section <<usage, usage>> shows some command line examples
+to use the tools just installed.

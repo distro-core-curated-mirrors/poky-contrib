@@ -1,0 +1,21 @@
+[[usage]]
+=== Usage
+
+When testing patches locally you can run the tool manually on your local
+host. Before testing, follow the <<host, host>> installation
+steps. In this section we focus on simple usages of the tool.
+
+'Patchtest' can only accept a **single** patch either from stdin
+
+[source,shell]
+----
+$ cd $OECORE
+$ git format-patch -1 --stdout | patchtest - --start-directory $SUITE
+----
+
+or as parameter
+
+[source,shell]
+----
+$ patchtest somepatch.patch --start-directory $SUITE
+----
