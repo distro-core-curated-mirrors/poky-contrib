@@ -1,58 +1,70 @@
 == Patchtest
 
-`Patchtest` is a test framework for community patches based on `unittest` python module.
+**Patchtest** is a test framework for community patches based on the standard
+https://docs.python.org/2/library/unittest.html[unittest] python module.
 As input, it needs tree elements to work propertly: a **patch** in mbox format
-(either created with `git format-patch` or fetched from `patchwork`),
-a **test suite** and finally a **target repository** (although this is not neccesary, unless
-patch must be merged). In this document we use `patchtest-oe`, a test suite containing 
-checks targeted for the
-https://www.yoctoproject.org/tools-resources/community/mailing-lists[OE-core] mailing list
-(monitored by https://patchwork.openembedded.org[patchwork]), where patches are
-finally merged into http://git.yoctoproject.org/cgit/cgit.cgi/poky/[Poky] target repository.
+(either created with `git format-patch` or fetched from 'patchwork'),
+a **test suite** and a **target repository**. In this document we use 'patchtest-oe',
+a test suite containing checks targeted for the
+https://www.yoctoproject.org/tools-resources/community/mailing-lists[openembedded-core] (
+OE-Core, hereafter) mailing list corresponding to the
+http://git.openembedded.org/openembedded-core/[OE-Core] target repository.
 
-
-`Patchtest` can either run on a **host** or a **guest** machine, depending on which environment
-the execution needs to be done. If you will test your own patches,
-the easiest way is install and run everything on <<host,host>>; in the other
-hand, if automatic testing is intended, <<guest,guest>> execution is the recommended method. Both
-methods are explained in the following sections.
+Patchtest can either run on a <<host,host>> or a <<guest,guest>> machine, depending on which environment
+the execution needs to be done. If you plan to test your own patches (a good practice before
+these are sent to the mailing list), the easiest way is to install and execute on your local
+host; in the other hand, if automatic testing is intended, the guest method
+is strongly recommended. Both methods are explained in the following sections.
 
 [[host]]
 === Host
 [WARNING]
-Testing series coming from `patchwork` without inspection may be risky on a insufficiently secured
-environment; if this is the case, consider executing patchtest in a guest machine as indicated on the
-<<guest, guest >> section.
+Testing series coming from 'patchwork' without inspection may be risky on a insufficiently secured
+environment; if this is the case, it is [red]#strongly recommended# to execute patchtest in a guest machine
+as indicated on the <<guest, guest >> section.
 
-Define the following environment variables
+[[env-vars]]
+* Define the following environment variables
 
 [source,shell]
 ----
-$ BASE=$PWD
+$ BASE=$PWD/pt
 $ PW=$BASE/patchwork
 $ PT=$BASE/patchtest
 $ PTOE=$BASE/patchtest-oe
 $ SUITE=$PTOE/tests
-$ POKY=$BASE/poky
+$ OECORE=$BASE/openembedded-core
 -----
 
-Clone and append tool paths into the environment `PATH` variable
+[[cloning]]
+* Clone repositories
 [NOTE]
 In case your already have the repositories, make sure you update them before testing.
-The `patchtest-oe` is an ongoing project and more checks are being added constantly.
+The 'patchtest' and in this case the suite, are live projects and checks are being added
+constantly.
 
 [source,shell]
 ----
+$ mkdir $BASE
 $ git clone https://github.com/dlespiau/patchwork.git $PW
 $ git clone ssh://git@git.yoctoproject.org/patchtest $PT
 $ git clone ssh://git@git.yoctoproject.org/patchtest-oe $PTOE
-$ git clone http://git.yoctoproject.org/git/poky $POKY
+$ git clone git://git.openembedded.org/openembedded-core $OECORE
 $ export PATH="$PATH:$PW/git-pw/:$PT"
 ----
 
-Install `git-pw` and test suite python requirements using `pip`
+[[path]]
+* Append tool paths into the environment 'PATH' variable
+
+[source,shell]
+----
+$ export PATH="$PATH:$PW/git-pw/:$PT"
+----
+
+[[requirements]]
+* Install `git-pw` and test suite python requirements using 'pip'
 [NOTE]
-You can use your distribution package manager instead of pip to install
+You can use your distribution package manager instead of 'pip' to install
 the requirements
 
 [source,shell]
@@ -61,12 +73,105 @@ $ cd $PW/git-pw; pip install -r requirements.txt
 $ cd $PWOE; pip install -r requirements.txt
 ----
 
-Now that everything is set, we are ready to use the tool on our host.
-`Patchtest` can only accept a **single** patch either from stdin
+The tool is ready to be used. It is worth mentioned again that the above
+steps consider the 'OE-core' and its corresponding suite 'patchtest-oe'
+as examples. Any other project/suite can be configured in a similar way,
+just the upstream links would change, but the rest of the instructions
+remain valid. Section <<usage, usage>> shows some command line examples
+to use the tools just installed.
+
+[[guest]]
+=== Guest: a **secure** approach
+
+This method is the recommended way when patch testing is done automatically, i.e. through a 'cronjob'. However,
+if you want to test patches your own patches, the <<host,host>> approach is a better option, making it easier and
+faster the code cycle ('code-test-code').
+
+* As in the <<host, host>> section, follow the steps <<env-vars, environment variables setting>> and <<cloning, cloning>>.
+
+* TODO: include `chmod` lines to remove write permission into the  '$BASE' folders, so guest can not touch it.
+
+* Poll new series events from the patchwork instance, previously configured as shown <<pw, Patchwork>> section.
+
+[source, shell]
+----
+$ $PT/scripts/poll $OECORE $BASE
+----
+
+The above script will create a new folder under '$BASE' containing the mboxes for every
+new series-revision polled. The link 'latest-series' will point to the new folder.
+
+* Using the https://www.yoctoproject.org/[Yocto Project] system, create a 'qemu' machine including
+the 'meta-patchtest' layer (located on this repository).
+[NOTE]
+In case of trouble, please refer to the main Yocto Project https://www.yoctoproject.org/documentation[documentation]
+for more information, specially the Yocto Project Quick Start Guide document.
 
 [source,shell]
 ----
-$ cd $POKY
+$ cd $BASE
+$ git clone git://git.yoctoproject.org/poky
+$ cd poky
+$ . oe-init-build-env
+$ echo "BBLAYERS += \"$PT/meta-patchtest\"' >> conf/bblayers.conf
+$ bitbake core-image-patchtest
+----
+
+* Launch (from the Poky 'build' folder) the 'qemu' machine with the following parameters
+
+[source, shell]
+----
+$ runqemu qemux86 \
+	core-image-patchtest \
+	nographic \
+	kvm \
+	qemuparams="-fsdev local,id=test_dev,path=$BASE,security_model=mapped \
+	            -device virtio-9p-pci,fsdev=test_dev,mount_tag=test_mount"
+----
+
+The 'qemu' parameters indicate the shared folder ('$BASE') between host and guest,
+containing all necessary data for patchtest to be run in isolation. This folder
+is now a (paravirtualized) filesystem using 
+https://www.kernel.org/doc/ols/2010/ols2010-pages-109-120.pdf[VirtFS].
+With this model, host view shows QEMU as the owner of all files created by any user 
+(including root) on the guest hence provides complete isolation and security
+[1].
+
+* The machine, once launched, will automatically execute 'patchtest'
+with all the new series and results stored in the 'latest-results' folder.
+
+* TODO: we should avoid this step, using a 'qemu' parameter to take
+a clean image for every run.
+For security reasons, remove the 'qemu' machine
+
+[source,shell]
+----
+$ cd $POKY/build
+$ bitbake -c cleanall core-image-minimal
+----
+
+* Finally, in case results need to be posted into the 'patchwork' instance, execute the following script
+
+[source, shell]
+----
+build$ $PTOE/scripts/post $OECORE $BASE/latest-results
+----
+
+where '$BASE/latest-results' contains previous results executed on guest.
+
+
+[[usage]]
+=== Usage
+
+When testing patches locally you can run the tool manually on your local
+host. Before testing, follow the <<host, host>> installation
+steps. In this section we focus on simple usages of the tool.
+
+'Patchtest' can only accept a **single** patch either from stdin
+
+[source,shell]
+----
+$ cd $OECORE
 $ git format-patch -1 --stdout | patchtest - --start-directory $SUITE
 ----
 
@@ -77,114 +182,29 @@ or as parameter
 $ patchtest somepatch.patch --start-directory $SUITE
 ----
 
-New upstream patches can also be tested using `git-pw` tool from the `patchwork` repository,
-but first some configurations are needed on the target repository. For the `OE-core` case,
-set the following
+[[pw]]
+=== Patchwork and `git-pw`
 
-[[repo-configuration]]
+New series can be fetched from a 'patchwork' instance using `git-pw` tool
+but first some configurations are needed on the target repository.
+For the 'OE-core' case, set the following
+
 [source,shell]
 ----
+$ cd $OECORE
 $ git config patchwork.default.url http://patchwork.openembedded.org
 $ git config patchwork.default.project oe-core
 ----
 
-you can now fetch patches (or series) from the patchwork instance and test them
+and fetch and test in the same command line
 
 [source,shell]
 ----
 $ git pw mbox 1487 | patchtest - --test-dir $SUITE
 ----
 
-As mentioned before, testing your patches locally is a good practice before these are sent to the mailing list.
-
-[[guest]]
-=== Guest
-
-This method is the recommended way when patch testing is done automatically, i.e. through a `cronjob`. However,
-if you want to test patches your own patches, the <<host,host>> approach is a better option, making it easier the
-`code-test-code` cycle.
-
-* Set the following environment variables
-
-[source,shell]
-----
-$ BASE=$PWD/shared
-$ PW=$BASE/patchwork
-$ PT=$BASE/patchtest
-$ PTOE=$BASE/patchtest-oe
-$ SUITE=$PTOE/tests
-$ POKY=$BASE/poky
------
-
-* Clone or update the git repositories
-
-[source,shell]
-----
-$ mkdir $BASE
-$ git clone https://github.com/dlespiau/patchwork.git $PW
-$ git clone ssh://git@git.yoctoproject.org/patchtest $PT
-$ git clone ssh://git@git.yoctoproject.org/patchtest-oe $PTOE
-$ git clone git://git.yoctoproject.org/poky $POKY
-----
-
-* Create a `core-image-minimal` image including the layer `meta-virtio` (located on this
-repository).
-[NOTE]
-In case of trouble, please refer to the main Yocto Project https://www.yoctoproject.org/documentation[documentation]
-for more information.
-
-[source,shell]
-----
-$ cd $POKY
-$ . oe-init-build-env
-$ echo "BBLAYERS += \"$PT/meta-virtio\"' >> conf/bblayers.conf
-$ bitbake core-image-patchtest
-----
-
-* Poll new series events from the patchwork instance, previously configured as shown in repository 
-<<repo-configuration, configuration>> step.
-
-[source, shell]
-----
-$ $PT/scripts/poll $POKY $BASE
-----
-
-The above script will create a new folder under `$BASE` containing the mboxes for every
-new series-revision polled. The link `latest-series` will point to the new folder.
-
-* From the poky `build` folder, launch the `qemu` machine with the following parameters
-
-[source, shell]
-----
-$ cd $POKY/build
-$ runqemu qemux86 \
-	core-image-patchtest \
-	nographic \
-	qemuparams="-fsdev local,id=test_dev,path=$BASE,security_model=mapped \
-	            -device virtio-9p-pci,fsdev=test_dev,mount_tag=test_mount"
-----
-
-The `qemu` parameters indicate the shared folder (`$BASE`) between host and guest,
-containing all necessary data for patchtest to be run in isolation. This folder
-is now a (paravirtualized) filesystem using 
-https://www.kernel.org/doc/ols/2010/ols2010-pages-109-120.pdf[VirtFS].
-With this model, host view shows QEMU as the owner of all files created by any user 
-(including root) on the guest hence provides complete isolation and security
-[1].
-
-* The machine, once launched, will automatically execute `patchtest`
-with all the new series and results stored in the `latest-results` folder.
-
-* For security reasons, remove the `qemu` machine
-
-[source,shell]
-----
-$ cd $POKY/build
-$ bitbake -c cleanall core-image-minimal
-----
-
-* Finally, in case results need to posted into the `patchwork` instance, credentials from a _service
-account_ must be configured
+'patchwork' can also store test results, thus two more configurations are needed
+in order to post results.
 
 [source,shell]
 ----
@@ -192,12 +212,5 @@ $ git config patchwork.default.user <service account>
 $ git config patchwork.default.pass <service password>
 ----
 
-where service account is a dedicated patchwork account configured to be a maintainer for a specific patchwork
-project, in this case `OpenEmbedded Core Layer`. Once configured, run
-
-[source, shell]
-----
-build$ $PTOE/scripts/post $POKY $BASE/latest-results
-----
-
-where `$BASE/latest-results` contains previous results executed on guest.
+where the service account is a dedicated patchwork account configured to be a maintainer for a specific patchwork
+project, in this case 'OpenEmbedded Core Layer'.
