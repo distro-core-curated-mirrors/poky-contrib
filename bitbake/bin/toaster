@@ -26,28 +26,23 @@ Usage: source toaster start|stop [webport=<address:port>] [noweb]
 
 webserverKillAll()
 {
-    local pidfile
-    for pidfile in ${BUILDDIR}/.toastermain.pid ${BUILDDIR}/.runbuilds.pid; do
-        if [ -f ${pidfile} ]; then
-            pid=`cat ${pidfile}`
-            while kill -0 $pid 2>/dev/null; do
-                kill -SIGTERM -$pid 2>/dev/null
-                sleep 1
-                # Kill processes if they are still running - may happen
-                # in interactive shells
-                ps fux | grep "python.*manage.py runserver" | awk '{print $2}' | xargs kill
-            done
-            rm  ${pidfile}
+    local pgidfile
+    for pgidfile in ${BUILDDIR}/.runserver.pgid ${BUILDDIR}/.runbuilds.pgid; do
+        if [ -f ${pgidfile} ]; then
+            kill -KILL -`cat $pgidfile` >/dev/null 2>&1
+            rm  ${pgidfile}
         fi
     done
 }
 
 webserverStartAll()
 {
+    local pgidfile
+    pgidfile=${BUILDDIR}/.runserver.pgid
     # do not start if toastermain points to a valid process
-    if ! cat "${BUILDDIR}/.toastermain.pid" 2>/dev/null | xargs -I{} kill -0 {} ; then
+    if ! cat $pgidfile 2>/dev/null | xargs -I{} kill -0 -{} ; then
         retval=1
-        rm "${BUILDDIR}/.toastermain.pid"
+        rm $pgidfile
     fi
 
     retval=0
@@ -72,13 +67,13 @@ webserverStartAll()
 
     $MANAGE runserver "$ADDR_PORT" \
            </dev/null >>${BUILDDIR}/toaster_web.log 2>&1 \
-           & echo $! >${BUILDDIR}/.toastermain.pid
+           & ps -o pgid= $! | grep -o '[0-9]\+' >$pgidfile
 
     sleep 1
 
-    if ! cat "${BUILDDIR}/.toastermain.pid" | xargs -I{} kill -0 {} ; then
+    if ! cat $pgidfile | xargs -I{} kill -0 -{} ; then
         retval=1
-        rm "${BUILDDIR}/.toastermain.pid"
+        rm $pgidfile
     else
         echo "Toaster development webserver started at http://$ADDR_PORT"
         echo -e "\nYou can now run 'bitbake <target>' on the command line and monitor your build in Toaster.\nYou can also use a Toaster project to configure and run a build.\n"
@@ -156,7 +151,7 @@ fi
 # 1) clones of layers (in _toaster_clones )
 # 2) the build dir (in build)
 # 3) the sqlite db if that is being used.
-# 4) pid's we need to clean up on exit/shutdown
+# 4) pgid's we need to clean up on exit/shutdown
 # note: for future. in order to make this an arbitrary directory, we need to
 # make sure that the toaster.sqlite file doesn't default to `pwd` like it currently does.
 export TOASTER_DIR=`pwd`
@@ -214,7 +209,7 @@ fi
 # 1) clones of layers (in _toaster_clones )
 # 2) the build dir (in build)
 # 3) the sqlite db if that is being used.
-# 4) pid's we need to clean up on exit/shutdown
+# 4) pgid's we need to clean up on exit/shutdown
 # note: for future. in order to make this an arbitrary directory, we need to
 # make sure that the toaster.sqlite file doesn't default to `pwd`
 # like it currently does.
@@ -255,7 +250,8 @@ case $CMD in
             return 4
         fi
         export BITBAKE_UI='toasterui'
-        $MANAGE runbuilds & echo $! >${BUILDDIR}/.runbuilds.pid
+        $MANAGE runbuilds &
+        ps -o pgid= $! | grep -o '[0-9]\+' > ${BUILDDIR}/.runbuilds.pgid
         # set fail safe stop system on terminal exit
         trap stop_system SIGHUP
         echo "Successful ${CMD}."
