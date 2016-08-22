@@ -1729,11 +1729,6 @@ class BuildInfoHelper(object):
                 real_image_name,
                 'image_license.manifest')
 
-            image_package_manifest_path = os.path.join(
-                license_directory,
-                real_image_name,
-                'image_license.manifest')
-
             # if image_license.manifest exists, we can read the names of bzImage
             # and modules files for this build from it, then look for them
             # in the DEPLOY_DIR_IMAGE; note that this file is only produced
