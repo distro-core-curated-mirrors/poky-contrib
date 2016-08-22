@@ -250,7 +250,7 @@ case $CMD in
             return 4
         fi
         export BITBAKE_UI='toasterui'
-        $MANAGE runbuilds &
+        unshare --user --pid --fork $MANAGE runbuilds &
         ps -o pgid= $! | grep -o '[0-9]\+' > ${BUILDDIR}/.runbuilds.pgid
         # set fail safe stop system on terminal exit
         trap stop_system SIGHUP
