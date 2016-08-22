@@ -35,7 +35,7 @@ class Repo(object):
     # prefixes used for temporal branches/stashes
     prefix = 'patchtest'
 
-    def __init__(self, patch, repodir, commit=None, branch=None, merge_branchname=None):
+    def __init__(self, patch, repodir, commit=None, branch=None):
         self._repodir = repodir
         self._patch = Patch(patch)
         self._current_branch = self._get_current_branch()
@@ -47,7 +47,7 @@ class Repo(object):
         self._commit = self._get_commitid(commit) or \
                        self._get_commitid('HEAD')
 
-        self._mergebranch = merge_branchname or ("%s_%s" % (Repo.prefix, os.getpid()))
+        self._mergebranch = "%s_%s" % (Repo.prefix, os.getpid())
 
         self._patchmerged = False
 
@@ -140,9 +140,7 @@ class Repo(object):
         self._patchmerged = True
         return True
 
-    def clean(self, keep_mergebranch):
-        cmds = [{'cmd':['git', 'checkout', '%s' % self._current_branch]}]
-        if self._patchmerged and not keep_mergebranch:
-            cmds.append({'cmd':['git', 'branch', '-D', self._mergebranch], 'ignore_error':True})
+    def clean(self):
+        self._exec([{'cmd':['git', 'checkout', '%s' % self._current_branch]},
+                    {'cmd':['git', 'branch', '-D', self._mergebranch], 'ignore_error':True}])
 
-        self._exec(cmds)

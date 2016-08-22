@@ -95,11 +95,6 @@ class PatchTestArgs(object):
                             dest='basecommit',
                             help="Commit ID used by patchtest to branch from. By default, it uses HEAD.")
 
-        parser.add_argument('--merge-branch-name',
-                            dest='merge_branchname',
-                            default=None,
-                            help="Branch name to be used to merge (if possible) the patch")
-
         parser.add_argument('--debug', '-d',
                             action='store_true',
                             help='Enable debug output')
@@ -108,11 +103,6 @@ class PatchTestArgs(object):
                             action='store_true',
                             dest='json',
                             help='Print results in JSON format')
-
-        parser.add_argument('--keep-merge-branch',
-                            action='store_true',
-                            dest='keep_mergebranch',
-                            help='Keep branch merge branch')
 
         return parser
 
