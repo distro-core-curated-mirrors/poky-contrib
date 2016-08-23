@@ -84,10 +84,6 @@ class Repo(object):
         try:
             results = utils.exec_cmds(_cmds, self._repodir)
         except utils.CmdException as ce:
-            cmd = ' '.join(ce.cmd)
-            logger.error("CMD: %s" % cmd)
-            logger.debug("CMD: %s RCODE: %s STDOUT: %s STDERR: %s" %
-                         (cmd, ce.returncode, ce.stdout, ce.stderr))
             raise ce
 
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -126,10 +122,10 @@ class Repo(object):
         # try patching
         try:
             self._exec([{'cmd': ['git', 'checkout', self._commit]},
-                        {'cmd': ['git', 'apply', '--check', '--verbose'], 'input': self._patch.contents}])
+                        {'cmd': ['git', 'apply', '--check', '--verbose'],
+                         'input': self._patch.contents}])
         except utils.CmdException as ce:
             # if fail move back to base branch
-            logger.error('Patch cannot be merged on top %s' % self._commit)
             self._exec({'cmd':['git', 'checkout', '%s' % self._current_branch]})
             return False
 
