@@ -77,7 +77,7 @@ class PatchTestArgs(object):
                             help="Top level directory of project (defaults to start directory)")
 
         startdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'tests')
-        parser.add_argument('--start-directory', '-s',
+        parser.add_argument('--start-dir', '-s',
                             dest='startdir',
                             default=startdir,
                             help="Directory to start discover")
@@ -91,7 +91,7 @@ class PatchTestArgs(object):
                             dest='basebranch',
                             help="Branch name used by patchtest to branch from. By default, it uses the current one.")
 
-        parser.add_argument('---base-commit', '-c',
+        parser.add_argument('--base-commit', '-c',
                             dest='basecommit',
                             help="Commit ID used by patchtest to branch from. By default, it uses HEAD.")
 
