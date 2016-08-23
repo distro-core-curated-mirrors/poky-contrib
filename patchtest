@@ -46,7 +46,7 @@ error = logger.error
 
 from patchtestrepo import Repo
 
-def getResult(mergepatch):
+def getResult(patch, mergepatch):
 
     class PatchTestResult(unittest.TextTestResult):
         """ Patchtest TextTestResult """
@@ -80,9 +80,9 @@ def getResult(mergepatch):
             # let's create the repo already, it can be used later on
             repoargs = {
                 'repodir': pti.repodir,
-                'commit': pti.basecommit,
-                'branch': pti.basebranch,
-                'patch': pti.patch,
+                'commit' : pti.basecommit,
+                'branch' : pti.basebranch,
+                'patch'  : patch,
             }
 
             self.repo_error    = False
@@ -166,11 +166,11 @@ def run(patch):
     unittest.installHandler()
 
     # run pre-merge tests, meaning those methods with 'pretest' as prefix
-    premerge_resultklass = getResult(False)
+    premerge_resultklass = getResult(patch, False)
     _runner(premerge_resultklass, 'pretest')
 
     # run post-merge tests, meaning those methods with 'test' as prefix
-    postmerge_resultklass = getResult(True)
+    postmerge_resultklass = getResult(patch, True)
     return _runner(postmerge_resultklass, 'test')
 
 def main():
