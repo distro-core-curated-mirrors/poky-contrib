@@ -24,15 +24,23 @@ function importLayerPageInit (ctx) {
   // choices available in the typeahead
   var layerDepsChoices = {};
 
+  // when a typeahead choice is selected, enabling the "Add layer" button
+  // since we know for sure this is a valid layer
+  layerDepInput.on("typeahead:select", function (event, data) {
+    if (data.name) {
+      layerDepBtn.removeAttr("disabled");
+    }
+  });
+
   // when the typeahead choices change, store an array of the available layer
   // choices locally, to use for enabling/disabling the "Add layer" button
-  layerDepInput.on("typeahead-choices-change", function (event, data) {
-    layerDepsChoices = {};
-
-    if (data.choices) {
-      data.choices.forEach(function (item) {
-        layerDepsChoices[item.name] = item;
-      });
+  //  layerDepInput.on("typeahead:render", function (event, [item[,item]*]) {
+  layerDepInput.on("typeahead:render", function (event, items) {
+    for (var i = 1, j = arguments.length; i < j; i++){
+      if (i == 1) {
+        layerDepsChoices = {};
+      }
+      layerDepsChoices[arguments[i].name] = arguments[i];
     }
   });
 
