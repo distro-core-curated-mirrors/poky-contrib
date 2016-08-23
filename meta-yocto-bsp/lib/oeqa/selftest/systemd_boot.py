@@ -1,6 +1,6 @@
 from oeqa.selftest.base import oeSelfTest
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, runqemu
-from oeqa.utils.decorators import testcase
+from oeqa.utils.decorators import testcase, skipUnlessPassed
 import re
 import os
 import sys
@@ -32,7 +32,8 @@ class Systemdboot(oeSelfTest):
     def test_efi_systemdboot_images_can_be_built(self):
         """
         Summary:     Check if systemd-boot images can be built correctly
-        Expected:    1. File systemd-boot.efi should be available in $poky/build/tmp/deploy/images/genericx86-64
+        Expected:    1. File systemd-boot.efi should be available in:
+                         $poky/build/tmp/deploy/images/genericx86-64
                      2. 'systemd-boot" can be built correctly
         Product:     oe-core
         Author:      Jose Perez Carranza <jose.perez.carranza@intel.com>
@@ -41,7 +42,8 @@ class Systemdboot(oeSelfTest):
 
         # We'd use DEPLOY_DIR_IMAGE here, except that we need its value for
         # MACHINE="genericx86-64 which is probably not the one configured
-        systemdbootfile = os.path.join(get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64', 'systemd-bootx64.efi')
+        systemdbootfile = os.path.join(get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
+                                       'systemd-bootx64.efi')
 
         self._common_setup()
 
@@ -54,3 +56,46 @@ class Systemdboot(oeSelfTest):
 
         found = os.path.isfile(systemdbootfile)
         self.assertTrue(found, 'Systemd-Boot file %s not found' % systemdbootfile)
+
+
+    @testcase(0000)
+    @skipUnlessPassed('test_efi_systemdboot_images_can_be_built')
+    def test_efi_systemdboot_is_built_correctly(self):
+        """
+        Summary:      Check if EFI bootloader for systemd is correctly build
+        Dependencies: Image was built correctly on testcase 1445
+        Steps:        1. Copy bootx64.efi file form the hddimg created
+                         under build/tmp/deploy/images/genericx86-64
+                      2. Check bootx64.efi was copied form hddimg
+                      3. Verify the checksums from the copied and previously
+                         created file are equal.
+        Expected :    Systemd-bootx64.efi and bootx64.efi should be the same
+                      hence checksums should be equal.
+        Product:      oe-core
+        Author:       Jose Perez Carranza <jose.perez.carranza@intel.com>
+        AutomatedBy:  Jose Perez Carranza <jose.perez.carranza@intel.com>
+        """
+
+        systemdbootfile = os.path.join(get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
+                                       'systemd-bootx64.efi')
+        systemdbootimage = os.path.join(get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
+                                        'core-image-minimal-genericx86-64.hddimg')
+        imagebootfile = os.path.join(get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
+                                     'bootx64.efi')
+
+        #Step 1
+        runCmd('mcopy -i %s ::EFI/BOOT/bootx64.efi %s' % (systemdbootimage, imagebootfile))
+
+        #Step 2
+        found = os.path.isfile(imagebootfile)
+        self.assertTrue(found, 'bootx64.efi file %s was not copied from image'
+                        % imagebootfile)
+
+        #Step 3
+        #result = runCmd('md5sum %s' % ' '.join([systemdbootfile, imagebootfile]))
+        result = runCmd('md5sum %s %s' % (systemdbootfile, imagebootfile))
+        self.assertEqual(result.output.split()[0], result.output.split()[2],
+                         '%s was not correclty generated' % imagebootfile)
+
+        #Ensure to have a clear enviroment after execute the test
+        runCmd('rm -f %s' % imagebootfile)
