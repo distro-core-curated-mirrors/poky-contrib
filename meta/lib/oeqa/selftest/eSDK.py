@@ -102,46 +102,5 @@ SSTATE_MIRRORS =  "file://.* http://%s/PATH"
         cmd = "devtool build-image %s" % image
         oeSDKExtSelfTest.run_esdk_cmd(self.env_eSDK, self.tmpdir_eSDKQA, cmd)
 
-
-    @testcase(1487)
-    def test_sdkupdate_devtool(self):
-        image = 'core-image-sato'
-
-        tmpdir_publish_eSDK = tempfile.mkdtemp(prefix='publish_eSDK')
-
-        http_service = HTTPService(tmpdir_publish_eSDK)
-        http_service.start()
-        http_url = "http://127.0.0.1:%d" % http_service.port
-
-        sstate_config = """
-SDK_LOCAL_CONF_WHITELIST = "SSTATE_MIRRORS"
-SSTATE_MIRRORS =  "file://.* http://%s/PATH"
-EXAMPLE_VAR = "qemux86"        
-        """ %http_url
-        
-        with open (os.path.join(self.tmpdir_eSDKQA, 'conf', 'local.conf'), 'a+') as f:
-            f.write(sstate_config)
-
-        try:
-            oeSDKExtSelfTest.generate_eSDK(image)
-            ext_sdk_path_sato = oeSDKExtSelfTest.get_eSDK_toolchain(image)
-          
-            cmd = "oe-publish-sdk %s %s" % (ext_sdk_path_sato, tmpdir_publish_eSDK)
-            subprocess.check_output(cmd, shell=True)
-
-            cmd = 'devtool sdk-update %s' % http_url
-            oeSDKExtSelfTest.run_esdk_cmd(self.env_eSDK, tmpdir_publish_eSDK, cmd)
-            with open(os.path.join(self.tmpdir_eSDKQA, 'conf', 'local.conf')) as f:
-                for line in f:
-                    if line.strip() == 'EXAMPLE_VAR = "qemux86"':
-                        break
-                else:
-                    self.fail("Test configuration missing.")
-
-        finally:
-            http_service.stop()
-            shutil.rmtree(tmpdir_publish_eSDK)
-            self.remove_config(sstate_config)
-
 if __name__ == '__main__':
     unittest.main()

@@ -77,8 +77,8 @@ class DevtoolTest(oeSDKExtTest):
     @testcase(1484)
     @skipUnlessPassed('test_devtool_location')
     def test_devtool_kernelmodule(self):
-        docfile = 'git://github.com/Mange/rtl8192eu-linux-driver.git'
-        recipe = 'rtl-linux-driver'
+        docfile = 'https://github.com/umlaeute/v4l2loopback.git'
+        recipe = 'v4l2loopback-driver'
         self._run('devtool add %s %s' % (recipe, docfile) )
         try:
             self._run('devtool build %s' % recipe)
