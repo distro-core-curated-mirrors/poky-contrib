@@ -49,7 +49,9 @@ old_dir=$PWD
   for commit in $(git rev-list $since..HEAD --reverse); do
      echo "Testing commit ${commit}"
      git format-patch "$commit^1..$commit" --stdout | \
-     patchtest - --commit "$commit^1" -C $repo_dir -s $start_dir --merge
+	 patchtest - --base-commit "$commit^1" \
+		   --repo-dir $repo_dir \
+		   --start-dir $start_dir
   done
 )
 
