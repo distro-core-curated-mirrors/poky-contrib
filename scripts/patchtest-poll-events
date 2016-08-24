@@ -1,0 +1,68 @@
+#!/usr/bin/python
+
+# Poll events of type --series-new-revision from patchwork
+#
+# Copyright (C) 2016 Intel Corporation
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+from argparse import ArgumentParser
+from sys import exit
+from json import loads
+from subprocess import check_output, CalledProcessError
+from os.path import exists, join
+
+def pollseries(repodir, pwproject):
+    listseriesrev = []
+    cmd           = 'cd %s;git pw poll-events --name series-new-revision' % repodir
+    timestamp     = '.git-pw.%s.poll.timestamp' % pwproject
+
+    if exists(join(repodir, timestamp)):
+        events = check_output(cmd, shell=True)
+        for event in events.splitlines():
+            series = loads(event)
+            listseriesrev.append((series['series'], series['parameters']['revision']))
+    else:
+        # just consume all events
+        while check_output(cmd, shell=True):
+            pass
+
+    return ' '.join(['.'.join([str(s),str(r)]) for s,r in listseriesrev])
+
+if __name__ == '__main__':
+
+    parser = ArgumentParser(description="""Poll and print latest series. If timestamp not present it polls all series and no series are printed""")
+
+    parser.add_argument('repodir',
+                        help='Repository where polling is done')
+
+    parser.add_argument('--project',
+                        dest='project',
+                        default='oe-core',
+                        help='Patchwork\'s project name')
+
+    args = parser.parse_args()
+
+    ret = 1
+    try:
+        print pollseries(args.repodir, args.project)
+        ret = 0
+    except CalledProcessError as cpe:
+        print 'make sure you have patchwork git-pw installed'
+    except:
+        import traceback
+        traceback.print_exc(5)
+
+    exit(ret)
+

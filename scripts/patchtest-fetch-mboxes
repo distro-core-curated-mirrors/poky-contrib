@@ -1,0 +1,84 @@
+#!/bin/bash
+# ex:ts=4:sw=4:sts=4:et
+# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
+#
+# patchtest-commits: run patchtest from a since commit (since) and report
+#
+# Copyright (C) 2016 Intel Corporation
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+# defaults values
+repodir=''
+outputdir='mboxes'
+
+function usage() {
+    cat << EOF
+\$ $(basename $0) -r <repodir> -o <outputdir> <series[.revision]> ...
+
+where
+
+    <repodir>              : Repository
+    <outputdir>            : Output directory patchtest results. Defaults to $outdirdir
+    <series[.revision]>    : Series id, with an optional revision. If not given, it will poll-events since the timestamp defined on .git-pw
+EOF
+>&2
+
+    exit 1
+}
+
+while getopts ":r:o:h" opt; do
+    case $opt in
+	r)
+	    repodir=$OPTARG
+	    ;;
+	o)
+	    outputdir=$OPTARG
+	    ;;
+	h)
+	    usage
+	    ;;
+	\?)
+	    echo "Invalid option: -$OPTARG" >&2
+	    usage
+	    ;;
+	:)
+	    echo "Option -$OPTARG requires an argument." >&2
+	    usage
+	    ;;
+    esac
+done
+shift $((OPTIND-1))
+
+[ -z "$repodir" ]   && { echo "Indicate the repository"; usage; }
+[ ! -d $repodir ]   && { echo "Repository does not exit"; usage; }
+[ ! -d $outputdir ] && { mkdir -p $outputdir; }
+
+series="$@"
+# events come in pairs separated by a dot
+if [ -z "$series" ]; then
+    series="$(patchtest-poll-events $repodir)"
+fi
+
+if [ -n "$series" ]; then
+    for s in $series; do
+	sid="$(echo $s | cut -d. -f1)"
+	rid="$(echo $s | cut -d. -f2)"
+	echo -e "Series/Revision $sid/$rid mbox"
+	git pw mbox $sid --revision $rid --link > $outputdir/$sid.$rid.mbox
+	echo -e "\tStore into $outputdir"
+    done
+else
+    echo -e "No new series events"
+fi
