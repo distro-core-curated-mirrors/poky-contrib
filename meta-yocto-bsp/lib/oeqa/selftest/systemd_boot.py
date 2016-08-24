@@ -6,7 +6,6 @@ import os
 import sys
 import logging
 
-
 class Systemdboot(oeSelfTest):
 
     def _common_setup(self):
@@ -27,6 +26,16 @@ class Systemdboot(oeSelfTest):
         # Build a genericx86-64/efi gummiboot image
         bitbake('mtools-native core-image-minimal')
 
+    @staticmethod
+    def _append_to_file(filename, string):
+        """
+        Used to append string to a file
+        """
+
+        content= open(filename).read()
+        if not string in content:
+            with open(filename, 'a') as f:
+                f.write('%s\n' % string)
 
     @testcase(1445)
     def test_efi_systemdboot_images_can_be_built(self):
@@ -81,8 +90,16 @@ class Systemdboot(oeSelfTest):
         systemdbootimage = os.path.join(get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
                                         'core-image-minimal-genericx86-64.hddimg')
         imagebootfile = os.path.join(get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
-                                     'bootx64.efi')
+                                                'bootx64.efi')
+        mtoolsrcfile = os.path.join(get_bb_var('HOME'), '.mtoolsrc')
 
+
+        #Avoid errors when checking sectors
+        self._append_to_file(mtoolsrcfile, "mtools_skip_check=1")
+
+        """
+        print("-------->  %s" % mtoolsrcfile)
+        """
         #Step 1
         runCmd('mcopy -i %s ::EFI/BOOT/bootx64.efi %s' % (systemdbootimage, imagebootfile))
 
@@ -92,7 +109,6 @@ class Systemdboot(oeSelfTest):
                         % imagebootfile)
 
         #Step 3
-        #result = runCmd('md5sum %s' % ' '.join([systemdbootfile, imagebootfile]))
         result = runCmd('md5sum %s %s' % (systemdbootfile, imagebootfile))
         self.assertEqual(result.output.split()[0], result.output.split()[2],
                          '%s was not correclty generated' % imagebootfile)
