@@ -2,7 +2,9 @@
 # ex:ts=4:sw=4:sts=4:et
 # -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
-# patchtest-commits: run patchtest from a since commit (since) and report
+# patchtest-test-mboxes: (patch) Test the provided mboxes and if required,
+#                        assemble those that can be merged into a branch
+#                        with results as git-notes
 #
 # Copyright (C) 2016 Intel Corporation
 #

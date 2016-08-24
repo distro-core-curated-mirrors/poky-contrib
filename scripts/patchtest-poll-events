@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-# Poll events of type --series-new-revision from patchwork
+# patchtest-poll-events: Poll events of type --series-new-revision from patchwork
+#                        and return these as a series/revision list.
 #
 # Copyright (C) 2016 Intel Corporation
 #
@@ -42,7 +43,8 @@ def pollseries(repodir, pwproject):
 
 if __name__ == '__main__':
 
-    parser = ArgumentParser(description="""Poll and print latest series. If timestamp not present it polls all series and no series are printed""")
+    parser = ArgumentParser(description="""Poll series and return these as a list of series.revision.
+If timestamp not present, it polls all series and no series are printed""")
 
     parser.add_argument('repodir',
                         help='Repository where polling is done')
