@@ -22,30 +22,30 @@
 
 # defaults values
 repodir=''
-outputdir='mboxes'
+mboxdir='mboxes'
 
 function usage() {
     cat << EOF
-\$ $(basename $0) -r <repodir> -o <outputdir> <series[.revision]> ...
+\$ $(basename $0) -r <repodir> -m <mboxdir> <series[.revision]> ...
 
 where
 
-    <repodir>              : Repository
-    <outputdir>            : Output directory patchtest results. Defaults to $outdirdir
-    <series[.revision]>    : Series id, with an optional revision. If not given, it will poll-events since the timestamp defined on .git-pw
+    <repodir>            : Repository
+    <mboxdir>            : Directory where mboxes are stored. Defaults to $mboxdir
+    <series[.revision]>  : Series id, with an optional revision. If not given, it will poll-events since the timestamp defined on .git-pw
 EOF
 >&2
 
     exit 1
 }
 
-while getopts ":r:o:h" opt; do
+while getopts ":r:m:h" opt; do
     case $opt in
 	r)
 	    repodir=$OPTARG
 	    ;;
-	o)
-	    outputdir=$OPTARG
+	m)
+	    mboxdir=$OPTARG
 	    ;;
 	h)
 	    usage
@@ -64,7 +64,6 @@ shift $((OPTIND-1))
 
 [ -z "$repodir" ]   && { echo "Indicate the repository"; usage; }
 [ ! -d $repodir ]   && { echo "Repository does not exit"; usage; }
-[ ! -d $outputdir ] && { mkdir -p $outputdir; }
 
 series="$@"
 # events come in pairs separated by a dot
@@ -73,12 +72,24 @@ if [ -z "$series" ]; then
 fi
 
 if [ -n "$series" ]; then
+    # create the mbox directory in case it does not exit
+    [ ! -d $mboxdir ] && { mkdir -p $mboxdir; }
+
+    # fetch series
     for s in $series; do
 	sid="$(echo $s | cut -d. -f1)"
-	rid="$(echo $s | cut -d. -f2)"
-	echo -e "Series/Revision $sid/$rid mbox"
-	git pw mbox $sid --revision $rid --link > $outputdir/$sid.$rid.mbox
-	echo -e "\tStore into $outputdir"
+	cmd="git pw mbox $sid --link"
+	# in case there is revision, consider it
+	if echo $s | grep '\.' --quiet; then
+	    rid="$(echo $s | cut -d. -f2)"
+	    cmd="$cmd --revision $rid"
+	    echo -e "Series/Revision $sid/$rid mbox"
+	else
+	    echo -e "Series/Revision $sid/latest mbox"
+	fi
+	$cmd > $mboxdir/$sid.$rid.mbox
+	echo -e "\tStore into $mboxdir"
+	echo -e ""
     done
 else
     echo -e "No new series events"
