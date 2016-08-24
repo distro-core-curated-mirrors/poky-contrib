@@ -128,7 +128,7 @@ fi
 for item in "$@"; do
     # if item is a directory, get all files and test each
     if [ -d $item ]; then
-	for patch in $(find $item -type f); do
+	for patch in $(find $item -type f | sort -n); do
 	    testpatch $patch
 	done
     else
