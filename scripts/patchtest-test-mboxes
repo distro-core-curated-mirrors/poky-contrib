@@ -19,9 +19,16 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+# default values
+repodir=''
+startdir=''
+assemblebranch=''
+startpoint='HEAD'
+outputdir='results'
+
 function usage() {
     cat << EOF
-\$ $(basename $0) -r <repodir> -s <startdir> -a <assemble branch> -b <start point> -o <outputdir> <patch> ... 
+\$ $(basename $0) -r <repodir> -s <startdir> -a <assemble branch> -p <start point> -o <outputdir> <patch> ...
 
 where
 
@@ -29,19 +36,13 @@ where
     <startdir>        : Start directory for test discovery
     <assemble branch> : Branch name to assemble patches (that can be merged), including results as git-notes
     <start point>     : Start point for assemble branch. Defaults to $startpoint
-    <outputdir>       : Output directory patchtest results. Defaults to $outdir
+    <outputdir>       : Output directory patchtest results. Defaults to $outputdir
     <patch>           : Patch to test by patchtest
 EOF
 >&2
 
     exit 1
 }
-
-repodir=''
-startdir=''
-assemblebranch=''
-startpoint='HEAD'
-outputdir='output'
 
 while getopts ":r:s:p:a:o:h" opt; do
     case $opt in
@@ -75,8 +76,9 @@ while getopts ":r:s:p:a:o:h" opt; do
 done
 shift $((OPTIND-1))
 
-[ ! -d $repodir ]  && { echo "Repository does not exit"; usage; }
-[ ! -d $startdir ] && { echo "Test suite starting directory does not exist"; usage; }
+[ -z "$repodir" ]   && { echo "Indicate the repository"; usage; }
+[ ! -d $repodir ]   && { echo "Repository does not exit"; usage; }
+[ ! -d $startdir ]  && { echo "Test suite starting directory does not exist"; usage; }
 [ ! -d $outputdir ] && { mkdir -p $outputdir; }
 
 # get current branch
@@ -107,7 +109,7 @@ for patch in "$@"; do
 	git checkout $assemblebranch --quiet
 
 	# try patch merge
-	if git apply --check $patch; then
+	if git apply --check $patch 2> /dev/null; then
 	    git am --quiet $patch 2> /dev/null
 	    git notes add -m "$RESULTS"
 	    echo -e "\tPatch merged into '${assemblebranch}' with results as git-notes"
