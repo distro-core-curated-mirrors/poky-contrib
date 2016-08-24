@@ -68,7 +68,7 @@ shift $((OPTIND-1))
 series="$@"
 # events come in pairs separated by a dot
 if [ -z "$series" ]; then
-    series="$(patchtest-poll-events $repodir)"
+    series="$(poll-events $repodir)"
 fi
 
 if [ -n "$series" ]; then
