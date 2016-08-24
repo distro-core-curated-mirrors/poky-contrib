@@ -83,9 +83,9 @@ if [ -n "$series" ]; then
 	if echo $s | grep '\.' --quiet; then
 	    rid="$(echo $s | cut -d. -f2)"
 	    cmd="$cmd --revision $rid"
-	    echo -e "Series/Revision $sid/$rid mbox"
+	    echo -e "Series/Revision $sid/$rid"
 	else
-	    echo -e "Series/Revision $sid/latest mbox"
+	    echo -e "Series/Revision $sid/latest"
 	fi
 	$cmd > $mboxdir/$sid.$rid.mbox
 	echo -e "\tStore into $mboxdir"
