@@ -1,0 +1,64 @@
+[[scripts]]
+=== Scripts
+
+Under the 'scripts' folder, there are several scripts that can be useful
+with the following purposes:
+
+* 'fetch-mboxes': Fetch mboxes from a patchwork instance
+* 'test-mboxes' : Test one or more mboxes, possible assembling these into into a git-branch
+
+The following subsections describe some possible scenarios. Before proceding, examples assume the
+following environment variables already defined:
+
+* `REPO`   : Path to a patchwork configured repository
+* `PROJECT`: Patchwork project name
+* `SUITE`  : Starting directory of the test suite
+
+==== Testing local patches
+
+Testing patches before these are sent to the mailing list is a good practice. Let's say
+that you are working on a branch and you want to test all commits that have diverted from master
+
+[source,shell]
+----
+$ BN=$(git rev-parse --abbrev-ref HEAD)       # This gets the current branch name
+$ git format-patch master..$BN -o $BN-mboxes  # Get all commits and store these
+----
+
+Now, you can test your mboxes (commits) with
+
+[source,shell]
+----
+$ test-mboxes -r $REPO -s $SUITE -a $BN-patchtest -p $(git merge-base master $BN) $BN-mboxes
+----
+
+A new branch, called `$BN-patchtest` is created, containing the tested mboxes with the results
+included as git-notes. You can review the notes to see the results and in case of failure, you
+can run the offending mbox using 'patchtest' directly
+
+[source,shell]
+----
+$ patchtest $BN-mboxes/0001-* -s $SUITE
+----
+
+==== Monitoring a patchwork instance
+
+The following lines can be collected into a single a script, and call it from a cronjob
+
+[source,shell]
+----
+$ TSFILE="$REPO/.git-pw.$PROJECT.poll.timestamp"
+$ CRONDIR="$(test -f $TSFILE && cat $TSFILE || date --iso-8601 | tee $TSFILE)"
+$ MBOXDIR="$CRONDIR/mbox"
+$ RESULTSDIR="$CRONDIR/results"
+$ fetch-mboxes -r $REPO -m $MBOXDIR
+----
+
+If test execution is done at host (insecure as explained in the <<guest,guest>> section), run
+
+[source,shell]
+----
+$ test-mboxes  -r $REPO -s $SUITE -o $RESULTSDIR $MBOXDIR
+----
+
+otherwise follow the 'qemu' instructions to launch and execute these.

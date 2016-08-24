@@ -6,11 +6,13 @@
 . <<host, Host Installation and Execution>>
 . <<guest, Host Installation and Guest execution>>
 . <<usage, Patchtest command line usage>>
+. <<scripts, Scripts>>
 . <<pw, Patchwork Repository Configuration>>
 
 include::doc/intro.adoc[]
 include::doc/host.adoc[]
 include::doc/guest.adoc[]
 include::doc/usage.adoc[]
+include::doc/scripts.adoc[]
 include::doc/pw.adoc[]
 
