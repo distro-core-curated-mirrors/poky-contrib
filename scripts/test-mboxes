@@ -28,9 +28,42 @@ assemblebranch=''
 startpoint='HEAD'
 outputdir='results'
 
+function testpatch() {
+    local patch="$1"
+
+    echo -e "${patch}"
+
+    # run patchtest
+    RESULTS=$(patchtest $patch --repo-dir $repodir --start-dir $startdir 2> /dev/null)
+
+    # if output dir given, place results there inside mboxes as git notes
+    if [ -n "$outputdir" ]; then
+	patchfn=$(basename $patch)
+	echo "$RESULTS" > $outputdir/${patchfn}
+	echo -e "\tResults stored into '$outputdir'"
+    fi
+
+    # if assemble branch give, try to assemble as many as possible
+    if [ -n "$assemblebranch" ]; then
+	# move the assemblebranch
+	git checkout $assemblebranch --quiet
+
+	# try patch merge
+	if git apply --check $patch 2> /dev/null; then
+	    git am --quiet $patch 2> /dev/null
+	    git notes add -m "$RESULTS"
+	    echo -e "\tPatch merged into '${assemblebranch}' with results as git-notes"
+	else
+	    echo -e "\tNot merged due to a merge-conflict"
+	fi
+	git checkout $CURRENTB --quiet
+    fi
+    echo -e ""
+}
+
 function usage() {
     cat << EOF
-\$ $(basename $0) -r <repodir> -s <startdir> -a <assemble branch> -p <start point> -o <outputdir> <patch> ...
+\$ $(basename $0) -r <repodir> -s <startdir> -a <assemble branch> -p <start point> -o <outputdir> (mboxdir | <patch>) ...
 
 where
 
@@ -39,7 +72,8 @@ where
     <assemble branch> : Branch name to assemble patches (that can be merged), including results as git-notes
     <start point>     : Start point for assemble branch. Defaults to $startpoint
     <outputdir>       : Output directory patchtest results. Defaults to $outputdir
-    <patch>           : Patch to test by patchtest
+    <mboxdir>         : Directory containing mboxes
+    <patch>           : Patch to test by patchtest.
 EOF
 >&2
 
@@ -91,34 +125,13 @@ if [ -n "$assemblebranch" ]; then
     git branch $assemblebranch $startpoint
 fi
 
-for patch in "$@"; do
-    
-    echo -e "${patch}"
-
-    # run patchtest
-    RESULTS=$(patchtest $patch --repo-dir $repodir --start-dir $startdir 2> /dev/null)
-
-    # if output dir given, place results there inside mboxes as git notes
-    if [ -n "$outputdir" ]; then
-	patchfn=$(basename $patch)
-	echo "$RESULTS" > $outputdir/${patchfn}
-	echo -e "\tResults stored into '$outputdir'"
-    fi
-
-    # if assemble branch give, try to assemble as many as possible
-    if [ -n "$assemblebranch" ]; then
-	# move the assemblebranch
-	git checkout $assemblebranch --quiet
-
-	# try patch merge
-	if git apply --check $patch 2> /dev/null; then
-	    git am --quiet $patch 2> /dev/null
-	    git notes add -m "$RESULTS"
-	    echo -e "\tPatch merged into '${assemblebranch}' with results as git-notes"
-	else
-	    echo -e "\tNot merged due to a merge-conflict"
-	fi
-	git checkout $CURRENTB --quiet
-	echo -e ""
+for item in "$@"; do
+    # if item is a directory, get all files and test each
+    if [ -d $item ]; then
+	for patch in $(find $item -type f); do
+	    testpatch $patch
+	done
+    else
+	testpatch $item
     fi
 done
