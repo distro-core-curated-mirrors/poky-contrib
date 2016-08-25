@@ -26,17 +26,6 @@ class Systemdboot(oeSelfTest):
         # Build a genericx86-64/efi gummiboot image
         bitbake('mtools-native core-image-minimal')
 
-    @staticmethod
-    def _append_to_file(filename, string):
-        """
-        Used to append string to a file
-        """
-
-        content= open(filename).read()
-        if not string in content:
-            with open(filename, 'a') as f:
-                f.write('%s\n' % string)
-
     @testcase(1445)
     def test_efi_systemdboot_images_can_be_built(self):
         """
@@ -67,7 +56,7 @@ class Systemdboot(oeSelfTest):
         self.assertTrue(found, 'Systemd-Boot file %s not found' % systemdbootfile)
 
 
-    @testcase(0000)
+    @testcase(1528)
     @skipUnlessPassed('test_efi_systemdboot_images_can_be_built')
     def test_efi_systemdboot_is_built_correctly(self):
         """
@@ -91,17 +80,11 @@ class Systemdboot(oeSelfTest):
                                         'core-image-minimal-genericx86-64.hddimg')
         imagebootfile = os.path.join(get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
                                                 'bootx64.efi')
-        mtoolsrcfile = os.path.join(get_bb_var('HOME'), '.mtoolsrc')
+        mcopynative = os.path.join(get_bb_var('STAGING_BINDIR_NATIVE'), 'mcopy')
 
-
-        #Avoid errors when checking sectors
-        self._append_to_file(mtoolsrcfile, "mtools_skip_check=1")
-
-        """
-        print("-------->  %s" % mtoolsrcfile)
-        """
         #Step 1
-        runCmd('mcopy -i %s ::EFI/BOOT/bootx64.efi %s' % (systemdbootimage, imagebootfile))
+        runCmd('%s -i %s ::EFI/BOOT/bootx64.efi %s' % (mcopynative ,systemdbootimage,
+               imagebootfile))
 
         #Step 2
         found = os.path.isfile(imagebootfile)
