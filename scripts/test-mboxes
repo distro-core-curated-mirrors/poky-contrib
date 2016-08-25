@@ -29,6 +29,25 @@ assemblebranch=''
 startpoint='HEAD'
 outputdir=''
 
+function usage() {
+    cat << EOF
+\$ $(basename $0) -v -r <repodir> -s <startdir> -a <assemble branch> -p <start point> -o <outputdir> (mboxdir | <patch>) ...
+
+where
+
+    <repodir>         : Repository
+    <startdir>        : Start directory for test discovery
+    <assemble branch> : Branch name to assemble patches (that can be merged), including results as git-notes
+    <start point>     : Start point for assemble branch. Defaults to $startpoint
+    <outputdir>       : Output directory patchtest results. Defaults to $outputdir
+    <mboxdir>         : Directory containing mboxes
+    <patch>           : Patch to test by patchtest.
+EOF
+>&2
+
+    exit 1
+}
+
 function testpatch() {
     local patch="$1"
 
@@ -65,25 +84,6 @@ function testpatch() {
     fi
 
     echo -e ""
-}
-
-function usage() {
-    cat << EOF
-\$ $(basename $0) -v -r <repodir> -s <startdir> -a <assemble branch> -p <start point> -o <outputdir> (mboxdir | <patch>) ...
-
-where
-
-    <repodir>         : Repository
-    <startdir>        : Start directory for test discovery
-    <assemble branch> : Branch name to assemble patches (that can be merged), including results as git-notes
-    <start point>     : Start point for assemble branch. Defaults to $startpoint
-    <outputdir>       : Output directory patchtest results. Defaults to $outputdir
-    <mboxdir>         : Directory containing mboxes
-    <patch>           : Patch to test by patchtest.
-EOF
->&2
-
-    exit 1
 }
 
 while getopts ":r:s:p:a:o:vh" opt; do
