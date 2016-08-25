@@ -53,12 +53,15 @@ function testpatch() {
 
     echo -e "${patch}"
 
+    tmp="$(mktemp)"
     # run patchtest
-    RESULTS="$(patchtest $patch --repo-dir $repodir --start-dir $startdir 2>&1)"
+    PTRESULTS="$(patchtest $patch --repo-dir $repodir --start-dir $startdir 2>$tmp)"
+    PTLOG="$(cat $tmp)"
+    rm $tmp
 
     if [ -n "$outputdir" ]; then
 	patchfn=$(basename $patch)
-	echo "$RESULTS" > $outputdir/${patchfn}
+	echo "$PTRESULTS" > $outputdir/${patchfn}
 	echo -e "\tResults stored into '$outputdir'"
     fi
 
@@ -71,7 +74,10 @@ function testpatch() {
 	# try patch merge
 	if git apply --check $patch 2> /dev/null; then
 	    git am --quiet $patch 2> /dev/null
-	    git notes add -m "$RESULTS"
+	    git notes --ref=patchtest-results-failure add -m "$(echo "$PTRESULTS" | grep FAIL)" HEAD
+	    git notes --ref=patchtest-results-skip    add -m "$(echo "$PTRESULTS" | grep SKIP)" HEAD
+	    git notes --ref=patchtest-results-pass    add -m "$(echo "$PTRESULTS" | grep PASS)" HEAD
+	    git notes --ref=patchtest-log add -m "$PTLOG" HEAD
 	    echo -e "\tPatch merged into '${assemblebranch}' with results as git-notes"
 	else
 	    echo -e "\tNot merged due to a merge-conflict"
@@ -80,7 +86,8 @@ function testpatch() {
     fi
 
     if [ -n "$verbose" ]; then
-	echo -e "$RESULTS"
+	echo -e "$PTLOG"
+	echo -e "$PTRESULTS"
     fi
 
     echo -e ""
