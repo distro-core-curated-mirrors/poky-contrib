@@ -10,10 +10,10 @@ class Systemdboot(oeSelfTest):
 
     def _common_setup(self):
         """
-        Common setup for test cases: 1445, XXXX
+        Common setup for test cases: 1445, 1528
         """
 
-        # Set EFI_PROVIDER = "gummiboot" and MACHINE = "genericx86-64" in conf/local.conf
+        # Set EFI_PROVIDER = "systemdboot" and MACHINE = "genericx86-64" in conf/local.conf
         features = 'EFI_PROVIDER = "systemd-boot"\n'
         features += 'MACHINE = "genericx86-64"'
         self.append_config(features)
@@ -23,11 +23,11 @@ class Systemdboot(oeSelfTest):
         Common build for test cases: 1445 , XXXX
         """
 
-        # Build a genericx86-64/efi gummiboot image
+        # Build a genericx86-64/efi systemdboot image
         bitbake('mtools-native core-image-minimal')
 
     @testcase(1445)
-    def test_efi_systemdboot_images_can_be_built(self):
+    def test_efi_image_build(self):
         """
         Summary:     Check if systemd-boot images can be built correctly
         Expected:    1. File systemd-boot.efi should be available in:
@@ -57,12 +57,12 @@ class Systemdboot(oeSelfTest):
 
 
     @testcase(1528)
-    @skipUnlessPassed('test_efi_systemdboot_images_can_be_built')
-    def test_efi_systemdboot_is_built_correctly(self):
+    @skipUnlessPassed('test_efi_image_build')
+    def test_image_efi_file(self):
         """
         Summary:      Check if EFI bootloader for systemd is correctly build
-        Dependencies: Image was built correctly on testcase 1445
-        Steps:        1. Copy bootx64.efi file form the hddimg created
+        Dependencies: Image was built correctly on test case 1445
+        Steps:        1. Copy bootx64.efi file from the hddimg created
                          under build/tmp/deploy/images/genericx86-64
                       2. Check bootx64.efi was copied form hddimg
                       3. Verify the checksums from the copied and previously
@@ -82,6 +82,10 @@ class Systemdboot(oeSelfTest):
                                                 'bootx64.efi')
         mcopynative = os.path.join(get_bb_var('STAGING_BINDIR_NATIVE'), 'mcopy')
 
+        #Clean environment before start the test
+        if os.path.isfile(imagebootfile):
+            runCmd('rm -f %s' % imagebootfile)
+
         #Step 1
         runCmd('%s -i %s ::EFI/BOOT/bootx64.efi %s' % (mcopynative ,systemdbootimage,
                imagebootfile))
@@ -94,7 +98,5 @@ class Systemdboot(oeSelfTest):
         #Step 3
         result = runCmd('md5sum %s %s' % (systemdbootfile, imagebootfile))
         self.assertEqual(result.output.split()[0], result.output.split()[2],
-                         '%s was not correclty generated' % imagebootfile)
-
-        #Ensure to have a clear enviroment after execute the test
-        runCmd('rm -f %s' % imagebootfile)
+                         'checksums from %s and %s are different'
+                         % (imagebootfile, systemdbootfile))
