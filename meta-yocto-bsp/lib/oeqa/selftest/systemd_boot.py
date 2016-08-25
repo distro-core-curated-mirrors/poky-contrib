@@ -95,6 +95,3 @@ class Systemdboot(oeSelfTest):
         result = runCmd('md5sum %s %s' % (systemdbootfile, imagebootfile))
         self.assertEqual(result.output.split()[0], result.output.split()[2],
                          '%s was not correclty generated' % imagebootfile)
-
-        #Ensure to have a clear enviroment after execute the test
-        runCmd('rm -f %s' % imagebootfile)
