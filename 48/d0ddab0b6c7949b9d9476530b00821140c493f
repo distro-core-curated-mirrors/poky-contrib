@@ -1,0 +1,3 @@
+FAIL test_metadata_lic_files_chksum.LicFilesChkSum.test_lic_files_chksum_modified_not_mentioned
+FAIL test_mbox_description.Description.test_description_presence
+FAIL test_mbox_merge.Merge.test_merge
