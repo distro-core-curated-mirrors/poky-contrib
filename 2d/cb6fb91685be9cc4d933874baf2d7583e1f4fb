@@ -1,0 +1,2 @@
+FAIL test_mbox_bugzilla.Bugzilla.test_bugzilla_entry_format
+FAIL test_mbox_merge.Merge.test_merge
