@@ -4,8 +4,9 @@
 Under the 'scripts' folder, there are several scripts that can be useful
 with the following purposes:
 
-* 'fetch-mboxes': Fetch mboxes from a patchwork instance
-* 'test-mboxes' : Test one or more mboxes, possible assembling these into into a git-branch
+* 'fetch-mboxes': Fetch mboxes from a patchwork instance and place these into a directory
+* 'test-mboxes' : Test one or more mboxes, possible assembling these into into a git-branch and/or
+collecting results into a repository
 
 The following subsections describe some possible scenarios. Before proceding, examples assume the
 following environment variables already defined:
@@ -29,12 +30,20 @@ Now, you can test your mboxes (commits) with
 
 [source,shell]
 ----
-$ test-mboxes -r $REPO -s $SUITE -a $BN-patchtest -p $(git merge-base master $BN) $BN-mboxes
+$ test-mboxes -r $REPO -s $SUITE -o $BN-patchtest $BN-mboxes
 ----
 
-A new branch, called `$BN-patchtest` is created, containing the tested mboxes with the results
-included as git-notes. You can review the notes to see the results and in case of failure, you
-can run the offending mbox using 'patchtest' directly
+The directory '$BN-patchtest' is in repository where you can review the patchtest results
+with
+
+[source,shell]
+-----
+$ cd $BN-patchtest
+$ git log --show-notes=patchtest-results-*
+----
+
+If you do not care about storing a results, you can always use the base script with a
+certain patch
 
 [source,shell]
 ----
@@ -43,14 +52,14 @@ $ patchtest $BN-mboxes/0001-* -s $SUITE
 
 ==== Monitoring a patchwork instance
 
-The following lines can be collected into a single a script, and call it from a cronjob
+The following command lines can be collected into a single a script, and call it from a cronjob
 
 [source,shell]
 ----
 $ TSFILE="$REPO/.git-pw.$PROJECT.poll.timestamp"
-$ CRONDIR="$(test -f $TSFILE && cat $TSFILE || date --iso-8601 | tee $TSFILE)"
-$ MBOXDIR="$CRONDIR/mbox"
-$ RESULTSDIR="$CRONDIR/results"
+$ TS="$(test -f $TSFILE && cat $TSFILE || date --iso-8601 | tee $TSFILE)"
+$ MBOXDIR="$TS/mbox"
+$ RESULTSDIR="$TS/results"
 $ fetch-mboxes -r $REPO -m $MBOXDIR
 ----
 
@@ -58,7 +67,14 @@ If test execution is done at host (insecure as explained in the <<guest,guest>> 
 
 [source,shell]
 ----
-$ test-mboxes  -r $REPO -s $SUITE -o $RESULTSDIR $MBOXDIR
+$ test-mboxes  -r $REPO -s $SUITE -o $RESULTSDIR -a $TS-patchtest $MBOXDIR
 ----
 
-otherwise follow the 'qemu' instructions to launch and execute these.
+where `$RESULTSDIR` would contain the results from those mboxes (stored on `$MBOXDIR`)
+fetched from a particular timestamp, defined by `$TS`. As explained before, commits on
+`$RESULTSDIR` have git-notes, so you can review them with
+
+[source,shell]
+----
+$ git log --show-notes=patchtest-results-*
+----
