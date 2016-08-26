@@ -71,6 +71,10 @@ class Repo(object):
     def commit(self):
         return self._commit
 
+    @property
+    def patchmerged(self):
+        return self._patchmerged
+
     def _exec(self, cmds):
         _cmds = []
         if isinstance(cmds, dict):
