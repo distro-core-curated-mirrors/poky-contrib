@@ -1,0 +1,2 @@
+FAIL test_patch_upstream_status.PatchUpstreamStatus.test_upstream_status_format
+FAIL test_mbox_merge.Merge.test_merge
