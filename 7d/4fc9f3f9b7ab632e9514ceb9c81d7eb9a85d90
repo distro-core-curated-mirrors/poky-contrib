@@ -1,0 +1,17 @@
+----------------------------------------------------------------------
+Ran 4 tests in 16.564s
+
+OK
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/case.py", line 329, in run
+    testMethod()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 43, in wrapper
+    return f(*args, **kwds)
+  File "/home/lsandov1/repos/patchtest-oe/tests/test_python_pylint.py", line 69, in test_pylint
+    test.remove(pretest.pop(0))
+ValueError: list.remove(x): x not in list
+None
+----------------------------------------------------------------------
+Ran 25 tests in 3.225s
+
+OK
