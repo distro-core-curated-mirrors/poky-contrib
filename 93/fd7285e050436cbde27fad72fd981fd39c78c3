@@ -1,0 +1,3 @@
+SKIP test_sample.Sample.test_mbox
+SKIP test_sample.Sample.test_patchset
+SKIP tests_patch_trailing_spaces.TrailingSpaces.test_patch_trailing_spaces
