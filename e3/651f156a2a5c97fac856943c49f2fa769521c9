@@ -1,0 +1,53 @@
+----------------------------------------------------------------------
+Ran 4 tests in 0.131s
+
+OK
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/case.py", line 329, in run
+    testMethod()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 43, in wrapper
+    return f(*args, **kwds)
+  File "/home/lsandov1/repos/patchtest-oe/tests/test_metadata_src_uri.py", line 53, in test_src_uri_checksums_not_changed
+    payload = str(patch)
+UnicodeEncodeError: 'ascii' codec can't encode characters in position 563-564: ordinal not in range(128)
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/case.py", line 329, in run
+    testMethod()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 43, in wrapper
+    return f(*args, **kwds)
+  File "/home/lsandov1/repos/patchtest-oe/tests/test_metadata_src_uri.py", line 24, in test_src_uri_left_files
+    payload = str(patch)
+UnicodeEncodeError: 'ascii' codec can't encode characters in position 563-564: ordinal not in range(128)
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/case.py", line 329, in run
+    testMethod()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 43, in wrapper
+    return f(*args, **kwds)
+  File "/home/lsandov1/repos/patchtest-oe/tests/test_patch_signed_off_by.py", line 47, in test_signed_off_by_presence
+    payload = str(newpatch)
+UnicodeEncodeError: 'ascii' codec can't encode characters in position 563-564: ordinal not in range(128)
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/case.py", line 329, in run
+    testMethod()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 43, in wrapper
+    return f(*args, **kwds)
+  File "/home/lsandov1/repos/patchtest-oe/tests/test_patch_upstream_status.py", line 75, in test_upstream_status_format
+    payload = str(newpatch)
+UnicodeEncodeError: 'ascii' codec can't encode characters in position 563-564: ordinal not in range(128)
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/case.py", line 329, in run
+    testMethod()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 43, in wrapper
+    return f(*args, **kwds)
+  File "/home/lsandov1/repos/patchtest-oe/tests/test_patch_upstream_status.py", line 55, in test_upstream_status_presence
+    payload = str(newpatch)
+UnicodeEncodeError: 'ascii' codec can't encode characters in position 563-564: ordinal not in range(128)
+None
+----------------------------------------------------------------------
+Ran 25 tests in 0.244s
+
+OK
