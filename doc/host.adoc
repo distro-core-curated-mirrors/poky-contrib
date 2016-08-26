@@ -52,7 +52,7 @@ the requirements
 [source,shell]
 ----
 $ cd $PW/git-pw; pip install -r requirements.txt
-$ cd $PWOE; pip install -r requirements.txt
+$ cd $PTOE; pip install -r requirements.txt
 ----
 
 The tool is ready to be used. It is worth mentioned again that the above
