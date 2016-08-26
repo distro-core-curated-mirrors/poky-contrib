@@ -1,0 +1,134 @@
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+----------------------------------------------------------------------
+Ran 0 tests in 0.107s
+
+OK
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 86, in setUpClass
+    cls.shortlogs     = [shortlog(msg['subject']) for msg in cls.mbox]
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 69, in shortlog
+    start = shlog.find(']', 0, shlog.find(':'))
+AttributeError: 'NoneType' object has no attribute 'find'
+None
+----------------------------------------------------------------------
+Ran 3 tests in 0.096s
+
+OK
