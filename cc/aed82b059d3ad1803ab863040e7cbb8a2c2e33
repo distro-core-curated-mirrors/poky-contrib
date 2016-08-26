@@ -1,0 +1,218 @@
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+----------------------------------------------------------------------
+Ran 0 tests in 0.100s
+
+OK
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/unittest/suite.py", line 146, in _handleClassSetUp
+    setUpClass()
+  File "/home/lsandov1/repos/patchtest-oe/tests/base.py", line 82, in setUpClass
+    cls.patchset = PatchSet(f, encoding=u'UTF-8')
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 278, in __init__
+    self._parse(data, encoding=encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 320, in _parse
+    current_file._parse_hunk(line, diff, encoding)
+  File "/usr/local/lib/python2.7/dist-packages/unidiff/patch.py", line 190, in _parse_hunk
+    line = line.decode(encoding)
+  File "/usr/lib/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xa7 in position 27: invalid start byte
+None
+----------------------------------------------------------------------
+Ran 3 tests in 0.107s
+
+OK
