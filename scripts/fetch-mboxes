@@ -23,29 +23,35 @@
 # defaults values
 repodir=''
 mboxdir='mboxes'
+since=''
 
 function usage() {
     cat << EOF
-\$ $(basename $0) -r <repodir> -m <mboxdir> <series[.revision]> ...
+\$ $(basename $0) -r <repodir> -m <mboxdir> -s <timestamp> [<series[.revision]> ...]
 
 where
 
     <repodir>            : Repository
     <mboxdir>            : Directory where mboxes are stored. Defaults to $mboxdir
-    <series[.revision]>  : Series id, with an optional revision. If not given, it will poll-events since the timestamp defined on .git-pw
+    <timestamp>          : Poll events since the defined timestamp
+    <series[.revision]>  : Series id, with an optional revision. If not given,
+                           it will poll-events using <timestamp> or using the one from the .git-pw file
 EOF
 >&2
 
     exit 1
 }
 
-while getopts ":r:m:h" opt; do
+while getopts ":r:m:s:h" opt; do
     case $opt in
 	r)
 	    repodir=$OPTARG
 	    ;;
 	m)
 	    mboxdir=$OPTARG
+	    ;;
+	s)
+	    since=$OPTARG
 	    ;;
 	h)
 	    usage
@@ -66,9 +72,10 @@ shift $((OPTIND-1))
 [ ! -d $repodir ]   && { echo "Repository does not exit"; usage; }
 
 series="$@"
+
 # events come in pairs separated by a dot
 if [ -z "$series" ]; then
-    series="$(poll-events $repodir)"
+    series="$(poll-events $repodir $since)"
 fi
 
 if [ -n "$series" ]; then
@@ -78,7 +85,7 @@ if [ -n "$series" ]; then
     # fetch series
     for s in $series; do
 	sid="$(echo $s | cut -d. -f1)"
-	cmd="git pw mbox $sid --link"
+	cmd="git pw mbox $sid --link --link-name $s"
 	# in case there is revision, consider it
 	if echo $s | grep '\.' --quiet; then
 	    rid="$(echo $s | cut -d. -f2)"

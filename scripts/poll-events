@@ -24,20 +24,26 @@ from json import loads
 from subprocess import check_output, CalledProcessError
 from os.path import exists, join
 
-def pollseries(repodir, pwproject):
-    listseriesrev = []
-    cmd           = 'cd %s;git pw poll-events --name series-new-revision' % repodir
-    timestamp     = '.git-pw.%s.poll.timestamp' % pwproject
+def pollseries(repodir, pwproject, since):
+    listseriesrev = list()
+    events = str()
+    cmd = 'cd %s;git pw poll-events --name series-new-revision' % repodir
 
-    if exists(join(repodir, timestamp)):
+    if since:
+        cmd += " --since %s" % since
         events = check_output(cmd, shell=True)
-        for event in events.splitlines():
-            series = loads(event)
-            listseriesrev.append((series['series'], series['parameters']['revision']))
     else:
-        # just consume all events
-        while check_output(cmd, shell=True):
-            pass
+        timestamp = '.git-pw.%s.poll.timestamp' % pwproject
+        if exists(join(repodir, timestamp)):
+            events = check_output(cmd, shell=True)
+        else:
+            # just consume all events
+            while check_output(cmd, shell=True):
+                pass
+
+    for event in events.splitlines():
+        series = loads(event)
+        listseriesrev.append((series['series'], series['parameters']['revision']))
 
     return ' '.join(['.'.join([str(s),str(r)]) for s,r in listseriesrev])
 
@@ -49,6 +55,11 @@ If timestamp not present, it polls all series and no series are printed""")
     parser.add_argument('repodir',
                         help='Repository where polling is done')
 
+    parser.add_argument('since',
+                        nargs='?',
+                        default=None,
+                        help='Poll events since the given timestamp')
+
     parser.add_argument('--project',
                         dest='project',
                         default='oe-core',
@@ -58,7 +69,7 @@ If timestamp not present, it polls all series and no series are printed""")
 
     ret = 1
     try:
-        print pollseries(args.repodir, args.project)
+        print pollseries(args.repodir, args.project, args.since)
         ret = 0
     except CalledProcessError as cpe:
         print 'make sure you have patchwork git-pw installed'

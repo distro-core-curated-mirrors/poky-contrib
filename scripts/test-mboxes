@@ -138,16 +138,13 @@ while getopts ":r:s:p:a:o:vh" opt; do
 done
 shift $((OPTIND-1))
 
-# check input data presence
+# Checks
 test -z "$@" && { echo -e "Provide at least a patch or a patch directory"; usage; }
-
 test -z "$repodir"  && { echo "Indicate the repository"; usage; }
 test ! -d $repodir  && { echo "Repository does not exit"; usage; }
 test ! -d $startdir && { echo "Test suite starting directory does not exist"; usage; }
-test ! -d $outrepodir && { (mkdir -p $outrepodir; cd $outrepodir;  git init) }
-
-# check if outrepodir is a git repo
-test ! -d $outrepodir/.git && { echo "$outrepodir is not a git repo"; usage; }
+test -n "$outrepodir" && { test ! -d $outrepodir && { (mkdir -p $outrepodir; cd $outrepodir;  git init) }; }
+test -n "$outrepodir" && { test ! -d $outrepodir/.git && { echo "$outrepodir is not a git repo"; usage; }; }
 
 # get current branch
 CURRENTB=$(git rev-parse --abbrev-ref HEAD)
