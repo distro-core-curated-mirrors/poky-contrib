@@ -129,9 +129,8 @@ def getResult(patch, mergepatch):
             # in case there was an error on repo object creation, just return
             if self.repo_error:
                 return
-            else:
-                if mergepatch:
-                    self.repo.clean()
+
+            self.repo.clean()
 
     return PatchTestResult
 

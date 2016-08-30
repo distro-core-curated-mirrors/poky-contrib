@@ -44,20 +44,29 @@ class Repo(object):
                        self._get_commitid(self._patch.branch) or \
                        self._current_branch
 
-        self._commit = self._get_commitid(commit) or \
-                       self._get_commitid('HEAD')
+        self._commit = self._get_commitid(commit) or self._get_commitid('HEAD')
 
-        self._mergebranch = "%s_%s" % (Repo.prefix, os.getpid())
+        self._workingbranch = "%s_%s" % (Repo.prefix, os.getpid())
+
+        # create working branch
+        self._exec({'cmd': ['git', 'checkout', '-b', self._workingbranch, self._commit]})
 
         self._patchmerged = False
 
+        # Check if patch can be merged
+        self._patchcanbemerged = True
+        try:
+            self._exec({'cmd': ['git', 'apply', '--check', '--verbose'], 'input': self._patch.contents})
+        except utils.CmdException as ce:
+            self._patchcanbemerged = False
+
         # for debugging purposes, print all repo parameters
         logger.debug("Parameters")
-        logger.debug("\tRepository: %s" % self._repodir)
-        logger.debug("\tBase Commit: %s" % self._commit)
-        logger.debug("\tBase Branch: %s" % self._branch)
-        logger.debug("\tMergebranch: %s" % self._mergebranch)
-        logger.debug("\tPatch: %s" % self._patch)
+        logger.debug("\tRepository     : %s" % self._repodir)
+        logger.debug("\tBase Commit    : %s" % self._commit)
+        logger.debug("\tBase Branch    : %s" % self._branch)
+        logger.debug("\tWorking branch : %s" % self._workingbranch)
+        logger.debug("\tPatch          : %s" % self._patch)
 
     @property
     def patch(self):
@@ -72,8 +81,12 @@ class Repo(object):
         return self._commit
 
     @property
-    def patchmerged(self):
+    def ismerged(self):
         return self._patchmerged
+
+    @property
+    def canbemerged(self):
+        return self._patchcanbemerged
 
     def _exec(self, cmds):
         _cmds = []
@@ -123,24 +136,13 @@ class Repo(object):
         return None
 
     def merge(self):
-        # try patching
-        try:
-            self._exec([{'cmd': ['git', 'checkout', self._commit]},
-                        {'cmd': ['git', 'apply', '--check', '--verbose'],
-                         'input': self._patch.contents}])
-        except utils.CmdException as ce:
-            # if fail move back to base branch
-            self._exec({'cmd':['git', 'checkout', '%s' % self._current_branch]})
-            return False
-
-        # create the branch and am (apply) patch
-        self._exec([{'cmd': ['git', 'checkout', '-b', self._mergebranch, self._commit]},
-                    {'cmd': ['git', 'am'], 'input': self._patch.contents, 'updateenv': {'PTRESOURCE':self._patch.path}}])
-
-        self._patchmerged = True
-        return True
+        if self._patchcanbemerged:
+            self._exec({'cmd': ['git', 'am'],
+                        'input': self._patch.contents,
+                        'updateenv': {'PTRESOURCE':self._patch.path}})
+            self._patchmerged = True
 
     def clean(self):
         self._exec([{'cmd':['git', 'checkout', '%s' % self._current_branch]},
-                    {'cmd':['git', 'branch', '-D', self._mergebranch], 'ignore_error':True}])
-
+                    {'cmd':['git', 'branch',   '-D', self._workingbranch]}])
+        self._patchmerged = False
