@@ -75,7 +75,7 @@
                     recipe"></span>
                     Layer branch
                 </dt>
-                {% if layer_version.layer.local_source_dir %}
+                {% if layer_version.layer.local_source_dir or not layer_version.layer.branch %}
                 <dd>
 		  <span class="text-muted">Not applicable</span>
 		  <span class="glyphicon glyphicon-question-sign get-help" title="The source
@@ -90,7 +90,7 @@
                         commit of the layer providing the recipe"></span>
                     Layer commit
                 </dt>
-                {% if layer_version.layer.local_source_dir %}
+                {% if layer_version.layer.local_source_dir or not layer_version.layer.commit %}
 		<dd>
 		  <span class="text-muted">Not applicable</span>
 		  <span class="glyphicon glyphicon-question-sign get-help" title="The source
