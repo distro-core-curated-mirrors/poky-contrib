@@ -53,7 +53,7 @@
           <tbody>{% for lv in build.layer_version_build.all|dictsort:"layer.name" %}
           <tr>
             <td>{{lv.layer.name}}</td>
-	    {% if lv.layer.local_source_dir %}
+	    {% if lv.layer.local_source_dir or not lv.branch or not lv.commit %}
 	    <td>
 	      <span class="text-muted">Not applicable</span>
 	      <span class="glyphicon glyphicon-question-sign get-help" data-original-title="" title="The source code of {{lv.layer.name}} is not in a Git repository, so there is no branch associated with it"> </span>
@@ -61,7 +61,7 @@
 	    {% else %}
             <td>{{lv.branch}}</td>
 	    {% endif %}
-	    {% if lv.layer.local_source_dir %}
+	    {% if lv.layer.local_source_dir or not lv.branch or not lv.commit %}
 	    <td>
 	      <span class="text-muted">Not applicable</span>
 	      <span class="glyphicon glyphicon-question-sign get-help" data-original-title="" title="The source code of {{lv.layer.name}} is not in a Git repository, so there is no commit associated with it"> </span>
