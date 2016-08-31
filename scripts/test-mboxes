@@ -81,18 +81,22 @@ function testpatch() {
     if [ -n "$assemblebranch" ]; then
 	# if assemble branch give, try to assemble as many as possible
 
-	# move the assemblebranch
-	git checkout $assemblebranch --quiet
+	(
+	    cd $repodir
+	    # move the assemblebranch
+	    git checkout $assemblebranch --quiet
 
-	# try patch merge
-	if git apply --check $patch 2> /dev/null; then
-	    git am --quiet $patch 2> /dev/null
-	    gitnotes
-	    echo -e "\tPatch merged into '${assemblebranch}' with results as git-notes"
-	else
-	    echo -e "\tNot merged due to a merge-conflict"
-	fi
-	git checkout $CURRENTB --quiet
+	    # try patch merge
+	    if git apply --check $patch 2> /dev/null; then
+		git am --quiet $patch 2> /dev/null
+		gitnotes
+		echo -e "\tPatch merged into '${assemblebranch}' with results as git-notes"
+	    else
+		echo -e "\tNot merged due to a merge-conflict"
+	    fi
+
+	    git checkout $CURRENTB --quiet
+	)
     fi
 
     if [ -n "$verbose" ]; then
@@ -151,7 +155,7 @@ CURRENTB="$(cd $repodir; git rev-parse --abbrev-ref HEAD)"
 
 # create assemblebrach
 if [ -n "$assemblebranch" ]; then
-    git branch $assemblebranch $startpoint
+    (cd $repodir; git branch $assemblebranch $startpoint)
 fi
 
 for item in "$@"; do
