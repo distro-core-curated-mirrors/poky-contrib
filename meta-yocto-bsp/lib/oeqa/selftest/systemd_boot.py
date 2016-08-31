@@ -98,5 +98,9 @@ class Systemdboot(oeSelfTest):
         #Step 3
         result = runCmd('md5sum %s %s' % (systemdbootfile, imagebootfile))
         self.assertEqual(result.output.split()[0], result.output.split()[2],
+<<<<<<< HEAD
                          'checksums from %s and %s are different'
                          % (imagebootfile, systemdbootfile))
+=======
+                         '%s was not correclty generated' % imagebootfile)
+>>>>>>> contrib/joseperez/systemd_2ndTC
