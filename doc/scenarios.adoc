@@ -1,0 +1,125 @@
+[[scenarios]]
+=== Secundary scripts and common scenarios
+
+The script `patchtest` is the only script you would use in case you are testing a single
+mbox and you do not really care about storing the results. These section cover others scripts,
+secondary scripts, in the sense that these sit on top of `patchtest`,
+that can help you the process of fetching mboxes from patchwork instance and/or
+testing and collecting the results into repository.
+
+There are two main scripts
+
+* 'fetch-mboxes': Fetch mboxes from a patchwork instance and place these into a output folder
+* 'test-mboxes' : Test one or more mboxes, possible assembling these into into a git-branch and/or
+collecting results into a repository.
+
+In the next scenarios using the above scripts, we asssume that fetching and testing is done at
+the same machine (host), so as explained in the <<host, host>> section, this is insecure if patches
+are taken automatically without supervision. Before proceeding, examples assume the following environment variables
+already defined (see sections<<env-vars, host>> for more information about these variables)
+
+* `REPO`      : Path to a patchwork configured repository and make sure the repo is (patchwork)
+configured as indicated on the <<pw-project-config, pw-config>> section.
+* `SUITE`     : Starting directory of the test suite
+
+[[fetching-mboxes]]
+==== Fetching mboxes
+
+In case you want want to fetch one ore more mboxes from a patchwork instance, you can do it in several ways:
+
+Fetching a particular series/revision:
+
+[source, shell]
+----
+fetch-mboxes -r $REPO 2017.1
+----
+
+In the above command, if no revision is provided (no `.1`), it will take the latest revision.
+
+Fetching mboxes since a timestamp (and stored into a specific folder)
+
+[source, shell]
+----
+fetch-mboxes -r $REPO -m $HOME/mboxes -s 2016-08-31
+----
+
+Or fetch latest mboxes since last git-pw poll
+
+[source, shell]
+----
+fetch-mboxes -r $REPO -m $HOME/mboxes
+----
+
+This last command has a side-effect: it uses the `git-pw` tool to poll new events, so the later
+updates the timestamp file ('$REPO/git-pw.<project>.poll.timestmap'). As a result, this tool
+can be used to fetch new patches that have arrived to the mailing list through a cronjob as
+describe in the <<cronjob, cronjob>> section.
+
+WARNING: if the 'git-pw.<project>.poll.timestamp' file is not represent, it will poll events but will
+not produce any mboxes. This avoids fetching many mboxes which may be not the desired behavior.
+
+[[storing-results]]
+==== Storing results
+
+You may need to stored the results that the `patchtest` script yields. Let's say you have some
+mboxes in a particular folder ('mboxes') so you need to test them and store results into 'results'
+
+[source,shell]
+----
+test-mboxes -r $REPO -s $START -o $HOME/results $HOME/mboxes
+----
+
+The output directory 'results' is a repository where you can review the patchtest results.
+Each commit on this repository corresponds to a particular mbox where the former includes the
+mbox and the results as git-notes.
+
+NOTE: On this repository, mboxes do not necessary apply into the main repository (`$REPO`) and if
+these need to be apply into a branch, there is another option (`-a`) to be discussed in the
+<<assembling-mboxes, next>>.
+
+To review the results, just `cd` into 'results' and `git-log` or `git-show` with notes
+
+[source,shell]
+-----
+git log --show-notes=patchtest-results-*
+----
+
+[[assembling-mboxes]]
+=== Assembling tested mboxes
+
+Besides <<storing-results,storing results>>, one may be interested in assembling these into brach after testing:
+
+[source,shell]
+----
+test-mboxes -r $REPO -s $START -a patchtest-branch mboxes
+----
+
+By default, the new branch created (`patchtest-branch` in this case) is checkout from `HEAD`, however one
+can indicated another starting point with the parameter `-p`. As in the `-o` case, the branch can be visited
+and commits review with standard `git-log/show` where results are stored as `git-notes`.
+
+[[cronjob]]
+==== A cronjob for automatic testing
+
+One way to monitor new patches coming into a patchwork instance is to collect the following lines
+into a script and call it from a cronjob:
+
+[source,shell]
+----
+TS="$(date +%s)"
+MBOXES="$TS/mboxes"
+RESULTS="$TS/results"
+(cd $REPO; git pull)
+fetch-mboxes -r $REPO -m $MBOXES
+test-mboxes  -r $REPO -s $START -o $RESULTS $MBOXES
+----
+
+Each time the cronjob runs, there would be a unique folder (based on the timestamp) containing mboxes
+and test results. Results can be inspected or push them to upstream if desire. For this last point,
+`git-notes` are not pushed upstream when pushing a branch, so these needs to be done separately
+
+[source,shell]
+----
+git push origin refs/notes/patchtest-*
+----
+

@@ -10,12 +10,12 @@ as indicated on the <<guest, guest >> section.
 
 [source,shell]
 ----
-$ BASE=$PWD/pt
-$ PW=$BASE/patchwork
-$ PT=$BASE/patchtest
-$ PTOE=$BASE/patchtest-oe
-$ SUITE=$PTOE/tests
-$ OECORE=$BASE/openembedded-core
+BASE=$PWD/pt
+PW=$BASE/patchwork
+PT=$BASE/patchtest
+SUITE=$BASE/patchtest-oe
+START=$SUITE/tests
+REPO=$BASE/openembedded-core
 -----
 
 [[cloning]]
@@ -27,12 +27,12 @@ constantly.
 
 [source,shell]
 ----
-$ mkdir $BASE
-$ git clone https://github.com/dlespiau/patchwork.git $PW
-$ git clone ssh://git@git.yoctoproject.org/patchtest $PT
-$ git clone ssh://git@git.yoctoproject.org/patchtest-oe $PTOE
-$ git clone git://git.openembedded.org/openembedded-core $OECORE
-$ export PATH="$PATH:$PW/git-pw/:$PT"
+mkdir $BASE
+git clone https://github.com/dlespiau/patchwork.git $PW
+git clone ssh://git@git.yoctoproject.org/patchtest $PT
+git clone ssh://git@git.yoctoproject.org/patchtest-oe $SUITE
+git clone git://git.openembedded.org/openembedded-core $REPO
+export PATH="$PATH:$PW/git-pw/:$PT"
 ----
 
 [[path]]
@@ -40,7 +40,7 @@ $ export PATH="$PATH:$PW/git-pw/:$PT"
 
 [source,shell]
 ----
-$ export PATH="$PATH:$PW/git-pw/:$PT"
+export PATH="$PATH:$PW/git-pw/:$PT"
 ----
 
 [[requirements]]
@@ -51,8 +51,8 @@ the requirements
 
 [source,shell]
 ----
-$ cd $PW/git-pw; pip install -r requirements.txt
-$ cd $PTOE; pip install -r requirements.txt
+cd $PW/git-pw; pip install -r requirements.txt
+cd $SUITE; pip install -r requirements.txt
 ----
 
 The tool is ready to be used. It is worth mentioned again that the above

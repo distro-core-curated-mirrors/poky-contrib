@@ -9,13 +9,13 @@ steps. In this section we focus on simple usages of the tool.
 
 [source,shell]
 ----
-$ cd $OECORE
-$ git format-patch -1 --stdout | patchtest - --start-directory $SUITE
+cd $REPO
+git format-patch -1 --stdout | patchtest - --start-directory $START
 ----
 
 or as parameter
 
 [source,shell]
 ----
-$ patchtest somepatch.patch --start-directory $SUITE
+patchtest somepatch.patch --start-directory $START
 ----

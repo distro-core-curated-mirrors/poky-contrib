@@ -13,7 +13,7 @@ faster the code cycle ('code-test-code').
 
 [source, shell]
 ----
-$ $PT/scripts/poll $OECORE $BASE
+$PT/scripts/poll $OECORE $BASE
 ----
 
 The above script will create a new folder under '$BASE' containing the mboxes for every
@@ -27,19 +27,19 @@ for more information, specially the Yocto Project Quick Start Guide document.
 
 [source,shell]
 ----
-$ cd $BASE
-$ git clone git://git.yoctoproject.org/poky
-$ cd poky
-$ . oe-init-build-env
-$ echo "BBLAYERS += \"$PT/meta-patchtest\"' >> conf/bblayers.conf
-$ bitbake core-image-patchtest
+cd $BASE
+git clone git://git.yoctoproject.org/poky
+cd poky
+. oe-init-build-env
+echo "BBLAYERS += \"$PT/meta-patchtest\"' >> conf/bblayers.conf
+bitbake core-image-patchtest
 ----
 
 * Launch (from the Poky 'build' folder) the 'qemu' machine with the following parameters
 
 [source, shell]
 ----
-$ runqemu qemux86 \
+runqemu qemux86 \
 	core-image-patchtest \
 	nographic \
 	kvm \
@@ -64,15 +64,15 @@ For security reasons, remove the 'qemu' machine
 
 [source,shell]
 ----
-$ cd $POKY/build
-$ bitbake -c cleanall core-image-minimal
+cd $POKY/build
+bitbake -c cleanall core-image-minimal
 ----
 
 * Finally, in case results need to be posted into the 'patchwork' instance, execute the following script
 
 [source, shell]
 ----
-build$ $PTOE/scripts/post $OECORE $BASE/latest-results
+build$PTOE/scripts/post $OECORE $BASE/latest-results
 ----
 
 where '$BASE/latest-results' contains previous results executed on guest.
