@@ -106,7 +106,7 @@ into a script and call it from a cronjob:
 
 [source,shell]
 ----
-TS="$(date +%s)"
+TS="cronjob/$(date +%s)"
 MBOXES="$TS/mboxes"
 RESULTS="$TS/results"
 (cd $REPO; git pull)
