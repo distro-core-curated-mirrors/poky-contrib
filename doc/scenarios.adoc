@@ -47,7 +47,7 @@ Or fetch latest mboxes since last git-pw poll
 
 [source, shell]
 ----
-fetch-mboxes -r $REPO -m $HOME/mboxes
+fetch-mboxes -r $REPO -m $REPO/mboxes
 ----
 
 This last command has a side-effect: it uses the `git-pw` tool to poll new events, so the later
@@ -91,7 +91,7 @@ Besides <<storing-results,storing results>>, one may be interested in assembling
 
 [source,shell]
 ----
-test-mboxes -r $REPO -s $START -a patchtest-branch mboxes
+test-mboxes -r $REPO -s $START -a patchtest-branch $HOME/mboxes
 ----
 
 By default, the new branch created (`patchtest-branch` in this case) is checkout from `HEAD`, however one
