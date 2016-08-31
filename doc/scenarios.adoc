@@ -20,7 +20,7 @@ already defined (see sections<<env-vars, host>> for more information about these
 
 * `REPO`      : Path to a patchwork configured repository and make sure the repo is (patchwork)
 configured as indicated on the <<pw-project-config, pw-config>> section.
-* `SUITE`     : Starting directory of the test suite
+* `START`     : Starting directory of the test suite
 
 [[fetching-mboxes]]
 ==== Fetching mboxes
