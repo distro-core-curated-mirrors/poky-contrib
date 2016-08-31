@@ -100,4 +100,3 @@ class Systemdboot(oeSelfTest):
         self.assertEqual(result.output.split()[0], result.output.split()[2],
                          'checksums from %s and %s are different'
                          % (imagebootfile, systemdbootfile))
->>>>>>> contrib/joseperez/systemd_2ndTC
