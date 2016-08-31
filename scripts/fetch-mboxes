@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 # ex:ts=4:sw=4:sts=4:et
 # -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
@@ -22,7 +22,7 @@
 
 # defaults values
 repodir=''
-mboxdir='mboxes'
+mboxdir='.'
 since=''
 
 function usage() {
@@ -71,6 +71,7 @@ shift $((OPTIND-1))
 [ -z "$repodir" ]   && { echo "Indicate the repository"; usage; }
 [ ! -d $repodir ]   && { echo "Repository does not exit"; usage; }
 
+repodir=$(realpath -e $repodir)
 series="$@"
 
 # events come in pairs separated by a dot
@@ -79,8 +80,12 @@ if [ -z "$series" ]; then
 fi
 
 if [ -n "$series" ]; then
+
     # create the mbox directory in case it does not exit
-    [ ! -d $mboxdir ] && { mkdir -p $mboxdir; }
+    test ! -d "$mboxdir" && { mkdir -p $mboxdir; }
+
+    # get the real path
+    mboxdir=$(realpath -e $mboxdir)
 
     # fetch series
     for s in $series; do
@@ -90,11 +95,15 @@ if [ -n "$series" ]; then
 	if echo $s | grep '\.' --quiet; then
 	    rid="$(echo $s | cut -d. -f2)"
 	    cmd="$cmd --revision $rid"
+	    mboxfile="$mboxdir/$sid.$rid.mbox"
 	    echo -e "Series/Revision $sid/$rid"
 	else
+	    mboxfile="$mboxdir/$sid.mbox"
 	    echo -e "Series/Revision $sid/latest"
 	fi
-	$cmd > $mboxdir/$sid.$rid.mbox
+	( cd $repodir
+	  $cmd > $mboxfile
+	)
 	echo -e "\tStore into $mboxdir"
 	echo -e ""
     done
