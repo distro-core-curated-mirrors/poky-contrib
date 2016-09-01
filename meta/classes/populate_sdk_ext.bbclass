@@ -442,8 +442,9 @@ fakeroot python do_populate_sdk_ext() {
         bb.fatal('The extensible SDK can currently only be built for the same architecture as the machine being built on - SDK_ARCH is set to %s (likely via setting SDKMACHINE) which is different from the architecture of the build machine (%s). Unable to continue.' % (d.getVar('SDK_ARCH', True), d.getVar('BUILD_ARCH', True)))
 
     d.setVar('SDK_INSTALL_TARGETS', get_sdk_install_targets(d))
+    d.setVar('SDKDEPLOYDIR', '${DEPLOY_DIR}/sdk')
 
-    bb.build.exec_func("do_populate_sdk", d)
+    populate_sdk_common(d)
 }
 
 def get_ext_sdk_depends(d):
