@@ -28,10 +28,11 @@ startdir=''
 assemblebranch=''
 startpoint='HEAD'
 outrepodir=''
+mergeall=''
 
 function usage() {
     cat << EOF
-\$ $(basename $0) -v -r <repodir> -s <startdir> -a <assemble branch> -p <start point> -o <outrepodir> (mboxdir | <patch>) ...
+\$ $(basename $0) -v -A -r <repodir> -s <startdir> -a <assemble branch> -p <start point> -o <outrepodir> (mboxdir | <patch>) ...
 
 where
 
@@ -39,6 +40,8 @@ where
     <startdir>        : Start directory for test discovery
     <assemble branch> : Branch name to assemble patches (that can be merged), including results as git-notes
     <start point>     : Start point for assemble branch. Defaults to $startpoint
+    <merge all>       : Merge the mboxes on <assemble branch> no matter if some tests have failed. By default merge is only
+                        on mboxes that have passed all tests (skips are not considered)
     <outrepodir>      : Output git repository for patchtest results, created if it does not exist. Defaults to $outrepodir
     <mboxdir>         : Directory containing mboxes
     <patch>           : Patch to test by patchtest.
@@ -49,14 +52,26 @@ EOF
 }
 
 function gitnotes() {
-    git notes --ref=patchtest-results-failure add -m "$(echo "$PTRESULTS" | grep FAIL)" HEAD
-    git notes --ref=patchtest-results-skip    add -m "$(echo "$PTRESULTS" | grep SKIP)" HEAD
-    git notes --ref=patchtest-results-pass    add -m "$(echo "$PTRESULTS" | grep PASS)" HEAD
+    git notes --ref=patchtest-results-failures add -m  "$(echo "$PTRESULTS" | grep FAIL)" HEAD
+    git notes --ref=patchtest-results-skips    add -m  "$(echo "$PTRESULTS" | grep SKIP)" HEAD
+    git notes --ref=patchtest-results-passes    add -m "$(echo "$PTRESULTS" | grep PASS)" HEAD
     git notes --ref=patchtest-log add -m "$PTLOG" HEAD
 }
 
 function testpatch() {
     local patch="$1"
+
+    # get current branch
+    CURRENTB="$(cd $repodir; git rev-parse --abbrev-ref HEAD)"
+
+    # create assemblebrach if it does not exist
+    if [ -n "$assemblebranch" ]; then
+	test "$assemblebranch" = "$CURRENTB" && { echo "The assemble branch must be different that current one"; exit 1; }
+	( cd $repodir
+	  git show-ref --verify --quiet refs/heads/$assemblebranch || \
+	      { git branch $assemblebranch $startpoint; }
+	)
+    fi
 
     echo -e "${patch}"
 
@@ -72,8 +87,13 @@ function testpatch() {
 	# just create a commit if patch is not tracked yet
 	test ! -f $patchfn && {
 	    cp $patch $outrepodir/$patchfn
+
 	    # go to the output repo and create a commit with git-notes
-	    ( cd $outrepodir; git add $patchfn; git commit -s -m "$patch"; gitnotes );
+	    ( cd $outrepodir
+	      git add $patchfn
+	      git commit -s -m "$patch"
+	      gitnotes
+	    )
 	    echo -e "\tResults stored into '$outrepodir'";
 	} || { echo -e "\tAlready tested"; }
     fi
@@ -83,14 +103,23 @@ function testpatch() {
 
 	(
 	    cd $repodir
-	    # move the assemblebranch
+
+	    # move the assemblebranch, already created above
 	    git checkout $assemblebranch --quiet
 
 	    # try patch merge
 	    if git apply --check $patch 2> /dev/null; then
-		git am --quiet $patch 2> /dev/null
-		gitnotes
-		echo -e "\tPatch merged into '${assemblebranch}' with results as git-notes"
+		if [ -n "$mergeall" ]; then
+		    git am --quiet $patch 2>/dev/null && gitnotes
+		    echo -e "\tPatch merged into '${assemblebranch}' including all test results"
+		else
+		    if echo "$PTRESULTS" | grep FAIL; then
+			echo -e "\tPatch has test failures, skipping"
+		    else
+			git am --quiet $patch 2>/dev/null && gitnotes
+			echo -e "\tPatch merged into '${assemblebranch}' with no test failures"
+		    fi
+		fi
 	    else
 		echo -e "\tNot merged due to a merge-conflict"
 	    fi
@@ -99,7 +128,8 @@ function testpatch() {
 	)
     fi
 
-    if [ -n "$verbose" ]; then
+    # just print the results either when verbose or when no outrepodir/assemblebranch given
+    if [ -n "$verbose"  -o -z "$outrepodir" -a -z "$assemblebranch" ]; then
 	echo -e "$PTLOG"
 	echo -e "$PTRESULTS"
     fi
@@ -107,7 +137,7 @@ function testpatch() {
     echo -e ""
 }
 
-while getopts ":r:s:p:a:o:vh" opt; do
+while getopts ":r:s:p:a:o:vAh" opt; do
     case $opt in
 	r)
 	    repodir=$OPTARG
@@ -126,6 +156,9 @@ while getopts ":r:s:p:a:o:vh" opt; do
 	    ;;
 	v)
 	    verbose='x'
+	    ;;
+	A)
+	    mergeall='x'
 	    ;;
 	h)
 	    usage
@@ -149,14 +182,6 @@ test ! -d $repodir  && { echo "Repository does not exit"; usage; }
 test ! -d $startdir && { echo "Test suite starting directory does not exist"; usage; }
 test -n "$outrepodir" && { test ! -d "$outrepodir" && { (mkdir -p "$outrepodir"; cd "$outrepodir";  git init) }; }
 test -n "$outrepodir" && { test ! -d "$outrepodir/.git" && { echo "$outrepodir is not a git repo"; usage; }; }
-
-# get current branch
-CURRENTB="$(cd $repodir; git rev-parse --abbrev-ref HEAD)"
-
-# create assemblebrach
-if [ -n "$assemblebranch" ]; then
-    (cd $repodir; git branch $assemblebranch $startpoint)
-fi
 
 for item in "$@"; do
     # if item is a directory, get all files and test each
