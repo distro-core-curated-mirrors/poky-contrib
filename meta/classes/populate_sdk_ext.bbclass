@@ -442,7 +442,7 @@ fakeroot python do_populate_sdk_ext() {
         bb.fatal('The extensible SDK can currently only be built for the same architecture as the machine being built on - SDK_ARCH is set to %s (likely via setting SDKMACHINE) which is different from the architecture of the build machine (%s). Unable to continue.' % (d.getVar('SDK_ARCH', True), d.getVar('BUILD_ARCH', True)))
 
     d.setVar('SDK_INSTALL_TARGETS', get_sdk_install_targets(d))
-    d.setVar('SDKDEPLOYDIR', '${DEPLOY_DIR}/sdk')
+    d.setVar('SDKDEPLOYDIR', '${SDKEXTDEPLOYDIR}')
 
     populate_sdk_common(d)
 }
@@ -488,5 +488,14 @@ do_populate_sdk_ext[vardeps] += "copy_buildsystem \
 # sdk(since the layers are put in the sdk) set the task to nostamp so it
 # always runs.
 do_populate_sdk_ext[nostamp] = "1"
+
+SDKEXTDEPLOYDIR = "${WORKDIR}/deploy-${PN}-populate-sdk-ext"
+
+SSTATETASKS += "do_populate_sdk_ext"
+SSTATE_SKIP_CREATION_task-populate-sdk-ext = '1'
+do_populate_sdk_ext[cleandirs] = "${SDKDEPLOYDIR}"
+do_populate_sdk_ext[sstate-inputdirs] = "${SDKEXTDEPLOYDIR}"
+do_populate_sdk_ext[sstate-outputdirs] = "${SDK_DEPLOY}"
+do_populate_sdk_ext[stamp-extra-info] = "${MACHINE}"
 
 addtask populate_sdk_ext after do_sdk_depends
