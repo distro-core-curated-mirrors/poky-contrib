@@ -87,7 +87,8 @@ git log --show-notes=patchtest-results-*
 [[assembling-mboxes]]
 === Assembling tested mboxes
 
-Besides <<storing-results,storing results>>, one may be interested in assembling these into brach after testing:
+Besides <<storing-results,storing results>>, one may be interested in assembling those patches
+that have pass **all** tests into a particular branch:
 
 [source,shell]
 ----
@@ -95,8 +96,10 @@ test-mboxes -r $REPO -s $START -a patchtest-branch $HOME/mboxes
 ----
 
 By default, the new branch created (`patchtest-branch` in this case) is checkout from `HEAD`, however one
-can indicated another starting point with the parameter `-p`. As in the `-o` case, the branch can be visited
-and commits review with standard `git-log/show` where results are stored as `git-notes`.
+can indicated another starting point with the parameter `-p`. If you want to merge the mboxes no matter
+the test results, just include the parameter `-A` (inside the new branch, you will see some commits with
+test failures). As in the `-o` case, the branch can be visited and commits review with standard
+`git-log/show` where results are stored as `git-notes`.
 
 [[cronjob]]
 ==== A cronjob for automatic testing
