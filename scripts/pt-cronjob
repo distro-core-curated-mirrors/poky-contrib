@@ -1,0 +1,157 @@
+#!/bin/bash -ex
+# ex:ts=4:sw=4:sts=4:et
+# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
+#
+# pt-cronjob: fetch mboxes from patchwork at host and test these from
+#             a guest machine (qemu).
+#
+# WARNING: it is assume that the image defined on 'meta-patchtest' layer has
+#          already being created using Poky. For more information, check
+#          the documentation
+#
+# Copyright (C) 2016 Intel Corporation
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+# Default values
+base=''
+pwurl='http://patchwork.openembedded.org'
+pwproject='oe-core'
+machine='qemux86-64'
+image='core-image-minimal'
+poky="$HOME/poky"
+
+function usage() {
+    cat << EOF
+\$ $(basename $0) -b <base> -u <pw url> -p <pw project> -m <qemu machine> -i <poky image> -P <poky folder>
+where
+
+    -b <base>      : Default $base
+    -u <pwurl>     : Default $pwurl
+    -p <pwproject> : Default $pwproject
+    -m <machine>   : Default $machine
+    -i <image>     : Default $image
+    -P <poky>      : Default $poky
+
+EOF
+>&2
+
+    exit 1
+}
+
+while getopts ":b:u:p:m:i:P:h" opt; do
+    case $opt in
+	b)
+	    base=$OPTARG
+	    ;;
+	u)
+	    pwurl=$OPTARG
+	    ;;
+	p)
+	    pwproject=$OPTARG
+	    ;;
+	m)
+	    machine=$OPTARG
+	    ;;
+	i)
+	    image=$OPTARG
+	    ;;
+	P)
+	    poky=$OPTARG
+	    ;;
+	h)
+	    usage
+	    ;;
+	\?)
+	    echo "Invalid option: -$OPTARG" >&2
+	    usage
+	    ;;
+	:)
+	    echo "Option -$OPTARG requires an argument." >&2
+	    usage
+	    ;;
+    esac
+done
+
+function cloneorpull() {
+    local repo=$1
+    local path=$2
+
+    # if path exist, lets assume it is a git repo
+    # clean, move to master and pull, otherwise
+    # clone and pw configure
+    if [ -d $path/.git ]; then
+	( cd $path
+	  git clean -xf
+	  git checkout master
+	  git pull )
+    else
+	git clone $repo $path
+    fi
+}
+
+function pwconfigure() {
+    local path=$1
+    local pwurl=$2
+    local pwproject=$3
+    ( cd $path
+      git config patchwork.default.url $pwurl
+      git config patchwork.default.project $pwproject
+    )
+}
+
+# main()
+
+# make sure base folder is provided by user
+test -z "$base" && { echo "Please provide a base folder"; usage; }
+
+# make sure the poky build folder exists
+test ! -d "$poky" && { echo "Please build a qemu machine according to the guest documentation"; exit 1; }
+
+# create base
+test ! -d $base && mkdir $base
+
+# clone or pull relevant repos
+PW=$base/patchwork && cloneorpull https://github.com/dlespiau/patchwork.git $PW
+PT=$base/patchtest && cloneorpull ssh://git@git.yoctoproject.org/patchtest $PT
+SUITE=$base/patchtest-oe && cloneorpull ssh://git@git.yoctoproject.org/patchtest-oe $SUITE
+REPO=$base/openembedded-core && cloneorpull git://git.openembedded.org/openembedded-core $REPO
+
+# configure the repo to get latest mboxes
+pwconfigure $REPO $pwurl $pwproject
+
+# include scripts into PATH
+export PATH="$PW/git-pw/:$PT:$PT/scripts:$PATH"
+
+# get latest mboxes
+fetch-mboxes -r $REPO -m $base/mboxes
+
+# launch qemu. Machine is assumed to be in the default build folder (build)
+(
+    cd $poky
+    if . $poky/oe-init-build-env build; then
+	runqemu $machine \
+		$image \
+		nographic \
+		kvm \
+		qemuparams="-fsdev local,id=test_dev,path=$base,security_model=mapped \
+                        -device virtio-9p-pci,fsdev=test_dev,mount_tag=test_mount"
+    else
+	echo 'oe-init-build-env could not be sourced'
+    fi
+)
+
+# Machine will launch, test all mboxes located at $base/mboxes and quit
+# Finally, results have be inspected on $base/results
+
