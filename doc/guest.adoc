@@ -5,19 +5,22 @@ This method is the recommended way when patch testing is done automatically, i.e
 if you want to test patches your own patches, the <<host,host>> approach is a better option, making it easier and
 faster the code cycle ('code-test-code').
 
+NOTE: The below code snipets have been collected into a script 'scripts/pt-cronjob' so it can be easily run
+from a cronjob.
+
 * As in the <<host, host>> section, follow the steps <<env-vars, environment variables setting>> and <<cloning, cloning>>.
 
 * TODO: include `chmod` lines to remove write permission into the  '$BASE' folders, so guest can not touch it.
 
-* Poll new series events from the patchwork instance, previously configured as shown <<pw, Patchwork>> section.
+* Fetch latest mboxes from patchwork, previously configured as shown <<pw, Patchwork>> section.
 
 [source, shell]
 ----
-$PT/scripts/poll $OECORE $BASE
+fetch-mboxes -r $REPO -m $BASE/mboxes
 ----
 
-The above script will create a new folder under '$BASE' containing the mboxes for every
-new series-revision polled. The link 'latest-series' will point to the new folder.
+The above script will create a folder '$BASE/mboxes' containing the mboxes for every
+new series-revision polled.
 
 * Using the https://www.yoctoproject.org/[Yocto Project] system, create a 'qemu' machine including
 the 'meta-patchtest' layer (located on this repository).
@@ -68,11 +71,11 @@ cd $POKY/build
 bitbake -c cleanall core-image-minimal
 ----
 
-* Finally, in case results need to be posted into the 'patchwork' instance, execute the following script
+* Results are stored into the folder '$BASE/results'. You can `cd` into the folder and explored the results.
+This folder is a git repository and you can check history (and results) with `git-log` or `git-show` commands
 
-[source, shell]
-----
-build$PTOE/scripts/post $OECORE $BASE/latest-results
+[source,shell]
+-----
+git log --show-notes=patchtest-results-*
 ----
 
-where '$BASE/latest-results' contains previous results executed on guest.
