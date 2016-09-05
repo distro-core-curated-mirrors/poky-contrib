@@ -1,0 +1,28 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          patchtest
+# Required-Start:    $local_fs mountvirtfs
+# Required-Stop:     $local_fs
+# Default-Start:     S
+# Default-Stop:      0 6
+# Short-Description: Execute patchtest and quits inmediately
+# Description:       Execute patchtest (the framework to test mboxes)
+#                    taking as input those file mboxes located at
+#                    $base/mboxes folder and results are stored into
+#                    $base/results
+### END INIT INFO
+
+. /etc/default/rcS
+
+test "$VERBOSE" != no && echo "Executing patchtest..."
+
+SHARED="/tmp/patchtest"
+
+#create the mount point of the share folder
+test ! -d "$SHARED" && mkdir "$SHARED"
+
+# mount the share folder
+mount -t 9p -o trans=virtio test_mount "$SHARED" -oversion=9p2000.L,posixacl,cache=loose
+
+#halt
+: exit 0
