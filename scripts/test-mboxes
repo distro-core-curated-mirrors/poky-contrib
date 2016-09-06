@@ -180,8 +180,11 @@ test -z "$@" && { echo -e "Provide at least a patch or a patch directory"; usage
 test -z "$repodir"  && { echo "Indicate the repository"; usage; }
 test ! -d $repodir  && { echo "Repository does not exit"; usage; }
 test ! -d $startdir && { echo "Test suite starting directory does not exist"; usage; }
-test -n "$outrepodir" && { test ! -d "$outrepodir" && { (mkdir -p "$outrepodir"; cd "$outrepodir";  git init) }; }
-test -n "$outrepodir" && { test ! -d "$outrepodir/.git" && { echo "$outrepodir is not a git repo"; usage; }; }
+
+# if outrepodir does not exit, create it
+# if outrepodir is not a repository, create a new one
+test -n "$outrepodir" && { test ! -d "$outrepodir" && { mkdir -p "$outrepodir"; }; }
+test -n "$outrepodir" && { test ! -d "$outrepodir/.git" && { (cd "$outrepodir";  git init) }; }
 
 for item in "$@"; do
     # if item is a directory, get all files and test each
