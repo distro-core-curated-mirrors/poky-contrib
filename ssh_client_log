@@ -1,0 +1,163 @@
+Executing: program /usr/bin/ssh host 192.168.7.6, user root, command scp -v -t /home/root/
+OpenSSH_6.6.1, OpenSSL 1.0.1f 6 Jan 2014
+debug1: Reading configuration data /folk/lyang1/.ssh/config
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 19: Applying options for *
+debug2: ssh_connect: needpriv 0
+debug1: Connecting to 192.168.7.6 [192.168.7.6] port 22.
+debug1: Connection established.
+debug3: Incorrect RSA1 identifier
+debug3: Could not load "/folk/lyang1/.ssh/id_rsa" as a RSA1 public key
+debug1: identity file /folk/lyang1/.ssh/id_rsa type 1
+debug1: identity file /folk/lyang1/.ssh/id_rsa-cert type -1
+debug1: identity file /folk/lyang1/.ssh/id_dsa type -1
+debug1: identity file /folk/lyang1/.ssh/id_dsa-cert type -1
+debug1: identity file /folk/lyang1/.ssh/id_ecdsa type -1
+debug1: identity file /folk/lyang1/.ssh/id_ecdsa-cert type -1
+debug1: identity file /folk/lyang1/.ssh/id_ed25519 type -1
+debug1: identity file /folk/lyang1/.ssh/id_ed25519-cert type -1
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_6.6.1p1 Ubuntu-2ubuntu2.8
+debug1: Remote protocol version 2.0, remote software version OpenSSH_7.3
+debug1: match: OpenSSH_7.3 pat OpenSSH* compat 0x04000000
+debug2: fd 3 setting O_NONBLOCK
+debug3: load_hostkeys: loading entries for host "192.168.7.6" from file "/folk/lyang1/.ssh/known_hosts"
+debug3: load_hostkeys: found key type ECDSA in file /folk/lyang1/.ssh/known_hosts:76
+debug3: load_hostkeys: loaded 1 keys
+debug3: order_hostkeyalgs: prefer hostkeyalgs: ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug2: kex_parse_kexinit: curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
+debug2: kex_parse_kexinit: ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ssh-rsa-cert-v00@openssh.com,ssh-dss-cert-v00@openssh.com,ssh-ed25519,ssh-rsa,ssh-dss
+debug2: kex_parse_kexinit: aes128-ctr,aes192-ctr,aes256-ctr,arcfour256,arcfour128,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,aes192-cbc,aes256-cbc,arcfour,rijndael-cbc@lysator.liu.se
+debug2: kex_parse_kexinit: aes128-ctr,aes192-ctr,aes256-ctr,arcfour256,arcfour128,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,aes192-cbc,aes256-cbc,arcfour,rijndael-cbc@lysator.liu.se
+debug2: kex_parse_kexinit: hmac-md5-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-ripemd160-etm@openssh.com,hmac-sha1-96-etm@openssh.com,hmac-md5-96-etm@openssh.com,hmac-md5,hmac-sha1,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-ripemd160,hmac-ripemd160@openssh.com,hmac-sha1-96,hmac-md5-96
+debug2: kex_parse_kexinit: hmac-md5-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-ripemd160-etm@openssh.com,hmac-sha1-96-etm@openssh.com,hmac-md5-96-etm@openssh.com,hmac-md5,hmac-sha1,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-ripemd160,hmac-ripemd160@openssh.com,hmac-sha1-96,hmac-md5-96
+debug2: kex_parse_kexinit: none,zlib@openssh.com,zlib
+debug2: kex_parse_kexinit: none,zlib@openssh.com,zlib
+debug2: kex_parse_kexinit: 
+debug2: kex_parse_kexinit: 
+debug2: kex_parse_kexinit: first_kex_follows 0 
+debug2: kex_parse_kexinit: reserved 0 
+debug2: kex_parse_kexinit: curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1
+debug2: kex_parse_kexinit: ssh-rsa,rsa-sha2-512,rsa-sha2-256,ecdsa-sha2-nistp256,ssh-ed25519
+debug2: kex_parse_kexinit: chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com
+debug2: kex_parse_kexinit: chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com
+debug2: kex_parse_kexinit: umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1
+debug2: kex_parse_kexinit: umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1
+debug2: kex_parse_kexinit: none
+debug2: kex_parse_kexinit: none
+debug2: kex_parse_kexinit: 
+debug2: kex_parse_kexinit: 
+debug2: kex_parse_kexinit: first_kex_follows 0 
+debug2: kex_parse_kexinit: reserved 0 
+debug2: mac_setup: setup hmac-sha1-etm@openssh.com
+debug1: kex: server->client aes128-ctr hmac-sha1-etm@openssh.com none
+debug2: mac_setup: setup hmac-sha1-etm@openssh.com
+debug1: kex: client->server aes128-ctr hmac-sha1-etm@openssh.com none
+debug1: sending SSH2_MSG_KEX_ECDH_INIT
+debug1: expecting SSH2_MSG_KEX_ECDH_REPLY
+debug1: Server host key: ECDSA 1d:82:2c:c2:6f:3b:5a:ef:8d:94:78:98:d1:8f:08:8a
+debug3: load_hostkeys: loading entries for host "192.168.7.6" from file "/folk/lyang1/.ssh/known_hosts"
+debug3: load_hostkeys: found key type ECDSA in file /folk/lyang1/.ssh/known_hosts:76
+debug3: load_hostkeys: loaded 1 keys
+debug1: Host '192.168.7.6' is known and matches the ECDSA host key.
+debug1: Found key in /folk/lyang1/.ssh/known_hosts:76
+debug1: ssh_ecdsa_verify: signature correct
+debug2: kex_derive_keys
+debug2: set_newkeys: mode 1
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug2: set_newkeys: mode 0
+debug1: SSH2_MSG_NEWKEYS received
+debug1: SSH2_MSG_SERVICE_REQUEST sent
+debug2: service_accept: ssh-userauth
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug2: key: /folk/lyang1/.ssh/id_rsa (0x562239982430),
+debug2: key: /folk/lyang1/.ssh/id_dsa ((nil)),
+debug2: key: /folk/lyang1/.ssh/id_ecdsa ((nil)),
+debug2: key: /folk/lyang1/.ssh/id_ed25519 ((nil)),
+debug1: Authentication succeeded (none).
+Authenticated to 192.168.7.6 ([192.168.7.6]:22).
+debug2: fd 4 setting O_NONBLOCK
+debug2: fd 5 setting O_NONBLOCK
+debug2: fd 6 setting O_NONBLOCK
+debug1: channel 0: new [client-session]
+debug3: ssh_session2_open: channel_new: 0
+debug2: channel 0: send open
+debug1: Requesting no-more-sessions@openssh.com
+debug1: Entering interactive session.
+debug1: client_input_global_request: rtype hostkeys-00@openssh.com want_reply 0
+debug2: callback start
+debug2: fd 3 setting TCP_NODELAY
+debug3: packet_set_tos: set IP_TOS 0x08
+debug2: client_session2_setup: id 0
+debug1: Sending environment.
+debug1: Sending env LC_PAPER = en_US.UTF-8
+debug2: channel 0: request env confirm 0
+debug1: Sending env LC_ADDRESS = en_US.UTF-8
+debug2: channel 0: request env confirm 0
+debug1: Sending env LC_MONETARY = en_US.UTF-8
+debug2: channel 0: request env confirm 0
+debug3: Ignored env SHELL
+debug3: Ignored env TERM
+debug3: Ignored env SSH_CLIENT
+debug1: Sending env LC_NUMERIC = en_US.UTF-8
+debug2: channel 0: request env confirm 0
+debug3: Ignored env OLDPWD
+debug3: Ignored env SSH_TTY
+debug1: Sending env LC_ALL = en_US.UTF-8
+debug2: channel 0: request env confirm 0
+debug3: Ignored env USER
+debug3: Ignored env LS_COLORS
+debug1: Sending env LC_TELEPHONE = en_US.UTF-8
+debug2: channel 0: request env confirm 0
+debug3: Ignored env TERMCAP
+debug3: Ignored env CPR_CONTRIB_AUTO_PUSH
+debug3: Ignored env PATH
+debug3: Ignored env MAIL
+debug3: Ignored env STY
+debug1: Sending env LC_IDENTIFICATION = en_US.UTF-8
+debug2: channel 0: request env confirm 0
+debug3: Ignored env PWD
+debug1: Sending env LANG = en_US
+debug2: channel 0: request env confirm 0
+debug1: Sending env LC_MEASUREMENT = en_US.UTF-8
+debug2: channel 0: request env confirm 0
+debug3: Ignored env BUILDDIR
+debug3: Ignored env HOME
+debug3: Ignored env SHLVL
+debug3: Ignored env LANGUAGE
+debug3: Ignored env LOGNAME
+debug3: Ignored env WINDOW
+debug3: Ignored env SSH_CONNECTION
+debug3: Ignored env LESSOPEN
+debug3: Ignored env CPR_CONTRIB_REMOTE
+debug3: Ignored env LESSCLOSE
+debug1: Sending env LC_TIME = en_US.UTF-8
+debug2: channel 0: request env confirm 0
+debug3: Ignored env BB_ENV_EXTRAWHITE
+debug3: Ignored env BBPATH_EXTRA
+debug1: Sending env LC_NAME = en_US.UTF-8
+debug2: channel 0: request env confirm 0
+debug3: Ignored env _
+debug1: Sending command: scp -v -t /home/root/
+debug2: channel 0: request exec confirm 1
+debug2: callback done
+debug2: channel 0: open confirm rwindow 0 rmax 32768
+debug2: channel 0: rcvd adjust 2097152
+debug2: channel_input_status_confirm: type 99 id 0
+debug2: exec request accepted on channel 0
+Sending file modes: C0644 0 foo
+debug1: channel 0: free: client-session, nchannels 1
+debug3: channel 0: status: The following connections are open:
+  #0 client-session (t4 r0 i0/0 o0/0 fd 4/5 cc -1)
+
+debug1: fd 0 clearing O_NONBLOCK
+debug1: fd 1 clearing O_NONBLOCK
+debug1: fd 2 clearing O_NONBLOCK
+Connection to 192.168.7.6 closed by remote host.
+Transferred: sent 2968, received 2396 bytes, in 0.3 seconds
+Bytes per second: sent 10722.4, received 8656.0
+debug1: Exit status -1
+lost connection
