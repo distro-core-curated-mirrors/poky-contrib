@@ -21,3 +21,6 @@ COMPATIBLE_MACHINE_mpc8315e-rdb = "mpc8315e-rdb"
 
 LINUX_VERSION_genericx86 = "4.4.3"
 LINUX_VERSION_genericx86-64 = "4.4.3"
+
+FILESEXTRAPATHS_prepend := "${THISDIR}/linux-yocto-4.4:"
+SRC_URI += " file://genericx86-preempt-rt.scc"
