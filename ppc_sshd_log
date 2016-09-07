@@ -1,0 +1,95 @@
+Sep  7 02:21:49 qemuppc login[522]: pam_unix(login:session): session opened for user root by LOGIN(uid=0)
+Sep  7 02:21:49 qemuppc login[524]: ROOT LOGIN  on '/dev/ttyS0'
+Sep  7 02:22:30 qemuppc sshd[541]: Accepted none for root from 192.168.7.7 port 54792 ssh2
+Sep  7 02:22:30 qemuppc sshd[541]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:22:30 qemuppc sshd[541]: Received disconnect from 192.168.7.7 port 54792:11: disconnected by user
+Sep  7 02:22:30 qemuppc sshd[541]: Disconnected from 192.168.7.7 port 54792
+Sep  7 02:22:30 qemuppc sshd[541]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:23:09 qemuppc sshd[547]: Accepted none for root from 192.168.7.7 port 54800 ssh2
+Sep  7 02:23:09 qemuppc sshd[547]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:23:19 qemuppc sshd[547]: Received disconnect from 192.168.7.7 port 54800:11: disconnected by user
+Sep  7 02:23:19 qemuppc sshd[547]: Disconnected from 192.168.7.7 port 54800
+Sep  7 02:23:19 qemuppc sshd[547]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:23:20 qemuppc sshd[550]: Accepted none for root from 192.168.7.7 port 54804 ssh2
+Sep  7 02:23:20 qemuppc sshd[550]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:23:20 qemuppc sshd[550]: ssh_dispatch_run_fatal: Connection from 192.168.7.7 port 54804: incomplete message
+Sep  7 02:23:20 qemuppc sshd[550]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:23:59 qemuppc sshd[558]: Accepted none for root from 192.168.7.7 port 54824 ssh2
+Sep  7 02:23:59 qemuppc sshd[558]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:23:59 qemuppc sshd[558]: dispatch_protocol_error: type 152 seq 19
+Sep  7 02:24:58 qemuppc sshd[558]: Received disconnect from 192.168.7.7 port 54824:11: disconnected by user
+Sep  7 02:24:58 qemuppc sshd[558]: Disconnected from 192.168.7.7 port 54824
+Sep  7 02:24:58 qemuppc sshd[558]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:25:21 qemuppc sshd[685]: Accepted none for root from 192.168.7.7 port 54868 ssh2
+Sep  7 02:25:21 qemuppc sshd[685]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:25:30 qemuppc sshd[685]: Received disconnect from 192.168.7.7 port 54868:11: disconnected by user
+Sep  7 02:25:30 qemuppc sshd[685]: Disconnected from 192.168.7.7 port 54868
+Sep  7 02:25:30 qemuppc sshd[685]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:25:42 qemuppc sshd[689]: Accepted none for root from 192.168.7.7 port 54882 ssh2
+Sep  7 02:25:42 qemuppc sshd[689]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:25:52 qemuppc sshd[689]: Received disconnect from 192.168.7.7 port 54882:11: disconnected by user
+Sep  7 02:25:52 qemuppc sshd[689]: Disconnected from 192.168.7.7 port 54882
+Sep  7 02:25:52 qemuppc sshd[689]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:25:53 qemuppc sshd[692]: Accepted none for root from 192.168.7.7 port 54886 ssh2
+Sep  7 02:25:53 qemuppc sshd[692]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:26:03 qemuppc sshd[692]: Received disconnect from 192.168.7.7 port 54886:11: disconnected by user
+Sep  7 02:26:03 qemuppc sshd[692]: Disconnected from 192.168.7.7 port 54886
+Sep  7 02:26:03 qemuppc sshd[692]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:26:05 qemuppc sshd[695]: Accepted none for root from 192.168.7.7 port 54890 ssh2
+Sep  7 02:26:05 qemuppc sshd[695]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:26:06 qemuppc sshd[695]: ssh_dispatch_run_fatal: Connection from 192.168.7.7 port 54890: Protocol error
+Sep  7 02:26:06 qemuppc sshd[695]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:44:17 qemuppc sshd[940]: Accepted none for root from 192.168.7.7 port 55240 ssh2
+Sep  7 02:44:17 qemuppc sshd[940]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:44:26 qemuppc sshd[940]: Received disconnect from 192.168.7.7 port 55240:11: disconnected by user
+Sep  7 02:44:26 qemuppc sshd[940]: Disconnected from 192.168.7.7 port 55240
+Sep  7 02:44:26 qemuppc sshd[940]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:45:01 qemuppc sshd[943]: Accepted none for root from 192.168.7.7 port 55250 ssh2
+Sep  7 02:45:01 qemuppc sshd[943]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:45:10 qemuppc sshd[943]: Received disconnect from 192.168.7.7 port 55250:11: disconnected by user
+Sep  7 02:45:10 qemuppc sshd[943]: Disconnected from 192.168.7.7 port 55250
+Sep  7 02:45:10 qemuppc sshd[943]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:45:19 qemuppc sshd[946]: Accepted none for root from 192.168.7.7 port 55294 ssh2
+Sep  7 02:45:19 qemuppc sshd[946]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:45:28 qemuppc sshd[946]: Received disconnect from 192.168.7.7 port 55294:11: disconnected by user
+Sep  7 02:45:28 qemuppc sshd[946]: Disconnected from 192.168.7.7 port 55294
+Sep  7 02:45:28 qemuppc sshd[946]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:52:20 qemuppc sshd[949]: Accepted none for root from 192.168.7.7 port 55460 ssh2
+Sep  7 02:52:20 qemuppc sshd[949]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:52:30 qemuppc sshd[949]: Received disconnect from 192.168.7.7 port 55460:11: disconnected by user
+Sep  7 02:52:30 qemuppc sshd[949]: Disconnected from 192.168.7.7 port 55460
+Sep  7 02:52:30 qemuppc sshd[949]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:53:13 qemuppc sshd[952]: Accepted none for root from 192.168.7.7 port 55472 ssh2
+Sep  7 02:53:13 qemuppc sshd[952]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:53:22 qemuppc sshd[952]: Received disconnect from 192.168.7.7 port 55472:11: disconnected by user
+Sep  7 02:53:22 qemuppc sshd[952]: Disconnected from 192.168.7.7 port 55472
+Sep  7 02:53:22 qemuppc sshd[952]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:53:25 qemuppc sshd[955]: Accepted none for root from 192.168.7.7 port 55482 ssh2
+Sep  7 02:53:25 qemuppc sshd[955]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:53:34 qemuppc sshd[955]: Received disconnect from 192.168.7.7 port 55482:11: disconnected by user
+Sep  7 02:53:35 qemuppc sshd[955]: Disconnected from 192.168.7.7 port 55482
+Sep  7 02:53:35 qemuppc sshd[955]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:53:43 qemuppc sshd[958]: Accepted none for root from 192.168.7.7 port 55536 ssh2
+Sep  7 02:53:43 qemuppc sshd[958]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:53:53 qemuppc sshd[958]: Received disconnect from 192.168.7.7 port 55536:11: disconnected by user
+Sep  7 02:53:53 qemuppc sshd[958]: Disconnected from 192.168.7.7 port 55536
+Sep  7 02:53:53 qemuppc sshd[958]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:54:03 qemuppc sshd[961]: Accepted none for root from 192.168.7.7 port 55538 ssh2
+Sep  7 02:54:03 qemuppc sshd[961]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:54:12 qemuppc sshd[961]: Received disconnect from 192.168.7.7 port 55538:11: disconnected by user
+Sep  7 02:54:12 qemuppc sshd[961]: Disconnected from 192.168.7.7 port 55538
+Sep  7 02:54:12 qemuppc sshd[961]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:54:33 qemuppc sshd[964]: Accepted none for root from 192.168.7.7 port 55540 ssh2
+Sep  7 02:54:33 qemuppc sshd[964]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:54:33 qemuppc sshd[964]: Received disconnect from 192.168.7.7 port 55540:11: disconnected by user
+Sep  7 02:54:33 qemuppc sshd[964]: Disconnected from 192.168.7.7 port 55540
+Sep  7 02:54:33 qemuppc sshd[964]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:54:36 qemuppc sshd[967]: Accepted none for root from 192.168.7.7 port 55544 ssh2
+Sep  7 02:54:36 qemuppc sshd[967]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:54:36 qemuppc sshd[967]: Received disconnect from 192.168.7.7 port 55544:11: disconnected by user
+Sep  7 02:54:36 qemuppc sshd[967]: Disconnected from 192.168.7.7 port 55544
+Sep  7 02:54:36 qemuppc sshd[967]: pam_unix(sshd:session): session closed for user root
+Sep  7 02:54:38 qemuppc sshd[970]: Accepted none for root from 192.168.7.7 port 55546 ssh2
+Sep  7 02:54:38 qemuppc sshd[970]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Sep  7 02:54:38 qemuppc sshd[970]: ssh_dispatch_run_fatal: Connection from 192.168.7.7 port 55546: incomplete message
+Sep  7 02:54:38 qemuppc sshd[970]: pam_unix(sshd:session): session closed for user root
