@@ -302,7 +302,7 @@ python do_kernel_configcheck() {
     bsp_check_visibility = int(d.getVar( "KCONF_BSP_AUDIT_LEVEL", True ) or 0)
 
     # if config check visibility is non-zero, report dropped configuration values
-    mismatch_file = "${S}/" + kmeta + "/" + "mismatch.cfg"
+    mismatch_file = d.expand( "${S}/" + kmeta + "/" + "mismatch.cfg" )
     if os.path.exists(mismatch_file):
         if config_check_visibility:
             with open (mismatch_file, "r") as myfile:
@@ -310,14 +310,14 @@ python do_kernel_configcheck() {
                 bb.warn( "[kernel config]: specified values did not make it into the kernel's final configuration:\n\n%s" % results)
 
     # if config check visibility is level 2 or higher, report non-hardware options
-    nonhw_file = "${S}/" + kmeta + "/" + "nonhw_report.cfg"
+    nonhw_file = d.expand( "${S}/" + kmeta + "/" + "nonhw_report.cfg" )
     if os.path.exists(nonhw_file):
         if config_check_visibility > 1:
             with open (nonhw_file, "r") as myfile:
                 results = myfile.read()
                 bb.warn( "[kernel config]: BSP specified non-hw configuration:\n\n%s" % results)
 
-    bsp_desc = "${S}/" + kmeta + "/" + "top_tgt"
+    bsp_desc = d.expand( "${S}/" + kmeta + "/" + "top_tgt" )
     if os.path.exists(bsp_desc) and bsp_check_visibility > 1:
         with open (bsp_desc, "r") as myfile:
             bsp_tgt = myfile.read()
