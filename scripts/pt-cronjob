@@ -29,7 +29,7 @@ base=''
 pwurl='http://patchwork.openembedded.org'
 pwproject='oe-core'
 machine='qemux86-64'
-image='core-image-minimal'
+image='core-image-patchtest'
 poky="$HOME/poky"
 
 function usage() {

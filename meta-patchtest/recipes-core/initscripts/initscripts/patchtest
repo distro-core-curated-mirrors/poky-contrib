@@ -16,13 +16,31 @@
 
 test "$VERBOSE" != no && echo "Executing patchtest..."
 
-SHARED="/tmp/patchtest"
+# Mount point
+MP="/tmp/patchtest"
+test ! -d "$MP" && mkdir "$MP"
+mount -t 9p -o trans=virtio test_mount "$MP" -oversion=9p2000.L,posixacl,cache=loose
 
-#create the mount point of the share folder
-test ! -d "$SHARED" && mkdir "$SHARED"
+MBOXES="$MP/mboxes"
+RESULTS="$MP/results"
+PW="$MP/patchwork"
+PT="$MP/patchtest"
+REPO="$MP/openembedded-core"
+SUITESTART="$MP/patchtest-oe/tests"
 
-# mount the share folder
-mount -t 9p -o trans=virtio test_mount "$SHARED" -oversion=9p2000.L,posixacl,cache=loose
+# include patchtest related scripts into PATH
+export PATH="$PW/git-pw/:$PT:$PT/scripts:$PATH"
 
-#halt
+# configure git
+git config --global user.email guest@patchtest.com
+git config --global user.name "Guest"
+
+# execute and place results on $RESULTS folder
+test-mboxes -r $REPO \
+	    -s $SUITESTART \
+	    -o $RESULTS \
+	    $MBOXES
+
+# TODO: place a command to halt the system (neither halt, shutdown not init worked)
+
 : exit 0
