@@ -1,0 +1,296 @@
+02:19:23 - bitbake-worker - RESULTS - Testcase 964: PASSED
+02:19:28 - bitbake-worker - RESULTS - Testcase 201: PASSED
+02:19:30 - bitbake-worker - RESULTS - Testcase 1149: PASSED
+02:19:32 - bitbake-worker - RESULTS - Testcase 1150: PASSED
+02:19:37 - bitbake-worker - RESULTS - Testcase 202: PASSED
+02:19:38 - bitbake-worker - RESULTS - Testcase 1141: PASSED
+02:19:39 - bitbake-worker - RESULTS - Testcase 208: PASSED
+02:19:42 - bitbake-worker - RESULTS - Testcase 1145: PASSED02:19:44 - bitbake-worker - RESULTS - Testcase 220: PASSED
+02:19:47 - bitbake-worker - RESULTS - Testcase 287: PASSED
+02:20:07 - bitbake-worker - RESULTS - Testcase 1059: FAILED
+02:20:07 - bitbake-worker - RESULTS - Testcase 1059:
+Traceback (most recent call last):
+  File "/buildarea/lyang1/poky/m02:20:11 - bitbake-worker - RESULTS - Testcase 220: PASSED
+02:20:15 - bitbake-worker - RESULTS - Testcase 287: PASSED
+02:20:35 - bitbake-worker - RESULTS - Testcase 1059: FAILED
+02:20:35 - bitbake-worker - RESULTS - Testcase 1059:
+Trace02:23:03 - bitbake-worker - RESULTS - Testcase 220: PASSED
+002:51:21 - bitbake-worker - RESULTS - Testcase 205: PASSED
+2:23:06 - bitbake-worker - RESULTS - Testcase 221: PASSED
+02:23:08 - bitbake-worker - RESULTS - Testcase 1151: PASSED
+02:26:13 - bitbake-worker - RESULTS - Testcase 316: PASSED
+02:26:14 - bitbake-worker - RESULTS - Testcase 962: PASSED
+02:26:15 - bitbake-worker - RESULTS - Testcase 239: PASSED
+02:26:28 - bitbake-worker - RESULTS - Testcase 1059: FAILED
+02:26:28 - bitbake-worker - RESULTS - Testcase 1059:
+Traceback (most recent call last):
+  File "/buildarea/lyang1/poky/meta/lib/oeqa/utils/decorators.py", line 109, in wrapped_f
+    return func(*args, **kwargs)
+  File "/buildarea/lyang1/poky/meta/lib/oeqa/utils/decorators.py", line 97, in wrapped_f
+    return f(*args, **kwargs)
+  File "/buildarea/lyang1/poky/meta/lib/oeqa/runtime/parselogs.py", line 302, in test_parselogs
+    self.assertEqual(errcount, 0, msg=self.msg)
+AssertionError: 9 != 0 : Log: dmesg
+-----------------------
+Central error: [    0.469932] pci 0000:00:10.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff83800000)
+***********************
+[    0.431655] pci 0000:00:0e.0: reg 0x10: [mem 0x81000000-0x81ffffff pref]
+[    0.437682] pci 0000:00:0e.0: reg 0x18: [mem 0x82000000-0x82000fff]
+[    0.446105] pci 0000:00:0e.0: reg 0x30: [mem 0x82010000-0x8201ffff pref]
+[    0.446765] pci 0000:00:0f.0: [1af4:1000] type 00 class 0x020000
+[    0.449683] pci 0000:00:0f.0: reg 0x10: [io  0x0400-0x041f]
+[    0.458169] pci 0000:00:0f.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff82800000)
+[    0.458562] pci 0000:00:0f.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.462187] pci 0000:00:0f.0: reg 0x30: [mem 0x83000000-0x8303ffff pref]
+[    0.462777] pci 0000:00:10.0: [1af4:1005] type 00 class 0x00ff00
+[    0.464250] pci 0000:00:10.0: reg 0x10: [io  0x0480-0x049f]
+[    0.469932] pci 0000:00:10.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff83800000)
+[    0.470199] pci 0000:00:10.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.472932] pci 0000:00:11.0: [1af4:1001] type 00 class 0x010000
+[    0.474448] pci 0000:00:11.0: reg 0x10: [io  0x0500-0x053f]
+[    0.479902] pci 0000:00:11.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff84000000)
+[    0.480161] pci 0000:00:11.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.485562] pci_bus 0000:00: busn_res: [bus 00-ff] end is updated to 00
+[    0.487823] PCI 0000:00 Cannot reserve Legacy IO [io  0x0000-0x0fff]
+[    0.490026] pci 0000:00:0f.0: BAR 4: assigned [mem 0x80800000-0x80ffffff 64bit pref]
+[    0.491215] pci 0000:00:10.0: BAR 4: assigned [mem 0x82800000-0x82ffffff 64bit pref]
+[    0.492346] pci 0000:00:11.0: BAR 4: assigned [mem 0x83800000-0x83ffffff 64bit pref]
+
+***********************
+Central error: [    0.458169] pci 0000:00:0f.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff82800000)
+***********************
+[    0.413986] pci 0000:00:0c.0: [106b:0022] type 00 class 0xff0000
+[    0.415424] pci 0000:00:0c.0: reg 0x10: [mem 0x80000000-0x8007ffff]
+[    0.421021] pci 0000:00:0d.0: [106b:003f] type 00 class 0x0c0310
+[    0.422009] pci 0000:00:0d.0: reg 0x10: [mem 0x80080000-0x800800ff]
+[    0.429244] pci 0000:00:0e.0: [1234:1111] type 00 class 0x030000
+[    0.431655] pci 0000:00:0e.0: reg 0x10: [mem 0x81000000-0x81ffffff pref]
+[    0.437682] pci 0000:00:0e.0: reg 0x18: [mem 0x82000000-0x82000fff]
+[    0.446105] pci 0000:00:0e.0: reg 0x30: [mem 0x82010000-0x8201ffff pref]
+[    0.446765] pci 0000:00:0f.0: [1af4:1000] type 00 class 0x020000
+[    0.449683] pci 0000:00:0f.0: reg 0x10: [io  0x0400-0x041f]
+[    0.458169] pci 0000:00:0f.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff82800000)
+[    0.458562] pci 0000:00:0f.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.462187] pci 0000:00:0f.0: reg 0x30: [mem 0x83000000-0x8303ffff pref]
+[    0.462777] pci 0000:00:10.0: [1af4:1005] type 00 class 0x00ff00
+[    0.464250] pci 0000:00:10.0: reg 0x10: [io  0x0480-0x049f]
+[    0.469932] pci 0000:00:10.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff83800000)
+[    0.470199] pci 0000:00:10.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.472932] pci 0000:00:11.0: [1af4:1001] type 00 class 0x010000
+[    0.474448] pci 0000:00:11.0: reg 0x10: [io  0x0500-0x053f]
+[    0.479902] pci 0000:00:11.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff84000000)
+[    0.480161] pci 0000:00:11.0: reg 0x20: [mem size 0x00800000 64bit pref]
+
+***********************
+Central error: [    0.479902] pci 0000:00:11.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff84000000)
+***********************
+[    0.449683] pci 0000:00:0f.0: reg 0x10: [io  0x0400-0x041f]
+[    0.458169] pci 0000:00:0f.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff82800000)
+[    0.458562] pci 0000:00:0f.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.462187] pci 0000:00:0f.0: reg 0x30: [mem 0x83000000-0x8303ffff pref]
+[    0.462777] pci 0000:00:10.0: [1af4:1005] type 00 class 0x00ff00
+[    0.464250] pci 0000:00:10.0: reg 0x10: [io  0x0480-0x049f]
+[    0.469932] pci 0000:00:10.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff83800000)
+[    0.470199] pci 0000:00:10.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.472932] pci 0000:00:11.0: [1af4:1001] type 00 class 0x010000
+[    0.474448] pci 0000:00:11.0: reg 0x10: [io  0x0500-0x053f]
+[    0.479902] pci 0000:00:11.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff84000000)
+[    0.480161] pci 0000:00:11.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.485562] pci_bus 0000:00: busn_res: [bus 00-ff] end is updated to 00
+[    0.487823] PCI 0000:00 Cannot reserve Legacy IO [io  0x0000-0x0fff]
+[    0.490026] pci 0000:00:0f.0: BAR 4: assigned [mem 0x80800000-0x80ffffff 64bit pref]
+[    0.491215] pci 0000:00:10.0: BAR 4: assigned [mem 0x82800000-0x82ffffff 64bit pref]
+[    0.492346] pci 0000:00:11.0: BAR 4: assigned [mem 0x83800000-0x83ffffff 64bit pref]
+[    0.493540] pci_bus 0000:00: resource 4 [io  0x0000-0x7fffff]
+[    0.493583] pci_bus 0000:00: resource 5 [mem 0x80000000-0x8fffffff]
+[    0.590674] raid6: altivecx1 gen()   346 MB/s
+[    0.659008] raid6: altivecx2 gen()   346 MB/s
+
+***********************
+Log: dmesg_output.log
+-----------------------
+Central error: [    0.469932] pci 0000:00:10.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff83800000)
+***********************
+[    0.431655] pci 0000:00:0e.0: reg 0x10: [mem 0x81000000-0x81ffffff pref]
+[    0.437682] pci 0000:00:0e.0: reg 0x18: [mem 0x82000000-0x82000fff]
+[    0.446105] pci 0000:00:0e.0: reg 0x30: [mem 0x82010000-0x8201ffff pref]
+[    0.446765] pci 0000:00:0f.0: [1af4:1000] type 00 class 0x020000
+[    0.449683] pci 0000:00:0f.0: reg 0x10: [io  0x0400-0x041f]
+[    0.458169] pci 0000:00:0f.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff82800000)
+[    0.458562] pci 0000:00:0f.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.462187] pci 0000:00:0f.0: reg 0x30: [mem 0x83000000-0x8303ffff pref]
+[    0.462777] pci 0000:00:10.0: [1af4:1005] type 00 class 0x00ff00
+[    0.464250] pci 0000:00:10.0: reg 0x10: [io  0x0480-0x049f]
+[    0.469932] pci 0000:00:10.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff83800000)
+[    0.470199] pci 0000:00:10.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.472932] pci 0000:00:11.0: [1af4:1001] type 00 class 0x010000
+[    0.474448] pci 0000:00:11.0: reg 0x10: [io  0x0500-0x053f]
+[    0.479902] pci 0000:00:11.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff84000000)
+[    0.480161] pci 0000:00:11.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.485562] pci_bus 0000:00: busn_res: [bus 00-ff] end is updated to 00
+[    0.487823] PCI 0000:00 Cannot reserve Legacy IO [io  0x0000-0x0fff]
+[    0.490026] pci 0000:00:0f.0: BAR 4: assigned [mem 0x80800000-0x80ffffff 64bit pref]
+[    0.491215] pci 0000:00:10.0: BAR 4: assigned [mem 0x82800000-0x82ffffff 64bit pref]
+[    0.492346] pci 0000:00:11.0: BAR 4: assigned [mem 0x83800000-0x83ffffff 64bit pref]
+
+***********************
+Central error: [    0.458169] pci 0000:00:0f.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff82800000)
+***********************
+[    0.413986] pci 0000:00:0c.0: [106b:0022] type 00 class 0xff0000
+[    0.415424] pci 0000:00:0c.0: reg 0x10: [mem 0x80000000-0x8007ffff]
+[    0.421021] pci 0000:00:0d.0: [106b:003f] type 00 class 0x0c0310
+[    0.422009] pci 0000:00:0d.0: reg 0x10: [mem 0x80080000-0x800800ff]
+[    0.429244] pci 0000:00:0e.0: [1234:1111] type 00 class 0x030000
+[    0.431655] pci 0000:00:0e.0: reg 0x10: [mem 0x81000000-0x81ffffff pref]
+[    0.437682] pci 0000:00:0e.0: reg 0x18: [mem 0x82000000-0x82000fff]
+[    0.446105] pci 0000:00:0e.0: reg 0x30: [mem 0x82010000-0x8201ffff pref]
+[    0.446765] pci 0000:00:0f.0: [1af4:1000] type 00 class 0x020000
+[    0.449683] pci 0000:00:0f.0: reg 0x10: [io  0x0400-0x041f]
+[    0.458169] pci 0000:00:0f.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff82800000)
+[    0.458562] pci 0000:00:0f.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.462187] pci 0000:00:0f.0: reg 0x30: [mem 0x83000000-0x8303ffff pref]
+[    0.462777] pci 0000:00:10.0: [1af4:1005] type 00 class 0x00ff00
+[    0.464250] pci 0000:00:10.0: reg 0x10: [io  0x0480-0x049f]
+[    0.469932] pci 0000:00:10.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff83800000)
+[    0.470199] pci 0000:00:10.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.472932] pci 0000:00:11.0: [1af4:1001] type 00 class 0x010000
+[    0.474448] pci 0000:00:11.0: reg 0x10: [io  0x0500-0x053f]
+[    0.479902] pci 0000:00:11.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff84000000)
+[    0.480161] pci 0000:00:11.0: reg 0x20: [mem size 0x00800000 64bit pref]
+
+***********************
+Central error: [    0.479902] pci 0000:00:11.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff84000000)
+***********************
+[    0.449683] pci 0000:00:0f.0: reg 0x10: [io  0x0400-0x041f]
+[    0.458169] pci 0000:00:0f.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff82800000)
+[    0.458562] pci 0000:00:0f.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.462187] pci 0000:00:0f.0: reg 0x30: [mem 0x83000000-0x8303ffff pref]
+[    0.462777] pci 0000:00:10.0: [1af4:1005] type 00 class 0x00ff00
+[    0.464250] pci 0000:00:10.0: reg 0x10: [io  0x0480-0x049f]
+[    0.469932] pci 0000:00:10.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff83800000)
+[    0.470199] pci 0000:00:10.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.472932] pci 0000:00:11.0: [1af4:1001] type 00 class 0x010000
+[    0.474448] pci 0000:00:11.0: reg 0x10: [io  0x0500-0x053f]
+[    0.479902] pci 0000:00:11.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff84000000)
+[    0.480161] pci 0000:00:11.0: reg 0x20: [mem size 0x00800000 64bit pref]
+[    0.485562] pci_bus 0000:00: busn_res: [bus 00-ff] end is updated to 00
+[    0.487823] PCI 0000:00 Cannot reserve Legacy IO [io  0x0000-0x0fff]
+[    0.490026] pci 0000:00:0f.0: BAR 4: assigned [mem 0x80800000-0x80ffffff 64bit pref]
+[    0.491215] pci 0000:00:10.0: BAR 4: assigned [mem 0x82800000-0x82ffffff 64bit pref]
+[    0.492346] pci 0000:00:11.0: BAR 4: assigned [mem 0x83800000-0x83ffffff 64bit pref]
+[    0.493540] pci_bus 0000:00: resource 4 [io  0x0000-0x7fffff]
+[    0.493583] pci_bus 0000:00: resource 5 [mem 0x80000000-0x8fffffff]
+[    0.590674] raid6: altivecx1 gen()   346 MB/s
+[    0.659008] raid6: altivecx2 gen()   346 MB/s
+
+***********************
+Log: kern.log
+-----------------------
+Central error: Sep  8 09:16:53 qemuppc kernel: [    0.496512] pci 0000:00:10.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff83800000)
+***********************
+Sep  8 09:16:53 qemuppc kernel: [    0.454838] pci 0000:00:0e.0: reg 0x10: [mem 0x81000000-0x81ffffff pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.460907] pci 0000:00:02:28:18 - bitbake-worker - RESULTS - Testcase 723: PASSED
+02:30:27 - bitbake-worker - RESULTS - Testcase 725: PASSED
+02:31:57 - bitbake-worker - RESULTS - Testcase 726: PASSED
+02:32:26 - bitbake-worker - RESULTS - Testcase 729: PASSED
+02:34:12 - bitbake-worker - RESULTS - Testcase 727: PASSED
+02:35:58 - bitbake-worker - RESULTS - Testcase 731: PASSED
+02:36:05 - bitbake-worker - RESULTS - Testcase 960: PASSED
+02:36:05 - bitbake-worker - RESULTS - Testcase 191: PASSED
+02:37:06 - bitbake-worker - RESULTS - Testcase 195: PASSED
+02:37:09 - bitbake-worker - RESULTS - Testcase 192: PASSED
+02:37:13 - bitbake-worker - RESULTS - Testcase 1096: PASSED
+02:37:15 - bitbake-worker - RESULTS - Testcase 194: PASSED
+6:53 qemuppc kernel: [    0.488903] pci 0000:00:10.0: [1af4:1005] type 00 class 0x00ff00
+Sep  8 09:16:53 qemuppc kernel: [    0.490485] pci 0000:00:10.0: reg 0x10: [io  0x0480-0x049f]
+Sep  8 09:16:53 qemuppc kernel: [    0.496512] pci 0000:00:10.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff83800000)
+Sep  8 09:16:53 qemuppc kernel: [    0.496783] pci 0000:00:10.0: reg 0x20: [mem size 0x00800000 64bit pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.500345] pci 0000:00:11.0: [1af4:1001] type 00 class 0x010000
+Sep  8 09:16:53 qemuppc kernel: [    0.501790] pci 0000:00:11.0: reg 0x10: [io  0x0500-0x053f]
+Sep  8 09:16:53 qemuppc kernel: [    0.507362] pci 0000:00:11.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff84000000)
+Sep  8 09:16:53 qemuppc kernel: [    0.507677] pci 0000:00:11.0: reg 0x20: [mem size 0x00800000 64bit pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.513905] pci_bus 0000:00: busn_res: [bus 00-ff] end is updated to 00
+Sep  8 09:16:53 qemuppc kernel: [    0.516493] PCI 0000:00 Cannot reserve Legacy IO [io  0x0000-0x0fff]
+Sep  8 09:16:53 qemuppc kernel: [    0.517512] pci 0000:00:0f.0: BAR 4: assigned [mem 0x80800000-0x80ffffff 64bit pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.518877] pci 0000:00:10.0: BAR 4: assigned [mem 0x82800000-0x82ffffff 64bit pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.519890] pci 0000:00:11.0: BAR 4: assigned [mem 0x83800000-0x83ffffff 64bit pref]
+
+***********************
+Central error: Sep  8 09:16:53 qemuppc kernel: [    0.483796] pci 0000:00:0f.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff82800000)
+***********************
+Sep  8 09:16:53 qemuppc kernel: [    0.435904] pci 0000:00:0c.0: [106b:0022] type 00 class 0xff0000
+Sep  8 09:16:53 qemuppc kernel: [    0.437508] pci 0000:00:0c.0: reg 0x10: [mem 0x80000000-0x8007ffff]
+Sep  8 09:16:53 qemuppc kernel: [    0.443529] pci 0000:00:0d.0: [106b:003f] type 00 class 0x0c0310
+Sep  8 09:16:53 qemuppc kernel: [    0.444616] pci 0000:00:0d.0: reg 0x10: [mem 0x80080000-0x800800ff]
+Sep  8 09:16:53 qemuppc kernel: [    0.452322] pci 0000:00:0e.0: [1234:1111] type 00 class 0x030000
+Sep  8 09:16:53 qemuppc kernel: [    0.454838] pci 0000:00:0e.0: reg 0x10: [mem 0x81000000-0x81ffffff pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.460907] pci 0000:00:0e.0: reg 0x18: [mem 0x82000000-0x82000fff]
+Sep  8 09:16:53 qemuppc kernel: [    0.469850] pci 0000:00:0e.0: reg 0x30: [mem 0x82010000-0x8201ffff pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.470660] pci 0000:00:0f.0: [1af4:1000] type 00 class 0x020000
+Sep  8 09:16:53 qemuppc kernel: [    0.474981] pci 0000:00:0f.0: reg 0x10: [io  0x0400-0x041f]
+Sep  8 09:16:53 qemuppc kernel: [    0.483796] pci 0000:00:0f.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff82800000)
+Sep  8 09:16:53 qemuppc kernel: [    0.484204] pci 0000:00:0f.0: reg 0x20: [mem size 0x00800000 64bit pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.488077] pci 0000:00:0f.0: reg 0x30: [mem 0x83000000-0x8303ffff pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.488903] pci 0000:00:10.0: [1af4:1005] type 00 class 0x00ff00
+Sep  8 09:16:53 qemuppc kernel: [    0.490485] pci 0000:00:10.0: reg 0x10: [io  0x0480-0x049f]
+Sep  8 09:16:53 qemuppc kernel: [    0.496512] pci 0000:00:10.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff83800000)
+Sep  8 09:16:53 qemuppc kernel: [    0.496783] pci 0000:00:10.0: reg 0x20: [mem size 0x00800000 64bit pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.500345] pci 0000:00:11.0: [1af4:1001] type 00 class 0x010000
+Sep  8 09:16:53 qemuppc kernel: [    0.501790] pci 0000:00:11.0: reg 0x10: [io  0x0500-0x053f]
+Sep  8 09:16:53 qemuppc kernel: [    0.507362] pci 0000:00:11.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff84000000)
+Sep  8 09:16:53 qemuppc kernel: [    0.507677] pci 0000:00:11.0: reg 0x20: [mem size 0x00800000 64bit pref]
+
+***********************
+Central error: Sep  8 09:16:53 qemuppc kernel: [    0.507362] pci 0000:00:11.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff84000000)
+***********************
+Sep  8 09:16:53 qemuppc kernel: [    0.474981] pci 0000:00:0f.0: reg 0x10: [io  0x0400-0x041f]
+Sep  8 09:16:53 qemuppc kernel: [    0.483796] pci 0000:00:0f.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff82800000)
+Sep  8 09:16:53 qemuppc kernel: [    0.484204] pci 0000:00:0f.0: reg 0x20: [mem size 0x00800000 64bit pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.488077] pci 0000:00:0f.0: reg 0x30: [mem 0x83000000-0x8303ffff pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.488903] pci 0000:00:10.0: [1af4:1005] type 00 class 0x00ff00
+Sep  8 09:16:53 qemuppc kernel: [    0.490485] pci 0000:00:10.0: reg 0x10: [io  0x0480-0x049f]
+Sep  8 09:16:53 qemuppc kernel: [    0.496512] pci 0000:00:10.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff83800000)
+Sep  8 09:16:53 qemuppc kernel: [    0.496783] pci 0000:00:10.0: reg 0x20: [mem size 0x00800000 64bit pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.500345] pci 0000:00:11.0: [1af4:1001] type 00 class 0x010000
+Sep  8 09:16:53 qemuppc kernel: [    0.501790] pci 0000:00:11.0: reg 0x10: [io  0x0500-0x053f]
+Sep  8 09:16:53 qemuppc kernel: [    0.507362] pci 0000:00:11.0: reg 0x20: can't handle BAR above 4GB (bus address 0xffffffff84000000)
+Sep  8 09:16:53 qemuppc kernel: [    0.507677] pci 0000:00:11.0: reg 0x20: [mem size 0x00800000 64bit pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.513905] pci_bus 0000:00: busn_res: [bus 00-ff] end is updated to 00
+Sep  8 09:16:53 qemuppc kernel: [    0.516493] PCI 0000:00 Cannot reserve Legacy IO [io  0x0000-0x0fff]
+Sep  8 09:16:53 qemuppc kernel: [    0.517512] pci 0000:00:0f.0: BAR 4: assigned [mem 0x80800000-0x80ffffff 64bit pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.518877] pci 0000:00:10.0: BAR 4: assigned [mem 0x82800000-0x82ffffff 64bit pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.519890] pci 0000:00:11.0: BAR 4: assigned [mem 0x83800000-0x83ffffff 64bit pref]
+Sep  8 09:16:53 qemuppc kernel: [    0.521435] pci_bus 0000:00: resource 4 [io  0x0000-0x7fffff]
+Sep  8 09:16:53 qemuppc kernel: [    0.521480] pci_bus 0000:00: resource 5 [mem 0x80000000-0x8fffffff]
+Sep  8 09:16:53 qemuppc kernel: [    0.625708] raid6: altivecx1 gen()   337 MB/s
+Sep  8 09:16:53 qemuppc kernel: [    0.694012] raid6: altivecx2 gen()   342 MB/s
+
+***********************
+9 errors found in logs.02:28:23 - bitbake-worker - RESULTS - Testcase 728: PASSED
+02:30:46 - bitbake-worker - RESULTS - Testcase 723: PASSED
+02:33:11 - bitbake-worker - RESULTS - Testcase 725: PASSED
+02:34:51 - bitbake-worker - RESULTS - Testcase 726: PASSED
+02:35:24 - bitbake-worker - RESULTS - Testcase 729: PASSED
+02:37:20 - bitbake-worker - RESULTS - Testcase 727: PASSED
+02:39:24 - bitbake-worker - RESULTS - Testcase 731: PASSED
+02:39:32 - bitbake-worker - RESULTS - Testcase 960: PASSED
+02:39:33 - bitbake-worker - RESULTS - Testcase 191: PASSED
+02:41:49 - bitbake-worker - RESULTS - Testcase 195: PASSED
+02:41:57 - bitbake-worker - RESULTS - Testcase 192: PASSED
+02:42:09 - bitbake-worker - RESULTS - Testcase 1096: PASSED
+02:42:14 - bitbake-worker - RESULTS - Testcase 194: PASSED
+D
+02:40:52 - bitbake-worker - RESULTS - Testcase 191: PASSED
+02:43:15 - bitbake-worker - RESULTS - Testcase 195: PASSED
+02:43:23 - bitbake-worker - RESULTS - Testcase 192: PASSED
+02:43:36 - bitbake-worker - RESULTS - Testcase 1096: PASSED
+02:43:41 - bitbake-worker - RESULTS - Testcase 194: PASSED
+02:41:59 - bitbake-worker - RESULTS - Testcase 729: PASSED
+02:43:52 - bitbake-worker - RESULTS - Testcase 727: PASSED
+02:46:00 - bitbake-worker - RESULTS - Testcase 731: PASSED
+02:46:09 - bitbake-worker - RESULTS - Testcase 960: PASSED
+02:46:11 - bitbake-worker - RESULTS - Testcase 191: PASSED
+02:48:15 - bitbake-worker - RESULTS - Testcase 195: PASSED
+02:48:24 - bitbake-worker - RESULTS - Testcase 192: PASSED
+02:48:35 - bitbake-worker - RESULTS - Testcase 1096: PASSED
+02:48:39 - bitbake-worker - RESULTS - Testcase 194: PASSED
