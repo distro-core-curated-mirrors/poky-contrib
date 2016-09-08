@@ -3,9 +3,11 @@ HOMEPAGE = "http://talloc.samba.org"
 SECTION = "libs"
 LICENSE = "LGPL-3.0+ & GPL-3.0+"
 
-DEPENDS += "libaio libbsd"
+DEPENDS += "libbsd"
 
-SRC_URI = "http://samba.org/ftp/talloc/talloc-${PV}.tar.gz"
+SRC_URI = "http://samba.org/ftp/talloc/talloc-${PV}.tar.gz \
+           file://talloc-Add-configure-options-for-packages.patch \
+"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/LGPL-3.0;md5=bfccfe952269fff2b407dd11f2f3083b \
                     file://${COREBASE}/meta/files/common-licenses/GPL-3.0;md5=c79ff39f19dfec6d293b95dea7b07891"
 
@@ -15,7 +17,15 @@ SRC_URI[sha256sum] = "22d14911164d4de67ff76b5269fa5250d01f78c955bc77e28615350996
 
 inherit waf-samba
 
-PACKAGECONFIG[attr] = ",,attr"
+PACKAGECONFIG ??= "\
+    ${@bb.utils.contains('DISTRO_FEATURES', 'acl', 'acl', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'xattr', 'attr', '', d)} \
+"
+PACKAGECONFIG[acl] = "--with-acl,,acl"
+PACKAGECONFIG[attr] = "--with-attr,,attr"
+PACKAGECONFIG[libaio] = "--with-libaio,,libaio,"
+PACKAGECONFIG[libcap] = "--with-libcap,,libcap,"
+PACKAGECONFIG[valgrind] = "--with-valgrind,,valgrind,"
 
 SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'attr', '', 'file://avoid-attr-unless-wanted.patch', d)}"
 
