@@ -3,10 +3,12 @@ HOMEPAGE = "http://tevent.samba.org"
 SECTION = "libs"
 LICENSE = "LGPLv3+"
 
-DEPENDS += "libaio libbsd libtalloc"
+DEPENDS += "libbsd libtalloc"
 RDEPENDS_python-tevent = "python"
 
-SRC_URI = "http://samba.org/ftp/tevent/tevent-${PV}.tar.gz"
+SRC_URI = "http://samba.org/ftp/tevent/tevent-${PV}.tar.gz \
+           file://tevent-Add-configure-options-for-packages.patch \
+"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/LGPL-3.0;md5=bfccfe952269fff2b407dd11f2f3083b"
 
 SRC_URI[md5sum] = "4372c1430a1ecb7ea0adddfdf21c0d55"
@@ -14,7 +16,15 @@ SRC_URI[sha256sum] = "a4f519b0bbb718fe2175bee9011ee4d199675f28c2ef80531be38e7bba
 
 inherit waf-samba
 
-PACKAGECONFIG[attr] = ",,attr"
+PACKAGECONFIG ??= "\
+    ${@bb.utils.contains('DISTRO_FEATURES', 'acl', 'acl', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'xattr', 'attr', '', d)} \
+"
+PACKAGECONFIG[acl] = "--with-acl,,acl"
+PACKAGECONFIG[attr] = "--with-attr,,attr"
+PACKAGECONFIG[libaio] = "--with-libaio,,libaio,"
+PACKAGECONFIG[libcap] = "--with-libcap,,libcap,"
+PACKAGECONFIG[valgrind] = "--with-valgrind,,valgrind,"
 
 SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'attr', '', 'file://avoid-attr-unless-wanted.patch', d)}"
 
