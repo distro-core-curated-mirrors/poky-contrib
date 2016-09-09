@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 # ex:ts=4:sw=4:sts=4:et
 # -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
@@ -93,7 +93,7 @@ function cloneorpull() {
     # clone and pw configure
     if [ -d $path/.git ]; then
 	( cd $path
-	  git clean -xf
+	  git clean -f
 	  git checkout master
 	  git pull )
     else
@@ -108,10 +108,9 @@ function pwconfigure() {
     ( cd $path
       git config patchwork.default.url $pwurl
       git config patchwork.default.project $pwproject
+      grep ".git-pw.$pwproject.poll.timestamp" .gitignore || { echo ".git-pw.$pwproject.poll.timestamp" >> .gitignore; }
     )
 }
-
-# main()
 
 # make sure base folder is provided by user
 test -z "$base" && { echo "Please provide a base folder"; usage; }
@@ -123,10 +122,17 @@ test ! -d "$poky" && { echo "Please build a qemu machine according to the guest 
 test ! -d $base && mkdir $base
 
 # clone or pull relevant repos
-PW=$base/patchwork && cloneorpull https://github.com/dlespiau/patchwork.git $PW
-PT=$base/patchtest && cloneorpull ssh://git@git.yoctoproject.org/patchtest $PT
-SUITE=$base/patchtest-oe && cloneorpull ssh://git@git.yoctoproject.org/patchtest-oe $SUITE
-REPO=$base/openembedded-core && cloneorpull git://git.openembedded.org/openembedded-core $REPO
+PW=$base/patchwork
+cloneorpull https://github.com/dlespiau/patchwork.git $PW
+
+PT=$base/patchtest
+cloneorpull ssh://git@git.yoctoproject.org/patchtest $PT
+
+SUITE=$base/patchtest-oe
+cloneorpull ssh://git@git.yoctoproject.org/patchtest-oe $SUITE
+
+REPO=$base/openembedded-core
+cloneorpull git://git.openembedded.org/openembedded-core $REPO
 
 # configure the repo to get latest mboxes
 pwconfigure $REPO $pwurl $pwproject
@@ -145,8 +151,9 @@ fetch-mboxes -r $REPO -m $base/mboxes
 		$image \
 		nographic \
 		kvm \
-		qemuparams="-fsdev local,id=test_dev,path=$base,security_model=mapped \
-                        -device virtio-9p-pci,fsdev=test_dev,mount_tag=test_mount"
+		qemuparams="-snapshot \
+                            -fsdev local,id=test_dev,path=$base,security_model=mapped \
+                            -device virtio-9p-pci,fsdev=test_dev,mount_tag=test_mount"
     else
 	echo 'oe-init-build-env could not be sourced'
     fi
