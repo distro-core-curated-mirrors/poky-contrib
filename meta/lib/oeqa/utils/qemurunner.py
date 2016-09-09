@@ -193,6 +193,7 @@ class QemuRunner:
 
         if self.is_alive():
             logger.info("qemu started - qemu procces pid is %s" % self.qemupid)
+            os.system("cpulimit -l 10 -p %d -b" % self.qemupid)
             if get_ip:
                 cmdline = ''
                 with open('/proc/%s/cmdline' % self.qemupid) as p:
