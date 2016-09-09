@@ -27,6 +27,20 @@ def find_sccs(d):
 
     return sources_list
 
+# returns the mode of any fragments specified on the SRC_URI that specify the
+# "kconfig_mode=" parameter. Valid modes are "alldefconfig" and "allnoconfig"
+# In the case of competing modes, the last fragment (or defconfig) wins
+def get_kconfig_mode(d):
+    kconfig_mode=""
+    fetch = bb.fetch2.Fetch([], d)
+    for url in fetch.urls:
+        urldata = fetch.ud[url]
+        parm = urldata.parm
+        if "kconfig_mode" in parm:
+            kconfig_mode = parm["kconfig_mode"]
+
+    return kconfig_mode
+
 # check the SRC_URI for "kmeta" type'd git repositories. Return the name of
 # the repository as it will be found in WORKDIR
 def find_kernel_feature_dirs(d):
@@ -64,15 +78,6 @@ do_kernel_metadata() {
 	set +e
 	cd ${S}
 	export KMETA=${KMETA}
-
-	# if kernel tools are available in-tree, they are preferred
-	# and are placed on the path before any external tools. Unless
-	# the external tools flag is set, in that case we do nothing.
-	if [ -f "${S}/scripts/util/configme" ]; then
-		if [ -z "${EXTERNAL_KERNEL_TOOLS}" ]; then
-			PATH=${S}/scripts/util:${PATH}
-		fi
-	fi
 
 	machine_branch="${@ get_machine_branch(d, "${KBRANCH}" )}"
 	machine_srcrev="${SRCREV_machine}"
@@ -263,6 +268,26 @@ do_validate_branches[depends] = "kern-tools-native:do_populate_sysroot"
 do_kernel_configme[dirs] += "${S} ${B}"
 do_kernel_configme() {
 	set +e
+	config_flags=""
+
+	# if there's a defconfig in the working directory, check to see if it
+	# came from the SRC_URI (versus an in-tree defconfig). if it came from
+	# the SRC_URI, check to see if there was a kconfig mode associated with
+	# the entry.
+	#
+	# If there was a mode specified, use that mode. Otherwise, we check to
+	# see if the KCONFIG_MODE variable is empty. If no specification has
+	# been provided, we default to "allnoconfig"
+	if [ -f ${WORKDIR}/defconfig ]; then
+		mode="${@get_kconfig_mode(d)}"
+		if [ -n "${mode}" ]; then
+			KCONFIG_MODE="${mode}"
+		else
+			 if [ -z "${KCONFIG_MODE}" ]; then
+				KCONFIG_MODE="allnoconfig"
+			 fi
+		fi
+	fi
 
 	# translate the kconfig_mode into something that merge_config.sh
 	# understands
@@ -273,11 +298,6 @@ do_kernel_configme() {
 		*alldefconfig)
 			config_flags=""
 			;;
-	    *)
-		if [ -f ${WORKDIR}/defconfig ]; then
-			config_flags="-n"
-		fi
-	    ;;
 	esac
 
 	cd ${S}
