@@ -152,6 +152,9 @@ class SmartRepoTest(SmartTest):
         self.smart('remove -y psplash')
         self.smart('install -y psplash-default')
 
+    def test_smart_install_from_dis(self):
+        self.smart('download psplash-default; smart remove -y psplash-default; smart install -y ./psplash-default*; smart remove -y psplash-default; smart install -y ./psplash-default*; smart remove -y psplash-default; smart install -y ./psplash-default* ')
+
     @testcase(723)
     @skipUnlessPassed('test_smart_channel_add')
     def test_smart_install_from_disk(self):
