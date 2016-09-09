@@ -2,15 +2,13 @@
 === Host installation and Guest execution: a **secure** approach
 
 This method is the recommended way when patch testing is done automatically, i.e. through a 'cronjob'. However,
-if you want to test patches your own patches, the <<host,host>> approach is a better option, making it easier and
+if you want to test your own patches, the <<host,host>> approach is a better option, making it easier and
 faster the code cycle ('code-test-code').
 
 NOTE: The below code snipets have been collected into a script 'scripts/pt-cronjob' so it can be easily run
 from a cronjob.
 
 * As in the <<host, host>> section, follow the steps <<env-vars, environment variables setting>> and <<cloning, cloning>>.
-
-* TODO: include `chmod` lines to remove write permission into the  '$BASE' folders, so guest can not touch it.
 
 * Fetch latest mboxes from patchwork, previously configured as shown <<pw, Patchwork>> section.
 
@@ -22,8 +20,8 @@ fetch-mboxes -r $REPO -m $BASE/mboxes
 The above script will create a folder '$BASE/mboxes' containing the mboxes for every
 new series-revision polled.
 
-* Using the https://www.yoctoproject.org/[Yocto Project] system, create a 'qemu' machine including
-the 'meta-patchtest' layer (located on this repository).
+[[poky]]
+* Using the https://www.yoctoproject.org/[Yocto Project] system, create a 'qemu' machine
 [NOTE]
 In case of trouble, please refer to the main Yocto Project https://www.yoctoproject.org/documentation[documentation]
 for more information, specially the Yocto Project Quick Start Guide document.
@@ -31,10 +29,13 @@ for more information, specially the Yocto Project Quick Start Guide document.
 [source,shell]
 ----
 cd $BASE
+git clone git://git.openembedded.org/meta-openembedded
 git clone git://git.yoctoproject.org/poky
 cd poky
 . oe-init-build-env
-echo "BBLAYERS += \"$PT/meta-patchtest\"' >> conf/bblayers.conf
+echo "BBLAYERS += \"$BASE/meta-openembedded/meta-oe\"" >> conf/bblayers.conf
+echo "BBLAYERS += \"$BASE/meta-openembedded/meta-python\"" >> conf/bblayers.conf
+echo "BBLAYERS += \"$PT/meta-patchtest\"" >> conf/bblayers.conf
 bitbake core-image-patchtest
 ----
 
@@ -46,7 +47,8 @@ runqemu qemux86 \
 	core-image-patchtest \
 	nographic \
 	kvm \
-	qemuparams="-fsdev local,id=test_dev,path=$BASE,security_model=mapped \
+	qemuparams="-snapshot \
+		    -fsdev local,id=test_dev,path=$BASE,security_model=mapped \
 	            -device virtio-9p-pci,fsdev=test_dev,mount_tag=test_mount"
 ----
 
@@ -59,23 +61,15 @@ With this model, host view shows QEMU as the owner of all files created by any u
 [1].
 
 * The machine, once launched, will automatically execute 'patchtest'
-with all the new series and results stored in the 'latest-results' folder.
 
-* TODO: we should avoid this step, using a 'qemu' parameter to take
-a clean image for every run.
-For security reasons, remove the 'qemu' machine
+* Currently, the machine is not turn off automatically, so one needs to
+login and halt the machine manually.
 
-[source,shell]
-----
-cd $POKY/build
-bitbake -c cleanall core-image-minimal
-----
-
-* Results are stored into the folder '$BASE/results'. You can `cd` into the folder and explored the results.
-This folder is a git repository and you can check history (and results) with `git-log` or `git-show` commands
+* Once on host again, results are stored into the folder '$BASE/results'. `cd` into the folder
+and explored the results with `git-log` or `git-show`:
 
 [source,shell]
 -----
-git log --show-notes=patchtest-results-*
+git log --show-notes=*
 ----
 

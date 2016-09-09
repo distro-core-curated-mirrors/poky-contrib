@@ -19,3 +19,6 @@ or as parameter
 ----
 patchtest somepatch.patch --start-directory $START
 ----
+
+You can see the test results on the console (passes, fails and skips tests). There are others parameters
+you can include, see `patchtest -h` for more help.

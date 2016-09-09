@@ -22,8 +22,8 @@ and fetch and test in the same command line
 git pw mbox 1487 | patchtest - --test-dir $START
 ----
 
-'patchwork' can also store test results, thus two more configurations are needed
-in order to post results.
+'patchwork' can also post test results using `git-pw post-result`, thus two more configurations (credentials) are needed
+
 
 [[pw-user-config]]
 [source,shell]

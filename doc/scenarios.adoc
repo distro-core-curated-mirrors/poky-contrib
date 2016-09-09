@@ -104,25 +104,45 @@ test failures). As in the `-o` case, the branch can be visited and commits revie
 [[cronjob]]
 ==== A cronjob for automatic testing
 
-One way to monitor new patches coming into a patchwork instance is to collect the following lines
-into a script and call it from a cronjob:
+One way to monitor new patches coming into a patchwork instance is to run the script `pt-cronjob`
+periodically with a tool like `crontab`. Before running the cron, a Poky image must be created
+following the instructions from <<poky, guest>> then set the environment variable `POKY` pointing
+to the path to the poky folder. Image creation takes a lot of time, and this is the reason
+it is not created every time the cron starts. Once created, follow these steps:
+
+* Define a share folder (his folder is the one to be shared between host and guest)
 
 [source,shell]
 ----
-TS="cronjob/$(date +%s)"
-MBOXES="$TS/mboxes"
-RESULTS="$TS/results"
-(cd $REPO; git pull)
-fetch-mboxes -r $REPO -m $MBOXES
-test-mboxes  -r $REPO -s $START -o $RESULTS $MBOXES
+SHARE="$HOME/share"
 ----
 
-Each time the cronjob runs, there would be a unique folder (based on the timestamp) containing mboxes
-and test results. Results can be inspected or push them to upstream if desire. For this last point,
-`git-notes` are not pushed upstream when pushing a branch, so these needs to be done separately
+* Clean previous mboxes
 
 [source,shell]
 ----
-git push origin refs/notes/patchtest-*
+rm -rf $SHARE/mboxes
 ----
+
+* Launch the script (this time, we will do it manually instead of using `crontab`)
+
+[source,shell]
+----
+pt-cronjob -P $POKY -b $SHARE
+----
+
+This script does the following: clone or pull relevant repositories, fetch the new series from
+patchwork and finally launch the `core-image-patchtest` guest machine. The guest has a init script
+which will automatically look into `$SHARE/mboxes` folder and execute patchtest on each mbox and
+store results into `$SHARE/results`, all done in the system start up.
+
+WARNING: Currently, the machine does not shutdown automatically, thus one needs to login and shutdown.
+
+* Once in host, `cd` into `$SHARE/results` folder and look the results with `git-log`
+
+[source,shell]
+----
+git log --show-notes=*
+----
+
 

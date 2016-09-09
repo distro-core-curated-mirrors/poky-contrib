@@ -3,7 +3,7 @@
 [WARNING]
 Testing series coming from 'patchwork' without inspection may be risky on a insufficiently secured
 environment; if this is the case, it is [red]#strongly recommended# to execute patchtest in a guest machine
-as indicated on the <<guest, guest >> section.
+as indicated on the <<guest, guest>> section.
 
 [[env-vars]]
 * Define the following environment variables
@@ -22,8 +22,8 @@ REPO=$BASE/openembedded-core
 * Clone repositories
 [NOTE]
 In case your already have the repositories, make sure you update them before testing.
-The 'patchtest' and in this case the suite, are live projects and checks are being added
-constantly.
+The 'patchtest' and in this case, the suite, are live projects and for the later,
+more checks are planned to be added.
 
 [source,shell]
 ----
