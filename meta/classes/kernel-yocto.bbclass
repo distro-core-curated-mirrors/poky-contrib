@@ -112,6 +112,9 @@ do_kernel_metadata() {
 				cmp "${WORKDIR}/defconfig" "${S}/arch/${ARCH}/configs/${KBUILD_DEFCONFIG}"
 				if [ $? -ne 0 ]; then
 					bbwarn "defconfig detected in WORKDIR. ${KBUILD_DEFCONFIG} skipped"
+				else
+					cp -f ${S}/arch/${ARCH}/configs/${KBUILD_DEFCONFIG} ${WORKDIR}/defconfig
+					sccs="${WORKDIR}/defconfig"
 				fi
 			else
 				cp -f ${S}/arch/${ARCH}/configs/${KBUILD_DEFCONFIG} ${WORKDIR}/defconfig
