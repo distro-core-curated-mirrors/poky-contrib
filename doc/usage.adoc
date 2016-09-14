@@ -1,23 +1,23 @@
 [[usage]]
 === Usage
 
-When testing patches locally you can run the tool manually on your local
+When testing patches locally you can manually run the tool on your local
 host. Before testing, follow the <<host, host>> installation
 steps. In this section we focus on simple usages of the tool.
 
-'Patchtest' can only accept a **single** patch either from stdin
+'Patchtest' only accepts a **single** patch either from stdin
 
 [source,shell]
 ----
 cd $REPO
-git format-patch -1 --stdout | patchtest - --start-directory $START
+git format-patch -1 --stdout | patchtest - --start-dir $START
 ----
 
 or as parameter
 
 [source,shell]
 ----
-patchtest somepatch.patch --start-directory $START
+patchtest somepatch.patch --start-dir $START
 ----
 
 You can see the test results on the console (passes, fails and skips tests). There are others parameters
