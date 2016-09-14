@@ -1,16 +1,16 @@
 [[guest]]
 === Host installation and Guest execution: a **secure** approach
 
-This method is the recommended way when patch testing is done automatically, i.e. through a 'cronjob'. However,
-if you want to test your own patches, the <<host,host>> approach is a better option, making it easier and
-faster the code cycle ('code-test-code').
+This method is recommended when patch testing is done automatically (i.e. through a 'cronjob'); however,
+if you want to test your own patches, the <<host,host>> approach is a better option for making the code
+cycle faster ('code-test-code').
 
-NOTE: The below code snipets have been collected into a script 'scripts/pt-cronjob' so it can be easily run
-from a cronjob.
+NOTE: The code snipets shown below have been collected into a script 'scripts/pt-cronjob' so they can be easily run
+from a cronjob
 
-* As in the <<host, host>> section, follow the steps <<env-vars, environment variables setting>> and <<cloning, cloning>>.
+* As in the <<host, host>> section, follow the <<env-vars, environment variables setting>> and <<cloning, cloning>> steps.
 
-* Fetch latest mboxes from patchwork, previously configured as shown <<pw, Patchwork>> section.
+* Fetch latest mboxes from Patchwork, having it previously configured as shown in the <<pw, Patchwork>> section.
 
 [source, shell]
 ----
@@ -21,10 +21,9 @@ The above script will create a folder '$BASE/mboxes' containing the mboxes for e
 new series-revision polled.
 
 [[poky]]
-* Using the https://www.yoctoproject.org/[Yocto Project] system, create a 'qemu' machine
+* Create a qemu machine using the https://www.yoctoproject.org/[Yocto Project] build system
 [NOTE]
-In case of trouble, please refer to the main Yocto Project https://www.yoctoproject.org/documentation[documentation]
-for more information, specially the Yocto Project Quick Start Guide document.
+For troubleshooting, please refer to the main Yocto Project https://www.yoctoproject.org/documentation[documentation], specially the http://www.yoctoproject.org/docs/latest/yocto-project-qs/yocto-project-qs.html[Yocto Project Quick Start Guide].
 
 [source,shell]
 ----
@@ -60,13 +59,13 @@ With this model, host view shows QEMU as the owner of all files created by any u
 (including root) on the guest hence provides complete isolation and security
 [1].
 
-* The machine, once launched, will automatically execute 'patchtest'
+* Once launched, the virtual machine will automatically execute 'patchtest'
 
-* Currently, the machine is not turn off automatically, so one needs to
-login and halt the machine manually.
+* Currently, the machine is not being turned off automatically, so one needs to
+login (as root) and halt the machine manually.
 
-* Once on host again, results are stored into the folder '$BASE/results'. `cd` into the folder
-and explored the results with `git-log` or `git-show`:
+* Once on host again, the results are stored into the folder '$BASE/results'. Now you
+can `cd` into the folder and explore the results with `git-log` or `git-show`:
 
 [source,shell]
 -----
