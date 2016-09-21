@@ -1,0 +1,7 @@
+# short-description: Create Beaglebone disk image
+# long-description: Creates a partitioned disk image for Beaglebone board
+# which can be directly copied to SD card.
+
+part /boot --ondisk mmcblk0 --label boot --fstype vfat --source bootimg-partition --align 1024 --active
+part /     --ondisk mmcblk0 --label root --fstype ext4 --source rootfs --align 1024
+
