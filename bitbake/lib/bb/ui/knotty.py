@@ -240,6 +240,7 @@ class TerminalFilter(object):
         if (not self.helper.tasknumber_total or self.helper.tasknumber_current == self.helper.tasknumber_total) and not len(activetasks):
             return
         tasks = []
+
         for t in runningpids:
             progress = activetasks[t].get("progress", None)
             if progress is not None:
