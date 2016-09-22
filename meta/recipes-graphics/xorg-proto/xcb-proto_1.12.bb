@@ -28,3 +28,9 @@ RDEPENDS_${PN}-dev = ""
 RRECOMMENDS_${PN}-dbg = "${PN}-dev (= ${EXTENDPKGV})"
 
 BBCLASSEXTEND = "native nativesdk"
+
+do_install_append() {
+    # Create blank .pyc files, so that they will be recorded in
+    # manifest, and can be cleaned correctly.
+    find ${D}${libdir}/xcb-proto/xcbgen -type f -maxdepth 1 -name '*.py' -exec touch {}c \;
+}
