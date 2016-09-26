@@ -1160,21 +1160,6 @@ class RunQueue:
             cache[tid] = iscurrent
         return iscurrent
 
-    def setup_make_fifo(self):
-        fifoname = "/tmp/makefifo"
-        threads = 20
-        if os.path.exists(fifoname):
-            os.remove(fifoname)
-        os.mkfifo(fifoname)
- 
-        # Has to be open for read and writing
-        self.makereadfd = os.open(fifoname, os.O_RDONLY|os.O_NONBLOCK)
-        self.makewritefd = os.open(fifoname, os.O_WRONLY)
-        wfd = os.fdopen(self.makewritefd, 'w')
-
-        for x in range(0, threads):
-            wfd.write('+')
-
     def _execute_runqueue(self):
         """
         Run the tasks in a queue prepared by rqdata.prepare()
@@ -1206,8 +1191,6 @@ class RunQueue:
                 depgraph = self.cooker.buildDependTree(self, self.rqdata.taskData)
                 self.rqdata.init_progress_reporter.next_stage()
                 bb.event.fire(bb.event.DepTreeGenerated(depgraph), self.cooker.data)
-
-                self.setup_make_fifo()
 
         if self.state is runQueueSceneInit:
             dump = self.cooker.configuration.dump_signatures
