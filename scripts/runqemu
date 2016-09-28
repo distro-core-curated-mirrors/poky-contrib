@@ -870,20 +870,20 @@ class BaseConfig(object):
         if not mach:
             return None
 
-        if mach == 'qemuarm':
-            qbsys = 'arm'
-        elif mach == 'qemuarm64':
+        if 'qemuarm64' in mach:
             qbsys = 'aarch64'
-        elif mach == 'qemux86':
-            qbsys = 'i386'
-        elif mach == 'qemux86-64':
+        elif 'qemuarm' in mach:
+            qbsys = 'arm'
+        elif 'qemux86-64' in mach:
             qbsys = 'x86_64'
-        elif mach == 'qemuppc':
+        elif 'qemux86' in mach:
+            qbsys = 'i386'
+        elif 'qemuppc' in mach:
             qbsys = 'ppc'
-        elif mach == 'qemumips':
-            qbsys = 'mips'
-        elif mach == 'qemumips64':
+        elif 'qemumips64' in mach:
             qbsys = 'mips64'
+        elif 'qemumips' in mach:
+            qbsys = 'mips'
 
         return 'qemu-system-%s' % qbsys
 
