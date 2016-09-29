@@ -32,7 +32,7 @@ mergeall=''
 
 function usage() {
     cat << EOF
-\$ $(basename $0) -v -A -r <repodir> -s <startdir> -a <assemble branch> -p <start point> -o <outrepodir> (mboxdir | <patch>) ...
+\$ $(basename $0) -r <repodir> -s <startdir> [-a <assemble branch> [-A]] [-p <start point>] [-o <outrepodir>] [-v] (mboxdir | <patch>) ...
 
 where
 
@@ -40,7 +40,7 @@ where
     <startdir>        : Start directory for test discovery
     <assemble branch> : Branch name to assemble patches (that can be merged), including results as git-notes
     <start point>     : Start point for assemble branch. Defaults to $startpoint
-    <merge all>       : Merge the mboxes on <assemble branch> no matter if some tests have failed. By default merge is only
+    -A                : Merge the mboxes on <assemble branch> no matter if some tests have failed. By default merge is only
                         on mboxes that have passed all tests (skips are not considered)
     <outrepodir>      : Output git repository for patchtest results, created if it does not exist. Defaults to $outrepodir
     <mboxdir>         : Directory containing mboxes
