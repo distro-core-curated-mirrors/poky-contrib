@@ -41,9 +41,9 @@ class ExecutionError(CmdError):
     def __str__(self):
         message = ""
         if self.stderr:
-            message += self.stderr
+            message += self.stderr.decode("utf-8")
         if self.stdout:
-            message += self.stdout
+            message += self.stdout.decode("utf-8")
         if message:
             message = ":\n" + message
         return (CmdError.__str__(self) +
@@ -129,7 +129,7 @@ def _logged_communicate(pipe, log, input, extrafiles):
 
             readextras(r)
 
-    finally:    
+    finally:
         log.flush()
 
     readextras([fobj for fobj, _ in extrafiles])
