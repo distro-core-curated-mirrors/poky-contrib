@@ -25,7 +25,7 @@
 #MACHINE ?= "qemux86"
 #MACHINE ?= "qemux86-64"
 #
-# There are also the following hardware board target machines included for 
+# There are also the following hardware board target machines included for
 # demonstration purposes:
 #
 #MACHINE ?= "beaglebone"
@@ -83,12 +83,12 @@ MACHINE ??= "qemux86"
 #
 # The distribution setting controls which policy settings are used as defaults.
 # The default value is fine for general Yocto project use, at least initially.
-# Ultimately when creating custom policy, people will likely end up subclassing 
+# Ultimately when creating custom policy, people will likely end up subclassing
 # these defaults.
 #
 DISTRO ?= "poky"
 # As an example of a subclass there is a "bleeding" edge policy configuration
-# where many versions are set to the absolute latest code from the upstream 
+# where many versions are set to the absolute latest code from the upstream
 # source control systems. This is just mentioned here as an example, its not
 # useful to most new users.
 # DISTRO ?= "poky-bleeding"
@@ -219,6 +219,18 @@ BB_DISKMON_DIRS = "\
 #file://.* http://someserver.tld/share/sstate/PATH;downloadfilename=PATH \n \
 #file://.* file:///some/local/dir/sstate/PATH"
 
+#
+# Uninative tarball from other locations
+#
+# By default the uninative tarball used to isolate the build system from the
+# host's C library is downloaded from downloads.yoctoproject.org.
+# To override this set
+# UNINATIVE_URL ?=  http://someserver.tld/mytarballdir/
+# if you have changed/modified the tarball, you will also need to set
+# for a 32 bit host:
+# UNINATIVE_CHECKSUM[i686] ?= "long md5sum"
+# or for a 64 bit host:
+# UNINATIVE_CHECKSUM[x86_64] ?= "other long md5sum"
 
 #
 # Qemu configuration
