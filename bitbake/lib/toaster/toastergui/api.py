@@ -293,8 +293,7 @@ class XhrCustomRecipe(View):
             # create layer 'Custom layer' and verion if needed
             layer = Layer.objects.get_or_create(
                 name=CustomImageRecipe.LAYER_NAME,
-                summary="Layer for custom recipes",
-                vcs_url="file:///toaster_created_layer")[0]
+                summary="Layer for custom recipes")[0]
 
             # Check if we have a layer version already
             # We don't use get_or_create here because the dirpath will change
@@ -306,6 +305,7 @@ class XhrCustomRecipe(View):
                 lver, created = Layer_Version.objects.get_or_create(
                     project=params['project'],
                     layer=layer,
+                    layer_source=LayerSource.TYPE_LOCAL,
                     dirpath="toaster_created_layer")
 
             # Add a dependency on our layer to the base recipe's layer
