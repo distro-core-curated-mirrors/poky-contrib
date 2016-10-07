@@ -443,6 +443,10 @@ def bitbake_main(configParams, configuration):
 
     # Clear away any spurious environment variables while we stoke up the cooker
     cleanedvars = bb.utils.clean_environment()
+    try:
+        raise Exception
+    except:
+        raise BBMainException('FATAL: Unable to handle exceptions afterwards')
 
     featureset = []
     if not configParams.server_only:
