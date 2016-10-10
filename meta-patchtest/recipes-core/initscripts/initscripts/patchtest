@@ -3,16 +3,14 @@
 # Provides:          patchtest
 # Required-Start:    $local_fs mountvirtfs
 # Required-Stop:     $local_fs
-# Default-Start:     S
-# Default-Stop:      0 6
+# Default-Start:     3 5
+# Default-Stop:
 # Short-Description: Execute patchtest and quits inmediately
 # Description:       Execute patchtest (the framework to test mboxes)
 #                    taking as input those file mboxes located at
 #                    $base/mboxes folder and results are stored into
 #                    $base/results
 ### END INIT INFO
-
-. /etc/default/rcS
 
 test "$VERBOSE" != no && echo "Executing patchtest..."
 
@@ -41,6 +39,8 @@ test-mboxes -r $REPO \
 	    -o $RESULTS \
 	    $MBOXES
 
-# TODO: place a command to halt the system (neither halt, shutdown not init worked)
+
+# poweroff the machine
+init 0
 
 : exit 0
