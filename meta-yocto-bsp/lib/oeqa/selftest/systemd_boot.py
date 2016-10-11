@@ -9,6 +9,11 @@ import logging
 
 class Systemdboot(oeSelfTest):
 
+    def setUpLocal(self):
+        if self.distro == 'poky-tiny':
+            if get_bb_var('MACHINE') != 'qemux86':
+                self.skipTest('Machine %s not compatible with linux-yocto-tiny' % self.machine)
+
     def _common_setup(self):
         """
         Common setup for test cases: 1445, XXXX

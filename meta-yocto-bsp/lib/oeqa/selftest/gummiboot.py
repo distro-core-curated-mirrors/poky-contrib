@@ -9,6 +9,11 @@ import logging
 
 class Gummiboot(oeSelfTest):
 
+    def setUpLocal(self):
+        if self.distro == 'poky-tiny':
+            if get_bb_var('MACHINE') != 'qemux86':
+                self.skipTest('Machine %s not compatible with linux-yocto-tiny' % self.machine)
+
     def _common_setup(self):
         """
         Common setup for test cases: 1101, 1103
@@ -26,7 +31,6 @@ class Gummiboot(oeSelfTest):
 
         # Build a genericx86-64/efi gummiboot image
         bitbake('syslinux syslinux-native parted-native dosfstools-native mtools-native core-image-minimal')
-
 
     @testcase(1101)
     def test_efi_gummiboot_images_can_be_built(self):
