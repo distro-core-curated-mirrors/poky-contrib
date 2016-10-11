@@ -60,6 +60,8 @@ class ImageOptionsTests(oeSelfTest):
     @testcase(1435)
     def test_read_only_image(self):
         self.write_config('IMAGE_FEATURES += "read-only-rootfs"')
+        if self.distro == 'poky-tiny':
+            self.skipTest('core-image-sato is not buildable with poky-tiny')
         bitbake("core-image-sato")
         # do_image will fail if there are any pending postinsts
 
