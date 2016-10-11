@@ -382,6 +382,8 @@ class RecipetoolTests(RecipetoolBase):
 
     @testcase(1194)
     def test_recipetool_create_git(self):
+        if self.distro == 'poky-tiny':
+            self.skipTest('Test not possible with poky-tiny because it requires a libx11 provider')
         # Ensure we have the right data in shlibs/pkgdata
         bitbake('libpng pango libx11 libxext jpeg libcheck')
         # Try adding a recipe
