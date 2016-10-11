@@ -25,8 +25,9 @@ class Gummiboot(oeSelfTest):
         """
 
         # Build a genericx86-64/efi gummiboot image
+        if self.distro == 'poky-tiny':
+            self.skipTest('Machine %s not compatible with linux-yocto-tiny' % get_bb_var('MACHINE'))
         bitbake('syslinux syslinux-native parted-native dosfstools-native mtools-native core-image-minimal')
-
 
     @testcase(1101)
     def test_efi_gummiboot_images_can_be_built(self):

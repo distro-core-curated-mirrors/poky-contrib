@@ -25,8 +25,9 @@ class Systemdboot(oeSelfTest):
         """
 
         # Build a genericx86-64/efi gummiboot image
+        if self.distro == 'poky-tiny':
+            self.skipTest('Machine %s not compatible with linux-yocto-tiny' % get_bb_var('MACHINE'))
         bitbake('mtools-native core-image-minimal')
-
 
     @testcase(1445)
     def test_efi_systemdboot_images_can_be_built(self):
