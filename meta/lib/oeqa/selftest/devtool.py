@@ -337,7 +337,8 @@ class DevtoolTests(DevtoolBase):
 
     @testcase(1161)
     def test_devtool_add_fetch_git(self):
-        # Fetch source
+        if self.distro == 'poky-tiny':
+            self.skipTest('libmatchbox2 is not buildable with poky-tiny because it requires a libx11 provider')
         tempdir = tempfile.mkdtemp(prefix='devtoolqa')
         self.track_for_cleanup(tempdir)
         url = 'git://git.yoctoproject.org/libmatchbox'
@@ -577,6 +578,8 @@ class DevtoolTests(DevtoolBase):
 
     @testcase(1378)
     def test_devtool_modify_virtual(self):
+        if self.distro == 'poky-tiny':
+            self.skipTest('Test not possible with poky-tiny because it requires a libx11 provider')
         # Try modifying a virtual recipe
         virtrecipe = 'virtual/libx11'
         realrecipe = 'libx11'
@@ -941,6 +944,8 @@ class DevtoolTests(DevtoolBase):
 
     @testcase(1379)
     def test_devtool_extract_virtual(self):
+        if self.distro == 'poky-tiny':
+            self.skipTest('Test not possible with poky-tiny because it requires a libx11 provider')
         tempdir = tempfile.mkdtemp(prefix='devtoolqa')
         # Try devtool extract
         self.track_for_cleanup(tempdir)
