@@ -68,6 +68,7 @@ class BitbakeLayers(oeSelfTest):
 
     @testcase(1384)
     def test_bitbakelayers_showrecipes(self):
+        distro = get_bb_var('DISTRO')
         result = runCmd('bitbake-layers show-recipes')
         self.assertIn('aspell:', result.output)
         self.assertIn('mtd-utils:', result.output)
@@ -77,11 +78,12 @@ class BitbakeLayers(oeSelfTest):
         self.assertIn('mtd-utils:', result.output)
         self.assertNotIn('aspell:', result.output)
         result = runCmd('bitbake-layers show-recipes -i kernel')
-        self.assertIn('linux-yocto:', result.output)
+        linux_yocto = 'linux-yocto-tiny' if distro == 'poky-tiny' else 'linux-yocto'
+        self.assertIn(linux_yocto, result.output)
         self.assertNotIn('mtd-utils:', result.output)
         result = runCmd('bitbake-layers show-recipes -i image')
         self.assertIn('core-image-minimal', result.output)
-        self.assertNotIn('linux-yocto:', result.output)
+        self.assertNotIn(linux_yocto, result.output)
         self.assertNotIn('mtd-utils:', result.output)
         result = runCmd('bitbake-layers show-recipes -i cmake,pkgconfig')
         self.assertIn('libproxy:', result.output)
