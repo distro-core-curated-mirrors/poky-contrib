@@ -5,6 +5,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=b2beded7103a3d8a442a2a0391d607b0"
 SRC_URI = "git://anongit.freedesktop.org/piglit \
            file://0001-cmake-install-bash-completions-in-the-right-place.patch \
            file://0001-tests-Use-FE_UPWARD-only-if-its-defined-in-fenv.h.patch \
+           file://piglit.sh \
            "
 
 # From 2017-02-06
@@ -40,8 +41,13 @@ do_configure_prepend() {
 }
 
 do_install() {
-	oe_runmake -C ${B} 'DESTDIR=${D}' install/strip
+    oe_runmake -C ${B} 'DESTDIR=${D}' install/strip
+    mv ${D}${bindir}/piglit ${D}${bindir}/piglit.real
+    install -m 755 ${WORKDIR}/piglit.sh ${D}${bindir}/piglit
+    tar -C ${D}${libdir}/piglit/ -czf ${D}${libdir}/piglit/generated_tests.tar.gz generated_tests/
 }
+
+PACKAGES =+ "${PN}-generated-tests ${PN}-generated-tests-compressed"
 
 RDEPENDS_${PN} = "waffle python3 python3-mako python3-json \
 	python3-subprocess python3-misc python3-importlib \
@@ -51,3 +57,16 @@ RDEPENDS_${PN} = "waffle python3 python3-mako python3-json \
 	"
 
 INSANE_SKIP_${PN} += "dev-so already-stripped"
+
+SUMMARY_${PN}-generated-tests = "Generated piglit tests (multiple GB)"
+FILES_${PN}-generated-tests = "${libdir}/piglit/generated_tests/*"
+CONFLICTS_${PN}-generated-tests = "${PN}-generated-tests-compressed"
+RDEPENDS_${PN}-generated-tests += "tar"
+
+SUMMARY_${PN}-generated-tests-compressed = "Generated piglit tests in compressed archive"
+FILES_${PN}-generated-tests-compressed = "${libdir}/piglit/generated_tests.tar.gz"
+CONFLICTS_${PN}-generated-tests-compressed = "${PN}-generated-tests"
+pkg_postrm_${PN}-generated-tests-compressed () {
+    rm -rf $D${libdir}/piglit/generated_tests/
+}
+
