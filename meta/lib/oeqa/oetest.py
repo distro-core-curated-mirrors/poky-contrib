@@ -146,6 +146,21 @@ class OETestCalledProcessError(subprocess.CalledProcessError):
 subprocess.CalledProcessError = OETestCalledProcessError
 
 class oeSDKTest(oeTest):
+
+    def setUp(self):
+        import cProfile
+        self.pr = cProfile.Profile()
+        self.pr.enable()
+
+    def tearDown(self):
+        import io, pstats
+        self.pr.disable()
+        s = io.StringIO()
+        sortby = 'cumulative'
+        self.ps = pstats.Stats(self.pr, stream=s).sort_stats(sortby)
+        self.ps.print_stats()
+        logger.warning(s.getvalue())
+
     def __init__(self, methodName='runTest'):
         self.sdktestdir = oeSDKTest.tc.sdktestdir
         super(oeSDKTest, self).__init__(methodName)
