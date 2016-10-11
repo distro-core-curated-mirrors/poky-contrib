@@ -94,6 +94,8 @@ class TestImage(oeSelfTest):
         Product: oe-core
         Author: Mariano Lopez <mariano.lopez@intel.com>
         """
+        if self.distro == 'poky-tiny':
+            self.skipTest('core-image-full-cmdline not buildable for poky-tiny')
 
         features = 'INHERIT += "testimage"\n'
         features += 'TEST_SUITES = "ping ssh selftest"\n'
