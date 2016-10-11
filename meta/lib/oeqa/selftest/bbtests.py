@@ -114,6 +114,9 @@ class BitbakeTests(oeSelfTest):
 
     @testcase(167)
     def test_bitbake_g(self):
+        if self.distro == 'poky-tiny':
+            self.skipTest('core-image-full-cmdline is not buildable with poky-tiny')
+
         result = bitbake('-g core-image-full-cmdline')
         for f in ['pn-buildlist', 'pn-depends.dot', 'package-depends.dot', 'task-depends.dot']:
             self.addCleanup(os.remove, f)
@@ -229,6 +232,10 @@ INHERIT_remove = \"report-error\"
 
     @testcase(1119)
     def test_non_gplv3(self):
+        supported_distros = ['poky', 'poky-tiny']
+        if not self.distro in supported_distros:
+            self.skipTest('Test considers only %s distros' % ','.join(supported_distros))
+
         data = 'INCOMPATIBLE_LICENSE = "GPLv3"'
         conf = os.path.join(self.builddir, 'conf/local.conf')
         ftools.append_file(conf ,data)
