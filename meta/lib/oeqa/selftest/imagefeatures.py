@@ -78,7 +78,11 @@ class ImageFeatures(oeSelfTest):
         """
 
         # Build a core-image-clutter
-        bitbake('core-image-clutter')
+        image = 'core-image-clutter'
+        supported_distros = ['poky', 'poky-lsb']
+        if not self.distro in supported_distros:
+            self.skipTest('Test is consider for distros (%s) supporting %s' % (','.join(supported_distros), image))
+        bitbake(image)
 
     @testcase(1117)
     def test_wayland_support_in_image(self):
@@ -96,7 +100,11 @@ class ImageFeatures(oeSelfTest):
         self.write_config(features)
 
         # Build a core-image-weston
-        bitbake('core-image-weston')
+        image = 'core-image-weston'
+        supported_distros = ['poky', 'poky-lsb']
+        if not self.distro in supported_distros:
+            self.skipTest('Test is only considered for distros (%s) supporting %s' % (','.join(supported_distros), image))
+        bitbake(image)
 
     def test_bmap(self):
         """
@@ -107,7 +115,11 @@ class ImageFeatures(oeSelfTest):
         Author:      Ed Bartosh <ed.bartosh@linux.intel.com>
         """
 
-        features = 'IMAGE_FSTYPES += " ext4 ext4.bmap"'
+        ext4_features = "ext4 ext4.bmap"
+        features = 'IMAGE_FSTYPES += " %s"' % ext4_features
+        if self.distro == 'poky-tiny':
+            self.skipTest('Features (%s) not supported for poky-tiny' % ext4_features)
+
         self.write_config(features)
 
         image_name = 'core-image-minimal'
