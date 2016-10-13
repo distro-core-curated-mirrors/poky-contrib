@@ -54,5 +54,8 @@ do_install_ptest() {
 	for i in $l; do install ${B}/bus/.libs/test-$i ${D}${PTEST_PATH}/test; done
 	install ${B}/dbus/.libs/test-dbus ${D}${PTEST_PATH}/test
 	cp -r ${B}/test/data ${D}${PTEST_PATH}/test
+
+	# set right path in service and conf files
+	find ${D} -type f -not -executable -exec sed -i 's#${B}#${PTEST_PATH}#' {} \;
 }
 RDEPENDS_${PN}-ptest += "bash"
