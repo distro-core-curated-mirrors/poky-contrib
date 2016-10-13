@@ -190,6 +190,8 @@ class Wic(oeSelfTest):
     @testcase(1346)
     def test_iso_image(self):
         """Test creation of hybrid iso image with legacy and EFI boot"""
+        if self.distro == 'poky-tiny':
+            self.skipTest('wic image (mkhybridiso) not supported for poky-tiny distro')
         self.assertEqual(0, runCmd("wic create mkhybridiso "
                                    "--image-name core-image-minimal").status)
         self.assertEqual(1, len(glob(self.resultdir + "HYBRID_ISO_IMG-*.direct")))
@@ -246,6 +248,9 @@ class Wic(oeSelfTest):
     def test_mkgummidisk(self):
         """Test creation of mkgummidisk image"""
         image = "mkgummidisk"
+        if self.distro == 'poky-tiny':
+            self.skipTest('wic image name (%s) not supported for poky-tiny distro' % image)
+
         self.assertEqual(0, runCmd("wic create %s -e core-image-minimal" \
                                    % image).status)
         self.assertEqual(1, len(glob(self.resultdir + "%s-*direct" % image)))
@@ -254,6 +259,8 @@ class Wic(oeSelfTest):
     def test_mkefidisk(self):
         """Test creation of mkefidisk image"""
         image = "mkefidisk"
+        if self.distro == 'poky-tiny':
+            self.skipTest('wic image (%s) not supported for poky-tiny distro' % image)
         self.assertEqual(0, runCmd("wic create %s -e core-image-minimal" \
                                    % image).status)
         self.assertEqual(1, len(glob(self.resultdir + "%s-*direct" % image)))
@@ -288,6 +295,8 @@ class Wic(oeSelfTest):
     def test_systemd_bootdisk(self):
         """Test creation of systemd-bootdisk image"""
         image = "systemd-bootdisk"
+        if self.distro == 'poky-tiny':
+            self.skipTest('wic image (%s) not supported for poky-tiny distro' % image)
         self.assertEqual(0, runCmd("wic create %s -e core-image-minimal" \
                                    % image).status)
         self.assertEqual(1, len(glob(self.resultdir + "%s-*direct" % image)))
