@@ -42,20 +42,36 @@ class SStateTests(SStateBase):
     @testcase(975)
     def test_sstate_creation_distro_specific_pass(self):
         targetarch = get_bb_var('TUNE_ARCH')
-        self.run_test_sstate_creation(['binutils-cross-'+ targetarch, 'binutils-native'], distro_specific=True, distro_nonspecific=False, temp_sstate_location=True)
+        # Execute the test in all distros expect poky-tiny where glibc-initial is not provided
+        targets = ['binutils-cross-'+ targetarch, 'binutils-native']
+        if self.distro == 'poky-tiny':
+            self.skipTest('Distro %s does not support building the following targets %s' % (self.distro, ','.join(targets)))
+        self.run_test_sstate_creation(targets, distro_specific=True, distro_nonspecific=False, temp_sstate_location=True)
 
     @testcase(1374)
     def test_sstate_creation_distro_specific_fail(self):
         targetarch = get_bb_var('TUNE_ARCH')
-        self.run_test_sstate_creation(['binutils-cross-'+ targetarch, 'binutils-native'], distro_specific=False, distro_nonspecific=True, temp_sstate_location=True, should_pass=False)
+        # Execute the test in all distros expect poky-tiny where glibc-initial is not provided
+        targets = ['binutils-cross-'+ targetarch, 'binutils-native']
+        if self.distro == 'poky-tiny':
+            self.skipTest('Distro %s does not support building the following targets %s' % (self.distro, ','.join(targets)))
+        self.run_test_sstate_creation(targets, distro_specific=False, distro_nonspecific=True, temp_sstate_location=True, should_pass=False)
 
     @testcase(976)
     def test_sstate_creation_distro_nonspecific_pass(self):
-        self.run_test_sstate_creation(['glibc-initial'], distro_specific=False, distro_nonspecific=True, temp_sstate_location=True)
+        # Execute the test in all distros expect poky-tiny where glibc-initial is not provided
+        targets = ['glibc-initial']
+        if self.distro == 'poky-tiny':
+            self.skipTest('Distro %s does not support building the following targets %s' % (self.distro, ','.join(targets)))
+        self.run_test_sstate_creation(targets, distro_specific=False, distro_nonspecific=True, temp_sstate_location=True)
 
     @testcase(1375)
     def test_sstate_creation_distro_nonspecific_fail(self):
-        self.run_test_sstate_creation(['glibc-initial'], distro_specific=True, distro_nonspecific=False, temp_sstate_location=True, should_pass=False)
+        # Execute the test in all distros expect poky-tiny where glibc-initial is not provided
+        targets = ['glibc-initial']
+        if self.distro == 'poky-tiny':
+            self.skipTest('Distro %s does not support building the following targets %s' % (self.distro, ','.join(targets)))
+        self.run_test_sstate_creation(targets, distro_specific=True, distro_nonspecific=False, temp_sstate_location=True, should_pass=False)
 
 
     # Test the sstate files deletion part of the do_cleansstate task
@@ -78,17 +94,28 @@ class SStateTests(SStateBase):
     @testcase(977)
     def test_cleansstate_task_distro_specific_nonspecific(self):
         targetarch = get_bb_var('TUNE_ARCH')
-        self.run_test_cleansstate_task(['binutils-cross-' + targetarch, 'binutils-native', 'glibc-initial'], distro_specific=True, distro_nonspecific=True, temp_sstate_location=True)
+        # Execute the test in all distros expect poky-tiny where glibc-initial is not provided
+        targets = ['binutils-cross-' + targetarch, 'binutils-native', 'glibc-initial']
+        if self.distro == 'poky-tiny':
+            self.skipTest('Distro %s does not support building the following targets %s' % (self.distro, ','.join(targets)))
+        self.run_test_cleansstate_task(targets, distro_specific=True, distro_nonspecific=True, temp_sstate_location=True)
 
     @testcase(1376)
     def test_cleansstate_task_distro_nonspecific(self):
-        self.run_test_cleansstate_task(['glibc-initial'], distro_specific=False, distro_nonspecific=True, temp_sstate_location=True)
+        # Execute the test in all distros expect poky-tiny where glibc-initial is not provided
+        targets = ['glibc-initial']
+        if self.distro == 'poky-tiny':
+            self.skipTest('Distro %s does not support building the following targets %s' % (self.distro, ','.join(targets)))
+        self.run_test_cleansstate_task(targets, distro_specific=False, distro_nonspecific=True, temp_sstate_location=True)
 
     @testcase(1377)
     def test_cleansstate_task_distro_specific(self):
         targetarch = get_bb_var('TUNE_ARCH')
-        self.run_test_cleansstate_task(['binutils-cross-'+ targetarch, 'binutils-native', 'glibc-initial'], distro_specific=True, distro_nonspecific=False, temp_sstate_location=True)
-
+        # Execute the test in all distros expect poky-tiny where glibc-initial is not provided
+        targets = ['binutils-cross-'+ targetarch, 'binutils-native', 'glibc-initial']
+        if self.distro == 'poky-tiny':
+            self.skipTest('Distro %s does not support building the following targets %s' % (self.distro, ','.join(targets)))
+        self.run_test_cleansstate_task(targets, distro_specific=True, distro_nonspecific=False, temp_sstate_location=True)
 
     # Test rebuilding of distro-specific sstate files
     def run_test_rebuild_distro_specific_sstate(self, targets, temp_sstate_location=True):
@@ -228,6 +255,8 @@ class SStateTests(SStateBase):
         build machines and running a builds, override the variables calling uname()
         manually and check using bitbake -S.
         """
+        if self.distro == 'poky-tiny':
+            self.skipTest('core-image-sato not buildable for poky-tiny')
 
         topdir = get_bb_var('TOPDIR')
         targetvendor = get_bb_var('TARGET_VENDOR')
@@ -276,6 +305,8 @@ PACKAGE_CLASSES = "package_rpm package_ipk package_deb"
         detected. Rather than requiring two different build machines and running
         builds, override the variables manually and check using bitbake -S.
         """
+        if self.distro == 'poky-tiny':
+            self.skipTest('core-image-sato not buildable for poky-tiny')
 
         topdir = get_bb_var('TOPDIR')
         self.write_config("""
@@ -310,6 +341,8 @@ NATIVELSBSTRING = \"DistroB\"
         Also, rather than duplicate the test, check nativesdk stamps are the same between
         the two MACHINE values.
         """
+        if 'opengl' not in get_bb_var('DISTRO_FEATURES'):
+            self.skipTest('Distro %s does not include opengl feature, required to build intended (bitbake) targets' % self.distro)
 
         configA = """
 TMPDIR = \"${TOPDIR}/tmp-sstatesamehash\"
@@ -328,6 +361,8 @@ MACHINE = \"qemuarm\"
         Also, rather than duplicate the test, check nativesdk stamps are the same between
         the two MACHINE values.
         """
+        if 'opengl' not in get_bb_var('DISTRO_FEATURES'):
+            self.skipTest('Distro %s does not include opengl feature, required to build intended (bitbake) targets' % self.distro)
 
         configA = """
 TMPDIR = \"${TOPDIR}/tmp-sstatesamehash\"
@@ -387,6 +422,9 @@ MULTILIBS = \"\"
         qemux86copy machine to test this. Also include multilibs in the test.
         """
 
+        if 'opengl' not in get_bb_var('DISTRO_FEATURES'):
+            self.skipTest('Distro %s does not include opengl feature, required to build intended (bitbake) targets' % self.distro)
+
         topdir = get_bb_var('TOPDIR')
         targetos = get_bb_var('TARGET_OS')
         targetvendor = get_bb_var('TARGET_VENDOR')
@@ -432,6 +470,9 @@ DEFAULTTUNE_virtclass-multilib-lib32 = "x86"
         The sstate checksums of two builds with these variables changed or
         classes inherits should be the same.
         """
+
+        if 'opengl' not in get_bb_var('DISTRO_FEATURES'):
+            self.skipTest('Distro %s does not include opengl feature, required to build intended (bitbake) targets' % self.distro)
 
         topdir = get_bb_var('TOPDIR')
         targetvendor = get_bb_var('TARGET_VENDOR')
