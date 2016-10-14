@@ -1372,7 +1372,7 @@ class BuildInfoHelper(object):
         if 'layer-priorities' in event._depgraph.keys():
             for lv in event._depgraph['layer-priorities']:
                 (_, path, _, priority) = lv
-                layer_version_obj = self._get_layer_version_for_path(path[1:]) # paths start with a ^
+                layer_version_obj = self._get_layer_version_for_path(path[1:].replace("\\","")) # paths start with a ^
                 assert layer_version_obj is not None
                 layer_version_obj.priority = priority
                 layer_version_obj.save()
