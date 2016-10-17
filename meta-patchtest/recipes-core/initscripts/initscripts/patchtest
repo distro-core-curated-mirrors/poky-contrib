@@ -15,7 +15,7 @@
 test "$VERBOSE" != no && echo "Executing patchtest..."
 
 # Mount point
-MP="/tmp/patchtest"
+MP="/patchtest"
 test ! -d "$MP" && mkdir "$MP"
 mount -t 9p -o trans=virtio test_mount "$MP" -oversion=9p2000.L,posixacl,cache=loose
 
@@ -39,6 +39,8 @@ test-mboxes -r $REPO \
 	    -o $RESULTS \
 	    $MBOXES
 
+# un-mount the share folder
+umount "$MP"
 
 # poweroff the machine
 init 0
