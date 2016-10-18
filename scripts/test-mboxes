@@ -27,12 +27,12 @@ repodir=''
 startdir=''
 assemblebranch=''
 startpoint='HEAD'
-outrepodir=''
+outputdir=''
 mergeall=''
 
 function usage() {
     cat << EOF
-\$ $(basename $0) -r <repodir> -s <startdir> [-a <assemble branch> [-A]] [-p <start point>] [-o <outrepodir>] [-v] (mboxdir | <patch>) ...
+\$ $(basename $0) -r <repodir> -s <startdir> [-a <assemble branch> [-A]] [-p <start point>] [-o <outputdir>] [-v] (inputdir | <patch>) ...
 
 where
 
@@ -42,8 +42,8 @@ where
     <start point>     : Start point for assemble branch. Defaults to $startpoint
     -A                : Merge the mboxes on <assemble branch> no matter if some tests have failed. By default merge is only
                         on mboxes that have passed all tests (skips are not considered)
-    <outrepodir>      : Output git repository for patchtest results, created if it does not exist. Defaults to $outrepodir
-    <mboxdir>         : Directory containing mboxes
+    <outputdir>       : Output folder containig patchtest results and logs for each tested series. Defaults to $outputdir
+    <inputdir>        : Directory containing mboxes
     <patch>           : Patch to test by patchtest.
 EOF
 >&2
@@ -52,9 +52,7 @@ EOF
 }
 
 function gitnotes() {
-    git notes --ref=patchtest-results-failures add -m  "$(echo "$PTRESULTS" | grep FAIL)" HEAD
-    git notes --ref=patchtest-results-skips    add -m  "$(echo "$PTRESULTS" | grep SKIP)" HEAD
-    git notes --ref=patchtest-results-passes    add -m "$(echo "$PTRESULTS" | grep PASS)" HEAD
+    git notes --ref=patchtest-results add -m "$PTRESULTS" HEAD
     git notes --ref=patchtest-log add -m "$PTLOG" HEAD
 }
 
@@ -77,25 +75,14 @@ function testpatch() {
 
     tmp="$(mktemp)"
     # run patchtest
-    PTRESULTS="$(patchtest $patch --repo-dir $repodir --start-dir $startdir 2>$tmp)"
+    PTRESULTS="$(patchtest $patch --repo-dir $repodir --start-dir $startdir --json 2>$tmp)"
     PTLOG="$(cat $tmp)"
     rm $tmp
 
-    if [ -n "$outrepodir" ]; then
+    if [ -n "$outputdir" ]; then
 	patchfn=$(basename $patch)
-
-	# just create a commit if patch is not tracked yet
-	test ! -f $patchfn && {
-	    cp $patch $outrepodir/$patchfn
-
-	    # go to the output repo and create a commit with git-notes
-	    ( cd $outrepodir
-	      git add $patchfn
-	      git commit -s -m "$patch"
-	      gitnotes
-	    )
-	    echo -e "\tResults stored into '$outrepodir'";
-	} || { echo -e "\tAlready tested"; }
+	echo "$PTRESULTS" > "$outputdir/$patchfn.results"
+	echo "$PTLOG" > "$outputdir/$patchfn.log"
     fi
 
     if [ -n "$assemblebranch" ]; then
@@ -128,8 +115,8 @@ function testpatch() {
 	)
     fi
 
-    # just print the results either when verbose or when no outrepodir/assemblebranch given
-    if [ -n "$verbose"  -o -z "$outrepodir" -a -z "$assemblebranch" ]; then
+    # just print the results either when verbose or when no outputdir/assemblebranch given
+    if [ -n "$verbose"  -o -z "$outputdir" -a -z "$assemblebranch" ]; then
 	echo -e "$PTLOG"
 	echo -e "$PTRESULTS"
     fi
@@ -152,7 +139,7 @@ while getopts ":r:s:p:a:o:vAh" opt; do
 	    assemblebranch=$OPTARG
 	    ;;
 	o)
-	    outrepodir=$OPTARG
+	    outputdir=$OPTARG
 	    ;;
 	v)
 	    verbose='x'
@@ -181,10 +168,8 @@ test -z "$repodir"  && { echo "Indicate the repository"; usage; }
 test ! -d $repodir  && { echo "Repository does not exit"; usage; }
 test ! -d $startdir && { echo "Test suite starting directory does not exist"; usage; }
 
-# if outrepodir does not exit, create it
-# if outrepodir is not a repository, create a new one
-test -n "$outrepodir" && { test ! -d "$outrepodir" && { mkdir -p "$outrepodir"; }; }
-test -n "$outrepodir" && { test ! -d "$outrepodir/.git" && { (cd "$outrepodir";  git init) }; }
+# if outputdir does not exit, create it
+test -n "$outputdir" && { test ! -d "$outputdir" && { mkdir -p "$outputdir"; }; }
 
 for item in "$@"; do
     # if item is a directory, get all files and test each
