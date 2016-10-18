@@ -31,7 +31,7 @@ from orm.models import Package_Dependency, Recipe_Dependency, Build
 from orm.models import Task_Dependency, Package, Target, Recipe
 from orm.models import CustomImagePackage
 
-from buildtest import BuildTest
+from tests.builds.buildtest import BuildTest
 
 
 class BuildCoreImageMinimal(BuildTest):

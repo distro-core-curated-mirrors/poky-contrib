@@ -24,14 +24,13 @@ import sys
 import time
 import unittest
 
-from orm.models import Project, Release, ProjectTarget, Build
+from orm.models import Project, Release, ProjectTarget, Build, ProjectVariable
 from bldcontrol.models import BuildEnvironment
-
-from bldcontrol.management.commands.loadconf import Command\
-    as LoadConfigCommand
 
 from bldcontrol.management.commands.runbuilds import Command\
     as RunBuildsCommand
+
+from django.core.management import call_command
 
 import subprocess
 
@@ -48,58 +47,77 @@ class BuildTest(unittest.TestCase):
         # So that the buildinfo helper uses the test database'
         self.assertEqual(
             os.environ.get('DJANGO_SETTINGS_MODULE', ''),
-            'toastermain.settings-test',
+            'toastermain.settings_test',
             "Please initialise django with the tests settings:  "
-            "DJANGO_SETTINGS_MODULE='toastermain.settings-test'")
+            "DJANGO_SETTINGS_MODULE='toastermain.settings_test'")
 
-        if self.target_already_built(target):
-            return
+        #if self.target_already_built(target):
+         #   print("build already done")
+          #  return
 
-        # Take a guess at the location of the toasterconf
-        poky_toaster_conf = '../../../meta-poky/conf/toasterconf.json'
-        oe_toaster_conf = '../../../meta/conf/toasterconf.json'
-        env_toaster_conf = os.environ.get('TOASTER_CONF')
+        call_command('loaddata', 'settings.xml', app_label="orm")
+        call_command('loaddata', 'poky.xml', app_label="orm")
 
-        config_file = None
-        if env_toaster_conf:
-            config_file = env_toaster_conf
-        else:
-            if os.path.exists(poky_toaster_conf):
-                config_file = poky_toaster_conf
-            elif os.path.exists(oe_toaster_conf):
-                config_file = oe_toaster_conf
+    # Setup a builddir based on default layout
+        oe_init_build_env_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            os.pardir,
+            os.pardir,
+            os.pardir,
+            os.pardir,
+            os.pardir,
+            'oe-init-build-env'
+        )
+        if not os.path.exists(oe_init_build_env_path):
+            raise Exception("We had not BUILDDIR set and couldn't "
+                            "find oe-init-build-env to set this up "
+                            "ourselves please run oe-init-build-env "
+                            "before running these tests")
 
-        self.assertIsNotNone(config_file,
-                             "Default locations for toasterconf not found"
-                             "please set $TOASTER_CONF manually")
+        oe_init_build_env_path = os.path.realpath(oe_init_build_env_path)
+        cmd = "bash -c 'source oe-init-build-env /tmp/build/'"
+        p = subprocess.Popen(
+            cmd,
+            cwd=os.path.dirname(oe_init_build_env_path),
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
 
-        # Setup the release information and default layers
-        print("\nImporting file: %s" % config_file)
-        os.environ['TOASTER_CONF'] = config_file
-        LoadConfigCommand()._import_layer_config(config_file)
+        output, err = p.communicate()
+        p.wait()
 
-        os.environ['TOASTER_DIR'] = \
-            os.path.abspath(os.environ['BUILDDIR'] + "/../")
+        print("output of command is %s %s" % (output, err))
+        os.environ['BUILDDIR'] = '/tmp/build/'
+        bitbake_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            os.pardir,
+            os.pardir,
+            os.pardir,
+            os.pardir,
+            'bin',
+            'bitbake')
+        if not os.path.exists(bitbake_path):
+            raise Exception("Could not find bitbake at the expected path %s"
+                            % bitbake_path)
 
-        os.environ['BBBASEDIR'] = \
-            subprocess.check_output('which bitbake', shell=True)
+        os.environ['BBBASEDIR'] = bitbake_path
 
         BuildEnvironment.objects.get_or_create(
             betype=BuildEnvironment.TYPE_LOCAL,
-            sourcedir=os.environ['TOASTER_DIR'],
-            builddir=os.environ['BUILDDIR']
+            sourcedir='/tmp/build/',
+            builddir='/tmp/build/'
         )
 
         release = Release.objects.get(name='local')
 
         # Create a project for this build to run in
-        try:
-            project = Project.objects.get(name=BuildTest.PROJECT_NAME)
-        except Project.DoesNotExist:
-            project = Project.objects.create_project(
-                name=BuildTest.PROJECT_NAME,
-                release=release
-            )
+        project = Project.objects.create_project(name=BuildTest.PROJECT_NAME,
+                                                 release=release)
+
+        ProjectVariable.objects.get_or_create(
+            name="SSTATE_MIRRORS",
+            value="file://.* http://autobuilder.yoctoproject.org/pub/sstate/PATH;downloadfilename=PATH",
+            project=project)
 
         ProjectTarget.objects.create(project=project,
                                      target=target,
@@ -118,9 +136,11 @@ class BuildTest(unittest.TestCase):
             sys.stdout.flush()
             time.sleep(1)
 
-        self.assertNotEqual(build_request.build.outcome,
-                            Build.SUCCEEDED, "Build did not SUCCEEDED")
-        print("\nBuild finished")
+        self.assertEqual(Build.objects.get(pk=build_pk).outcome,
+                         Build.SUCCEEDED,
+                         "Build did not SUCCEEDED")
+
+        print("\nBuild finished %s" % build_request.build.outcome)
         return build_request.build
 
     def target_already_built(self, target):
