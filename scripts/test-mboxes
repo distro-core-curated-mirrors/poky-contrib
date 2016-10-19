@@ -2,9 +2,10 @@
 # ex:ts=4:sw=4:sts=4:et
 # -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
-# patchtest-test-mboxes: (patch) Test the provided mboxes and if required,
-#                        assemble those that can be merged into a branch
-#                        with results as git-notes
+# test-mboxes: Test the provided mboxes and if required. Results
+#              can be either stored in the defined output directory
+#              and/or assemble those series that can be merged
+#              into a branch with results as git-notes
 #
 # Copyright (C) 2016 Intel Corporation
 #
@@ -42,7 +43,7 @@ where
     <start point>     : Start point for assemble branch. Defaults to $startpoint
     -A                : Merge the mboxes on <assemble branch> no matter if some tests have failed. By default merge is only
                         on mboxes that have passed all tests (skips are not considered)
-    <outputdir>       : Output folder containig patchtest results and logs for each tested series. Defaults to $outputdir
+    <outputdir>       : Folder to be used to output (patchtest) results and logs for each tested series.
     <inputdir>        : Directory containing mboxes
     <patch>           : Patch to test by patchtest.
 EOF
@@ -81,7 +82,7 @@ function testpatch() {
 
     if [ -n "$outputdir" ]; then
 	patchfn=$(basename $patch)
-	echo "$PTRESULTS" > "$outputdir/$patchfn.results"
+	echo "$PTRESULTS" > "$outputdir/$patchfn.json"
 	echo "$PTLOG" > "$outputdir/$patchfn.log"
     fi
 
@@ -100,7 +101,7 @@ function testpatch() {
 		    git am --quiet $patch 2>/dev/null && gitnotes
 		    echo -e "\tPatch merged into '${assemblebranch}' including all test results"
 		else
-		    if echo "$PTRESULTS" | grep FAIL; then
+		    if [ "$(echo "$PTRESULTS" | any-fail)" == "yes"]; then
 			echo -e "\tPatch has test failures, skipping"
 		    else
 			git am --quiet $patch 2>/dev/null && gitnotes
