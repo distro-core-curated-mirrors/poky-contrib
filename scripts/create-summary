@@ -35,6 +35,7 @@ def summary(stdin, series, revision, outfile, template, project, mailinglist):
         status  = result['status']
         results = result['results']
         if not 'pretest' in results[0][1]:
+            results.insert(1, ['Status', status])
             results_list.append(results)
 
     render = template.render({
