@@ -23,7 +23,7 @@ MBOXES="$MP/mboxes"
 RESULTS="$MP/results"
 PW="$MP/patchwork"
 PT="$MP/patchtest"
-REPO="$MP/openembedded-core"
+REPO="$MP/poky"
 SUITESTART="$MP/patchtest-oe/tests"
 
 # include patchtest related scripts into PATH
