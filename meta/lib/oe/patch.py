@@ -212,7 +212,7 @@ class PatchTree(PatchSet):
         self.patches.insert(i, patch)
 
     def _applypatch(self, patch, force = False, reverse = False, run = True):
-        shellcmd = ["cat", patch['file'], "|", "patch", "--no-backup-if-mismatch", "-p", patch['strippath']]
+        shellcmd = ["cat", patch['file'], "|", "patch", "--no-backup-if-mismatch", "--fuzz=0", "-p", patch['strippath']]
         if reverse:
             shellcmd.append('-R')
 
@@ -627,7 +627,7 @@ class QuiltTree(PatchSet):
     def Push(self, force = False, all = False, run = True):
         # quilt push [-f]
 
-        args = ["push"]
+        args = ["push", "--fuzz=0"]
         if force:
             args.append("-f")
         if all:
