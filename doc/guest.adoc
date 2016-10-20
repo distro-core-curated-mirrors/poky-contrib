@@ -32,17 +32,18 @@ git clone git://git.openembedded.org/meta-openembedded
 git clone git://git.yoctoproject.org/poky
 cd poky
 . oe-init-build-env
+echo "MACHINE = \"qemux86-64\"" >> conf/local.conf
 echo "BBLAYERS += \"$BASE/meta-openembedded/meta-oe\"" >> conf/bblayers.conf
 echo "BBLAYERS += \"$BASE/meta-openembedded/meta-python\"" >> conf/bblayers.conf
 echo "BBLAYERS += \"$PT/meta-patchtest\"" >> conf/bblayers.conf
 bitbake core-image-patchtest
 ----
 
-* Launch (from the Poky 'build' folder) the 'qemu' machine with the following parameters
+* Launch (from the Poky 'build' folder and with the environment prepared) the 'qemu' machine with the following parameters
 
 [source, shell]
 ----
-runqemu qemux86 \
+runqemu qemux86-64
 	core-image-patchtest \
 	nographic \
 	kvm \
