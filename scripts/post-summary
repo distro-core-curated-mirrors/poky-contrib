@@ -1,0 +1,93 @@
+#!/bin/bash -eu
+# ex:ts=4:sw=4:sts=4:et
+# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
+#
+# post-results: Post results to a patchwork instance.
+#
+# Copyright (C) 2016 Intel Corporation
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+repodir=''
+resultsdir=''
+
+function usage() {
+    cat << EOF
+\$ $(basename $0) [OPTIONS]
+
+where
+
+    -r <repodir>   : Repository patchwork configured
+    -R <resultsdir>: Folder containing patchtest raw results in json format
+EOF
+>&2
+
+    exit 1
+
+}
+
+while getopts ":r:R:h" opt; do
+    case $opt in
+	r)
+	    repodir=$OPTARG
+	    ;;
+	R)
+	    resultsdir=$OPTARG
+	    ;;
+	h)
+	    usage
+	    ;;
+	\?)
+	    echo "Invalid option: -$OPTARG" >&2
+	    usage
+	    ;;
+	:)
+	    echo "Option -$OPTARG requires an argument." >&2
+	    usage
+	    ;;
+    esac
+done
+
+# must parameters
+[ -z $repodir ] && { echo -e 'Repository missing'; usage; }
+[ -z $resultsdir ] && { echo -e 'Results directory missing'; usage; }
+
+failure="failure"
+success="success"
+testname="patchtest"
+
+for file in $resultsdir/*.json; do
+    filebn="$(basename $file)"
+    series="$(echo $filebn   | cut -d. -f1)"
+    revision="$(echo $filebn | cut -d. -f2)"
+    summary="${file}.summary"
+
+    # Create the final summary
+    if [ "$(cat ${file} | any-fail)" == "yes" ]; then
+	cat ${file} | grep '"status": "FAIL"' | create-summary $series $revision --outfile $summary
+	result=$failure
+    else
+	# produce the summary to be post to patchwork
+	cat ${file} | create-summary $series $revision --outfile $summary
+	result=$success
+    fi
+
+    # Post results
+    ( cd ${repodir};
+      git pw post-result $series $testname $result \
+	  --revision ${revision} --summary-from-file ${summary} \
+    )
+
+    echo -e "Summary posted for series/rev ${series}/${revision}. Result: ${result}." >&2
+done
