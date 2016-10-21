@@ -29,19 +29,27 @@ def summary(stdin, series, revision, outfile, template, project, mailinglist):
     env = Environment(loader=FileSystemLoader(dirname(template)))
     template = env.get_template(basename(template))
 
-    results_list = []
+    results = list()
     for line in stdin:
-        result  = loads(line)
-        status  = result['status']
-        results = result['results']
-        if not 'pretest' in results[0][1]:
-            results.insert(1, ['Status', status])
-            results_list.append(results)
+        test        = loads(line)
+        teststatus, testresults  = test['status'], test['results']
+
+        # First element always contains the testid
+        testid = testresults[0][1]
+        module, testcase, tid = testid.split('.')
+
+        # Final order
+        r = [['Test Name', tid],
+             ['Status', teststatus]]
+
+        if testresults[1:]:
+            r.extend(testresults[1:])
+        results.append(r)
 
     render = template.render({
         'series_id': series,
         'revision_id': revision,
-        'results': results_list,
+        'results': results,
         'project': project,
         'mailinglist': mailinglist
     })
