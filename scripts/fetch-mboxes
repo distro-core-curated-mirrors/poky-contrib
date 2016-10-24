@@ -2,8 +2,7 @@
 # ex:ts=4:sw=4:sts=4:et
 # -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
-# patchtest-fetch-mboxes: Fetch mboxes from a patchwork instance given
-#                         series/revisions ids
+# fetch-mboxes: Fetch mboxes from a patchwork instance
 #
 # Copyright (C) 2016 Intel Corporation
 #
@@ -27,15 +26,20 @@ since=''
 
 function usage() {
     cat << EOF
-\$ $(basename $0) -r <repodir> -m <mboxdir> -s <timestamp> [<series[.revision]> ...]
+\$ $(basename $0) OPTIONS [SERIES]
 
-where
+where OPTIONS are
 
-    <repodir>            : Repository
-    <mboxdir>            : Directory where mboxes are stored. Defaults to $mboxdir
-    <timestamp>          : Poll events since the defined timestamp
-    <series[.revision]>  : Series id, with an optional revision. If not given,
-                           it will poll-events using <timestamp> or using the one from the .git-pw file
+    -r <repodir>   : Repository
+    -m <mboxdir>   : Directory where mboxes are stored. Defaults to $mboxdir
+    -s <timestamp> : Poll events since the defined timestamp
+
+and optional SERIES separated with spaces, i.e. '100 87'. Revision can be included and these appears after the series,
+joined with a dot, i.e. '100.2 87'. If series are not given, it will poll patchwork events using <timestamp> if given,
+otherwise it uses the timestamp defined on the corresponding .git-pw file, the latter produced by git-pw command. In case
+any of these are not present, the script wont do anything except that the .git-pw files is now present and populated with
+timestamp of last polled series event.
+
 EOF
 >&2
 
