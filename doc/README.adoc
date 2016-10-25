@@ -13,10 +13,10 @@
   .. <<assembling-mboxes, Assembling tested mboxes>>
   .. <<cronjob, A cronjob for automatic testing>>
 
-include::doc/intro.adoc[]
-include::doc/host.adoc[]
-include::doc/guest.adoc[]
-include::doc/usage.adoc[]
-include::doc/pw.adoc[]
-include::doc/scenarios.adoc[]
+include::intro.adoc[]
+include::host.adoc[]
+include::guest.adoc[]
+include::usage.adoc[]
+include::pw.adoc[]
+include::scenarios.adoc[]
 
