@@ -1,12 +1,14 @@
-#!/bin/bash -e
+#!/bin/bash
 # ex:ts=4:sw=4:sts=4:et
 # -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
-# pt-cronjob: fetch mboxes from patchwork at host and test these from
-#             a guest machine (qemu).
+# pt-cronjob: fetch mboxes from patchwork at host and test them at
+#             guest machine (qemu); once guest turns off, the host
+#             post summary to the patchwork instance
 #
 # WARNING: it is assume that the image defined on 'meta-patchtest' layer has
-#          already being created using Poky. For more information, check
+#          already being created using Poky, thus the kernel and rootfs
+#          full paths are passed as arguments. For more information, check
 #          the documentation
 #
 # Copyright (C) 2016 Intel Corporation
@@ -25,24 +27,38 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 # Default values
-base=''
-pwurl='http://patchwork.openembedded.org'
+sharefolder=''
+
+pwurl='https://patchwork.openembedded.org'
 pwproject='oe-core'
-machine='qemux86-64'
-image='core-image-patchtest'
-poky="$HOME/poky"
+pwuser='nouser'
+pwpass='nopass'
+
+kernel='tmp/deploy/images/qemux86-64/bzImage-qemux86-64.bin'
+rootfs='tmp/deploy/images/qemux86-64/core-image-patchtest-qemux86-64.ext4'
+
+poky=''
+
 
 function usage() {
     cat << EOF
-\$ $(basename $0) -b <base> -u <pw url> -p <pw project> -m <qemu machine> -i <poky image> -P <poky folder>
-where
+\$ $(basename $0) [OPTION]
 
-    -b <base>      : Default $base
-    -u <pwurl>     : Default $pwurl
-    -p <pwproject> : Default $pwproject
-    -m <machine>   : Default $machine
-    -i <image>     : Default $image
-    -P <poky>      : Default $poky
+where OPTIONS are
+
+    -s <sharefolder> : Share folder between host and guest. Default $sharefolder
+
+
+    -u <pwurl>       : Patchwork URL. Default $pwurl
+    -p <pwproject>   : Patchwork project. Default $pwproject
+    -U <pwuser>      : Patchwork user. Default $pwuser
+    -P <pwpass>      : Patchwork user pwd. $pwpass
+
+    -k <kernel>      : QEMU kernel image. Default $kernel
+    -r <rootfs>      : QEMU root filesystem. Default $rootfs
+    -i <image>       : QEMU Poky Image name. Default $image
+
+    -Y <poky>        : Poky repo used to source oe-init-build-env. Default $poky
 
 EOF
 >&2
@@ -50,10 +66,10 @@ EOF
     exit 1
 }
 
-while getopts ":b:u:p:m:i:P:h" opt; do
+while getopts ":s:u:p:U:P:k:r:i:Y:h" opt; do
     case $opt in
-	b)
-	    base=$OPTARG
+	s)
+	    sharefolder=$OPTARG
 	    ;;
 	u)
 	    pwurl=$OPTARG
@@ -61,13 +77,22 @@ while getopts ":b:u:p:m:i:P:h" opt; do
 	p)
 	    pwproject=$OPTARG
 	    ;;
-	m)
-	    machine=$OPTARG
+	U)
+	    pwuser=$OPTARG
+	    ;;
+	P)
+	    pwpass=$OPTARG
+	    ;;
+	k)
+	    kernel=$OPTARG
+	    ;;
+	r)
+	    rootfs=$OPTARG
 	    ;;
 	i)
 	    image=$OPTARG
 	    ;;
-	P)
+	Y)
 	    poky=$OPTARG
 	    ;;
 	h)
@@ -92,10 +117,23 @@ function cloneorpull() {
     # clean, move to master and pull, otherwise
     # clone and pw configure
     if [ -d $path/.git ]; then
-	( cd $path
-	  git clean -f
-	  git checkout master
-	  git pull )
+	(
+	    cd $path
+
+	    # "Clean" repository consists on the following
+	    #    1 abort possible merges
+	    #    2 reset working dir
+	    #    3 clean non-tracked files
+	    git am    --abort
+	    git reset --hard
+	    git clean -f -e ".git-pw*"
+
+	    # Start always from master
+	    git checkout master
+
+	    # pull latest changes
+	    git pull
+	)
     else
 	git clone $repo $path
     fi
@@ -105,60 +143,91 @@ function pwconfigure() {
     local path=$1
     local pwurl=$2
     local pwproject=$3
-    ( cd $path
-      git config patchwork.default.url $pwurl
-      git config patchwork.default.project $pwproject
-      grep ".git-pw.$pwproject.poll.timestamp" .gitignore || { echo ".git-pw.$pwproject.poll.timestamp" >> .gitignore; }
+    local pwuser=$4
+    local pwpass=$5
+
+    (
+	cd $path
+	git config patchwork.default.url $pwurl
+	git config patchwork.default.project $pwproject
+	test $pwuser != "nouser" && git config patchwork.default.user $pwuser
+	test $pwpass != "nopass" && git config patchwork.default.password $pwpass
     )
 }
 
-# make sure base folder is provided by user
-test -z "$base" && { echo "Please provide a base folder"; usage; }
+# make sure sharefolder folder is provided by user
+test -z "$sharefolder" && { echo "Please provide a sharefolder folder"; usage; }
 
 # make sure the poky build folder exists
 test ! -d "$poky" && { echo "Please build a qemu machine according to the guest documentation"; exit 1; }
 
-# create base
-test ! -d $base && mkdir $base
+# create sharefolder
+test ! -d $sharefolder && mkdir $sharefolder
 
-# clone or pull relevant repos
-PW=$base/patchwork
+# Define repo location and names
+PW=$sharefolder/patchwork
+PT=$sharefolder/patchtest
+SUITE=$sharefolder/patchtest-oe
+REPO=$sharefolder/poky
+
+# Clone or pull latest on required repos
 cloneorpull https://github.com/dlespiau/patchwork.git $PW
-
-PT=$base/patchtest
 cloneorpull ssh://git@git.yoctoproject.org/patchtest $PT
-
-SUITE=$base/patchtest-oe
 cloneorpull ssh://git@git.yoctoproject.org/patchtest-oe $SUITE
+cloneorpull git://git.yoctoproject.org/poky $REPO
 
-REPO=$base/openembedded-core
-cloneorpull git://git.openembedded.org/openembedded-core $REPO
+# Configure the repo to get latest mboxes
+pwconfigure $REPO $pwurl $pwproject $pwuser $pwpass
 
-# configure the repo to get latest mboxes
-pwconfigure $REPO $pwurl $pwproject
+# Get latest mboxes
+fetch-mboxes -r $REPO -m $sharefolder/tmp/mboxes
+
+# if new mboxes, just quit
+test ! -d $sharefolder/tmp/mboxes && { echo "Exiting"; exit 0; }
+
+# Check if old mboxes are present and backup these and its results
+# TODO: we must thing on something smarter to store past results
+# The first approach was the use of a git repository and git notes
+# but in this case a branch needs to be created in every run
+# and then use the post-summary script to get data from it.
+# A simpler approach is just storing plain texts and it is
+# the scripting does at the moment.
+if [ -d $sharefolder/mboxes ]; then
+
+    # Unique folder to store previous mboxes/results
+    now="$(date --iso-8601=seconds)"
+
+    # Define and create unique backup dir
+    backup="$sharefolder/backup/$now"
+    test ! -d $backup && mkdir -p $backup
+
+    # backup mboxes
+    mv $sharefolder/mboxes $backup/mboxes
+
+    # backup results (if exists)
+    test -d $sharefolder/results && mv $sharefolder/results $backup/results
+fi
+
+# Move latest mboxes
+mv $sharefolder/tmp/mboxes $sharefolder/mboxes
 
 # include scripts into PATH
 export PATH="$PW/git-pw/:$PT:$PT/scripts:$PATH"
-
-# get latest mboxes
-fetch-mboxes -r $REPO -m $base/mboxes
 
 # launch qemu. Machine is assumed to be in the default build folder (build)
 (
     cd $poky
     if . $poky/oe-init-build-env build; then
-	runqemu $machine \
-		$image \
-		nographic \
-		kvm \
+	runqemu $kernel $rootfs	nographic kvm \
 		qemuparams="-snapshot \
-                            -fsdev local,id=test_dev,path=$base,security_model=mapped \
+                            -fsdev local,id=test_dev,path=$sharefolder,security_model=mapped \
                             -device virtio-9p-pci,fsdev=test_dev,mount_tag=test_mount"
     else
 	echo 'oe-init-build-env could not be sourced'
     fi
 )
 
-# Machine will launch, test all mboxes located at $base/mboxes and quit
-# Finally, results have be inspected on $base/results
-
+# Post patchtest results ($sharefolder/results) into patchwork
+if [ $pwuser != "nouser" -a $pwpass != "nopass" ]; then
+    post-summary -r $REPO -R $sharefolder/results
+fi
