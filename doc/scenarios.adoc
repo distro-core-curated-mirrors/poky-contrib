@@ -11,11 +11,9 @@ There are two main scripts
 
 * 'fetch-mboxes': Fetch mboxes from a patchwork instance and place these into a output folder
 * 'test-mboxes' : Test one or more mboxes, possible assembling these into into a git-branch and/or
-collecting results into a repository.
+                  storing results and logs into a target folder
 
-In the next scenarios using the above scripts, we asssume that fetching and testing is done at
-the same machine (host), so as explained in the <<host, host>> section, this is insecure if patches
-are taken automatically without supervision. Before proceeding, examples assume the following environment variables
+Before proceeding, examples assume the following environment variables are
 already defined (see sections<<env-vars, host>> for more information about these variables)
 
 * `REPO`      : Path to a patchwork configured repository and make sure the repo is (patchwork)
@@ -69,20 +67,7 @@ mboxes in a particular folder ('mboxes') so you need to test them and store resu
 test-mboxes -r $REPO -s $START -o $HOME/results $HOME/mboxes
 ----
 
-The output directory 'results' is a repository where you can review the patchtest results.
-Each commit on this repository corresponds to a particular mbox where the former includes the
-mbox and the results as git-notes.
-
-NOTE: On this repository, mboxes do not necessary apply into the main repository (`$REPO`) and if
-these need to be apply into a branch, there is another option (`-a`) to be discussed in the
-<<assembling-mboxes, next>>.
-
-To review the results, just `cd` into 'results' and `git-log` or `git-show` with notes
-
-[source,shell]
------
-git log --show-notes=patchtest-results-*
-----
+The output directory 'results' contains raw patchtest results and logs.
 
 [[assembling-mboxes]]
 === Assembling tested mboxes
@@ -114,35 +99,29 @@ it is not created every time the cron starts. Once created, follow these steps:
 
 [source,shell]
 ----
-SHARE="$HOME/share"
+SHARE="/home/<cronjob-user>/share"
 ----
 
-* Clean previous mboxes
+* The script `pt-cronjob` uses the qemu runner to launch the guest machine, which in uses poky' scripts
+that needs `sudo` permissions so include the following lines using `visudo`
 
 [source,shell]
 ----
-rm -rf $SHARE/mboxes
+<cronjob-user> ALL=NOPASSWD: /home/<cronjob-user>/share/poky/scripts/runqemu-ifup
+<cronjob-user> ALL=NOPASSWD: /home/<cronjob-user>/share/poky/scripts/runqemu-ifdown
 ----
 
 * Launch the script (this time, we will do it manually instead of using `crontab`)
 
 [source,shell]
 ----
-pt-cronjob -P $POKY -b $SHARE
+pt-cronjob -Y $POKY -s $SHARE -U <PW user> -P <PW pass>
 ----
 
-This script does the following: clone or pull relevant repositories, fetch the new series from
-patchwork and finally launch the `core-image-patchtest` guest machine. The guest has a init script
-which will automatically look into `$SHARE/mboxes` folder and execute patchtest on each mbox and
-store results into `$SHARE/results`, all done in the system start up.
-
-WARNING: Currently, the machine does not shutdown automatically, thus one needs to login and shutdown.
-
-* Once in host, `cd` into `$SHARE/results` folder and look the results with `git-log`
-
-[source,shell]
-----
-git log --show-notes=*
-----
-
+This script does several actions which can be divided in two phases: 1. fetch latest series, clone or pull relevant repositories
+then launch the `core-image-patchtest` guest machine 2. machine will run tests for every mbox then shutdown inmediately; at host, the
+results are converted to summaries and posted to the patchwork instance. Next time the cron executes, it will go through all
+the steps unless no new series are present. Of course, patchwork credentials should have POST permissions so request
+go though the instance which in turn will send emails to those configured (mailing list, specific developers, specific list, etc.) in case
+of failure.
 
