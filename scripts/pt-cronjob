@@ -171,9 +171,9 @@ test ! -d $sharefolder && mkdir $sharefolder
 
 # Clone or pull latest on required repos
 cloneorpull https://github.com/dlespiau/patchwork.git $PW
-cloneorpull ssh://git@git.yoctoproject.org/patchtest $PT
-cloneorpull ssh://git@git.yoctoproject.org/patchtest-oe $SUITE
-cloneorpull git://git.yoctoproject.org/poky $REPO
+cloneorpull https://git.yoctoproject.org/git/patchtest $PT
+cloneorpull https://git.yoctoproject.org/git/patchtest-oe $SUITE
+cloneorpull https://git.yoctoproject.org/git/poky $REPO
 
 # Configure the repo to get latest mboxes
 pwconfigure $REPO $pwurl $pwproject $pwuser $pwpass
