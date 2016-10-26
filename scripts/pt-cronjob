@@ -56,7 +56,6 @@ where OPTIONS are
 
     -k <kernel>      : QEMU kernel image. Default $kernel
     -r <rootfs>      : QEMU root filesystem. Default $rootfs
-    -i <image>       : QEMU Poky Image name. Default $image
 
     -Y <poky>        : Poky repo used to source oe-init-build-env. Default $poky
 
@@ -66,7 +65,7 @@ EOF
     exit 1
 }
 
-while getopts ":s:u:p:U:P:k:r:i:Y:h" opt; do
+while getopts ":s:u:p:U:P:k:r:Y:h" opt; do
     case $opt in
 	s)
 	    sharefolder=$OPTARG
@@ -88,9 +87,6 @@ while getopts ":s:u:p:U:P:k:r:i:Y:h" opt; do
 	    ;;
 	r)
 	    rootfs=$OPTARG
-	    ;;
-	i)
-	    image=$OPTARG
 	    ;;
 	Y)
 	    poky=$OPTARG
