@@ -151,6 +151,15 @@ function pwconfigure() {
     )
 }
 
+# Define repo location and names
+PW=$sharefolder/patchwork
+PT=$sharefolder/patchtest
+SUITE=$sharefolder/patchtest-oe
+REPO=$sharefolder/poky
+
+# include scripts into PATH
+export PATH="$PW/git-pw/:$PT:$PT/scripts:$PATH"
+
 # make sure sharefolder folder is provided by user
 test -z "$sharefolder" && { echo "Please provide a sharefolder folder"; usage; }
 
@@ -159,12 +168,6 @@ test ! -d "$poky" && { echo "Please build a qemu machine according to the guest 
 
 # create sharefolder
 test ! -d $sharefolder && mkdir $sharefolder
-
-# Define repo location and names
-PW=$sharefolder/patchwork
-PT=$sharefolder/patchtest
-SUITE=$sharefolder/patchtest-oe
-REPO=$sharefolder/poky
 
 # Clone or pull latest on required repos
 cloneorpull https://github.com/dlespiau/patchwork.git $PW
@@ -206,9 +209,6 @@ fi
 
 # Move latest mboxes
 mv $sharefolder/tmp/mboxes $sharefolder/mboxes
-
-# include scripts into PATH
-export PATH="$PW/git-pw/:$PT:$PT/scripts:$PATH"
 
 # launch qemu. Machine is assumed to be in the default build folder (build)
 (
