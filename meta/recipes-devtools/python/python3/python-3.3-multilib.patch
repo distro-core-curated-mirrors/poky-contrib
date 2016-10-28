@@ -7,6 +7,11 @@ get the sys.lib from python itself and do not use hardcoded value of 'lib'
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 Signed-off-by: Alejandro Hernandez <alejandro.hernandez@linux.intel.com>
 
+Remove the section to add a global var in Modules/getpath.c that the global var
+has been removed from python3 upstream.
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+
 Index: Python-3.5.2/Include/pythonrun.h
 ===================================================================
 --- Python-3.5.2.orig/Include/pythonrun.h
@@ -130,14 +135,6 @@ Index: Python-3.5.2/Modules/getpath.c
  #ifndef LANDMARK
  #define LANDMARK L"os.py"
  #endif
-@@ -113,6 +120,7 @@ static wchar_t prefix[MAXPATHLEN+1];
- static wchar_t exec_prefix[MAXPATHLEN+1];
- static wchar_t progpath[MAXPATHLEN+1];
- static wchar_t *module_search_path = NULL;
-+static wchar_t *lib_python = L"" LIB_PYTHON;
- 
- /* Get file status. Encode the path to the locale encoding. */
- 
 Index: Python-3.5.2/Python/getplatform.c
 ===================================================================
 --- Python-3.5.2.orig/Python/getplatform.c
