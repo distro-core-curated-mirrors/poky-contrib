@@ -7,6 +7,11 @@
   </object>
 
   <!-- Bitbake versions which correspond to the metadata release -->
+  <object model="orm.bitbakeversion" pk="3">
+    <field type="CharField" name="name">master</field>
+    <field type="CharField" name="giturl">git://git.openembedded.org/bitbake</field>
+    <field type="CharField" name="branch">master</field>
+  </object>
   <object model="orm.bitbakeversion" pk="1">
     <field type="CharField" name="name">morty</field>
     <field type="CharField" name="giturl">git://git.openembedded.org/bitbake</field>
@@ -17,6 +22,13 @@
   </object>
 
   <!-- Releases available -->
+  <object model="orm.release" pk="3">
+    <field type="CharField" name="name">master</field>
+    <field type="CharField" name="description">Openembedded Master</field>
+    <field rel="ManyToOneRel" to="orm.bitbakeversion" name="bitbake_version">3</field>
+    <field type="CharField" name="branch_name">master</field>
+    <field type="TextField" name="helptext">Toaster will run your builds using the tip of the &lt;a href=\"http://cgit.openembedded.org/openembedded-core/log/?h=morty\"&gt;OpenEmbedded master&lt;/a&gt; branch, where active development takes place. This is not a stable branch, so your builds might not work as expected.</field>
+  </object>
   <object model="orm.release" pk="1">
     <field type="CharField" name="name">morty</field>
     <field type="CharField" name="description">Openembedded Morty</field>
