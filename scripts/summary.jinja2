@@ -1,6 +1,6 @@
 Thank you for your patch submission of the following patch series to {{project}}-.
 this is an automated response. Several tests have been executed on the proposed
-series (series {{series}}, revision {{revision}}) by patchtest yielding the following results:
+series (series {{series}}, revision {{revision}}) by patchtest and the following have {% if fail %}failed{% else %}passed/skipped{%endif%}:
 
 {% for lines in results %}{% for k, v in lines %}
 {% if 'Test ID' in k%}{{k}}{{' '*10}}{{v}}{%else%}{{k}}{{' '*(17-(k|length))}}{{v}}{%endif%}{%endfor%}
