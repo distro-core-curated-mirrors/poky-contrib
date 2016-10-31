@@ -46,13 +46,11 @@ def summary(stdin, series, revision, outfile, template, project, mailinglist):
             r.extend(testresults[1:])
         results.append(r)
 
-    render = template.render({
-        'series_id': series,
-        'revision_id': revision,
-        'results': results,
-        'project': project,
-        'mailinglist': mailinglist
-    })
+
+    renderparams = dict([('results', results)])
+    renderparams.update(opt)
+
+    render = template.render(renderparams)
 
     if outfile:
         with codecs.open(outfile, 'w', encoding='utf-8', errors='ignore') as fd:
@@ -92,15 +90,15 @@ if __name__ == '__main__':
     ret = 1
     try:
         stdin = fileinput.input('-')
-        ret = summary(
-            stdin,
-            series=args.series,
-            revision=args.revision,
-            outfile=args.outfile,
-            template=args.template,
-            project=args.project,
-            mailinglist=args.mailinglist
-        )
+        opt = dict([
+            ('series', args.series),
+            ('revision', args.revision),
+            ('outfile', args.outfile),
+            ('template', args.template),
+            ('project', args.project),
+            ('mailinglist', args.mailinglist)
+        ])
+        ret = summary(stdin, **opt)
     except:
         import traceback
         traceback.print_exc(5)

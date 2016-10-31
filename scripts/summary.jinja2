@@ -1,18 +1,17 @@
 Thank you for your patch submission of the following patch series to {{project}}-.
-this is an automated response. Several tests have been executed on this proposed
-patch (series {{series_id}}, revision {{revision_id}}) by patchtest yielding the following results:
+this is an automated response. Several tests have been executed on the proposed
+series (series {{series}}, revision {{revision}}) by patchtest yielding the following results:
 
 {% for lines in results %}{% for k, v in lines %}
 {% if 'Test ID' in k%}{{k}}{{' '*10}}{{v}}{%else%}{{k}}{{' '*(17-(k|length))}}{{v}}{%endif%}{%endfor%}
 {% endfor %}
 
-If you believe any of these test results are incorrect, please reply
-to the mailing list ({{mailinglist}}) raising
-your concerns. Otherwise we would appreciate you correcting the issues
-and submitting a new version of the patchset if applicable. Please
-ensure you add/increment the version number when sending the new
+If you believe any of these test results are incorrect, please reply to the mailing
+list ({{mailinglist}}) raising your concerns. Otherwise we would
+appreciate you correcting the issues and submitting a new version of the patchset if
+applicable. Please ensure you add/increment the version number when sending the new
 version (i.e. [PATCH] -> [PATCH v2] -> [PATCH v3] -> ...).
 
----
+]---
 Test framework: http://git.yoctoproject.org/cgit/cgit.cgi/patchtest
 Test suite:     http://git.yoctoproject.org/cgit/cgit.cgi/patchtest-oe
