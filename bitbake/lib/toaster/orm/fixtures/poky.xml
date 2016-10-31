@@ -7,6 +7,12 @@
   </object>
 
   <!-- Bitbake versions which correspond to the metadata release -->
+  <object model="orm.bitbakeversion" pk="3">
+    <field type="CharField" name="name">master</field>
+    <field type="CharField" name="giturl">git://git.yoctoproject.org/poky</field>
+    <field type="CharField" name="branch">master</field>
+    <field type="CharField" name="dirpath">bitbake</field>
+  </object>
   <object model="orm.bitbakeversion" pk="1">
     <field type="CharField" name="name">morty</field>
     <field type="CharField" name="giturl">git://git.yoctoproject.org/poky</field>
@@ -21,6 +27,13 @@
   </object>
 
   <!-- Releases available -->
+  <object model="orm.release" pk="3">
+    <field type="CharField" name="name">master</field>
+    <field type="CharField" name="description">Yocto Project master</field>
+    <field rel="ManyToOneRel" to="orm.bitbakeversion" name="bitbake_version">3</field>
+    <field type="CharField" name="branch_name">morty</field>
+    <field type="TextField" name="helptext">Toaster will run your builds using the tip of the &lt;a href="http://git.yoctoproject.org/cgit/cgit.cgi/poky/log/"&gt;Yocto Project master branch&lt;/a&gt;, where active development takes place. This is not a stable branch, so your builds might not work as expected.</field>
+  </object>
   <object model="orm.release" pk="1">
     <field type="CharField" name="name">morty</field>
     <field type="CharField" name="description">Yocto Project 2.2 "Morty"</field>
