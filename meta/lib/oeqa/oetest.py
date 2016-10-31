@@ -145,20 +145,6 @@ class OETestCalledProcessError(subprocess.CalledProcessError):
 
 subprocess.CalledProcessError = OETestCalledProcessError
 
-class oeSDKTest(oeTest):
-    def __init__(self, methodName='runTest'):
-        self.sdktestdir = oeSDKTest.tc.sdktestdir
-        super(oeSDKTest, self).__init__(methodName)
-
-    @classmethod
-    def hasHostPackage(self, pkg):
-        if re.search(pkg, oeTest.tc.hostpkgmanifest):
-            return True
-        return False
-
-    def _run(self, cmd):
-        return subprocess.check_output(". %s > /dev/null; %s;" % (self.tc.sdkenv, cmd), shell=True, stderr=subprocess.STDOUT).decode("utf-8")
-
 class oeSDKExtTest(oeSDKTest):
     def _run(self, cmd):
         # extensible sdk shows a warning if found bitbake in the path
