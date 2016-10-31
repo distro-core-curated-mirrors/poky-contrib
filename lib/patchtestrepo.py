@@ -40,11 +40,23 @@ class Repo(object):
         self._patch = Patch(patch)
         self._current_branch = self._get_current_branch()
 
+        # Target Branch
+        # Priority (top has highest priority):
+        #    1. branch given at cmd line
+        #    2. branch given at the patch
+        #    3. current branch
         self._branch = self._get_commitid(branch) or \
-                       self._get_commitid(self._patch.branch) or \
-                       self._current_branch
+          self._get_commitid(self._patch.branch) or \
+          self._current_branch
 
-        self._commit = self._get_commitid(commit) or self._get_commitid('HEAD')
+        # Target Commit
+        # Priority (top has highest priority):
+        #    1. commit given at cmd line
+        #    2. branch given at the patch
+        #    3. current HEAD
+        self._commit = self._get_commitid(commit) or \
+          self._get_commitid(self._patch.branch) or \
+          self._get_commitid('HEAD')
 
         self._workingbranch = "%s_%s" % (Repo.prefix, os.getpid())
 
