@@ -1,7 +1,8 @@
-import unittest
-from oe.utils import packages_filter_out_system
+from oeqa.selftest.base import oeSelfTest
+from oeqa.utils.decorators import testcase
+from oe.utils import packages_filter_out_system, trim_version
 
-class TestPackagesFilterOutSystem(unittest.TestCase):
+class TestPackagesFilterOutSystem(oeSelfTest):
     def test_filter(self):
         """
         Test that oe.utils.packages_filter_out_system works.
@@ -31,7 +32,7 @@ class TestPackagesFilterOutSystem(unittest.TestCase):
         self.assertEqual(pkgs, ["foo-data"])
 
 
-class TestTrimVersion(unittest.TestCase):
+class TestTrimVersion(oeSelfTest):
     def test_version_exception(self):
         with self.assertRaises(TypeError):
             trim_version(None, 2)

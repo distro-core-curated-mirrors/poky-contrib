@@ -1,11 +1,12 @@
-import unittest
+from oeqa.selftest.base import oeSelfTest
+from oeqa.utils.decorators import testcase
 import oe, oe.path
 import tempfile
 import os
 import errno
 import shutil
 
-class TestRealPath(unittest.TestCase):
+class TestRealPath(oeSelfTest):
     DIRS = [ "a", "b", "etc", "sbin", "usr", "usr/bin", "usr/binX", "usr/sbin", "usr/include", "usr/include/gdbm" ]
     FILES = [ "etc/passwd", "b/file" ]
     LINKS = [

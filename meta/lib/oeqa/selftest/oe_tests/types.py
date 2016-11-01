@@ -1,7 +1,8 @@
-import unittest
+from oeqa.selftest.base import oeSelfTest
+from oeqa.utils.decorators import testcase
 from oe.maketype import create, factory
 
-class TestTypes(unittest.TestCase):
+class TestTypes(oeSelfTest):
     def assertIsInstance(self, obj, cls):
         return self.assertTrue(isinstance(obj, cls))
 
@@ -12,6 +13,10 @@ class TestTypes(unittest.TestCase):
         cls = factory(type)
         self.assertIsNot(cls, None)
         self.assertIsInstance(create(value, type, **flags), cls)
+
+    def assertListIsEqual(self, value, valid, sep=None):
+        obj = create(value, 'list', separator=sep)
+        self.assertListEqual(obj, valid)
 
 class TestBooleanType(TestTypes):
     def test_invalid(self):
@@ -44,19 +49,13 @@ class TestBooleanType(TestTypes):
         self.assertNotEqual(create('y', 'boolean'), False)
 
 class TestList(TestTypes):
-    def assertListEqual(self, value, valid, sep=None):
-        obj = create(value, 'list', separator=sep)
-        self.assertEqual(obj, valid)
-        if sep is not None:
-            self.assertEqual(obj.separator, sep)
-        self.assertEqual(str(obj), obj.separator.join(obj))
 
     def test_list_nosep(self):
         testlist = ['alpha', 'beta', 'theta']
-        self.assertListEqual('alpha beta theta', testlist)
-        self.assertListEqual('alpha  beta\ttheta', testlist)
-        self.assertListEqual('alpha', ['alpha'])
+        self.assertListIsEqual('alpha beta theta', testlist)
+        self.assertListIsEqual('alpha  beta\ttheta', testlist)
+        self.assertListIsEqual('alpha', ['alpha'])
 
     def test_list_usersep(self):
-        self.assertListEqual('foo:bar', ['foo', 'bar'], ':')
-        self.assertListEqual('foo:bar:baz', ['foo', 'bar', 'baz'], ':')
+        self.assertListIsEqual('foo:bar', ['foo', 'bar'], ':')
+        self.assertListIsEqual('foo:bar:baz', ['foo', 'bar', 'baz'], ':')
