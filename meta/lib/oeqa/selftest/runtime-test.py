@@ -2,6 +2,7 @@ from oeqa.selftest.base import oeSelfTest
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, runqemu
 from oeqa.utils.decorators import testcase
 import os
+import re
 
 class TestExport(oeSelfTest):
 
@@ -103,3 +104,35 @@ class TestImage(oeSelfTest):
         # Build core-image-sato and testimage
         bitbake('core-image-full-cmdline socat')
         bitbake('-c testimage core-image-full-cmdline')
+
+class Postinst(oeSelfTest):
+
+        
+    def test_verify_postinst(self):
+        """
+        Summary: The purpose of this test is to verify the execution order of postinst Bugzilla ID: [5319]
+        Expected 1. Compile a minimal image.
+        1. The compiled image will add the created layer with the recipes a b d p t z
+        2. Run qemux86
+        3. Validate the task execution order
+        """
+        features = 'INHERIT += "testimage"\n'
+        features += 'CORE_IMAGE_EXTRA_INSTALL += "postinstz postinsta postinstb postinstd postinstp postinstt"\n'
+        self.write_config(features)
+        
+        bitbake('core-image-minimal -c cleansstate')
+        bitbake('core-image-minimal')
+    
+        # I need to declare a list with all the elements for qmeu_boot_log
+        list_words = ['100-postinstz','101-postinsta','102-postinstb','103-postinstd','104-postinstp','105-postinstt']
+        logfile = '/home/fjpedraz/Debugging/poky/build-firstboot/tmp/work/qemux86-poky-linux/core-image-minimal/1.0-r0/testimage/qemu_boot_log'
+        with runqemu('core-image-minimal') as qemu:
+            with open(logfile) as f:
+                found = False
+                for line in f:
+                    if re.search("\b{0}\b".format(list_words),line):
+                        print line
+                        found = True
+                if not found:
+                    print('Error, the recipes were not run in the required order z,a,b,d,p,t !'')    
+   
