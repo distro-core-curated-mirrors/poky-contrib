@@ -59,6 +59,13 @@ def create_selenium_driver(browser='chrome'):
         return webdriver.Ie()
     elif browser == 'phantomjs':
         return webdriver.PhantomJS()
+    elif ":" in browser:
+        driver = webdriver.Remote(browser,
+                                  webdriver.DesiredCapabilities.FIREFOX.copy())
+        env_link_url = os.environ.get('TOASTER_TESTS_URL')
+
+        driver.get(env_link_url)
+        return driver
     else:
         msg = 'Selenium driver for browser %s is not available' % browser
         raise RuntimeError(msg)
