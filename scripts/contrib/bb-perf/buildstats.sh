@@ -36,6 +36,7 @@
 #
 BS_DIR="tmp/buildstats"
 TASKS="compile:configure:fetch:install:patch:populate_lic:populate_sysroot:unpack"
+STAT="Elapsed time"
 
 function usage {
 CMD=$(basename $0)
@@ -45,18 +46,23 @@ Usage: $CMD [-b buildstats_dir] [-t do_task]
                 (default: "$BS_DIR")
   -t tasks      The tasks to be computed
                 (default: "$TASKS")
+  -s stat       The stat to be matched and summed
+                (default: "$STAT")
   -h            Display this help message
 EOM
 }
 
 # Parse and validate arguments
-while getopts "b:t:h" OPT; do
+while getopts "b:t:s:h" OPT; do
 	case $OPT in
 	b)
 		BS_DIR="$OPTARG"
 		;;
 	t)
 		TASKS="$OPTARG"
+		;;
+	s)
+		STAT="$OPTARG"
 		;;
 	h)
 		usage
@@ -76,15 +82,13 @@ if [ ! -d "$BS_DIR" ]; then
 	exit 1
 fi
 
-RECIPE_FIELD=1
-TIME_FIELD=4
+tasks=($(echo $TASKS | awk 'BEGIN{FS=":"}{for (i=1; i<=NF; i++) print $i }'))
 
-tasks=(${TASKS//:/ })
 for task in "${tasks[@]}"; do
     task="do_${task}"
     for file in $(find ${BS_DIR} -type f -name ${task}); do
-        recipe=$(sed -n -e "/$task/p" ${file} | cut -d ':' -f${RECIPE_FIELD})
-        time=$(sed -n -e "/$task/p" ${file} | cut -d ':' -f${TIME_FIELD} | cut -d ' ' -f2)
+        recipe="$(basename $(dirname $file))"
+	time=$(sed -n -e "s/^\($STAT\): \\(.*\\)/\\2/p" $file)
         echo "${task} ${recipe} ${time}"
     done
 done
