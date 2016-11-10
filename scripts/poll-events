@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # patchtest-poll-events: Poll events of type --series-new-revision from patchwork
 #                        and return these as a series/revision list.
