@@ -53,5 +53,5 @@ if __name__ == '__main__':
 
     for mbox in args.mboxs:
         fullprefix, branch  = get_branch(mbox)
-        print "%s:%s:%s" % (mbox, fullprefix, branch)
+        print("%s:%s:%s" % (mbox, fullprefix, branch))
 

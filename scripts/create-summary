@@ -56,7 +56,7 @@ def summary(stdin, series, revision, outfile, template, project, mailinglist, fa
         with codecs.open(outfile, 'w', encoding='utf-8', errors='ignore') as fd:
             fd.write(render)
     else:
-        print render.encode('utf-8')
+        print(render.encode('utf-8'))
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Create a summary")

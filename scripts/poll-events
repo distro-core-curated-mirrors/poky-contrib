@@ -71,10 +71,10 @@ file is not present, *all* events are polled and *no* series are printed.""")
 
     ret = 1
     try:
-        print pollseries(args.repodir, args.project, args.since)
+        print(pollseries(args.repodir, args.project, args.since))
         ret = 0
     except CalledProcessError as cpe:
-        print 'make sure you have patchwork git-pw installed'
+        print('make sure you have patchwork git-pw installed')
     except:
         import traceback
         traceback.print_exc(5)

@@ -34,7 +34,7 @@ def any_fail(jsonlines):
 if __name__ == '__main__':
     ret = 1
     try:
-        print any_fail(fileinput.input('-'))
+        print(any_fail(fileinput.input('-')))
         ret = 0
     except:
         import traceback
