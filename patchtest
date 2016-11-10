@@ -146,7 +146,7 @@ def _runner(resultklass, prefix=None):
 
     # if there are no test cases, just quit
     if not ntc:
-        return 0
+        return 2
 
     runner = unittest.TextTestRunner(resultclass=resultklass, verbosity=0)
 
@@ -166,11 +166,16 @@ def run(patch):
 
     # run pre-merge tests, meaning those methods with 'pretest' as prefix
     premerge_resultklass = getResult(patch, False)
-    _runner(premerge_resultklass, 'pretest')
+    premerge_result = _runner(premerge_resultklass, 'pretest')
 
     # run post-merge tests, meaning those methods with 'test' as prefix
     postmerge_resultklass = getResult(patch, True)
-    return _runner(postmerge_resultklass, 'test')
+    postmerge_result = _runner(postmerge_resultklass, 'test')
+
+    if premerge_result == 2 and postmerge_result == 2:
+        logger.error('No tests to run - did you specify the correct suite directory?')
+
+    return premerge_result or postmerge_result
 
 def main():
     patch = pti.patch
