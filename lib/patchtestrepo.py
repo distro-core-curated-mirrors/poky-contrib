@@ -21,9 +21,7 @@
 
 import os
 import utils
-import git
 import logging
-import requests
 import json
 from patchtestpatch import Patch
 
