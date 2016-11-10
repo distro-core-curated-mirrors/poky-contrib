@@ -36,7 +36,7 @@ def summary(stdin, series, revision, outfile, template, project, mailinglist, fa
 
         # First element always contains the testid
         testid = testresults[0][1]
-        module, testcase, tid = testid.split('.')
+        module, testcase, tid = testid.rsplit('.', 4)[-3:]
 
         r = [['Test Name', tid]]
         if not fail:
