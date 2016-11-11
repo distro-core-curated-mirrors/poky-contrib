@@ -2,6 +2,7 @@ from oeqa.selftest.base import oeSelfTest
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, runqemu
 from oeqa.utils.decorators import testcase
 import os
+import re 
 
 class TestExport(oeSelfTest):
 
@@ -126,7 +127,7 @@ class Postinst(oeSelfTest):
         workspacedir = os.path.join(path_workdir, workspacedir)
         rexp = re.compile("^Running postinst .*/(?P<postinst>.*)\.\.\.$")
         with runqemu('core-image-minimal') as qemu:
-            with open(logfile) as f:
+            with open(workspacedir) as f:
                 found = False
                 idx = 0 
                 for line in f.readlines():
