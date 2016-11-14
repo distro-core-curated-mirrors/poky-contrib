@@ -4,7 +4,7 @@ series (series {{series}}, revision {{revision}}) by patchtest resulting in
 the following {% if fail %}failures{% else %}results{%endif%}:
 
 {% for result in results %}
-{% if result.commit %}* Patch            {{ result.commit }}
+{% if result.commit %}* Patch            {{ result.commit.subject }}
   {% else %}* {% endif %}Issue            {{ result.issue }} [{{ result.test_name }}]
 {% if result.fix %}  Suggested fix    {{ result.fix }}
 {% endif %}{% for extra in result.data %}  {{ extra[0].ljust(16) }} {{ extra[1] }}
