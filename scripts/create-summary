@@ -37,20 +37,11 @@ def summary(stdin, series, revision, outfile, template, project, mailinglist, fa
             if teststatus != 'FAIL':
                 continue
 
-        # First element always contains the testid
-        testid = testresults[0][1]
-        module, testcase, tid = testid.rsplit('.', 4)[-3:]
+        testresults['test_name'] = testresults['id'].split('.')[-1]
+        testresults['status'] = teststatus
+        results.append(testresults)
 
-        r = [['Test Name', tid]]
-        if not fail:
-             r.append(['Status', teststatus])
-
-        if testresults[1:]:
-            r.extend(testresults[1:])
-        results.append(r)
-
-
-    renderparams = dict([('results', results)])
+    renderparams = {'results': results}
     renderparams.update(opt)
 
     render = template.render(renderparams)
