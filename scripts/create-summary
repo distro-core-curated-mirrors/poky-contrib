@@ -25,7 +25,7 @@ import argparse
 import jinja2
 import codecs
 
-def summary(stdin, series, revision, outfile, template, project, mailinglist, fail):
+def summary(stdin, template, outfile, fail, params):
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(template)))
     template = env.get_template(os.path.basename(template))
 
@@ -42,7 +42,7 @@ def summary(stdin, series, revision, outfile, template, project, mailinglist, fa
         results.append(testresults)
 
     renderparams = {'results': results}
-    renderparams.update(opt)
+    renderparams.update(params)
 
     render = template.render(renderparams)
 
@@ -92,13 +92,11 @@ if __name__ == '__main__':
         opt = dict([
             ('series', args.series),
             ('revision', args.revision),
-            ('outfile', args.outfile),
-            ('template', args.template),
             ('project', args.project),
             ('mailinglist', args.mailinglist),
             ('fail', args.fail),
         ])
-        ret = summary(stdin, **opt)
+        ret = summary(stdin, args.template, args.outfile, args.fail, opt)
     except:
         import traceback
         traceback.print_exc(5)
