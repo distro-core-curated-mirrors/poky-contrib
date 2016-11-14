@@ -1,7 +1,7 @@
 Thank you for submitting this patch series to {{project}}. This is
 an automated response. Several tests have been executed on the proposed
-series (series {{series}}, revision {{revision}}) by patchtest and the
-following have {% if fail %}failed{% else %}passed/skipped{%endif%}:
+series (series {{series}}, revision {{revision}}) by patchtest resulting in
+the following {% if fail %}failures{% else %}results{%endif%}:
 
 {% for lines in results %}{% for k, v in lines %}
 {% if 'Test ID' in k%}{{k}}{{' '*10}}{{v}}{%else%}{{k}}{{' '*(17-(k|length))}}{{v}}{%endif%}{%endfor%}
