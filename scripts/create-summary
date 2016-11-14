@@ -33,6 +33,9 @@ def summary(stdin, series, revision, outfile, template, project, mailinglist, fa
     for line in stdin:
         test = json.loads(line)
         teststatus, testresults  = test['status'], test['results']
+        if fail:
+            if teststatus != 'FAIL':
+                continue
 
         # First element always contains the testid
         testid = testresults[0][1]
@@ -88,7 +91,7 @@ if __name__ == '__main__':
     parser.add_argument('--fail',
                         action='store_true',
                         dest='fail',
-                        help='Indicate the series\' state defined by patchwork')
+                        help='Include failures only')
 
     args = parser.parse_args()
 
