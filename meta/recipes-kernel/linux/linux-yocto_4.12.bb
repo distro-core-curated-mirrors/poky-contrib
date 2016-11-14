@@ -28,6 +28,8 @@ DEPENDS += "openssl-native util-linux-native"
 
 LINUX_VERSION ?= "4.12.26"
 
+SRC_URI += "file://drm.cfg"
+
 PV = "${LINUX_VERSION}+git${SRCPV}"
 
 KMETA = "kernel-meta"
