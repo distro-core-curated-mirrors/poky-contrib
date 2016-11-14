@@ -29,7 +29,7 @@ import fileinput
 import logging
 import traceback
 import re
-from json import dumps, loads
+import json
 
 # Include current path so test cases can see it
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -71,10 +71,10 @@ def getResult(patch, mergepatch):
                 # results may be in json format, so try decoding it
                 # before inserting it into self._out
                 try:
-                    self._out[self.results] = loads(self._results)
+                    self._out[self.results] = json.loads(self._results)
                 except ValueError:
                     pass
-                return dumps(self._out)
+                return json.dumps(self._out)
 
         def startTestRun(self):
             # let's create the repo already, it can be used later on

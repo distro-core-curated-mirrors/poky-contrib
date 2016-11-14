@@ -17,13 +17,13 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import sys
 import fileinput
-from sys import exit
-from json import loads
+import json
 
 def any_fail(jsonlines):
     for jsonline in fileinput.input('-'):
-        result = loads(jsonline)
+        result = json.loads(jsonline)
 	if result['status'] == 'FAIL':
            break
     else:
@@ -39,5 +39,5 @@ if __name__ == '__main__':
     except:
         import traceback
         traceback.print_exc(5)
-    exit(ret)
+    sys.exit(ret)
 

@@ -23,7 +23,7 @@ import os
 import subprocess
 import logging
 import sys
-from re import compile, search
+import re
 
 class CmdException(Exception):
     """ Simple exception class where its attributes are the ones passed when instantiated """
@@ -137,7 +137,7 @@ def logger_create(name):
 
 def get_subject_prefix(data):
     prefix = ""
-    pattern1 = compile("(?<=Subject: )(\[.*\])")
+    pattern1 = re.compile("(?<=Subject: )(\[.*\])")
 
     for subject in data.split('\n'):
         match1 = pattern1.search(subject)
@@ -154,8 +154,8 @@ def valid_branch(branch):
     invalid  = lbranch.startswith('patch') or \
                lbranch.startswith('rfc') or \
                lbranch.startswith('resend') or \
-               search('^v\d+', lbranch) or \
-               search('^\d+/\d+', lbranch)
+               re.search('^v\d+', lbranch) or \
+               re.search('^\d+/\d+', lbranch)
 
     return not invalid
 

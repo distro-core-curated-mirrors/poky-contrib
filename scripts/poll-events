@@ -18,11 +18,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from argparse import ArgumentParser
-from sys import exit
-from json import loads
-from subprocess import check_output, CalledProcessError
-from os.path import exists, join
+import sys
+import os
+import argparse
+import json
+import subprocess
 
 def pollseries(repodir, pwproject, since):
     listseriesrev = list()
@@ -31,25 +31,25 @@ def pollseries(repodir, pwproject, since):
 
     if since:
         cmd += " --since %s" % since
-        events = check_output(cmd, shell=True)
+        events = subprocess.check_output(cmd, shell=True)
     else:
         timestamp = '.git-pw.%s.poll.timestamp' % pwproject
-        if exists(join(repodir, timestamp)):
-            events = check_output(cmd, shell=True)
+        if os.path.exists(os.path.join(repodir, timestamp)):
+            events = subprocess.check_output(cmd, shell=True)
         else:
             # just consume all events
-            while check_output(cmd, shell=True):
+            while subprocess.check_output(cmd, shell=True):
                 pass
 
     for event in events.splitlines():
-        series = loads(event)
+        series = json.loads(event)
         listseriesrev.append((series['series'], series['parameters']['revision']))
 
     return ' '.join(['.'.join([str(s),str(r)]) for s,r in listseriesrev])
 
 if __name__ == '__main__':
 
-    parser = ArgumentParser(description="""
+    parser = argparse.ArgumentParser(description="""
 Poll series and return these as a list of series.revision. If since is not present,
 it will look into the .git-pw and take possible timestamp from it. If the latter
 file is not present, *all* events are polled and *no* series are printed.""")
@@ -73,11 +73,11 @@ file is not present, *all* events are polled and *no* series are printed.""")
     try:
         print(pollseries(args.repodir, args.project, args.since))
         ret = 0
-    except CalledProcessError as cpe:
+    except subprocess.CalledProcessError as cpe:
         print('make sure you have patchwork git-pw installed')
     except:
         import traceback
         traceback.print_exc(5)
 
-    exit(ret)
+    sys.exit(ret)
 
