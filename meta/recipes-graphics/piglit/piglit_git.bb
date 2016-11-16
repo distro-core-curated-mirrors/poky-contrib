@@ -5,13 +5,11 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=b2beded7103a3d8a442a2a0391d607b0"
 SRC_URI = "git://anongit.freedesktop.org/piglit \
            file://0001-cmake-install-bash-completions-in-the-right-place.patch \
            file://0001-tests-Use-FE_UPWARD-only-if-its-defined-in-fenv.h.patch \
-           file://0001-cmake-Link-utils-with-xcb-explicitly.patch \
-           file://0001-cmake-Link-test-utils-with-ldl.patch \
            file://piglit.sh \
            "
 
-# From 2016-07-07
-SRCREV = "c39e41a86551eb390b8da23232dc8577639403d0"
+# Head of master 2016-11-16
+SRCREV = "1619c37a88770c9c0d8467939e34ffd337241c14"
 # (when PV goes above 1.0 remove the trailing r)
 PV = "1.0+gitr${SRCPV}"
 
