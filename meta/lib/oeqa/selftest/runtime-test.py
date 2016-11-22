@@ -106,22 +106,22 @@ class TestImage(oeSelfTest):
         bitbake('-c testimage core-image-full-cmdline')
 
 class Postinst(oeSelfTest):
+    @testcase(1540)
     def test_verify_postinst(self):
         """
         Summary: The purpose of this test is to verify the execution order of postinst Bugzilla ID: [5319]
         Expected 1. Compile a minimal image.
-        1. The compiled image will add the created layer with the recipes a b d p t z
+        1. The compiled image will add the created layer with the recipes postinst[ abdpt]
         2. Run qemux86
         3. Validate the task execution order
         """
         features = 'INHERIT += "testimage"\n'
-        features += 'CORE_IMAGE_EXTRA_INSTALL += "postinstz postinsta postinstb postinstd postinstp postinstt"\n'
+        features += 'CORE_IMAGE_EXTRA_INSTALL += "postinst postinsta postinstb postinstd postinstp postinstt"\n'
         self.write_config(features)
 
-        bitbake('core-image-minimal -c cleansstate')
-        bitbake('core-image-minimal')
+        bitbake('core-image-minimal -f')
 
-        postinst_list = ['100-postinstz','101-postinsta','102-postinstb','103-postinstd','104-postinstp','105-postinstt']
+        postinst_list = ['100-postinst','101-postinsta','102-postinstb','103-postinstd','104-postinstp','105-postinstt']
         path_workdir = get_bb_var('WORKDIR','core-image-minimal')
         workspacedir = 'testimage/qemu_boot_log'
         workspacedir = os.path.join(path_workdir, workspacedir)
@@ -129,10 +129,9 @@ class Postinst(oeSelfTest):
         with runqemu('core-image-minimal') as qemu:
             with open(workspacedir) as f:
                 found = False
-                idx = 0 
+                idx = 0
                 for line in f.readlines():
-                    line = line.strip()
-                    line = line.replace("^M","")
+                    line = line.strip().replace("^M","")
                     if not line: # To avoid empty lines
                         continue
                     m = rexp.search(line)
