@@ -15,7 +15,7 @@ PW=$BASE/patchwork
 PT=$BASE/patchtest
 SUITE=$BASE/patchtest-oe
 START=$SUITE/tests
-REPO=$BASE/openembedded-core
+REPO=$BASE/poky
 -----
 
 [[cloning]]
@@ -29,9 +29,9 @@ planned to be added, so keeping them up to date is important.
 ----
 mkdir $BASE
 git clone https://github.com/dlespiau/patchwork.git $PW
-git clone ssh://git@git.yoctoproject.org/patchtest $PT
-git clone ssh://git@git.yoctoproject.org/patchtest-oe $SUITE
-git clone git://git.openembedded.org/openembedded-core $REPO
+git clone git://git.yoctoproject.org/patchtest $PT
+git clone git://git.yoctoproject.org/patchtest-oe $SUITE
+git clone git://git.openembedded.org/poky $REPO
 ----
 
 [[path]]
