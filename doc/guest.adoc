@@ -27,12 +27,19 @@ For troubleshooting, please refer to the main Yocto Project https://www.yoctopro
 
 [source,shell]
 ----
-cd $BASE
+GUEST="$HOME/patchtest-guest"
+mkdir -p $GUEST
+----
+
+[source,shell]
+----
+cd $GUEST
 git clone git://git.openembedded.org/meta-openembedded
 git clone git://git.yoctoproject.org/poky
 cd poky
-. oe-init-build-env
+source oe-init-build-env
 echo "MACHINE = \"qemux86-64\"" >> conf/local.conf
+echo "SERIAL_CONSOLES_CHECK ?= \"${SERIAL_CONSOLES}\"" >> conf/local.conf
 echo "BBLAYERS += \"$BASE/meta-openembedded/meta-oe\"" >> conf/bblayers.conf
 echo "BBLAYERS += \"$BASE/meta-openembedded/meta-python\"" >> conf/bblayers.conf
 echo "BBLAYERS += \"$PT/meta-patchtest\"" >> conf/bblayers.conf

@@ -10,7 +10,7 @@ as indicated on the <<guest, guest>> section.
 
 [source,shell]
 ----
-BASE=$PWD/pt
+BASE=$HOME/patchtest
 PW=$BASE/patchwork
 PT=$BASE/patchtest
 SUITE=$BASE/patchtest-oe
