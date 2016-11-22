@@ -55,10 +55,6 @@ def summary(stdin, template, outfile, fail, params):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Create a summary")
 
-    parser.add_argument('series',    help='Series ID')
-
-    parser.add_argument('revision',  help='Revision ID')
-
     parser.add_argument('--outfile',
                         dest='outfile',
                         default=None,
@@ -90,8 +86,6 @@ if __name__ == '__main__':
     try:
         stdin = fileinput.input('-')
         opt = dict([
-            ('series', args.series),
-            ('revision', args.revision),
             ('project', args.project),
             ('mailinglist', args.mailinglist),
             ('fail', args.fail),
