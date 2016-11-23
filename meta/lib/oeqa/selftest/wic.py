@@ -243,9 +243,9 @@ class Wic(oeSelfTest):
         self.assertEqual(1, len(glob(self.resultdir + "%s-*direct" % image)))
 
     @testcase(1349)
-    def test_mkgummidisk(self):
-        """Test creation of mkgummidisk image"""
-        image = "mkgummidisk"
+    def test_systemd-bootdisk(self):
+        """Test creation of systemd-bootdisk image"""
+        image = "systemd-bootdisk"
         self.assertEqual(0, runCmd("wic create %s -e core-image-minimal" \
                                    % image).status)
         self.assertEqual(1, len(glob(self.resultdir + "%s-*direct" % image)))
