@@ -39,7 +39,7 @@ git clone git://git.yoctoproject.org/poky
 cd poky
 source oe-init-build-env
 echo "MACHINE = \"qemux86-64\"" >> conf/local.conf
-echo "SERIAL_CONSOLES_CHECK ?= \"${SERIAL_CONSOLES}\"" >> conf/local.conf
+echo "SERIAL_CONSOLES_CHECK ?= \"\${SERIAL_CONSOLES}\"" >> conf/local.conf
 echo "BBLAYERS += \"$BASE/meta-openembedded/meta-oe\"" >> conf/bblayers.conf
 echo "BBLAYERS += \"$BASE/meta-openembedded/meta-python\"" >> conf/bblayers.conf
 echo "BBLAYERS += \"$PT/meta-patchtest\"" >> conf/bblayers.conf
