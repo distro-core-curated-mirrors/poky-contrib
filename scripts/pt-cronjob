@@ -155,7 +155,7 @@ function pwconfigure() {
 PW=$sharefolder/patchwork
 PT=$sharefolder/patchtest
 SUITE=$sharefolder/patchtest-oe
-REPO=$sharefolder/poky
+REPO=$sharefolder/openembedded-core
 
 # include scripts into PATH
 export PATH="$PW/git-pw/:$PT:$PT/scripts:$PATH"
@@ -173,7 +173,7 @@ test ! -d $sharefolder && mkdir $sharefolder
 cloneorpull https://github.com/dlespiau/patchwork.git $PW
 cloneorpull https://git.yoctoproject.org/git/patchtest $PT
 cloneorpull https://git.yoctoproject.org/git/patchtest-oe $SUITE
-cloneorpull https://git.yoctoproject.org/git/poky $REPO
+cloneorpull git://git.openembedded.org/openembedded-core $REPO
 
 # Configure the repo to get latest mboxes
 pwconfigure $REPO $pwurl $pwproject $pwuser $pwpass
