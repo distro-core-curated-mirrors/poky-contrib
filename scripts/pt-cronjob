@@ -170,7 +170,7 @@ test ! -d "$poky" && { echo "Please build a qemu machine according to the guest 
 test ! -d $sharefolder && mkdir $sharefolder
 
 # Clone or pull latest on required repos
-cloneorpull https://github.com/dlespiau/patchwork.git $PW
+cloneorpull git://git.yoctoproject.org/patchwork $PW
 cloneorpull https://git.yoctoproject.org/git/patchtest $PT
 cloneorpull https://git.yoctoproject.org/git/patchtest-oe $SUITE
 cloneorpull git://git.openembedded.org/openembedded-core $REPO
