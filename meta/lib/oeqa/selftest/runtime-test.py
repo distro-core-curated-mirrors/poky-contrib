@@ -116,12 +116,23 @@ class Postinst(oeSelfTest):
         3. Validate the task execution order
         """
         features = 'INHERIT += "testimage"\n'
-        features += 'CORE_IMAGE_EXTRA_INSTALL += "postinst postinsta postinstb postinstd postinstp postinstt"\n'
+        features += 'CORE_IMAGE_EXTRA_INSTALL += "postinst \
+postinst-a \
+postinst-b \
+postinst-d \
+postinst-p \
+postinst-t \
+"\n'
         self.write_config(features)
 
         bitbake('core-image-minimal -f')
 
-        postinst_list = ['100-postinst','101-postinsta','102-postinstb','103-postinstd','104-postinstp','105-postinstt']
+        postinst_list = ['100-postinst',
+                         '101-postinst-a',
+                         '102-postinst-b',
+                         '103-postinst-d',
+                         '104-postinst-p',
+                         '105-postinst-t']
         path_workdir = get_bb_var('WORKDIR','core-image-minimal')
         workspacedir = 'testimage/qemu_boot_log'
         workspacedir = os.path.join(path_workdir, workspacedir)
