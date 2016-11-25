@@ -110,29 +110,31 @@ class Postinst(oeSelfTest):
     def test_verify_postinst(self):
         """
         Summary: The purpose of this test is to verify the execution order of postinst Bugzilla ID: [5319]
-        Expected 1. Compile a minimal image.
-        1. The compiled image will add the created layer with the recipes postinst[ abdpt]
-        2. Run qemux86
-        3. Validate the task execution order
+        Expected 
+        1. Compile a minimal image.
+        2. The compiled image will add the created layer with the recipes postinst[ abdpt]
+        3. Run qemux86
+        4. Validate the task execution order
+        Author: Francisco Pedraza <francisco.j.pedraza.gonzalez@intel.com>
         """
         features = 'INHERIT += "testimage"\n'
-        features += 'CORE_IMAGE_EXTRA_INSTALL += "postinst \
-postinst-a \
-postinst-b \
-postinst-d \
-postinst-p \
-postinst-t \
+        features += 'CORE_IMAGE_EXTRA_INSTALL += "postinst-at-rootfs \
+postinst-delayed-a \
+postinst-delayed-b \
+postinst-delayed-d \
+postinst-delayed-p \
+postinst-delayed-t \
 "\n'
         self.write_config(features)
 
         bitbake('core-image-minimal -f')
 
-        postinst_list = ['100-postinst',
-                         '101-postinst-a',
-                         '102-postinst-b',
-                         '103-postinst-d',
-                         '104-postinst-p',
-                         '105-postinst-t']
+        postinst_list = ['100-postinst-at-rootfs',
+                         '101-postinst-delayed-a',
+                         '102-postinst-delayed-b',
+                         '103-postinst-delayed-d',
+                         '104-postinst-delayed-p',
+                         '105-postinst-delayed-t']
         path_workdir = get_bb_var('WORKDIR','core-image-minimal')
         workspacedir = 'testimage/qemu_boot_log'
         workspacedir = os.path.join(path_workdir, workspacedir)
