@@ -31,8 +31,8 @@ sharefolder=''
 
 pwurl='https://patchwork.openembedded.org'
 pwproject='oe-core'
-pwuser='nouser'
-pwpass='nopass'
+pwuser=''
+pwpass=''
 
 kernel='tmp/deploy/images/qemux86-64/bzImage-qemux86-64.bin'
 rootfs='tmp/deploy/images/qemux86-64/core-image-patchtest-qemux86-64.ext4'
@@ -146,8 +146,8 @@ function pwconfigure() {
 	cd $path
 	git config patchwork.default.url $pwurl
 	git config patchwork.default.project $pwproject
-	test $pwuser != "nouser" && git config patchwork.default.user $pwuser
-	test $pwpass != "nopass" && git config patchwork.default.password $pwpass
+	test -n "$pwuser" && git config patchwork.default.user $pwuser
+	test -n "$pwpass" && git config patchwork.default.password $pwpass
     )
 }
 
@@ -224,6 +224,6 @@ mv $sharefolder/tmp/mboxes $sharefolder/mboxes
 )
 
 # Post patchtest results ($sharefolder/results) into patchwork
-if [ $pwuser != "nouser" -a $pwpass != "nopass" ]; then
+if [ -n "$pwuser" -a -n "$pwpass" ]; then
     post-summary -r $REPO -R $sharefolder/results
 fi
