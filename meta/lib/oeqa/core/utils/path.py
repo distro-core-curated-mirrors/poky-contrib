@@ -12,3 +12,8 @@ def findFile(file_name, directory):
         if file_name in f:
             return os.path.join(r, file_name)
     return None
+
+def remove_safe(path):
+    if os.path.exists(path):
+        os.remove(path)
+
