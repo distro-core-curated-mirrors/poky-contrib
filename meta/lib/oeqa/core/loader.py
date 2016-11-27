@@ -66,7 +66,7 @@ class OETestLoader(unittest.TestLoader):
     def _patchCaseClass(self, testCaseClass):
         # Adds custom attributes to the OETestCase class
         setattr(testCaseClass, 'tc', self.tc)
-        setattr(testCaseClass, 'd', self.tc.d)
+        setattr(testCaseClass, 'td', self.tc.td)
         setattr(testCaseClass, 'logger', self.tc.logger)
 
     def _validateFilters(self, filters, decorator_filters):

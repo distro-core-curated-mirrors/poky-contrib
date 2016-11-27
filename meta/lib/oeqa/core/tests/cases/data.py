@@ -11,9 +11,9 @@ class DataTest(OETestCase):
     @OETestDataDepends(['MACHINE',])
     @OETestTag('dataTestOk')
     def testDataOk(self):
-        self.assertEqual(self.d.get('IMAGE'), 'core-image-minimal')
-        self.assertEqual(self.d.get('ARCH'), 'x86')
-        self.assertEqual(self.d.get('MACHINE'), 'qemuarm')
+        self.assertEqual(self.td.get('IMAGE'), 'core-image-minimal')
+        self.assertEqual(self.td.get('ARCH'), 'x86')
+        self.assertEqual(self.td.get('MACHINE'), 'qemuarm')
 
     @OETestTag('dataTestFail')
     def testDataFail(self):

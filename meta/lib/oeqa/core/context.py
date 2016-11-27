@@ -17,11 +17,11 @@ class OETestContext(object):
 
     files_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../files")
 
-    def __init__(self, d=None, logger=None):
-        if not type(d) is dict:
-            raise TypeError("d isn't dictionary type")
+    def __init__(self, td=None, logger=None):
+        if not type(td) is dict:
+            raise TypeError("td isn't dictionary type")
 
-        self.d = d
+        self.td = td
         self.logger = logger
         self._registry = {}
         self._registry['cases'] = collections.OrderedDict()
@@ -62,7 +62,7 @@ class OETestContextExecutor(object):
 
     default_cases = [os.path.join(os.path.abspath(os.path.dirname(__file__)),
             'cases/example')]
-    default_data = os.path.join(default_cases[0], 'data.json')
+    default_test_data = os.path.join(default_cases[0], 'data.json')
 
     def register_commands(self, logger, subparsers):
         self.parser = subparsers.add_parser(self.name, help=self.help,
@@ -74,12 +74,12 @@ class OETestContextExecutor(object):
                 default=self.default_output_log,
                 help="results output log, default: %s" % self.default_output_log)
 
-        if self.default_data:
-            self.parser.add_argument('--data-file', action='store',
-                    default=self.default_data,
-                    help="data file to load, default: %s" % self.default_data)
+        if self.default_test_data:
+            self.parser.add_argument('--test-data-file', action='store',
+                    default=self.default_test_data,
+                    help="data file to load, default: %s" % self.default_test_data)
         else:
-            self.parser.add_argument('--data-file', action='store',
+            self.parser.add_argument('--test-data-file', action='store',
                     help="data file to load")
 
         if self.default_cases:
@@ -111,11 +111,11 @@ class OETestContextExecutor(object):
         self.tc_kwargs['run'] = {}
 
         self.tc_kwargs['init']['logger'] = self._setup_logger(logger, args)
-        if args.data_file:
-            self.tc_kwargs['init']['d'] = json.load(
-                    open(args.data_file, "r"))
+        if args.test_data_file:
+            self.tc_kwargs['init']['td'] = json.load(
+                    open(args.test_data_file, "r"))
         else:
-            self.tc_kwargs['init']['d'] = {}
+            self.tc_kwargs['init']['td'] = {}
 
         self.module_paths = args.CASES_PATHS
 

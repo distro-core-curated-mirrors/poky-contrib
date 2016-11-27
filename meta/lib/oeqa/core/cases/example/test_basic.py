@@ -6,10 +6,10 @@ from oeqa.core.decorator.depends import OETestDepends
 
 class OETestExample(OETestCase):
     def test_example(self):
-        self.logger.info('IMAGE: %s' % self.d.get('IMAGE'))
-        self.assertEqual('core-image-minimal', self.d.get('IMAGE'))
-        self.logger.info('ARCH: %s' % self.d.get('ARCH'))
-        self.assertEqual('x86', self.d.get('ARCH'))
+        self.logger.info('IMAGE: %s' % self.td.get('IMAGE'))
+        self.assertEqual('core-image-minimal', self.td.get('IMAGE'))
+        self.logger.info('ARCH: %s' % self.td.get('ARCH'))
+        self.assertEqual('x86', self.td.get('ARCH'))
 
 class OETestExampleDepend(OETestCase):
     @OETestDepends(['OETestExample.test_example'])
