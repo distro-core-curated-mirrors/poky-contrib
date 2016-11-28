@@ -14,6 +14,7 @@ from oeqa.core.runner import OETestRunner, OEStreamLogger
 class OETestContext(object):
     loaderClass = OETestLoader
     runnerClass = OETestRunner
+    streamLoggerClass = OEStreamLogger
 
     files_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../files")
 
@@ -49,7 +50,7 @@ class OETestContext(object):
         self.suites = self.loader.discover()
 
     def runTests(self):
-        streamLogger = OEStreamLogger(self.logger)
+        streamLogger = self.streamLoggerClass(self.logger)
         self.runner = self.runnerClass(self, stream=streamLogger, verbosity=2)
         return self.runner.run(self.suites)
 
