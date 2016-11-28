@@ -36,6 +36,7 @@ from bb import msg, data, event
 from bb import monitordisk
 import subprocess
 import pickle
+from multiprocessing import Process
 
 bblogger = logging.getLogger("BitBake")
 logger = logging.getLogger("BitBake.RunQueue")
@@ -1302,15 +1303,35 @@ class RunQueue:
         else:
             self.rqexe.finish()
 
-    def dump_signatures(self, options):
-        done = set()
-        bb.note("Reparsing files to collect dependency data")
+    def rq_dump_sigfn(self, fn, options):
         bb_cache = bb.cache.NoCache(self.cooker.databuilder)
+        the_data = bb_cache.loadDataFull(fn, self.cooker.collection.get_file_appends(fn))
+        siggen = bb.parse.siggen
+        dataCaches = self.rqdata.dataCaches
+        siggen.dump_sigfn(fn, dataCaches, options)
+
+    def dump_signatures(self, options):
+        fns = set()
+        bb.note("Reparsing files to collect dependency data")
+
         for tid in self.rqdata.runtaskentries:
             fn = fn_from_tid(tid)
-            if fn not in done:
-                the_data = bb_cache.loadDataFull(fn, self.cooker.collection.get_file_appends(fn))
-                done.add(fn)
+            fns.add(fn)
+
+        cpus = os.cpu_count() or 1
+
+        # We cannot use the real multiprocessing.Pool directly due to some local data
+        # that can't be pickled. This cheap multi-process solution is much faster than
+        # a single-thread, just less optimized as the real Pool.
+        while (fns):
+            batch = []
+            process_num = min(len(fns), int(self.cfgData.getVar("BB_NUMBER_PARSE_THREADS") or cpus))
+            for n in range(0, process_num):
+                p = Process(target=self.rq_dump_sigfn, args=(fns.pop(), options))
+                batch.append(p)
+                p.start()
+            for p in batch:
+                p.join()
 
         bb.parse.siggen.dump_sigs(self.rqdata.dataCaches, options)
 
