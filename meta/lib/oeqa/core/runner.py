@@ -20,10 +20,14 @@ except ImportError:
 class OEStreamLogger(object):
     def __init__(self, logger):
         self.logger = logger
+        self.buffer = ""
 
     def write(self, msg):
-        for line in msg.rstrip().splitlines():
-            self.logger.log(logging.INFO, line.rstrip())
+        if msg[-1] != '\n':
+            self.buffer += msg
+        else:
+            self.logger.log(logging.INFO, self.buffer.rstrip("\n"))
+            self.buffer = ""
 
     def flush(self):
         for handler in self.logger.handlers:
