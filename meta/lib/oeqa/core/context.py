@@ -7,6 +7,7 @@ import json
 import time
 import logging
 import collections
+import re
 
 from oeqa.core.loader import OETestLoader
 from oeqa.core.runner import OETestRunner, OEStreamLogger
@@ -16,7 +17,8 @@ class OETestContext(object):
     runnerClass = OETestRunner
     streamLoggerClass = OEStreamLogger
 
-    files_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../files")
+    files_dir = os.path.abspath(os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), "../files"))
 
     def __init__(self, td=None, logger=None):
         if not type(td) is dict:
@@ -52,7 +54,80 @@ class OETestContext(object):
     def runTests(self):
         streamLogger = self.streamLoggerClass(self.logger)
         self.runner = self.runnerClass(self, stream=streamLogger, verbosity=2)
-        return self.runner.run(self.suites)
+
+        self._run_start_time = time.time()
+        result = self.runner.run(self.suites)
+        self._run_end_time = time.time()
+
+        return result
+
+    def logSummary(self, result, component, context_msg=''):
+        self.logger.info("SUMMARY:")
+        self.logger.info("%s (%s) - Ran %d test%s in %.3fs" % (component,
+            context_msg, result.testsRun, result.testsRun != 1 and "s" or "",
+            (self._run_end_time - self._run_start_time)))
+
+        if result.wasSuccessful():
+            msg = "%s - OK - All required tests passed" % component
+        else:
+            msg = "%s - FAIL - Required tests failed" % component
+        skipped = len(self._results['skipped'])
+        if skipped: 
+            msg += " (skipped=%d)" % skipped
+        self.logger.info(msg)
+
+    def _logDetailsNotPassed(self, case, type, desc):
+        found = False
+
+        for (scase, msg) in self._results[type]:
+            if case == scase:
+                found = True
+                break
+            else:
+                # When fails at module or class level the class name is passed as string
+                # so figure out to see if match
+                m = re.search("^setUpModule \((?P<module_name>.*)\)$", str(scase))
+                if m:
+                    if case.__class__.__module__ == m.group('module_name'):
+                        found = True
+                        break
+
+                m = re.search("^setUpClass \((?P<class_name>.*)\)$", str(scase))
+                if m:
+                    class_name = "%s.%s" % (case.__class__.__module__,
+                            case.__class__.__name__)
+
+                    if class_name == m.group('class_name'):
+                        found = True
+                        break
+
+        if found:
+            self.logger.info("RESULTS - %s - Testcase %s: %s" % (case.id(),
+                case.oe_id if hasattr(case, 'oeid') else '-1', desc))
+            if msg:
+                self.logger.info(msg)
+
+        return found
+
+    def logDetails(self):
+        self.logger.info("RESULTS:")
+        for case_name in self._registry['cases']:
+            case = self._registry['cases'][case_name]
+
+            result_types = ['failures', 'errors', 'skipped', 'expectedFailures']
+            result_desc = ['FAILED', 'ERROR', 'SKIPPED', 'EXPECTEDFAIL']
+
+            match = False
+            for idx, name in enumerate(result_types):
+                match = self._logDetailsNotPassed(case, result_types[idx],
+                        result_desc[idx])
+                if match:
+                    break
+
+            if not match:
+                self.logger.info("RESULTS - %s - Testcase %s: %s" % (case.id(),
+                    case.oe_id if hasattr(case, 'oeid') else '-1',
+                    'PASSED'))
 
 class OETestContextExecutor(object):
     _context_class = OETestContext
@@ -126,6 +201,8 @@ class OETestContextExecutor(object):
         self.tc = self._context_class(**self.tc_kwargs['init'])
         self.tc.loadTests(self.module_paths, **self.tc_kwargs['load'])
         rc = self.tc.runTests(**self.tc_kwargs['run'])
+        self.tc.logSummary(rc, self.name)
+        self.tc.logDetails()
 
         output_link = os.path.join(os.path.dirname(args.output_log),
                 "%s-results.log" % self.name)
