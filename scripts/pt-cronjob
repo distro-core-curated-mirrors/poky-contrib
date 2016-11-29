@@ -156,6 +156,7 @@ PW=$sharefolder/patchwork
 PT=$sharefolder/patchtest
 SUITE=$sharefolder/patchtest-oe
 REPO=$sharefolder/openembedded-core
+BB=$sharefolder/bitbake
 
 # include scripts into PATH
 export PATH="$PW/git-pw/:$PT:$PT/scripts:$PATH"
@@ -174,6 +175,7 @@ cloneorpull git://git.yoctoproject.org/patchwork $PW
 cloneorpull git://git.yoctoproject.org/patchtest $PT
 cloneorpull git://git.yoctoproject.org/patchtest-oe $SUITE
 cloneorpull git://git.openembedded.org/openembedded-core $REPO
+cloneorpull git://git.openembedded.org/bitbake $BB
 
 # Configure the repo to get latest mboxes
 pwconfigure $REPO $pwurl $pwproject $pwuser $pwpass
