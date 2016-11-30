@@ -108,15 +108,20 @@ class Repo(object):
             raise utils.CmdException({'cmd':str(cmds)})
 
         results = []
+        cmdfailure = False
         try:
             results = utils.exec_cmds(_cmds, self._repodir)
         except utils.CmdException as ce:
+            cmdfailure = True
             raise ce
-
-        if logger.getEffectiveLevel() == logging.DEBUG:
-            for result in results:
-                logger.debug("CMD: %s RCODE: %s STDOUT: %s STDERR: %s" %
-                             (' '.join(result['cmd']), result['returncode'], result['stdout'], result['stderr']))
+        finally:
+            if cmdfailure:
+                for cmd in _cmds:
+                    logger.debug("CMD: %s" % ' '.join(cmd['cmd']))
+            else:
+                for result in results:
+                    cmd, rc, stdout, stderr = ' '.join(result['cmd']), result['returncode'], result['stdout'], result['stderr']
+                    logger.debug("CMD: %s RCODE: %s STDOUT: %s STDERR: %s" % (cmd, rc, stdout, stderr))
 
         return results
 
@@ -153,6 +158,6 @@ class Repo(object):
             self._patchmerged = True
 
     def clean(self):
-        self._exec([{'cmd':['git', 'checkout', '%s' % self._current_branch]},
-                    {'cmd':['git', 'branch',   '-D', self._workingbranch]}])
+        self._exec({'cmd':['git', 'checkout', '%s' % self._current_branch]})
+        self._exec({'cmd':['git', 'branch', '-D', self._workingbranch]})
         self._patchmerged = False
