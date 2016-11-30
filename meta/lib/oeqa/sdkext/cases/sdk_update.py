@@ -1,15 +1,17 @@
+# Copyright (C) 2016 Intel Corporation
+# Released under the MIT license (see COPYING.MIT)
+
 import os
 import shutil
 import subprocess
 
-from oeqa.oetest import oeSDKExtTest
+from oeqa.sdkext.case import OESDKExtTestCase
 from oeqa.utils.httpserver import HTTPService
 
-class SdkUpdateTest(oeSDKExtTest):
-
+class SdkUpdateTest(OESDKExtTestCase):
     @classmethod
     def setUpClass(self):
-        self.publish_dir = os.path.join(self.tc.sdktestdir, 'esdk_publish')
+        self.publish_dir = os.path.join(self.tc.sdk_dir, 'esdk_publish')
         if os.path.exists(self.publish_dir):
             shutil.rmtree(self.publish_dir)
         os.mkdir(self.publish_dir)
