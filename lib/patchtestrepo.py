@@ -127,7 +127,11 @@ class Repo(object):
 
     def _get_current_branch(self, commit='HEAD'):
         cmd = {'cmd':['git', 'rev-parse', '--abbrev-ref', commit]}
-        return self._exec(cmd)[0]['stdout']
+        cb = self._exec(cmd)[0]['stdout']
+        if cb == commit:
+            logger.warning('You may be detached so patchtest will checkout to master after execution')
+            cb = 'master'
+        return cb
 
     def _get_commitid(self, commit):
 
