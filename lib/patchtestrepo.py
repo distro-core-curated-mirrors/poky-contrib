@@ -73,8 +73,8 @@ class Repo(object):
         # for debugging purposes, print all repo parameters
         logger.debug("Parameters")
         logger.debug("\tRepository     : %s" % self._repodir)
-        logger.debug("\tBase Commit    : %s" % self._commit)
-        logger.debug("\tBase Branch    : %s" % self._branch)
+        logger.debug("\tTarget Commit    : %s" % self._commit)
+        logger.debug("\tTarget Branch    : %s" % self._branch)
         logger.debug("\tWorking branch : %s" % self._workingbranch)
         logger.debug("\tPatch          : %s" % self._patch)
 
