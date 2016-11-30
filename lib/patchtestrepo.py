@@ -43,9 +43,7 @@ class Repo(object):
         #    1. branch given at cmd line
         #    2. branch given at the patch
         #    3. current branch
-        self._branch = self._get_commitid(branch) or \
-          self._get_commitid(self._patch.branch) or \
-          self._current_branch
+        self._branch = branch or self._patch.branch or self._current_branch
 
         # Target Commit
         # Priority (top has highest priority):
