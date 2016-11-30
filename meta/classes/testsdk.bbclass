@@ -99,7 +99,7 @@ def testsdkext_main(d):
 
     from bb.utils import export_proxies
     from oeqa.utils import avoid_paths_in_environ
-    from oeqa.sdk.context import OESDKExtTestContext, OESDKExtTestContextExecutor
+    from oeqa.sdkext.context import OESDKExtTestContext, OESDKExtTestContextExecutor
 
     pn = d.getVar("PN")
     logger = logging.getLogger("BitBake")
@@ -118,13 +118,13 @@ def testsdkext_main(d):
         bb.fatal("The toolchain ext %s is not built. Build it before running the" \
                  " tests: 'bitbake <image> -c populate_sdk_ext' ." % tcname)
 
-    tdname = d.expand("${SDK_DEPLOY}/${TOOLCHAIN_OUTPUTNAME}.testdata.json")
+    tdname = d.expand("${SDK_DEPLOY}/${TOOLCHAINEXT_OUTPUTNAME}.testdata.json")
     test_data = json.load(open(tdname, "r"))
 
     target_pkg_manifest = OESDKExtTestContextExecutor._load_manifest(
-        d.expand("${SDK_DEPLOY}/${TOOLCHAIN_OUTPUTNAME}.target.manifest"))
+        d.expand("${SDK_DEPLOY}/${TOOLCHAINEXT_OUTPUTNAME}.target.manifest"))
     host_pkg_manifest = OESDKExtTestContextExecutor._load_manifest(
-        d.expand("${SDK_DEPLOY}/${TOOLCHAIN_OUTPUTNAME}.host.manifest"))
+        d.expand("${SDK_DEPLOY}/${TOOLCHAINEXT_OUTPUTNAME}.host.manifest"))
 
     sdk_dir = d.expand("${WORKDIR}/testsdkext/")
     bb.utils.remove(sdk_dir, True)
@@ -133,7 +133,7 @@ def testsdkext_main(d):
         subprocess.check_output("%s -y -d %s" % (tcname, sdk_dir), shell=True)
     except subprocess.CalledProcessError as e:
         msg = "Couldn't install the extensible SDK:\n%s" % e.output.decode("utf-8")
-        logfn = os.path.join(sdkdir, 'preparing_build_system.log')
+        logfn = os.path.join(sdk_dir, 'preparing_build_system.log')
         if os.path.exists(logfn):
             msg += '\n\nContents of preparing_build_system.log:\n'
             with open(logfn, 'r') as f:
