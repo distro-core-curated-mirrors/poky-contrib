@@ -10,7 +10,7 @@ import collections
 import re
 
 from oeqa.core.loader import OETestLoader
-from oeqa.core.runner import OETestRunner, OEStreamLogger
+from oeqa.core.runner import OETestRunner, OEStreamLogger, xmlEnabled
 
 class OETestContext(object):
     loaderClass = OETestLoader
@@ -80,6 +80,13 @@ class OETestContext(object):
         found = False
 
         for (scase, msg) in self._results[type]:
+            # XXX: When XML reporting is enabled scase is
+            # xmlrunner.result._TestInfo instance instead of
+            # string.
+            if xmlEnabled and case.id() == scase.test_id:
+                found = True
+                break
+
             if case == scase:
                 found = True
                 break
