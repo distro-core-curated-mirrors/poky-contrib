@@ -15548,6 +15548,20 @@ recipes-graphics/xorg-font/font-alias_1.0.3.bb:PR = "${INC_PR}.3"
             </glossdef>
         </glossentry>
 
+        <glossentry id='var-WKS_FILE'><glossterm>WKS_FILE</glossterm>
+            <info>
+               WKS_FILE[doc] = "Specifies the name of the wic kickstart file."
+            </info>
+            <glossdef>
+                <para role="glossdeffirst">
+                    Specifies the location of the wic kickstart file that is
+                    used to <ulink url='&YOCTO_DOCS_DEV_URL;#creating-wic-images-oe'>create wic partitioned image by the OpenEmbedded build system</ulink>.
+                    For details on kickstart file format, see
+                    <ulink url='&YOCTO_DOCS_DEV_URL;#openembedded-kickstart-wks-reference'>OpenEmbedded Kickstart (.wks) Reference</ulink>.
+                </para>
+            </glossdef>
+        </glossentry>
+
         <glossentry id='var-WORKDIR'><glossterm>WORKDIR</glossterm>
             <info>
                WORKDIR[doc] = "The pathname of the working directory in which the OpenEmbedded build system builds a recipe. This directory is located within the TMPDIR directory structure and changes as different packages are built."
