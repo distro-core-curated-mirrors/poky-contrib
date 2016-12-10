@@ -1,0 +1,18 @@
+LICENSE = "CLOSED"
+INHIBIT_DEFAULT_DEPS = "1"
+
+require zephyr-kernel-test.inc
+
+addtask testimage
+deltask configure
+deltask compile
+deltask install
+
+do_testimage () {
+	:
+}
+
+do_testimage[depends] = '${@" ".join(["zephyr-kernel-test-" + x + ":do_testimage" for x in d.getVar("ZEPHYRTESTS", True).split()])}'
+
+do_build[depends] = '${@" ".join(["zephyr-kernel-test-" + x + ":do_build" for x in d.getVar("ZEPHYRTESTS", True).split()])}'
+
