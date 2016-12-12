@@ -22,49 +22,85 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 # defaults values
-repo=$1
-origin=$2
-tests=$3
+repo=''
+since=''
+tests=''
+pattern='test*.py'
 
 function usage() {
-       echo -e "Runs patchtest starting at certain commit using the specified test suite"
-       echo -e "\$ $0 <repo> <since commit> <startdir path of the test suite>"
-       echo
-       echo -e "For example, test last 10 commits"
-       echo
-       echo -e "\$ $0 ~/poky HEAD~10 ~/patchtest-oe/tests"
-       echo
+    cat << EOF
+\$ $(basename $0) OPTIONS
 
-       exit 1
+where OPTIONS are
+
+    -r <repodir>  : Repository.
+    -c <since>    : Starting commit
+    -s <startdir> : Test suite start directory
+    -p <patern>   : Pattern. Defaults '$pattern'
+
+EOF
+>&2
+
+    exit 1
 }
 
-[ -z $repo ]   && { echo "OE-core repo missing"; usage; }
-[ -z $origin ] && { echo "Start commit missing"; usage; }
-[ -z $tests ]  && { echo "Start directory from a test suite missing"; usage; }
+while getopts ":r:c:s:p:h" opt; do
+    case $opt in
+	r)
+	    repo=$OPTARG
+	    ;;
+	c)
+	    since=$OPTARG
+	    ;;
+	s)
+	    tests=$OPTARG
+	    ;;
+	p)
+	    pattern="$OPTARG"
+	    ;;
+	h)
+	    usage
+	    ;;
+	\?)
+	    echo "Invalid option: -$OPTARG" >&2
+	    usage
+	    ;;
+	:)
+	    echo "Option -$OPTARG requires an argument." >&2
+	    usage
+	    ;;
+    esac
+done
+shift $((OPTIND-1))
+
+
+[ -z $repo ]  && { echo "OE-core repo missing"; usage; }
+[ -z $since ] && { echo "Start commit missing"; usage; }
+[ -z $tests ] && { echo "Start directory from a test suite missing"; usage; }
 
 tmpdir=$(mktemp -d)
+tmperror=$(mktemp)
 
 cd $repo
-for commit in $(git rev-list $origin..HEAD --reverse)
+for commit in $(git rev-list $since..HEAD --reverse)
 do
     patch="$tmpdir/$commit.patch"
     git format-patch "$commit^1..$commit" --stdout > $patch
 
-    CMD="patchtest $patch -r $repo -s $tests --base-commit $commit^1"
-    LOG="`$CMD 2>&1`"
+    CMD="patchtest $patch -r $repo -s $tests --base-commit $commit^1 --json --pattern $pattern"
+    JSON="`$CMD 2>$tmperror`"
 
     # In case of patchtest failure, just quit showing the patch that breaks it
     if [ $? -ne 0 ]
     then
         echo "patchtest failed with patch $patch"
 	echo "Command: $CMD"
-	echo "Log: $LOG"
+	cat $tmperror
 	echo
         break
     else
-	echo "Patch $patch"
 	echo "Command: $CMD"
-	echo "`echo \"$LOG\" | grep FAIL`"
+	echo "$JSON" | create-summary --fail --only-results
 	echo
     fi
 done
