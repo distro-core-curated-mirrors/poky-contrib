@@ -1,14 +1,17 @@
+{% if not only_results %}
 Thank you for submitting this patch series to {{project}}. This is
 an automated response. Several tests have been executed on the proposed
 series by patchtest resulting in the following {% if fail %}failures{% else %}results{%endif%}:
+{% endif %}
 
 {% for result in results %}
 {% if result.commit %}* Patch            {{ result.commit.subject }}
-  {% else %}* {% endif %}Issue            {{ result.issue }} [{{ result.test_name }}]
+ {% else %}* {% endif %}Issue            {{ result.issue }} [{{ result.test_name }}]
 {% if result.fix %}  Suggested fix    {{ result.fix }}
 {% endif %}{% for extra in result.data %}  {{ extra[0].ljust(16) }} {{ extra[1] }}
 {% endfor %}{% endfor %}
 
+{% if not only_results %}
 If you believe any of these test results are incorrect, please reply to the
 mailing list ({{mailinglist}}) raising your concerns.
 Otherwise we would appreciate you correcting the issues and submitting a new
@@ -19,3 +22,4 @@ version number when sending the new version (i.e. [PATCH] -> [PATCH v2] ->
 ---
 Test framework: http://git.yoctoproject.org/cgit/cgit.cgi/patchtest
 Test suite:     http://git.yoctoproject.org/cgit/cgit.cgi/patchtest-oe
+{% endif %}

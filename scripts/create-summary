@@ -80,6 +80,11 @@ if __name__ == '__main__':
                         dest='fail',
                         help='Include failures only')
 
+    parser.add_argument('--only-results',
+                        action='store_true',
+                        dest='only_results',
+                        help='Print just the results')
+
     args = parser.parse_args()
 
     ret = 1
@@ -89,6 +94,7 @@ if __name__ == '__main__':
             ('project', args.project),
             ('mailinglist', args.mailinglist),
             ('fail', args.fail),
+            ('only_results', args.only_results),
         ])
         ret = summary(stdin, args.template, args.outfile, args.fail, opt)
     except:
