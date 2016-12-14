@@ -286,7 +286,8 @@ class SignatureGeneratorBasic(SignatureGenerator):
 
         computed_basehash = calc_basehash(data)
         if computed_basehash != self.basehash[k]:
-            bb.error("Basehash mismatch %s versus %s for %s" % (computed_basehash, self.basehash[k], k))
+            bb.error("Basehash mismatch, use the computed %s instead of %s for %s" % (computed_basehash, self.basehash[k], k))
+            data['basehash'] = computed_basehash
         if runtime and k in self.taskhash:
             computed_taskhash = calc_taskhash(data)
             if computed_taskhash != self.taskhash[k]:
