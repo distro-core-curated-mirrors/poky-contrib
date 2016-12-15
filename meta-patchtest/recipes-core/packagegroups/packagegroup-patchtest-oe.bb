@@ -9,4 +9,5 @@ inherit packagegroup
 RDEPENDS_${PN} = "\
     python-pyparsing \
     python-unidiff \
+    python-pylint \
     "
