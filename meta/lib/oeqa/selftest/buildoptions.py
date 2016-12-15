@@ -32,12 +32,13 @@ class ImageOptionsTests(oeSelfTest):
 
     @testcase(286)
     def test_ccache_tool(self):
+        self.addCleanup(bitbake, 'm4 -c clean')
+        self.addCleanup(bitbake, 'ccache-native -c clean')
+
         bitbake("ccache-native")
         self.assertTrue(os.path.isfile(os.path.join(get_bb_var('STAGING_BINDIR_NATIVE', 'ccache-native'), "ccache")), msg = "No ccache found under %s" % str(get_bb_var('STAGING_BINDIR_NATIVE', 'ccache-native')))
         self.write_config('INHERIT += "ccache"')
-        bitbake("m4 -c cleansstate")
-        bitbake("m4 -c compile")
-        self.addCleanup(bitbake, 'ccache-native -ccleansstate')
+        bitbake("m4 -C unpack")
         res = runCmd("grep ccache %s" % (os.path.join(get_bb_var("WORKDIR","m4"),"temp/log.do_compile")), ignore_status=True)
         self.assertEqual(0, res.status, msg="No match for ccache in m4 log.do_compile. For further details: %s" % os.path.join(get_bb_var("WORKDIR","m4"),"temp/log.do_compile"))
 
