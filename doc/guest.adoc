@@ -55,7 +55,7 @@ bitbake core-image-patchtest
 
 [source, shell]
 ----
-runqemu qemux86-64
+runqemu qemux86-64 \
 	core-image-patchtest \
 	nographic \
 	kvm \
