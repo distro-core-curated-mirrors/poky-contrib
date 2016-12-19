@@ -32,6 +32,9 @@ npm_do_compile() {
 }
 
 npm_do_install() {
+	# changing the home directory to the working directory, the .npmrc will
+	# be created in this directory
+	export HOME=${WORKDIR}
 	mkdir -p ${NPM_INSTALLDIR}/
 	cp -a ${S}/* ${NPM_INSTALLDIR}/ --no-preserve=ownership
 }
