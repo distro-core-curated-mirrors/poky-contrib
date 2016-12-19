@@ -151,7 +151,7 @@ class DevtoolTests(DevtoolBase):
                 self.fail('Unexpected modified file in line: %s' % line)
         if expected_status:
             self.fail('Missing file changes: %s' % expected_status)
-
+"""
     @testcase(1158)
     def test_create_workspace(self):
         # Check preconditions
@@ -1057,7 +1057,7 @@ class DevtoolTests(DevtoolBase):
         self.assertFalse(matches1, 'Stamp files exist for recipe %s that should have been cleaned' % testrecipe1)
         matches2 = glob.glob(stampprefix2 + '*')
         self.assertFalse(matches2, 'Stamp files exist for recipe %s that should have been cleaned' % testrecipe2)
-
+"""
     @testcase(1272)
     def test_devtool_deploy_target(self):
         # NOTE: Whilst this test would seemingly be better placed as a runtime test,
