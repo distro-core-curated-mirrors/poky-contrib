@@ -25,6 +25,12 @@ class OETestContext(object):
             raise TypeError("td isn't dictionary type")
 
         self.td = td
+        # XXX: Bitbake logger redifines debug() in order to
+        # set a level within debug, this breaks compatibility
+        # with vainilla logging, so we neeed to redifine debug()
+        # method again.
+        if 'bbdebug' in dir(logger):
+            logger.debug = self._log_debug
         self.logger = logger
         self._registry = {}
         self._registry['cases'] = collections.OrderedDict()
@@ -61,9 +67,16 @@ class OETestContext(object):
 
         return result
 
+    def _log_debug(self, level, msg='', *args, **kwargs):
+        if msg:
+            self.logger.bbdebug(level, msg, *args, **kwargs)
+        else:
+            self.logger.log(logging.DEBUG, level, *args, **kwargs)
+
     def logSummary(self, result, component, context_msg=''):
-        self.logger.info("SUMMARY:")
-        self.logger.info("%s (%s) - Ran %d test%s in %.3fs" % (component,
+        self.logger.log(logging.INFO + 1, "SUMMARY:")
+        self.logger.log(logging.INFO + 1,
+            "%s (%s) - Ran %d test%s in %.3fs" % (component,
             context_msg, result.testsRun, result.testsRun != 1 and "s" or "",
             (self._run_end_time - self._run_start_time)))
 
@@ -74,7 +87,7 @@ class OETestContext(object):
         skipped = len(self._results['skipped'])
         if skipped: 
             msg += " (skipped=%d)" % skipped
-        self.logger.info(msg)
+        self.logger.log(logging.INFO + 1, msg)
 
     def _logDetailsNotPassed(self, case, type, desc):
         found = False
@@ -109,7 +122,8 @@ class OETestContext(object):
                         break
 
         if found:
-            self.logger.info("RESULTS - %s - Testcase %s: %s" % (case.id(),
+            self.logger.log(logging.INFO + 1,
+                "RESULTS - %s - Testcase %s: %s" % (case.id(),
                 case.oe_id if hasattr(case, 'oeid') else '-1', desc))
             if msg:
                 self.logger.info(msg)
@@ -117,7 +131,7 @@ class OETestContext(object):
         return found
 
     def logDetails(self):
-        self.logger.info("RESULTS:")
+        self.logger.log(logging.INFO + 1, "RESULTS:")
         for case_name in self._registry['cases']:
             case = self._registry['cases'][case_name]
 
@@ -132,7 +146,8 @@ class OETestContext(object):
                     break
 
             if not match:
-                self.logger.info("RESULTS - %s - Testcase %s: %s" % (case.id(),
+                self.logger.log(logging.INFO + 1,
+                    "RESULTS - %s - Testcase %s: %s" % (case.id(),
                     case.oe_id if hasattr(case, 'oeid') else '-1',
                     'PASSED'))
 
