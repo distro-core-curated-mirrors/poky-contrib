@@ -12,6 +12,7 @@ SRC_URI = "git://github.com/tianocore/edk2.git;branch=master \
 
 SRC_URI_append_class-target = " \
 	http://www.openssl.org/source/openssl-1.0.2j.tar.gz;name=openssl;subdir=${S}/CryptoPkg/Library/OpensslLib \
+	file://0007-OvmfPkg-EnrollDefaultKeys-application-for-enrolling-.patch \
 "
 
 SRCREV="4575a602ca6072ee9d04150b38bfb143cbff8588"
@@ -136,6 +137,9 @@ do_compile_class-target() {
     ( cd ${S}/CryptoPkg/Library/OpensslLib/ && ./Install.sh )
     ${S}/OvmfPkg/build.sh $PARALLEL_JOBS -a $OVMF_ARCH -b RELEASE -t ${FIXED_GCCVER} ${OVMF_SECURE_BOOT_FLAGS}
     ln ${build_dir}/FV/OVMF.fd ${WORKDIR}/ovmf/OVMF.secboot.fd
+    for i in Shell.efi EnrollDefaultKeys.efi; do
+        ln ${build_dir}/${OVMF_ARCH}/$i ${WORKDIR}/ovmf/$i
+    done
 }
 
 do_install_class-native() {
@@ -147,7 +151,19 @@ do_install_class-target() {
     # Traditional location.
     install -d ${D}${datadir}/ovmf
     install -m 0755 ${WORKDIR}/ovmf/OVMF.fd ${D}${datadir}/ovmf/bios.bin
+    # Content for UEFI shell iso. We install the EFI shell as
+    # bootx64/ia32.efi because then it can be started even when the
+    # firmware itself does not contain it.
+    install -d ${D}/efi/boot
+    install ${WORKDIR}/ovmf/Shell.efi ${D}/efi/boot/boot${@ "ia32" if "${TARGET_ARCH}" != "x86_64" else "x64"}.efi
+    install ${WORKDIR}/ovmf/EnrollDefaultKeys.efi ${D}
 }
+
+PACKAGES =+ "ovmf-shell-efi"
+FILES_ovmf-shell-efi = " \
+    EnrollDefaultKeys.efi \
+    efi/ \
+"
 
 inherit deploy
 do_deploy() {
