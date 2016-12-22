@@ -27,12 +27,7 @@ SRC_URI = "http://www.busybox.net/downloads/busybox-${PV}.tar.bz2;name=tarball \
            file://inetd \
            file://login-utilities.cfg \
            file://recognize_connmand.patch \
-           file://busybox-cross-menuconfig.patch \
            file://0001-Use-CC-when-linking-instead-of-LD-and-use-CFLAGS-and.patch \
-           file://busybox-1.24.1-unzip.patch \
-           file://busybox-1.24.1-unzip-regression.patch \
-           file://busybox-1.24.1-truncate-open-mode.patch \
-           file://0001-flock-update-the-behaviour-of-c-parameter-to-match-u.patch \
            file://mount-via-label.cfg \
            file://sha1sum.cfg \
            file://sha256sum.cfg \
@@ -44,18 +39,9 @@ SRC_URI = "http://www.busybox.net/downloads/busybox-${PV}.tar.bz2;name=tarball \
            file://rcS \
            file://rcK \
            file://runlevel \
-           file://CVE-2016-2148.patch \
-           file://CVE-2016-2147.patch \
-           file://CVE-2016-2147_2.patch \
-           file://ip_fix_problem_on_mips64_n64_big_endian_musl_systems.patch \
-           file://makefile-fix-backport.patch \
-           file://0001-sed-fix-sed-n-flushes-pattern-space-terminates-early.patch \
-           file://busybox-kbuild-race-fix-commit-d8e61bb.patch \
-           file://commit-applet_tables-fix-commit-0dddbc1.patch \
            file://makefile-libbb-race.patch \
-           file://0001-libiproute-handle-table-ids-larger-than-255.patch \
 "
 SRC_URI_append_libc-musl = " file://musl.cfg "
 
-SRC_URI[tarball.md5sum] = "be98a40cadf84ce2d6b05fa41a275c6a"
-SRC_URI[tarball.sha256sum] = "37d03132cc078937360b392170b7a1d0e5b322eee9f57c0b82292a8b1f0afe3d"
+SRC_URI[tarball.md5sum] = "044684cb9e4e3253fc31c84f66a5bd9a"
+SRC_URI[tarball.sha256sum] = "0fbbe487fa35cc3258749cf79c259578c1a221013cc4fb60d6a3542590f781f2"
