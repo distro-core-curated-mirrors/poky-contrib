@@ -6,6 +6,7 @@ import re
 
 class TestExport(oeSelfTest):
 
+    '''
     def test_testexport_basic(self):
         """
         Summary: Check basic testexport functionality with only ping test enabled.
@@ -44,6 +45,7 @@ class TestExport(oeSelfTest):
             failure = True if 'FAIL' in result.output else False
             self.assertNotEqual(True, failure, 'ping test failed')
 
+    '''
     def test_testexport_sdk(self):
         """
         Summary: Check sdk functionality for testexport.
@@ -105,6 +107,7 @@ class TestImage(oeSelfTest):
         bitbake('core-image-full-cmdline socat')
         bitbake('-c testimage core-image-full-cmdline')
 
+'''
 class Postinst(oeSelfTest):
     @testcase(1540)
     def test_verify_postinst(self):
@@ -216,3 +219,4 @@ postinst-delayed-t \
                 #Step 5
                 bitbake(' %s %s -c cleanall' % (rootfs_pkg, boot_pkg))
                 bitbake('core-image-full-cmdline -c cleanall')
+                '''

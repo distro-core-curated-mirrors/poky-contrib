@@ -11,6 +11,7 @@ class ImageFeatures(oeSelfTest):
     test_user = 'tester'
     root_user = 'root'
 
+    '''
     @testcase(1107)
     def test_non_root_user_can_connect_via_ssh_without_password(self):
         """
@@ -36,6 +37,7 @@ class ImageFeatures(oeSelfTest):
                 ssh = SSHControl(ip=qemu.ip, logfile=qemu.sshlog, user=user)
                 status, output = ssh.run("true")
                 self.assertEqual(status, 0, 'ssh to user %s failed with %s' % (user, output))
+
 
     @testcase(1115)
     def test_all_users_can_connect_via_ssh_without_password(self):
@@ -67,6 +69,7 @@ class ImageFeatures(oeSelfTest):
                     self.assertEqual(status, 0, 'ssh to user tester failed with %s' % output)
 
 
+    '''
     @testcase(1116)
     def test_clutter_image_can_be_built(self):
         """
