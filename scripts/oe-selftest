@@ -547,7 +547,7 @@ def main():
         # we need to do this here, otherwise just loading the tests
         # will take 2 minutes (bitbake -e calls)
         oeSelfTest.testlayer_path = get_test_layer()
-        for test in testslist:
+        for test in ['oeqa.selftest.imagefeatures.ImageFeatures.test_all_users_can_connect_via_ssh_without_password']:
             log.info("Loading tests from: %s" % test)
             try:
                 suite.addTests(loader.loadTestsFromName(test))
