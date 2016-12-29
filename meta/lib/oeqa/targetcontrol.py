@@ -127,7 +127,7 @@ class QemuTarget(BaseTarget):
         if d.getVar("QEMU_USE_KVM", False) is not None \
            and d.getVar("QEMU_USE_KVM", False) == "True" \
            and "x86" in d.getVar("MACHINE"):
-            use_kvm = True
+            use_kvm = False
         else:
             use_kvm = False
 
