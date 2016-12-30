@@ -500,10 +500,10 @@ python package_get_auto_pr() {
     pkgv = d.getVar("PKGV")
 
     # PR Server not active, handle AUTOINC
-    if not d.getVar('PRSERV_HOST'):
-        if 'AUTOINC' in pkgv:
-            d.setVar("PKGV", pkgv.replace("AUTOINC", "0"))
-        return
+    #if not d.getVar('PRSERV_HOST'):
+    if 'AUTOINC' in pkgv:
+        d.setVar("PKGV", pkgv.replace("AUTOINC", "0"))
+    return
 
     auto_pr = None
     pv = d.getVar("PV")

@@ -420,9 +420,9 @@ class PRServiceConfigError(Exception):
 def auto_start(d):
     global singleton
 
-    host_params = list(filter(None, (d.getVar('PRSERV_HOST') or '').split(':')))
-    if not host_params:
-        return None
+    #host_params = list(filter(None, (d.getVar('PRSERV_HOST') or '').split(':')))
+    #if not host_params:
+    return None
 
     if len(host_params) != 2:
         logger.critical('\n'.join(['PRSERV_HOST: incorrect format',
