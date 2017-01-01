@@ -12,8 +12,8 @@ SRC_URI = "ftp://ftp.alsa-project.org/pub/lib/${BP}.tar.bz2 \
            file://Check-if-wordexp-function-is-supported.patch \
            file://avoid-including-sys-poll.h-directly.patch \
 "
-SRC_URI[md5sum] = "1946e6438b8262a7b8fdadacd0e06ba7"
-SRC_URI[sha256sum] = "d38dacd9892b06b8bff04923c380b38fb2e379ee5538935ff37e45b395d861d6"
+SRC_URI[md5sum] = "eefe5992567ba00d6110a540657aaf5c"
+SRC_URI[sha256sum] = "71282502184c592c1a008e256c22ed0ba5728ca65e05273ceb480c70f515969c"
 
 inherit autotools pkgconfig
 
