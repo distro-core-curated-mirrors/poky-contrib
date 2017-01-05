@@ -155,7 +155,7 @@ postinst-delayed-t \
                     elif found:
                         self.assertEqual(idx, len(postinst_list), "Not found all postinsts")
                         break
-
+    '''
     @testcase(1545)
     def test_postinst_roofs_and_boot(self):
         """
@@ -216,3 +216,4 @@ postinst-delayed-t \
                 #Step 5
                 bitbake(' %s %s -c cleanall' % (rootfs_pkg, boot_pkg))
                 bitbake('core-image-full-cmdline -c cleanall')
+                '''
