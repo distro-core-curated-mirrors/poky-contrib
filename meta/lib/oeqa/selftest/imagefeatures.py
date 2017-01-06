@@ -77,6 +77,9 @@ class ImageFeatures(oeSelfTest):
         AutomatedBy: Daniel Istrate <daniel.alexandrux.istrate@intel.com>
         """
 
+        if 'opengl' not in get_bb_var('DISTRO_FEATURES'):
+            self.skipTest('opengl not present on DISTRO_FEATURES so core-image-clutter cannot be built')
+
         # Build a core-image-clutter
         bitbake('core-image-clutter')
 
@@ -90,6 +93,10 @@ class ImageFeatures(oeSelfTest):
         Author:      Ionut Chisanovici <ionutx.chisanovici@intel.com>
         AutomatedBy: Daniel Istrate <daniel.alexandrux.istrate@intel.com>
         """
+
+        distro_features = get_bb_var('DISTRO_FEATURES')
+        if not ('opengl' in distro_features and 'wayland' in distro_features):
+            self.skipTest('neither opengl nor wayland present on DISTRO_FEATURES so core-image-weston cannot be built')
 
         features = 'DISTRO_FEATURES_append = " wayland"\n'
         features += 'CORE_IMAGE_EXTRA_INSTALL += "wayland weston"'
@@ -109,6 +116,10 @@ class ImageFeatures(oeSelfTest):
 
         features = 'IMAGE_FSTYPES += " ext4 ext4.bmap"'
         self.write_config(features)
+
+        image_fstypes = get_bb_var('IMAGE_FSTYPES')
+        if 'ext4 ext4.bmap' not in image_fstypes:
+            self.skipTest('Current distro does not allow "ext4 ext4.bmap" filesystem type. Supported: %s' % image_fstypes)
 
         image_name = 'core-image-minimal'
         bitbake(image_name)
