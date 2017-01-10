@@ -50,26 +50,26 @@ DISK_SIGNATURE ?= "${DISK_SIGNATURE_GENERATED}"
 DISK_SIGNATURE[vardepsexclude] = "DISK_SIGNATURE_GENERATED"
 
 build_boot_dd() {
-	HDDDIR="${S}/hdd/boot"
+	DEPLOY_DIR_IMAGE="${S}/hdd/boot"
 	HDDIMG="${S}/hdd.image"
 	IMAGE=${IMGDEPLOYDIR}/${IMAGE_NAME}.hdddirect
 
-	populate_kernel $HDDDIR
+	populate_kernel $DEPLOY_DIR_IMAGE
 
 	if [ "${PCBIOS}" = "1" ]; then
-		syslinux_hddimg_populate $HDDDIR
+		syslinux_hddimg_populate $DEPLOY_DIR_IMAGE
 	fi
 	if [ "${EFI}" = "1" ]; then
-		efi_hddimg_populate $HDDDIR
+		efi_hddimg_populate $DEPLOY_DIR_IMAGE
 	fi
 
-	BLOCKS=`du -bks $HDDDIR | cut -f 1`
+	BLOCKS=`du -bks $DEPLOY_DIR_IMAGE | cut -f 1`
 	BLOCKS=`expr $BLOCKS + ${BOOTDD_EXTRA_SPACE}`
 
 	# Remove it since mkdosfs would fail when it exists
 	rm -f $HDDIMG
 	mkdosfs -n ${BOOTDD_VOLUME_ID} -S 512 -C $HDDIMG $BLOCKS 
-	mcopy -i $HDDIMG -s $HDDDIR/* ::/
+	mcopy -i $HDDIMG -s $DEPLOY_DIR_IMAGE/* ::/
 
 	if [ "${PCBIOS}" = "1" ]; then
 		syslinux_hdddirect_install $HDDIMG

@@ -60,7 +60,7 @@ python() {
         d.appendVarFlag('do_bootimg', 'depends', ' %s:do_image_complete' % initrd_i)
 }
 
-HDDDIR = "${S}/hddimg"
+DEPLOY_DIR_IMAGE = "${S}/hddimg"
 ISODIR = "${S}/iso"
 EFIIMGDIR = "${S}/efi_img"
 COMPACT_ISODIR = "${S}/iso.z"
@@ -230,29 +230,29 @@ build_fat_img() {
 build_hddimg() {
 	# Create an HDD image
 	if [ "${NOHDD}" != "1" ] ; then
-		populate_live ${HDDDIR}
+		populate_live ${DEPLOY_DIR_IMAGE}
 
 		if [ "${PCBIOS}" = "1" ]; then
-			syslinux_hddimg_populate ${HDDDIR}
+			syslinux_hddimg_populate ${DEPLOY_DIR_IMAGE}
 		fi
 		if [ "${EFI}" = "1" ]; then
-			efi_hddimg_populate ${HDDDIR}
+			efi_hddimg_populate ${DEPLOY_DIR_IMAGE}
 		fi
 
-		# Check the size of ${HDDDIR}/rootfs.img, error out if it
+		# Check the size of ${DEPLOY_DIR_IMAGE}/rootfs.img, error out if it
 		# exceeds 4GB, it is the single file's max size of FAT fs.
-		if [ -f ${HDDDIR}/rootfs.img ]; then
-			rootfs_img_size=`stat -c '%s' ${HDDDIR}/rootfs.img`
+		if [ -f ${DEPLOY_DIR_IMAGE}/rootfs.img ]; then
+			rootfs_img_size=`stat -c '%s' ${DEPLOY_DIR_IMAGE}/rootfs.img`
 			max_size=`expr 4 \* 1024 \* 1024 \* 1024`
 			if [ $rootfs_img_size -gt $max_size ]; then
-				bberror "${HDDDIR}/rootfs.img execeeds 4GB,"
+				bberror "${DEPLOY_DIR_IMAGE}/rootfs.img execeeds 4GB,"
 				bberror "this doesn't work on FAT filesystem, you can try either of:"
 				bberror "1) Reduce the size of rootfs.img"
 				bbfatal "2) Use iso, vmdk or vdi to instead of hddimg\n"
 			fi
 		fi
 
-		build_fat_img ${HDDDIR} ${IMGDEPLOYDIR}/${IMAGE_NAME}.hddimg
+		build_fat_img ${DEPLOY_DIR_IMAGE} ${IMGDEPLOYDIR}/${IMAGE_NAME}.hddimg
 
 		if [ "${PCBIOS}" = "1" ]; then
 			syslinux_hddimg_install
