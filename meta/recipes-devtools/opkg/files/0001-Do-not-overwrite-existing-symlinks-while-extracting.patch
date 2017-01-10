@@ -1,0 +1,28 @@
+From 81679d4750919bda778ff840ed59528feeb4f47d Mon Sep 17 00:00:00 2001
+From: Amarnath Valluri <amarnath.valluri@intel.com>
+Date: Sat, 7 Jan 2017 22:47:46 +0200
+Subject: [PATCH] Do not overwrite existing symlinks while extracting
+
+Upstream-Status: Pending
+
+Signed-off-by: Amarnath Valluri <amarnath.valluri@intel.com>
+---
+ libopkg/opkg_archive.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libopkg/opkg_archive.c b/libopkg/opkg_archive.c
+index 12312e6..c5a7c4e 100644
+--- a/libopkg/opkg_archive.c
++++ b/libopkg/opkg_archive.c
+@@ -725,7 +725,7 @@ struct opkg_ar *ar_open_pkg_data_archive(const char *filename)
+      * ARCHIVE_EXTRACT_XATTR).
+      */
+     ar->extract_flags = ARCHIVE_EXTRACT_OWNER | ARCHIVE_EXTRACT_PERM |
+-        ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_UNLINK;
++        ARCHIVE_EXTRACT_TIME ;
+ 
+     if (opkg_config->ignore_uid)
+         ar->extract_flags &= ~ARCHIVE_EXTRACT_OWNER;
+-- 
+2.7.4
+
