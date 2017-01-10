@@ -59,7 +59,7 @@ class oeSDKExtSelfTest(oeSelfTest):
         cls.http_service = HTTPService(sstate_dir)
         cls.http_service.start()
 
-        http_url = "127.0.0.1:%d" % cls.http_service.port
+        cls.http_url = "http://127.0.0.1:%d" % cls.http_service.port
  
         image = 'core-image-minimal'
 
@@ -76,7 +76,8 @@ class oeSDKExtSelfTest(oeSelfTest):
         sstate_config="""
 SDK_LOCAL_CONF_WHITELIST = "SSTATE_MIRRORS"
 SSTATE_MIRRORS =  "file://.* http://%s/PATH"
-        """ % http_url
+CORE_IMAGE_EXTRA_INSTALL = "perl"
+        """ % cls.http_url
         with open(os.path.join(cls.tmpdir_eSDKQA, 'conf', 'local.conf'), 'a+') as f:
             f.write(sstate_config)
 
@@ -98,6 +99,11 @@ SSTATE_MIRRORS =  "file://.* http://%s/PATH"
         image = 'core-image-minimal'
         cmd = "devtool build-image %s" % image
         oeSDKExtSelfTest.run_esdk_cmd(self.env_eSDK, self.tmpdir_eSDKQA, cmd)
+
+    @testcase(1567)
+    def test_sdk_update_http(cls):
+        cmd = "devtool sdk-update %s" % cls.http_url
+        oeSDKExtSelfTest.run_esdk_cmd(cls.env_eSDK, cls.tmpdir_eSDKQA, cmd)
 
 if __name__ == '__main__':
     unittest.main()
