@@ -42,6 +42,7 @@ class oeSelfTest(unittest.TestCase):
             self.machineinc_path, self.localconf_backup,
             self.local_bblayers_backup]
         self.distro = get_bb_var('DISTRO')
+        self.pr = None
         super(oeSelfTest, self).__init__(methodName)
 
     def setUp(self):
@@ -100,6 +101,13 @@ be re-executed from a clean environment to ensure accurate results.")
             self.set_machine_config(machine_conf)
             print('MACHINE: %s' % machine)
 
+        try:
+            import cProfile
+            self.pr = cProfile.Profile()
+            self.pr.enable()
+        except ImportError as e:
+            self.log.warning('Install the cProfile module if profiling is desired')
+
         # tests might need their own setup
         # but if they overwrite this one they have to call
         # super each time, so let's give them an alternative
@@ -127,6 +135,15 @@ be re-executed from a clean environment to ensure accurate results.")
                 if os.path.isfile(path):
                     os.remove(path)
             self._track_for_cleanup = []
+
+        if self.pr:
+            import io, pstats
+            self.pr.disable()
+            s = io.StringIO()
+            sortby = 'cumulative'
+            self.ps = pstats.Stats(self.pr, stream=s).sort_stats(sortby)
+            self.ps.print_stats()
+            self.log.info(s.getvalue())
 
         self.tearDownLocal()
 
