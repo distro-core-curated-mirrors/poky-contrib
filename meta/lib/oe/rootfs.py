@@ -187,6 +187,13 @@ class Rootfs(object, metaclass=ABCMeta):
 
         bb.utils.mkdirhier(self.deploydir)
 
+        if bb.utils.contains("DISTRO_FEATURES", "usrmerge", True, False, self.d):
+            # create symlinks for e.g. /bin so later package install
+            # to /bin/ does not create real directories
+            for mergeddir in ["/bin", "/sbin", "/lib"]:
+                bb.utils.mkdirhier(self.image_rootfs + "/usr" + mergeddir)
+                os.symlink("usr" + mergeddir, self.image_rootfs + mergeddir)
+
         shutil.copytree(postinst_intercepts_dir, intercepts_dir)
 
         shutil.copy(self.d.expand("${COREBASE}/meta/files/deploydir_readme.txt"),
