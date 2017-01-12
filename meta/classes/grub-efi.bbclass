@@ -36,7 +36,7 @@ inherit fs-uuid
 efi_populate() {
 	# DEST must be the root of the image so that EFIDIR is not
 	# nested under a top level directory.
-	DEST=$1
+	DEST=${1-${WORKDIR}/efi}
 
 	install -d ${DEST}${EFIDIR}
 
