@@ -111,3 +111,23 @@ python do_rootfs_wicenv () {
 addtask do_rootfs_wicenv after do_image before do_image_wic
 do_rootfs_wicenv[vardeps] += "${WICVARS}"
 do_rootfs_wicenv[prefuncs] = 'set_image_size'
+
+# Populate EFI artifacts
+
+EFI_PROVIDER ?= "grub-efi"
+
+EFI_CLASS = "${@bb.utils.contains("MACHINE_FEATURES", "efi", "${EFI_PROVIDER}", "", d)}"
+inherit ${EFI_CLASS}
+
+python do_efi_populate() {
+    if d.getVar("EFI_CLASS"):
+        # set variables required for populating efi artifacts
+        for key, value in [('LABELS', "boot"), ('GRUB_CFG', "grub-wic.cfg")]:
+            if not d.getVar(key):
+                d.setVar(key, value)
+
+        bb.build.exec_func('build_efi_cfg', d)
+        bb.build.exec_func('efi_populate', d)
+}
+
+addtask do_efi_populate after do_rootfs before do_image
