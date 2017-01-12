@@ -11,6 +11,7 @@
 
 do_bootimg[depends] += "${MLPREFIX}systemd-boot:do_deploy"
 do_bootdirectdisk[depends] += "${MLPREFIX}systemd-boot:do_deploy"
+do_efi_populate[depends] += "${MLPREFIX}systemd-boot:do_deploy"
 
 EFIDIR = "/EFI/BOOT"
 
