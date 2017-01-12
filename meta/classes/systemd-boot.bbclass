@@ -22,7 +22,7 @@ SYSTEMD_BOOT_TIMEOUT ?= "10"
 inherit fs-uuid
 
 efi_populate() {
-        DEST=$1
+        DEST=${1-${WORKDIR}/efi}
 
         EFI_IMAGE="systemd-bootia32.efi"
         DEST_EFI_IMAGE="bootia32.efi"
