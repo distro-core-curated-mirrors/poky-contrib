@@ -167,9 +167,7 @@ class BootimgEFIPlugin(SourcePlugin):
         In this case, prepare content for an EFI (grub) boot partition.
         """
         if not bootimg_dir:
-            bootimg_dir = get_bitbake_var("HDDDIR")
-            if not bootimg_dir:
-                msger.error("Couldn't find HDDDIR, exiting\n")
+            bootimg_dir = os.path.join(get_bitbake_var("WORKDIR"), "efi")
             # just so the result notes display it
             creator.set_bootimg_dir(bootimg_dir)
 
