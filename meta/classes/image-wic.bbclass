@@ -131,3 +131,12 @@ python do_efi_populate() {
 }
 
 addtask do_efi_populate after do_rootfs before do_image
+
+# Build iso artifacts
+
+python do_build_iso() {
+    # do_bootimage calls build_iso, check to avoid building twice
+    if 'do_bootimg' not in d and d.getVar('IMG_LIVE_CLASS'):
+        bb.build.exec_func('build_iso', d)
+}
+addtask do_build_iso after do_image before do_image_wic
