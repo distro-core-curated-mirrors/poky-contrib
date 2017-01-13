@@ -361,6 +361,13 @@ class RecipeEvent(Event):
 class RecipePreFinalise(RecipeEvent):
     """ Recipe Parsing Complete but not yet finialised"""
 
+class RecipeTaskPreProcess(RecipeEvent):
+    """Recipe Tasks about to be finalised"""
+    def __init__(self, fn, tasklist):
+        self.fn = fn
+        self.tasklist = tasklist
+        Event.__init__(self)
+
 class RecipeParsed(RecipeEvent):
     """ Recipe Parsing Complete """
 
