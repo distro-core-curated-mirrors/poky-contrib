@@ -54,6 +54,7 @@ class Wic(oeSelfTest):
             bitbake('syslinux syslinux-native parted-native gptfdisk-native '
                     'dosfstools-native mtools-native bmap-tools-native')
             bitbake('core-image-minimal')
+            bitbake("build-sysroots")
             Wic.image_is_ready = True
 
         rmtree(self.resultdir, ignore_errors=True)
