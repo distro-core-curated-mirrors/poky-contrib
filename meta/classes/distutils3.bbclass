@@ -68,6 +68,16 @@ distutils3_do_install() {
             mv -f ${D}${datadir}/share/* ${D}${datadir}/
             rmdir ${D}${datadir}/share
         fi
+
+        # detect if .egg files/directories were created and add their
+        # path to a .pth file
+        SHORT_PN=$(echo "${PN}" | sed 's/${PYTHON_PN}-//g')
+        if test -e ${D}${PYTHON_SITEPACKAGES_DIR}/${SHORT_PN}*.egg; then
+            EGG_NAME=$(basename $(find ${D}${PYTHON_SITEPACKAGES_DIR}/ \
+-name ${SHORT_PN}\*.egg))
+            echo "./${EGG_NAME}" > ${D}${PYTHON_SITEPACKAGES_DIR}/\
+${SHORT_PN}.pth
+        fi
 }
 distutils3_do_install[vardepsexclude] = "MACHINE"
 
