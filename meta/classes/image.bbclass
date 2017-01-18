@@ -641,3 +641,290 @@ do_bundle_initramfs () {
 	:
 }
 addtask bundle_initramfs after do_image_complete
+
+python extend_recipe_sysroot2() {
+    import copy
+    import subprocess
+
+    taskdepdata = d.getVar("BB_TASKDEPDATA", False)
+    mytaskname = d.getVar("BB_RUNTASK")
+    #bb.warn(str(taskdepdata))
+    pn = d.getVar("PN")
+
+    if mytaskname.endswith("_setscene"):
+        mytaskname = mytaskname.replace("_setscene", "")
+
+    start = None
+    configuredeps = []
+    for dep in taskdepdata:
+        data = taskdepdata[dep]
+        if data[1] == mytaskname and data[0] == pn:
+            start = dep
+            break
+    if start is None:
+        bb.fatal("Couldn't find ourself in BB_TASKDEPDATA?")
+
+    # We need to figure out which sysroot files we need to expose to this task.
+    # This needs to match what would get restored from sstate, which is controlled 
+    # ultimately by calls from bitbake to setscene_depvalid().
+    # That function expects a setscene dependency tree. We build a dependency tree 
+    # condensed to inter-sstate task dependencies, similar to that used by setscene 
+    # tasks. We can then call into setscene_depvalid() and decide
+    # which dependencies we can "see" and should expose in the recipe specific sysroot.
+    setscenedeps = copy.deepcopy(taskdepdata)
+
+    start = set([start])
+
+    sstatetasks = d.getVar("SSTATETASKS").split()
+
+    def print_dep_tree(deptree):
+        data = ""
+        for dep in deptree:
+            deps = "    " + "\n    ".join(deptree[dep][3]) + "\n"
+            data = "%s:\n  %s\n  %s\n%s  %s\n  %s\n" % (deptree[dep][0], deptree[dep][1], deptree[dep][2], deps, deptree[dep][4], deptree[dep][5])
+        return data
+
+    #bb.warn("Full dep tree is:\n%s" % print_dep_tree(taskdepdata))
+
+    #bb.note(" start2 is %s" % str(start))
+
+    # If start is an sstate task (like do_package) we need to add in its direct dependencies
+    # else the code below won't recurse into them.
+    for dep in set(start):
+        for dep2 in setscenedeps[dep][3]:
+            start.add(dep2)
+        start.remove(dep)
+
+    #bb.note(" start3 is %s" % str(start))
+
+    # Create collapsed do_populate_sysroot -> do_populate_sysroot tree
+    for dep in taskdepdata:
+        data = setscenedeps[dep]        
+        if data[1] not in sstatetasks:
+            for dep2 in setscenedeps:
+                data2 = setscenedeps[dep2]
+                if dep in data2[3]:
+                    data2[3].update(setscenedeps[dep][3])
+                    data2[3].remove(dep)
+            if dep in start:
+                start.update(setscenedeps[dep][3])
+                start.remove(dep)
+            del setscenedeps[dep]
+
+    # Remove circular references
+    for dep in setscenedeps:
+        if dep in setscenedeps[dep][3]:
+            setscenedeps[dep][3].remove(dep)
+
+    #bb.note("Computed dep tree is:\n%s" % print_dep_tree(setscenedeps))
+    #bb.note(" start is %s" % str(start))
+    #bb.warn("Computed dep tree is:\n%s" % str(setscenedeps))
+
+    # Direct dependencies should be present and can be depended upon
+    for dep in set(start):
+        if setscenedeps[dep][1] == "do_populate_sysroot":
+            if dep not in configuredeps:
+                configuredeps.append(dep)
+    #bb.note("Direct dependencies are %s" % str(configuredeps))
+    #bb.note(" or %s" % str(start))
+
+    # Call into setscene_depvalid for each sub-dependency and only copy sysroot files
+    # for ones that would be restored from sstate.
+    done = list(start)
+    next = list(start)
+    while next:
+        new = []
+        for dep in next:
+            bb.note("Processing %s" % dep)
+            data = setscenedeps[dep]
+            for datadep in data[3]:
+                bb.note("Processing dep %s" % datadep)
+                if datadep in done:
+                    continue
+                taskdeps = {}
+                taskdeps[dep] = setscenedeps[dep][:2]
+                taskdeps[datadep] = setscenedeps[datadep][:2]
+                retval = setscene_depvalid2(datadep, taskdeps, [], d)
+                if retval:
+                    bb.note("Skipping setscene dependency %s for installation into the sysroot" % datadep)
+                    continue
+                done.append(datadep)
+                new.append(datadep)
+                if datadep not in configuredeps and setscenedeps[datadep][1] == "do_populate_sysroot":
+                    configuredeps.append(datadep)
+                    bb.note("Adding dependency on %s" % setscenedeps[datadep][0])
+                else:
+                    bb.note("Following dependency on %s" % setscenedeps[datadep][0])
+        next = new
+
+    stagingdir = d.getVar("STAGING_DIR")
+    recipesysroot = d.getVar("RECIPE_SYSROOT")
+    recipesysrootnative = d.getVar("RECIPE_SYSROOT_NATIVE")
+
+    # Detect bitbake -b usage
+    nodeps = d.getVar("BB_LIMITEDDEPS") or False
+    if nodeps:
+        lock = bb.utils.lockfile(recipesysroot + "/sysroot.lock")
+        staging_populate_sysroot_dir(recipesysroot, recipesysrootnative, True, d)
+        staging_populate_sysroot_dir(recipesysroot, recipesysrootnative, False, d)
+        bb.utils.unlockfile(lock)
+
+    depdir = recipesysroot + "/installeddeps"
+    bb.utils.mkdirhier(depdir)
+
+    lock = bb.utils.lockfile(recipesysroot + "/sysroot.lock")
+
+    fixme = []
+    fixmenative = []
+    postinsts = []
+
+    for dep in configuredeps:
+        c = setscenedeps[dep][0]
+        taskhash = setscenedeps[dep][5]
+        taskmanifest = depdir + "/" + c + "." + taskhash
+        if mytaskname in ["do_sdk_depends", "do_populate_sdk_ext"] and c.endswith("-initial"):
+            bb.note("Skipping initial setscene dependency %s for installation into the sysroot" % c)
+            continue
+        if os.path.exists(depdir + "/" + c):
+            lnk = os.readlink(depdir + "/" + c)
+            if lnk == c + "." + taskhash and os.path.exists(depdir + "/" + c + ".complete"): 
+                bb.note("%s exists in sysroot, skipping" % c)
+                continue
+            else:
+                bb.note("%s exists in sysroot, but is stale (%s vs. %s), removing." % (c, lnk, c + "." + taskhash))
+                sstate_clean_manifest(depdir + "/" + lnk, d)
+                os.unlink(depdir + "/" + c)
+        elif os.path.lexists(depdir + "/" + c):
+            os.unlink(depdir + "/" + c)
+
+        os.symlink(c + "." + taskhash, depdir + "/" + c)
+
+        native = False
+        if c.endswith("-native"):
+            manifest = d.expand("${SSTATE_MANIFESTS}/manifest-${BUILD_ARCH}-%s.populate_sysroot" % c)
+            native = True
+        elif c.startswith("nativesdk-"):
+            manifest = d.expand("${SSTATE_MANIFESTS}/manifest-${SDK_ARCH}_${SDK_OS}-%s.populate_sysroot" % c)
+        elif "-cross-" in c:
+            manifest = d.expand("${SSTATE_MANIFESTS}/manifest-${BUILD_ARCH}_${TARGET_ARCH}-%s.populate_sysroot" % c)
+            native = True
+        elif "-crosssdk" in c:
+            manifest = d.expand("${SSTATE_MANIFESTS}/manifest-${BUILD_ARCH}_${SDK_ARCH}_${SDK_OS}-%s.populate_sysroot" % c)
+            native = True
+        else:
+            manifest = d.expand("${SSTATE_MANIFESTS}/manifest-${MACHINE_ARCH}-%s.populate_sysroot" % c)
+            if not os.path.exists(manifest):
+                manifest = d.expand("${SSTATE_MANIFESTS}/manifest-${TUNE_PKGARCH}-%s.populate_sysroot" % c)
+            if not os.path.exists(manifest):
+                manifest = d.expand("${SSTATE_MANIFESTS}/manifest-allarch-%s.populate_sysroot" % c)
+        #if not os.path.exists(manifest):
+        bb.warn("Looked for Manifest %s?" % manifest)
+
+    #staging_processfixme(fixme, recipesysroot, recipesysroot, recipesysrootnative, d)
+    #staging_processfixme(fixmenative, recipesysrootnative, recipesysroot, recipesysrootnative, d)
+
+    #for p in postinsts:
+    #    subprocess.check_call(p, shell=True)
+
+    #for dep in configuredeps:
+    #    c = setscenedeps[dep][0]
+    #    open(depdir + "/" + c + ".complete", "w").close()
+
+    bb.utils.unlockfile(lock)
+}
+extend_recipe_sysroot2[vardepsexclude] += "MACHINE SDK_ARCH BUILD_ARCH SDK_OS BB_TASKDEPDATA"
+
+#python () {
+#    d.appendVarFlag("do_rootfs", "prefuncs", " extend_recipe_sysroot2")
+#}
+
+
+def setscene_depvalid2(task, taskdependees, notneeded, d):
+    # taskdependees is a dict of tasks which depend on task, each being a 3 item list of [PN, TASKNAME, FILENAME]
+    # task is included in taskdependees too
+    # Return - False - We need this dependency
+    #        - True - We can skip this dependency
+
+    bb.debug(2, "Considering setscene task: %s" % (str(taskdependees[task])))
+
+    def isNativeCross(x):
+        return x.endswith("-native") or "-cross-" in x or "-crosssdk" in x or x.endswith("-cross")
+
+    def isPostInstDep(x):
+        if x in ["qemu-native", "gdk-pixbuf-native", "qemuwrapper-cross", "depmodwrapper-cross", "systemd-systemctl-native", "gtk-icon-utils-native", "ca-certificates-native",
+                 "glib-2.0-native", "kmod-native", "shadow-native"]:
+            return True
+        return False
+
+    # We only need to trigger populate_lic through direct dependencies
+    if taskdependees[task][1] == "do_populate_lic":
+        return True
+
+    # We only need to trigger packagedata through direct dependencies
+    # but need to preserve packagedata on packagedata links
+    if taskdependees[task][1] == "do_packagedata":
+        for dep in taskdependees:
+            if taskdependees[dep][1] == "do_packagedata":
+                return False
+        return True
+
+    for dep in taskdependees:
+        bb.debug(2, "  considering dependency: %s" % (str(taskdependees[dep])))
+        if task == dep:
+            continue
+        if dep in notneeded:
+            continue
+        # do_package_write_* and do_package doesn't need do_package
+        if taskdependees[task][1] == "do_package" and taskdependees[dep][1] in ['do_package', 'do_package_write_deb', 'do_package_write_ipk', 'do_package_write_rpm', 'do_packagedata', 'do_package_qa']:
+            continue
+        # do_package_write_* need do_populate_sysroot as they're mainly postinstall dependencies
+        if taskdependees[task][1] == "do_populate_sysroot" and taskdependees[dep][1] in ['do_package_write_deb', 'do_package_write_ipk', 'do_package_write_rpm']:
+            return False
+        # do_package/packagedata/package_qa don't need do_populate_sysroot
+        if taskdependees[task][1] == "do_populate_sysroot" and taskdependees[dep][1] in ['do_package', 'do_packagedata', 'do_package_qa']:
+            continue
+        # Native/Cross packages don't exist and are noexec anyway
+        if isNativeCross(taskdependees[dep][0]) and taskdependees[dep][1] in ['do_package_write_deb', 'do_package_write_ipk', 'do_package_write_rpm', 'do_packagedata', 'do_package', 'do_package_qa']:
+            continue
+
+        # This is due to the [depends] in useradd.bbclass complicating matters
+        # The logic *is* reversed here due to the way hard setscene dependencies are injected
+        if (taskdependees[task][1] == 'do_package' or taskdependees[task][1] == 'do_populate_sysroot') and taskdependees[dep][0].endswith(('shadow-native', 'shadow-sysroot', 'base-passwd', 'pseudo-native')) and taskdependees[dep][1] == 'do_populate_sysroot':
+            continue
+
+        # Consider sysroot depending on sysroot tasks
+        if taskdependees[task][1] == 'do_populate_sysroot' and taskdependees[dep][1] == 'do_populate_sysroot':
+            # base-passwd/shadow-sysroot don't need their dependencies
+            if taskdependees[dep][0].endswith(("base-passwd", "shadow-sysroot")):
+                continue
+            # Nothing need depend on libc-initial/gcc-cross-initial
+            if "-initial" in taskdependees[task][0]:
+                continue
+            # For meta-extsdk-toolchain we want all sysroot dependencies
+            if taskdependees[dep][0] == 'meta-extsdk-toolchain':
+                return False
+            # Native/Cross populate_sysroot need their dependencies
+            if isNativeCross(taskdependees[task][0]) and isNativeCross(taskdependees[dep][0]):
+                return False
+            # Target populate_sysroot depended on by cross tools need to be installed
+            if isNativeCross(taskdependees[dep][0]):
+                return False
+            # Native/cross tools depended upon by target sysroot are not needed
+            if isNativeCross(taskdependees[task][0]):
+                continue
+            # Target populate_sysroot need their dependencies
+            return False
+
+        if taskdependees[task][1] == 'do_shared_workdir':
+            continue
+
+        if taskdependees[dep][1] == "do_populate_lic":
+            continue
+
+
+        # Safe fallthrough default
+        bb.debug(2, " Default setscene dependency fall through due to dependency: %s" % (str(taskdependees[dep])))
+        return False
+    return True
+
+
