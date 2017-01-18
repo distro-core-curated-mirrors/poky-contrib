@@ -4,6 +4,7 @@ inherit useradd_base
 # target sysroot, and shadow -native and -sysroot provide the utilities
 # and support files needed to add and modify user and group accounts
 DEPENDS_append_class-target = " base-files shadow-native shadow-sysroot shadow base-passwd"
+PACKAGE_WRITE_DEPS += "shadow-native:do_populate_sysroot"
 
 # This preinstall function can be run in four different contexts:
 #

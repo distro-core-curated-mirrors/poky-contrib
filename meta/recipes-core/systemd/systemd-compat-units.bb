@@ -4,7 +4,7 @@ LICENSE = "MIT"
 
 PR = "r29"
 
-DEPENDS = "systemd-systemctl-native"
+PACKAGE_WRITE_DEPS += "systemd-systemctl-native:do_populate_sysroot"
 
 S = "${WORKDIR}"
 

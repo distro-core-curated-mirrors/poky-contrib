@@ -8,7 +8,7 @@ inherit qemu
 
 PIXBUF_PACKAGES ??= "${PN}"
 
-do_package_write_rpm[depends] += "qemu-native:do_populate_sysroot gdk-pixbuf-native:do_populate_sysroot"
+PACKAGE_WRITE_DEPS += "qemu-native:do_populate_sysroot gdk-pixbuf-native:do_populate_sysroot"
 
 pixbufcache_common() {
 if [ "x$D" != "x" ]; then

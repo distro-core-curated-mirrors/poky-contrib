@@ -22,6 +22,8 @@ if [ x"$D" = "x" ]; then
 fi
 }
 
+PACKAGE_WRITE_DEPS += "kmod-native:do_populate_sysroot depmodwrapper-cross:do_populate_sysroot"
+
 do_install_append() {
 	install -d ${D}${sysconfdir}/modules-load.d/ ${D}${sysconfdir}/modprobe.d/
 }

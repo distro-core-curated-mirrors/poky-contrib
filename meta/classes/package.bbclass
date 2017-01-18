@@ -54,6 +54,8 @@ ALL_MULTILIB_PACKAGE_ARCHS = "${@all_multilib_tune_values(d, 'PACKAGE_ARCHS')}"
 # rpm is used for the per-file dependency identification
 PACKAGE_DEPENDS += "rpm-native"
 
+PACKAGE_WRITE_DEPS ??= ""
+
 def legitimize_package_name(s):
     """
     Make sure package names are legitimate strings
