@@ -1,7 +1,8 @@
 inherit linux-kernel-base kernel-module-split
 
 PROVIDES += "virtual/kernel"
-DEPENDS += "virtual/${TARGET_PREFIX}binutils virtual/${TARGET_PREFIX}gcc kmod-native depmodwrapper-cross bc-native lzop-native"
+DEPENDS += "virtual/${TARGET_PREFIX}binutils virtual/${TARGET_PREFIX}gcc kmod-native bc-native lzop-native"
+PACKAGE_WRITE_DEPS += "depmodwrapper-cross:do_populate_sysroot virtual/update-alternatives-native:do_populate_sysroot"
 
 S = "${STAGING_KERNEL_DIR}"
 B = "${WORKDIR}/build"
