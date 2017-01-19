@@ -1,6 +1,8 @@
 # Support for device tree generation
 FILES_kernel-devicetree = "/${KERNEL_IMAGEDEST}/devicetree*"
 
+PACKAGE_WRITE_DEPS += "virtual/update-alternatives-native:do_populate_sysroot"
+
 python __anonymous () {
     d.appendVar("PACKAGES", " kernel-devicetree")
 }
