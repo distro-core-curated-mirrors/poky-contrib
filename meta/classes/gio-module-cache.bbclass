@@ -1,4 +1,4 @@
-DEPENDS += "qemu-native"
+PACKAGE_WRITE_DEPS += "qemu-native:do_populate_sysroot"
 inherit qemu
 
 GIO_MODULE_PACKAGES ??= "${PN}"
