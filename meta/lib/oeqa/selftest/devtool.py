@@ -341,11 +341,12 @@ class DevtoolTests(DevtoolBase):
 
     @testcase(1161)
     def test_devtool_add_fetch_git(self):
+        # Fetch source
         tempdir = tempfile.mkdtemp(prefix='devtoolqa')
         self.track_for_cleanup(tempdir)
-        url = 'gitsm://git.yoctoproject.org/mraa'
-        checkrev = 'ae127b19a50aa54255e4330ccfdd9a5d058e581d'
-        testrecipe = 'mraa'
+        url = 'git://git.yoctoproject.org/libmatchbox'
+        checkrev = '462f0652055d89c648ddd54fd7b03f175c2c6973'
+        testrecipe = 'libmatchbox2'
         srcdir = os.path.join(tempdir, testrecipe)
         # Test devtool add
         self.track_for_cleanup(self.workspacedir)
@@ -353,7 +354,7 @@ class DevtoolTests(DevtoolBase):
         self.add_command_to_tearDown('bitbake-layers remove-layer */workspace')
         result = runCmd('devtool add %s %s -a -f %s' % (testrecipe, srcdir, url))
         self.assertTrue(os.path.exists(os.path.join(self.workspacedir, 'conf', 'layer.conf')), 'Workspace directory not created: %s' % result.output)
-        self.assertTrue(os.path.isfile(os.path.join(srcdir, 'imraa', 'imraa.c')), 'Unable to find imraa/imraa.c in source directory')
+        self.assertTrue(os.path.isfile(os.path.join(srcdir, 'configure.ac')), 'Unable to find configure.ac in source directory')
         # Test devtool status
         result = runCmd('devtool status')
         self.assertIn(testrecipe, result.output)
@@ -363,7 +364,7 @@ class DevtoolTests(DevtoolBase):
         self.assertIn('_git.bb', recipefile, 'Recipe file incorrectly named')
         checkvars = {}
         checkvars['S'] = '${WORKDIR}/git'
-        checkvars['PV'] = '1.0+git${SRCPV}'
+        checkvars['PV'] = '1.12+git${SRCPV}'
         checkvars['SRC_URI'] = url
         checkvars['SRCREV'] = '${AUTOREV}'
         self._test_recipe_contents(recipefile, checkvars, [])
@@ -372,7 +373,7 @@ class DevtoolTests(DevtoolBase):
         shutil.rmtree(srcdir)
         url_rev = '%s;rev=%s' % (url, checkrev)
         result = runCmd('devtool add %s %s -f "%s" -V 1.5' % (testrecipe, srcdir, url_rev))
-        self.assertTrue(os.path.isfile(os.path.join(srcdir, 'imraa', 'imraa.c')), 'Unable to find imraa/imraa.c in source directory')
+        self.assertTrue(os.path.isfile(os.path.join(srcdir, 'configure.ac')), 'Unable to find configure.ac in source directory')
         # Test devtool status
         result = runCmd('devtool status')
         self.assertIn(testrecipe, result.output)
@@ -417,8 +418,9 @@ class DevtoolTests(DevtoolBase):
 
     @testcase(1164)
     def test_devtool_modify(self):
-        import oe.path
-
+        # Clean up anything in the workdir/sysroot/sstate cache
+        bitbake('mdadm -c cleansstate')
+        # Try modifying a recipe
         tempdir = tempfile.mkdtemp(prefix='devtoolqa')
         self.track_for_cleanup(tempdir)
         self.track_for_cleanup(self.workspacedir)
@@ -429,94 +431,66 @@ class DevtoolTests(DevtoolBase):
         self.assertTrue(os.path.exists(os.path.join(self.workspacedir, 'conf', 'layer.conf')), 'Workspace directory not created')
         matches = glob.glob(os.path.join(self.workspacedir, 'appends', 'mdadm_*.bbappend'))
         self.assertTrue(matches, 'bbappend not created %s' % result.output)
-
         # Test devtool status
         result = runCmd('devtool status')
         self.assertIn('mdadm', result.output)
         self.assertIn(tempdir, result.output)
+        # Check git repo
         self._check_src_repo(tempdir)
+        # Try building
+        def list_stamps(globsuffix='*'):
+            stampprefix = get_bb_var('STAMP', 'mdadm')
+            self.assertTrue(stampprefix, 'Unable to get STAMP value for recipe mdadm')
+            return glob.glob(stampprefix + globsuffix)
 
-        bitbake('mdadm -C unpack')
+        numstamps = len(list_stamps('.do_compile.*'))
+        self.assertEqual(numstamps, 0, 'do_compile stamps before first build')
+        for x in range(10):
+            bitbake('mdadm')
+            nowstamps = len(list_stamps('.do_compile.*'))
+            if nowstamps == numstamps:
+                break
+            numstamps = nowstamps
+        else:
+            self.fail('build did not stabilize in 10 iterations')
 
-        def check_line(checkfile, expected, message, present=True):
-            # Check for $expected, on a line on its own, in checkfile.
-            with open(checkfile, 'r') as f:
-                if present:
-                    self.assertIn(expected + '\n', f, message)
-                else:
-                    self.assertNotIn(expected + '\n', f, message)
-
+        # Try making (minor) modifications to the source
         modfile = os.path.join(tempdir, 'mdadm.8.in')
+        result = runCmd("sed -i 's!^\.TH.*!.TH MDADM 8 \"\" v9.999-custom!' %s" % modfile)
+
+        def check_TH_line(checkfile, expected, message):
+            with open(checkfile, 'r') as f:
+                for line in f:
+                    if line.startswith('.TH'):
+                        self.assertEqual(line.rstrip(), expected, message)
+
+        check_TH_line(modfile, '.TH MDADM 8 "" v9.999-custom', 'man .in file not modified (sed failed)')
+        bitbake('mdadm -c package')
         pkgd = get_bb_var('PKGD', 'mdadm')
         self.assertTrue(pkgd, 'Could not query PKGD variable')
         mandir = get_bb_var('mandir', 'mdadm')
         self.assertTrue(mandir, 'Could not query mandir variable')
-        manfile = oe.path.join(pkgd, mandir, 'man8', 'mdadm.8')
-
-        check_line(modfile, 'Linux Software RAID', 'Could not find initial string')
-        check_line(modfile, 'antique pin sardine', 'Unexpectedly found replacement string', present=False)
-
-        result = runCmd("sed -i 's!^Linux Software RAID$!antique pin sardine!' %s" % modfile)
-        check_line(modfile, 'antique pin sardine', 'mdadm.8.in file not modified (sed failed)')
-
+        if mandir[0] == '/':
+            mandir = mandir[1:]
+        manfile = os.path.join(pkgd, mandir, 'man8', 'mdadm.8')
+        check_TH_line(manfile, '.TH MDADM 8 "" v9.999-custom', 'man file not modified. man searched file path: %s' % manfile)
+        # Test reverting the change
+        result = runCmd("git -C %s checkout -- %s" % (tempdir, modfile))
+        check_TH_line(modfile, '.TH MDADM 8 "" v3.4', 'man .in file not restored (git failed)')
         bitbake('mdadm -c package')
-        check_line(manfile, 'antique pin sardine', 'man file not modified. man searched file path: %s' % manfile)
-
-        result = runCmd('git checkout -- %s' % modfile, cwd=tempdir)
-        check_line(modfile, 'Linux Software RAID', 'man .in file not restored (git failed)')
-
-        bitbake('mdadm -c package')
-        check_line(manfile, 'Linux Software RAID', 'man file not updated. man searched file path: %s' % manfile)
-
+        pkgd = get_bb_var('PKGD', 'mdadm')
+        self.assertTrue(pkgd, 'Could not query PKGD variable')
+        mandir = get_bb_var('mandir', 'mdadm')
+        self.assertTrue(mandir, 'Could not query mandir variable')
+        if mandir[0] == '/':
+            mandir = mandir[1:]
+        manfile = os.path.join(pkgd, mandir, 'man8', 'mdadm.8')
+        check_TH_line(manfile, '.TH MDADM 8 "" v3.4', 'man file not updated. man searched file path: %s' % manfile)
+        # Test devtool reset
         result = runCmd('devtool reset mdadm')
         result = runCmd('devtool status')
         self.assertNotIn('mdadm', result.output)
-
-    def test_devtool_buildclean(self):
-        def assertFile(path, *paths):
-            f = os.path.join(path, *paths)
-            self.assertTrue(os.path.exists(f), "%r does not exist" % f)
-        def assertNoFile(path, *paths):
-            f = os.path.join(path, *paths)
-            self.assertFalse(os.path.exists(os.path.join(f)), "%r exists" % f)
-
-        # Clean up anything in the workdir/sysroot/sstate cache
-        bitbake('mdadm m4 -c cleansstate')
-        # Try modifying a recipe
-        tempdir_mdadm = tempfile.mkdtemp(prefix='devtoolqa')
-        tempdir_m4 = tempfile.mkdtemp(prefix='devtoolqa')
-        builddir_m4 = tempfile.mkdtemp(prefix='devtoolqa')
-        self.track_for_cleanup(tempdir_mdadm)
-        self.track_for_cleanup(tempdir_m4)
-        #self.track_for_cleanup(builddir_m4)
-        self.track_for_cleanup(self.workspacedir)
-        self.add_command_to_tearDown('bitbake-layers remove-layer */workspace')
-        self.add_command_to_tearDown('bitbake -c clean mdadm m4')
-        self.write_recipeinc('m4', 'EXTERNALSRC_BUILD = "%s"\ndo_clean() {\n\t:\n}\n' % builddir_m4)
-        try:
-            runCmd('devtool modify mdadm -x %s' % tempdir_mdadm)
-            runCmd('devtool modify m4 -x %s' % tempdir_m4)
-            assertNoFile(tempdir_mdadm, 'mdadm')
-            assertNoFile(builddir_m4, 'src/m4')
-            result = bitbake('m4 -e')
-            result = bitbake('mdadm m4 -c compile')
-            self.assertEqual(result.status, 0)
-            assertFile(tempdir_mdadm, 'mdadm')
-            assertFile(builddir_m4, 'src/m4')
-            # Check that buildclean task exists and does call make clean
-            bitbake('mdadm m4 -c buildclean')
-            assertNoFile(tempdir_mdadm, 'mdadm')
-            assertNoFile(builddir_m4, 'src/m4')
-            bitbake('mdadm m4 -c compile')
-            assertFile(tempdir_mdadm, 'mdadm')
-            assertFile(builddir_m4, 'src/m4')
-            bitbake('mdadm m4 -c clean')
-            # Check that buildclean task is run before clean for B == S
-            assertNoFile(tempdir_mdadm, 'mdadm')
-            # Check that buildclean task is not run before clean for B != S
-            assertFile(builddir_m4, 'src/m4')
-        finally:
-            self.delete_recipeinc('m4')
+        self.assertFalse(list_stamps(), 'Stamp files exist for recipe mdadm that should have been cleaned')
 
     @testcase(1166)
     def test_devtool_modify_invalid(self):
@@ -639,8 +613,8 @@ class DevtoolTests(DevtoolBase):
     @testcase(1378)
     def test_devtool_modify_virtual(self):
         # Try modifying a virtual recipe
-        virtrecipe = 'virtual/make'
-        realrecipe = 'make'
+        virtrecipe = 'virtual/libx11'
+        realrecipe = 'libx11'
         tempdir = tempfile.mkdtemp(prefix='devtoolqa')
         self.track_for_cleanup(tempdir)
         self.track_for_cleanup(self.workspacedir)
@@ -1074,7 +1048,7 @@ class DevtoolTests(DevtoolBase):
         tempdir = tempfile.mkdtemp(prefix='devtoolqa')
         # Try devtool extract
         self.track_for_cleanup(tempdir)
-        result = runCmd('devtool extract virtual/make %s' % tempdir)
+        result = runCmd('devtool extract virtual/libx11 %s' % tempdir)
         self.assertTrue(os.path.exists(os.path.join(tempdir, 'Makefile.am')), 'Extracted source could not be found')
         # devtool extract shouldn't create the workspace
         self.assertFalse(os.path.exists(self.workspacedir))
@@ -1579,3 +1553,89 @@ class DevtoolTests(DevtoolBase):
         checkvars['S'] = '${WORKDIR}/${BPN}-%s' % recipever
         checkvars['SRC_URI'] = url
         self._test_recipe_contents(newrecipefile, checkvars, [])
+
+
+    @testcase(1577)
+    def test_devtool_virtual_kernel_modify(self):
+        """
+        Summary:        The purpose of this test case is to verify that
+                        devtool modify works correctly when building
+                        the kernel.
+        Dependencies:   NA
+        Steps:          1. Build kernel with bitbake.
+                        2. Save the config file generated.
+                        3. Clean the environment.
+                        4. Use `devtool modify virtual/kernel` to validate following:
+                           4.1 The source is checked out correctly.
+                           4.2 The resulting configuration is the same as
+                               what was get on step 2.
+                           4.3 The Kernel can be build correctly.
+                           4.4 Changes made on the source are reflected on the
+                               subsequent builds.
+                           4.5 Changes on the configuration are reflected on the
+                               subsequent builds
+         Expected:       devtool modify is able to checkout the source of the kernel
+                         and modification to the source and configurations are reflected
+                         when building the kernel.
+         """
+        #Set machine to qemxu86 to be able to modify the kernel and
+        #verify the modification.
+        features = 'MACHINE = "qemux86"\n'
+        self.write_config(features)
+        # Clean up the enviroment
+        bitbake('linux-yocto -c cleansstate')
+        tempdir = tempfile.mkdtemp(prefix='devtoolqa')
+        self.track_for_cleanup(tempdir)
+        self.track_for_cleanup(self.workspacedir)
+        self.add_command_to_tearDown('bitbake-layers remove-layer */workspace')
+        self.add_command_to_tearDown('bitbake -c clean linux-yocto')
+        #Step 1
+        #Here is just generated the config file instead of all the kernel to optimize the
+        #time of executing this test case.
+        bitbake('linux-yocto -c configure')
+        bbconfig = os.path.join(get_bb_var('B',"linux-yocto"),'.config')
+        buildir= get_bb_var('TOPDIR')
+        #Step 2
+        runCmd('cp %s %s' % (bbconfig, buildir))
+        self.assertTrue(os.path.exists(os.path.join(buildir, '.config')),
+                        'Could not copy .config file from kernel')
+
+        tmpconfig = os.path.join(buildir, '.config')
+        #Step 3
+        bitbake('linux-yocto -c cleanall')
+        #Step 4.1
+        runCmd('devtool modify virtual/kernel -x %s' % tempdir)
+        self.assertTrue(os.path.exists(os.path.join(tempdir, 'Makefile')),
+                        'Extracted source could not be found')
+        #Step 4.2
+        configfile = os.path.join(tempdir,'.config')
+        diff = runCmd('diff %s %s' % (tmpconfig, configfile))
+        self.assertEqual(0,diff.status,'Kernel .config file is not the same using bitbake and devtool')
+        #Step 4.3
+        #NOTE: virtual/kernel is mapped to linux-yocto
+        result = runCmd('devtool build linux-yocto')
+        self.assertEqual(0,result.status,'Cannot build kernel using `devtool build`')
+        kernelfile = os.path.join(get_bb_var('KBUILD_OUTPUT',"linux-yocto"), 'vmlinux')
+        self.assertTrue(os.path.exists(kernelfile),'Kernel was not build correctly')
+
+        #Modify the kernel source, this is specific for qemux86
+        modfile = os.path.join(tempdir,'arch/x86/boot/header.S')
+        modstring = "use a boot loader - Devtool kernel testing"
+        modapplied = runCmd("sed -i 's/boot loader/%s/' %s" % (modstring, modfile))
+        self.assertEqual(0,modapplied.status,'Modification to %s on kernel source failed' % modfile)
+        #Modify the configuration
+        codeconfigfile = os.path.join(tempdir,'.config.new')
+        modconfopt = "CONFIG_SG_POOL=n"
+        modconf = runCmd("sed -i 's/CONFIG_SG_POOL=y/%s/' %s" % (modconfopt, codeconfigfile))
+        self.assertEqual(0,modconf.status,'Modification to %s failed' % codeconfigfile)
+        #Build again kernel with devtool
+        rebuild = runCmd('devtool build linux-yocto')
+        self.assertEqual(0,rebuild.status,'Fail to build kernel after modification of source and config')
+        #Step 4.4
+        bzimagename = 'bzImage-' + get_bb_var('KERNEL_VERSION_NAME',"linux-yocto")
+        bzimagefile = os.path.join(get_bb_var('D',"linux-yocto"),'boot', bzimagename)
+        checkmodcode = runCmd("strings %s | head -n 10 | grep '%s'" % (bzimagefile, modstring))
+        self.assertEqual(0,checkmodcode.status,'Modification on kernel source failed')
+        #Step 4.5
+        checkmodconfg = runCmd("grep %s %s" % (modconfopt, codeconfigfile))
+        self.assertEqual(0,checkmodconfg.status,'Modification to configuration file failed')
