@@ -1,0 +1,12 @@
+This layer is intended as test layer, used by image_tests to issue
+runtime performance testing. It's probably a mistake to include it
+in your builds (unless you want to run these tests).
+
+Phoronix is to be used in the runtime performance testcases. As part
+of Phoronix setup, the proxies need to be configured in the target
+via the command 'phoronix-test-suite network-setup'. It is intended
+to make this an automatic task in the future.
+
+This is a skeleton layer at the moment, only containing the phoronix
+dependency with meta-oe layer. It should be updated as soon as
+testcases are defined for this component.
