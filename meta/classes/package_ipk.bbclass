@@ -32,6 +32,13 @@ python do_package_ipk () {
         bb.error("Variables incorrectly set, unable to package")
         return
 
+    # opkg won't allow empty lines in package's description at execution
+    # time, so is better to fail at build time instead when trying to install.
+    description = d.getVar('DESCRIPTION').encode('UTF-8', 'ignore')
+    description = description.decode('unicode_escape')
+    if ([line for line in description.splitlines() if not line.strip()]):
+        bb.fatal("opkg won't allow empty lines in DESCRIPTION")
+
     packages = d.getVar('PACKAGES')
     if not packages or packages == '':
         bb.debug(1, "No packages; nothing to do")
