@@ -537,3 +537,20 @@ class ImageQAFailed(Exception):
 def sh_quote(string):
     import shlex
     return shlex.quote(string)
+
+from contextlib import contextmanager
+@contextmanager
+def environ(**kwargs):
+    """
+    Context manager to set (or unset) environment variables for the lifetime of
+    the context. Takes name=value pairs to set a variable, or name=None to unset.
+    """
+    old = os.environ.copy()
+    for name, value in kwargs.items():
+        if value:
+            os.environ[name] = value
+        else:
+            del os.environ[name]
+    yield
+    os.environ.clear()
+    os.environ.update(old)
