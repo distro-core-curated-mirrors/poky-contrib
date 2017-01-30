@@ -35,7 +35,7 @@ TEST_NEEDED_PACKAGES_DIR ?= "${WORKDIR}/testimage/packages"
 TEST_EXTRACTED_DIR ?= "${TEST_NEEDED_PACKAGES_DIR}/extracted"
 TEST_PACKAGED_DIR ?= "${TEST_NEEDED_PACKAGES_DIR}/packaged"
 
-RPMTESTSUITE = "${@bb.utils.contains('IMAGE_PKGTYPE', 'rpm', 'smart rpm', '', d)}"
+RPMTESTSUITE = "${@bb.utils.contains('IMAGE_PKGTYPE', 'rpm', 'dnf rpm', '', d)}"
 SYSTEMDSUITE = "${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)}"
 MINTESTSUITE = "ping"
 NETTESTSUITE = "${MINTESTSUITE} ssh df date scp oe_syslog ${SYSTEMDSUITE}"
@@ -74,12 +74,11 @@ TESTIMAGEDEPENDS = ""
 TESTIMAGEDEPENDS_qemuall = "qemu-native:do_populate_sysroot qemu-helper-native:do_populate_sysroot"
 TESTIMAGEDEPENDS += "${@bb.utils.contains('IMAGE_PKGTYPE', 'rpm', 'cpio-native:do_populate_sysroot', '', d)}"
 TESTIMAGEDEPENDS_qemuall += "${@bb.utils.contains('IMAGE_PKGTYPE', 'rpm', 'cpio-native:do_populate_sysroot', '', d)}"
-TESTIMAGEDEPENDS_qemuall += "${@bb.utils.contains('IMAGE_PKGTYPE', 'rpm', 'createrepo-native:do_populate_sysroot', '', d)}"
-TESTIMAGEDEPENDS += "${@bb.utils.contains('IMAGE_PKGTYPE', 'rpm', 'python-smartpm-native:do_populate_sysroot', '', d)}"
+TESTIMAGEDEPENDS_qemuall += "${@bb.utils.contains('IMAGE_PKGTYPE', 'rpm', 'createrepo-c-native:do_populate_sysroot', '', d)}"
+TESTIMAGEDEPENDS += "${@bb.utils.contains('IMAGE_PKGTYPE', 'rpm', 'dnf-native:do_populate_sysroot', '', d)}"
 TESTIMAGEDEPENDS += "${@bb.utils.contains('IMAGE_PKGTYPE', 'ipk', 'opkg-utils-native:do_populate_sysroot', '', d)}"
 TESTIMAGEDEPENDS += "${@bb.utils.contains('IMAGE_PKGTYPE', 'deb', 'apt-native:do_populate_sysroot', '', d)}"
-TESTIMAGEDEPENDS += "${@bb.utils.contains('IMAGE_PKGTYPE', 'rpm', 'python-smartpm-native:do_populate_sysroot', '', d)}"
-TESTIMAGEDEPENDS += "${@bb.utils.contains('IMAGE_PKGTYPE', 'rpm', 'createrepo-native:do_populate_sysroot', '', d)}"
+TESTIMAGEDEPENDS += "${@bb.utils.contains('IMAGE_PKGTYPE', 'rpm', 'createrepo-c-native:do_populate_sysroot', '', d)}"
 
 TESTIMAGELOCK = "${TMPDIR}/testimage.lock"
 TESTIMAGELOCK_qemuall = ""
@@ -120,7 +119,7 @@ python do_testimage() {
     testimage_sanity(d)
 
     if (d.getVar('IMAGE_PKGTYPE') == 'rpm'
-       and 'smart' in d.getVar('TEST_SUITES')):
+       and 'dnf' in d.getVar('TEST_SUITES')):
         create_rpm_index(d)
 
     testimage_main(d)
@@ -320,19 +319,16 @@ def create_index(arg):
 
 def create_rpm_index(d):
     # Index RPMs
-    rpm_createrepo = bb.utils.which(os.getenv('PATH'), "createrepo")
+    rpm_createrepo = bb.utils.which(os.getenv('PATH'), "createrepo_c")
     index_cmds = []
     archs = (d.getVar('ALL_MULTILIB_PACKAGE_ARCHS') or '').replace('-', '_')
 
     for arch in archs.split():
         rpm_dir = os.path.join(d.getVar('DEPLOY_DIR_RPM'), arch)
-        idx_path = os.path.join(d.getVar('WORKDIR'), 'rpm', arch)
-        db_path = os.path.join(d.getVar('WORKDIR'), 'rpmdb', arch)
+        idx_path = os.path.join(d.getVar('WORKDIR'), 'oe-testimage-repo', arch)
 
         if not os.path.isdir(rpm_dir):
             continue
-        if os.path.exists(db_path):
-            bb.utils.remove(dbpath, True)
 
         lockfilename = os.path.join(d.getVar('DEPLOY_DIR_RPM'), 'rpm.lock')
         lf = bb.utils.lockfile(lockfilename, False)
@@ -342,8 +338,7 @@ def create_rpm_index(d):
         # this leaves some allarch and machine arch packages too.
         bb.utils.remove(idx_path + "*/[a-oq-z]*.rpm")
         bb.utils.unlockfile(lf)
-        cmd = '%s --dbpath %s --update -q %s' % (rpm_createrepo,
-                                                 db_path, idx_path)
+        cmd = '%s --update -q %s' % (rpm_createrepo, idx_path)
 
         # Create repodata
         result = create_index(cmd)
