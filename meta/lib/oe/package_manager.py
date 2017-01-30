@@ -192,7 +192,6 @@ class OpkgIndexer(Indexer):
                      "SDK_PACKAGE_ARCHS",
                      ]
 
-        opkg_index_cmd = bb.utils.which(os.getenv('PATH'), "opkg-make-index")
         if self.d.getVar('PACKAGE_FEED_SIGN') == '1':
             signer = get_signer(self.d, self.d.getVar('PACKAGE_FEED_GPG_BACKEND'))
         else:
@@ -218,8 +217,8 @@ class OpkgIndexer(Indexer):
                 if not os.path.exists(pkgs_file):
                     open(pkgs_file, "w").close()
 
-                index_cmds.add('%s --checksum md5 --checksum sha256 -r %s -p %s -m %s' %
-                                  (opkg_index_cmd, pkgs_file, pkgs_file, pkgs_dir))
+                index_cmds.add('opkg-make-index --checksum md5 --checksum sha256 -r %s -p %s -m %s' %
+                                  (pkgs_file, pkgs_file, pkgs_dir))
 
                 index_sign_files.add(pkgs_file)
 
