@@ -169,7 +169,7 @@ postinst-delayed-t \
                         break
 
     @testcase(1545)
-    def test_postinst_roofs_and_boot(self):
+    def test_postinst_rootfs_and_boot(self):
         """
         Summary:        The purpose of this test case is to verify Post-installation
                         scripts are called when roofs is created and also test
@@ -192,6 +192,7 @@ postinst-delayed-t \
         fileboot_name = "this-was-created-at-first-boot"
         rootfs_pkg = 'postinst-at-rootfs'
         boot_pkg = 'postinst-delayed-a'
+        specfeatures = ""
         #Step 1
         features = 'MACHINE = "qemux86"\n'
         features += 'CORE_IMAGE_EXTRA_INSTALL += "%s %s "\n'% (rootfs_pkg, boot_pkg)
@@ -199,16 +200,16 @@ postinst-delayed-t \
         for init_manager in ("sysvinit", "systemd"):
             #for sysvinit no extra configuration is needed,
             if (init_manager is "systemd"):
-                features += 'DISTRO_FEATURES_append = " systemd"\n'
-                features += 'VIRTUAL-RUNTIME_init_manager = "systemd"\n'
-                features += 'DISTRO_FEATURES_BACKFILL_CONSIDERED = "sysvinit"\n'
-                features += 'VIRTUAL-RUNTIME_initscripts = ""\n'
+                specfeatures += 'DISTRO_FEATURES_append = " systemd"\n'
+                specfeatures += 'VIRTUAL-RUNTIME_init_manager = "systemd"\n'
+                specfeatures += 'DISTRO_FEATURES_BACKFILL_CONSIDERED = "sysvinit"\n'
+                specfeatures += 'VIRTUAL-RUNTIME_initscripts = ""\n'
             for classes in ("package_rpm package_deb package_ipk",
                             "package_deb package_rpm package_ipk",
                             "package_ipk package_deb package_rpm"):
-                features += 'PACKAGE_CLASSES = "%s"\n' % classes
-                self.write_config(features)
-
+                pkgfeatures = 'PACKAGE_CLASSES = "%s"\n' % classes
+                allfeatures = features + pkgfeatures + specfeatures
+                self.write_config(allfeatures)
                 #Step 2
                 bitbake('core-image-minimal')
 
@@ -228,4 +229,4 @@ postinst-delayed-t \
 
                 #Step 5
                 bitbake(' %s %s -c cleanall' % (rootfs_pkg, boot_pkg))
-                bitbake('core-image-minimal -c cleanall')
+                self.remove_config(allfeatures)
