@@ -28,8 +28,8 @@ class Archiver(oeSelfTest):
         features += 'COPYLEFT_PN_EXCLUDE = "%s"\n' % exclude_recipe
         self.write_config(features)
 
-        shutil.rmtree(get_bb_var('TMPDIR'))
-        bitbake("%s %s" % (include_recipe, exclude_recipe))
+        bitbake("-C fetch %s" % include_recipe)
+        bitbake("-C fetch %s" % exclude_recipe)
 
         src_path = os.path.join(get_bb_var('DEPLOY_DIR_SRC'), get_bb_var('TARGET_SYS'))
 
