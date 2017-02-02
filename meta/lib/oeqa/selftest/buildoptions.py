@@ -91,7 +91,7 @@ class SanityOptionsTest(oeSelfTest):
         self.append_config('ERROR_QA_remove = "packages-list"')
         self.append_config('WARN_QA_append = " packages-list"')
         bitbake("xcursor-transparent-theme -ccleansstate")
-        res = bitbake("xcursor-transparent-theme")
+        res = bitbake("xcursor-transparent-theme", ignore_status = True)
         self.delete_recipeinc('xcursor-transparent-theme')
         line = self.getline(res, "QA Issue: xcursor-transparent-theme-dbg is listed in PACKAGES multiple times, this leads to packaging errors.")
         self.assertTrue(line and line.startswith("WARNING:"), msg=res.output)
