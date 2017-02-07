@@ -127,6 +127,8 @@ do_install_append_pn-gzip () {
 #""")
         res = bitbake("nfs-utils -f -c package_qa")
         line = self.getline(res, "QA Issue: nfs-utils")
+        self.log.warn('\nline: %s' % line)
+        self.log.warn('\noutput:\n%s' % res.output)
         self.assertTrue(line and line.startswith("WARNING:"), "WARNING: QA Issue: nfs-utils message is not present in bitbake's output: %s" % res.output)
 
     @testcase(1421)
