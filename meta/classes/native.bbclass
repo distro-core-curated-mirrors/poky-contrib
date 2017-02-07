@@ -176,3 +176,8 @@ do_packagedata[stamp-extra-info] = ""
 do_populate_sysroot[stamp-extra-info] = ""
 
 USE_NLS = "no"
+
+addtask populate_recipe_sysroot after do_prepare_recipe_sysroot
+python do_populate_recipe_sysroot() {
+    staging_populate_own_sysroot_dir(d)
+}

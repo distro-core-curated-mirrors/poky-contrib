@@ -343,6 +343,48 @@ def staging_populate_sysroot_dir(targetsysroot, nativesysroot, native, d):
     for p in postinsts:
         subprocess.check_output(p, shell=True)
 
+
+def staging_populate_own_sysroot_dir(d):
+    """
+    Populate a recipe's sysroot with its own files
+    During normal operations a recipe's sysroot doesn't contain its own
+    sysroot contents - just that of its dependencies. This is only really
+    useful when you want to have a single place to find sysroot files from
+    a recipe e.g. when you want to call some native utility externally.
+    """
+    import subprocess
+    import errno
+
+    targetsysroot = d.getVar("RECIPE_SYSROOT")
+    nativesysroot = d.getVar("RECIPE_SYSROOT_NATIVE")
+
+    fixme = []
+    postinsts = []
+    stagingdir = d.getVar("STAGING_DIR")
+    native = bb.data.inherits_class('native', d)
+    if native:
+        targetdir = nativesysroot
+    else:
+        targetdir = targetsysroot
+
+    bb.utils.mkdirhier(targetdir)
+    manifest = "%s.populate_sysroot" % d.getVar('SSTATE_MANFILEPREFIX')
+    with open(manifest, "r") as f:
+        for l in f:
+            l = l.strip()
+            if l.endswith("/"):
+                staging_copydir(l, targetdir, stagingdir)
+                continue
+            try:
+                staging_copyfile(l, targetdir, fixme, postinsts, stagingdir)
+            except FileExistsError:
+                continue
+
+    staging_processfixme(fixme, targetdir, targetsysroot, nativesysroot, d)
+    for p in postinsts:
+        subprocess.check_output(p, shell=True)
+
+
 #
 # Manifests here are complicated. The main sysroot area has the unpacked sstate
 # which us unrelocated and tracked by the main sstate manifests. Each recipe
