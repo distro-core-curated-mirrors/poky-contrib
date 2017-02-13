@@ -19,8 +19,8 @@ SRC_URI = "${GNOME_MIRROR}/${BPN}/${MAJ_VER}/${BPN}-${PV}.tar.xz \
            file://fatal-loader.patch \
            "
 
-SRC_URI[md5sum] = "fe30b0420e013f2c4590ae6226d895d4"
-SRC_URI[sha256sum] = "9d5ba72070460c1b5b74115d395a3e33daeb7b7b67fb256cdccc9d7187c42a38"
+SRC_URI[md5sum] = "aef5fe5888b9f578573e331501d08f85"
+SRC_URI[sha256sum] = "0b19901c3eb0596141d2d48ddb9dac79ad1524bdf59366af58ab38fcb9ee7463"
 
 inherit autotools pkgconfig gettext pixbufcache ptest-gnome upstream-version-is-even gobject-introspection gtk-doc lib_package
 
