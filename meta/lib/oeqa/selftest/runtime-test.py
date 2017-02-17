@@ -111,6 +111,9 @@ class TestImage(oeSelfTest):
 
         features = 'INHERIT += "testimage"\n'
         features += 'TEST_SUITES = "ping ssh selftest"\n'
+        features += 'PACKAGE_FEED_URIS = "http://192.168.7.1:8080"\n'
+        features += 'EXTRA_IMAGE_FEATURES += "package-management"\n'
+        features += 'PACKAGE_CLASSES = "package_rpm"'
         self.write_config(features)
 
         # Build core-image-sato and testimage
