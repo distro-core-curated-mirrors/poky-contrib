@@ -31,7 +31,10 @@ class LocalSigner(object):
         """Sign RPM files"""
 
         cmd = self.rpm_bin + " --addsign --define '_gpg_name %s'  " % keyid
-        cmd += "--define '_gpg_sign_cmd_extra_args --batch --passphrase=%s --pinentry-mode=loopback' " % passphrase
+        gpg_args = '--batch --passphrase=%s' % passphrase
+        if self.gpg_version > (2,1,):
+            gpg_args += ' --pinentry-mode=loopback'
+        cmd += "--define '_gpg_sign_cmd_extra_args %s' " % gpg_args
         if self.gpg_bin:
             cmd += "--define '%%__gpg %s' " % self.gpg_bin
         if self.gpg_path:
