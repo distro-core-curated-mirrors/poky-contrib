@@ -526,7 +526,14 @@ class RpmPM(PackageManager):
         open(rpmrcconfdir + "rpmrc", 'w').write("arch_compat: %s: %s" % (self.primary_arch, self.archs if len(self.archs) > 0 else self.primary_arch))
 
         if self.d.getVar('RPM_SIGN_PACKAGES') == '1':
-            raise NotImplementedError("Signature verification with rpm not yet supported.")
+            pubkey_path = self.d.getVar('RPM_GPG_PUBKEY')
+            rpm_bin = bb.utils.which(os.getenv('PATH'), "rpmkeys")
+            cmd = [rpm_bin, '--root=%s' % self.target_rootfs, '--import', pubkey_path]
+            try:
+                subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError as e:
+                bb.fatal("Importing GPG key failed. Command '%s' "
+                        "returned %d:\n%s" % (' '.join(cmd), e.returncode, e.output.decode("utf-8")))
 
         if self.d.getVar('RPM_PREFER_ELF_ARCH'):
             raise NotImplementedError("RPM_PREFER_ELF_ARCH not yet checked/tested/implemented with rpm4/dnf.")
