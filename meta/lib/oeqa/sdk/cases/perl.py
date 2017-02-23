@@ -8,7 +8,10 @@ from oeqa.sdk.case import OESDKTestCase
 class PerlTest(OESDKTestCase):
     @classmethod
     def setUpClass(self):
-        if not self.tc.hasHostPackage("nativesdk-perl"):
+        if not (self.tc.hasHostPackage("nativesdk-perl") or 
+                self.tc.hasHostPackage("perl-native") or
+                self.tc.hasHostPackage("libperl5") or 
+                self.tc.hasHostPackage("perl")):
             raise unittest.SkipTest("No perl package in the SDK")
 
         for f in ['test.pl']:

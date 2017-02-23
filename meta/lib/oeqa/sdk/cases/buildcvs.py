@@ -15,7 +15,10 @@ class BuildCvsTest(OESDKTestCase):
         self.project.download_archive()
 
         machine = self.td.get("MACHINE")
-        if not self.tc.hasHostPackage("packagegroup-cross-canadian-%s" % machine):
+        if not (self.tc.hasHostPackage("packagegroup-cross-canadian-%s" % machine) or 
+                self.tc.hasHostPackage("gcc-runtime") or
+                self.tc.hasHostPackage("libgcc") or
+                self.tc.hasHostPackage("gcc-sanitizers")):
             raise unittest.SkipTest("SDK doesn't contain a cross-canadian toolchain")
 
     def test_cvs(self):
