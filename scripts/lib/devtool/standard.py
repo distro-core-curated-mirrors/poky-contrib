@@ -276,6 +276,13 @@ def add(args, config, basepath, workspace):
                 f.write('    done\n')
                 f.write('}\n')
 
+            if bb.data.inherits_class('kernel', rd):
+                provider = 'PREFERRED_PROVIDER_virtual/kernel="%s"' % args.recipename
+                if args.fixed_setup:
+                    f.write("%s" % provider)
+                else:
+                    logger.warn('Set \'%s\' in order to use the recipe' % provider)
+
         _add_md5(config, recipename, appendfile)
 
         logger.info('Recipe %s has been automatically created; further editing may be required to make it fully functional' % recipefile)
