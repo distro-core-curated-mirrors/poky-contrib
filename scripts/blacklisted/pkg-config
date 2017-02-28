@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# This is a dummy version that always fails. It is intended to catch
+# missing dependencies on the real version.
+
+myname=${0##*/}
+
+echo "The correct version of $myname is not being used!" >&2
+echo "Make sure the recipe inherits 'pkgconfig'." >&2
+
+# Return something that will make the compiler barf. This is for when
+# pkg-config is used directly in a Makefile in a construct like:
+# CFLAGS += $(shell pkg-config --cflags glib-2.0)
+echo "The-correct-version-of-$myname-is-not-being-used"
+
+exit 1
