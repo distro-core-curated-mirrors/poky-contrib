@@ -24,3 +24,13 @@ LINUX_VERSION_genericx86-64 = "4.9.6"
 LINUX_VERSION_edgerouter = "4.9.8"
 LINUX_VERSION_beaglebone = "4.9.8"
 LINUX_VERSION_mpc8315e-rdb = "4.9.8"
+FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+LINUX_VERSION_qemunios2 = "4.9.9"
+COMPATIBLE_MACHINE_qemunios2 = "qemunios2"
+
+# During some modules compilation we get some unresolved externals:
+# __mulsi3, __lshrdi3, ...
+# So we exclude these modules via using a modified defconfig.
+
+SRC_URI_append_qemunios2 = " file://defconfig"
+#KBUILD_DEFCONFIG_qemunios2 = "10m50_defconfig"
