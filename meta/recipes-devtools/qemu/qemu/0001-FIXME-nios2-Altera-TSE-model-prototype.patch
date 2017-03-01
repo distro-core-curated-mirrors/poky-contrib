@@ -1,0 +1,1121 @@
+From b1d3e9918c159c068095fe11d7f517e7697195e4 Mon Sep 17 00:00:00 2001
+From: Marek Vasut <marex@denx.de>
+Date: Mon, 14 Nov 2016 16:34:22 +0100
+Subject: [PATCH] FIXME: nios2: Altera TSE model prototype
+
+This is an Altera TSE model prototype for QEMU, assembled with a lot
+of ducttape and wd40.
+
+Start with something like this to get network access:
+$ rm -f /tmp/altr.pcap
+$ ./nios2-softmmu/qemu-system-nios2 -machine 10m50-ghrd \
+	-kernel vmlinux -dtb 10m50_devboard.dtb \
+	-initrd core-image-minimal-10m50.cpio \
+	-append 'console=ttyS0,115200' -nographic \
+	-net nic,model=ALTR.tse,macaddr=00:aa:bb:cc:dd:ee \
+	-net dump,file=/tmp/altr.pcap -net user
+
+Observe traffic with:
+$ tcpdump -r /tmp/altr.pcap -nxxvvv
+
+Start with something like this to get local NFS server access
+(it is _much_ faster for NFS than user networking):
+$ ./nios2-softmmu/qemu-system-nios2 -machine 10m50-ghrd \
+	-kernel vmlinux -dtb 10m50_devboard.dtb \
+	-append 'console=ttyS0,115200 root=/dev/nfs rw rootwait nfsroot=10.0.2.2:/srv/nfs/nios2/,vers=3,tcp ip=10.0.2.15::10.0.2.1:255.255.255.0' \
+	-nographic -net nic,model=ALTR.tse,macaddr=00:aa:bb:cc:dd:ee \
+	-net tap,ifname=tap0,script=no,downscript=no
+
+To bring up the interface:
+$ sudo brctl addbr br0 && \
+  sudo ip tuntap add dev tap0 mode tap user `whoami` &&
+  sudo ip link set tap0 up && \
+  sudo brctl addif br0 tap0 && \
+  sudo ip addr add 10.0.2.2/24 dev br0 && \
+  sudo ip link set br0 up
+
+To bring it down again:
+$ sudo tunctl -d tap0 && \
+  sudo ip link set br0 down &&\
+  sudo brctl delbr br0
+
+Observe traffic with:
+$ tcpdump -i tap0 -nxxvvv
+
+Signed-off-by: Marek Vasut <marex@denx.de>
+---
+ default-configs/nios2-softmmu.mak |   1 +
+ hw/net/Makefile.objs              |   1 +
+ hw/net/altera_tse.c               | 947 ++++++++++++++++++++++++++++++++++++++
+ hw/nios2/10m50_devboard.c         |  15 +
+ hw/nios2/altera_10m50_device.c    |  26 +-
+ 5 files changed, 985 insertions(+), 5 deletions(-)
+ create mode 100644 hw/net/altera_tse.c
+
+diff --git a/default-configs/nios2-softmmu.mak b/default-configs/nios2-softmmu.mak
+index 6159846..836ab15 100644
+--- a/default-configs/nios2-softmmu.mak
++++ b/default-configs/nios2-softmmu.mak
+@@ -4,4 +4,5 @@ CONFIG_NIOS2=y
+ CONFIG_SERIAL=y
+ CONFIG_PTIMER=y
+ CONFIG_ALTERA_TIMER=y
++CONFIG_ALTERA_TSE=y
+ CONFIG_ALTERA_JUART=y
+diff --git a/hw/net/Makefile.objs b/hw/net/Makefile.objs
+index 610ed3e..6ec1ce7 100644
+--- a/hw/net/Makefile.objs
++++ b/hw/net/Makefile.objs
+@@ -22,6 +22,7 @@ common-obj-$(CONFIG_MIPSNET) += mipsnet.o
+ common-obj-$(CONFIG_XILINX_AXI) += xilinx_axienet.o
+ common-obj-$(CONFIG_ALLWINNER_EMAC) += allwinner_emac.o
+ common-obj-$(CONFIG_IMX_FEC) += imx_fec.o
++common-obj-$(CONFIG_ALTERA_TSE) += altera_tse.o
+ 
+ common-obj-$(CONFIG_CADENCE) += cadence_gem.o
+ common-obj-$(CONFIG_STELLARIS_ENET) += stellaris_enet.o
+diff --git a/hw/net/altera_tse.c b/hw/net/altera_tse.c
+new file mode 100644
+index 0000000..85fc052
+--- /dev/null
++++ b/hw/net/altera_tse.c
+@@ -0,0 +1,947 @@
++/*
++ * Altera TSE Ethernet Controller emulation.
++ *
++ * Copyright (c) 2016 Marek Vasut <marex@denx.de>
++ *
++ *  This program is free software; you can redistribute it and/or modify it
++ *  under the terms of the GNU General Public License as published by the
++ *  Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful, but WITHOUT
++ *  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ *  FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
++ *  for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "qemu/osdep.h"
++#include "sysemu/dma.h"
++#include "qemu/log.h"
++#include "hw/sysbus.h"
++#include "net/net.h"
++#include "net/checksum.h"
++#include "net/eth.h"
++
++/* For crc32 */
++#include <zlib.h>
++
++#define TYPE_ALTERA_TSE "ALTR.tse"
++#define ALTERA_TSE(obj) OBJECT_CHECK(AlteraTSEState, (obj), TYPE_ALTERA_TSE)
++
++#define TSE_CP_REV			0x00
++#define TSE_CP_SCRATCH			0x01
++#define TSE_CP_COMMAND_CONFIG		0x02
++#define TSE_CP_COMMAND_CONFIG_SW_RESET		(1 << 13)
++#define TSE_CP_COMMAND_CONFIG_CNT_RESET		(1 << 31)
++#define TSE_CP_MAC_0			0x03
++#define TSE_CP_MAC_1			0x04
++#define TSE_CP_FRM_LENGTH		0x05
++#define TSE_CP_PAUSE_QUANT		0x06
++#define TSE_CP_RX_SECTION_EMPTY		0x07
++#define TSE_CP_RX_SECTION_FULL		0x08
++#define TSE_CP_TX_SECTION_EMPTY		0x09
++#define TSE_CP_TX_SECTION_FULL		0x0a
++#define TSE_CP_RX_ALMOST_EMPTY		0x0b
++#define TSE_CP_RX_ALMOST_FULL		0x0c
++#define TSE_CP_TX_ALMOST_EMPTY		0x0d
++#define TSE_CP_TX_ALMOST_FULL		0x0e
++#define TSE_CP_MDIO_ADDR0		0x0f
++#define TSE_CP_MDIO_ADDR1		0x10
++#define TSE_CP_HOLDOFF_QUANT		0x11
++#define TSE_CP_TX_IPG_LENGTH		0x17
++
++#define TSE_TX_CMD_STAT			0x3a
++#define TSE_TX_CMD_STAT_OMIT_CRC		(1 << 17)
++#define TSE_TX_CMD_STAT_TX_SHIFT16		(1 << 18)
++#define TSE_RX_CMD_STAT			0x3b
++#define TSE_RX_CMD_STAT_RX_SHIFT16		(1 << 25)
++
++#define TSE_MDIO0_START			0x80
++#define TSE_MDIO0_END			0x9f
++
++#define TSE_MDIO1_START			0xa0
++#define TSE_MDIO1_END			0xbf
++
++#define TSE_CSR_STATUS		0x0
++#define TSE_CSR_CONTROL		0x1
++#define TSE_CSR_RW_FILL_LEVEL	0x2
++#define TSE_CSR_RESP_FILL_LEVEL	0x3
++#define TSE_CSR_RW_SEQ_NUM	0x4
++
++#define TSE_CSR_STATUS_BUSY			(1 << 0)
++#define TSE_CSR_STATUS_DESC_BUF_EMPTY		(1 << 1)
++#define TSE_CSR_STATUS_DESC_BUF_FULL		(1 << 2)
++#define TSE_CSR_STATUS_RESP_BUF_EMPTY		(1 << 3)
++#define TSE_CSR_STATUS_RESP_BUF_FULL		(1 << 4)
++#define TSE_CSR_STATUS_STOPPED			(1 << 5)
++#define TSE_CSR_STATUS_RESETTING		(1 << 6)
++#define TSE_CSR_STATUS_STOPPED_ON_ERR		(1 << 7)
++#define TSE_CSR_STATUS_STOPPED_ON_EARLY		(1 << 8)
++#define TSE_CSR_STATUS_IRQ			(1 << 9)
++#define TSE_CSR_STATUS_MASK			0x3FF
++#define TSE_CSR_STATUS_MASK_WITHOUT_IRQ		0x1FF
++
++#define TSE_CSR_CONTROL_STOP			(1 << 0)
++#define TSE_CSR_CONTROL_RESET			(1 << 1)
++#define TSE_CSR_CONTROL_STOP_ON_ERR		(1 << 2)
++#define TSE_CSR_CONTROL_STOP_ON_EARLY		(1 << 3)
++#define TSE_CSR_CONTROL_GLOBAL_INTR		(1 << 4)
++#define TSE_CSR_CONTROL_STOP_DESCS		(1 << 5)
++
++#define TSE_MSGDMA_READ_ADDR_LO		0x0
++#define TSE_MSGDMA_WRITE_ADDR_LO	0x1
++#define TSE_MSGDMA_LEN			0x2
++#define TSE_MSGDMA_BURST_SEQ_NUM	0x3
++#define TSE_MSGDMA_STRIDE		0x4
++#define TSE_MSGDMA_READ_ADDR_HI		0x5
++#define TSE_MSGDMA_WRITE_ADDR_HI	0x6
++#define TSE_MSGDMA_CONTROL		0x7
++#define TSE_MSGDMA_CONTROL_SET_CH(x)		((x) & 0xff)
++#define TSE_MSGDMA_CONTROL_GEN_SOP		(1 << 8)
++#define TSE_MSGDMA_CONTROL_GEN_EOP		(1 << 9)
++#define TSE_MSGDMA_CONTROL_PARK_READS		(1 << 10)
++#define TSE_MSGDMA_CONTROL_PARK_WRITES		(1 << 11)
++#define TSE_MSGDMA_CONTROL_END_ON_EOP		(1 << 12)
++#define TSE_MSGDMA_CONTROL_END_ON_LEN		(1 << 13)
++#define TSE_MSGDMA_CONTROL_TR_COMP_IRQ		(1 << 14)
++#define TSE_MSGDMA_CONTROL_EARLY_IRQ		(1 << 15)
++#define TSE_MSGDMA_CONTROL_TR_ERR_IRQ		(0xff << 16)
++#define TSE_MSGDMA_CONTROL_EARLY_DONE		(1 << 24)
++#define TSE_MSGDMA_CONTROL_GO			(1 << 31)
++
++#define TSE_RESP_BYTES_TRANSFERRED	0
++#define TSE_RESP_STATUS			1
++
++typedef struct AlteraTSEState {
++    /*< private >*/
++    SysBusDevice parent_obj;
++
++    /*< public >*/
++    NICState *nic;
++    NICConf conf;
++    qemu_irq irq[2];
++    MemoryRegion mem_control_port;
++    MemoryRegion mem_rx_csr;
++    MemoryRegion mem_rx_desc;
++    MemoryRegion mem_rx_resp;
++    MemoryRegion mem_tx_csr;
++    MemoryRegion mem_tx_desc;
++
++    uint32_t control_port_regs[0x100];
++    uint32_t rx_csr_regs[5];
++    uint32_t tx_csr_regs[5];
++    uint32_t rx_desc_regs[8];
++    uint32_t tx_desc_regs[8];
++    uint32_t rx_resp_regs[2];
++    /* FIXME !! */
++    uint64_t rx_addrs[64];
++    int rx_addr_start;
++    int rx_addr_end;
++    uint16_t rx_addr_count;
++    uint16_t rx_addr_pending;
++    uint64_t tx_addrs[64];
++    int tx_addr_start;
++    int tx_addr_end;
++    uint32_t rx_descriptor;
++    uint32_t tx_descriptor;
++
++    uint32_t phy_status;
++    uint32_t phy_control;
++    uint32_t phy_advertise;
++    uint32_t phy_int;
++    uint32_t phy_int_mask;
++
++    bool is_fec;
++} AlteraTSEState;
++
++#ifndef DEBUG_ALTERA_TSE
++#define DEBUG_ALTERA_TSE 0
++#endif
++
++#define TSE_PRINTF(fmt, args...) \
++    do { \
++        if (DEBUG_ALTERA_TSE) { \
++            fprintf(stderr, "[%s]%s: " fmt , TYPE_ALTERA_TSE, \
++                                             __func__, ##args); \
++        } \
++    } while (0)
++
++#ifndef DEBUG_ALTERA_PHY
++#define DEBUG_ALTERA_PHY 0
++#endif
++
++#define PHY_PRINTF(fmt, args...) \
++    do { \
++        if (DEBUG_ALTERA_PHY) { \
++            fprintf(stderr, "[%s.phy]%s: " fmt , TYPE_ALTERA_TSE, \
++                                                 __func__, ##args); \
++        } \
++    } while (0)
++
++static const VMStateDescription vmstate_altera_tse_eth = {
++    .name = TYPE_ALTERA_TSE,
++    .version_id = 2,
++    .minimum_version_id = 2,
++    .fields = (VMStateField[]) {
++        VMSTATE_UINT32_ARRAY(control_port_regs, AlteraTSEState, 0x100),
++        VMSTATE_UINT32(rx_descriptor, AlteraTSEState),
++        VMSTATE_UINT32(tx_descriptor, AlteraTSEState),
++
++        VMSTATE_UINT32(phy_status, AlteraTSEState),
++        VMSTATE_UINT32(phy_control, AlteraTSEState),
++        VMSTATE_UINT32(phy_advertise, AlteraTSEState),
++        VMSTATE_UINT32(phy_int, AlteraTSEState),
++        VMSTATE_UINT32(phy_int_mask, AlteraTSEState),
++        VMSTATE_END_OF_LIST()
++    }
++};
++
++#define PHY_INT_ENERGYON            (1 << 7)
++#define PHY_INT_AUTONEG_COMPLETE    (1 << 6)
++#define PHY_INT_FAULT               (1 << 5)
++#define PHY_INT_DOWN                (1 << 4)
++#define PHY_INT_AUTONEG_LP          (1 << 3)
++#define PHY_INT_PARFAULT            (1 << 2)
++#define PHY_INT_AUTONEG_PAGE        (1 << 1)
++
++//static void altera_tse_eth_update(AlteraTSEState *s);
++
++/*
++ * The MII phy could raise a GPIO to the processor which in turn
++ * could be handled as an interrpt by the OS.
++ * For now we don't handle any GPIO/interrupt line, so the OS will
++ * have to poll for the PHY status.
++ */
++static void phy_update_irq(AlteraTSEState *s)
++{
++//    altera_tse_eth_update(s);
++}
++
++static void phy_update_link(AlteraTSEState *s)
++{
++    /* Autonegotiation status mirrors link status.  */
++    if (qemu_get_queue(s->nic)->link_down) {
++        PHY_PRINTF("link is down\n");
++        s->phy_status &= ~0x0024;
++        s->phy_int |= PHY_INT_DOWN;
++    } else {
++        PHY_PRINTF("link is up\n");
++        s->phy_status |= 0x0024;
++        s->phy_int |= PHY_INT_ENERGYON;
++        s->phy_int |= PHY_INT_AUTONEG_COMPLETE;
++    }
++    phy_update_irq(s);
++}
++
++static void altera_tse_eth_set_link(NetClientState *nc)
++{
++    fprintf(stderr, "%s[%i]\n", __func__, __LINE__);
++
++    phy_update_link(ALTERA_TSE(qemu_get_nic_opaque(nc)));
++}
++
++static void phy_reset(AlteraTSEState *s)
++{
++    s->phy_status = 0x7809;
++    s->phy_control = 0x3000;
++    s->phy_advertise = 0x01e1;
++    s->phy_int_mask = 0;
++    s->phy_int = 0;
++    phy_update_link(s);
++}
++
++static uint32_t do_phy_read(AlteraTSEState *s, int reg)
++{
++    uint32_t val;
++
++    if (reg > 31) {
++        /* we only advertise one phy */
++        return 0;
++    }
++
++    switch (reg) {
++    case 0:     /* Basic Control */
++        val = s->phy_control;
++        break;
++    case 1:     /* Basic Status */
++        val = s->phy_status;
++        break;
++    case 2:     /* ID1 */
++        val = 0x0141;
++        break;
++    case 3:     /* ID2 */
++        val = 0x0e10;
++        break;
++    case 4:     /* Auto-neg advertisement */
++        val = s->phy_advertise;
++        break;
++    case 5:     /* Auto-neg Link Partner Ability */
++        val = 0x0f71;
++        break;
++    case 6:     /* Auto-neg Expansion */
++        val = 1;
++        break;
++    case 29:    /* Interrupt source.  */
++        val = s->phy_int;
++        s->phy_int = 0;
++        phy_update_irq(s);
++        break;
++    case 30:    /* Interrupt mask */
++        val = s->phy_int_mask;
++        break;
++    case 17:
++    case 18:
++    case 27:
++    case 31:
++        qemu_log_mask(LOG_UNIMP, "[%s.phy]%s: reg %d not implemented\n",
++                      TYPE_ALTERA_TSE, __func__, reg);
++        val = 0;
++        break;
++    default:
++        qemu_log_mask(LOG_GUEST_ERROR, "[%s.phy]%s: Bad address at offset %d\n",
++                      TYPE_ALTERA_TSE, __func__, reg);
++        val = 0;
++        break;
++    }
++
++    PHY_PRINTF("read 0x%04x @ %d\n", val, reg);
++
++    return val;
++}
++
++static void do_phy_write(AlteraTSEState *s, int reg, uint32_t val)
++{
++    PHY_PRINTF("write 0x%04x @ %d\n", val, reg);
++
++    if (reg > 31) {
++        /* we only advertise one phy */
++        return;
++    }
++
++    switch (reg) {
++    case 0:     /* Basic Control */
++        if (val & 0x8000) {
++            phy_reset(s);
++        } else {
++            s->phy_control = val & 0x7980;
++            /* Complete autonegotiation immediately.  */
++            if (val & 0x1000) {
++                s->phy_status |= 0x0020;
++            }
++        }
++        break;
++    case 4:     /* Auto-neg advertisement */
++        s->phy_advertise = (val & 0x2d7f) | 0x80;
++        break;
++    case 30:    /* Interrupt mask */
++        s->phy_int_mask = val & 0xff;
++        phy_update_irq(s);
++        break;
++    case 17:
++    case 18:
++    case 27:
++    case 31:
++        qemu_log_mask(LOG_UNIMP, "[%s.phy)%s: reg %d not implemented\n",
++                      TYPE_ALTERA_TSE, __func__, reg);
++        break;
++    default:
++        qemu_log_mask(LOG_GUEST_ERROR, "[%s.phy]%s: Bad address at offset %d\n",
++                      TYPE_ALTERA_TSE, __func__, reg);
++        break;
++    }
++}
++
++static void altera_tse_eth_reset(DeviceState *d)
++{
++    AlteraTSEState *s = ALTERA_TSE(d);
++
++    /* We also reset the PHY */
++    phy_reset(s);
++}
++
++static uint64_t altera_tse_read_control_port(void *opaque, hwaddr offset, unsigned size)
++{
++    AlteraTSEState *s = ALTERA_TSE(opaque);
++    uint32_t index = offset >> 2;
++
++    switch (index) {
++    /* Base configuration */
++    case TSE_CP_REV:
++        return 0x101;	/* FIXME */
++    case TSE_CP_SCRATCH:
++	return s->control_port_regs[index];
++    case TSE_CP_COMMAND_CONFIG:
++       	return s->control_port_regs[index] & 0x03ffdfff;
++    case TSE_CP_MAC_0:
++        return (s->conf.macaddr.a[0] << 24) | (s->conf.macaddr.a[1] << 16) |
++               (s->conf.macaddr.a[2] << 8) | s->conf.macaddr.a[3];
++    case TSE_CP_MAC_1:
++        return (s->conf.macaddr.a[4] << 24) | (s->conf.macaddr.a[5] << 16);
++    case TSE_CP_FRM_LENGTH:
++    case TSE_CP_PAUSE_QUANT:
++    case TSE_CP_RX_SECTION_EMPTY:
++    case TSE_CP_RX_SECTION_FULL:
++    case TSE_CP_TX_SECTION_EMPTY:
++    case TSE_CP_TX_SECTION_FULL:
++    case TSE_CP_RX_ALMOST_EMPTY:
++    case TSE_CP_RX_ALMOST_FULL:
++    case TSE_CP_TX_ALMOST_EMPTY:
++    case TSE_CP_TX_ALMOST_FULL:
++    case TSE_CP_MDIO_ADDR0:
++    case TSE_CP_MDIO_ADDR1:
++    case TSE_CP_HOLDOFF_QUANT:
++    case TSE_CP_TX_IPG_LENGTH:
++	return s->control_port_regs[index];
++
++    /* TX and RX command registers */
++    case TSE_TX_CMD_STAT:
++    case TSE_RX_CMD_STAT:
++	return s->control_port_regs[index];
++
++    case TSE_MDIO0_START...TSE_MDIO0_END:
++	return do_phy_read(s, index - TSE_MDIO0_START);
++    case TSE_MDIO1_START...TSE_MDIO1_END:
++	return do_phy_read(s, index - TSE_MDIO1_START);
++    default:
++        fprintf(stderr,
++                "%s[%i] Invalid IO access: offset=0x%x size=%i\n",
++		__func__, __LINE__, index, size);
++	return 0;
++    }
++}
++
++static void altera_tse_write_control_port(void *opaque, hwaddr offset, uint64_t value,
++                           unsigned size)
++{
++//    uint32_t value = 0;
++    AlteraTSEState *s = ALTERA_TSE(opaque);
++    uint32_t index = offset >> 2;
++
++    switch (index) {
++    /* Base configuration */
++    case TSE_CP_REV:
++        return;		/* Read-only register, write ignored. */
++    case TSE_CP_SCRATCH:
++	s->control_port_regs[index] = value;
++    case TSE_CP_COMMAND_CONFIG:
++	if (value & TSE_CP_COMMAND_CONFIG_SW_RESET) {
++            value = 0; /* FIXME: Do more reseting of the regs ? */
++        }
++
++	if (value & TSE_CP_COMMAND_CONFIG_CNT_RESET) {
++            /* FIXME : Reset the counters */
++            value &= ~TSE_CP_COMMAND_CONFIG_CNT_RESET;
++        }
++
++	if (value & ~0x80002000)
++        TSE_PRINTF("%s[%i] offset=%lx size=%i ==> value=%lx\n\n\n", __func__, __LINE__, offset, size, value);
++
++	s->control_port_regs[index] = value;
++        return;
++    case TSE_CP_MAC_0:
++        s->conf.macaddr.a[0] = value >> 24;
++        s->conf.macaddr.a[1] = value >> 16;
++        s->conf.macaddr.a[2] = value >> 8;
++        s->conf.macaddr.a[3] = value;
++	break;
++    case TSE_CP_MAC_1:
++        s->conf.macaddr.a[4] = value >> 24;
++        s->conf.macaddr.a[5] = value >> 16;
++	break;
++    case TSE_CP_FRM_LENGTH:
++    case TSE_CP_PAUSE_QUANT:
++	s->control_port_regs[index] = value & 0xffff;
++	break;
++    case TSE_CP_RX_SECTION_EMPTY:
++    case TSE_CP_RX_SECTION_FULL:
++    case TSE_CP_TX_SECTION_EMPTY:
++    case TSE_CP_TX_SECTION_FULL:
++	s->control_port_regs[index] = value;
++	break;
++    case TSE_CP_RX_ALMOST_EMPTY:
++    case TSE_CP_RX_ALMOST_FULL:
++    case TSE_CP_TX_ALMOST_EMPTY:
++	if (value < 3)
++            value = 3;
++	s->control_port_regs[index] = value;
++	break;
++    case TSE_CP_TX_ALMOST_FULL:
++	if (value < 3)
++            value = 3;
++	if (value > 11)
++            value = 11;
++	s->control_port_regs[index] = value;
++	break;
++    case TSE_CP_MDIO_ADDR0:
++    case TSE_CP_MDIO_ADDR1:
++	s->control_port_regs[index] = value & 0x1f;
++	break;
++    case TSE_CP_HOLDOFF_QUANT:
++	s->control_port_regs[index] = value & 0xffff;
++	break;
++    case TSE_CP_TX_IPG_LENGTH:
++	s->control_port_regs[index] = value & 0x1f;
++	break;
++
++    /* TX and RX command registers */
++    case TSE_TX_CMD_STAT:
++	s->control_port_regs[index] = value & (TSE_TX_CMD_STAT_OMIT_CRC |
++                                               TSE_TX_CMD_STAT_TX_SHIFT16);
++	break;
++    case TSE_RX_CMD_STAT:
++	s->control_port_regs[index] = value & TSE_RX_CMD_STAT_RX_SHIFT16;
++	break;
++
++    case TSE_MDIO0_START...TSE_MDIO0_END:
++	return do_phy_write(s, index - TSE_MDIO0_START, value);
++    case TSE_MDIO1_START...TSE_MDIO1_END:
++	return do_phy_write(s, index - TSE_MDIO1_START, value);
++    default:
++        fprintf(stderr,
++                "%s[%i] Invalid IO access: offset=0x%x size=%i => value=%lx\n",
++		__func__, __LINE__, index, size, value);
++	return;
++    }
++}
++
++static uint64_t altera_tse_read_rx_csr(void *opaque, hwaddr offset, unsigned size)
++{
++    AlteraTSEState *s = ALTERA_TSE(opaque);
++    uint32_t index = offset >> 2;
++    uint64_t ret;
++
++    switch (index) {
++    case TSE_CSR_STATUS:
++    case TSE_CSR_CONTROL:
++    case TSE_CSR_RW_FILL_LEVEL:
++	return s->rx_csr_regs[index];
++    case TSE_CSR_RESP_FILL_LEVEL:
++	ret = s->rx_csr_regs[index];
++	if (s->rx_csr_regs[index])
++            s->rx_csr_regs[index]--;
++	return ret;
++    case TSE_CSR_RW_SEQ_NUM:
++	return s->rx_csr_regs[index];
++    default:
++        fprintf(stderr,
++                "%s[%i] Invalid IO access: offset=0x%x size=%i\n",
++		__func__, __LINE__, index, size);
++	return 0;
++    }
++}
++
++static void altera_tse_write_rx_csr(void *opaque, hwaddr offset, uint64_t value,
++                           unsigned size)
++{
++    AlteraTSEState *s = ALTERA_TSE(opaque);
++    uint32_t index = offset >> 2;
++
++    switch (index) {
++    case TSE_CSR_STATUS:
++        if (value & TSE_CSR_STATUS_IRQ) {
++            if (s->rx_addr_pending)
++                s->rx_addr_pending--;
++            if (!s->rx_addr_pending)
++                qemu_set_irq(s->irq[0], 0);
++        }
++	s->rx_csr_regs[index] &= ~value;
++	return;
++    case TSE_CSR_CONTROL:
++	if (value & TSE_CSR_CONTROL_RESET) {
++	    s->rx_csr_regs[TSE_CSR_STATUS] = 0;
++	    s->rx_csr_regs[TSE_CSR_CONTROL] = 0;
++        }
++	return;
++    case TSE_CSR_RW_FILL_LEVEL:
++    case TSE_CSR_RESP_FILL_LEVEL:
++    case TSE_CSR_RW_SEQ_NUM:
++	s->rx_csr_regs[index] = value;
++	return;
++    default:
++        fprintf(stderr,
++                "%s[%i] Invalid IO access: offset=0x%x size=%i => value=%lx\n",
++		__func__, __LINE__, index, size, value);
++	return;
++    }
++}
++
++static uint64_t altera_tse_read_rx_desc(void *opaque, hwaddr offset, unsigned size)
++{
++    AlteraTSEState *s = ALTERA_TSE(opaque);
++    uint32_t index = offset >> 2;
++
++    switch (index) {
++    case TSE_MSGDMA_READ_ADDR_LO:
++    case TSE_MSGDMA_WRITE_ADDR_LO:
++    case TSE_MSGDMA_LEN:
++    case TSE_MSGDMA_BURST_SEQ_NUM:
++    case TSE_MSGDMA_STRIDE:
++    case TSE_MSGDMA_READ_ADDR_HI:
++    case TSE_MSGDMA_WRITE_ADDR_HI:
++	return s->rx_desc_regs[index];
++    case TSE_MSGDMA_CONTROL:
++        TSE_PRINTF("%s[%i] offset=%lx size=%i <== value=%x\n\n\n", __func__, __LINE__, offset, size, s->rx_desc_regs[index]);
++	return s->rx_desc_regs[index];
++    default:
++        fprintf(stderr,
++                "%s[%i] Invalid IO access: offset=0x%x size=%i\n",
++		__func__, __LINE__, index, size);
++	return 0;
++    }
++}
++
++static void altera_tse_write_rx_desc(void *opaque, hwaddr offset, uint64_t value,
++                           unsigned size)
++{
++    AlteraTSEState *s = ALTERA_TSE(opaque);
++    uint32_t index = offset >> 2;
++
++    switch (index) {
++    case TSE_MSGDMA_READ_ADDR_LO:
++    case TSE_MSGDMA_WRITE_ADDR_LO:
++        TSE_PRINTF("%s[%i] offset=%lx size=%i ==> value=%lx\n\n\n", __func__, __LINE__, offset, size, value);
++    case TSE_MSGDMA_LEN:
++    case TSE_MSGDMA_BURST_SEQ_NUM:
++    case TSE_MSGDMA_STRIDE:
++    case TSE_MSGDMA_READ_ADDR_HI:
++    case TSE_MSGDMA_WRITE_ADDR_HI:
++	s->rx_desc_regs[index] = value;
++	return;
++    case TSE_MSGDMA_CONTROL:
++	if (value & TSE_MSGDMA_CONTROL_GO) {
++            /* FIXME */
++	    s->rx_addrs[s->rx_addr_start] = s->rx_desc_regs[TSE_MSGDMA_WRITE_ADDR_LO];
++            s->rx_addr_start = (s->rx_addr_start + 1) % 64;
++	    s->rx_addr_count++;
++            qemu_flush_queued_packets(qemu_get_queue(s->nic));
++        }
++
++        TSE_PRINTF("%s[%i] offset=%lx size=%i ==> value=%lx\n\n\n", __func__, __LINE__, offset, size, value);
++	s->rx_desc_regs[index] = value & ~TSE_MSGDMA_CONTROL_GO;
++	return;
++    default:
++        fprintf(stderr,
++                "%s[%i] Invalid IO access: offset=0x%x size=%i => value=%lx\n",
++		__func__, __LINE__, index, size, value);
++	return;
++    }
++}
++
++static uint64_t altera_tse_read_rx_resp(void *opaque, hwaddr offset, unsigned size)
++{
++    AlteraTSEState *s = ALTERA_TSE(opaque);
++    uint32_t index = offset >> 2;
++
++    switch (index) {
++    case TSE_RESP_BYTES_TRANSFERRED:
++    case TSE_RESP_STATUS:
++        TSE_PRINTF("%s[%i] offset=%lx size=%i ==> value=%x\n\n\n", __func__, __LINE__, offset, size, s->rx_resp_regs[index]);
++	return s->rx_resp_regs[index];
++    default:
++        fprintf(stderr,
++                "%s[%i] Invalid IO access: offset=0x%x size=%i\n",
++		__func__, __LINE__, index, size);
++	return 0;
++    }
++}
++
++static void altera_tse_write_rx_resp(void *opaque, hwaddr offset, uint64_t value,
++                           unsigned size)
++{
++    AlteraTSEState *s = ALTERA_TSE(opaque);
++    uint32_t index = offset >> 2;
++
++    switch (index) {
++    case TSE_RESP_BYTES_TRANSFERRED:
++    case TSE_RESP_STATUS:
++	s->rx_resp_regs[index] = value;
++	return;
++    default:
++        fprintf(stderr,
++                "%s[%i] Invalid IO access: offset=0x%x size=%i => value=%lx\n",
++		__func__, __LINE__, index, size, value);
++	return;
++    }
++}
++
++static uint64_t altera_tse_read_tx_csr(void *opaque, hwaddr offset, unsigned size)
++{
++    AlteraTSEState *s = ALTERA_TSE(opaque);
++    uint32_t index = offset >> 2;
++
++    switch (index) {
++    case TSE_CSR_STATUS:
++    case TSE_CSR_CONTROL:
++    case TSE_CSR_RW_FILL_LEVEL:
++    case TSE_CSR_RESP_FILL_LEVEL:
++    case TSE_CSR_RW_SEQ_NUM:
++	return s->tx_csr_regs[index];
++    default:
++        fprintf(stderr,
++                "%s[%i] Invalid IO access: offset=0x%x size=%i\n",
++		__func__, __LINE__, index, size);
++	return 0;
++    }
++}
++
++static void altera_tse_write_tx_csr(void *opaque, hwaddr offset, uint64_t value,
++                           unsigned size)
++{
++    AlteraTSEState *s = ALTERA_TSE(opaque);
++    uint32_t index = offset >> 2;
++
++    switch (index) {
++    case TSE_CSR_STATUS:
++        if (value & TSE_CSR_STATUS_IRQ)
++            qemu_set_irq(s->irq[1], 0);
++	s->tx_csr_regs[index] &= ~value;
++	return;
++    case TSE_CSR_CONTROL:
++	if (value & TSE_CSR_CONTROL_RESET) {
++	    s->tx_csr_regs[TSE_CSR_STATUS] = 0;
++	    s->tx_csr_regs[TSE_CSR_CONTROL] = 0;
++        }
++	return;
++    case TSE_CSR_RW_FILL_LEVEL:
++    case TSE_CSR_RESP_FILL_LEVEL:
++    case TSE_CSR_RW_SEQ_NUM:
++	s->tx_csr_regs[index] = value;
++	return;
++    default:
++        fprintf(stderr,
++                "%s[%i] Invalid IO access: offset=0x%x size=%i => value=%lx\n",
++		__func__, __LINE__, index, size, value);
++	return;
++    }
++}
++
++static uint64_t altera_tse_read_tx_desc(void *opaque, hwaddr offset, unsigned size)
++{
++    AlteraTSEState *s = ALTERA_TSE(opaque);
++    uint32_t index = offset >> 2;
++
++    switch (index) {
++    case TSE_MSGDMA_READ_ADDR_LO:
++    case TSE_MSGDMA_WRITE_ADDR_LO:
++    case TSE_MSGDMA_LEN:
++    case TSE_MSGDMA_BURST_SEQ_NUM:
++    case TSE_MSGDMA_STRIDE:
++    case TSE_MSGDMA_READ_ADDR_HI:
++    case TSE_MSGDMA_WRITE_ADDR_HI:
++	return s->tx_desc_regs[index];
++    case TSE_MSGDMA_CONTROL:
++        TSE_PRINTF("%s[%i] offset=%lx size=%i <== value=%x\n\n\n", __func__, __LINE__, offset, size, s->tx_desc_regs[index]);
++	return s->tx_desc_regs[index];
++    default:
++        fprintf(stderr,
++                "%s[%i] Invalid IO access: offset=0x%x size=%i\n",
++		__func__, __LINE__, index, size);
++	return 0;
++    }
++}
++
++static void altera_tse_write_tx_desc(void *opaque, hwaddr offset, uint64_t value,
++                           unsigned size)
++{
++    AlteraTSEState *s = ALTERA_TSE(opaque);
++    uint32_t index = offset >> 2;
++
++    switch (index) {
++    case TSE_MSGDMA_READ_ADDR_LO:
++    case TSE_MSGDMA_WRITE_ADDR_LO:
++    case TSE_MSGDMA_LEN:
++    case TSE_MSGDMA_BURST_SEQ_NUM:
++    case TSE_MSGDMA_STRIDE:
++    case TSE_MSGDMA_READ_ADDR_HI:
++    case TSE_MSGDMA_WRITE_ADDR_HI:
++	s->tx_desc_regs[index] = value;
++	return;
++    case TSE_MSGDMA_CONTROL:
++        TSE_PRINTF("%s[%i] offset=%lx size=%i ==> value=%lx\n\n\n", __func__, __LINE__, offset, size, value);
++	if (value & TSE_MSGDMA_CONTROL_GO) {
++            int frame_size = s->tx_desc_regs[TSE_MSGDMA_LEN];
++            uint8_t frame[2048 /* FIXME */];
++	    /* NOTE: The Nios2 is a 32bit system, high bits wrap around */
++	    dma_addr_t addr = s->tx_desc_regs[TSE_MSGDMA_READ_ADDR_LO];
++	    dma_memory_read(&address_space_memory, addr, frame, frame_size);
++	    qemu_send_packet(qemu_get_queue(s->nic), frame, frame_size);
++            qemu_flush_queued_packets(qemu_get_queue(s->nic));
++            qemu_set_irq(s->irq[1], 1);
++	}
++	s->tx_desc_regs[index] = value & ~TSE_MSGDMA_CONTROL_GO;
++	return;
++    default:
++        fprintf(stderr,
++                "%s[%i] Invalid IO access: offset=0x%x size=%i => value=%lx\n",
++		__func__, __LINE__, index, size, value);
++	return;
++    }
++}
++
++static int altera_tse_eth_can_receive(NetClientState *nc)
++{
++    AlteraTSEState *s = ALTERA_TSE(qemu_get_nic_opaque(nc));
++    TSE_PRINTF("%s[%i]\n", __func__, __LINE__);
++    return !!s->rx_addr_count;
++}
++
++static ssize_t altera_tse_eth_receive(NetClientState *nc, const uint8_t *buf,
++                               size_t len)
++{
++    AlteraTSEState *s = ALTERA_TSE(qemu_get_nic_opaque(nc));
++
++    dma_addr_t addr = s->rx_addrs[s->rx_addr_end];
++    s->rx_addr_end = (s->rx_addr_end + 1) % 64;
++    s->rx_addr_count--;
++    s->rx_addr_pending++;
++
++    TSE_PRINTF("%s[%i] addr=%lx len=%li\n", __func__, __LINE__, addr, len);
++
++    dma_memory_write(&address_space_memory, addr + 2, buf, len);
++    s->rx_csr_regs[TSE_CSR_RESP_FILL_LEVEL]++;
++    s->rx_resp_regs[TSE_RESP_BYTES_TRANSFERRED] = (len + 2) & 0xffff;
++    s->rx_resp_regs[TSE_RESP_STATUS] = 0;
++
++    s->rx_csr_regs[TSE_CSR_STATUS] |= TSE_CSR_STATUS_IRQ;
++    qemu_set_irq(s->irq[0], 1);
++
++    return len;
++}
++
++static const MemoryRegionOps altera_tse_control_port_ops = {
++    .read                  = altera_tse_read_control_port,
++    .write                 = altera_tse_write_control_port,
++    .valid.min_access_size = 4,
++    .valid.max_access_size = 4,
++    .endianness            = DEVICE_NATIVE_ENDIAN,
++};
++
++static const MemoryRegionOps altera_tse_rx_csr_ops = {
++    .read                  = altera_tse_read_rx_csr,
++    .write                 = altera_tse_write_rx_csr,
++    .valid.min_access_size = 4,
++    .valid.max_access_size = 4,
++    .endianness            = DEVICE_NATIVE_ENDIAN,
++};
++
++static const MemoryRegionOps altera_tse_rx_desc_ops = {
++    .read                  = altera_tse_read_rx_desc,
++    .write                 = altera_tse_write_rx_desc,
++    .valid.min_access_size = 4,
++    .valid.max_access_size = 4,
++    .endianness            = DEVICE_NATIVE_ENDIAN,
++};
++
++static const MemoryRegionOps altera_tse_rx_resp_ops = {
++    .read                  = altera_tse_read_rx_resp,
++    .write                 = altera_tse_write_rx_resp,
++    .valid.min_access_size = 4,
++    .valid.max_access_size = 4,
++    .endianness            = DEVICE_NATIVE_ENDIAN,
++};
++
++static const MemoryRegionOps altera_tse_tx_csr_ops = {
++    .read                  = altera_tse_read_tx_csr,
++    .write                 = altera_tse_write_tx_csr,
++    .valid.min_access_size = 4,
++    .valid.max_access_size = 4,
++    .endianness            = DEVICE_NATIVE_ENDIAN,
++};
++
++static const MemoryRegionOps altera_tse_tx_desc_ops = {
++    .read                  = altera_tse_read_tx_desc,
++    .write                 = altera_tse_write_tx_desc,
++    .valid.min_access_size = 4,
++    .valid.max_access_size = 4,
++    .endianness            = DEVICE_NATIVE_ENDIAN,
++};
++
++
++static void altera_tse_eth_cleanup(NetClientState *nc)
++{
++    AlteraTSEState *s = ALTERA_TSE(qemu_get_nic_opaque(nc));
++    fprintf(stderr, "%s[%i]\n", __func__, __LINE__);
++
++    s->nic = NULL;
++}
++
++static NetClientInfo altera_tse_eth_net_info = {
++    .type                = NET_CLIENT_DRIVER_NIC,
++    .size                = sizeof(NICState),
++    .can_receive         = altera_tse_eth_can_receive,
++    .receive             = altera_tse_eth_receive,
++    .cleanup             = altera_tse_eth_cleanup,
++    .link_status_changed = altera_tse_eth_set_link,
++};
++
++static void altera_tse_eth_realize(DeviceState *dev, Error **errp)
++{
++    AlteraTSEState *s = ALTERA_TSE(dev);
++    SysBusDevice *sbd = SYS_BUS_DEVICE(dev);
++
++    memory_region_init_io(&s->mem_control_port, OBJECT(dev),
++                          &altera_tse_control_port_ops, s, TYPE_ALTERA_TSE,
++			  0x400);
++    sysbus_init_mmio(sbd, &s->mem_control_port);
++    memory_region_init_io(&s->mem_rx_csr, OBJECT(dev), &altera_tse_rx_csr_ops,
++                          s, TYPE_ALTERA_TSE, 0x20);
++    sysbus_init_mmio(sbd, &s->mem_rx_csr);
++    memory_region_init_io(&s->mem_rx_desc, OBJECT(dev), &altera_tse_rx_desc_ops,
++                          s, TYPE_ALTERA_TSE, 0x20);
++    sysbus_init_mmio(sbd, &s->mem_rx_desc);
++    memory_region_init_io(&s->mem_rx_resp, OBJECT(dev), &altera_tse_rx_resp_ops,
++                          s, TYPE_ALTERA_TSE, 0x8);
++    sysbus_init_mmio(sbd, &s->mem_rx_resp);
++    memory_region_init_io(&s->mem_tx_csr, OBJECT(dev), &altera_tse_tx_csr_ops,
++                          s, TYPE_ALTERA_TSE, 0x20);
++    sysbus_init_mmio(sbd, &s->mem_tx_csr);
++    memory_region_init_io(&s->mem_tx_desc, OBJECT(dev), &altera_tse_tx_desc_ops,
++                          s, TYPE_ALTERA_TSE, 0x20);
++    sysbus_init_mmio(sbd, &s->mem_tx_desc);
++
++    sysbus_init_irq(sbd, &s->irq[0]);
++    sysbus_init_irq(sbd, &s->irq[1]);
++
++    qemu_macaddr_default_if_unset(&s->conf.macaddr);
++
++    s->conf.peers.ncs[0] = nd_table[0].netdev;
++
++    s->nic = qemu_new_nic(&altera_tse_eth_net_info, &s->conf,
++                          object_get_typename(OBJECT(dev)),
++                          DEVICE(dev)->id, s);
++
++    qemu_format_nic_info_str(qemu_get_queue(s->nic), s->conf.macaddr.a);
++}
++
++static Property altera_tse_eth_properties[] = {
++    DEFINE_NIC_PROPERTIES(AlteraTSEState, conf),
++    DEFINE_PROP_END_OF_LIST(),
++};
++
++static void altera_tse_eth_class_init(ObjectClass *klass, void *data)
++{
++    DeviceClass *dc = DEVICE_CLASS(klass);
++
++    dc->vmsd    = &vmstate_altera_tse_eth;
++    dc->reset   = altera_tse_eth_reset;
++    dc->props   = altera_tse_eth_properties;
++    dc->realize = altera_tse_eth_realize;
++    dc->desc    = "Altera TSE Ethernet Controller";
++}
++
++static const TypeInfo altera_tse_info = {
++    .name          = TYPE_ALTERA_TSE,
++    .parent        = TYPE_SYS_BUS_DEVICE,
++    .instance_size = sizeof(AlteraTSEState),
++    .class_init    = altera_tse_eth_class_init,
++};
++
++static void altera_tse_eth_register_types(void)
++{
++    type_register_static(&altera_tse_info);
++}
++
++type_init(altera_tse_eth_register_types)
+diff --git a/hw/nios2/10m50_devboard.c b/hw/nios2/10m50_devboard.c
+index 62e5738..0d8b9aa 100644
+--- a/hw/nios2/10m50_devboard.c
++++ b/hw/nios2/10m50_devboard.c
+@@ -30,6 +30,7 @@
+ #include "hw/sysbus.h"
+ #include "hw/hw.h"
+ #include "hw/char/serial.h"
++#include "net/net.h"
+ #include "sysemu/sysemu.h"
+ #include "hw/boards.h"
+ #include "exec/memory.h"
+@@ -107,6 +108,20 @@ static void nios2_10m50_ghrd_init(MachineState *machine)
+     sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, 0xe0000880);
+     sysbus_connect_irq(SYS_BUS_DEVICE(dev), 0, irq[5]);
+ 
++    /* Register: Ethernet rgmii_0_eth_tse_0  */
++    qemu_check_nic_model(&nd_table[0], "ALTR.tse");
++    dev = qdev_create(NULL, "ALTR.tse");
++    qdev_set_nic_properties(dev, &nd_table[0]);
++    qdev_init_nofail(dev);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, 0xe0000400);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 1, 0xe0000820);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 2, 0xe0000800);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 3, 0xe00008c0);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 4, 0xe0000840);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 5, 0xe0000860);
++    sysbus_connect_irq(SYS_BUS_DEVICE(dev), 0, irq[2]);
++    sysbus_connect_irq(SYS_BUS_DEVICE(dev), 1, irq[3]);
++
+     /* Configure new exception vectors and reset CPU for it to take effect. */
+     cpu->reset_addr = 0xd4000000;
+     cpu->exception_addr = 0xc8000120;
+diff --git a/hw/nios2/altera_10m50_device.c b/hw/nios2/altera_10m50_device.c
+index c86091f..4adcf7f 100644
+--- a/hw/nios2/altera_10m50_device.c
++++ b/hw/nios2/altera_10m50_device.c
+@@ -39,6 +39,7 @@
+ #include "sysemu/blockdev.h"
+ #include "qapi/qmp/qerror.h"
+ #include "hw/char/altera_juart.h"
++#include "net/net.h"
+ #include <libfdt.h>
+ 
+ #include "boot.h"
+@@ -252,16 +253,15 @@ static void altera_10m50_init_common(Nios2CPU *cpu, MachineState *machine)
+         irq[i] = qdev_get_gpio_in(dev, i);
+     }
+ #endif
+-
+-    find_compatible_controller(fdt, -1, "altr,juart-1.0", &base,
+-                               &interrupt, NULL);
+-    altera_juart_create(1, base | 0xe0000000, irq[interrupt], 16);
+-
+     find_compatible_controller(fdt, -1, "altr,16550-FIFO32", &base,
+                                &interrupt, NULL);
+     serial_mm_init(address_space_mem, base | 0xe0000000, 2, irq[interrupt], 115200,
+                    serial_hds[0], DEVICE_NATIVE_ENDIAN);
+ 
++    find_compatible_controller(fdt, -1, "altr,juart-1.0", &base,
++                               &interrupt, NULL);
++    altera_juart_create(1, base | 0xe0000000, irq[interrupt], 16);
++
+     /* Find all timers... */
+     node = -1;
+     do {
+@@ -273,6 +273,22 @@ static void altera_10m50_init_common(Nios2CPU *cpu, MachineState *machine)
+         }
+     } while (node > 0);
+ 
++
++    /* Register: Ethernet rgmii_0_eth_tse_0  */
++    /* TODO: get the values from the device tree */
++    qemu_check_nic_model(&nd_table[0], "ALTR.tse");
++    dev = qdev_create(NULL, "ALTR.tse");
++    qdev_set_nic_properties(dev, &nd_table[0]);
++    qdev_init_nofail(dev);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, 0xe0000400);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 1, 0xe0000820);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 2, 0xe0000800);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 3, 0xe00008c0);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 4, 0xe0000840);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 5, 0xe0000860);
++    sysbus_connect_irq(SYS_BUS_DEVICE(dev), 0, irq[2]);
++    sysbus_connect_irq(SYS_BUS_DEVICE(dev), 1, irq[3]);
++
+     init_cpu_from_devtree(fdt, cpu);
+     nios2_load_kernel(cpu, MEMORY_BASEADDR, ram_size, machine->initrd_filename,
+                       BINARY_DEVICE_TREE_FILE, NULL);
+-- 
+2.7.4
+
