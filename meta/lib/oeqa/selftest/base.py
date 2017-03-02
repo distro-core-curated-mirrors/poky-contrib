@@ -104,6 +104,9 @@ be re-executed from a clean environment to ensure accurate results.")
         # super each time, so let's give them an alternative
         self.setUpLocal()
 
+        # Default yp share-states
+        self.append_config('SSTATE_MIRRORS ?= "file://.* http://sstate.yoctoproject.org/dev/PATH"')
+
     def setUpLocal(self):
         pass
 
