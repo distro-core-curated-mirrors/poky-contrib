@@ -128,6 +128,7 @@ python run_buildstats () {
         # set the buildname
         ########################################################################
         bb.utils.mkdirhier(bsdir)
+        bb.utils.mkdirhier('/tmp/strace')
         set_buildtimedata("__timedata_build", d)
         build_time = os.path.join(bsdir, "build_stats")
         # write start of build into build_time
@@ -161,6 +162,17 @@ python run_buildstats () {
         with open(os.path.join(taskdir, e.task), "a") as f:
             f.write("Event: %s \n" % bb.event.getName(e))
             f.write("Started: %0.2f \n" % e.time)
+
+        pn = d.getVar("PN", True)
+        parentpid = os.getpid()
+        pid = os.fork() 
+        if pid == 0:
+            os.setsid()
+            pid2 = os.fork()
+            if pid2 > 0:
+                os._exit(os.EX_OK)
+            output = subprocess.check_output("strace -p %s -f -c -q -o /tmp/strace/%s.%s.%s" % (parentpid, pn, e.task, parentpid), shell=True)
+            os._exit(os.EX_OK)
 
     elif isinstance(e, bb.build.TaskSucceeded):
         write_task_data("passed", os.path.join(taskdir, e.task), e, d)
