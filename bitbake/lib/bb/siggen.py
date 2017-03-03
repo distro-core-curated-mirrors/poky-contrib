@@ -5,6 +5,7 @@ import re
 import tempfile
 import pickle
 import bb.data
+import difflib
 from bb.checksum import FileChecksumCache
 
 logger = logging.getLogger('BitBake.SigGen')
@@ -461,7 +462,13 @@ def compare_sigfiles(a, b, recursecb = None):
     changed, added, removed = dict_diff(a_data['varvals'], b_data['varvals'])
     if changed:
         for dep in changed:
-            output.append("Variable %s value changed from '%s' to '%s'" % (dep, a_data['varvals'][dep], b_data['varvals'][dep]))
+            oldval = a_data['varvals'][dep]
+            newval = b_data['varvals'][dep]
+            if '\n' in oldval or '\n' in newval:
+                diff = difflib.unified_diff(oldval.splitlines(), newval.splitlines(), lineterm='')
+                output.append("Variable %s value changed:\n%s" % (dep, '\n'.join(diff)))
+            else:
+                output.append("Variable %s value changed from '%s' to '%s'" % (dep, oldval, newval))
 
     if not 'file_checksum_values' in a_data:
          a_data['file_checksum_values'] = {}
