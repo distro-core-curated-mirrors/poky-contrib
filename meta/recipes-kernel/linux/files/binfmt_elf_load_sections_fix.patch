@@ -1,0 +1,85 @@
+binfmt_elf: Don't require PT_LOAD sections without holes.
+
+The kernel makes the assumption that all PT_LOAD sections are continous, at
+least to the point where PT_PHDR is contained. If there are holes between
+the PT_LOAD sections, the calculation load_addr + exec->e_phoff fails to
+correctly locate the phdrs.
+
+This change notices where phdrs are located in some other PT_LOAD section
+other than the first one and corrects the offsets used.
+
+This is useful where userspace wants to rewrite elf files but can't guarantee
+that all PT_LOAD sections are continuous without holes without potentially
+creating large holes in the binaries. I was unable to find any ELF spec
+which requires continuous PT_LOAD sections or that PT_PHDR be in the first
+PT_LOAD section.
+
+Signed-off-by: Richard Purdie <richard.purdie@linuxfoundation.org>
+Upstream-Status: Pending
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 4223702..392dab3 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -148,7 +148,7 @@ static int padzero(unsigned long elf_bss)
+ 
+ static int
+ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+-		unsigned long load_addr, unsigned long interp_load_addr)
++		unsigned long load_addr, unsigned long interp_load_addr, unsigned long phdr_addr)
+ {
+ 	unsigned long p = bprm->p;
+ 	int argc = bprm->argc;
+@@ -234,7 +234,7 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 	NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
+ 	NEW_AUX_ENT(AT_PAGESZ, ELF_EXEC_PAGESIZE);
+ 	NEW_AUX_ENT(AT_CLKTCK, CLOCKS_PER_SEC);
+-	NEW_AUX_ENT(AT_PHDR, load_addr + exec->e_phoff);
++	NEW_AUX_ENT(AT_PHDR, phdr_addr);
+ 	NEW_AUX_ENT(AT_PHENT, sizeof(struct elf_phdr));
+ 	NEW_AUX_ENT(AT_PHNUM, exec->e_phnum);
+ 	NEW_AUX_ENT(AT_BASE, interp_load_addr);
+@@ -668,7 +668,7 @@ static unsigned long randomize_stack_top(unsigned long stack_top)
+ static int load_elf_binary(struct linux_binprm *bprm)
+ {
+ 	struct file *interpreter = NULL; /* to shut gcc up */
+- 	unsigned long load_addr = 0, load_bias = 0;
++	unsigned long load_addr = 0, load_bias = 0, phdr_addr = 0, phdr_offset = 0;
+ 	int load_addr_set = 0;
+ 	char * elf_interpreter = NULL;
+ 	unsigned long error;
+@@ -795,6 +795,10 @@ static int load_elf_binary(struct linux_binprm *bprm)
+ 			if (retval)
+ 				goto out_free_dentry;
+ 			break;
++
++		case PT_PHDR:
++			phdr_offset = elf_ppnt->p_offset;
++			break;
+ 		}
+ 
+ 	/* Some simple consistency checks for the interpreter */
+@@ -947,7 +951,13 @@ static int load_elf_binary(struct linux_binprm *bprm)
+ 				load_addr += load_bias;
+ 				reloc_func_desc = load_bias;
+ 			}
++			phdr_addr = load_addr;
++		} else if (phdr_offset >= elf_ppnt->p_offset && phdr_offset < (elf_ppnt->p_offset + elf_ppnt->p_filesz)) {
++			phdr_addr = phdr_addr + error -
++				    ELF_PAGESTART(load_bias + vaddr) + 
++				    elf_ppnt->p_vaddr - elf_ppnt->p_offset;
+ 		}
++
+ 		k = elf_ppnt->p_vaddr;
+ 		if (k < start_code)
+ 			start_code = k;
+@@ -1045,8 +1055,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
+ 		goto out;
+ #endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGES */
+ 
++        phdr_addr = phdr_addr + loc->elf_ex.e_phoff;
+ 	retval = create_elf_tables(bprm, &loc->elf_ex,
+-			  load_addr, interp_load_addr);
++			  load_addr, interp_load_addr, phdr_addr);
+ 	if (retval < 0)
+ 		goto out;
+ 	/* N.B. passed_fileno might not be initialized? */
