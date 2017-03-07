@@ -392,3 +392,11 @@
 #DISTRO_FEATURES_BACKFILL_CONSIDERED += "sysvinit"
 #VIRTUAL-RUNTIME_init_manager = "systemd"
 #VIRTUAL-RUNTIME_initscripts = "systemd-compat-units"
+
+#
+# There are also various 'pre-canned' include files which setup commonly
+# used configurations as examples. In particular several Yocto Project
+# autobuilder test configurations are available
+#
+#require conf/examples/autobuilder/musl.inc
+#require conf/examples/autobuilder/x32.inc
