@@ -30,9 +30,6 @@ if test "x$D" != "x"; then
 	if [ ! -e $D${sysconfdir}/login.defs -a -e $D${sysconfdir}/login.defs.dpkg-new ]; then
 	    cp $D${sysconfdir}/login.defs.dpkg-new $D${sysconfdir}/login.defs
 	fi
-
-	# user/group lookups should match useradd/groupadd --root
-	export PSEUDO_PASSWD="$SYSROOT"
 fi
 
 # If we're not doing a special SSTATE/SYSROOT install
@@ -130,6 +127,9 @@ useradd_sysroot () {
 	UA_SYSROOT=1
 
 	useradd_preinst
+
+	# user/group lookups should match useradd/groupadd --root
+	export PSEUDO_PASSWD="$D"
 }
 
 # The export of PSEUDO in useradd_sysroot() above contains references to
