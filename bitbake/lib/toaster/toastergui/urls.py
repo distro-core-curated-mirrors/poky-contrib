@@ -235,6 +235,9 @@ urlpatterns = patterns('toastergui.views',
         url(r'^mostrecentbuilds$', widgets.MostRecentBuildsView.as_view(),
             name='most_recent_builds'),
 
+        url(r'xhr_projectBuild/', api.XhrProjectBuild.as_view(),
+            name='xhr_projectBuild'),
+
           # default redirection
         url(r'^$', RedirectView.as_view(url='landing', permanent=True)),
 )

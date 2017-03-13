@@ -28,6 +28,7 @@ from orm.models import LayerVersionDependency, LayerSource, ProjectLayer
 from orm.models import Recipe, CustomImageRecipe, CustomImagePackage
 from orm.models import Layer, Target, Package, Package_Dependency
 from orm.models import ProjectVariable
+from orm.models import LogMessage
 from bldcontrol.models import BuildRequest
 from bldcontrol import bbcontroller
 
@@ -1023,3 +1024,56 @@ class XhrBuild(View):
             "error": "ok",
             "gotoUrl": reverse("projectbuilds", args=(project.pk,))
         })
+
+
+
+class XhrProjectBuild(View):
+    """ Get Build information
+          Methods: GET
+    """
+    def get(self, request, *args, **kwargs):
+        """
+          Get Build information
+
+          Method: GET
+          Entry point: /xhr_projectBuild
+        """
+
+        try:
+            ret = []
+            logs = []
+            logmessage = LogMessage.objects.all()
+
+            
+            for b in Build.objects.all():
+
+                logs[:] = []
+                for log in LogMessage.objects.filter(build=b.pk):
+                      logs.append({"message" : log.message,
+                                   "task" : log.task,
+                                   "level" : log.level
+                                    })
+
+                ret.append({
+                      "buildId": b.pk,
+                      "buildName" : b.build_name,
+                      "buildOutcome": b.outcome,
+                      "buildMachine" : b.machine,
+                      "buildDistro" : b.distro,
+                      "buildDistroVersion" : b.distro_version,
+                      "buildBitbakeVersion" : b.bitbake_version,
+                      "buildLogPath" : b.cooker_log_path,
+                      "buildProjectId" : b.project.pk,
+                      "buildProjectName" : b.project.name,
+                      "buildLogs" : logs                                       
+                 })
+            
+        except Build.DoesNotExist:
+            return error_response("No Builds")
+
+        return JsonResponse(ret,safe=False)
+
+
+
+
+
