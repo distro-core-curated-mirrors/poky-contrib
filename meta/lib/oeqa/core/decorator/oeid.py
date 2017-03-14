@@ -1,8 +1,8 @@
 # Copyright (C) 2016 Intel Corporation
 # Released under the MIT license (see COPYING.MIT)
 
-from . import OETestFilter, registerDecorator
 from oeqa.core.utils.misc import intToList
+from oeqa.core.decorator.base import OETestFilter, registerDecorator
 
 def _idFilter(oeid, filters):
      return False if oeid in filters else True

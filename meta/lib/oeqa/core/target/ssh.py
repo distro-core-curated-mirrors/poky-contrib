@@ -7,7 +7,7 @@ import select
 import logging
 import subprocess
 
-from . import OETarget
+from oeqa.core.target.base import OETarget
 
 class OESSHTarget(OETarget):
     def __init__(self, logger, ip, server_ip, timeout=300, user='root',

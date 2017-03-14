@@ -2,10 +2,8 @@
 # Released under the MIT license (see COPYING.MIT)
 
 from unittest import SkipTest
-
 from oeqa.core.exception import OEQADependency
-
-from . import OETestDiscover, registerDecorator
+from oeqa.core.decorator.base import OETestDiscover, registerDecorator
 
 def _add_depends(registry, case, depends):
     module_name = case.__module__
