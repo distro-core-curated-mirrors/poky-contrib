@@ -6,12 +6,17 @@ import sys
 import signal
 import time
 
+from oeqa.core.target.base import registerTarget
 from oeqa.core.target.ssh import OESSHTarget
 from oeqa.utils.qemurunner import QemuRunner
 
 supported_fstypes = ['ext3', 'ext4', 'cpio.gz', 'wic', 'elf']
 
+@registerTarget
 class OEQemuTarget(OESSHTarget):
+
+    targetName = 'qemu'
+
     def __init__(self, logger, ip, server_ip, timeout=300, user='root',
             port=None, machine='', rootfs='', kernel='', kvm=False,
             dump_dir='', dump_host_cmds='', display='', bootlog='',

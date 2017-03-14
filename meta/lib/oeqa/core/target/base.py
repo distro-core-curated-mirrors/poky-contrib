@@ -1,7 +1,30 @@
 # Copyright (C) 2016 Intel Corporation
 # Released under the MIT license (see COPYING.MIT)
+import os
+import sys
+import importlib
 
 from abc import abstractmethod
+
+# Used to keep record of registered targets, it
+# uses class' targetName as the key to the class.
+targetClasses = {}
+
+def registerTarget(obj):
+    """ Use as decorator to register targets for runtime testing """
+
+    if (obj.targetName in targetClasses and
+        obj.__name__ != targetClasses[obj.targetName].__name__):
+
+        msg = ('Tried to register %s as "%s" that is used by %s' %
+               (obj, obj.targetName, targetClasses[obj.targetName]))
+        raise ImportError(msg)
+
+    if not issubclass(obj, OETarget):
+        raise TypeError('%s must inherit from OETarget' % obj)
+
+    targetClasses[obj.targetName] = obj
+    return obj
 
 class OETarget(object):
 
