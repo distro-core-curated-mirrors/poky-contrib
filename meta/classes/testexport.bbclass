@@ -58,8 +58,8 @@ def testexport_main(d):
     logger = logging.getLogger("BitBake")
 
     target = OERuntimeTestContextExecutor.getTarget(
-        d.getVar("TEST_TARGET"), None, d.getVar("TEST_TARGET_IP"),
-        d.getVar("TEST_SERVER_IP"))
+        d.getVar("TEST_TARGET"), d.getVar('BBLAYERS').split(), None,
+        d.getVar("TEST_TARGET_IP"), d.getVar("TEST_SERVER_IP"))
 
     host_dumper = OERuntimeTestContextExecutor.getHostDumper(
         d.getVar("testimage_dump_host"), d.getVar("TESTIMAGE_DUMP_DIR"))
@@ -107,6 +107,21 @@ def copy_needed_files(d, tc):
             oe.path.copytree(src, dst)
         else:
             shutil.copy2(src, dst)
+
+    # Get all target files.
+    t_path = os.path.join('lib', 'oeqa', 'core', 'target')
+    targets_to_copy = [os.path.join(root, filename)
+                       for path in d.getVar('BBLAYERS').split()
+                       for root, _, files in os.walk(os.path.join(path, t_path))
+                       for filename in files
+                       if filename.endswith('.py') ]
+
+    # Copy all targets.
+    export_target_path = os.path.join(export_path, t_path)
+    oe.path.remove(export_target_path)
+    bb.utils.mkdirhier(export_target_path)
+    for f in targets_to_copy:
+        shutil.copy2(f, export_target_path)
 
     # Remove cases and just copy the ones specified
     cases_path = os.path.join(export_path, 'lib', 'oeqa', 'runtime', 'cases')
