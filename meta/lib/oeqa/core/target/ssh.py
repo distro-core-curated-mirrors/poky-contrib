@@ -7,9 +7,13 @@ import select
 import logging
 import subprocess
 
-from oeqa.core.target.base import OETarget
+from oeqa.core.target.base import OETarget, registerTarget
 
+@registerTarget
 class OESSHTarget(OETarget):
+
+    targetName = 'simpleremote'
+
     def __init__(self, logger, ip, server_ip, timeout=300, user='root',
                  port=None, **kwargs):
         if not logger:
