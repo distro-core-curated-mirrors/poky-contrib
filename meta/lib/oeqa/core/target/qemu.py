@@ -6,7 +6,7 @@ import sys
 import signal
 import time
 
-from .ssh import OESSHTarget
+from oeqa.core.target.ssh import OESSHTarget
 from oeqa.utils.qemurunner import QemuRunner
 
 supported_fstypes = ['ext3', 'ext4', 'cpio.gz', 'wic', 'elf']

@@ -10,7 +10,7 @@ from oeqa.core.utils.path import findFile
 from oeqa.core.utils.test import getSuiteModules, getCaseID
 
 from oeqa.core.case import OETestCase
-from oeqa.core.decorator import decoratorClasses, OETestDecorator, \
+from oeqa.core.decorator.base import decoratorClasses, OETestDecorator, \
         OETestFilter, OETestDiscover
 
 # When loading tests, the unittest framework stores any exceptions and

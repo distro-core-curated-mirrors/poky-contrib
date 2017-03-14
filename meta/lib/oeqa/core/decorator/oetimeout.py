@@ -1,13 +1,15 @@
 # Copyright (C) 2016 Intel Corporation
 # Released under the MIT license (see COPYING.MIT)
 
-from . import OETestDecorator, registerDecorator
 
 import signal
 from threading import Timer
 
 from oeqa.core.threaded import OETestRunnerThreaded
+import signal
+
 from oeqa.core.exception import OEQATimeoutError
+from oeqa.core.decorator.base import OETestDecorator, registerDecorator
 
 @registerDecorator
 class OETimeout(OETestDecorator):
