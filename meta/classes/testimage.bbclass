@@ -244,8 +244,8 @@ def testimage_main(d):
 
     # the robot dance
     target = OERuntimeTestContextExecutor.getTarget(
-        d.getVar("TEST_TARGET"), None, d.getVar("TEST_TARGET_IP"),
-        d.getVar("TEST_SERVER_IP"), **target_kwargs)
+        d.getVar("TEST_TARGET"), d.getVar('BBLAYERS').split(), None,
+        d.getVar("TEST_TARGET_IP"), d.getVar("TEST_SERVER_IP"), **target_kwargs)
 
     # test context
     tc = OERuntimeTestContext(td, logger, target, host_dumper,

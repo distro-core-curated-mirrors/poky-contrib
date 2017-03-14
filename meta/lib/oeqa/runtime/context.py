@@ -51,6 +51,10 @@ class OERuntimeTestContextExecutor(OETestContextExecutor):
     default_target_ip = '192.168.7.2'
     default_host_dumper_dir = '/tmp/oe-saved-tests'
     default_extract_dir = 'packages/extracted'
+    default_root = os.path.join(
+                        os.path.dirname(
+                        os.path.dirname(
+                        os.path.dirname(os.path.dirname(__file__)))))
 
     def register_commands(self, logger, subparsers):
         super(OERuntimeTestContextExecutor, self).register_commands(logger, subparsers)
@@ -58,7 +62,7 @@ class OERuntimeTestContextExecutor(OETestContextExecutor):
         runtime_group = self.parser.add_argument_group('runtime options')
 
         runtime_group.add_argument('--target-type', action='store',
-                default=self.default_target_type, choices=['simpleremote', 'qemu'],
+                default=self.default_target_type,
                 help="Target type of device under test, default: %s" \
                 % self.default_target_type)
         runtime_group.add_argument('--target-ip', action='store',
@@ -89,96 +93,28 @@ class OERuntimeTestContextExecutor(OETestContextExecutor):
                 help="Qemu boot configuration, only needed when target_type is QEMU.")
 
     @staticmethod
-    def getTarget(target_type, logger, target_ip, server_ip, **kwargs):
-        target = None
+    def getTarget(target_type, target_paths, logger, target_ip, server_ip, **kwargs):
+        """
+        Gets target to be used with runtime testing.
 
-        if target_type == 'simpleremote':
-            target = OESSHTarget(logger, target_ip, server_ip, **kwargs)
-        elif target_type == 'qemu':
-            target = OEQemuTarget(logger, target_ip, server_ip, **kwargs)
+        It is possible to add targes using registerTarget decorator and putting
+        the module in 'lib/oeqa/core/target' directory of your layer.
+        """
+
+        from oeqa.core.target.base import discover_targets, targetClasses
+
+        target = None
+        discover_targets(target_paths)
+
+        target_class = targetClasses.get(target_type, None)
+        if target_class:
+            target = target_class(logger, target_ip, server_ip, **kwargs)
         else:
-            # XXX: This code uses the old naming convention for controllers and
-            # targets, the idea it is to leave just targets as the controller
-            # most of the time was just a wrapper.
-            # XXX: This code tries to import modules from lib/oeqa/controllers
-            # directory and treat them as controllers, it will less error prone
-            # to use introspection to load such modules.
-            # XXX: Don't base your targets on this code it will be refactored
-            # in the near future.
-            # Custom target module loading
-            try:
-                target_modules_path = kwargs.get('target_modules_path', '')
-                controller = OERuntimeTestContextExecutor.getControllerModule(target_type, target_modules_path)
-                target = controller(logger, target_ip, server_ip, **kwargs)
-            except ImportError as e:
-                raise TypeError("Failed to import %s from available controller modules" % target_type)
+            msg = 'Can\'t find "%s" in available targets' % target_type
+            raise TypeError(msg)
 
         return target
 
-    # Search oeqa.controllers module directory for and return a controller
-    # corresponding to the given target name.
-    # AttributeError raised if not found.
-    # ImportError raised if a provided module can not be imported.
-    @staticmethod
-    def getControllerModule(target, target_modules_path):
-        controllerslist = OERuntimeTestContextExecutor._getControllerModulenames(target_modules_path)
-        controller = OERuntimeTestContextExecutor._loadControllerFromName(target, controllerslist)
-        return controller
-
-    # Return a list of all python modules in lib/oeqa/controllers for each
-    # layer in bbpath
-    @staticmethod
-    def _getControllerModulenames(target_modules_path):
-
-        controllerslist = []
-
-        def add_controller_list(path):
-            if not os.path.exists(os.path.join(path, '__init__.py')):
-                raise OSError('Controllers directory %s exists but is missing __init__.py' % path)
-            files = sorted([f for f in os.listdir(path) if f.endswith('.py') and not f.startswith('_')])
-            for f in files:
-                module = 'oeqa.controllers.' + f[:-3]
-                if module not in controllerslist:
-                    controllerslist.append(module)
-                else:
-                    raise RuntimeError("Duplicate controller module found for %s. Layers should create unique controller module names" % module)
-
-        extpath = target_modules_path.split(':')
-        for p in extpath:
-            controllerpath = os.path.join(p, 'lib', 'oeqa', 'controllers')
-            if os.path.exists(controllerpath):
-                add_controller_list(controllerpath)
-        return controllerslist
-
-    # Search for and return a controller from given target name and
-    # set of module names.
-    # Raise AttributeError if not found.
-    # Raise ImportError if a provided module can not be imported
-    @staticmethod
-    def _loadControllerFromName(target, modulenames):
-        for name in modulenames:
-            obj = OERuntimeTestContextExecutor._loadControllerFromModule(target, name)
-            if obj:
-                return obj
-        raise AttributeError("Unable to load {0} from available modules: {1}".format(target, str(modulenames)))
-
-    # Search for and return a controller or None from given module name
-    @staticmethod
-    def _loadControllerFromModule(target, modulename):
-        obj = None
-        # import module, allowing it to raise import exception
-        try:
-            module = __import__(modulename, globals(), locals(), [target])
-        except Exception as e:
-            return obj
-        # look for target class in the module, catching any exceptions as it
-        # is valid that a module may not have the target class.
-        try:
-            obj = getattr(module, target)
-        except:
-            obj = None
-        return obj
-        
     @staticmethod
     def readPackagesManifest(manifest):
         if not manifest or not os.path.exists(manifest):
@@ -208,7 +144,8 @@ class OERuntimeTestContextExecutor(OETestContextExecutor):
 
         self.tc_kwargs['init']['target'] = \
                 OERuntimeTestContextExecutor.getTarget(args.target_type,
-                        None, args.target_ip, args.server_ip, **target_kwargs)
+                        [self.default_root], None, args.target_ip, args.server_ip,
+                        **target_kwargs)
         self.tc_kwargs['init']['host_dumper'] = \
                 OERuntimeTestContextExecutor.getHostDumper(None,
                         args.host_dumper_dir)
