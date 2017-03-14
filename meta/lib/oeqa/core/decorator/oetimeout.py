@@ -2,8 +2,8 @@
 # Released under the MIT license (see COPYING.MIT)
 
 import signal
-from . import OETestDecorator, registerDecorator
 from oeqa.core.exception import OEQATimeoutError
+from oeqa.core.decorator.base import OETestDecorator, registerDecorator
 
 @registerDecorator
 class OETimeout(OETestDecorator):

@@ -1,8 +1,8 @@
 # Copyright (C) 2016 Intel Corporation
 # Released under the MIT license (see COPYING.MIT)
 
-from oeqa.core.decorator import OETestDecorator, registerDecorator
 from oeqa.core.utils.misc import strToSet
+from oeqa.core.decorator.base import OETestDecorator, registerDecorator
 
 @registerDecorator
 class OEHasPackage(OETestDecorator):

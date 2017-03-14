@@ -2,8 +2,7 @@
 # Released under the MIT license (see COPYING.MIT)
 
 from oeqa.core.exception import OEQAMissingVariable
-
-from . import OETestDecorator, registerDecorator
+from oeqa.core.decorator.base import OETestDecorator, registerDecorator
 
 def has_feature(td, feature):
     """
