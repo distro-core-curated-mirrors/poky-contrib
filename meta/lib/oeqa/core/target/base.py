@@ -54,3 +54,29 @@ class OETarget(object):
     @abstractmethod
     def copyDirTo(self, localSrc, remoteDst):
         pass
+
+def discover_targets(layer_paths):
+    """
+    Imports modules found in 'lib/oeqa/core/target'.
+
+    This is used to register targets using registerTarget decorator.
+    """
+
+    target_path = 'lib/oeqa/core/target'
+    paths = [os.path.join(p, target_path) for p in layer_paths]
+    for path in paths:
+        files_python = [os.path.join(root, filename)
+                        for root, _, filenames in os.walk(path)
+                        for filename in filenames
+                        if filename.endswith('.py')]
+        for f in files_python:
+            if '__init__.py' in f:
+                continue
+            abs_path = os.path.abspath(f)
+            for sys_path in sys.path:
+                if sys_path in abs_path:
+                    rel_path = os.path.relpath(abs_path, sys_path)
+                    break
+
+            name = rel_path.replace('.py', '').replace(os.path.sep, '.')
+            importlib.import_module(name)
