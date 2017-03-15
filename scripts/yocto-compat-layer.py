@@ -141,6 +141,10 @@ def main():
             layer['path']))
 
         shutil.copyfile(bblayersconf + '.backup', bblayersconf)
+        layerbasename = os.path.basename(layer['path'])
+        if layerbasename in td['bbvars']['BBLAYERS']:
+             logger.error("Cannot test layer %s as its already in BBLAYERS?" % layer['path'])
+             continue
 
         missing_dependencies = not add_layer_dependencies(bblayersconf, layer, dep_layers, logger)
         if not missing_dependencies:
