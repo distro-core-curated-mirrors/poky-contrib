@@ -119,6 +119,7 @@ def detect_layers(layer_directories, no_auto):
         directory = os.path.realpath(directory)
         if directory[-1] == '/':
             directory = directory[0:-1]
+        directory = os.path.abspath(directory)
 
         if no_auto:
             conf_dir = os.path.join(directory, 'conf')
