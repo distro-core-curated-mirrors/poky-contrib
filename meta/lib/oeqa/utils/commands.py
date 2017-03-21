@@ -171,6 +171,10 @@ def runCmd(command, ignore_status=False, timeout=None, assert_error=True,
         nenv['PATH'] = extra_paths + ':' + nenv.get('PATH', '')
         options['env'] = nenv
 
+    logger = logging.getLogger("selftest")
+
+    logger.debug("Running command %s" % command)
+
     cmd = Command(command, timeout=timeout, output_log=output_log, **options)
     cmd.run()
 
@@ -191,6 +195,8 @@ def runCmd(command, ignore_status=False, timeout=None, assert_error=True,
             raise AssertionError("Command '%s' returned non-zero exit status %d:\n%s" % (command, result.status, exc_output))
         else:
             raise CommandError(result.status, command, exc_output)
+
+    logger.debug("Output was %s" % result.output)
 
     return result
 
