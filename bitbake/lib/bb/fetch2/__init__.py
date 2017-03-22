@@ -25,7 +25,7 @@ BitBake build tools.
 #
 # Based on functions from the base bb module, Copyright 2003 Holger Schurig
 
-import os, re
+import os, re, tempfile
 import signal
 import logging
 import urllib.request, urllib.parse, urllib.error
@@ -946,6 +946,16 @@ def rename_bad_checksum(ud, suffix):
     bb.warn("Renaming %s to %s" % (ud.localpath, new_localpath))
     bb.utils.movefile(ud.localpath, new_localpath)
 
+def atomic_symlink(src, dst):
+    """Create/replace a symbolic link atomically."""
+
+    tmpname = tempfile.mktemp(prefix=dst)
+    os.symlink(src, tmpname)
+    try:
+        os.rename(tmpname, dst)
+    except OSError:
+        os.remove(tmpname)
+        raise
 
 def try_mirror_url(fetch, origud, ud, ld, check = False):
     # Return of None or a value means we're finished
@@ -983,7 +993,7 @@ def try_mirror_url(fetch, origud, ud, ld, check = False):
                 open(ud.donestamp, 'w').close()
             dest = os.path.join(dldir, os.path.basename(ud.localpath))
             if not os.path.exists(dest):
-                os.symlink(ud.localpath, dest)
+                atomic_symlink(ud.localpath, dest)
             if not verify_donestamp(origud, ld) or origud.method.need_update(origud, ld):
                 origud.method.download(origud, ld)
                 if hasattr(origud.method,"build_mirror_data"):
@@ -991,11 +1001,7 @@ def try_mirror_url(fetch, origud, ud, ld, check = False):
             return origud.localpath
         # Otherwise the result is a local file:// and we symlink to it
         if not os.path.exists(origud.localpath):
-            if os.path.islink(origud.localpath):
-                # Broken symbolic link
-                os.unlink(origud.localpath)
-
-            os.symlink(ud.localpath, origud.localpath)
+            atomic_symlink(ud.localpath, origud.localpath)
         update_stamp(origud, ld)
         return ud.localpath
 
