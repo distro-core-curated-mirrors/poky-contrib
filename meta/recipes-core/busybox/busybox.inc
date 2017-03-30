@@ -15,6 +15,11 @@ SECTION = "base"
 # Whether to split the suid apps into a seperate binary
 BUSYBOX_SPLIT_SUID ?= "1"
 
+BUSYBOX_FRAGMENTS = "login-utilities"
+
+def busybox_fragment(name, d):
+    return bb.utils.contains('BUSYBOX_FRAGMENTS', name, "file://" + name + ".cfg", "", d)
+
 export EXTRA_CFLAGS = "${CFLAGS}"
 export EXTRA_LDFLAGS = "${LDFLAGS}"
 
