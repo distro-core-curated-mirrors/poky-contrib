@@ -15,6 +15,7 @@ SRC_URI = "${GNUPG_MIRROR}/gpgme/${BP}.tar.bz2 \
            file://python-lang-config.patch \
            file://0001-Correctly-install-python-modules.patch \
            file://0001-Avoid-host-contamination-from-gpg-config.patch \
+           file://0001-m4-ax_python_devel.m4-check-status-code-instead-of-s.patch \
           "
 
 SRC_URI[md5sum] = "722a4153904b9b5dc15485a22d29263b"
