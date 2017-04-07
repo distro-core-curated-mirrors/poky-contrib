@@ -67,12 +67,15 @@ QB_NETWORK_DEVICE ?= "-device virtio-net-pci,netdev=net0,mac=@MAC@"
 # Create qemuboot.conf
 addtask do_write_qemuboot_conf after do_rootfs before do_image
 IMGDEPLOYDIR ?= "${WORKDIR}/deploy-${PN}-image-complete"
+STAGING_DIR_TUNCTL_NATIVE = "${STAGING_DIR}-components/${BUILD_ARCH}/qemu-helper-native"
+STAGING_DIR_QEMU_BINDIR_NATIVE = "${STAGING_DIR}-components/${BUILD_ARCH}/qemu-native/usr/bin"
 
 def qemuboot_vars(d):
     build_vars = ['MACHINE', 'TUNE_ARCH', 'DEPLOY_DIR_IMAGE',
                 'KERNEL_IMAGETYPE', 'IMAGE_NAME', 'IMAGE_LINK_NAME',
                 'STAGING_DIR_NATIVE', 'STAGING_BINDIR_NATIVE',
-                'STAGING_DIR_HOST']
+                'STAGING_DIR_HOST', 'STAGING_DIR_TUNCTL_NATIVE',
+                'STAGING_DIR_QEMU_BINDIR_NATIVE']
     return build_vars + [k for k in d.keys() if k.startswith('QB_')]
 
 do_write_qemuboot_conf[vardeps] += "${@' '.join(qemuboot_vars(d))}"
