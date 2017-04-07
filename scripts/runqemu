@@ -908,7 +908,10 @@ class BaseConfig(object):
             gid = os.getgid()
             uid = os.getuid()
             logger.info("Setting up tap interface under sudo")
-            cmd = 'sudo %s %s %s %s' % (self.qemuifup, uid, gid, self.get('STAGING_DIR_NATIVE'))
+            if os.path.exists(self.get('STAGING_DIR_TUNCTL_NATIVE')):
+                cmd = 'sudo %s %s %s %s' % (self.qemuifup, uid, gid, self.get('STAGING_DIR_TUNCTL_NATIVE'))
+            else:
+                cmd = 'sudo %s %s %s %s' % (self.qemuifup, uid, gid, self.get('STAGING_DIR_NATIVE'))
             tap = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8').rstrip('\n')
             lockfile = os.path.join(lockdir, tap)
             self.lock = lockfile + '.lock'
@@ -1041,7 +1044,10 @@ class BaseConfig(object):
         if not qemu_system:
             raise Exception("Failed to boot, QB_SYSTEM_NAME is NULL!")
 
-        qemu_bin = '%s/%s' % (self.get('STAGING_BINDIR_NATIVE'), qemu_system)
+        if os.path.exists(self.get('STAGING_DIR_QEMU_BINDIR_NATIVE')):
+            qemu_bin = '%s/%s' % (self.get('STAGING_DIR_QEMU_BINDIR_NATIVE'), qemu_system)
+        else:
+            qemu_bin = '%s/%s' % (self.get('STAGING_BINDIR_NATIVE'), qemu_system)
 
         # It is possible to have qemu-native in ASSUME_PROVIDED, and it won't
         # find QEMU in sysroot, it needs to use host's qemu.
