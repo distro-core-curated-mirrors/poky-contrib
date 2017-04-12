@@ -10,6 +10,7 @@ BBCLASSEXTEND = "native nativesdk"
 
 # QEMU_TARGETS is overridable variable
 QEMU_TARGETS ?= "arm aarch64 i386 mips mipsel mips64 mips64el ppc sh4 x86_64"
+RM_WORK_EXCLUDE += "${PN}"
 
 EXTRA_OECONF = " \
     --prefix=${prefix} \
@@ -59,6 +60,9 @@ do_install () {
 	export STRIP="true"
 	autotools_do_install
 }
+
+addtask addto_recipe_sysroot after do_populate_sysroot before do_build
+
 
 # The following fragment will create a wrapper for qemu-mips user emulation
 # binary in order to work around a segmentation fault issue. Basically, by
