@@ -5152,7 +5152,7 @@
                         <filename>bmaptool</filename> or
                         <filename>dd</filename>:
                         <literallayout class='monospaced'>
-     $ oe-run-native bmaptool copy /var/tmp/wic/build/mkefidisk-201310230946-sda.direct /dev/sd<replaceable>X</replaceable>
+     $ oe-run-native bmap-tools-native bmaptool copy /var/tmp/wic/build/mkefidisk-201310230946-sda.direct /dev/sd<replaceable>X</replaceable>
                         </literallayout>
                         or
                         <literallayout class='monospaced'>

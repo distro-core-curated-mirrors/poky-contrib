@@ -379,7 +379,7 @@
                         If you have write access to the media,
                         use this command form:
                         <literallayout class='monospaced'>
-     $ oe-run-native bmaptool copy ./tmp/deploy/images/qemux86-64/core-image-minimal-<replaceable>machine</replaceable>.wic /dev/sd<replaceable>X</replaceable>
+     $ oe-run-native bmap-tools-native bmaptool copy ./tmp/deploy/images/qemux86-64/core-image-minimal-<replaceable>machine</replaceable>.wic /dev/sd<replaceable>X</replaceable>
                         </literallayout>
                         </para></listitem>
                     <listitem><para>
@@ -413,7 +413,7 @@
         the following commands:
         <literallayout class='monospaced'>
      $ bmaptool --help
-     $ oe-run-native bmaptool --help
+     $ oe-run-native bmap-tools-native bmaptool --help
         </literallayout>
     </para>
 </section>
