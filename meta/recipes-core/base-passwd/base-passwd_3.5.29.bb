@@ -46,6 +46,8 @@ do_install () {
 basepasswd_sysroot_postinst() {
 #!/bin/sh
 
+${@"set -x" if bb.msg.loggerVerboseLogs else ""}
+
 # Install passwd.master and group.master to sysconfdir
 install -d -m 755 ${STAGING_DIR_TARGET}${sysconfdir}
 for i in passwd group; do
