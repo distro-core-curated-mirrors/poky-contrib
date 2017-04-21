@@ -9,6 +9,7 @@ inherit utils
 inherit utility-tasks
 inherit metadata_scm
 inherit logging
+inherit reproducible_build
 
 OE_IMPORTS += "os sys time oe.path oe.utils oe.types oe.package oe.packagegroup oe.sstatesig oe.lsb oe.cachedpath oe.license"
 OE_IMPORTS[type] = "list"
@@ -173,6 +174,7 @@ python base_do_unpack() {
     try:
         fetcher = bb.fetch2.Fetch(src_uri, d)
         fetcher.unpack(d.getVar('WORKDIR'))
+        create_src_date_epoch_stamp(d)
     except bb.fetch2.BBFetchException as e:
         bb.fatal(str(e))
 }
@@ -382,6 +384,7 @@ def set_packagetriplet(d):
         tvs.append(localdata.getVar("TARGET_VENDOR"))
 
     settriplet(d, "PKGMLTRIPLETS", archs, tos, tvs)
+
 
 python () {
     import string, re
@@ -677,6 +680,7 @@ python () {
             d.setVar('PACKAGE_ARCH', "${MACHINE_ARCH}")
             bb.warn("Recipe %s is marked as only being architecture specific but seems to have machine specific packages?! The recipe may as well mark itself as machine specific directly." % d.getVar("PN"))
 }
+
 
 addtask cleansstate after do_clean
 python do_cleansstate() {
