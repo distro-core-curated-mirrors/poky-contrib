@@ -48,6 +48,7 @@ ROOTFS_POSTPROCESS_COMMAND_append_qemuall = "${SSH_DISABLE_DNS_LOOKUP}"
 SORT_PASSWD_POSTPROCESS_COMMAND ??= " sort_passwd; "
 python () {
     d.appendVar('ROOTFS_POSTPROCESS_COMMAND', '${SORT_PASSWD_POSTPROCESS_COMMAND}')
+    d.appendVar('ROOTFS_POSTPROCESS_COMMAND', 'rootfs_reproducible;')
 }
 
 systemd_create_users () {
@@ -243,10 +244,12 @@ python write_image_manifest () {
         os.symlink(os.path.basename(manifest_name), manifest_link)
 }
 
-# Can be use to create /etc/timestamp during image construction to give a reasonably
+# Can be used to create /etc/timestamp during image construction to give a reasonably
 # sane default time setting
 rootfs_update_timestamp () {
-	date -u +%4Y%2m%2d%2H%2M%2S >${IMAGE_ROOTFS}/etc/timestamp
+	if [ "$BUILD_REPRODUCIBLE_BINARIES" = "0" ]; then
+		date -u +%4Y%2m%2d%2H%2M%2S >${IMAGE_ROOTFS}/etc/timestamp
+	fi
 }
 
 # Prevent X from being started
@@ -286,7 +289,6 @@ rootfs_sysroot_relativelinks () {
 	sysroot-relativelinks.py ${SDK_OUTPUT}/${SDKTARGETSYSROOT}
 }
 
-
 # Generated test data json file
 python write_image_test_data() {
     from oe.data import export2json
@@ -301,4 +303,23 @@ python write_image_test_data() {
     if os.path.lexists(testdata_link):
        os.remove(testdata_link)
     os.symlink(os.path.basename(testdata), testdata_link)
+}
+
+# Perform any additional adjustments needed to make rootf binary reproducible
+rootfs_reproducible () {
+	if [ "$BUILD_REPRODUCIBLE_BINARIES" = "1" ]; then
+		if [ "$REPRODUCIBLE_TIMESTAMP_ROOTFS" = "" ]; then
+			REPRODUCIBLE_TIMESTAMP_ROOTFS=`git log -1 --pretty=%ct`
+		fi
+
+		# Convert UTC into %4Y%2m%2d%2H%2M%2S
+		sformatted=`date -u -d @$REPRODUCIBLE_TIMESTAMP_ROOTFS +%4Y%2m%2d%2H%2M%2S`
+		echo $sformatted > ${IMAGE_ROOTFS}/etc/version
+		bbnote "rootfs_reproducible: set /etc/version to $sformatted"
+		echo $sformatted > ${IMAGE_ROOTFS}/etc/timestamp
+		bbnote "rootfs_reproducible: set /etc/timestamp to $sformatted"
+
+		find ${IMAGE_ROOTFS}/etc/gconf -name '%gconf.xml' -print0 | xargs -0r \
+		sed -i -e 's@\bmtime="[0-9][0-9]*"@mtime="'$REPRODUCIBLE_TIMESTAMP_ROOTFS'"@g'
+	fi
 }
