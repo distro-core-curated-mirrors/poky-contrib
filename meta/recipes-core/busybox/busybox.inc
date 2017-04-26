@@ -138,6 +138,9 @@ do_configure () {
 
 do_compile() {
 	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
+	if [ "$BUILD_REPRODUCIBLE_BINARIES" = "1" ]; then
+		export KCONFIG_NOTIMESTAMP=1
+	fi
 	if [ "${BUSYBOX_SPLIT_SUID}" = "1" -a x`grep "CONFIG_FEATURE_INDIVIDUAL=y" .config` = x ]; then
 	# split the .config into two parts, and make two busybox binaries
 		if [ -e .config.orig ]; then
