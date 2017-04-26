@@ -120,4 +120,18 @@ class DnfRepoTest(DnfTest):
     def test_dnf_reinstall(self):
         self.dnf_with_repo('reinstall -y run-postinsts-dev')
 
+    @OETestDepends(['dnf.DnfRepoTest.test_dnf_makecache'])
+    @OETestID(1771)
+    def test_dnf_installroot(self):
+        rootpath = '/home/root/chroot/test'
+        self.dnf_with_repo('install --installroot=%s --skip-broken --releasever=1 -v -y run-postinstsv' % rootpath)
+        status, output = self.target.run('test -e %s/var/cache/dnf' % rootpath, 1500)
+        self.assertEqual(0, status, output)
 
+    @OETestDepends(['dnf.DnfRepoTest.test_dnf_reinstall'])
+    @OETestID(1772)
+    def test_dnf_exclude(self):
+        excludepkg = 'run-postinsts-dev'
+        self.dnf_with_repo('remove -y run-postinsts')
+        self.dnf_with_repo('install -y --exclude=%s run-postinsts' % excludepkg)
+        self.dnf('list %s' % excludepkg, 1)
