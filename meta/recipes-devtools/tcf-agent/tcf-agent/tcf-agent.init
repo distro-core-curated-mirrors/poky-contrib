@@ -35,7 +35,7 @@ case "$1" in
         echo -n "Stopping $DAEMON_NAME: "
         count=0
         while [ -n "`/bin/pidof $DAEMON_PATH`" -a $count -lt 10 ] ; do
-            killproc $DAEMON_PATH >& /dev/null
+            kill -USR2 `pidofproc $DAEMON_PATH`  >& /dev/null
             sleep 1
             RETVAL=$?
             if [ $RETVAL != 0 -o -n "`/bin/pidof $DAEMON_PATH`" ] ; then
@@ -72,4 +72,3 @@ case "$1" in
 esac
 
 exit $RETVAL
-
