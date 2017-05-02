@@ -6,6 +6,8 @@ SECTION = "base"
 
 DEPENDS = "texinfo-native"
 
+PROVIDES_append_class-native = " cpio-replacement-native"
+
 SRC_URI = "${GNU_MIRROR}/cpio/cpio-${PV}.tar.gz \
     "
 
