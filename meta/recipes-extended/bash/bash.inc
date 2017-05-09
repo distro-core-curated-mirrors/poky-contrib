@@ -28,6 +28,11 @@ RDEPENDS_${PN}-ptest += "make"
 USERADD_PACKAGES = "${PN}-ptest"
 USERADD_PARAM_${PN}-ptest = "--create-home --user-group test"
 
+# CFLAGS contain references to host build environment, via "-fdebug-prefix-map="
+# command line option. To achieve binary reproducibility we need to remove them
+# from CFLAGS, we can do this by clearing DEBUG_PREFIX_MAP.
+DEBUG_PREFIX_MAP=""
+
 do_configure_prepend () {
 	if [ ! -e ${S}/acinclude.m4 ]; then
 		cat ${S}/aclocal.m4 > ${S}/acinclude.m4
