@@ -26,6 +26,7 @@ except ImportError:
     pass
 
 from oeqa.core.context import OETestContextExecutor
+from oeqa.core.exception import OEQAPreRun
 
 logger = scriptutils.logger_create('oe-test')
 
@@ -56,7 +57,7 @@ def _load_test_components(logger):
     return components
 
 def main():
-    parser = argparse_oe.ArgumentParser(description="OpenEmbedded test tool",
+    parser = argparse_oe.ArgumentParser(description="OpenEmbedded-Core test tool",
                                         add_help=False,
                                         epilog="Use %(prog)s <subcommand> --help to get help on a specific command")
     parser.add_argument('-d', '--debug', help='Enable debug output', action='store_true')
@@ -92,6 +93,8 @@ def main():
         ret = err.code
     except argparse_oe.ArgumentUsageError as ae:
         parser.error_subcommand(ae.message, ae.subcommand)
+    except OEQAPreRun as pr:
+        ret = 1
 
     return ret
 

@@ -224,10 +224,14 @@ class OETestContextExecutor(object):
 
         self.module_paths = args.CASES_PATHS
 
+    def _prerun(self):
+        pass
+
     def run(self, logger, args):
         self._process_args(logger, args)
 
         self.tc = self._context_class(**self.tc_kwargs['init'])
+        self._prerun()
         self.tc.loadTests(self.module_paths, **self.tc_kwargs['load'])
         rc = self.tc.runTests(**self.tc_kwargs['run'])
         self.tc.logSummary(rc, self.name)
