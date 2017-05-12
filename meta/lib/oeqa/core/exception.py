@@ -12,3 +12,9 @@ class OEQAMissingVariable(OEQAException):
 
 class OEQADependency(OEQAException):
     pass
+
+class OEQAMissingManifest(OEQAException):
+    pass
+
+class OEQAPreRun(OEQAException):
+    pass
