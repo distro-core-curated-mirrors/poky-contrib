@@ -23,6 +23,12 @@ CACHED_CONFIGUREVARS += "ac_cv_lib_ndbm_main=no ac_cv_lib_dbm_main=no"
 
 BBCLASSEXTEND = "native nativesdk"
 
+do_configure_prepend() {
+    if [ ! -z "${SOURCE_DATE_EPOCH}" ]; then
+        export CFLAGS="${CFLAGS} -U__DATE__  -Wno-builtin-macro-redefined"
+    fi
+}
+
 do_install_append () {
     # Create a symlink to ndbm.h and gdbm.h in include/gdbm to let other packages to find
     # these headers
