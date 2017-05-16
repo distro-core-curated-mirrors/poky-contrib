@@ -218,7 +218,8 @@ class CoreRecipeInfo(RecipeInfoCommon):
 
         # Build hash of runtime depends and recommends
         for package in self.packages + [self.pn]:
-            cachedata.rundeps[fn][package] = list(self.rdepends) + self.rdepends_pkg[package]
+            rdlst = list(self.rdepends) + self.rdepends_pkg[package]
+            cachedata.rundeps[fn][package] = rdlst
             cachedata.runrecs[fn][package] = list(self.rrecommends) + self.rrecommends_pkg[package]
 
         # Collect files we may need for possible world-dep
