@@ -85,6 +85,43 @@ def prepare_update_layer_command(options, branch, layer):
         cmd += ' -q'
     return cmd
 
+def update_actual_branch(layerquery, fetchdir, branch, options, update_bitbake, bitbakepath):
+    """Update actual branch for layers and bitbake in database"""
+    to_save = set()
+    actual_branch = options.actual_branch
+    if update_bitbake:
+        branchobj = utils.get_branch(branch)
+        if actual_branch != branchobj.bitbake_branch:
+            if utils.is_branch_valid(bitbakepath, actual_branch):
+                logger.info("bitbake: %s.bitbake_branch: %s -> %s" % (branch, branchobj.bitbake_branch, actual_branch))
+                branchobj.bitbake_branch = actual_branch
+                to_save.add(branchobj)
+            else:
+                logger.info("Skipping update bitbake_branch for bitbake - branch %s doens't exist" % actual_branch)
+        else:
+            logger.info("bitbake: %s.bitbake_branch is already %s, so no change" % (branch, actual_branch))
+
+    for layer in layerquery:
+        urldir = layer.get_fetch_dir()
+        repodir = os.path.join(fetchdir, urldir)
+        if not utils.is_branch_valid(repodir, actual_branch):
+            logger.info("Skipping update actual_branch for %s - branch %s doens't exist" % (layer.name, actual_branch))
+            continue
+        layerbranch = layer.get_layerbranch(branch)
+        if not layerbranch:
+            logger.info("Skipping update actual_branch for %s - layerbranch %s doens't exist" % (layer.name, branch))
+            continue
+        if actual_branch != layerbranch.actual_branch:
+            logger.info("%s: %s.actual_branch: %s -> %s" % (layer.name, branch, layerbranch.actual_branch, actual_branch))
+            layerbranch.actual_branch = actual_branch
+            to_save.add(layerbranch)
+        else:
+            logger.info("%s: %s.actual_branch is already %s, so no change" % (layer.name, branch, actual_branch))
+
+    # At last, do the save
+    if not options.dryrun:
+        for s in to_save:
+            s.save()
 
 def main():
     if LooseVersion(git.__version__) < '0.3.1':
@@ -102,6 +139,9 @@ def main():
     parser.add_option("-l", "--layer",
             help = "Specify layers to update (use commas to separate multiple). Default is all published layers.",
             action="store", dest="layers")
+    parser.add_option("-a", "--actual-branch",
+            help = "Update actual branch for layer and bitbake",
+            action="store", dest="actual_branch", default='')
     parser.add_option("-r", "--reload",
             help = "Reload recipe data instead of updating since last update",
             action="store_true", dest="reload")
@@ -156,8 +196,13 @@ def main():
         logger.info("No published layers to update")
         sys.exit(1)
 
+    # For -a option to update bitbake branch
+    update_bitbake = False
     if options.layers:
         layers = options.layers.split(',')
+        if 'bitbake' in layers:
+            update_bitbake = True
+            layers.remove('bitbake')
         for layer in layers:
             layerquery = LayerItem.objects.filter(classic=False).filter(name=layer)
             if layerquery.count() == 0:
@@ -166,7 +211,16 @@ def main():
         layerquery = LayerItem.objects.filter(classic=False).filter(name__in=layers)
     else:
         # We deliberately exclude status == 'X' ("no update") here
+        update_bitbake = True
         layerquery = layerquery_all
+
+    if options.actual_branch:
+        if not options.branch:
+            logger.error("-a option requires -b")
+            sys.exit(1)
+        elif len(branches) != 1:
+            logger.error("Only one branch should be used with -a")
+            sys.exit(1)
 
     if not os.path.exists(fetchdir):
         os.makedirs(fetchdir)
@@ -215,7 +269,7 @@ def main():
                             continue
                         fetchedrepos.append(layer.vcs_url)
 
-                if not fetchedrepos:
+                if not (fetchedrepos or update_bitbake):
                     logger.error("No repositories could be fetched, exiting")
                     sys.exit(1)
 
@@ -224,6 +278,10 @@ def main():
                     out = utils.runcmd("git clone %s %s" % (settings.BITBAKE_REPO_URL, 'bitbake'), fetchdir, logger=logger)
                 else:
                     out = utils.runcmd("git fetch", bitbakepath, logger=logger)
+
+            if options.actual_branch:
+                update_actual_branch(layerquery, fetchdir, branches[0], options, update_bitbake, bitbakepath)
+                return
 
             # Process and extract data from each layer
             # We now do this by calling out to a separate script; doing otherwise turned out to be
