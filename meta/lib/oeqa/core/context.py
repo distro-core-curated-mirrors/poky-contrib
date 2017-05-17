@@ -54,7 +54,7 @@ class OETestContext(object):
 
     def runTests(self):
         streamLogger = self.streamLoggerClass(self.logger)
-        self.runner = self.runnerClass(self, stream=streamLogger, verbosity=2)
+        self.runner = self.runnerClass(self, stream=streamLogger, descriptions=False, verbosity=2)
 
         self._run_start_time = time.time()
         result = self.runner.run(self.suites)
