@@ -1,0 +1,7 @@
+Supported targets:
+    intel-docker-image
+
+Now type
+    bitbake intel-docker-image
+
+To build the final image
