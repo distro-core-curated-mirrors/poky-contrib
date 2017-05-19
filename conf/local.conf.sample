@@ -236,5 +236,5 @@ PACKAGECONFIG_append_pn-nativesdk-qemu = " sdl"
 # this doesn't mean anything to you.
 CONF_VERSION = "1"
 
-DISTRO ?= "poky-docker"
-MACHINE ?= "intel-corei7-64"
+DISTRO = "poky-docker"
+MACHINE = "intel-corei7-64"
