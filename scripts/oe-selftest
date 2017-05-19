@@ -43,11 +43,13 @@ scriptpath.add_bitbake_lib_path()
 scriptpath.add_oe_lib_path()
 import argparse_oe
 
-import oeqa.selftest
+import oeqa.selftest.cases
 import oeqa.utils.ftools as ftools
 from oeqa.utils.commands import runCmd, get_bb_var, get_test_layer
 from oeqa.utils.metadata import metadata_from_bb, write_metadata_file
-from oeqa.selftest.base import oeSelfTest, get_available_machines
+from oeqa.selftest.case import OESelftestTestCase, get_available_machines
+from oeqa.selftest.context import OESelftestTestContextExecutor
+from oeqa.core.exception import OEQAPreRun
 
 try:
     import xmlrunner
@@ -114,104 +116,9 @@ def get_args_parser():
 
 builddir = None
 
-
-def preflight_check():
-
-    global builddir
-
-    log.info("Checking that everything is in order before running the tests")
-
-    if not os.environ.get("BUILDDIR"):
-        log.error("BUILDDIR isn't set. Did you forget to source your build environment setup script?")
-        return False
-
-    builddir = os.environ.get("BUILDDIR")
-    if os.getcwd() != builddir:
-        log.info("Changing cwd to %s" % builddir)
-        os.chdir(builddir)
-
-    if not "meta-selftest" in get_bb_var("BBLAYERS"):
-        log.warn("meta-selftest layer not found in BBLAYERS, adding it")
-        meta_selftestdir = os.path.join(
-                get_bb_var("BBLAYERS_FETCH_DIR"),
-                'meta-selftest')
-        if os.path.isdir(meta_selftestdir):
-            runCmd("bitbake-layers add-layer %s" %meta_selftestdir)
-        else:
-            log.error("could not locate meta-selftest in:\n%s"
-                    %meta_selftestdir)
-            return False
-
-    if "buildhistory.bbclass" in get_bb_var("BBINCLUDED"):
-        log.error("You have buildhistory enabled already and this isn't recommended for selftest, please disable it first.")
-        return False
-
-    if get_bb_var("PRSERV_HOST"):
-        log.error("Please unset PRSERV_HOST in order to run oe-selftest")
-        return False
-
-    if get_bb_var("SANITY_TESTED_DISTROS"):
-        log.error("Please unset SANITY_TESTED_DISTROS in order to run oe-selftest")
-        return False
-
-    log.info("Running bitbake -p")
-    runCmd("bitbake -p")
-
-    return True
-
-def add_include():
-    global builddir
-    if "#include added by oe-selftest.py" \
-        not in ftools.read_file(os.path.join(builddir, "conf/local.conf")):
-            log.info("Adding: \"include selftest.inc\" in local.conf")
-            ftools.append_file(os.path.join(builddir, "conf/local.conf"), \
-                    "\n#include added by oe-selftest.py\ninclude machine.inc\ninclude selftest.inc")
-
-    if "#include added by oe-selftest.py" \
-        not in ftools.read_file(os.path.join(builddir, "conf/bblayers.conf")):
-            log.info("Adding: \"include bblayers.inc\" in bblayers.conf")
-            ftools.append_file(os.path.join(builddir, "conf/bblayers.conf"), \
-                    "\n#include added by oe-selftest.py\ninclude bblayers.inc")
-
-def remove_include():
-    global builddir
-    if builddir is None:
-        return
-    if "#include added by oe-selftest.py" \
-        in ftools.read_file(os.path.join(builddir, "conf/local.conf")):
-            log.info("Removing the include from local.conf")
-            ftools.remove_from_file(os.path.join(builddir, "conf/local.conf"), \
-                    "\n#include added by oe-selftest.py\ninclude machine.inc\ninclude selftest.inc")
-
-    if "#include added by oe-selftest.py" \
-        in ftools.read_file(os.path.join(builddir, "conf/bblayers.conf")):
-            log.info("Removing the include from bblayers.conf")
-            ftools.remove_from_file(os.path.join(builddir, "conf/bblayers.conf"), \
-                    "\n#include added by oe-selftest.py\ninclude bblayers.inc")
-
-def remove_inc_files():
-    global builddir
-    if builddir is None:
-        return
-    try:
-        os.remove(os.path.join(builddir, "conf/selftest.inc"))
-        for root, _, files in os.walk(get_test_layer()):
-            for f in files:
-                if f == 'test_recipe.inc':
-                    os.remove(os.path.join(root, f))
-    except OSError as e:
-        pass
-
-    for incl_file in ['conf/bblayers.inc', 'conf/machine.inc']:
-        try:
-            os.remove(os.path.join(builddir, incl_file))
-        except:
-            pass
-
-
 def get_tests_modules(include_hidden=False):
     modules_list = list()
-    for modules_path in oeqa.selftest.__path__:
+    for modules_path in oeqa.selftest.cases.__path__:
         for (p, d, f) in os.walk(modules_path):
             files = sorted([f for f in os.listdir(p) if f.endswith('.py') and not (f.startswith('_') and not include_hidden) and not f.startswith('__') and f != 'base.py'])
             for f in files:
@@ -229,7 +136,7 @@ def get_tests_modules(include_hidden=False):
 def get_tests(exclusive_modules=[], include_hidden=False):
     test_modules = list()
     for x in exclusive_modules:
-        test_modules.append('oeqa.selftest.' + x)
+        test_modules.append('oeqa.selftest.cases.' + x)
     if not test_modules:
         inc_hidden = include_hidden
         test_modules = get_tests_modules(inc_hidden)
@@ -250,13 +157,13 @@ class Tc:
 
 def get_tests_from_module(tmod):
     tlist = []
-    prefix = 'oeqa.selftest.'
+    prefix = 'oeqa.selftest.cases.'
 
     try:
         import importlib
         modlib = importlib.import_module(tmod)
         for mod in list(vars(modlib).values()):
-            if isinstance(mod, type(oeSelfTest)) and issubclass(mod, oeSelfTest) and mod is not oeSelfTest:
+            if isinstance(mod, type(OESelftestTestCase)) and issubclass(mod, OESelftestTestCase) and mod is not OESelftestTestCase:
                 for test in dir(mod):
                     if test.startswith('test_') and hasattr(vars(mod)[test], '__call__'):
                         # Get test case id and feature tag
@@ -492,6 +399,14 @@ def main():
     parser = get_args_parser()
     args = parser.parse_args()
 
+    # Check if environment is safe to run
+    try:
+        tce = OESelftestTestContextExecutor()
+        tce.tc = tce._context_class(td=dict(),logger=log)
+        tce._prerun()
+    except OEQAPreRun as e:
+        return 1
+
     # Add <layer>/lib to sys.path, so layers can add selftests
     log.info("Running bitbake -e to get BBPATH")
     bbpath = get_bb_var('BBPATH').split(':')
@@ -548,7 +463,7 @@ def main():
                     modlib = importlib.import_module(test)
                     for v in vars(modlib):
                         t = vars(modlib)[v]
-                        if isinstance(t, type(oeSelfTest)) and issubclass(t, oeSelfTest) and t!=oeSelfTest:
+                        if isinstance(t, type(OESelftestTestCase)) and issubclass(t, OESelftestTestCase) and t!=OESelftestTestCase:
                             print(" --", v)
                             for method in dir(t):
                                 if method.startswith("test_") and isinstance(vars(t)[method], collections.Callable):
@@ -559,8 +474,6 @@ def main():
                     pass
 
     if args.run_tests or args.run_all_tests or args.run_tests_by:
-        if not preflight_check():
-            return 1
 
         if args.run_tests_by:
             testslist = ts
@@ -574,7 +487,7 @@ def main():
                 resultclass=buildResultClass(args))
         # we need to do this here, otherwise just loading the tests
         # will take 2 minutes (bitbake -e calls)
-        oeSelfTest.testlayer_path = get_test_layer()
+        OESelftestTestCase.testlayer_path = get_test_layer()
         for test in testslist:
             log.info("Loading tests from: %s" % test)
             try:
@@ -583,8 +496,10 @@ def main():
                 log.error("Failed to import %s" % test)
                 log.error(e)
                 return 1
-        add_include()
 
+
+        # set the logger on the selftest test case
+        OESelftestTestCase.logger = log
         if args.machine:
             # Custom machine sets only weak default values (??=) for MACHINE in machine.inc
             # This let test cases that require a specific MACHINE to be able to override it, using (?= or =)
@@ -808,7 +723,4 @@ if __name__ == "__main__":
         ret = 1
         import traceback
         traceback.print_exc()
-    finally:
-        remove_include()
-        remove_inc_files()
     sys.exit(ret)
