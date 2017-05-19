@@ -1,5 +1,8 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
+# We're only supporting 64 bit Intel machines
+COMPATIBLE_MACHINE = "intel-corei7-64"
+
 SRC_URI += "file://http-proxy.conf"
 
 do_install_append() {
