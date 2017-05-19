@@ -431,6 +431,46 @@ class Tinfoil:
         """
         return self.run_command('buildFile', buildfile, task, internal)
 
+    # FIXME internal mode
+    def build_targets(self, targets, task=None, handle_events=True):
+        """
+        Builds the specified targets. This is equivalent to a normal invocation
+        of bitbake.
+        """
+        if isinstance(targets, str):
+            targets = targets.split()
+        if not task:
+            task = self.config_data.getVar('BB_DEFAULT_TASK')
+        ret = self.run_command('buildTargets', targets, task)
+        if handle_events:
+            while True:
+                event = self.wait_event(0.25)
+                if event:
+                    if self.handle_event(event, self.logger):
+                        break
+        else:
+            return ret
+
+    def handle_event(self, event, logger):
+        """
+        Basic event handler for a single event returned by wait_event().
+        Returns true if you should stop processing events now.
+        """
+        if isinstance(event, bb.command.CommandCompleted):
+            return True
+        elif isinstance(event, bb.command.CommandFailed):
+            logger.error(str(event))
+            return True
+        elif isinstance(event, bb.build.TaskStarted):
+            logger.info('Starting %s.%s' % (event._package, event._task))
+        elif isinstance(event, logging.LogRecord):
+            if event.taskpid == 0 or event.levelno > logging.INFO:
+                logger.handle(event)
+        elif isinstance(event, bb.event.NoProvider):
+            logger.error(str(event))
+            return True
+        return False
+
     def shutdown(self):
         if self.server_connection:
             self.run_command('clientComplete')
