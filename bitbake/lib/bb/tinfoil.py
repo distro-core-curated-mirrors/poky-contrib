@@ -2,6 +2,7 @@
 #
 # Copyright (C) 2012-2017 Intel Corporation
 # Copyright (C) 2011 Mentor Graphics Corporation
+# Copyright (C) 2006-2012 Richard Purdie
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -218,6 +219,7 @@ class Tinfoil:
         self.ui_module = None
         self.server_connection = None
         self.recipes_parsed = False
+        self.quiet = 0
         if setup_logging:
             # This is the *client-side* logger, nothing to do with
             # logging messages from the server
@@ -230,6 +232,8 @@ class Tinfoil:
         self.shutdown()
 
     def prepare(self, config_only=False, config_params=None, quiet=0):
+        self.quiet = quiet
+
         if self.tracking:
             extrafeatures = [bb.cooker.CookerFeatures.BASEDATASTORE_TRACKING]
         else:
@@ -441,13 +445,88 @@ class Tinfoil:
             targets = targets.split()
         if not task:
             task = self.config_data.getVar('BB_DEFAULT_TASK')
+
+        if handle_events:
+            ret = self.set_event_mask(['bb.event.BuildStarted',
+                                'bb.event.BuildCompleted',
+                                'logging.LogRecord',
+                                'bb.event.NoProvider',
+                                'bb.command.CommandCompleted',
+                                'bb.command.CommandFailed',
+                                'bb.build.TaskStarted',
+                                'bb.build.TaskFailed',
+                                'bb.build.TaskSucceeded',
+                                'bb.build.TaskFailedSilent',
+                                'bb.build.TaskProgress',
+                                'bb.runqueue.runQueueTaskStarted',
+                                'bb.runqueue.sceneQueueTaskStarted',
+                                'bb.event.ProcessStarted',
+                                'bb.event.ProcessProgress',
+                                'bb.event.ProcessFinished',
+                                ])
+
         ret = self.run_command('buildTargets', targets, task)
         if handle_events:
-            while True:
-                event = self.wait_event(0.25)
-                if event:
-                    if self.handle_event(event, self.logger):
-                        break
+            # Borrowed from knotty, instead somewhat hackily we use the helper
+            # as the object to store "shutdown" on
+            helper = bb.ui.uihelper.BBUIHelper()
+            console = logging.StreamHandler(sys.stdout)
+            errconsole = logging.StreamHandler(sys.stderr)
+            format_str = "%(levelname)s: %(message)s"
+            format = bb.msg.BBLogFormatter(format_str)
+            helper.shutdown = 0
+            parseprogress = None
+            termfilter = bb.ui.knotty.TerminalFilter(helper, helper, console, errconsole, format, quiet=self.quiet)
+            try:
+                while True:
+                    try:
+                        event = self.wait_event(0.25)
+                        if event:
+                            if helper.eventHandler(event):
+                                continue
+                            if isinstance(event, bb.event.ProcessStarted):
+                                if self.quiet > 1:
+                                    continue
+                                parseprogress = bb.ui.knotty.new_progress(event.processname, event.total)
+                                parseprogress.start(False)
+                                continue
+                            if isinstance(event, bb.event.ProcessProgress):
+                                if self.quiet > 1:
+                                    continue
+                                if parseprogress:
+                                    parseprogress.update(event.progress)
+                                else:
+                                    bb.warn("Got ProcessProgress event for someting that never started?")
+                                continue
+                            if isinstance(event, bb.event.ProcessFinished):
+                                if self.quiet > 1:
+                                    continue
+                                if parseprogress:
+                                    parseprogress.finish()
+                                parseprogress = None
+                                continue
+                            if self.handle_event(event, self.logger):
+                                break
+                        elif helper.shutdown > 1:
+                            break
+                        termfilter.updateFooter()
+                    except KeyboardInterrupt:
+                        termfilter.clearFooter()
+                        if helper.shutdown == 1:
+                            print("\nSecond Keyboard Interrupt, stopping...\n")
+                            ret = self.run_command("stateForceShutdown")
+                            if ret and ret[2]:
+                                logger.error("Unable to cleanly stop: %s" % ret[2])
+                        elif helper.shutdown == 0:
+                            print("\nKeyboard Interrupt, closing down...\n")
+                            interrupted = True
+                            ret = self.run_command("stateShutdown")
+                            if ret and ret[2]:
+                                logger.error("Unable to cleanly shutdown: %s" % ret[2])
+                        helper.shutdown = helper.shutdown + 1
+                termfilter.clearFooter()
+            finally:
+                termfilter.finish()
         else:
             return ret
 
