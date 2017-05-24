@@ -716,8 +716,7 @@ def main():
         import traceback
         traceback.print_exc()
     finally:
-        if LooseVersion(bb.__version__) > LooseVersion("1.27"):
-            tinfoil.shutdown()
+        utils.shutdown_tinfoil(tinfoil)
 
     shutil.rmtree(tempdir)
     sys.exit(0)
