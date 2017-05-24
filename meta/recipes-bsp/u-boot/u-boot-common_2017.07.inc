@@ -10,7 +10,9 @@ PE = "1"
 SRCREV = "d85ca029f257b53a96da6c2fb421e78a003a9943"
 
 SRC_URI = "git://git.denx.de/u-boot.git \
-    file://MPC8315ERDB-enable-DHCP.patch \
-"
+        file://MPC8315ERDB-enable-DHCP.patch \
+	file://0001-rsa-Fix-build-with-OpenSSL-1.1.x.patch \
+	file://0002-tools-kwbimage-fix-build-with-OpenSSL-1.1.x.patch \
+	"
 
 S = "${WORKDIR}/git"
