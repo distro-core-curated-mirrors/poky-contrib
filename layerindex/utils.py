@@ -27,6 +27,33 @@ def get_layer(layername):
         return res[0]
     return None
 
+def get_layer_var(config_data, var):
+    collection = config_data.getVar('BBFILE_COLLECTIONS', True)
+    if collection:
+        collection = collection.strip()
+    value = config_data.getVar('%s_%s' % (var, collection), True)
+    if not value:
+        value = config_data.getVar(var, True)
+    return value
+
+def is_deps_satisfied(req_col, req_ver, collections):
+    """ Check whether required collection and version are in collections"""
+    for existed_col, existed_ver in collections:
+        if req_col == existed_col:
+            # If there is no version constraint, return True when collection matches
+            if not req_ver:
+                return True
+            else:
+                # If there is no version in the found layer, then don't use this layer.
+                if not existed_ver:
+                    continue
+                (op, dep_version) = req_ver.split()
+                success = bb.utils.vercmp_string_op(existed_ver, dep_version, op)
+                if success:
+                    return True
+    # Return False when not found
+    return False
+
 def get_dependency_layer(depname, version_str=None, logger=None):
     from layerindex.models import LayerItem, LayerBranch
 
@@ -155,6 +182,18 @@ def setup_tinfoil(bitbakepath, enable_tracking):
     tinfoil.prepare(config_only = True)
 
     return tinfoil
+
+def shutdown_tinfoil(tinfoil):
+    if tinfoil and hasattr(tinfoil, 'shutdown'):
+        tinfoil.shutdown()
+
+def copy_tinfoil_data(config_data):
+    import bb.data
+    return bb.data.createCopy(config_data)
+
+def explode_dep_versions2(deps):
+    import bb.utils
+    return bb.utils.explode_dep_versions2(deps)
 
 def checkout_layer_branch(layerbranch, repodir, logger=None):
 

@@ -18,6 +18,8 @@ import signal
 from datetime import datetime, timedelta
 from distutils.version import LooseVersion
 import utils
+import operator
+import recipeparse
 
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -151,6 +153,11 @@ def main():
         logger.error("Please set LAYER_FETCH_DIR in settings.py")
         sys.exit(1)
 
+    layerquery_all = LayerItem.objects.filter(classic=False).filter(status='P')
+    if layerquery_all.count() == 0:
+        logger.info("No published layers to update")
+        sys.exit(1)
+
     if options.layers:
         layers = options.layers.split(',')
         for layer in layers:
@@ -161,10 +168,7 @@ def main():
         layerquery = LayerItem.objects.filter(classic=False).filter(name__in=layers)
     else:
         # We deliberately exclude status == 'X' ("no update") here
-        layerquery = LayerItem.objects.filter(classic=False).filter(status='P')
-        if layerquery.count() == 0:
-            logger.info("No published layers to update")
-            sys.exit(1)
+        layerquery = layerquery_all
 
     if not os.path.exists(fetchdir):
         os.makedirs(fetchdir)
@@ -186,6 +190,7 @@ def main():
     try:
         lockfn = os.path.join(fetchdir, "layerindex.lock")
         lockfile = utils.lock_file(lockfn)
+        tinfoil = None
         if not lockfile:
             logger.error("Layer index lock timeout expired")
             sys.exit(1)
@@ -228,8 +233,89 @@ def main():
             # they never get used during normal operation).
             last_rev = {}
             for branch in branches:
+                # If layer_A depends(or recommends) on layer_B, add layer_B before layer_A
+                deps_dict_all = {}
+                layerquery_sorted = []
+                collections_done = set()
                 branchobj = utils.get_branch(branch)
+                try:
+                    utils.shutdown_tinfoil(tinfoil)
+                    (tinfoil, tempdir) = recipeparse.init_parser(settings, branchobj, bitbakepath, nocheckout=options.nocheckout, logger=logger)
+                except recipeparse.RecipeParseError as e:
+                    logger.error(str(e))
+                    sys.exit(1)
+                for layer in layerquery_all:
+                    # Get all collections from database, but we can't trust the
+                    # one which will be updated since its collections maybe
+                    # changed (different from database).
+                    if layer in layerquery:
+                        continue
+                    layerbranch = layer.get_layerbranch(branch)
+                    if layerbranch:
+                        collections_done.add((layerbranch.collection, layerbranch.version))
+
                 for layer in layerquery:
+                    errmsg = failedrepos.get(layer.vcs_url, '')
+                    if errmsg:
+                        continue
+                    config_data = utils.copy_tinfoil_data(tinfoil.config_data)
+                    layerbranch = layer.get_layerbranch(branch)
+                    if not layerbranch:
+                        layerbranch = layer.get_layerbranch(None)
+                    if not layerbranch:
+                        logger.error('Failed to get layerbranch for %s' % layer.name)
+                        sys.exit(1)
+                    urldir = layer.get_fetch_dir()
+                    repodir = os.path.join(fetchdir, urldir)
+                    layerdir = os.path.join(repodir, layerbranch.vcs_subdir)
+                    if not options.nocheckout:
+                        utils.checkout_layer_branch(layerbranch, repodir, logger=logger)
+                    utils.parse_layer_conf(layerdir, config_data, logger=logger)
+
+                    deps = utils.get_layer_var(config_data, 'LAYERDEPENDS') or ''
+                    recs = utils.get_layer_var(config_data, 'LAYERRECOMMENDS') or ''
+                    col = (utils.get_layer_var(config_data, 'BBFILE_COLLECTIONS') or '').strip()
+                    ver = utils.get_layer_var(config_data, 'LAYERVERSION') or ''
+
+                    deps_dict = utils.explode_dep_versions2(deps + ' ' + recs)
+                    if len(deps_dict) == 0:
+                        # No depends, add it firstly
+                        layerquery_sorted.append(layer)
+                        collections_done.add((col, ver))
+                        continue
+                    deps_dict_all[layer] = {'requires': deps_dict, 'collection': col, 'version': ver}
+
+                # Move deps_dict_all to layerquery_sorted orderly
+                logger.info("Sorting layers for branch %s" % branch)
+                while True:
+                    deps_dict_all_copy = deps_dict_all.copy()
+                    for layer, value in deps_dict_all_copy.items():
+                        for req_col, req_ver_list in value['requires'].copy().items():
+                            matched = False
+                            if req_ver_list:
+                                req_ver = req_ver_list[0]
+                            else:
+                                req_ver = None
+                            if utils.is_deps_satisfied(req_col, req_ver, collections_done):
+                                del(value['requires'][req_col])
+                        if not value['requires']:
+                            # All the depends are in collections_done:
+                            del(deps_dict_all[layer])
+                            layerquery_sorted.append(layer)
+                            collections_done.add((value['collection'], value['version']))
+
+                    if not len(deps_dict_all):
+                        break
+
+                    # Something is wrong if nothing changed after a run
+                    if operator.eq(deps_dict_all_copy, deps_dict_all):
+                        logger.error("Cannot find required collections on branch %s:" % branch)
+                        for layer, value in deps_dict_all.items():
+                            logger.error('%s: %s' % (layer.name, value['requires']))
+                        logger.error("Known collections: %s" % collections_done)
+                        sys.exit(1)
+
+                for layer in layerquery_sorted:
                     layerupdate = LayerUpdate()
                     layerupdate.update = update
 
@@ -269,33 +355,9 @@ def main():
                     if ret == 254:
                         # Interrupted by user, break out of loop
                         break
-
-            # Since update_layer may not be called in the correct order to have the
-            # dependencies created before trying to link them, we now have to loop
-            # back through all the branches and layers and try to link in the
-            # dependencies that may have been missed.  Note that creating the
-            # dependencies is a best-effort and continues if they are not found.
-            for branch in branches:
-                branchobj = utils.get_branch(branch)
-                for layer in layerquery:
-                    layerbranch = layer.get_layerbranch(branch)
-                    if layerbranch:
-                        if not (options.reload or options.fullreload):
-                            # Skip layers that did not change.
-                            layer_last_rev = last_rev.get(layerbranch, None)
-                            if layer_last_rev is None or layer_last_rev == layerbranch.vcs_last_rev:
-                                continue
-
-                        logger.info('Updating layer dependencies for %s on branch %s' % (layer.name, branch))
-                        cmd = prepare_update_layer_command(options, branchobj, layer, updatedeps=True)
-                        logger.debug('Running update dependencies command: %s' % cmd)
-                        ret, output = run_command_interruptible(cmd)
-                        if ret == 254:
-                            # Interrupted by user, break out of loop
-                            break
-
         finally:
             utils.unlock_file(lockfile)
+            utils.shutdown_tinfoil(tinfoil)
 
     finally:
         update.log = ''.join(listhandler.read())
