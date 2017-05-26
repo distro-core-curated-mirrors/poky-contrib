@@ -152,10 +152,13 @@ def main():
         sys.exit(1)
 
     if options.layers:
-        layerquery = LayerItem.objects.filter(classic=False).filter(name__in=options.layers.split(','))
-        if layerquery.count() == 0:
-            logger.error('No layers matching specified query "%s"' % options.layers)
-            sys.exit(1)
+        layers = options.layers.split(',')
+        for layer in layers:
+            layerquery = LayerItem.objects.filter(classic=False).filter(name=layer)
+            if layerquery.count() == 0:
+                logger.error('No layers matching specified query "%s"' % layer)
+                sys.exit(1)
+        layerquery = LayerItem.objects.filter(classic=False).filter(name__in=layers)
     else:
         # We deliberately exclude status == 'X' ("no update") here
         layerquery = LayerItem.objects.filter(classic=False).filter(status='P')
