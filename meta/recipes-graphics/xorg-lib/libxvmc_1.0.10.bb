@@ -11,6 +11,10 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=0a207f08d4961489c55046c9a5e500da \
 
 DEPENDS += "libxext libxv videoproto"
 
+SRC_URI +=  " file://run-ptest"
+inherit ptest
+RDEPENDS_${PN}-ptest += "xvideo-tests xvideo-tests-images coreutils"
+
 PE = "1"
 
 XORG_PN = "libXvMC"

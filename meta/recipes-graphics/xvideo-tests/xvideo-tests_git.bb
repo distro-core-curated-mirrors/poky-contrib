@@ -13,5 +13,15 @@ S = "${WORKDIR}/git"
 
 inherit autotools distro_features_check
 
+do_install_append() {
+    install -d ${D}${datadir}/test-xvideo
+    cp -rf ${S}/data/*.yuv ${D}${datadir}/test-xvideo/
+}
+
+FILES_${PN}-images = " ${datadir}/test-xvideo/320x240-yuv420p-5frames.yuv \
+                       ${datadir}/test-xvideo/320x240-yuv-420-planar.yuv \
+                      "
+PACKAGES =+ " ${PN}-images"
+
 # The libxv requires x11 in DISTRO_FEATURES
 REQUIRED_DISTRO_FEATURES = "x11"

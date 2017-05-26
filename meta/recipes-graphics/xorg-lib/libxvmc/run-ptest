@@ -1,0 +1,3 @@
+#!/bin/sh
+timeout -sHUP 0.5m testxvideo --src-size 320x240 /usr/share/test-xvideo/320x240-yuv-420-planar.yuv &>/tmp/320x240-yuv-420-planar.log
+timeout -sHUP 0.5m testxvideo --src-size 320x240 /usr/share/test-xvideo/320x240-yuv420p-5frames.yuv &>/tmp/320x240-yuv420p-5frames.log
