@@ -12,13 +12,15 @@ SRC_URI = "http://curl.haxx.se/download/curl-${PV}.tar.bz2 \
 # curl likes to set -g0 in CFLAGS, so we stop it
 # from mucking around with debug options
 #
-SRC_URI += " file://configure_ac.patch"
+SRC_URI += " file://configure_ac.patch \
+             file://run-ptest \
+           "
 
 SRC_URI[md5sum] = "89bb7ba87384dfbf4f1a3f953da42458"
 SRC_URI[sha256sum] = "f50ebaf43c507fa7cc32be4b8108fa8bbd0f5022e90794388f3c7694a302ff06"
 
 CVE_PRODUCT = "libcurl"
-inherit autotools pkgconfig binconfig multilib_header
+inherit autotools pkgconfig binconfig multilib_header ptest
 
 PACKAGECONFIG ??= "${@bb.utils.filter('DISTRO_FEATURES', 'ipv6', d)} gnutls proxy zlib"
 PACKAGECONFIG_class-native = "ipv6 proxy ssl zlib"
@@ -61,6 +63,25 @@ do_install_append_class-target() {
 	# cleanup buildpaths from curl-config
 	sed -i -e 's,${STAGING_DIR_HOST},,g' ${D}${bindir}/curl-config
 }
+
+do_compile_ptest() {
+    oe_runmake test
+    oe_runmake -C ${B}/tests/data/ show
+    oe_runmake -C ${B}/tests/server
+}
+
+do_install_ptest() {
+    cp -rf ${B}/tests ${D}${PTEST_PATH}
+    cp -rf ${S}/tests ${D}${PTEST_PATH}
+    install -d ${D}${PTEST_PATH}/src
+    ln -sf ${bindir}/curl   ${D}${PTEST_PATH}/src/curl
+}
+
+RDEPENDS_${PN}-ptest += "make bash perl perl-module-cwd \
+                         perl-module-ipc-open2 perl-module-digest-md5\
+                         perl-module-file-basename perl-module-posix \
+                         perl-module-errno python python-netserver \
+                         python-argparse python-pprint diffutils"
 
 PACKAGES =+ "lib${BPN}"
 
