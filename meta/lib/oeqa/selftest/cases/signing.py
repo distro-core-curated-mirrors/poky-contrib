@@ -108,7 +108,7 @@ class Signing(OESelftestTestCase):
 
         test_recipe = 'ed'
 
-        builddir = os.environ.get('BUILDDIR')
+        builddir = self.builddir
         sstatedir = os.path.join(builddir, 'test-sstate')
 
         self.add_command_to_tearDown('bitbake -c clean %s' % test_recipe)
