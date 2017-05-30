@@ -150,10 +150,6 @@ class OESelftestTestContextExecutor(OETestContextExecutor):
         _check_required_env_variables(["BUILDDIR"])
         _check_presence_meta_selftest()
 
-        if "buildhistory.bbclass" in self.tc.td["BBINCLUDED"]:
-            self.tc.logger.error("You have buildhistory enabled already and this isn't recommended for selftest, please disable it first.")
-            raise OEQAPreRun
-
         if "PRSERV_HOST" in self.tc.td:
             self.tc.logger.error("Please unset PRSERV_HOST in order to run oe-selftest")
             raise OEQAPreRun

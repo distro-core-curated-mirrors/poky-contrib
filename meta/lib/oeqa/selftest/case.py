@@ -138,6 +138,12 @@ to ensure accurate results.")
             machine_conf = 'MACHINE ??= "%s"\n' % self.tc.custommachine
             self.set_machine_config(machine_conf)
 
+        # If buildhistory is enabled, we need to disable version-going-backwards
+        # QA checks for this test. It may report errors otherwise.
+        if "buildhistory.bbclass" in self.tc.td["BBINCLUDED"]:
+            self.logger.warn("You have buildhistory enabled, disabling 'version-going-backwards' QA checks")
+            self.append_config('ERROR_QA_remove = "version-going-backwards"')
+
         # tests might need their own setup
         # but if they overwrite this one they have to call
         # super each time, so let's give them an alternative
