@@ -236,3 +236,47 @@ postinst-delayed-t \
                     sshargs = '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
                     result = runCmd('ssh %s root@%s %s' % (sshargs, qemu.ip, testcommand))
                     self.assertEqual(result.status, 0, 'File %s was not created at firts boot'% fileboot_name)
+
+class GeneratedImages(oeSelfTest):
+    @testcase(1845)
+    def test_integrity_compressed_images(self):
+        """
+        Summary: The purpose of this test is to verify the correct behavior of all the available images compression.
+        Bugzilla ID: [10745]
+        Steps:
+            1. Add IMAGE_FSTYPES += "[type(s)]" to ~/conf/local.conf
+            2. Build a "core-image-minimal" using this configuration.
+            3. Verify that the image compressed file is present in rootfs directory.
+        """
+        # Step 1 Add configuration to conf/local.conf
+        features = 'btrfs ' + \
+'cpio cpio.gz cpio.lz4 cpio.lzma cpio.xz ' + \
+'cramfs ' + \
+'elf ' + \
+'ext2 ext2.bz2 ext2.gz ext2.lzma ext3 ext3.gz ext4 ext4.gz ' + \
+'hdddirect hddimg ' + \
+'iso ' + \
+'jffs2 jffs2.sum ' + \
+'multiubi ' + \
+'qcow2 ' + \
+'squashfs squashfs-lzo squashfs-xz ' + \
+'tar tar.bz2 tar.gz tar.lz4 tar.xz ' + \
+'ubi ubifs ' + \
+'vdi ' + \
+'vmdk ' + \
+'wic wic.bz2 wic.gz wic.lzma ' 
+        features_list = features.split()
+        self.write_config('IMAGE_FSTYPES = "%s"' % features)
+        # Setp 2 Compile.
+        build = 'core-image-minimal'
+        bitbake(build)
+        for image_feature in features_list:
+            # Step 3 Verify compressed images are present in rottfs directory.
+            need_vars = ['DEPLOY_DIR_IMAGE','MACHINE']
+            bb_vars = get_bb_vars(need_vars, 'core-image-minimal')
+            deploy_dir_image = bb_vars['DEPLOY_DIR_IMAGE']
+            machine = bb_vars['MACHINE']
+            compressed_file = "%s-%s.%s" % (build, machine, image_feature)
+            complete_path = os.path.join(deploy_dir_image, compressed_file)
+        msg = "Couldn't find compressed file: %s" % complete_path
+        self.assertEqual(os.path.isfile(complete_path), True, msg)
