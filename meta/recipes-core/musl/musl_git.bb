@@ -11,6 +11,7 @@ PV = "1.1.19+git${SRCPV}"
 
 SRC_URI = "git://git.musl-libc.org/musl \
            file://0001-Make-dynamic-linker-a-relative-symlink-to-libc.patch \
+           file://0001-Make-default-threadsize-at-160KB.patch \
           "
 
 S = "${WORKDIR}/git"

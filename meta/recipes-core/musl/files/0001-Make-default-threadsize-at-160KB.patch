@@ -1,0 +1,25 @@
+From ac8a1c77e40729cbec41e39c783bfb2d6a0ee196 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Sun, 28 May 2017 09:59:43 -0700
+Subject: [PATCH] Make default threadsize at 160 KB
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+Upstream-Status: Pending
+
+ src/internal/pthread_impl.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: git/src/internal/pthread_impl.h
+===================================================================
+--- git.orig/src/internal/pthread_impl.h
++++ git/src/internal/pthread_impl.h
+@@ -145,7 +145,7 @@ void __block_all_sigs(void *);
+ void __block_app_sigs(void *);
+ void __restore_sigs(void *);
+ 
+-#define DEFAULT_STACK_SIZE 81920
++#define DEFAULT_STACK_SIZE 163840
+ #define DEFAULT_GUARD_SIZE 4096
+ 
+ #define __ATTRP_C11_THREAD ((void*)(uintptr_t)-1)
