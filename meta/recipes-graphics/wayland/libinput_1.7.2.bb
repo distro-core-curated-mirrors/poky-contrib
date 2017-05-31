@@ -10,10 +10,10 @@ DEPENDS = "libevdev udev mtdev"
 SRC_URI = "http://www.freedesktop.org/software/${BPN}/${BP}.tar.xz \
            file://touchpad-serial-synaptics-need-to-fake-new-touches-on-TRIPLETAP.patch \
 "
-SRC_URI[md5sum] = "7e282344f8ed7ec5cf87ca9fc22674fb"
-SRC_URI[sha256sum] = "9d816f13eee63bcca0e9c3bb652c52ab55f39be4d1b90b54e4bfd1dc92ef55a8"
+SRC_URI[md5sum] = "d138d62c528fbf9aba300a97bae453cb"
+SRC_URI[sha256sum] = "0b1e5a6c106ccc609ccececd9e33e6b27c8b01fc7457ddb4c1dd266e780d6bc2"
 
-inherit autotools pkgconfig
+inherit autotools pkgconfig lib_package
 
 PACKAGECONFIG ??= ""
 PACKAGECONFIG[libunwind] = "--with-libunwind,--without-libunwind,libunwind"
@@ -23,3 +23,7 @@ PACKAGECONFIG[gui] = "--enable-event-gui,--disable-event-gui,cairo gtk+3"
 UDEVDIR = "`pkg-config --variable=udevdir udev`"
 
 EXTRA_OECONF += "--with-udev-dir=${UDEVDIR}"
+
+RPROVIDES_${PN} = "libinput"
+RREPLACES_${PN} = "libinput"
+RCONFLICTS_${PN} = "libinput"
