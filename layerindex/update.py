@@ -64,15 +64,13 @@ def run_command_interruptible(cmd):
     return process.returncode, buf
 
 
-def prepare_update_layer_command(options, branch, layer, updatedeps=False):
+def prepare_update_layer_command(options, branch, layer):
     """Prepare the update_layer.py command line"""
     if branch.update_environment:
         cmdprefix = branch.update_environment.get_command()
     else:
         cmdprefix = 'python3'
     cmd = '%s update_layer.py -l %s -b %s' % (cmdprefix, layer.name, branch.name)
-    if updatedeps:
-        cmd += ' --update-dependencies'
     if options.reload:
         cmd += ' --reload'
     if options.fullreload:
