@@ -77,11 +77,11 @@ python () {
                 # a variable and let the metadata deal with the deps.
                 d.setVar('_WKS_TEMPLATE', body)
 
-        if d.getVar('EFI_CLASS'):
-            bb.build.addtask('do_prepare_wic_build', 'do_image_wic', 'do_bootimg', d)
-            d.appendVarFlag('do_prepare_wic_build', 'depends', 'virtual/kernel:do_deploy')
-        else:
-            bb.build.addtask('do_prepare_wic_build', 'do_image_wic', None, d)
+#        if d.getVar('EFI_CLASS'):
+#            bb.build.addtask('do_prepare_wic_build', 'do_image_wic', 'do_bootimg', d)
+#            d.appendVarFlag('do_prepare_wic_build', 'depends', 'virtual/kernel:do_deploy')
+#        else:
+#            bb.build.addtask('do_prepare_wic_build', 'do_image_wic', None, d)
 }
 
 #
@@ -157,8 +157,8 @@ python do_prepare_wic_build() {
     partuuid = str(uuid4())
     d.setVar("ROOTFS_PARTUUID", partuuid)
 
-    if d.getVar("EFI_CLASS"):
-        populate_bootfs(partuuid)
+#    if d.getVar("EFI_CLASS"):
+#        populate_bootfs(partuuid)
 
     template = d.getVar("_WKS_TEMPLATE")
     if template:
