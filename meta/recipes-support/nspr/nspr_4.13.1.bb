@@ -150,12 +150,18 @@ inherit autotools
 PACKAGECONFIG ??= "${@bb.utils.filter('DISTRO_FEATURES', 'ipv6', d)}"
 PACKAGECONFIG[ipv6] = "--enable-ipv6,--disable-ipv6,"
 
-do_compile_prepend() {
-	oe_runmake CROSS_COMPILE=1 CFLAGS="-DXP_UNIX" LDFLAGS="" CC=gcc -C config export
-}
+do_compile(){
+    oe_runmake CROSS_COMPILE=1 CFLAGS="-DXP_UNIX" LDFLAGS="" CC=gcc -C config export
 
-do_compile_append() {
-	oe_runmake -C pr/tests
+    if [ ! -z "${SOURCE_DATE_EPOCH}" ]; then
+        BUILD_DATE=`date -u -d "@${SOURCE_DATE_EPOCH}" +'%Y-%m-%d %T'`
+        BUILD_TIME="${SOURCE_DATE_EPOCH}000000"
+        oe_runmake  "SH_NOW=${BUILD_TIME}" "SH_DATE=${BUILD_DATE}"
+    else
+        oe_runmake
+    fi
+
+    oe_runmake -C pr/tests
 }
 
 do_install_append() {
