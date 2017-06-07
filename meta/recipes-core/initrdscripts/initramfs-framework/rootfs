@@ -2,6 +2,52 @@
 # Copyright (C) 2011 O.S. Systems Software LTDA.
 # Licensed on MIT
 
+ROOT_IMAGE="rootfs.img"
+ISOLINUX=""
+ROOT_DISK=""
+shelltimeout=30
+
+echo "Waiting for removable media..."
+C=0
+while true
+do
+  for i in `ls /run/media 2>/dev/null`; do
+      if [ -f /run/media/$i/$ROOT_IMAGE ] ; then
+		found="yes"
+		ROOT_DISK="$i"
+		break
+	  elif [ -f /run/media/$i/isolinux/$ROOT_IMAGE ]; then
+		found="yes"
+		ISOLINUX="isolinux"
+		break
+      fi
+  done
+  if [ "$found" = "yes" ]; then
+      break;
+  fi
+  # don't wait for more than $shelltimeout seconds, if it's set
+  if [ -n "$shelltimeout" ]; then
+      echo -n " " $(( $shelltimeout - $C ))
+      if [ $C -ge $shelltimeout ]; then
+           echo "..."
+	   echo "Mounted filesystems"
+           mount | grep media
+           echo "Available block devices"
+           cat /proc/partitions
+           fatal "Cannot find $ROOT_IMAGE file in /run/media/* , dropping to a shell "
+      fi
+      C=$(( C + 1 ))
+  fi
+  sleep 1
+done
+
+# Copy from mount_and_boot function in init-live.sh
+    mknod /dev/loop0 b 7 0 2>/dev/null
+
+    if ! mount -o rw,loop,noatime,nodiratime /run/media/$ROOT_DISK/$ISOLINUX/$ROOT_IMAGE $ROOTFS_DIR ; then
+	fatal "Could not mount rootfs image"
+    fi
+
 rootfs_enabled() {
 	return 0
 }
