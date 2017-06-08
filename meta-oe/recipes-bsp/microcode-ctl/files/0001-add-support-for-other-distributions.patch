@@ -1,0 +1,27 @@
+Subject: [PATCH] add support for other distributions
+
+Upstream-Status: Inappropriate [OE specific]
+
+Signed-off-by: Jackie Huang <jackie.huang@windriver.com>
+---
+ microcode_ctl.start | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/microcode_ctl.start b/microcode_ctl.start
+index 6fa9d72..e9321d0 100755
+--- a/microcode_ctl.start
++++ b/microcode_ctl.start
+@@ -47,8 +47,8 @@ elif [ -f /etc/slackware-version ]; then
+ 		END=slack_end
+ 	fi
+ else
+-	echo "$0: Can't guess distribution, aborting!"
+-	exit 1
++	START=
++	END=
+ fi
+ 
+ # Lets just be sure we have a device file...
+-- 
+2.11.0
+
