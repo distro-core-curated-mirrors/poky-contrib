@@ -35,6 +35,10 @@ SRC_URI = "git://github.com/rpm-software-management/rpm \
            file://0001-Fix-build-with-musl-C-library.patch \
            file://0001-Add-a-color-setting-for-mips64_n32-binaries.patch \
            file://0001-Add-PYTHON_ABI-when-searching-for-python-libraries.patch \
+           file://0001-Split-binary-package-building-into-a-separate-functi.patch \
+           file://0002-Run-binary-package-creation-via-thread-pools.patch \
+           file://0003-rpmstrpool.c-make-operations-over-string-pools-threa.patch \
+           file://0004-build-pack.c-remove-static-local-variables-from-buil.patch \
            "
 
 PV = "4.13.90+git${SRCPV}"
