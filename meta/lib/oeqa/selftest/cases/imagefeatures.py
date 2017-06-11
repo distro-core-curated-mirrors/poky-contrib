@@ -3,6 +3,7 @@ from oeqa.utils.commands import runCmd, bitbake, get_bb_var, runqemu
 from oeqa.core.decorator.oeid import OETestID
 from oeqa.utils.sshcontrol import SSHControl
 import os
+import glob
 
 class ImageFeatures(OESelftestTestCase):
 
@@ -124,3 +125,23 @@ class ImageFeatures(OESelftestTestCase):
         # check if result image is sparse
         image_stat = os.stat(image_path)
         self.assertTrue(image_stat.st_size > image_stat.st_blocks * 512)
+
+    def test_image_gen_debugfs(self):
+        """
+        Summary:     Check debugfs generation
+        Expected:    1. core-image-minimal can be build with IMAGE_GEN_DEBUGFS variable set
+                     2. debug filesystem is created when variable set
+        Product:     oe-core
+        Author:      Humberto Ibarra <humberto.ibarra.lopez@intel.com>
+        """
+
+        image_name = 'core-image-minimal'
+        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
+
+        features = 'IMAGE_GEN_DEBUGFS = "1"\n'
+        features += 'IMAGE_FSTYPES_DEBUGFS = "tar.bz2"'
+        self.write_config(features)
+
+        bitbake(image_name)
+        debug_files = glob.glob(os.path.join(deploy_dir_image,"*-dbg.rootfs.tar.bz2"))
+        self.assertNotEqual(len(debug_files), 0, 'debug filesystem not generated')
