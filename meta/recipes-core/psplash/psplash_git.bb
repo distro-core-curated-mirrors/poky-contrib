@@ -9,7 +9,7 @@ SRCREV = "88343ad23c90fa1dd8d79ac0d784a691aa0c6d2b"
 PV = "0.1+git${SRCPV}"
 PR = "r15"
 
-SRC_URI = "git://git.yoctoproject.org/${BPN} \
+SRC_URI = "git://git.yoctoproject.org/${BPN};subdir=${S} \
            file://psplash-init \
            ${SPLASH_IMAGES}"
 
