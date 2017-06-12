@@ -18,5 +18,5 @@ SRC_URI = "git://github.com/mkschreder/jucid \
 S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig
-DEPENDS += "libblobpack libutype libusys luci uci lua5.1 libwebsockets iwinfo rpcd ubus"
+DEPENDS += "libblobpack libutype libusys luci uci lua5.1 libwebsockets iwinfo rpcd ubus luajit"
 RDEPENDS_${PN} += "libutype libblobpack libusys"

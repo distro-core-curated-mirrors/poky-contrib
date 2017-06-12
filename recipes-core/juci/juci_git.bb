@@ -7,19 +7,36 @@ LICENSE = "GPL-3.0"
 LIC_FILES_CHKSUM = "file://COPYING;md5=87212b5f1ae096371049a12f80034f32"
 SECTION = "apps"
 
-SRCREV = "b173dba22fbd9891bc5e3a55f8b40ba562f38e31"
-SRC_URI = "git://github.com/mkschreder/juci"
-SRC_URI += "file://0001-juci-pin-grunt-to-0.4.1-for-grunt-angular-gettext.patch"
-
+SRCREV = "${AUTOREV}"
+#SRCREV = "b4d8961595594e0754d399bb89588622813e49f1"
+#SRC_URI = "git://github.com/mkschreder/juci"
+SRC_URI = "git://github.com/leopck/juci.git"
+#SRC_URI += "file://0001-juci-pin-grunt-to-0.4.1-for-grunt-angular-gettext.patch"
+#SRC_URI += "file://0001-package-4.patch"
+SRC_URI += "file://0001-package-v5.patch"
+SRC_URI += "file://0002-makefile-v2.patch"
 S = "${WORKDIR}/git"
 
 inherit npm-install
 
-NPM_INSTALL_append = " uglify-js"
-DEPENDS += "jucid lua5.1 grunt-cli-native"
+#NPM_INSTALL_append = " uglify-js grunt-cli espree karma"
+DEPENDS += "jucid lua5.1 grunt-cli-native gettext-native"
 
 do_compile() {
 	oe_runmake node_modules
+
+	## Just simply workaround to create softlinks for the local node_modules to be added to the global path
+	ln -sf ${WORKDIR}/git/node_modules/grunt-cli/bin/grunt ${WORKDIR}/recipe-sysroot-native/usr/bin/grunt
+	ln -sf ${WORKDIR}/git/node_modules/uglify-js/bin/uglifyjs ${WORKDIR}/recipe-sysroot-native/usr/bin/uglifyjs
+	ln -sf ${WORKDIR}/git/node_modules/less/bin/lessc ${WORKDIR}/recipe-sysroot-native/usr/bin/lessc
+
+## Workaround for the issue that this is a local node_modules and .bin directory cannot be used due to the fact that .bin is created by another user so no permission to access
+
+	ln -sf ${WORKDIR}/git/node_modules/minify/bin/minify.js ${WORKDIR}/recipe-sysroot-native/usr/bin/minify
+
+## Workaround for the double node_modules issue, this will cause the npm shrinkwrap to flag error, it is highly believed that this issue is due to ln -sf node_modules by nodejs because it creates a softlink inside the first node_modules
+
+	rm ${WORKDIR}/git/node_modules/node_modules
 }
 
 do_install_append() {
