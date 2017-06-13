@@ -65,7 +65,7 @@ RDEPENDS_initramfs-module-mdev = "${PN}-base busybox-mdev"
 FILES_initramfs-module-mdev = "/init.d/01-mdev"
 
 SUMMARY_initramfs-module-udev = "initramfs support for udev"
-RDEPENDS_initramfs-module-udev = "${PN}-base udev"
+RDEPENDS_initramfs-module-udev = "${PN}-base udev udev-extraconf"
 FILES_initramfs-module-udev = "/init.d/01-udev"
 
 SUMMARY_initramfs-module-e2fs = "initramfs support for ext4/ext3/ext2 filesystems"
