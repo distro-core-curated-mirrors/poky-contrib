@@ -32,10 +32,10 @@ def create_src_date_epoch_stamp(d):
     if d.getVar('BUILD_REPRODUCIBLE_BINARIES') == '1':
         path = d.getVar('S')
 
-        #epochfile = os.path.join(path,'src_date_epoch.txt')
-        #if os.path.isfile(epochfile):
-        #    bb.warn(" *** path: %s reusing src_date_epoch.txt" % epochfile)
-        #    return
+        epochfile = os.path.join(path,'src_date_epoch.txt')
+        if os.path.isfile(epochfile):
+            bb.warn(" *** path: %s reusing src_date_epoch.txt" % epochfile)
+            return
 
         filename_dbg = None
         src_date_epoch = get_src_date_epoch_quick(d, path)
