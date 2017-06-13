@@ -1,70 +1,12 @@
-from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, runqemu
-from oeqa.core.decorator.oeid import OETestID
-from oeqa.utils.sshcontrol import SSHControl
 import os
 import json
 
+from oeqa.selftest.case import OESelftestTestCase
+from oeqa.core.decorator.oeid import OETestID
+
 class ImageFeatures(OESelftestTestCase):
-
-    test_user = 'tester'
-    root_user = 'root'
-
-    @OETestID(1107)
-    def test_non_root_user_can_connect_via_ssh_without_password(self):
-        """
-        Summary: Check if non root user can connect via ssh without password
-        Expected: 1. Connection to the image via ssh using root user without providing a password should be allowed.
-                  2. Connection to the image via ssh using tester user without providing a password should be allowed.
-        Product: oe-core
-        Author: Ionut Chisanovici <ionutx.chisanovici@intel.com>
-        AutomatedBy: Daniel Istrate <daniel.alexandrux.istrate@intel.com>
-        """
-
-        features = 'EXTRA_IMAGE_FEATURES = "ssh-server-openssh empty-root-password allow-empty-password"\n'
-        features += 'INHERIT += "extrausers"\n'
-        features += 'EXTRA_USERS_PARAMS = "useradd -p \'\' {}; usermod -s /bin/sh {};"'.format(self.test_user, self.test_user)
-        self.write_config(features)
-
-        # Build a core-image-minimal
-        bitbake('core-image-minimal')
-
-        with runqemu("core-image-minimal") as qemu:
-            # Attempt to ssh with each user into qemu with empty password
-            for user in [self.root_user, self.test_user]:
-                ssh = SSHControl(ip=qemu.ip, logfile=qemu.sshlog, user=user)
-                status, output = ssh.run("true")
-                self.assertEqual(status, 0, 'ssh to user %s failed with %s' % (user, output))
-
-    @OETestID(1115)
-    def test_all_users_can_connect_via_ssh_without_password(self):
-        """
-        Summary:     Check if all users can connect via ssh without password
-        Expected: 1. Connection to the image via ssh using root user without providing a password should NOT be allowed.
-                  2. Connection to the image via ssh using tester user without providing a password should be allowed.
-        Product:     oe-core
-        Author:      Ionut Chisanovici <ionutx.chisanovici@intel.com>
-        AutomatedBy: Daniel Istrate <daniel.alexandrux.istrate@intel.com>
-        """
-
-        features = 'EXTRA_IMAGE_FEATURES = "ssh-server-openssh allow-empty-password"\n'
-        features += 'INHERIT += "extrausers"\n'
-        features += 'EXTRA_USERS_PARAMS = "useradd -p \'\' {}; usermod -s /bin/sh {};"'.format(self.test_user, self.test_user)
-        self.write_config(features)
-
-        # Build a core-image-minimal
-        bitbake('core-image-minimal')
-
-        with runqemu("core-image-minimal") as qemu:
-            # Attempt to ssh with each user into qemu with empty password
-            for user in [self.root_user, self.test_user]:
-                ssh = SSHControl(ip=qemu.ip, logfile=qemu.sshlog, user=user)
-                status, output = ssh.run("true")
-                if user == 'root':
-                    self.assertNotEqual(status, 0, 'ssh to user root was allowed when it should not have been')
-                else:
-                    self.assertEqual(status, 0, 'ssh to user tester failed with %s' % output)
-
+    _use_own_builddir = True
+    _main_thread = False
 
     @OETestID(1116)
     def test_clutter_image_can_be_built(self):
@@ -77,7 +19,7 @@ class ImageFeatures(OESelftestTestCase):
         """
 
         # Build a core-image-clutter
-        bitbake('core-image-clutter')
+        self.bitbake('core-image-clutter')
 
     @OETestID(1117)
     def test_wayland_support_in_image(self):
@@ -90,12 +32,12 @@ class ImageFeatures(OESelftestTestCase):
         AutomatedBy: Daniel Istrate <daniel.alexandrux.istrate@intel.com>
         """
 
-        distro_features = get_bb_var('DISTRO_FEATURES')
+        distro_features = self.get_bb_var('DISTRO_FEATURES')
         if not ('opengl' in distro_features and 'wayland' in distro_features):
             self.skipTest('neither opengl nor wayland present on DISTRO_FEATURES so core-image-weston cannot be built')
 
         # Build a core-image-weston
-        bitbake('core-image-weston')
+        self.bitbake('core-image-weston')
 
     @OETestID(1497)
     def test_bmap(self):
@@ -111,10 +53,10 @@ class ImageFeatures(OESelftestTestCase):
         self.write_config(features)
 
         image_name = 'core-image-minimal'
-        bitbake(image_name)
+        self.bitbake(image_name)
 
-        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
-        link_name = get_bb_var('IMAGE_LINK_NAME', image_name)
+        deploy_dir_image = self.get_bb_var('DEPLOY_DIR_IMAGE')
+        link_name = self.get_bb_var('IMAGE_LINK_NAME', image_name)
         image_path = os.path.join(deploy_dir_image, "%s.ext4" % link_name)
         bmap_path = "%s.bmap" % image_path
         gzip_path = "%s.gz" % bmap_path
@@ -129,7 +71,7 @@ class ImageFeatures(OESelftestTestCase):
         self.assertTrue(image_stat.st_size > image_stat.st_blocks * 512)
 
         # check if the resulting gzip is valid
-        self.assertTrue(runCmd('gzip -t %s' % gzip_path))
+        self.assertTrue(self.runCmd('gzip -t %s' % gzip_path))
 
     def test_hypervisor_fmts(self):
         """
@@ -148,10 +90,10 @@ class ImageFeatures(OESelftestTestCase):
         self.write_config(features)
 
         image_name = 'core-image-minimal'
-        bitbake(image_name)
+        self.bitbake(image_name)
 
-        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
-        link_name = get_bb_var('IMAGE_LINK_NAME', image_name)
+        deploy_dir_image = self.get_bb_var('DEPLOY_DIR_IMAGE')
+        link_name = self.get_bb_var('IMAGE_LINK_NAME', image_name)
         for itype in img_types:
             image_path = os.path.join(deploy_dir_image, "%s.wic.%s" %
                                       (link_name, itype))
@@ -160,8 +102,8 @@ class ImageFeatures(OESelftestTestCase):
             self.assertTrue(os.path.exists(image_path))
 
             # check if result image is vmdk
-            sysroot = get_bb_var('STAGING_DIR_NATIVE', 'core-image-minimal')
-            result = runCmd('qemu-img info --output json %s' % image_path,
+            sysroot = self.get_bb_var('STAGING_DIR_NATIVE', 'core-image-minimal')
+            result = self.runCmd('qemu-img info --output json %s' % image_path,
                             native_sysroot=sysroot)
             self.assertTrue(json.loads(result.output).get('format') == itype)
 
@@ -181,10 +123,10 @@ class ImageFeatures(OESelftestTestCase):
         self.write_config(features)
 
         image_name = 'core-image-minimal'
-        bitbake(image_name)
+        self.bitbake(image_name)
 
-        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
-        link_name = get_bb_var('IMAGE_LINK_NAME', image_name)
+        deploy_dir_image = self.get_bb_var('DEPLOY_DIR_IMAGE')
+        link_name = self.get_bb_var('IMAGE_LINK_NAME', image_name)
         image_path = os.path.join(deploy_dir_image, "%s.%s" %
                                   (link_name, conv))
 
@@ -193,7 +135,7 @@ class ImageFeatures(OESelftestTestCase):
         self.assertTrue(os.path.exists(image_path + ".sha256sum"))
 
         # check if the resulting sha256sum agrees
-        self.assertTrue(runCmd('cd %s;sha256sum -c %s.%s.sha256sum' %
+        self.assertTrue(self.runCmd('cd %s;sha256sum -c %s.%s.sha256sum' %
                                (deploy_dir_image, link_name, conv)))
 
     def test_image_fstypes(self):
@@ -205,7 +147,7 @@ class ImageFeatures(OESelftestTestCase):
         """
         image_name = 'core-image-minimal'
 
-        img_types = [itype for itype in get_bb_var("IMAGE_TYPES", image_name).split() \
+        img_types = [itype for itype in self.get_bb_var("IMAGE_TYPES", image_name).split() \
                          if itype not in ('container', 'elf', 'multiubi')]
 
         config = 'IMAGE_FSTYPES += "%s"\n'\
@@ -214,10 +156,10 @@ class ImageFeatures(OESelftestTestCase):
 
         self.write_config(config)
 
-        bitbake(image_name)
+        self.bitbake(image_name)
 
-        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
-        link_name = get_bb_var('IMAGE_LINK_NAME', image_name)
+        deploy_dir_image = self.get_bb_var('DEPLOY_DIR_IMAGE')
+        link_name = self.get_bb_var('IMAGE_LINK_NAME', image_name)
         for itype in img_types:
             image_path = os.path.join(deploy_dir_image, "%s.%s" % (link_name, itype))
             # check if result image is in deploy directory
