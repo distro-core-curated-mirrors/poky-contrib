@@ -29,7 +29,7 @@ class Command(object):
 
         self.defaultopts = {
             "stdout": subprocess.PIPE,
-            "stderr": subprocess.STDOUT,
+            "stderr": subprocess.PIPE,
             "stdin": None,
             "shell": False,
             "bufsize": -1,
