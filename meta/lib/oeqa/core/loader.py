@@ -13,7 +13,7 @@ from oeqa.core.decorator import decoratorClasses, OETestDecorator, \
         OETestFilter, OETestDiscover
 
 if sys.version_info >= (3,4,4):
-    def _make_failed_test(classname, exception, suiteClass):
+    def _make_failed_test(classname, methodname, exception, suiteClass):
         """
             When loading tests, the unittest framework stores any exceptions and
             displays them only when the 'run' method is called.
@@ -23,7 +23,7 @@ if sys.version_info >= (3,4,4):
         """
         raise exception
 else:
-    def _make_failed_test(classname, methodname, exception, suiteClass):
+    def _make_failed_test(classname, exception, suiteClass):
         raise exception
 unittest.loader._make_failed_test = _make_failed_test
 
