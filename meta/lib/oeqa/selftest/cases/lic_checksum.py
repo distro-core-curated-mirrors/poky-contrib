@@ -31,5 +31,5 @@ SRC_URI = "file://%s;md5=d41d8cd98f00b204e9800998ecf8427e"
 
         self.write_config("INHERIT_remove = \"report-error\"")
         result = bitbake(bitbake_cmd, ignore_status=True)
-        if error_msg not in result.output:
-            raise AssertionError(result.output)
+        if error_msg not in result.error:
+            raise AssertionError(result.error)

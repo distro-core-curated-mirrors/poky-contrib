@@ -23,16 +23,16 @@ class OePkgdataUtilTests(OESelftestTestCase):
         result = runCmd('oe-pkgdata-util lookup-pkg zlib-dev')
         self.assertEqual(result.output, 'libz-dev')
         result = runCmd('oe-pkgdata-util lookup-pkg nonexistentpkg', ignore_status=True)
-        self.assertEqual(result.status, 1, "Status different than 1. output: %s" % result.output)
-        self.assertEqual(result.output, 'ERROR: The following packages could not be found: nonexistentpkg')
+        self.assertEqual(result.status, 1, "Status different than 1. error: %s" % result.error)
+        self.assertEqual(result.error, 'ERROR: The following packages could not be found: nonexistentpkg')
         # Reverse tests
         result = runCmd('oe-pkgdata-util lookup-pkg -r "libz1 busybox"')
         self.assertEqual(result.output, 'zlib\nbusybox')
         result = runCmd('oe-pkgdata-util lookup-pkg -r libz-dev')
         self.assertEqual(result.output, 'zlib-dev')
         result = runCmd('oe-pkgdata-util lookup-pkg -r nonexistentpkg', ignore_status=True)
-        self.assertEqual(result.status, 1, "Status different than 1. output: %s" % result.output)
-        self.assertEqual(result.output, 'ERROR: The following packages could not be found: nonexistentpkg')
+        self.assertEqual(result.status, 1, "Status different than 1. error: %s" % result.error)
+        self.assertEqual(result.error, 'ERROR: The following packages could not be found: nonexistentpkg')
 
     @OETestID(1205)
     def test_read_value(self):
@@ -51,8 +51,8 @@ class OePkgdataUtilTests(OESelftestTestCase):
         result = runCmd('oe-pkgdata-util find-path /usr/bin/m4')
         self.assertEqual(result.output, 'm4: /usr/bin/m4')
         result = runCmd('oe-pkgdata-util find-path /not/exist', ignore_status=True)
-        self.assertEqual(result.status, 1, "Status different than 1. output: %s" % result.output)
-        self.assertEqual(result.output, 'ERROR: Unable to find any package producing path /not/exist')
+        self.assertEqual(result.status, 1, "Status different than 1. error: %s" % result.error)
+        self.assertEqual(result.error, 'ERROR: Unable to find any package producing path /not/exist')
 
     @OETestID(1204)
     def test_lookup_recipe(self):
@@ -61,8 +61,8 @@ class OePkgdataUtilTests(OESelftestTestCase):
         result = runCmd('oe-pkgdata-util lookup-recipe libz-dbg')
         self.assertEqual(result.output, 'zlib')
         result = runCmd('oe-pkgdata-util lookup-recipe nonexistentpkg', ignore_status=True)
-        self.assertEqual(result.status, 1, "Status different than 1. output: %s" % result.output)
-        self.assertEqual(result.output, 'ERROR: The following packages could not be found: nonexistentpkg')
+        self.assertEqual(result.status, 1, "Status different than 1. error: %s" % result.error)
+        self.assertEqual(result.error, 'ERROR: The following packages could not be found: nonexistentpkg')
 
     @OETestID(1202)
     def test_list_pkgs(self):

@@ -133,7 +133,7 @@ class Signing(OESelftestTestCase):
         ret = runCmd('gpg --homedir %s --verify %s %s' % (self.gpg_dir, recipe_sig[0], recipe_tgz[0]))
         # gpg: Signature made Thu 22 Oct 2015 01:45:09 PM EEST using RSA key ID 61EEFB30
         # gpg: Good signature from "testuser (nocomment) <testuser@email.com>"
-        self.assertIn('gpg: Good signature from', ret.output, 'Package signed incorrectly.')
+        self.assertIn('gpg: Good signature from', ret.error, 'Package signed incorrectly.')
 
 
 class LockedSignatures(OESelftestTestCase):

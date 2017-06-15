@@ -3,16 +3,12 @@ import re
 
 import oeqa.utils.ftools as ftools
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
+from oeqa.utils.misc import getline
 
 from oeqa.selftest.case import OESelftestTestCase
 from oeqa.core.decorator.oeid import OETestID
 
 class BitbakeTests(OESelftestTestCase):
-
-    def getline(self, res, line):
-        for l in res.output.split('\n'):
-            if line in l:
-                return l
 
     @OETestID(789)
     def test_run_bitbake_from_dir_1(self):
@@ -46,13 +42,15 @@ class BitbakeTests(OESelftestTestCase):
 
     @OETestID(105)
     def test_bitbake_invalid_recipe(self):
-        result = bitbake('-b asdf', ignore_status=True)
-        self.assertTrue("ERROR: Unable to find any recipe file matching 'asdf'" in result.output, msg = "Though asdf recipe doesn't exist, bitbake didn't output any err. message. bitbake output: %s" % result.output)
+        invalid = 'asdf'
+        result = bitbake('-b %s' % invalid, ignore_status=True)
+        self.assertTrue("ERROR: Unable to find any recipe file matching '%s'" % invalid in result.error, msg = "Though %s recipe doesn't exist, bitbake didn't output any err. message. bitbake output: %s" % (invalid, result.error))
 
     @OETestID(107)
     def test_bitbake_invalid_target(self):
-        result = bitbake('asdf', ignore_status=True)
-        self.assertTrue("ERROR: Nothing PROVIDES 'asdf'" in result.output, msg = "Though no 'asdf' target exists, bitbake didn't output any err. message. bitbake output: %s" % result.output)
+        invalid = 'asdf'
+        result = bitbake(invalid, ignore_status=True)
+        self.assertTrue("ERROR: Nothing PROVIDES '%s'" % invalid in result.error, msg = "Though no '%s' target exists, bitbake didn't output any err. message. bitbake output: %s" % (invalid, result.error))
 
     @OETestID(106)
     def test_warnings_errors(self):
@@ -71,8 +69,8 @@ class BitbakeTests(OESelftestTestCase):
         result = bitbake('man -c patch', ignore_status=True)
         self.delete_recipeinc('man')
         bitbake('-cclean man')
-        line = self.getline(result, "Function failed: patch_do_patch")
-        self.assertTrue(line and line.startswith("ERROR:"), msg = "Repeated patch application didn't fail. bitbake output: %s" % result.output)
+        line = getline(result.error, "Function failed: patch_do_patch")
+        self.assertTrue(line and line.startswith("ERROR:"), msg = "Repeated patch application didn't fail. bitbake output: %s" % result.error)
 
     @OETestID(1354)
     def test_force_task_1(self):
@@ -144,9 +142,9 @@ INHERIT_remove = \"report-error\"
         bitbake('-ccleanall man')
         self.delete_recipeinc('man')
         self.assertEqual(result.status, 1, msg="Command succeded when it should have failed. bitbake output: %s" % result.output)
-        self.assertTrue('Fetcher failure: Unable to find file file://invalid anywhere. The paths that were searched were:' in result.output, msg = "\"invalid\" file \
+        self.assertTrue('Fetcher failure: Unable to find file file://invalid anywhere. The paths that were searched were:' in result.error, msg = "\"invalid\" file \
 doesn't exist, yet no error message encountered. bitbake output: %s" % result.output)
-        line = self.getline(result, 'Fetcher failure for URL: \'file://invalid\'. Unable to fetch URL from any source.')
+        line = getline(result.error, 'Fetcher failure for URL: \'file://invalid\'. Unable to fetch URL from any source.')
         self.assertTrue(line and line.startswith("ERROR:"), msg = "\"invalid\" file \
 doesn't exist, yet fetcher didn't report any error. bitbake output: %s" % result.output)
 

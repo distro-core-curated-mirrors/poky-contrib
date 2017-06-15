@@ -6,6 +6,7 @@ import tempfile
 from oeqa.selftest.case import OESelftestTestCase
 from oeqa.selftest.cases.buildhistory import BuildhistoryBase
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
+from oeqa.utils.misc import getline
 import oeqa.utils.ftools as ftools
 from oeqa.core.decorator.oeid import OETestID
 
@@ -58,21 +59,17 @@ class DiskMonTest(OESelftestTestCase):
     def test_stoptask_behavior(self):
         self.write_config('BB_DISKMON_DIRS = "STOPTASKS,${TMPDIR},100000G,100K"')
         res = bitbake("m4", ignore_status = True)
-        self.assertTrue('ERROR: No new tasks can be executed since the disk space monitor action is "STOPTASKS"!' in res.output, msg = "Tasks should have stopped. Disk monitor is set to STOPTASK: %s" % res.output)
-        self.assertEqual(res.status, 1, msg = "bitbake reported exit code %s. It should have been 1. Bitbake output: %s" % (str(res.status), res.output))
+        self.assertTrue('ERROR: No new tasks can be executed since the disk space monitor action is "STOPTASKS"!' in res.error, msg = "Tasks should have stopped. Disk monitor is set to STOPTASK: %s" % res.error)
+        self.assertEqual(res.status, 1, msg = "bitbake reported exit code %s. It should have been 1. Bitbake output: %s" % (str(res.status), res.error))
         self.write_config('BB_DISKMON_DIRS = "ABORT,${TMPDIR},100000G,100K"')
         res = bitbake("m4", ignore_status = True)
-        self.assertTrue('ERROR: Immediately abort since the disk space monitor action is "ABORT"!' in res.output, "Tasks should have been aborted immediatelly. Disk monitor is set to ABORT: %s" % res.output)
-        self.assertEqual(res.status, 1, msg = "bitbake reported exit code %s. It should have been 1. Bitbake output: %s" % (str(res.status), res.output))
+        self.assertTrue('ERROR: Immediately abort since the disk space monitor action is "ABORT"!' in res.error, "Tasks should have been aborted immediatelly. Disk monitor is set to ABORT: %s" % res.error)
+        self.assertEqual(res.status, 1, msg = "bitbake reported exit code %s. It should have been 1. Bitbake output: %s" % (str(res.status), res.error))
         self.write_config('BB_DISKMON_DIRS = "WARN,${TMPDIR},100000G,100K"')
         res = bitbake("m4")
         self.assertTrue('WARNING: The free space' in res.output, msg = "A warning should have been displayed for disk monitor is set to WARN: %s" %res.output)
 
 class SanityOptionsTest(OESelftestTestCase):
-    def getline(self, res, line):
-        for l in res.output.split('\n'):
-            if line in l:
-                return l
 
     @OETestID(927)
     def test_options_warnqa_errorqa_switch(self):
@@ -85,7 +82,7 @@ class SanityOptionsTest(OESelftestTestCase):
         self.add_command_to_tearDown('bitbake -c clean xcursor-transparent-theme')
         res = bitbake("xcursor-transparent-theme -f -c package", ignore_status=True)
         self.delete_recipeinc('xcursor-transparent-theme')
-        line = self.getline(res, "QA Issue: xcursor-transparent-theme-dbg is listed in PACKAGES multiple times, this leads to packaging errors.")
+        line = getline(res.error, "QA Issue: xcursor-transparent-theme-dbg is listed in PACKAGES multiple times, this leads to packaging errors.")
         self.assertTrue(line and line.startswith("ERROR:"), msg=res.output)
         self.assertEqual(res.status, 1, msg = "bitbake reported exit code %s. It should have been 1. Bitbake output: %s" % (str(res.status), res.output))
         self.write_recipeinc('xcursor-transparent-theme', 'PACKAGES += \"${PN}-dbg\"')
@@ -93,7 +90,7 @@ class SanityOptionsTest(OESelftestTestCase):
         self.append_config('WARN_QA_append = " packages-list"')
         res = bitbake("xcursor-transparent-theme -f -c package")
         self.delete_recipeinc('xcursor-transparent-theme')
-        line = self.getline(res, "QA Issue: xcursor-transparent-theme-dbg is listed in PACKAGES multiple times, this leads to packaging errors.")
+        line = getline(res.output, "QA Issue: xcursor-transparent-theme-dbg is listed in PACKAGES multiple times, this leads to packaging errors.")
         self.assertTrue(line and line.startswith("WARNING:"), msg=res.output)
 
     @OETestID(278)
@@ -102,7 +99,7 @@ class SanityOptionsTest(OESelftestTestCase):
 
         self.add_command_to_tearDown('bitbake -c clean gzip')
         res = bitbake("gzip -f -c package_qa")
-        line = self.getline(res, "QA Issue: gzip")
+        line = getline(res.output, "QA Issue: gzip")
         self.assertFalse(line, "WARNING: QA Issue: gzip message is present in bitbake's output and shouldn't be: %s" % res.output)
 
         self.append_config("""
@@ -111,7 +108,7 @@ do_install_append_pn-gzip () {
 }
 """)
         res = bitbake("gzip -f -c package_qa")
-        line = self.getline(res, "QA Issue: gzip")
+        line = getline(res.output, "QA Issue: gzip")
         self.assertTrue(line and line.startswith("WARNING:"), "WARNING: QA Issue: gzip message is not present in bitbake's output: %s" % res.output)
 
     @OETestID(1421)

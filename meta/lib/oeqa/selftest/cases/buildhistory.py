@@ -37,10 +37,10 @@ class BuildhistoryBase(OESelftestTestCase):
 
         if expect_error:
             self.assertEqual(result.status, 1, msg="Error expected for global config '%s' and target config '%s'" % (global_config, target_config))
-            search_for_error = re.search(error_regex, result.output)
-            self.assertTrue(search_for_error, msg="Could not find desired error in output: %s (%s)" % (error_regex, result.output))
+            search_for_error = re.search(error_regex, result.error)
+            self.assertTrue(search_for_error, msg="Could not find desired error in output: %s (%s)" % (error_regex, result.error))
         else:
-            self.assertEqual(result.status, 0, msg="Command 'bitbake %s' has failed unexpectedly: %s" % (target, result.output))
+            self.assertEqual(result.status, 0, msg="Command 'bitbake %s' has failed unexpectedly: %s" % (target, result.error))
 
     # No tests should be added to the base class.
     # Please create a new class that inherit this one, or use one of those already available for adding tests.

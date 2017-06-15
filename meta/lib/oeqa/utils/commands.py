@@ -70,6 +70,7 @@ class Command(object):
             self.stop()
 
     def stop(self):
+
         if self.thread.isAlive():
             self.process.terminate()
             # let's give it more time to terminate gracefully before killing it
@@ -78,10 +79,9 @@ class Command(object):
                 self.process.kill()
                 self.thread.join()
 
-        if not self.output:
-            self.output = ""
-        else:
-            self.output = self.output.decode("utf-8", errors='replace').rstrip()
+        self.output = self.output.decode("utf-8", errors='replace').rstrip() if self.output else ""
+        self.error = self.error.decode("utf-8", errors='ignore').rstrip() if self.error else ""
+
         self.status = self.process.poll()
 
         self.log.debug("Command '%s' returned %d as exit code." % (self.cmd, self.status))
