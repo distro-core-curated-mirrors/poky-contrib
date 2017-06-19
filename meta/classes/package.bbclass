@@ -1404,6 +1404,8 @@ python emit_pkgdata() {
         write_if_exists(sf, pkg, 'pkg_prerm')
         write_if_exists(sf, pkg, 'FILERPROVIDESFLIST')
         write_if_exists(sf, pkg, 'FILES_INFO')
+        write_if_exists(sf, pkg, 'SRC_URI')
+        write_if_exists(sf, pkg, 'HOMEPAGE')
         for dfile in (d.getVar('FILERPROVIDESFLIST_' + pkg) or "").split():
             write_if_exists(sf, pkg, 'FILERPROVIDES_' + dfile)
 

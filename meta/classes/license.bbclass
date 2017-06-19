@@ -65,50 +65,76 @@ def write_license_files(d, license_manifest, pkg_dic):
     bad_licenses = expand_wildcard_licenses(d, bad_licenses)
 
     with open(license_manifest, "w") as license_file:
-        for pkg in sorted(pkg_dic):
-            if bad_licenses:
-                try:
-                    (pkg_dic[pkg]["LICENSE"], pkg_dic[pkg]["LICENSES"]) = \
-                        oe.license.manifest_licenses(pkg_dic[pkg]["LICENSE"],
-                        bad_licenses, canonical_license, d)
-                except oe.license.LicenseError as exc:
-                    bb.fatal('%s: %s' % (d.getVar('P'), exc))
-            else:
-                pkg_dic[pkg]["LICENSES"] = re.sub('[|&()*]', ' ', pkg_dic[pkg]["LICENSE"])
-                pkg_dic[pkg]["LICENSES"] = re.sub('  *', ' ', pkg_dic[pkg]["LICENSES"])
-                pkg_dic[pkg]["LICENSES"] = pkg_dic[pkg]["LICENSES"].split()
+        with open(license_manifest+".csv", "w") as license_excel:
+            license_excel.write("\"Component Name (Recipe name)\",\"Summary\",\"Description\",")
+            license_excel.write("\"License\",\"Source URL (SRC_URI)\",\"Supplier (HOMEPAGE)\"\n")
+            for pkg in sorted(pkg_dic):
+                if bad_licenses:
+                    try:
+                        (pkg_dic[pkg]["LICENSE"], pkg_dic[pkg]["LICENSES"]) = \
+                            oe.license.manifest_licenses(pkg_dic[pkg]["LICENSE"],
+                            bad_licenses, canonical_license, d)
+                    except oe.license.LicenseError as exc:
+                        bb.fatal('%s: %s' % (d.getVar('P'), exc))
+                else:
+                    pkg_dic[pkg]["LICENSES"] = re.sub('[|&()*]', ' ', pkg_dic[pkg]["LICENSE"])
+                    pkg_dic[pkg]["LICENSES"] = re.sub('  *', ' ', pkg_dic[pkg]["LICENSES"])
+                    pkg_dic[pkg]["LICENSES"] = pkg_dic[pkg]["LICENSES"].split()
 
-            if not "IMAGE_MANIFEST" in pkg_dic[pkg]:
-                # Rootfs manifest
-                license_file.write("PACKAGE NAME: %s\n" % pkg)
-                license_file.write("PACKAGE VERSION: %s\n" % pkg_dic[pkg]["PV"])
-                license_file.write("RECIPE NAME: %s\n" % pkg_dic[pkg]["PN"])
-                license_file.write("LICENSE: %s\n\n" % pkg_dic[pkg]["LICENSE"])
+                src_url = "NA"
+                if "SRC_URI" in pkg_dic[pkg]:
+                    src_url = pkg_dic[pkg]["SRC_URI"]
+                elif "SRC_URI_" + pkg in pkg_dic[pkg]:
+                    src_url = pkg_dic[pkg]["SRC_URI_" + pkg]
+                else:
+                    src_url = "NA"
+                src_url_lite = (src_url.split(" ")[0]).split(";")[0]
 
-                # If the package doesn't contain any file, that is, its size is 0, the license
-                # isn't relevant as far as the final image is concerned. So doing license check
-                # doesn't make much sense, skip it.
-                if pkg_dic[pkg]["PKGSIZE_%s" % pkg] == "0":
-                    continue
-            else:
-                # Image manifest
-                license_file.write("RECIPE NAME: %s\n" % pkg_dic[pkg]["PN"])
-                license_file.write("VERSION: %s\n" % pkg_dic[pkg]["PV"])
-                license_file.write("LICENSE: %s\n" % pkg_dic[pkg]["LICENSE"])
-                license_file.write("FILES: %s\n\n" % pkg_dic[pkg]["FILES"])
+                if not "IMAGE_MANIFEST" in pkg_dic[pkg]:
+                    # Rootfs manifest
+                    license_file.write("PACKAGE NAME: %s\n" % pkg)
+                    license_file.write("PACKAGE VERSION: %s\n" % pkg_dic[pkg]["PV"])
+                    license_file.write("RECIPE NAME: %s\n" % pkg_dic[pkg]["PN"])
+                    license_file.write("LICENSE: %s\n\n" % pkg_dic[pkg]["LICENSE"])
 
-            for lic in pkg_dic[pkg]["LICENSES"]:
-                lic_file = os.path.join(d.getVar('LICENSE_DIRECTORY'),
-                                        pkg_dic[pkg]["PN"], "generic_%s" % 
-                                        re.sub('\+', '', lic))
-                # add explicity avoid of CLOSED license because isn't generic
-                if lic == "CLOSED":
-                   continue
+                    license_excel.write("\"%s\"," % pkg)
+                    license_excel.write("\"%s\"," % (pkg_dic[pkg].get("SUMMARY", "NA")).replace("\"","\'"))
+                    license_excel.write("\"%s\"," % (pkg_dic[pkg].get("DESCRIPTION", "NA")).replace("\"","\'"))
+                    license_excel.write("\"%s\"," % pkg_dic[pkg]["LICENSE"])
+                    license_excel.write("\"%s\"," % src_url_lite)
+                    license_excel.write("\"%s\"\n" % pkg_dic[pkg].get("HOMEPAGE", "NA"))
 
-                if not os.path.exists(lic_file):
-                   bb.warn("The license listed %s was not in the "\ 
-                            "licenses collected for recipe %s" 
-                            % (lic, pkg_dic[pkg]["PN"]))
+                    # If the package doesn't contain any file, that is, its size is 0, the license
+                    # isn't relevant as far as the final image is concerned. So doing license check
+                    # doesn't make much sense, skip it.
+                    if pkg_dic[pkg]["PKGSIZE_%s" % pkg] == "0":
+                        continue
+                else:
+                    # Image manifest
+                    license_file.write("RECIPE NAME: %s\n" % pkg_dic[pkg]["PN"])
+                    license_file.write("VERSION: %s\n" % pkg_dic[pkg]["PV"])
+                    license_file.write("LICENSE: %s\n" % pkg_dic[pkg]["LICENSE"])
+                    license_file.write("FILES: %s\n\n" % pkg_dic[pkg]["FILES"])
+
+                    license_excel.write("\"%s\"," % pkg)
+                    license_excel.write("\"%s\"," % (pkg_dic[pkg].get("SUMMARY", "NA")).replace("\"","\'"))
+                    license_excel.write("\"%s\"," % (pkg_dic[pkg].get("DESCRIPTION", "NA")).replace("\"","\'"))
+                    license_excel.write("\"%s\"," % pkg_dic[pkg]["LICENSE"])
+                    license_excel.write("\"%s\"," % src_url_lite)
+                    license_excel.write("\"%s\"\n" % pkg_dic[pkg].get("HOMEPAGE", "NA"))
+
+                for lic in pkg_dic[pkg]["LICENSES"]:
+                    lic_file = os.path.join(d.getVar('LICENSE_DIRECTORY'),
+                                            pkg_dic[pkg]["PN"], "generic_%s" % 
+                                            re.sub('\+', '', lic))
+                    # add explicity avoid of CLOSED license because isn't generic
+                    if lic == "CLOSED":
+                       continue
+
+                    if not os.path.exists(lic_file):
+                       bb.warn("The license listed %s was not in the "\ 
+                                "licenses collected for recipe %s" 
+                                % (lic, pkg_dic[pkg]["PN"]))
 
     # Two options here:
     # - Just copy the manifest
