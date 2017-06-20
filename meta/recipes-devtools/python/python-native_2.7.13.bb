@@ -1,5 +1,4 @@
 require python.inc
-
 EXTRANATIVEPATH += "bzip2-native"
 DEPENDS = "openssl-native bzip2-replacement-native zlib-native readline-native sqlite3-native expat-native"
 PR = "${INC_PR}.1"
@@ -24,8 +23,6 @@ S = "${WORKDIR}/Python-${PV}"
 FILESEXTRAPATHS =. "${FILE_DIRNAME}/${PN}:"
 
 inherit native
-
-require python-native-${PYTHON_MAJMIN}-manifest.inc
 
 EXTRA_OECONF_append = " --bindir=${bindir}/${PN} --with-system-expat=${STAGING_DIR_HOST}"
 
