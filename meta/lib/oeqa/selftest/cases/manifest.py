@@ -1,7 +1,7 @@
 import os
 
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import get_bb_var, get_bb_vars, bitbake
+from oeqa.utils.commands import bitbake
 from oeqa.core.decorator.oeid import OETestID
 
 class ManifestEntry:
@@ -37,7 +37,7 @@ class VerifyManifest(OESelftestTestCase):
     @classmethod
     def get_dir_from_bb_var(self, bb_var, target = None):
         target == self.buildtarget if target == None else target
-        directory = get_bb_var(bb_var, target);
+        directory = self.get_bb_var(bb_var, target);
         if not directory or not os.path.isdir(directory):
             self.logger.debug("{}: {} points to {} when target = {}"\
                     .format(self.classname, bb_var, directory, target))
@@ -84,7 +84,7 @@ class VerifyManifest(OESelftestTestCase):
         try:
             mdir = self.get_dir_from_bb_var('SDK_DEPLOY', self.buildtarget)
             for k in d_target.keys():
-                bb_vars = get_bb_vars(['SDK_NAME', 'SDK_VERSION'], self.buildtarget)
+                bb_vars = self.get_bb_vars(['SDK_NAME', 'SDK_VERSION'], self.buildtarget)
                 mfilename[k] = "{}-toolchain-{}.{}.manifest".format(
                         bb_vars['SDK_NAME'],
                         bb_vars['SDK_VERSION'],
@@ -134,7 +134,7 @@ class VerifyManifest(OESelftestTestCase):
         try:
             mdir = self.get_dir_from_bb_var('DEPLOY_DIR_IMAGE',
                                                 self.buildtarget)
-            mfilename = get_bb_var("IMAGE_LINK_NAME", self.buildtarget)\
+            mfilename = self.get_bb_var("IMAGE_LINK_NAME", self.buildtarget)\
                     + ".manifest"
             mpath = os.path.join(mdir, mfilename)
             if not os.path.isfile(mpath): raise IOError

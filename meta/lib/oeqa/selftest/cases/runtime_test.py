@@ -1,5 +1,5 @@
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars, runqemu
+from oeqa.utils.commands import runCmd, bitbake, runqemu
 from oeqa.core.decorator.oeid import OETestID
 import os
 import re
@@ -33,7 +33,7 @@ class TestExport(OESelftestTestCase):
         bitbake('core-image-minimal')
         bitbake('-c testexport core-image-minimal')
 
-        testexport_dir = get_bb_var('TEST_EXPORT_DIR', 'core-image-minimal')
+        testexport_dir = self.get_bb_var('TEST_EXPORT_DIR', 'core-image-minimal')
 
         # Verify if TEST_EXPORT_DIR was created
         isdir = os.path.isdir(testexport_dir)
@@ -78,7 +78,7 @@ class TestExport(OESelftestTestCase):
         bitbake('-c testexport core-image-minimal')
 
         needed_vars = ['TEST_EXPORT_DIR', 'TEST_EXPORT_SDK_DIR', 'TEST_EXPORT_SDK_NAME']
-        bb_vars = get_bb_vars(needed_vars, 'core-image-minimal')
+        bb_vars = self.get_bb_vars(needed_vars, 'core-image-minimal')
         testexport_dir = bb_vars['TEST_EXPORT_DIR']
         sdk_dir = bb_vars['TEST_EXPORT_SDK_DIR']
         sdk_name = bb_vars['TEST_EXPORT_SDK_NAME']
@@ -115,7 +115,7 @@ class TestImage(OESelftestTestCase):
         Product: oe-core
         Author: Mariano Lopez <mariano.lopez@intel.com>
         """
-        if get_bb_var('DISTRO') == 'poky-tiny':
+        if self.get_bb_var('DISTRO') == 'poky-tiny':
             self.skipTest('core-image-full-cmdline not buildable for poky-tiny')
 
         features = 'INHERIT += "testimage"\n'
@@ -134,7 +134,7 @@ class TestImage(OESelftestTestCase):
         Product: oe-core
         Author: Alexander Kanavin <alexander.kanavin@intel.com>
         """
-        if get_bb_var('DISTRO') == 'poky-tiny':
+        if self.get_bb_var('DISTRO') == 'poky-tiny':
             self.skipTest('core-image-full-cmdline not buildable for poky-tiny')
 
         features = 'INHERIT += "testimage"\n'
@@ -180,7 +180,7 @@ postinst-delayed-t \
                          '103-postinst-delayed-d',
                          '104-postinst-delayed-p',
                          '105-postinst-delayed-t']
-        path_workdir = get_bb_var('WORKDIR','core-image-minimal')
+        path_workdir = self.get_bb_var('WORKDIR','core-image-minimal')
         workspacedir = 'testimage/qemu_boot_log'
         workspacedir = os.path.join(path_workdir, workspacedir)
         rexp = re.compile("^Running postinst .*/(?P<postinst>.*)\.\.\.$")
@@ -245,7 +245,7 @@ postinst-delayed-t \
                 bitbake('core-image-minimal')
 
                 #Step 3
-                file_rootfs_created = os.path.join(get_bb_var('IMAGE_ROOTFS',"core-image-minimal"),
+                file_rootfs_created = os.path.join(self.get_bb_var('IMAGE_ROOTFS',"core-image-minimal"),
                                                    file_rootfs_name)
                 found = os.path.isfile(file_rootfs_created)
                 self.assertTrue(found, "File %s was not created at rootfs time by %s" % \

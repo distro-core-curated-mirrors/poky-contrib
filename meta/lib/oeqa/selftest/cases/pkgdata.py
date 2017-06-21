@@ -3,7 +3,7 @@ import tempfile
 import fnmatch
 
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
+from oeqa.utils.commands import runCmd, bitbake
 from oeqa.core.decorator.oeid import OETestID
 
 class OePkgdataUtilTests(OESelftestTestCase):
@@ -122,7 +122,7 @@ class OePkgdataUtilTests(OESelftestTestCase):
                     curpkg = line.split(':')[0]
                     files[curpkg] = []
             return files
-        bb_vars = get_bb_vars(['base_libdir', 'libdir', 'includedir', 'mandir'])
+        bb_vars = self.get_bb_vars(['base_libdir', 'libdir', 'includedir', 'mandir'])
         base_libdir = bb_vars['base_libdir']
         libdir = bb_vars['libdir']
         includedir = bb_vars['includedir']
@@ -220,5 +220,5 @@ class OePkgdataUtilTests(OESelftestTestCase):
 
     @OETestID(1206)
     def test_specify_pkgdatadir(self):
-        result = runCmd('oe-pkgdata-util -p %s lookup-pkg zlib' % get_bb_var('PKGDATA_DIR'))
+        result = runCmd('oe-pkgdata-util -p %s lookup-pkg zlib' % self.get_bb_var('PKGDATA_DIR'))
         self.assertEqual(result.output, 'libz1')

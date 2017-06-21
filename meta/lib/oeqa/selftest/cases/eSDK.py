@@ -4,7 +4,7 @@ import os
 import glob
 from oeqa.core.decorator.oeid import OETestID
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
+from oeqa.utils.commands import runCmd, bitbake, get_bb_vars
 
 class oeSDKExtSelfTest(OESelftestTestCase):
     """
@@ -72,7 +72,7 @@ CORE_IMAGE_EXTRA_INSTALL = "perl"
         super(oeSDKExtSelfTest, cls).setUpClass()
         cls.tmpdir_eSDKQA = tempfile.mkdtemp(prefix='eSDKQA')
 
-        sstate_dir = get_bb_var('SSTATE_DIR')
+        sstate_dir = cls.get_bb_var('SSTATE_DIR')
 
         cls.image = 'core-image-minimal'
         oeSDKExtSelfTest.generate_eSDK(cls.image)

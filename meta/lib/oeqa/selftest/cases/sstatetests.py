@@ -4,7 +4,7 @@ import glob
 import subprocess
 
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_test_layer
+from oeqa.utils.commands import runCmd, bitbake, get_test_layer
 from oeqa.selftest.cases.sstate import SStateBase
 from oeqa.core.decorator.oeid import OETestID
 
@@ -150,7 +150,7 @@ class SStateTests(SStateBase):
         for idx in range(len(target_config)):
             self.append_config(global_config[idx])
             self.append_recipeinc(target, target_config[idx])
-            sstate_arch = get_bb_var('SSTATE_PKGARCH', target)
+            sstate_arch = self.get_bb_var('SSTATE_PKGARCH', target)
             if not sstate_arch in sstate_archs_list:
                 sstate_archs_list.append(sstate_arch)
             if target_config[idx] == target_config[-1]:

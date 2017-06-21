@@ -1,6 +1,7 @@
 from oeqa.selftest.case import OESelftestTestCase
 from oeqa.core.decorator.oeid import OETestID
-from oeqa.utils.commands import get_bb_var, get_bb_vars, bitbake, runCmd
+from oeqa.utils.commands import bitbake, runCmd
+
 import oe.path
 import os
 
@@ -9,7 +10,7 @@ class LibOE(OESelftestTestCase):
     @classmethod
     def setUpClass(cls):
         super(LibOE, cls).setUpClass()
-        cls.tmp_dir = get_bb_var('TMPDIR')
+        cls.tmp_dir = cls.get_bb_var('TMPDIR')
 
     @OETestID(1635)
     def test_copy_tree_special(self):
@@ -56,7 +57,7 @@ class LibOE(OESelftestTestCase):
         # ensure we have setfattr available
         bitbake("attr-native")
 
-        bb_vars = get_bb_vars(['SYSROOT_DESTDIR', 'bindir'], 'attr-native')
+        bb_vars = self.get_bb_vars(['SYSROOT_DESTDIR', 'bindir'], 'attr-native')
         destdir = bb_vars['SYSROOT_DESTDIR']
         bindir = bb_vars['bindir']
         bindir = destdir + bindir

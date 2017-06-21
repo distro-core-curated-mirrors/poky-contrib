@@ -2,7 +2,7 @@ import os
 import re
 
 import oeqa.utils.ftools as ftools
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
+from oeqa.utils.commands import runCmd, bitbake
 
 from oeqa.selftest.case import OESelftestTestCase
 from oeqa.core.decorator.oeid import OETestID
@@ -79,7 +79,7 @@ class BitbakeTests(OESelftestTestCase):
         # test 1 from bug 5875
         test_recipe = 'zlib'
         test_data = "Microsoft Made No Profit From Anyone's Zunes Yo"
-        bb_vars = get_bb_vars(['D', 'PKGDEST', 'mandir'], test_recipe)
+        bb_vars = self.get_bb_vars(['D', 'PKGDEST', 'mandir'], test_recipe)
         image_dir = bb_vars['D']
         pkgsplit_dir = bb_vars['PKGDEST']
         man_dir = bb_vars['mandir']
@@ -123,7 +123,7 @@ class BitbakeTests(OESelftestTestCase):
     @OETestID(899)
     def test_image_manifest(self):
         bitbake('core-image-minimal')
-        bb_vars = get_bb_vars(["DEPLOY_DIR_IMAGE", "IMAGE_LINK_NAME"], "core-image-minimal")
+        bb_vars = self.get_bb_vars(["DEPLOY_DIR_IMAGE", "IMAGE_LINK_NAME"], "core-image-minimal")
         deploydir = bb_vars["DEPLOY_DIR_IMAGE"]
         imagename = bb_vars["IMAGE_LINK_NAME"]
         manifest = os.path.join(deploydir, imagename + ".manifest")
@@ -164,7 +164,7 @@ SSTATE_DIR = \"${TOPDIR}/download-selftest\"
         result = bitbake('-f -c fetch aspell', ignore_status=True)
         self.delete_recipeinc('aspell')
         self.assertEqual(result.status, 0, msg = "Couldn't fetch aspell. %s" % result.output)
-        dl_dir = get_bb_var("DL_DIR")
+        dl_dir = self.get_bb_var("DL_DIR")
         self.assertTrue(os.path.isfile(os.path.join(dl_dir, 'test-aspell.tar.gz')), msg = "File rename failed. No corresponding test-aspell.tar.gz file found under %s" % dl_dir)
         self.assertTrue(os.path.isfile(os.path.join(dl_dir, 'test-aspell.tar.gz.done')), "File rename failed. No corresponding test-aspell.tar.gz.done file found under %s" % dl_dir)
 
@@ -235,7 +235,7 @@ INHERIT_remove = \"report-error\"
         self.write_config('INCOMPATIBLE_LICENSE = "GPLv3"')
         result = bitbake('selftest-ed', ignore_status=True)
         self.assertEqual(result.status, 0, "Bitbake failed, exit code %s, output %s" % (result.status, result.output))
-        lic_dir = get_bb_var('LICENSE_DIRECTORY')
+        lic_dir = self.get_bb_var('LICENSE_DIRECTORY')
         self.assertFalse(os.path.isfile(os.path.join(lic_dir, 'selftest-ed/generic_GPLv3')))
         self.assertTrue(os.path.isfile(os.path.join(lic_dir, 'selftest-ed/generic_GPLv2')))
 
@@ -258,7 +258,7 @@ INHERIT_remove = \"report-error\"
     def test_bbappend_order(self):
         """ Bitbake should bbappend to recipe in a predictable order """
         test_recipe = 'ed'
-        bb_vars = get_bb_vars(['SUMMARY', 'PV'], test_recipe)
+        bb_vars = self.get_bb_vars(['SUMMARY', 'PV'], test_recipe)
         test_recipe_summary_before = bb_vars['SUMMARY']
         test_recipe_pv = bb_vars['PV']
         recipe_append_file = test_recipe + '_' + test_recipe_pv + '.bbappend'
@@ -275,5 +275,5 @@ INHERIT_remove = \"report-error\"
         self.add_command_to_tearDown('rm -rf %s' % os.path.join(self.testlayer_path, 'recipes-test',
                                                                test_recipe + '_test_*'))
 
-        test_recipe_summary_after = get_bb_var('SUMMARY', test_recipe)
+        test_recipe_summary_after = self.get_bb_var('SUMMARY', test_recipe)
         self.assertEqual(expected_recipe_summary, test_recipe_summary_after)

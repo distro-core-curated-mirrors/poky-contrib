@@ -5,7 +5,7 @@ import datetime
 
 import oeqa.utils.ftools as ftools
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var
+from oeqa.utils.commands import runCmd, bitbake
 from oeqa.core.decorator.oeid import OETestID
 from oeqa.utils.network import get_free_port
 
@@ -14,7 +14,7 @@ class BitbakePrTests(OESelftestTestCase):
     @classmethod
     def setUpClass(cls):
         super(BitbakePrTests, cls).setUpClass()
-        cls.pkgdata_dir = get_bb_var('PKGDATA_DIR')
+        cls.pkgdata_dir = cls.get_bb_var('PKGDATA_DIR')
 
     def get_pr_version(self, package_name):
         package_data_file = os.path.join(self.pkgdata_dir, 'runtime', package_name)
@@ -24,7 +24,7 @@ class BitbakePrTests(OESelftestTestCase):
         return int(find_pr.group(1))
 
     def get_task_stamp(self, package_name, recipe_task):
-        stampdata = get_bb_var('STAMP', target=package_name).split('/')
+        stampdata = self.get_bb_var('STAMP', target=package_name).split('/')
         prefix = stampdata[-1]
         package_stamps_path = "/".join(stampdata[:-1])
         stamps = []
@@ -75,7 +75,7 @@ class BitbakePrTests(OESelftestTestCase):
         self.assertEqual(export_result.status, 0, msg="PR Service database export failed: %s" % export_result.output)
 
         if replace_current_db:
-            current_db_path = os.path.join(get_bb_var('PERSISTENT_DIR'), 'prserv.sqlite3')
+            current_db_path = os.path.join(self.get_bb_var('PERSISTENT_DIR'), 'prserv.sqlite3')
             self.assertTrue(os.path.exists(current_db_path), msg="Path to current PR Service database is invalid: %s" % current_db_path)
             os.remove(current_db_path)
 
