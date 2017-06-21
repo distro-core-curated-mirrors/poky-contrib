@@ -17,3 +17,7 @@ FILES_${PN} += "${libdir}/X11/x11perfcomp/*"
 
 SRC_URI[md5sum] = "f0b24e4d8beb622a419e8431e1c03cd7"
 SRC_URI[sha256sum] = "e87098dec1947572d70c62697a7b70bde1ab5668237d4660080eade6bc096751"
+
+do_install_append () {
+    sed -i -e 's:${HOSTTOOLS_DIR}/::g' ${D}/${bindir}/x11perfcomp
+}
