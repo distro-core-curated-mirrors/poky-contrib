@@ -33,7 +33,7 @@ from functools import wraps, lru_cache
 from tempfile import NamedTemporaryFile
 
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars, runqemu
+from oeqa.utils.commands import runCmd, bitbake, get_bb_var, runqemu
 from oeqa.core.decorator.oeid import OETestID
 
 
@@ -73,13 +73,13 @@ class Wic(OESelftestTestCase):
         """This code is executed before each test method."""
         super(Wic, self).setUpLocal()
         if not self.native_sysroot:
-            Wic.native_sysroot = get_bb_var('STAGING_DIR_NATIVE', 'wic-tools')
+            Wic.native_sysroot = self.get_bb_var('STAGING_DIR_NATIVE', 'wic-tools')
 
         # Do this here instead of in setUpClass as the base setUp does some
         # clean up which can result in the native tools built earlier in
         # setUpClass being unavailable.
         if not Wic.image_is_ready:
-            if get_bb_var('USE_NLS') == 'yes':
+            if self.get_bb_var('USE_NLS') == 'yes':
                 bitbake('wic-tools')
             else:
                 self.skipTest('wic-tools cannot be built due its (intltool|gettext)-native dependency and NLS disable')
@@ -237,7 +237,7 @@ class Wic(OESelftestTestCase):
     def test_sdimage_bootpart(self):
         """Test creation of sdimage-bootpart image"""
         cmd = "wic create sdimage-bootpart -e core-image-minimal -o %s" % self.resultdir
-        kimgtype = get_bb_var('KERNEL_IMAGETYPE', 'core-image-minimal')
+        kimgtype = self.get_bb_var('KERNEL_IMAGETYPE', 'core-image-minimal')
         self.write_config('IMAGE_BOOT_FILES = "%s"\n' % kimgtype)
         self.assertEqual(0, runCmd(cmd).status)
         self.assertEqual(1, len(glob(self.resultdir + "sdimage-bootpart-*direct")))
@@ -256,9 +256,9 @@ class Wic(OESelftestTestCase):
     @only_for_arch(['i586', 'i686', 'x86_64'])
     def test_build_artifacts(self):
         """Test wic create directdisk providing all artifacts."""
-        bb_vars = get_bb_vars(['STAGING_DATADIR', 'RECIPE_SYSROOT_NATIVE'],
+        bb_vars = self.get_bb_vars(['STAGING_DATADIR', 'RECIPE_SYSROOT_NATIVE'],
                               'wic-tools')
-        bb_vars.update(get_bb_vars(['DEPLOY_DIR_IMAGE', 'IMAGE_ROOTFS'],
+        bb_vars.update(self.get_bb_vars(['DEPLOY_DIR_IMAGE', 'IMAGE_ROOTFS'],
                                    'core-image-minimal'))
         bbvars = {key.lower(): value for key, value in bb_vars.items()}
         bbvars['resultdir'] = self.resultdir
@@ -369,9 +369,9 @@ class Wic(OESelftestTestCase):
     @only_for_arch(['i586', 'i686', 'x86_64'])
     def test_rootfs_artifacts(self):
         """Test usage of rootfs plugin with rootfs paths"""
-        bb_vars = get_bb_vars(['STAGING_DATADIR', 'RECIPE_SYSROOT_NATIVE'],
+        bb_vars = self.get_bb_vars(['STAGING_DATADIR', 'RECIPE_SYSROOT_NATIVE'],
                               'wic-tools')
-        bb_vars.update(get_bb_vars(['DEPLOY_DIR_IMAGE', 'IMAGE_ROOTFS'],
+        bb_vars.update(self.get_bb_vars(['DEPLOY_DIR_IMAGE', 'IMAGE_ROOTFS'],
                                    'core-image-minimal'))
         bbvars = {key.lower(): value for key, value in bb_vars.items()}
         bbvars['wks'] = "directdisk-multi-rootfs"
@@ -391,12 +391,12 @@ class Wic(OESelftestTestCase):
         """Test --exclude-path wks option."""
 
         oldpath = os.environ['PATH']
-        os.environ['PATH'] = get_bb_var("PATH", "wic-tools")
+        os.environ['PATH'] = self.get_bb_var("PATH", "wic-tools")
 
         try:
             wks_file = 'temp.wks'
             with open(wks_file, 'w') as wks:
-                rootfs_dir = get_bb_var('IMAGE_ROOTFS', 'core-image-minimal')
+                rootfs_dir = self.get_bb_var('IMAGE_ROOTFS', 'core-image-minimal')
                 wks.write("""
 part / --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path usr
 part /usr --source rootfs --ondisk mmcblk0 --fstype=ext4 --rootfs-dir %s/usr
@@ -535,7 +535,7 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
         """Generate and obtain the path to <image>.env"""
         if image not in self.wicenv_cache:
             self.assertEqual(0, bitbake('%s -c do_rootfs_wicenv' % image).status)
-            bb_vars = get_bb_vars(['STAGING_DIR', 'MACHINE'], image)
+            bb_vars = self.get_bb_vars(['STAGING_DIR', 'MACHINE'], image)
             stdir = bb_vars['STAGING_DIR']
             machine = bb_vars['MACHINE']
             self.wicenv_cache[image] = os.path.join(stdir, machine, 'imgdata')
@@ -547,7 +547,7 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
         image = 'core-image-minimal'
         imgdatadir = self._get_image_env_path(image)
 
-        bb_vars = get_bb_vars(['IMAGE_BASENAME', 'WICVARS'], image)
+        bb_vars = self.get_bb_vars(['IMAGE_BASENAME', 'WICVARS'], image)
         basename = bb_vars['IMAGE_BASENAME']
         self.assertEqual(basename, image)
         path = os.path.join(imgdatadir, basename) + '.env'
@@ -597,7 +597,7 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
         self.assertEqual(0, bitbake('wic-image-minimal').status)
         self.remove_config(config)
 
-        bb_vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'MACHINE'])
+        bb_vars = self.get_bb_vars(['DEPLOY_DIR_IMAGE', 'MACHINE'])
         deploy_dir = bb_vars['DEPLOY_DIR_IMAGE']
         machine = bb_vars['MACHINE']
         prefix = os.path.join(deploy_dir, 'wic-image-minimal-%s.' % machine)
@@ -722,7 +722,7 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
     def test_rawcopy_plugin(self):
         """Test rawcopy plugin"""
         img = 'core-image-minimal'
-        machine = get_bb_var('MACHINE', img)
+        machine = self.get_bb_var('MACHINE', img)
         with NamedTemporaryFile("w", suffix=".wks") as wks:
             wks.writelines(['part /boot --active --source bootimg-pcbios\n',
                             'part / --source rawcopy --sourceparams="file=%s-%s.ext4" --use-uuid\n'\
@@ -773,7 +773,7 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
         """Test globbed sources with image-bootpart plugin"""
         img = "core-image-minimal"
         cmd = "wic create sdimage-bootpart -e %s -o %s" % (img, self.resultdir)
-        config = 'IMAGE_BOOT_FILES = "%s*"' % get_bb_var('KERNEL_IMAGETYPE', img)
+        config = 'IMAGE_BOOT_FILES = "%s*"' % self.get_bb_var('KERNEL_IMAGETYPE', img)
         self.append_config(config)
         self.assertEqual(0, runCmd(cmd).status)
         self.remove_config(config)
@@ -782,7 +782,7 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
     @OETestID(1855)
     def test_sparse_copy(self):
         """Test sparse_copy with FIEMAP and SEEK_HOLE filemap APIs"""
-        libpath = os.path.join(get_bb_var('COREBASE'), 'scripts', 'lib', 'wic')
+        libpath = os.path.join(self.get_bb_var('COREBASE'), 'scripts', 'lib', 'wic')
         sys.path.insert(0, libpath)
         from  filemap import FilemapFiemap, FilemapSeek, sparse_copy, ErrorNotSupp
         with NamedTemporaryFile("w", suffix=".wic-sparse") as sparse:
@@ -817,7 +817,7 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
         images = glob(self.resultdir + "wictestdisk-*.direct")
         self.assertEqual(1, len(images))
 
-        sysroot = get_bb_var('RECIPE_SYSROOT_NATIVE', 'wic-tools')
+        sysroot = self.get_bb_var('RECIPE_SYSROOT_NATIVE', 'wic-tools')
 
         # list partitions
         result = runCmd("wic ls %s -n %s" % (images[0], sysroot))
@@ -838,7 +838,7 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
         images = glob(self.resultdir + "wictestdisk-*.direct")
         self.assertEqual(1, len(images))
 
-        sysroot = get_bb_var('RECIPE_SYSROOT_NATIVE', 'wic-tools')
+        sysroot = self.get_bb_var('RECIPE_SYSROOT_NATIVE', 'wic-tools')
 
         # list directory content of the first partition
         result = runCmd("wic ls %s:1/ -n %s" % (images[0], sysroot))
@@ -883,7 +883,7 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
         images = glob(self.resultdir + "mkefidisk-*.direct")
         self.assertEqual(1, len(images))
 
-        sysroot = get_bb_var('RECIPE_SYSROOT_NATIVE', 'wic-tools')
+        sysroot = self.get_bb_var('RECIPE_SYSROOT_NATIVE', 'wic-tools')
 
         # list directory content of the first partition
         result = runCmd("wic ls %s:1 -n %s" % (images[0], sysroot))

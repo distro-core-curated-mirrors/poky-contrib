@@ -1,5 +1,5 @@
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, runqemu
+from oeqa.utils.commands import runCmd, bitbake, runqemu
 from oeqa.core.decorator.oeid import OETestID
 from oeqa.utils.sshcontrol import SSHControl
 import os
@@ -89,7 +89,7 @@ class ImageFeatures(OESelftestTestCase):
         AutomatedBy: Daniel Istrate <daniel.alexandrux.istrate@intel.com>
         """
 
-        distro_features = get_bb_var('DISTRO_FEATURES')
+        distro_features = self.get_bb_var('DISTRO_FEATURES')
         if not ('opengl' in distro_features and 'wayland' in distro_features):
             self.skipTest('neither opengl nor wayland present on DISTRO_FEATURES so core-image-weston cannot be built')
 
@@ -112,8 +112,8 @@ class ImageFeatures(OESelftestTestCase):
         image_name = 'core-image-minimal'
         bitbake(image_name)
 
-        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
-        link_name = get_bb_var('IMAGE_LINK_NAME', image_name)
+        deploy_dir_image = self.get_bb_var('DEPLOY_DIR_IMAGE')
+        link_name = self.get_bb_var('IMAGE_LINK_NAME', image_name)
         image_path = os.path.join(deploy_dir_image, "%s.ext4" % link_name)
         bmap_path = "%s.bmap" % image_path
 

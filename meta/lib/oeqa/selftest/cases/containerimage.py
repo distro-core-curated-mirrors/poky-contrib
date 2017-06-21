@@ -1,8 +1,9 @@
 import os
 
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import bitbake, get_bb_vars, runCmd
+from oeqa.utils.commands import bitbake, runCmd
 from oeqa.core.decorator.oeid import OETestID
+
 
 # This test builds an image with using the "container" IMAGE_FSTYPE, and
 # ensures that then files in the image are only the ones expected.
@@ -41,7 +42,7 @@ PACKAGE_CLASSES = "package_ipk"
 IMAGE_FEATURES = ""
 """)
 
-        bbvars = get_bb_vars(['bindir', 'sysconfdir', 'localstatedir',
+        bbvars = self.get_bb_vars(['bindir', 'sysconfdir', 'localstatedir',
                               'DEPLOY_DIR_IMAGE', 'IMAGE_LINK_NAME'],
                               target='container-test-image')
         expected_files = [

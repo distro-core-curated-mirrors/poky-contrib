@@ -1,5 +1,5 @@
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
+from oeqa.utils.commands import runCmd, bitbake
 import os
 import glob
 import re
@@ -43,7 +43,7 @@ class Signing(OESelftestTestCase):
         """
         import oe.packagedata
 
-        package_classes = get_bb_var('PACKAGE_CLASSES')
+        package_classes = self.get_bb_var('PACKAGE_CLASSES')
         if 'package_rpm' not in package_classes:
             self.skipTest('This test requires RPM Packaging.')
 
@@ -62,7 +62,7 @@ class Signing(OESelftestTestCase):
         self.add_command_to_tearDown('bitbake -c clean %s' % test_recipe)
 
         needed_vars = ['PKGDATA_DIR', 'DEPLOY_DIR_RPM', 'PACKAGE_ARCH', 'STAGING_BINDIR_NATIVE']
-        bb_vars = get_bb_vars(needed_vars, test_recipe)
+        bb_vars = self.get_bb_vars(needed_vars, test_recipe)
         pkgdatadir = bb_vars['PKGDATA_DIR']
         pkgdata = oe.packagedata.read_pkgdatafile(pkgdatadir + "/runtime/ed")
         if 'PKGE' in pkgdata:
@@ -165,7 +165,7 @@ class LockedSignatures(OESelftestTestCase):
         bitbake(test_recipe)
 
         # Make a change that should cause the locked task signature to change
-        recipe_append_file = test_recipe + '_' + get_bb_var('PV', test_recipe) + '.bbappend'
+        recipe_append_file = test_recipe + '_' + self.get_bb_var('PV', test_recipe) + '.bbappend'
         recipe_append_path = os.path.join(self.testlayer_path, 'recipes-test', test_recipe, recipe_append_file)
         feature = 'SUMMARY += "test locked signature"\n'
 

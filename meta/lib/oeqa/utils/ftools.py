@@ -9,6 +9,7 @@ def write_file(path, data):
     wdata = data.rstrip() + "\n"
     with open(path, "w") as f:
         f.write(wdata)
+        f.flush()
 
 def append_file(path, data):
     # In case data is None, return immediately
@@ -17,6 +18,7 @@ def append_file(path, data):
     wdata = data.rstrip() + "\n"
     with open(path, "a") as f:
             f.write(wdata)
+            f.flush()
 
 def read_file(path):
     data = None

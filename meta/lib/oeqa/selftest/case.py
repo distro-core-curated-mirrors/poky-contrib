@@ -9,7 +9,7 @@ import errno
 from unittest.util import safe_repr
 
 import oeqa.utils.ftools as ftools
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var
+from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
 from oeqa.core.case import OETestCase
 
 class OESelftestTestCase(OETestCase):
@@ -264,3 +264,23 @@ to ensure accurate results.")
         if os.path.exists(expr):
             msg = self._formatMessage(msg, "%s exists when it should not" % safe_repr(expr))
             raise self.failureException(msg)
+
+    @classmethod
+    def get_bb_vars(cls, variables, target=None, postconfig=None):
+        """Wrapper that queries local test data instead of calling bitbake on behalf of commands.get_bb_vars"""
+        values = dict()
+        # only use local test data when there is no target and unit test has not added any conf value into testinc file
+        if not target and not os.path.exists(cls.testinc_path):
+            for var in variables:
+                try:
+                    values[var] = cls.td[var]
+                except KeyError:
+                    break
+            else:
+                return values
+
+        return get_bb_vars(variables, target, postconfig)
+
+    @classmethod
+    def get_bb_var(cls, var, target=None, postconfig=None):
+        return cls.get_bb_vars([var], target, postconfig)[var]

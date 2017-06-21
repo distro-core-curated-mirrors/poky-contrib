@@ -5,7 +5,7 @@ import shutil
 import tempfile
 from oeqa.selftest.case import OESelftestTestCase
 from oeqa.selftest.cases.buildhistory import BuildhistoryBase
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
+from oeqa.utils.commands import runCmd, bitbake
 import oeqa.utils.ftools as ftools
 from oeqa.core.decorator.oeid import OETestID
 
@@ -13,14 +13,14 @@ class ImageOptionsTests(OESelftestTestCase):
 
     @OETestID(761)
     def test_incremental_image_generation(self):
-        image_pkgtype = get_bb_var("IMAGE_PKGTYPE")
+        image_pkgtype = self.get_bb_var("IMAGE_PKGTYPE")
         if image_pkgtype != 'rpm':
             self.skipTest('Not using RPM as main package format')
         bitbake("-c clean core-image-minimal")
         self.write_config('INC_RPM_IMAGE_GEN = "1"')
         self.append_config('IMAGE_FEATURES += "ssh-server-openssh"')
         bitbake("core-image-minimal")
-        log_data_file = os.path.join(get_bb_var("WORKDIR", "core-image-minimal"), "temp/log.do_rootfs")
+        log_data_file = os.path.join(self.get_bb_var("WORKDIR", "core-image-minimal"), "temp/log.do_rootfs")
         log_data_created = ftools.read_file(log_data_file)
         incremental_created = re.search(r"Installing\s*:\s*packagegroup-core-ssh-openssh", log_data_created)
         self.remove_config('IMAGE_FEATURES += "ssh-server-openssh"')
@@ -33,19 +33,19 @@ class ImageOptionsTests(OESelftestTestCase):
     @OETestID(286)
     def test_ccache_tool(self):
         bitbake("ccache-native")
-        bb_vars = get_bb_vars(['SYSROOT_DESTDIR', 'bindir'], 'ccache-native')
+        bb_vars = self.get_bb_vars(['SYSROOT_DESTDIR', 'bindir'], 'ccache-native')
         p = bb_vars['SYSROOT_DESTDIR'] + bb_vars['bindir'] + "/" + "ccache"
         self.assertTrue(os.path.isfile(p), msg = "No ccache found (%s)" % p)
         self.write_config('INHERIT += "ccache"')
         self.add_command_to_tearDown('bitbake -c clean m4')
         bitbake("m4 -f -c compile")
-        log_compile = os.path.join(get_bb_var("WORKDIR","m4"), "temp/log.do_compile")
+        log_compile = os.path.join(self.get_bb_var("WORKDIR","m4"), "temp/log.do_compile")
         res = runCmd("grep ccache %s" % log_compile, ignore_status=True)
         self.assertEqual(0, res.status, msg="No match for ccache in m4 log.do_compile. For further details: %s" % log_compile)
 
     @OETestID(1435)
     def test_read_only_image(self):
-        distro_features = get_bb_var('DISTRO_FEATURES')
+        distro_features = self.get_bb_var('DISTRO_FEATURES')
         if not ('x11' in distro_features and 'opengl' in distro_features):
             self.skipTest('core-image-sato requires x11 and opengl in distro features')
         self.write_config('IMAGE_FEATURES += "read-only-rootfs"')
@@ -78,7 +78,7 @@ class SanityOptionsTest(OESelftestTestCase):
     def test_options_warnqa_errorqa_switch(self):
 
         self.write_config("INHERIT_remove = \"report-error\"")
-        if "packages-list" not in get_bb_var("ERROR_QA"):
+        if "packages-list" not in self.get_bb_var("ERROR_QA"):
             self.append_config("ERROR_QA_append = \" packages-list\"")
 
         self.write_recipeinc('xcursor-transparent-theme', 'PACKAGES += \"${PN}-dbg\"')
@@ -159,7 +159,7 @@ class BuildhistoryTests(BuildhistoryBase):
     @OETestID(293)
     def test_buildhistory_basic(self):
         self.run_buildhistory_operation('xcursor-transparent-theme')
-        self.assertTrue(os.path.isdir(get_bb_var('BUILDHISTORY_DIR')), "buildhistory dir was not created.")
+        self.assertTrue(os.path.isdir(self.get_bb_var('BUILDHISTORY_DIR')), "buildhistory dir was not created.")
 
     @OETestID(294)
     def test_buildhistory_buildtime_pr_backwards(self):
@@ -177,7 +177,7 @@ class ArchiverTest(OESelftestTestCase):
         self.write_config("INHERIT += \"archiver\"\nARCHIVER_MODE[src] = \"original\"\nARCHIVER_MODE[srpm] = \"1\"")
         res = bitbake("xcursor-transparent-theme", ignore_status=True)
         self.assertEqual(res.status, 0, "\nCouldn't build xcursortransparenttheme.\nbitbake output %s" % res.output)
-        deploy_dir_src = get_bb_var('DEPLOY_DIR_SRC')
+        deploy_dir_src = self.get_bb_var('DEPLOY_DIR_SRC')
         pkgs_path = g.glob(str(deploy_dir_src) + "/allarch*/xcurs*")
         src_file_glob = str(pkgs_path[0]) + "/xcursor*.src.rpm"
         tar_file_glob = str(pkgs_path[0]) + "/xcursor*.tar.gz"

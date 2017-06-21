@@ -3,8 +3,8 @@ import shutil
 import tempfile
 import urllib.parse
 
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var
-from oeqa.utils.commands import get_bb_vars, create_temp_layer
+from oeqa.utils.commands import runCmd, bitbake
+from oeqa.utils.commands import create_temp_layer
 from oeqa.core.decorator.oeid import OETestID
 from oeqa.selftest.cases import devtool
 
@@ -42,7 +42,7 @@ class RecipetoolBase(devtool.DevtoolBase):
         self.assertNotIn('Traceback', result.output)
 
         # Check the bbappend was created and applies properly
-        recipefile = get_bb_var('FILE', testrecipe)
+        recipefile = self.get_bb_var('FILE', testrecipe)
         bbappendfile = self._check_bbappend(testrecipe, recipefile, self.templayerdir)
 
         # Check the bbappend contents
@@ -73,7 +73,7 @@ class RecipetoolTests(RecipetoolBase):
         # Ensure we have the right data in shlibs/pkgdata
         cls.logger.info('Running bitbake to generate pkgdata')
         bitbake('-c packagedata base-files coreutils busybox selftest-recipetool-appendfile')
-        bb_vars = get_bb_vars(['COREBASE', 'BBPATH'])
+        bb_vars = cls.get_bb_vars(['COREBASE', 'BBPATH'])
         cls.corebase = bb_vars['COREBASE']
         cls.bbpath = bb_vars['BBPATH']
 
@@ -355,7 +355,7 @@ class RecipetoolTests(RecipetoolBase):
             return bbappendfile
 
         # Check without wildcard option
-        recipefn = os.path.basename(get_bb_var('FILE', 'base-files'))
+        recipefn = os.path.basename(self.get_bb_var('FILE', 'base-files'))
         filename = try_appendfile_wc('')
         self.assertEqual(filename, recipefn.replace('.bb', '.bbappend'))
         # Now check with wildcard option
@@ -381,7 +381,7 @@ class RecipetoolTests(RecipetoolBase):
 
     @OETestID(1194)
     def test_recipetool_create_git(self):
-        if 'x11' not in get_bb_var('DISTRO_FEATURES'):
+        if 'x11' not in self.get_bb_var('DISTRO_FEATURES'):
             self.skipTest('Test requires x11 as distro feature')
         # Ensure we have the right data in shlibs/pkgdata
         bitbake('libpng pango libx11 libxext jpeg libcheck')
@@ -557,7 +557,7 @@ class RecipetoolAppendsrcBase(RecipetoolBase):
     @staticmethod
     def _get_first_file_uri(recipe):
         '''Return the first file:// in SRC_URI for the specified recipe.'''
-        src_uri = get_bb_var('SRC_URI', recipe).split()
+        src_uri = RecipetoolAppendsrcBase.get_bb_var('SRC_URI', recipe).split()
         for uri in src_uri:
             p = urllib.parse.urlparse(uri)
             if p.scheme == 'file':
@@ -605,7 +605,7 @@ class RecipetoolAppendsrcBase(RecipetoolBase):
 
         self._try_recipetool_appendsrcfiles(testrecipe, newfiles, expectedfiles=expectedfiles, destdir=destdir, options=options)
 
-        bb_vars = get_bb_vars(['SRC_URI', 'FILE', 'FILESEXTRAPATHS'], testrecipe)
+        bb_vars = self.get_bb_vars(['SRC_URI', 'FILE', 'FILESEXTRAPATHS'], testrecipe)
         src_uri = bb_vars['SRC_URI'].split()
         for f in expectedfiles:
             if destdir:
@@ -632,7 +632,7 @@ class RecipetoolAppendsrcTests(RecipetoolAppendsrcBase):
     def test_recipetool_appendsrcfile_basic_wildcard(self):
         testrecipe = 'base-files'
         self._test_appendsrcfile(testrecipe, 'a-file', options='-w')
-        recipefile = get_bb_var('FILE', testrecipe)
+        recipefile = self.get_bb_var('FILE', testrecipe)
         bbappendfile = self._check_bbappend(testrecipe, recipefile, self.templayerdir)
         self.assertEqual(os.path.basename(bbappendfile), '%s_%%.bbappend' % testrecipe)
 
@@ -647,7 +647,7 @@ class RecipetoolAppendsrcTests(RecipetoolAppendsrcBase):
     @OETestID(1280)
     def test_recipetool_appendsrcfile_srcdir_basic(self):
         testrecipe = 'bash'
-        bb_vars = get_bb_vars(['S', 'WORKDIR'], testrecipe)
+        bb_vars = self.get_bb_vars(['S', 'WORKDIR'], testrecipe)
         srcdir = bb_vars['S']
         workdir = bb_vars['WORKDIR']
         subdir = os.path.relpath(srcdir, workdir)
@@ -674,7 +674,7 @@ class RecipetoolAppendsrcTests(RecipetoolAppendsrcBase):
     def test_recipetool_appendsrcfile_replace_file_srcdir(self):
         testrecipe = 'bash'
         filepath = 'Makefile.in'
-        bb_vars = get_bb_vars(['S', 'WORKDIR'], testrecipe)
+        bb_vars = self.get_bb_vars(['S', 'WORKDIR'], testrecipe)
         srcdir = bb_vars['S']
         workdir = bb_vars['WORKDIR']
         subdir = os.path.relpath(srcdir, workdir)

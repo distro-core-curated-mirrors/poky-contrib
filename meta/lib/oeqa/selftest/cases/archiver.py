@@ -1,6 +1,6 @@
 import os
 import glob
-from oeqa.utils.commands import bitbake, get_bb_vars
+from oeqa.utils.commands import bitbake
 from oeqa.selftest.case import OESelftestTestCase
 from oeqa.core.decorator.oeid import OETestID
 
@@ -29,7 +29,7 @@ class Archiver(OESelftestTestCase):
         bitbake('-c clean %s %s' % (include_recipe, exclude_recipe))
         bitbake("-c deploy_archives %s %s" % (include_recipe, exclude_recipe))
 
-        bb_vars = get_bb_vars(['DEPLOY_DIR_SRC', 'TARGET_SYS'])
+        bb_vars = self.get_bb_vars(['DEPLOY_DIR_SRC', 'TARGET_SYS'])
         src_path = os.path.join(bb_vars['DEPLOY_DIR_SRC'], bb_vars['TARGET_SYS'])
 
         # Check that include_recipe was included
@@ -61,7 +61,7 @@ class Archiver(OESelftestTestCase):
         bitbake('-c clean %s %s' % (target_recipe, native_recipe))
         bitbake("%s -c deploy_archives %s" % (target_recipe, native_recipe))
 
-        bb_vars = get_bb_vars(['DEPLOY_DIR_SRC', 'TARGET_SYS', 'BUILD_SYS'])
+        bb_vars = self.get_bb_vars(['DEPLOY_DIR_SRC', 'TARGET_SYS', 'BUILD_SYS'])
         src_path_target = os.path.join(bb_vars['DEPLOY_DIR_SRC'], bb_vars['TARGET_SYS'])
         src_path_native = os.path.join(bb_vars['DEPLOY_DIR_SRC'], bb_vars['BUILD_SYS'])
 
@@ -98,7 +98,7 @@ class Archiver(OESelftestTestCase):
         bitbake('-c clean %s %s' % (' '.join(target_recipes), ' '.join(native_recipes)))
         bitbake('-c deploy_archives %s %s' % (' '.join(target_recipes), ' '.join(native_recipes)))
 
-        bb_vars = get_bb_vars(['DEPLOY_DIR_SRC', 'TARGET_SYS', 'BUILD_SYS'])
+        bb_vars = self.get_bb_vars(['DEPLOY_DIR_SRC', 'TARGET_SYS', 'BUILD_SYS'])
         src_path_target = os.path.join(bb_vars['DEPLOY_DIR_SRC'], bb_vars['TARGET_SYS'])
         src_path_native = os.path.join(bb_vars['DEPLOY_DIR_SRC'], bb_vars['BUILD_SYS'])
 
