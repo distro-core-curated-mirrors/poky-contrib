@@ -508,9 +508,11 @@ buildhistory_list_files() {
 	# List the files in the specified directory, but exclude date/time etc.
 	# This awk script is somewhat messy, but handles where the size is not printed for device files under pseudo
 	if [ "$3" = "fakeroot" ] ; then
-		( cd $1 && ${FAKEROOTENV} ${FAKEROOTCMD} find . ! -path . -printf "%M %-10u %-10g %10s %p -> %l\n" | sort -k5 | sed 's/ * -> $//' > $2 )
+		( cd $1 && ${FAKEROOTENV} ${FAKEROOTCMD} find . ! -path . -printf "%M %-10u %-10g %10s %p -> %l\n" | sort -k5 | sed 's/ * -> $//' | \
+		awk '{if (substr($0,1,1) =="d"){split($0,a," ",b); print b[0]a[1]b[1]a[2]b[2]a[3]"                 "b[4]a[5]}else print}' > $2 )
 	else
-		( cd $1 && find . ! -path . -printf "%M %-10u %-10g %10s %p -> %l\n" | sort -k5 | sed 's/ * -> $//' > $2 )
+		( cd $1 && find . ! -path . -printf "%M %-10u %-10g %10s %p -> %l\n" | sort -k5 | sed 's/ * -> $//' | \
+		awk '{if (substr($0,1,1) =="d"){split($0,a," ",b); print b[0]a[1]b[1]a[2]b[2]a[3]"                 "b[4]a[5]}else print}' > $2)
 	fi
 }
 
