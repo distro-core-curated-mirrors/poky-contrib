@@ -13,7 +13,8 @@ SRC_URI = "file://init \
            file://mdev \
            file://udev \
            file://e2fs \
-           file://debug"
+           file://debug \
+           file://setup-live"
 
 S = "${WORKDIR}"
 
@@ -24,6 +25,7 @@ do_install() {
     install -m 0755 ${WORKDIR}/init ${D}/init
     install -m 0755 ${WORKDIR}/rootfs ${D}/init.d/90-rootfs
     install -m 0755 ${WORKDIR}/finish ${D}/init.d/99-finish
+    install -m 0755 ${WORKDIR}/setup-live ${D}/init.d/80-setup-live
 
     # mdev
     install -m 0755 ${WORKDIR}/mdev ${D}/init.d/01-mdev
@@ -50,7 +52,7 @@ PACKAGES = "${PN}-base \
             initramfs-module-rootfs \
             initramfs-module-debug"
 
-FILES_${PN}-base = "/init /init.d/99-finish /dev"
+FILES_${PN}-base = "/init /init.d/99-finish /init.d/80-setup-live /dev"
 
 # 99-finish in base depends on some other module which mounts
 # the rootfs, like 90-rootfs. To replace that default, use
