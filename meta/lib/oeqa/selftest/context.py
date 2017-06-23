@@ -8,6 +8,7 @@ import sys
 import imp
 import signal
 from shutil import copyfile
+import tempfile
 from random import choice
 
 import oeqa
@@ -137,6 +138,8 @@ class OESelftestTestContextExecutor(OETestContextExecutor):
                 self.tc_kwargs['init']['config_paths']['bblayers_backup'])
 
         self.tc_kwargs['run']['skips'] = args.skips
+        self.tc_kwargs['init']['config_paths']['base_builddir'] = \
+                tempfile.mkdtemp(prefix='build-selftest-', dir=builddir)
 
     def _pre_run(self):
         def _check_required_env_variables(vars):
