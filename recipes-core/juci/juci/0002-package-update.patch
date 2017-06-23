@@ -1,0 +1,21 @@
+Index: git/package.json
+===================================================================
+--- git.orig/package.json
++++ git/package.json
+@@ -13,6 +13,16 @@
+     "jquery-deferred": "*",
+     "watchjs": "*",
+     "uglify-js": "*", 
++	"asap":"*",
++	"errno":"*",
++	"graceful-fs":"*",
++	"image-size":"*",
++	"less":"*",
++	"minimist":"*",
++	"mkdirp":"*",
++	"promise":"*",
++	"prr":"*",
++	"yuicompressor":"*",
+     "array.prototype.find": "*",
+ 	"node-getopt": "*", 
+ 	"gettext-parser": "*",

@@ -1,0 +1,31 @@
+Index: git/scripts/bootstrap.sh
+===================================================================
+--- git/scripts/bootstrap.sh
++++ git/scripts/bootstrap.sh
+@@ -9,8 +9,8 @@ if [ "$(which npm)" == "" ]; then
+ 	ERR=1
+ fi 
+ 
+-if [ "$(which yui-compressor)" == "" ] && [ "$(which yuicompressor)" == "" ]; then
+-	perr "!!! yui-compressor is missing. Please install package yui-compressor or yuicompressor."; 
++if [ "$(which minify)" == "" ]; then
++	perr "$(ls -al /media/rebeccas/015-juci-poky/build/tmp/work/i586-poky-linux-musl/juci/git-r0/git/node_modules) !!! $(ls -al /media/rebeccas/015-juci-poky/build/tmp/work/i586-poky-linux-musl/juci/git-r0/git/node_modules/.bin) !!! $(ls -al /media/rebeccas/015-juci-poky/build/tmp/work/i586-poky-linux-musl/juci/git-r0/git/node_modules/grunt-cli/bin) !!! minify is missing. Please install package minify.";
+ 	ERR=1
+ fi 
+ 
+Index: git/scripts/juci-compile
+===================================================================
+--- git/scripts/juci-compile
++++ git/scripts/juci-compile
+@@ -14,10 +14,6 @@ done
+ 
+ for file in `find $BIN/www/css/ -name "*.css"`; do 
+ 	echo "Compiling CSS ${file}.."
+-	if [ "$(which yui-compressor)" != "" ]; then
+-		yui-compressor ${file} > ${file}.out
+-	else
+-		yuicompressor ${file} > ${file}.out
+-	fi
++	minify ${file} > ${file}.out
+ 	mv ${file}.out ${file}
+ done

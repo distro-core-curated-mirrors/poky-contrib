@@ -1,0 +1,42 @@
+Index: git/package.json
+===================================================================
+--- git/package.json
++++ git/package.json
+@@ -18,7 +18,36 @@
+     "gettext-parser": "*",
+     "underscore": "*",
+     "ws": "*",
+-    "express-ws": "*"
++    "express-ws": "*",
++    "camel-case": "*",
++    "checkup": "*",
++    "clean-css": "*",
++    "commander": "*",
++    "source-map": "*",
++    "css-b64-images": "*",
++    "execon": "*",
++    "he": "*",
++    "html-minifier": "*",
++    "clean-css": "*",
++    "ischanged": "*",
++    "debug": "*",
++    "ms": "*",
++    "lower-case": "*",
++    "minify": "*",
++    "debug": "*",
++    "ms": "*",
++    "ncname": "*",
++    "no-case": "*",
++    "param-case": "*",
++    "readjson": "*",
++    "relateurl": "*",
++    "rendy": "*",
++    "timem": "*",
++    "tomas": "*",
++    "try-catch": "*",
++    "upper-case": "*",
++    "writejson": "*",
++    "xml-char-classes": "*"
+   },
+   "engines": {
+     "node": "0.10.x",

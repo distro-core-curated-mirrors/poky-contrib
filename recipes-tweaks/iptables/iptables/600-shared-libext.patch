@@ -1,8 +1,7 @@
-Index: iptables-1.6.0/extensions/GNUmakefile.in
-===================================================================
---- iptables-1.6.0.orig/extensions/GNUmakefile.in
-+++ iptables-1.6.0/extensions/GNUmakefile.in
-@@ -49,11 +49,33 @@ pfb_build_mod := $(filter-out @blacklist
+diff -Naur iptables-1.6.1/extensions/GNUmakefile.in iptables-1.6.1.mod/extensions/GNUmakefile.in
+--- iptables-1.6.1/extensions/GNUmakefile.in	2017-01-27 00:11:58.000000000 +0800
++++ iptables-1.6.1.mod/extensions/GNUmakefile.in	2017-05-30 14:59:52.526484105 +0800
+@@ -50,11 +50,33 @@
  pfa_build_mod := $(filter-out @blacklist_modules@ @blacklist_a_modules@,${pfa_build_mod})
  pf4_build_mod := $(filter-out @blacklist_modules@ @blacklist_4_modules@,${pf4_build_mod})
  pf6_build_mod := $(filter-out @blacklist_modules@ @blacklist_6_modules@,${pf6_build_mod})
@@ -13,7 +12,7 @@ Index: iptables-1.6.0/extensions/GNUmakefile.in
 -pf6_objs      := $(patsubst %,libip6t_%.o,${pf6_build_mod})
 +
 +ifdef BUILTIN_MODULES
-+pfx_build_static := $(filter $(BUILTIN_MODULES),${pfx_build_mod})
++	+pfx_build_static := $(filter $(BUILTIN_MODULES),${pfx_build_mod})
 +pfb_build_static := $(filter $(BUILTIN_MODULES),${pfb_build_mod})
 +pfa_build_static := $(filter $(BUILTIN_MODULES),${pfa_build_mod})
 +pf4_build_static := $(filter $(BUILTIN_MODULES),${pf4_build_mod})
@@ -41,7 +40,7 @@ Index: iptables-1.6.0/extensions/GNUmakefile.in
  pfx_solibs    := $(patsubst %,libxt_%.so,${pfx_build_mod} ${pfx_symlinks})
  pfb_solibs    := $(patsubst %,libebt_%.so,${pfb_build_mod})
  pfa_solibs    := $(patsubst %,libarpt_%.so,${pfa_build_mod})
-@@ -64,15 +86,15 @@ pf6_solibs    := $(patsubst %,libip6t_%.
+@@ -65,15 +87,15 @@
  #
  # Building blocks
  #
@@ -65,7 +64,7 @@ Index: iptables-1.6.0/extensions/GNUmakefile.in
  
  .SECONDARY:
  
-@@ -91,7 +113,7 @@ clean:
+@@ -92,7 +114,7 @@
  distclean: clean
  
  init%.o: init%.c
@@ -74,7 +73,7 @@ Index: iptables-1.6.0/extensions/GNUmakefile.in
  
  -include .*.d
  
-@@ -100,7 +122,7 @@ init%.o: init%.c
+@@ -101,7 +123,7 @@
  #	Shared libraries
  #
  lib%.so: lib%.oo
@@ -83,7 +82,7 @@ Index: iptables-1.6.0/extensions/GNUmakefile.in
  
  lib%.oo: ${srcdir}/lib%.c
  	${AM_VERBOSE_CC} ${CC} ${AM_CPPFLAGS} ${AM_DEPFLAGS} ${AM_CFLAGS} -D_INIT=lib$*_init -DPIC -fPIC ${CFLAGS} -o $@ -c $<;
-@@ -123,28 +145,28 @@ xt_connlabel_LIBADD = @libnetfilter_conn
+@@ -124,28 +146,28 @@
  #	handling code in the Makefiles.
  #
  lib%.o: ${srcdir}/lib%.c
@@ -128,11 +127,10 @@ Index: iptables-1.6.0/extensions/GNUmakefile.in
  
  .initext.dd: FORCE
  	@echo "${initext_func}" >$@.tmp; \
-Index: iptables-1.6.0/iptables/Makefile.am
-===================================================================
---- iptables-1.6.0.orig/iptables/Makefile.am
-+++ iptables-1.6.0/iptables/Makefile.am
-@@ -6,7 +6,8 @@ AM_YFLAGS = -d
+diff -Naur iptables-1.6.1/iptables/Makefile.am iptables-1.6.1.mod/iptables/Makefile.am
+--- iptables-1.6.1/iptables/Makefile.am	2017-01-27 00:11:58.000000000 +0800
++++ iptables-1.6.1.mod/iptables/Makefile.am	2017-05-30 15:06:39.646481102 +0800
+@@ -8,7 +8,8 @@
  
  xtables_multi_SOURCES  = xtables-multi.c iptables-xml.c
  xtables_multi_CFLAGS   = ${AM_CFLAGS}
@@ -142,7 +140,7 @@ Index: iptables-1.6.0/iptables/Makefile.am
  if ENABLE_STATIC
  xtables_multi_CFLAGS  += -DALL_INCLUSIVE
  endif
-@@ -14,22 +15,25 @@ if ENABLE_IPV4
+@@ -16,23 +17,26 @@
  xtables_multi_SOURCES += iptables-save.c iptables-restore.c \
                           iptables-standalone.c iptables.c
  xtables_multi_CFLAGS  += -DENABLE_IPV4
@@ -164,6 +162,7 @@ Index: iptables-1.6.0/iptables/Makefile.am
  
  # nftables compatibility layer
  if ENABLE_NFTABLES
+ BUILT_SOURCES += xtables-config-parser.h
  xtables_compat_multi_SOURCES  = xtables-compat-multi.c iptables-xml.c
  xtables_compat_multi_CFLAGS   = ${AM_CFLAGS}
 -xtables_compat_multi_LDADD    = ../extensions/libext.a ../extensions/libext_ebt.a
@@ -172,10 +171,10 @@ Index: iptables-1.6.0/iptables/Makefile.am
  if ENABLE_STATIC
  xtables_compat_multi_CFLAGS  += -DALL_INCLUSIVE
  endif
-@@ -41,11 +45,12 @@ xtables_compat_multi_SOURCES += xtables-
- 				xtables-arp-standalone.c xtables-arp.c \
+@@ -45,11 +49,12 @@
  				getethertype.c nft-bridge.c \
- 				xtables-eb-standalone.c xtables-eb.c
+ 				xtables-eb-standalone.c xtables-eb.c \
+ 				xtables-translate.c
 -xtables_compat_multi_LDADD   += ${libmnl_LIBS} ${libnftnl_LIBS} ${libnetfilter_conntrack_LIBS} ../extensions/libext4.a ../extensions/libext6.a ../extensions/libext_ebt.a ../extensions/libext_arpt.a
 +xtables_compat_multi_LDADD   += ${libmnl_LIBS} ${libnftnl_LIBS} ${libnetfilter_conntrack_LIBS}
 +xtables_compat_multi_LDFLAGS += -liptext6 -liptext6 -liptext_ebt -liptext_arpt
