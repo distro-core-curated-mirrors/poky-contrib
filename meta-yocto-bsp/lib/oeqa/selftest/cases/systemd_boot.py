@@ -3,9 +3,11 @@ import os
 from oeqa.selftest.case import OESelftestTestCase
 from oeqa.core.decorator.oeid import OETestID
 from oeqa.core.decorator.depends import OETestDepends
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, runqemu
 
 class Systemdboot(OESelftestTestCase):
+    _use_own_builddir = True
+    _main_thread = False
+
     def _common_setup(self):
         """
         Common setup for test cases: 1445, 1528
@@ -22,7 +24,7 @@ class Systemdboot(OESelftestTestCase):
         """
 
         # Build a genericx86-64/efi systemdboot image
-        bitbake('mtools-native core-image-minimal')
+        self.bitbake('mtools-native core-image-minimal')
 
 
     @OETestID(1445)
@@ -38,14 +40,14 @@ class Systemdboot(OESelftestTestCase):
 
         # We'd use DEPLOY_DIR_IMAGE here, except that we need its value for
         # MACHINE="genericx86-64 which is probably not the one configured
-        systemdbootfile = os.path.join(get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64', 'systemd-bootx64.efi')
+        systemdbootfile = os.path.join(self.get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64', 'systemd-bootx64.efi')
 
         self._common_setup()
 
         # Ensure we're actually testing that this gets built and not that
         # it was around from an earlier build
-        bitbake('-c cleansstate systemd-boot')
-        runCmd('rm -f %s' % systemdbootfile)
+        self.bitbake('-c cleansstate systemd-boot')
+        self.runCmd('rm -f %s' % systemdbootfile)
 
         self._common_build()
 
@@ -71,20 +73,20 @@ class Systemdboot(OESelftestTestCase):
         AutomatedBy:  Jose Perez Carranza <jose.perez.carranza at linux-intel.com>
         """
 
-        systemdbootfile = os.path.join(get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
+        systemdbootfile = os.path.join(self.get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
                                            'systemd-bootx64.efi')
-        systemdbootimage = os.path.join(get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
+        systemdbootimage = os.path.join(self.get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
                                                 'core-image-minimal-genericx86-64.hddimg')
-        imagebootfile = os.path.join(get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
+        imagebootfile = os.path.join(self.get_bb_var('DEPLOY_DIR'), 'images', 'genericx86-64',
                                                             'bootx64.efi')
-        mcopynative = os.path.join(get_bb_var('STAGING_BINDIR_NATIVE'), 'mcopy')
+        mcopynative = os.path.join(self.get_bb_var('STAGING_BINDIR_NATIVE'), 'mcopy')
 
         #Clean environment before start the test
         if os.path.isfile(imagebootfile):
-            runCmd('rm -f %s' % imagebootfile)
+            self.runCmd('rm -f %s' % imagebootfile)
 
             #Step 1
-            runCmd('%s -i %s ::EFI/BOOT/bootx64.efi %s' % (mcopynative ,systemdbootimage,
+            self.runCmd('%s -i %s ::EFI/BOOT/bootx64.efi %s' % (mcopynative ,systemdbootimage,
                                                            imagebootfile))
 
             #Step 2
@@ -93,6 +95,6 @@ class Systemdboot(OESelftestTestCase):
                             % imagebootfile)
 
             #Step 3
-            result = runCmd('md5sum %s %s' % (systemdbootfile, imagebootfile))
+            result = self.runCmd('md5sum %s %s' % (systemdbootfile, imagebootfile))
             self.assertEqual(result.output.split()[0], result.output.split()[2],
                              '%s was not correclty generated' % imagebootfile)
