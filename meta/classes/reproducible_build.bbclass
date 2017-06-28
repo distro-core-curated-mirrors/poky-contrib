@@ -10,8 +10,11 @@ def get_src_date_epoch_quick(d, path):
     src_date_epoch = 0
     saved_cwd = os.getcwd()
     os.chdir(path)
-    if path.endswith('/git'):
-        src_date_epoch = int(subprocess.check_output(['git','log','-1','--pretty=%ct']))
+    if os.path.isdir(".git"):
+        try:
+            src_date_epoch = int(subprocess.check_output(['git','log','-1','--pretty=%ct']))
+        except subprocess.CalledProcessError as grepexc:
+            bb.warn("Not a git repository in .git folder? error:%d" % (grepexc.returncode))
     else:
         known_files = set(["NEWS", "ChangeLog", "Changelog", "CHANGES"])
 
@@ -44,12 +47,8 @@ def create_src_date_epoch_stamp(d):
             exclude = set(["temp", "licenses", "patches", "recipe-sysroot-native", "recipe-sysroot", "pseudo"])
             for root, dirs, files in os.walk(path, topdown=True):
                 files = [f for f in files if not f[0] == '.']
-                dirs[:] = [d for d in dirs if not d[0] == '.']
+                #dirs[:] = [d for d in dirs if not d[0] == '.']
                 dirs[:] = [d for d in dirs if d not in exclude]
-                if root.endswith('/git'):
-                    bb.warn(" *** path: %s (git)" % path)
-                    src_date_epoch = get_src_date_epoch_quick(d, root)
-                    break
 
                 for fname in files:
                     filename = os.path.join(root, fname)
