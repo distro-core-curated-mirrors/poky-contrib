@@ -102,7 +102,8 @@ do_install_append_class-target() {
 }
 
 do_install_append () {
-	sed -i -e 's:${HOSTTOOLS_DIR}/::g' ${D}/${libdir}/rpm/macros
+        sed -i -e 's:${HOSTTOOLS_DIR}/::g' \
+               -e 's:--sysroot=${STAGING_DIR_HOST}::g' ${D}/${libdir}/rpm/macros
 }
 
 FILES_${PN} += "${libdir}/rpm-plugins/*.so \
