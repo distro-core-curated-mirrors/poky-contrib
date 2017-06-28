@@ -1697,3 +1697,101 @@ class DevtoolTests(DevtoolBase):
         #Step 4.5
         checkmodconfg = runCmd("grep %s %s" % (modconfopt, codeconfigfile))
         self.assertEqual(0,checkmodconfg.status,'Modification to configuration file failed')
+
+    def test_devtool_export(self):
+        self.track_for_cleanup(self.workspacedir)
+        self.add_command_to_tearDown('bitbake-layers remove-layer */workspace')
+        self.add_command_to_tearDown('rm workspace-export*.tar.gz')
+
+        modified_recipes = ['bc', 'xz']
+        for recipe in modified_recipes:
+            runCmd('devtool modify %s' % recipe)
+        result = runCmd('devtool export')
+        self.assertIn(', '.join(modified_recipes), result.output, 'Recipes (%s) were not exported' % ' '.join(modified_recipes))
+
+    def test_devtool_export_include(self):
+        self.track_for_cleanup(self.workspacedir)
+        self.add_command_to_tearDown('bitbake-layers remove-layer */workspace')
+        self.add_command_to_tearDown('rm workspace-export*.tar.gz')
+
+        modified_recipes = ['bc', 'xz']
+        for recipe in modified_recipes:
+            runCmd('devtool modify %s' % recipe)
+        result = runCmd('devtool export -i %s ' % ' '.join(modified_recipes))
+        self.assertIn(', '.join(modified_recipes), result.output, 'Recipes (%s) were not exported' % ' '.join(modified_recipes))
+
+    def test_devtool_export_exclude_all(self):
+        self.track_for_cleanup(self.workspacedir)
+        self.add_command_to_tearDown('bitbake-layers remove-layer */workspace')
+        self.add_command_to_tearDown('rm workspace-export*.tar.gz')
+
+        modified_recipes = ['bc', 'xz']
+        for recipe in modified_recipes:
+            runCmd('devtool modify %s' % recipe)
+        result = runCmd('devtool export -e %s ' % ' '.join(modified_recipes))
+        self.assertNotIn(', '.join(modified_recipes), result.output, 'Recipes (%s) were not excluded on the export' % ' '.join(modified_recipes))
+
+    def test_devtool_export_exclude_specific_file(self):
+        tempdir = tempfile.mkdtemp(prefix='devexport')
+        archive_file = os.path.join(tempdir, 'workspace-export.tar.gz')
+
+        self.track_for_cleanup(self.workspacedir)
+        self.track_for_cleanup(tempdir)
+        self.add_command_to_tearDown('bitbake-layers remove-layer */workspace')
+
+        modified_recipes = ['bc', 'xz']
+        for recipe in modified_recipes:
+            runCmd('devtool modify %s' % recipe)
+        result = runCmd('devtool export -f %s ' % archive_file)
+        self.assertExists(archive_file, 'No exported archive found at %s' % archive_file)
+
+    def test_devtool_export_overwrite_file(self):
+        tempdir = tempfile.mkdtemp(prefix='devexport')
+        archive_file = os.path.join(tempdir, 'workspace-export.tar.gz')
+
+        self.track_for_cleanup(self.workspacedir)
+        self.track_for_cleanup(tempdir)
+        self.add_command_to_tearDown('bitbake-layers remove-layer */workspace')
+
+        modified_recipes = ['bc', 'xz']
+        for recipe in modified_recipes:
+            runCmd('devtool modify %s' % recipe)
+
+        # create the first archive
+        result = runCmd('devtool export -f %s ' % archive_file)
+        self.assertExists(archive_file, 'No exported archive found at %s' % archive_file)
+
+        # if overwrite without -o, the plugin should not touch the current archive
+        mtime = os.stat(archive_file)
+        result = runCmd('devtool export -f %s ' % archive_file, ignore_status=True)
+        self.assertEqual(mtime, os.stat(archive_file), 'Devtool export should not modified the current archive if present')
+
+        # if overwrite with -o, the plugin should touch the current archive
+        mtime = os.stat(archive_file)
+        result = runCmd('devtool export -o -f %s ' % archive_file)
+        self.assertNotEqual(mtime, os.stat(archive_file), 'devtool export should modified the current archive')
+
+    def test_devtool_import(self):
+        tempdir = tempfile.mkdtemp(prefix='devexport')
+        archive_file = os.path.join(tempdir, 'workspace-export.tar.gz')
+        workspace_export = tempfile.mkdtemp(prefix='export')
+        workspace_import = tempfile.mkdtemp(prefix='import')
+
+        # cleanup/teardown-commands
+        for cleanup in [tempdir, workspace_export, workspace_import]:
+            self.track_for_cleanup(cleanup)
+        self.add_command_to_tearDown('bitbake-layers remove-layer */%s' % workspace_import)
+
+        runCmd('devtool create-workspace %s' % workspace_export)
+        # include some recipes into workspace and export
+        modified_recipes = ['bc', 'xz']
+        for recipe in modified_recipes:
+            runCmd('devtool modify %s' % recipe)
+        result = runCmd('devtool export -f %s ' % archive_file)
+        self.assertExists(archive_file, 'No exported archive found at %s' % archive_file)
+
+        # import and check that output contains imported recipes
+        runCmd('devtool create-workspace %s' % workspace_import)
+        result = runCmd('devtool import %s' % archive_file)
+        for rec in modified_recipes:
+            self.assertIn(rec, result.output, 'Recipe %s was not imported' % rec)
