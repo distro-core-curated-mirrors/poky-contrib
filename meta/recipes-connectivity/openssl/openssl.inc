@@ -52,6 +52,11 @@ RDEPENDS_${PN}-ptest += "${PN}-misc make perl perl-module-filehandle bc"
 # vulnerability
 EXTRA_OECONF = " -no-ssl3"
 
+WEAKCIPHERS = "${@bb.utils.contains('DISTRO_FEATURES', 'openssl-no-weak-ciphers', \
+               'no-des no-ec no-ecdh no-ecdsa no-md2 no-mdc2', '', d)}"
+EXTRA_OECONF_append_class-target = " ${WEAKCIPHERS}"
+EXTRA_OECONF_append_class-nativesdk = " ${WEAKCIPHERS}"
+
 do_configure_prepend_darwin () {
 	sed -i -e '/version-script=openssl\.ld/d' Configure
 }
