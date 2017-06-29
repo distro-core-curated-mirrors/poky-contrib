@@ -1,0 +1,44 @@
+From cc54279710e3ce6aa83b94ad68fb8247c24357c8 Mon Sep 17 00:00:00 2001
+From: sweeaun <swee.aun.khor@intel.com>
+Date: Thu, 29 Jun 2017 15:27:46 -0700
+Subject: [PATCH] libffi: Support musl x32 build
+
+Support libffi build with musl-x32 option.
+
+Signed-off-by: sweeaun <swee.aun.khor@intel.com>
+---
+ configure    | 3 +++
+ configure.ac | 3 +++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/configure b/configure
+index c6da467..ad7ebda 100755
+--- a/configure
++++ b/configure
+@@ -17181,6 +17181,9 @@ case "$host" in
+ 	    *-gnux32)
+ 	      TARGET=X86_64
+ 	      ;;
++            *-muslx32)
++              TARGET=X86_64
++              ;;
+ 	    *)
+ 	      TARGET=X86
+ 	      ;;
+diff --git a/configure.ac b/configure.ac
+index a7bf5ee..f4e101d 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -180,6 +180,9 @@ case "$host" in
+ 	    *-gnux32)
+ 	      TARGET=X86_64
+ 	      ;;
++            *-muslx32)
++              TARGET=X86_64
++              ;;
+ 	    *)
+ 	      TARGET=X86
+ 	      ;;
+-- 
+2.7.4
+
