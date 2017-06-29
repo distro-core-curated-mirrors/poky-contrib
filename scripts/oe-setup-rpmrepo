@@ -72,7 +72,7 @@ setup_sysroot() {
 		BUILD_SYS="$BUILD_ARCH-$BUILD_OS"
 
 		OECORE_NATIVE_SYSROOT=$TMPDIR/sysroots/$BUILD_SYS
-	fi 
+	fi
 }
 
 setup_sysroot
@@ -88,16 +88,13 @@ if [ ! -d "$RPM_DIR" ]; then
    	echo "Error: rpm dir $RPM_DIR doesn't exist"
 	exit 1
 fi
-
-CREATEREPO=$OECORE_NATIVE_SYSROOT/usr/bin/createrepo_c
-if [ ! -e "$CREATEREPO" ]; then
-   	echo "Error: can't find createrepo binary"
-	echo "please run bitbake createrepo-native first"
-	exit 1
+if ! oe-run-native createrepo-c-native createrepo_c "$RPM_DIR"&>/dev/null; then
+    echo "Could not run createrepo_c, using bitbake to add to"
+    echo "native sysroot and trying again..."
+    bitbake createrepo-c-native -caddto_recipe_sysroot
+    # this time show the error mesage in case it's helpful
+    if ! oe-run-native createrepo-c-native createrepo_c "$RPM_DIR"; then
+        exit 1
+    fi
 fi
-
-export PATH=${PATH}:${OECORE_NATIVE_SYSROOT}/usr/bin
-
-$CREATEREPO "$RPM_DIR"
-
 exit 0
