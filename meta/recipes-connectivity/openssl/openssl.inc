@@ -68,8 +68,9 @@ do_configure () {
 	linux-uclibceabi |\
 	linux-gnueabi |\
 	linux-uclibcspe |\
-	linux-gnuspe |\
-	linux-musl*)
+	linux-gnuspe)
+#	linux-gnuspe |\
+#	linux-musl*)
 		os=linux
 		;;
 		*)
@@ -104,6 +105,9 @@ do_configure () {
 	linux-gnux32-x86_64)
 		target=linux-x32
 		;;
+        linux-muslx32-x86_64)
+                target=linux-x32
+                ;;
 	linux-gnu64-x86_64)
 		target=linux-x86_64
 		;;

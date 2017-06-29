@@ -8,3 +8,7 @@ ARM_INSTRUCTION_SET_armv4 = "arm"
 ARM_INSTRUCTION_SET_armv5 = "arm"
 
 BBCLASSEXTEND = "nativesdk"
+
+CFLAGS_prepend = " -m64"
+
+HOST_CC_ARCH = " -march=corei7 -mtune=corei7 -mfpmath=sse -msse4.2"
