@@ -209,7 +209,8 @@ copy_initramfs() {
 }
 
 INITRAMFS_BASE_NAME ?= "initramfs-${PV}-${PR}-${MACHINE}-${DATETIME}"
-INITRAMFS_BASE_NAME[vardepsexclude] = "DATETIME"
+INITRAMFS_BASE_NAME[vardepvalue] = "initramfs-${PV}-${PR}-${MACHINE}"
+
 do_bundle_initramfs () {
 	if [ ! -z "${INITRAMFS_IMAGE}" -a x"${INITRAMFS_IMAGE_BUNDLE}" = x1 ]; then
 		echo "Creating a kernel image with a bundled initramfs..."
@@ -593,13 +594,12 @@ do_sizecheck[dirs] = "${B}"
 addtask sizecheck before do_install after do_strip
 
 KERNEL_IMAGE_BASE_NAME ?= "${PKGE}-${PKGV}-${PKGR}-${MACHINE}-${DATETIME}"
-# Don't include the DATETIME variable in the sstate package signatures
-KERNEL_IMAGE_BASE_NAME[vardepsexclude] = "DATETIME"
+# Don't include the DATETIME variable in the sstate package signatures of code parser computations
+KERNEL_IMAGE_BASE_NAME[vardepvalue] = "${PKGE}-${PKGV}-${PKGR}-${MACHINE}"
 KERNEL_IMAGE_SYMLINK_NAME ?= "${MACHINE}"
 MODULE_IMAGE_BASE_NAME ?= "modules-${PKGE}-${PKGV}-${PKGR}-${MACHINE}-${DATETIME}"
-MODULE_IMAGE_BASE_NAME[vardepsexclude] = "DATETIME"
+MODULE_IMAGE_BASE_NAME[vardepvalue] = "modules-${PKGE}-${PKGV}-${PKGR}-${MACHINE}"
 MODULE_TARBALL_BASE_NAME ?= "${MODULE_IMAGE_BASE_NAME}.tgz"
-# Don't include the DATETIME variable in the sstate package signatures
 MODULE_TARBALL_SYMLINK_NAME ?= "modules-${MACHINE}.tgz"
 MODULE_TARBALL_DEPLOY ?= "1"
 

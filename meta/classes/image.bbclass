@@ -437,6 +437,7 @@ python () {
         # Similarly TMPDIR since otherwise we see QA stamp comparision problems
         localdata.delVar('DATETIME')
         localdata.delVar('TMPDIR')
+        localdata.delVar('IMAGE_NAME')
 
         image_cmd = localdata.getVar("IMAGE_CMD")
         vardeps.add('IMAGE_CMD_' + realt)

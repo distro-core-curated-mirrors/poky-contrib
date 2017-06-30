@@ -1,3 +1,6 @@
+TOOLCHAIN_DATETIME = "${DATETIME}"
+TOOLCHAIN_DATETIME[vardepvalue] = ""
+
 #This function create a version information file
 toolchain_create_sdk_version () {
 	local versionfile=$1
@@ -6,6 +9,6 @@ toolchain_create_sdk_version () {
 	echo 'Distro: ${DISTRO}' >> $versionfile
 	echo 'Distro Version: ${DISTRO_VERSION}' >> $versionfile
 	echo 'Metadata Revision: ${METADATA_REVISION}' >> $versionfile
-	echo 'Timestamp: ${DATETIME}' >> $versionfile
+	echo 'Timestamp: ${TOOLCHAIN_DATETIME}' >> $versionfile
 }
-toolchain_create_sdk_version[vardepsexclude] = "DATETIME"
+

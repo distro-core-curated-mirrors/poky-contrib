@@ -321,7 +321,7 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
                 deps = deps | (keys & parser.execs)
                 value = handle_contains(value, parser.contains, d)
             else:
-                parsedvar = d.expandWithRefs(value, key)
+                parsedvar = d.expandWithRefs(value, key, vardeps=True)
                 parser = bb.codeparser.ShellParser(key, logger)
                 parser.parse_shell(parsedvar.value)
                 deps = deps | shelldeps

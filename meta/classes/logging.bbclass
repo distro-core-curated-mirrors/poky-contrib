@@ -4,6 +4,7 @@
 # bb.note(), etc.
 
 LOGFIFO = "${T}/fifo.${@os.getpid()}"
+LOGFIFO[vardepvalue] = "${T}/fifo"
 
 # Print the output exactly as it is passed in. Typically used for output of
 # tasks that should be seen on the console. Use sparingly.

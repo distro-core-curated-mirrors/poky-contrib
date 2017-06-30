@@ -90,10 +90,11 @@ def infer_caller_details(loginfo, parent = False, varval = True):
             loginfo['func'] = func
 
 class VariableParse:
-    def __init__(self, varname, d, val = None):
+    def __init__(self, varname, d, val = None, vardeps=False):
         self.varname = varname
         self.d = d
         self.value = val
+        self.vardeps = vardeps
 
         self.references = set()
         self.execs = set()
@@ -101,14 +102,22 @@ class VariableParse:
 
     def var_sub(self, match):
             key = match.group()[2:-1]
+            cachekey = key
+            if self.vardeps:
+                cachekey += "_vardeps"
             if self.varname and key:
                 if self.varname == key:
                     raise Exception("variable %s references itself!" % self.varname)
-            if key in self.d.expand_cache:
-                varparse = self.d.expand_cache[key]
+            if self.vardeps:
+                var = self.d.getVarFlag(key, "vardepvalue")
+                #bb.warn("here %s %s" % (key, var))
+                if var is not None:
+                    return var
+            if cachekey in self.d.expand_cache:
+                varparse = self.d.expand_cache[cachekey]
                 var = varparse.value
             else:
-                var = self.d.getVarFlag(key, "_content")
+                var = self.d.getVarFlag(key, "_content", vardeps=self.vardeps)
             self.references.add(key)
             if var is not None:
                 return var
@@ -396,15 +405,21 @@ class DataSmart(MutableMapping):
     def disableTracking(self):
         self._tracking = False
 
-    def expandWithRefs(self, s, varname):
+    def expandWithRefs(self, s, varname, vardeps=False):
+        # vardeps allows expansion to use vardepvalue rather than the actual _content
+        # datastore value.
 
         if not isinstance(s, str): # sanity check
             return VariableParse(varname, self, s)
 
-        if varname and varname in self.expand_cache:
-            return self.expand_cache[varname]
+        cachekey = varname
+        if cachekey and vardeps:
+            cachekey += "_vardeps"
 
-        varparse = VariableParse(varname, self)
+        if varname and cachekey in self.expand_cache:
+            return self.expand_cache[cachekey]
+
+        varparse = VariableParse(varname, self, None, vardeps)
 
         while s.find('${') != -1:
             olds = s
@@ -427,8 +442,8 @@ class DataSmart(MutableMapping):
 
         varparse.value = s
 
-        if varname:
-            self.expand_cache[varname] = varparse
+        if cachekey:
+            self.expand_cache[cachekey] = varparse
 
         return varparse
 
@@ -719,7 +734,7 @@ class DataSmart(MutableMapping):
                 self.dict["__exportlist"]["_content"] = set()
             self.dict["__exportlist"]["_content"].add(var)
 
-    def getVarFlag(self, var, flag, expand=True, noweakdefault=False, parsing=False):
+    def getVarFlag(self, var, flag, expand=True, noweakdefault=False, parsing=False, vardeps=False):
         local_var, overridedata = self._findVar(var)
         value = None
         if flag == "_content" and overridedata is not None and not parsing:
@@ -791,7 +806,7 @@ class DataSmart(MutableMapping):
                 cachename = var
             else:
                 cachename = var + "[" + flag + "]"
-            value = self.expand(value, cachename)
+            value = self.expandWithRefs(value, cachename, vardeps).value
 
         if value and flag == "_content" and local_var is not None and "_remove" in local_var:
             removes = []
@@ -812,7 +827,10 @@ class DataSmart(MutableMapping):
                 if expand and var in self.expand_cache:
                     # We need to ensure the expand cache has the correct value
                     # flag == "_content" here
-                    self.expand_cache[var].value = value
+                    cachekey = var
+                    if vardeps:
+                        cachekey += "_vardeps"
+                    self.expand_cache[cachekey].value = value
         return value
 
     def delVarFlag(self, var, flag, **loginfo):
