@@ -65,8 +65,7 @@ do_configure () {
 	os=${HOST_OS}
 	case $os in
 	linux-gnueabi |\
-	linux-gnuspe |\
-	linux-musl*)
+	linux-gnuspe)
 		os=linux
 		;;
 		*)
@@ -101,6 +100,9 @@ do_configure () {
 	linux-gnux32-x86_64)
 		target=linux-x32
 		;;
+        linux-muslx32-x86_64)
+                target=linux-x32
+                ;;
 	linux-gnu64-x86_64)
 		target=linux-x86_64
 		;;
