@@ -380,6 +380,8 @@ class VariableHistory(object):
             else:
                 self.variables[var] = []
 
+expand_cache2 = {}
+
 class DataSmart(MutableMapping):
     def __init__(self):
         self.dict = {}
@@ -414,6 +416,10 @@ class DataSmart(MutableMapping):
 
         cachekey = varname
         if cachekey and vardeps:
+            if varname in expand_cache2:
+                #bb.warn("hit")
+                return expand_cache2[varname]
+            #bb.warn("miss")
             cachekey += "_vardeps"
 
         if varname and cachekey in self.expand_cache:
@@ -444,6 +450,8 @@ class DataSmart(MutableMapping):
 
         if cachekey:
             self.expand_cache[cachekey] = varparse
+        if varname and vardeps:
+            expand_cache2[varname] = varparse
 
         return varparse
 
@@ -586,6 +594,8 @@ class DataSmart(MutableMapping):
 
         if var in self.overridevars:
             self._setvar_update_overridevars(var, value)
+
+        self.getVarFlag(var, "_content", False, vardeps=True)
 
     def _setvar_update_overridevars(self, var, value):
         vardata = self.expandWithRefs(value, var)
