@@ -290,8 +290,7 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
             return deps, value
         varflags = d.getVarFlags(key, ["vardeps", "vardepvalue", "vardepsexclude", "exports", "postfuncs", "prefuncs", "lineno", "filename"]) or {}
         vardeps = varflags.get("vardeps")
-        value = d.getVarFlag(key, "_content", False, vardeps=True)
-        #value = d.getVarFlag(key, "_content", False)
+        value = d.getVarFlag(key, "_content", False)
 
         def handle_contains(value, contains, d):
             newvalue = ""
@@ -338,7 +337,7 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
             if "exports" in varflags:
                 deps = deps | set(varflags["exports"].split())
         else:
-            parser = d.expandWithRefs(value, key, vardeps=True)
+            parser = d.expandWithRefs(value, key)
             deps |= parser.references
             deps = deps | (keys & parser.execs)
             value = handle_contains(value, parser.contains, d)
