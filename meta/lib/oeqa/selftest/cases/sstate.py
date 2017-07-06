@@ -35,8 +35,10 @@ class SStateBase(OESelftestTestCase):
             config_temp_sstate = "SSTATE_DIR = \"%s\"" % temp_sstate_path
             self.append_config(config_temp_sstate)
             self.track_for_cleanup(temp_sstate_path)
+        self.logger.info('before self.sstate_path %s' % self.sstate_path)
         bb_vars = self.get_bb_vars(['SSTATE_DIR', 'NATIVELSBSTRING'])
         self.sstate_path = bb_vars['SSTATE_DIR']
+        self.logger.info('after self.sstate_path %s' % self.sstate_path)
         self.hostdistro = bb_vars['NATIVELSBSTRING']
         self.distro_specific_sstate = os.path.join(self.sstate_path, self.hostdistro)
 
@@ -44,6 +46,7 @@ class SStateBase(OESelftestTestCase):
             config_set_sstate_if_not_set = 'SSTATE_MIRRORS ?= ""'
             self.append_config(config_set_sstate_if_not_set)
             for local_mirror in add_local_mirrors:
+                self.logger.info('local mirror %s self.sstate_path %s' % (local_mirror, self.sstate_path))
                 self.assertFalse(os.path.join(local_mirror) == os.path.join(self.sstate_path), msg='Cannot add the current sstate path as a sstate mirror')
                 config_sstate_mirror = "SSTATE_MIRRORS += \"file://.* file:///%s/PATH\"" % local_mirror
                 self.append_config(config_sstate_mirror)

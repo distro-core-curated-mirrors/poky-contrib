@@ -270,10 +270,12 @@ to ensure accurate results.")
         """Wrapper that queries local test data instead of calling bitbake on behalf of commands.get_bb_vars"""
         values = dict()
         # only use local test data when there is no target and unit test has not added any conf value into testinc file
-        if not target and not os.path.exists(cls.testinc_path):
+        if (not target) and (not os.path.exists(cls.testinc_path)):
             for var in variables:
                 try:
+                    cls.logger.info('target %s os.path.exists %s cls.td[%s]' % ((not target), (not os.path.exists(cls.testinc_path)), var))
                     values[var] = cls.td[var]
+                    cls.logger.info('cls.td[%s] = %s' % (var, values[var]))
                 except KeyError:
                     break
             else:
