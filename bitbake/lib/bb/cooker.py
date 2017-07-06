@@ -1921,11 +1921,16 @@ class Parser(multiprocessing.Process):
 
                 if job is None:
                     break
+                start = time.time()
                 result = self.parse(*job)
+                end = time.time()
+                length = end-start
+                #bb.warn("Time %s %s" % (len(result), length))
 
             try:
                 self.results.put(result, timeout=0.25)
             except queue.Full:
+                bb.warn("Queue Full")
                 pending.append(result)
 
     def parse(self, filename, appends):
