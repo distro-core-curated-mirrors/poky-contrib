@@ -66,7 +66,8 @@ do_configure () {
 	case $os in
 	linux-gnueabi |\
 	linux-gnuspe |\
-	linux-musl*)
+	linux-musleabi |\
+	linux-muslspe)
 		os=linux
 		;;
 		*)
@@ -98,7 +99,7 @@ do_configure () {
 	linux-i686)
 		target=debian-i386-i686/cmov
 		;;
-	linux-gnux32-x86_64)
+	linux-gnux32-x86_64 | linux-muslx32-x86_64 )
 		target=linux-x32
 		;;
 	linux-gnu64-x86_64)
