@@ -13,6 +13,7 @@ SRC_URI = "git://github.com/mkschreder/jucid \
            file://0001-juci_ws_server.c-ubus_srv_ws_client_new-expects-no-p.patch \
            file://0001-main.c-define-_DEFAULT_SOURCE.patch \
            file://0002-fix-makefile-in.patch \
+           file://0001-gcc7-fix-jucid.patch \
            "
 
 S = "${WORKDIR}/git"
