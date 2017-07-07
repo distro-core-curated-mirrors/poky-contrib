@@ -45,7 +45,7 @@ class dpkgBasicTest(dpkgTest):
 
     @OETestID(1812)
     def test_dpkg_status(self):
-        self.dpkg('dpkg -s xprop')
+        self.dpkg('dpkg -s dpkg')
 
     @OETestID(1814)
     def test_dpkg_list(self):
