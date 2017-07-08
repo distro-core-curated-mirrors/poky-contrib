@@ -23,6 +23,7 @@ do_compile() {
 }
 
 do_install_append() {
+        ln -sf ${WORKDIR}/git/node_modules/uglify-js/bin/uglifyjs ${WORKDIR}/recipe-sysroot-native/usr/bin/uglifyjs
 	oe_runmake
 	oe_runmake DESTDIR='${D}' install
 }
