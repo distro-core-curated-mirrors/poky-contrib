@@ -1,0 +1,15 @@
+Index: git/scripts/bootstrap.sh
+===================================================================
+--- git.orig/scripts/bootstrap.sh
++++ git/scripts/bootstrap.sh
+@@ -9,8 +9,8 @@ if [ "$(which npm)" == "" ]; then
+ 	ERR=1
+ fi 
+ 
+-if [ "$(which yui-compressor)" == "" ] && [ "$(which yuicompressor)" == "" ]; then
+-	perr "!!! yui-compressor is missing. Please install package yui-compressor or yuicompressor."; 
++if [ "$(which minify)" == "" ]; then
++	perr "!!! minify is missing. Please install package minify."; 
+ 	ERR=1
+ fi 
+ 

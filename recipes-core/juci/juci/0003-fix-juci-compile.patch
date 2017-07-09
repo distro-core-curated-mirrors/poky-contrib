@@ -1,0 +1,16 @@
+Index: git/scripts/juci-compile
+===================================================================
+--- git.orig/scripts/juci-compile
++++ git/scripts/juci-compile
+@@ -14,10 +14,6 @@ done
+ 
+ for file in `find $BIN/www/css/ -name "*.css"`; do 
+ 	echo "Compiling CSS ${file}.."
+-	if [ "$(which yui-compressor)" != "" ]; then
+-		yui-compressor ${file} > ${file}.out
+-	else
+-		yuicompressor ${file} > ${file}.out
+-	fi
++	minify ${file} > ${file}.out
+ 	mv ${file}.out ${file}
+ done
