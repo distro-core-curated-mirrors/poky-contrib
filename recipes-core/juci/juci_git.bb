@@ -15,15 +15,19 @@ S = "${WORKDIR}/git"
 
 inherit npm-install
 
-NPM_INSTALL_append = " uglify-js"
+NPM_INSTALL_append = " --save uglify-js less"
 DEPENDS += "jucid lua5.1 grunt-cli-native"
 
 do_compile() {
 	oe_runmake node_modules
 }
 
-do_install_append() {
+do_compile_append(){
         ln -sf ${WORKDIR}/git/node_modules/uglify-js/bin/uglifyjs ${WORKDIR}/recipe-sysroot-native/usr/bin/uglifyjs
+        ln -sf ${WORKDIR}/git/node_modules/less/bin/lessc ${WORKDIR}/recipe-sysroot-native/usr/bin/lessc
+}
+
+do_install_append() {
 	oe_runmake
 	oe_runmake DESTDIR='${D}' install
 }
