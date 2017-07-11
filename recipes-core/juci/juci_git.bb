@@ -12,13 +12,14 @@ SRC_URI = "git://github.com/mkschreder/juci"
 SRC_URI += "file://0002-fix-bootstrap.patch"
 SRC_URI += "file://0003-fix-juci-compile.patch"
 SRC_URI += "file://0005-makefile-local.patch"
+SRC_URI += "file://0006-package-json-update.patch"
 
 S = "${WORKDIR}/git"
 
 inherit npm-install
 
-NPM_INSTALL_append = " --save uglify-js less minify"
-DEPENDS += "jucid lua5.1 grunt-cli-native"
+NPM_INSTALL_append = " --save uglify-js less minify espree grunt-cli karma grunt@~0.4.1"
+DEPENDS += "jucid lua5.1 grunt-cli-native gettext-native"
 
 do_compile() {
 	oe_runmake node_modules
