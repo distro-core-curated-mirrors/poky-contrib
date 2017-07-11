@@ -108,14 +108,14 @@ class BitBakeServerCommands():
         self.server = server
         self.has_client = False
 
-    def registerEventHandler(self, host, port):
+    def registerEventHandler(self, host, port, observe_only=False):
         """
         Register a remote UI Event Handler
         """
         s, t = _create_server(host, port)
 
-        # we don't allow connections if the cooker is running
-        if (self.cooker.state in [bb.cooker.state.parsing, bb.cooker.state.running]):
+        # Only allow observe_only connections if the cooker is running
+        if (self.cooker.state in [bb.cooker.state.parsing, bb.cooker.state.running]) and not observe_only:
             return None, "Cooker is busy: %s" % bb.cooker.state.get_name(self.cooker.state)
 
         self.event_handle = bb.event.register_UIHhandler(s, True)
@@ -359,10 +359,13 @@ class BitBakeXMLRPCServerConnection(BitBakeBaseServerConnection):
         self.transport.set_connection_token(token)
         return self
 
-    def setupEventQueue(self):
-        self.events = uievent.BBUIEventQueue(self.connection, self.clientinfo)
+    def setupEventQueue(self, observe_only=False):
+        self.events = uievent.BBUIEventQueue(self.connection, self.clientinfo, observe_only)
         for event in bb.event.ui_queue:
             self.events.queue_event(event)
+
+        if observe_only:
+            return
 
         _, error = self.connection.runCommand(["setFeatures", self.featureset])
         if error:

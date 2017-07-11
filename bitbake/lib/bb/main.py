@@ -541,7 +541,7 @@ def setup_bitbake(configParams, configuration, extrafeatures=None, setup_logging
             bb.event.ui_queue = []
             return None, None, None
 
-        server_connection.setupEventQueue()
+        server_connection.setupEventQueue(configParams.observe_only)
 
         # Restore the environment in case the UI needs it
         for k in cleanedvars:

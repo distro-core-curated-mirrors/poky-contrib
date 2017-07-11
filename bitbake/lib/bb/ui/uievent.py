@@ -28,7 +28,7 @@ import socket, threading, pickle, collections
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 
 class BBUIEventQueue:
-    def __init__(self, BBServer, clientinfo=("localhost, 0")):
+    def __init__(self, BBServer, clientinfo=("localhost, 0"), observe_only=False):
 
         self.eventQueue = []
         self.eventQueueLock = threading.Lock()
@@ -36,6 +36,7 @@ class BBUIEventQueue:
 
         self.BBServer = BBServer
         self.clientinfo = clientinfo
+        self.observe_only = observe_only
 
         server = UIXMLRPCServer(self.clientinfo)
         self.host, self.port = server.socket.getsockname()
@@ -51,7 +52,7 @@ class BBUIEventQueue:
         # giving up
 
         for count_tries in range(5):
-            ret = self.BBServer.registerEventHandler(self.host, self.port)
+            ret = self.BBServer.registerEventHandler(self.host, self.port, self.observe_only)
 
             if isinstance(ret, collections.Iterable):
                 self.EventHandle, error = ret

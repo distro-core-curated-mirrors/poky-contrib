@@ -63,7 +63,7 @@ class BitBakeBaseServerConnection():
     def terminate(self):
         pass
 
-    def setupEventQueue(self):
+    def setupEventQueue(self, observe_only=False):
         pass
 
 
