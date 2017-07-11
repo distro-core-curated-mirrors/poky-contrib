@@ -667,11 +667,13 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                                   bb.event.MultiConfigParsed,
                                   bb.event.RecipeParsed,
                                   bb.event.RecipePreFinalise,
+                                  bb.event.RecipeTaskPreProcess,
                                   bb.runqueue.runQueueEvent,
                                   bb.event.OperationStarted,
                                   bb.event.OperationCompleted,
                                   bb.event.OperationProgress,
                                   bb.event.DiskFull,
+                                  bb.event.MonitorDiskEvent,
                                   bb.event.HeartbeatEvent,
                                   bb.build.TaskProgress)):
                 continue
