@@ -76,7 +76,7 @@ class ConfigParameters(object):
         for o in ["abort", "tryaltconfigs", "force", "invalidate_stamp", 
                   "verbose", "debug", "dry_run", "dump_signatures", 
                   "debug_domains", "extra_assume_provided", "profile",
-                  "prefile", "postfile", "tracking"]:
+                  "prefile", "postfile", "tracking", "server_timeout"]:
             options[o] = getattr(self.options, o)
 
         ret, error = server.runCommand(["updateConfig", options, environment, sys.argv])
@@ -144,7 +144,8 @@ class CookerConfiguration(object):
         self.dump_signatures = []
         self.dry_run = False
         self.tracking = False
-        self.interface = []
+        self.xmlrpcinterface = []
+        self.server_timeout = None
         self.writeeventlog = False
         self.server_only = False
         self.limited_deps = False
@@ -228,6 +229,26 @@ def findConfigFile(configfile, data):
         if os.path.exists(i):
             return i
 
+    return None
+
+#
+# We search for a conf/bblayers.conf under an entry in BBPATH or in cwd working 
+# up to /. If that fails, we search for a conf/bitbake.conf in BBPATH.
+#
+
+def findTopdir():
+    d = bb.data.init()
+    if 'BBPATH' in os.environ:
+        bbpath = os.environ['BBPATH']
+        d.setVar('BBPATH', bbpath)
+
+    layerconf = findConfigFile("bblayers.conf", d)
+    if layerconf:
+        return os.path.dirname(os.path.dirname(layerconf))
+    if bbpath:
+        bitbakeconf = bb.utils.which(bbpath, "conf/bitbake.conf")
+        if bitbakeconf:
+            return os.path.dirname(os.path.dirname(bitbakeconf))
     return None
 
 class CookerDataBuilder(object):
