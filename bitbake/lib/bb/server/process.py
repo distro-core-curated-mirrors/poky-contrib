@@ -326,7 +326,13 @@ class BitBakeServer(object):
             os.unlink(sockname)
  
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.sock.bind(sockname)
+        # AF_UNIX has path length issues so chdir here to workaround
+        cwd = os.getcwd()
+        try:
+            os.chdir(os.path.dirname(sockname))
+            self.sock.bind(os.path.basename(sockname))
+        finally:
+            os.chdir(cwd)
         self.sock.listen(1)
 
         os.set_inheritable(self.sock.fileno(), True)
@@ -352,7 +358,13 @@ class BitBakeServer(object):
 def connectProcessServer(sockname, featureset):
     # Connect to socket
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    sock.connect(sockname)
+    # AF_UNIX has path length issues so chdir here to workaround
+    cwd = os.getcwd()
+    try:
+        os.chdir(os.path.dirname(sockname))
+        sock.connect(os.path.basename(sockname))
+    finally:
+        os.chdir(cwd)
 
     # Send an fd for the remote to write events to
     readfd, writefd = os.pipe()
