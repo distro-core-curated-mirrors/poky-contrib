@@ -419,7 +419,7 @@ def setup_bitbake(configParams, configuration, extrafeatures=None, setup_logging
         server_connection = bb.server.xmlrpcclient.connectXMLRPC(configParams.remote_server, featureset, 
                                                                  configParams.observe_only, configParams.xmlrpctoken)
     else:
-        retries = 5
+        retries = 8
         while retries:
             try:
                 topdir, lock = lockBitbake()
@@ -436,12 +436,16 @@ def setup_bitbake(configParams, configuration, extrafeatures=None, setup_logging
                         raise bb.server.process.ProcessTimeout
                 if not configParams.server_only:
                     server_connection = bb.server.process.connectProcessServer(sockname, featureset)
-                break
+                if server_connection:
+                    break
             except bb.server.process.ProcessTimeout:
                 if not retries:
                     raise
                 retries -= 1
                 print("Retrying server connection...")
+            if not retries:
+                raise bb.server.process.ProcessTimeout("Unable to connect to bitbake server, or start one")
+
 
     if configParams.kill_server:
         server_connection.connection.terminateServer()
