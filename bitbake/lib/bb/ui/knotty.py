@@ -415,7 +415,6 @@ def main(server, eventHandler, params, tf = TerminalFilter):
             logger.error("Command '%s' failed: returned %s" % (cmdline, ret))
             return 1
 
-
     parseprogress = None
     cacheprogress = None
     main.shutdown = 0
@@ -526,6 +525,7 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 else:
                     bb.warn("Got ParseProgress event for parsing that never started?")
                 continue
+
             if isinstance(event, bb.event.ParseCompleted):
                 if params.options.quiet > 1:
                     continue
@@ -555,12 +555,13 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 if params.options.quiet == 0:
                     print("Loaded %d entries from dependency cache." % event.num_entries)
                 continue
-
             if isinstance(event, bb.command.CommandFailed):
                 return_value = event.exitcode
                 if event.error:
                     errors = errors + 1
                     logger.error("Command execution failed: %s", event.error)
+                else:
+                    logger.error("Command execution failed")
                 main.shutdown = 2
                 continue
             if isinstance(event, bb.command.CommandExit):
@@ -706,6 +707,7 @@ def main(server, eventHandler, params, tf = TerminalFilter):
             main.shutdown = main.shutdown + 1
             pass
         except Exception as e:
+            print(str(e))
             import traceback
             sys.stderr.write(traceback.format_exc())
             if not params.observe_only:

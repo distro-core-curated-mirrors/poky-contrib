@@ -181,7 +181,7 @@ def fire_ui_handlers(event, d):
 
     errors = []
     for h in _ui_handlers:
-        #print "Sending event %s" % event
+        #print("Sending event %s" % event)
         try:
              if not _ui_logfilters[h].filter(event):
                  continue
@@ -196,6 +196,7 @@ def fire_ui_handlers(event, d):
             print(str(e))
             errors.append(h)
     for h in errors:
+        print("Droping handler %s" % str(h))
         del _ui_handlers[h]
 
     if _thread_lock_enabled:
