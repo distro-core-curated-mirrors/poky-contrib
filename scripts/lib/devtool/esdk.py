@@ -1,4 +1,4 @@
-# Development tool - sdk-update command plugin
+# Development tool - esdk-update command plugin
 #
 # Copyright (C) 2015-2016 Intel Corporation
 #
@@ -78,14 +78,14 @@ def mkdir(d):
         if e.errno != errno.EEXIST:
             raise e
 
-def install_sstate_objects(sstate_objects, src_sdk, dest_sdk):
-    """Install sstate objects into destination SDK"""
-    sstate_dir = os.path.join(dest_sdk, 'sstate-cache')
+def install_sstate_objects(sstate_objects, src_esdk, dest_esdk):
+    """Install sstate objects into destination eSDK"""
+    sstate_dir = os.path.join(dest_esdk, 'sstate-cache')
     if not os.path.exists(sstate_dir):
-        logger.error("Missing sstate-cache directory in %s, it might not be an extensible SDK." % dest_sdk)
+        logger.error("Missing sstate-cache directory in %s, it might not be an extensible SDK." % dest_esdk)
         raise
     for sb in sstate_objects:
-        dst = sb.replace(src_sdk, dest_sdk)
+        dst = sb.replace(src_esdk, dest_esdk)
         destdir = os.path.dirname(dst)
         mkdir(destdir)
         logger.debug("Copying %s to %s" % (sb, dst))
@@ -106,18 +106,18 @@ def check_manifest(fn, basepath):
                     changedfiles.append(fpath)
     return changedfiles
 
-def sdk_update(args, config, basepath, workspace):
-    """Entry point for devtool sdk-update command"""
+def esdk_update(args, config, basepath, workspace):
+    """Entry point for devtool esdk-update command"""
     updateserver = args.updateserver
     if not updateserver:
-        updateserver = config.get('SDK', 'updateserver', '')
+        updateserver = config.get('eSDK', 'updateserver', '')
     logger.debug("updateserver: %s" % updateserver)
 
-    # Make sure we are using sdk-update from within SDK
+    # Make sure we are using esdk-update from within eSDK
     logger.debug("basepath = %s" % basepath)
     old_locked_sig_file_path = os.path.join(basepath, 'conf/locked-sigs.inc')
     if not os.path.exists(old_locked_sig_file_path):
-        logger.error("Not using devtool's sdk-update command from within an extensible SDK. Please specify correct basepath via --basepath option")
+        logger.error("Not using devtool's esdk-update command from within an extensible SDK. Please specify correct basepath via --basepath option")
         return -1
     else:
         logger.debug("Found conf/locked-sigs.inc in %s" % basepath)
@@ -138,13 +138,13 @@ def sdk_update(args, config, basepath, workspace):
     finally:
         tinfoil.shutdown()
 
-    tmpsdk_dir = tempfile.mkdtemp()
+    tmpesdk_dir = tempfile.mkdtemp()
     try:
-        os.makedirs(os.path.join(tmpsdk_dir, 'conf'))
-        new_locked_sig_file_path = os.path.join(tmpsdk_dir, 'conf', 'locked-sigs.inc')
+        os.makedirs(os.path.join(tmpesdk_dir, 'conf'))
+        new_locked_sig_file_path = os.path.join(tmpesdk_dir, 'conf', 'locked-sigs.inc')
         # Fetch manifest from server
-        tmpmanifest = os.path.join(tmpsdk_dir, 'conf', 'sdk-conf-manifest')
-        ret = subprocess.call("wget -q -O %s %s/conf/sdk-conf-manifest" % (tmpmanifest, updateserver), shell=True)
+        tmpmanifest = os.path.join(tmpesdk_dir, 'conf', 'esdk-conf-manifest')
+        ret = subprocess.call("wget -q -O %s %s/conf/esdk-conf-manifest" % (tmpmanifest, updateserver), shell=True)
         changedfiles = check_manifest(tmpmanifest, basepath)
         if not changedfiles:
             logger.info("Already up-to-date")
@@ -155,7 +155,7 @@ def sdk_update(args, config, basepath, workspace):
         if os.path.exists(os.path.join(basepath, 'layers/.git')):
             out = subprocess.check_output("git status --porcelain", shell=True, cwd=layers_dir)
             if not out:
-                ret = subprocess.call("git fetch --all; git reset --hard @{u}", shell=True, cwd=layers_dir)
+                ret = subprocess.call("git fetch --all; git reset --hard", shell=True, cwd=layers_dir)
             else:
                 logger.error("Failed to update metadata as there have been changes made to it. Aborting.");
                 logger.error("Changed files:\n%s" % out);
@@ -163,13 +163,13 @@ def sdk_update(args, config, basepath, workspace):
         else:
             ret = -1
         if ret != 0:
-            ret = subprocess.call("git clone %s/layers/.git" % updateserver, shell=True, cwd=tmpsdk_dir)
+            ret = subprocess.call("git clone %s/layers/.git" % updateserver, shell=True, cwd=tmpesdk_dir)
             if ret != 0:
                 logger.error("Updating metadata via git failed")
                 return ret
         logger.debug("Updating conf files ...")
         for changedfile in changedfiles:
-            ret = subprocess.call("wget -q -O %s %s/%s" % (changedfile, updateserver, changedfile), shell=True, cwd=tmpsdk_dir)
+            ret = subprocess.call("wget -q -O %s %s/%s" % (changedfile, updateserver, changedfile), shell=True, cwd=tmpesdk_dir)
             if ret != 0:
                 logger.error("Updating %s failed" % changedfile)
                 return ret
@@ -188,51 +188,51 @@ def sdk_update(args, config, basepath, workspace):
                 return chksumitems
 
             oldsums = read_uninative_checksums(os.path.join(basepath, 'conf/local.conf'))
-            newsums = read_uninative_checksums(os.path.join(tmpsdk_dir, 'conf/local.conf'))
+            newsums = read_uninative_checksums(os.path.join(tmpesdk_dir, 'conf/local.conf'))
             if oldsums != newsums:
                 uninative = True
                 for buildarch, chksum in newsums:
                     uninative_file = os.path.join('downloads', 'uninative', chksum, '%s-nativesdk-libc.tar.bz2' % buildarch)
-                    mkdir(os.path.join(tmpsdk_dir, os.path.dirname(uninative_file)))
-                    ret = subprocess.call("wget -q -O %s %s/%s" % (uninative_file, updateserver, uninative_file), shell=True, cwd=tmpsdk_dir)
+                    mkdir(os.path.join(tmpesdk_dir, os.path.dirname(uninative_file)))
+                    ret = subprocess.call("wget -q -O %s %s/%s" % (uninative_file, updateserver, uninative_file), shell=True, cwd=tmpesdk_dir)
 
         # Ok, all is well at this point - move everything over
-        tmplayers_dir = os.path.join(tmpsdk_dir, 'layers')
+        tmplayers_dir = os.path.join(tmpesdk_dir, 'layers')
         if os.path.exists(tmplayers_dir):
             shutil.rmtree(layers_dir)
             shutil.move(tmplayers_dir, layers_dir)
         for changedfile in changedfiles:
             destfile = os.path.join(basepath, changedfile)
             os.remove(destfile)
-            shutil.move(os.path.join(tmpsdk_dir, changedfile), destfile)
-        os.remove(os.path.join(conf_dir, 'sdk-conf-manifest'))
+            shutil.move(os.path.join(tmpesdk_dir, changedfile), destfile)
+        os.remove(os.path.join(conf_dir, 'esdk-conf-manifest'))
         shutil.move(tmpmanifest, conf_dir)
         if uninative:
             shutil.rmtree(os.path.join(basepath, 'downloads', 'uninative'))
-            shutil.move(os.path.join(tmpsdk_dir, 'downloads', 'uninative'), os.path.join(basepath, 'downloads'))
+            shutil.move(os.path.join(tmpesdk_dir, 'downloads', 'uninative'), os.path.join(basepath, 'downloads'))
 
         if not sstate_mirrors:
             with open(os.path.join(conf_dir, 'site.conf'), 'a') as f:
                 f.write('SCONF_VERSION = "%s"\n' % site_conf_version)
                 f.write('SSTATE_MIRRORS_append = " file://.* %s/sstate-cache/PATH \\n "\n' % updateserver)
     finally:
-        shutil.rmtree(tmpsdk_dir)
+        shutil.rmtree(tmpesdk_dir)
 
     if not args.skip_prepare:
         # Find all potentially updateable tasks
-        sdk_update_targets = []
+        esdk_update_targets = []
         tasks = ['do_populate_sysroot', 'do_packagedata']
         for root, _, files in os.walk(stamps_dir):
             for fn in files:
                 if not '.sigdata.' in fn:
                     for task in tasks:
                         if '.%s.' % task in fn or '.%s_setscene.' % task in fn:
-                            sdk_update_targets.append('%s:%s' % (os.path.basename(root), task))
-        # Run bitbake command for the whole SDK
+                            esdk_update_targets.append('%s:%s' % (os.path.basename(root), task))
+        # Run bitbake command for the whole eSDK
         logger.info("Preparing build system... (This may take some time.)")
         try:
-            exec_build_env_command(config.init_path, basepath, 'bitbake --setscene-only %s' % ' '.join(sdk_update_targets), stderr=subprocess.STDOUT)
-            output, _ = exec_build_env_command(config.init_path, basepath, 'bitbake -n %s' % ' '.join(sdk_update_targets), stderr=subprocess.STDOUT)
+            exec_build_env_command(config.init_path, basepath, 'bitbake --setscene-only %s' % ' '.join(esdk_update_targets), stderr=subprocess.STDOUT)
+            output, _ = exec_build_env_command(config.init_path, basepath, 'bitbake -n %s' % ' '.join(esdk_update_targets), stderr=subprocess.STDOUT)
             runlines = []
             for line in output.splitlines():
                 if 'Running task ' in line:
@@ -245,8 +245,8 @@ def sdk_update(args, config, basepath, workspace):
             return -1
     return 0
 
-def sdk_install(args, config, basepath, workspace):
-    """Entry point for the devtool sdk-install command"""
+def esdk_install(args, config, basepath, workspace):
+    """Entry point for the devtool esdk-install command"""
 
     import oe.recipeutils
     import bb.process
@@ -311,35 +311,26 @@ def sdk_install(args, config, basepath, workspace):
         except bb.process.ExecutionError as e:
             raise DevtoolError('Failed to bitbake build-sysroots:\n%s' % (str(e)))
 
-devtool_esdk_help = """
-
- WARNING: this plugin will be removed starting 2.6 development in favour
- of using 'devtool esdk-*' subcommands, offering a better description in
- terms of functionality.
-
-"""
-
 
 def register_commands(subparsers, context):
-    """Register devtool subcommands from the sdk plugin"""
+    """Register devtool subcommands from the eSDK plugin"""
     if context.fixed_setup:
-        parser_sdk = subparsers.add_parser('sdk-update',
-                                           help='devtool_esdk_help\n
-                                                 Update SDK components',
-                                           description='Updates installed SDK components from a remote server',
-                                           group='sdk')
-        updateserver = context.config.get('SDK', 'updateserver', '')
+        parser_esdk = subparsers.add_parser('esdk-update',
+                                           help='Update eSDK components',
+                                           description='Updates installed eSDK components from a remote server',
+                                           group='esdk')
+        updateserver = context.config.get('eSDK', 'updateserver', '')
         if updateserver:
-            parser_sdk.add_argument('updateserver', help='The update server to fetch latest SDK components from (default %s)' % updateserver, nargs='?')
+            parser_esdk.add_argument('updateserver', help='The update server to fetch latest eSDK components from (default %s)' % updateserver, nargs='?')
         else:
-            parser_sdk.add_argument('updateserver', help='The update server to fetch latest SDK components from')
-        parser_sdk.add_argument('--skip-prepare', action="store_true", help='Skip re-preparing the build system after updating (for debugging only)')
-        parser_sdk.set_defaults(func=sdk_update)
+            parser_esdk.add_argument('updateserver', help='The update server to fetch latest eSDK components from')
+        parser_esdk.add_argument('--skip-prepare', action="store_true", help='Skip re-preparing the build system after updating (for debugging only)')
+        parser_esdk.set_defaults(func=esdk_update)
 
-        parser_sdk_install = subparsers.add_parser('sdk-install',
-                                                   help='Install additional SDK components',
-                                                   description='Installs additional recipe development files into the SDK. (You can use "devtool search" to find available recipes.)',
-                                                   group='sdk')
-        parser_sdk_install.add_argument('recipename', help='Name of the recipe to install the development artifacts for', nargs='+')
-        parser_sdk_install.add_argument('-s', '--allow-build', help='Allow building requested item(s) from source', action='store_true')
-        parser_sdk_install.set_defaults(func=sdk_install)
+        parser_esdk_install = subparsers.add_parser('esdk-install',
+                                                   help='Install additional eSDK components',
+                                                   description='Installs additional recipe development files into the eSDK. (You can use "devtool search" to find available recipes.)',
+                                                   group='esdk')
+        parser_esdk_install.add_argument('recipename', help='Name of the recipe to install the development artifacts for', nargs='+')
+        parser_esdk_install.add_argument('-s', '--allow-build', help='Allow building requested item(s) from source', action='store_true')
+        parser_esdk_install.set_defaults(func=esdk_install)
