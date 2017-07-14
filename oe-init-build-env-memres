@@ -72,7 +72,7 @@ if [ -e bitbake.lock ] && grep : bitbake.lock > /dev/null; then
 fi
 
 if [ $res != 0 ]; then
-    bitbake --server-only -t xmlrpc -B localhost:$port
+    bitbake --server-only -B localhost:$port
 fi
 
 if [ $port = -1 ]; then
