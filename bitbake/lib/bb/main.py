@@ -436,7 +436,7 @@ def setup_bitbake(configParams, configuration, extrafeatures=None, setup_logging
                         raise bb.server.process.ProcessTimeout
                 if not configParams.server_only:
                     server_connection = bb.server.process.connectProcessServer(sockname, featureset)
-                if server_connection:
+                if server_connection or configParams.server_only:
                     break
             except bb.server.process.ProcessTimeout:
                 if not retries:
