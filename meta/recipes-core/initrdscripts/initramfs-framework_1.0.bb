@@ -14,7 +14,8 @@ SRC_URI = "file://init \
            file://udev \
            file://e2fs \
            file://debug \
-           file://setup-live"
+           file://setup-live \
+           file://install-efi.sh"
 
 S = "${WORKDIR}"
 
@@ -41,6 +42,9 @@ do_install() {
     # debug
     install -m 0755 ${WORKDIR}/debug ${D}/init.d/00-debug
 
+    # install-efi
+    install -m 0755 ${WORKDIR}/install-efi.sh ${D}/init.d/install-efi.sh
+
     # Create device nodes expected by some kernels in initramfs
     # before even executing /init.
     install -d ${D}/dev
@@ -53,7 +57,8 @@ PACKAGES = "${PN}-base \
             initramfs-module-e2fs \
             initramfs-module-rootfs \
             initramfs-module-debug \
-            initramfs-module-setup-live"
+            initramfs-module-setup-live \
+            initramfs-module-install-efi"
 
 FILES_${PN}-base = "/init /init.d/99-finish /dev"
 
@@ -88,3 +93,7 @@ FILES_initramfs-module-rootfs = "/init.d/90-rootfs"
 SUMMARY_initramfs-module-debug = "initramfs dynamic debug support"
 RDEPENDS_initramfs-module-debug = "${PN}-base"
 FILES_initramfs-module-debug = "/init.d/00-debug"
+
+SUMMARY_initramfs-module-install-efi = "initramfs support for installation option"
+RDEPENDS_initramfs-module-install-efi = "${PN}-base parted e2fsprogs-mke2fs dosfstools util-linux-blkid"
+FILES_initramfs-module-install-efi = "/init.d/install-efi.sh"
