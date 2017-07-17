@@ -315,6 +315,14 @@ class BitBakeConfigParameters(cookerdata.ConfigParameters):
             eventlog = "bitbake_eventlog_%s.json" % datetime.now().strftime("%Y%m%d%H%M%S")
             options.writeeventlog = eventlog
 
+        # Read host and port from lockfile if present
+        if not options.bind:
+            topdir = bb.cookerdata.findTopdir()
+            lockfile = topdir + "/bitbake.lock"
+            if os.path.exists(lockfile):
+                with open(lockfile, 'r') as lf:
+                    options.bind = lf.readline()
+
         if options.bind:
             try:
                 #Checking that the port is a number and is a ':' delimited value

@@ -96,7 +96,7 @@ class ProcessServer(multiprocessing.Process):
             self.bitbake_lock.seek(0)
             self.bitbake_lock.truncate()
             if self.xmlrpc:
-                self.bitbake_lock.write("%s %s:%s\n" % (os.getpid(), self.xmlrpc.host, self.xmlrpc.port))
+                self.bitbake_lock.write("%s:%s\n" % (self.xmlrpc.host, self.xmlrpc.port))
             else:
                 self.bitbake_lock.write("%s\n" % (os.getpid()))
             self.bitbake_lock.flush()
