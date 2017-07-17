@@ -46,7 +46,7 @@ class ProcessServer(multiprocessing.Process):
     profile_filename = "profile.log"
     profile_processed_filename = "profile.log.processed"
 
-    def __init__(self, lock, sock, sockname):
+    def __init__(self, lock, sock, sockname, server_only):
         multiprocessing.Process.__init__(self)
         self.command_channel = False
         self.command_channel_reply = False
@@ -64,6 +64,7 @@ class ProcessServer(multiprocessing.Process):
         self.bitbake_lock = lock
         self.sock = sock
         self.sockname = sockname
+        self.server_only = server_only
 
     def register_idle_function(self, function, data):
         """Register a function to be called while the server is idle"""
@@ -90,7 +91,6 @@ class ProcessServer(multiprocessing.Process):
                 self.timeout = float(self.timeout)
         except:
             bb.warn('Ignoring invalid BB_SERVER_TIMEOUT=%s, must be a float specifying seconds.' % self.timeout)
-
 
         try:
             self.bitbake_lock.seek(0)
@@ -167,7 +167,8 @@ class ProcessServer(multiprocessing.Process):
                     self.cooker.clientComplete()
                     if self.timeout is None:
                         self.quit = True
-            if not self.haveui and self.lastui and self.timeout and (self.lastui + self.timeout) < time.time():
+            if not self.server_only and not self.haveui and self.lastui and self.timeout \
+                    and (self.lastui + self.timeout) < time.time():
                 self.quit = True
 
             ready = self.idle_commands(.1, fds)
@@ -340,7 +341,7 @@ class BitBakeServer(object):
         self.sock.close()
 
     def _startServer(self):
-        server = ProcessServer(self.bitbake_lock, self.sock, self.sockname)
+        server = ProcessServer(self.bitbake_lock, self.sock, self.sockname, self.configuration.server_only)
         self.configuration.setServerRegIdleCallback(server.register_idle_function)
 
         # Copy prefile and postfile to _server variants
