@@ -65,12 +65,8 @@ unset OEROOT
 
 [ -z "$BUILDDIR" ] || cd "$BUILDDIR"
 
-res=1
-if [ -e bitbake.lock ] && grep : bitbake.lock > /dev/null; then
-    BBSERVER=$(cat bitbake.lock) bitbake --status-only
-    res=$?
-fi
-
+bitbake --status-only
+res=$?
 if [ $res != 0 ]; then
     bitbake --server-only -B localhost:$port
 fi
@@ -88,3 +84,4 @@ else
     fi
 fi
 unset port res
+unset BBSERVER
