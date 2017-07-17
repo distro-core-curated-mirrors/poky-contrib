@@ -375,8 +375,10 @@ def bitbake_main(configParams, configuration):
                           configuration.debug_domains)
 
     server_connection, ui_module = setup_bitbake(configParams, configuration)
-    if server_connection is None and configParams.kill_server:
-        return 0
+    # No server connection
+    if server_connection is None:
+        if configParams.status_only or configParams.kill_server:
+            return 1
 
     if not configParams.server_only:
         if configParams.status_only:
@@ -433,6 +435,10 @@ def setup_bitbake(configParams, configuration, extrafeatures=None, setup_logging
                 topdir, lock = lockBitbake()
                 sockname = topdir + "/bitbake.sock"
                 if lock:
+                    if configParams.status_only or configParams.kill_server:
+                        print("bitbake server is not running.")
+                        lock.close()
+                        return None, None
                     # we start a server with a given configuration
                     print("Starting bitbake server...")
                     server = bb.server.process.BitBakeServer(lock, sockname, configuration, featureset)
