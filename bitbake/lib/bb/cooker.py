@@ -1357,6 +1357,7 @@ class BBCooker:
             if not retval:
                 if fireevents:
                     bb.event.fire(bb.event.BuildCompleted(len(rq.rqdata.runtaskentries), buildname, item, failures, interrupted), self.databuilder.mcdata[mc])
+                    bb.event.fire(bb.event.MultiConfigBuildCompleted(len(rq.rqdata.runtaskentries), buildname, item, failures, interrupted), self.databuilder.mcdata[''])
                 self.command.finishAsyncCommand(msg)
                 # We trashed self.recipecaches above
                 self.parsecache_valid = False
@@ -1401,6 +1402,7 @@ class BBCooker:
                 try:
                     for mc in self.multiconfigs:
                         bb.event.fire(bb.event.BuildCompleted(len(rq.rqdata.runtaskentries), buildname, targets, failures, interrupted), self.databuilder.mcdata[mc])
+                    bb.event.fire(bb.event.MultiConfigBuildCompleted(len(rq.rqdata.runtaskentries), buildname, targets, failures, interrupted), self.databuilder.mcdata[''])
                 finally:
                     self.command.finishAsyncCommand(msg)
                 return False
