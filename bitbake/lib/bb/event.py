@@ -479,8 +479,7 @@ class BuildStarted(BuildBase, OperationStarted):
         OperationStarted.__init__(self, "Building Started")
         BuildBase.__init__(self, n, p, failures)
 
-class BuildCompleted(BuildBase, OperationCompleted):
-    """Event when builds have completed"""
+class BuildCompletedBase(BuildBase, OperationCompleted):
     def __init__(self, total, n, p, failures=0, interrupted=0):
         if not failures:
             OperationCompleted.__init__(self, total, "Building Succeeded")
@@ -488,6 +487,12 @@ class BuildCompleted(BuildBase, OperationCompleted):
             OperationCompleted.__init__(self, total, "Building Failed")
         self._interrupted = interrupted
         BuildBase.__init__(self, n, p, failures)
+
+class BuildCompleted(BuildCompletedBase):
+    """Event when builds have completed (one event per multiconfig)"""
+
+class MultiConfigBuildCompleted(BuildCompletedBase):
+    """Event fired once per build as it completes regardless of the number of multiconfigs"""
 
 class DiskFull(Event):
     """Disk full case build aborted"""
