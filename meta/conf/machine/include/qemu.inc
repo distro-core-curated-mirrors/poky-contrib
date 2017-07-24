@@ -18,9 +18,6 @@ IMAGE_FSTYPES += "tar.bz2 ext4"
 # Don't include kernels in standard images
 RDEPENDS_kernel-base = ""
 
-# Use a common kernel recipe for all QEMU machines
-PREFERRED_PROVIDER_virtual/kernel ?= "linux-yocto"
-
 EXTRA_IMAGEDEPENDS += "qemu-native qemu-helper-native"
 
 # Provide the nfs server kernel module for all qemu images
