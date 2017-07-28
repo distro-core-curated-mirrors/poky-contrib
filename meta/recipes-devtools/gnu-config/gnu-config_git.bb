@@ -12,7 +12,9 @@ SRCREV = "b576fa87c140b824466ef1638e945e87dc5c0343"
 PV = "20150728+git${SRCPV}"
 
 SRC_URI = "git://git.sv.gnu.org/config.git \
-           file://gnu-configize.in"
+           file://gnu-configize.in \
+           file://0001-remove-uclibc.patch \
+           "
 
 S = "${WORKDIR}/git"
 
