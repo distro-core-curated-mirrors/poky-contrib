@@ -1,0 +1,33 @@
+From a5751517422fba023bc25e2815769203ce1b4185 Mon Sep 17 00:00:00 2001
+From: Choong Yin Thong <yin.thong.choong@intel.com>
+Date: Wed, 26 Jul 2017 15:51:10 +0800
+Subject: [PATCH 1/2] remove uclibc
+
+Signed-off-by: Choong Yin Thong <yin.thong.choong@intel.com>
+---
+ ostable | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/ostable b/ostable
+index 038b8bd..8aa9667 100644
+--- a/ostable
++++ b/ostable
+@@ -12,8 +12,6 @@
+ #   system part of the output of the GNU config.guess script.
+ #
+ # <Debian name>		<GNU name>		<config.guess regex>
+-uclibceabi-linux	linux-uclibceabi	linux[^-]*-uclibceabi
+-uclibc-linux		linux-uclibc		linux[^-]*-uclibc
+ musleabihf-linux	linux-musleabihf	linux[^-]*-musleabihf
+ musleabi-linux		linux-musleabi		linux[^-]*-musleabi
+ musl-linux		linux-musl		linux[^-]*-musl
+@@ -35,6 +33,4 @@ bsd-freebsd		freebsd			freebsd[^-]*
+ bsd-netbsd		netbsd			netbsd[^-]*
+ bsd-openbsd		openbsd			openbsd[^-]*
+ sysv-solaris		solaris			solaris[^-]*
+-uclibceabi-uclinux	uclinux-uclibceabi	uclinux[^-]*-uclibceabi
+-uclibc-uclinux		uclinux-uclibc		uclinux[^-]*(-uclibc.*)?
+ tos-mint		mint			mint[^-]*
+-- 
+2.7.4
+

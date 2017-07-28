@@ -1,0 +1,33 @@
+From 090348b9a96fabcf6ba90d796bb84217679d7ad5 Mon Sep 17 00:00:00 2001
+From: Choong Yin Thong <yin.thong.choong@intel.com>
+Date: Wed, 26 Jul 2017 15:51:28 +0800
+Subject: [PATCH 2/2] remove uclibc
+
+Signed-off-by: Choong Yin Thong <yin.thong.choong@intel.com>
+---
+ triplettable | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/triplettable b/triplettable
+index 49ae25c..cc3992f 100644
+--- a/triplettable
++++ b/triplettable
+@@ -3,8 +3,6 @@
+ # Supported variables: <cpu>
+ #
+ # <Debian triplet>	<Debian arch>
+-uclibceabi-linux-arm	uclibc-linux-armel
+-uclibc-linux-<cpu>	uclibc-linux-<cpu>
+ musleabihf-linux-arm	musl-linux-armhf
+ musleabi-linux-arm	musl-linux-armel
+ musl-linux-<cpu>	musl-linux-<cpu>
+@@ -33,6 +31,4 @@ bsd-openbsd-<cpu>	openbsd-<cpu>
+ bsd-netbsd-<cpu>	netbsd-<cpu>
+ bsd-darwin-<cpu>	darwin-<cpu>
+ sysv-solaris-<cpu>	solaris-<cpu>
+-uclibceabi-uclinux-arm	uclinux-armel
+-uclibc-uclinux-<cpu>	uclinux-<cpu>
+ tos-mint-m68k		mint-m68k
+-- 
+2.7.4
+
