@@ -1,0 +1,26 @@
+From ff56b4f66952eab319a77cf373822d59be4a2a7f Mon Sep 17 00:00:00 2001
+From: Choong Yin Thong <yin.thong.choong@intel.com>
+Date: Wed, 26 Jul 2017 16:12:25 +0800
+Subject: [PATCH] remove uclibc
+
+Signed-off-by: Choong Yin Thong <yin.thong.choong@intel.com>
+---
+ m4macros/glib-gettext.m4 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/m4macros/glib-gettext.m4 b/m4macros/glib-gettext.m4
+index 7ec3731..8833a08 100644
+--- a/m4macros/glib-gettext.m4
++++ b/m4macros/glib-gettext.m4
+@@ -290,7 +290,7 @@ msgstr ""
+ 	    CATOBJEXT=.mo
+             DATADIRNAME=share
+ 	    ;;
+-	    *-*-musl* | *-*-linux-uclibc*)
++	    *-*-musl*)
+ 	    CATOBJEXT=.gmo
+             DATADIRNAME=share
+ 	    ;;
+-- 
+2.7.4
+
