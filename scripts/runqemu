@@ -1052,26 +1052,22 @@ class BaseConfig(object):
         if not mach:
             return None
 
-        if mach == 'qemuarm':
-            qbsys = 'arm'
-        elif mach == 'qemuarm64':
-            qbsys = 'aarch64'
-        elif mach == 'qemux86':
-            qbsys = 'i386'
-        elif mach == 'qemux86-64':
-            qbsys = 'x86_64'
-        elif mach == 'qemuppc':
-            qbsys = 'ppc'
-        elif mach == 'qemumips':
-            qbsys = 'mips'
-        elif mach == 'qemumips64':
-            qbsys = 'mips64'
-        elif mach == 'qemumipsel':
-            qbsys = 'mipsel'
-        elif mach == 'qemumips64el':
-            qbsys = 'mips64el'
+        # Order here is important, i.e qemuarm64 is verified before qemuarm,
+        qemumachines = (('qemuarm64'    , 'aarch64'),
+                        ('qemuarm'      , 'arm'),
+                        ('qemux86-64'   , 'x86_64'),
+                        ('qemux86'      , 'i386'),
+                        ('qemupcc'      , 'pcc'),
+                        ('qemumips64el' , 'mips64el'),
+                        ('qemumips64'   , 'mips64'),
+                        ('qemumipsel'   , 'mipsel'),
+                        ('qemumips'     , 'mips'))
 
-        return 'qemu-system-%s' % qbsys
+        for qemumachine, qbsys in qemumachines:
+            if qemumachine in mach:
+                return 'qemu-system-%s' % qbsys
+        else:
+            return None
 
     def setup_final(self):
         qemu_system = self.get('QB_SYSTEM_NAME')
