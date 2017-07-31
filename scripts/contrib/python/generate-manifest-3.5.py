@@ -77,6 +77,29 @@ class MakefileMaker:
         else:
             return os.path.join( dirname, basename, '__pycache__' )
 
+    def formatVar( self, varname, values, override=None, is_append=False, max_length=80):
+        out = varname
+        if override:
+            out += '_%s' % override
+        assigment = '='
+        if is_append:
+            assigment = '+='
+        if not values:
+            return out + ' %s ""' % assigment
+        else:
+            out += ' %s "\\\n' % assigment
+        indent = len(out) - 2
+        line = ' ' * indent
+        for value in values:
+            if len(line) > max_length:
+                out += line + '\\\n'
+                line = ' ' * indent
+            line += "%s " % value
+        out += line + '\\\n'
+        out += ' '*indent + '"'
+
+        return out
+
     def doBody( self ):
         """generate body of Makefile"""
 
@@ -91,19 +114,14 @@ class MakefileMaker:
             for name in ['${PN}-modules'] + sorted(self.packages):
                 pkglist.append('%s-native' % name.replace('${PN}', 'python3'))
 
-            self.out('RPROVIDES += "%s"' % " ".join(pkglist))
+            self.out( self.formatVar('RPROVIDES', pkglist, is_append=True) )
             return
 
         #
         # generate provides line
         #
 
-        provideLine = 'PROVIDES+="'
-        for name in sorted(self.packages):
-            provideLine += "%s " % name
-        provideLine += '"'
-
-        self.out( provideLine )
+        self.out( self.formatVar('PROVIDES', sorted(self.packages), is_append=True) )
         self.out( "" )
 
         #
@@ -133,9 +151,12 @@ class MakefileMaker:
             # write out the description, revision and dependencies
             #
             self.out( 'SUMMARY_%s="%s"' % ( name, desc ) )
-            self.out( 'RDEPENDS_%s="%s"' % ( name, deps ) )
+            self.out( self.formatVar('RDEPENDS', [deps], override=name) )
 
-            line = 'FILES_%s="' % name
+            #
+            # write out the packages files
+            #
+            self.out( self.formatVar('FILES', files, override=name) )
 
             #
             # check which directories to make in the temporary directory
@@ -145,25 +166,12 @@ class MakefileMaker:
             for target in files:
                 dirset[os.path.dirname( target )] = True
 
-            #
-            # generate which files to copy for the target (-dfR because whole directories are also allowed)
-            #
-
-            for target in files:
-                line += "%s " % target
-
-            line += '"'
-            self.out( line )
             self.out( "" )
 
         self.out( 'SUMMARY_${PN}-modules="All Python modules"' )
-        line = 'RDEPENDS_${PN}-modules="'
+        pkgs = [name for name, _ in sorted(self.packages.items()) if name not in ['${PN}-dev', '${PN}-distutils-staticdev']]
+        self.out( self.formatVar('RDEPENDS', pkgs, override='{PN}-modules') )
 
-        for name, data in sorted(self.packages.items()):
-            if name not in ['${PN}-dev', '${PN}-distutils-staticdev']:
-                line += "%s " % name
-
-        self.out( "%s \"" % line )
         self.out( 'ALLOW_EMPTY_${PN}-modules = "1"' )
 
     def doEpilog( self ):
