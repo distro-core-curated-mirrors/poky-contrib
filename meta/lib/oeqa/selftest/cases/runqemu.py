@@ -139,3 +139,17 @@ SYSLINUX_TIMEOUT = "10"
         cmd = "%s %s" % (self.cmd_common, rootfs)
         with runqemu(self.recipe, ssh=False, launch_cmd=cmd) as qemu:
             self.assertTrue(qemu.runner.logged, "Failed: %s" % cmd)
+
+    def test_qemuparams_mem(self):
+        """Test runqemu qemuparams memory"""
+        cmd = "%s %s qemuparams=\"%s\"" % (self.cmd_common, self.machine, "-m 512")
+        with runqemu(self.recipe, ssh=False, launch_cmd=cmd) as qemu:
+            with open(qemu.qemurunnerlog) as f:
+                self.assertTrue('mem=512M' in f.read(), "Failed: %s" % cmd)
+
+    def test_qemuparams_cpu(self):
+        """Test runqemu qemuparams cpu"""
+        cmd = "%s %s qemuparams=\"%s\"" % (self.cmd_common, self.machine, "-cpu coreduo")
+        with runqemu(self.recipe, ssh=False, launch_cmd=cmd) as qemu:
+            with open(qemu.qemurunnerlog) as f:
+                self.assertTrue('-cpu coreduo' in f.read(), "Failed: %s" % cmd)
