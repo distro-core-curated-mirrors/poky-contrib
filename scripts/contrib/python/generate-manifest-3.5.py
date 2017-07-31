@@ -203,7 +203,7 @@ if __name__ == "__main__":
     "warnings.* site.* stat.* " +
     "UserDict.* UserList.* UserString.* " +
     "lib-dynload/binascii.*.so lib-dynload/_struct.*.so lib-dynload/time.*.so " +
-    "lib-dynload/xreadlines.*.so types.* platform.* ${bindir}/python* "  + 
+    "lib-dynload/xreadlines.*.so types.* platform.* ${bindir}/python*[!-config] " +
     "_weakrefset.* sysconfig.* _sysconfigdata.* " +
     "${includedir}/python${PYTHON_BINABI}/pyconfig*.h " +
     "${libdir}/python${PYTHON_MAJMIN}/collections " +
@@ -213,6 +213,7 @@ if __name__ == "__main__":
 
     m.addPackage( "${PN}-dev", "Python development package", "${PN}-core",
     "${includedir} " +
+    "${bindir}/python*-config " +
     "${libdir}/lib*${SOLIBSDEV} " +
     "${libdir}/*.la " +
     "${libdir}/*.a " +
