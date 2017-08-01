@@ -43,6 +43,7 @@ CONFIGUREOPTS = " \
     --libdir=${libdir} \
     --includedir=${includedir} \
     --syslibdir=${base_libdir} \
+    --disable-visibility \
 "
 
 do_configure() {
