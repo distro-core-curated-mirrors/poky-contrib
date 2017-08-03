@@ -17,7 +17,7 @@
 #     echo "bar" >${WORKDIR}/foo
 # }
 # RM_WORK_EXCLUDE_ITEMS += "foo"
-RM_WORK_EXCLUDE_ITEMS = "temp"
+RM_WORK_EXCLUDE_ITEMS = "${@os.path.basename(d.getVar("T"))}"
 
 # Use the completion scheduler by default when rm_work is active
 # to try and reduce disk usage
