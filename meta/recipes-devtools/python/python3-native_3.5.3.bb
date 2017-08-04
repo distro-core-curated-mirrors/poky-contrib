@@ -41,7 +41,7 @@ DEPENDS = "openssl-native bzip2-replacement-native zlib-native readline-native s
 
 inherit native
 
-require python-native-${PYTHON_MAJMIN}-manifest.inc
+#require python-native-${PYTHON_MAJMIN}-manifest.inc
 
 EXTRA_OECONF_append = " --bindir=${bindir}/${PN} --without-ensurepip"
 
@@ -75,5 +75,11 @@ do_install() {
 	done
 
 	# Tests are large and we don't need them in the native sysroot
-	rm ${D}${libdir}/python${PYTHON_MAJMIN}/test -rf
+	#rm ${D}${libdir}/python${PYTHON_MAJMIN}/test -rf
+
+        # Add a symlink to the native Python so that scripts can just invoke
+        # "nativepython" and get the right one without needing absolute paths
+        # (these often end up too long for the #! parser in the kernel as the
+        # buffer is 128 bytes long).
+        ln -s python3-native/python3 ${D}${bindir}/nativepython3
 }
