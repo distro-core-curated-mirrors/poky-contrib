@@ -397,9 +397,7 @@ def bitbake_main(configParams, configuration):
 def setup_bitbake(configParams, configuration, extrafeatures=None, setup_logging=True):
     # Ensure logging messages get sent to the UI as events
     handler = bb.event.LogHandler()
-    if setup_logging and not configParams.status_only:
-        # In status only mode there are no logs and no UI
-        logger.addHandler(handler)
+    logger.addHandler(handler)
 
     # Clear away any spurious environment variables while we stoke up the cooker
     cleanedvars = bb.utils.clean_environment()
