@@ -137,12 +137,8 @@ class ProcessServer(multiprocessing.Process):
         while not self.quit:
             if self.sock in ready:
                 self.controllersock, address = self.sock.accept()
-                if self.haveui:
-                    print("Dropping connection attempt as we have a UI %s" % (str(ready)))
-                    self.controllersock.close()
-                else:
-                    print("Accepting %s" % (str(ready)))
-                    fds.append(self.controllersock)
+                print("Accepting %s" % (str(ready)))
+                fds.append(self.controllersock)
             if self.controllersock in ready:
                 try:
                     print("Connecting Client")
