@@ -148,11 +148,19 @@ def srctree_hash_files(d):
     import tempfile
 
     s_dir = d.getVar('EXTERNALSRC', True)
-    git_dir = os.path.join(s_dir, '.git')
-    oe_hash_file = os.path.join(git_dir, 'oe-devtool-tree-sha1')
+    git_dir = None
+
+    try:
+        # git rev-parse returns the path relative to the current working
+        # directory
+        git_dir = os.path.join(s_dir,
+            subprocess.check_output(['git', 'rev-parse', '--git-dir'], cwd=s_dir).decode("utf-8").rstrip())
+    except subprocess.CalledProcessError:
+        pass
 
     ret = " "
-    if os.path.exists(git_dir):
+    if git_dir is not None:
+        oe_hash_file = os.path.join(git_dir, 'oe-devtool-tree-sha1')
         with tempfile.NamedTemporaryFile(dir=git_dir, prefix='oe-devtool-index') as tmp_index:
             # Clone index
             shutil.copy2(os.path.join(git_dir, 'index'), tmp_index.name)
