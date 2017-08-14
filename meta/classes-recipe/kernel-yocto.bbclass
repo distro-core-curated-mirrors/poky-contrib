@@ -455,15 +455,16 @@ do_kernel_configme() {
 		bbfatal_log "Could not find configuration queue (${meta_dir}/config.queue)"
 	fi
 
-	CFLAGS="${CFLAGS} ${TOOLCHAIN_OPTIONS}" HOSTCC="${BUILD_CC} ${BUILD_CFLAGS} ${BUILD_LDFLAGS}" HOSTCPP="${BUILD_CPP}" CC="${KERNEL_CC}" LD="${KERNEL_LD}" ARCH=${ARCH} merge_config.sh -O ${B} ${config_flags} ${configs} > ${meta_dir}/cfg/merge_config_build.log 2>&1
-	if [ $? -ne 0 -o ! -f ${B}/.config ]; then
-		bberror "Could not generate a .config for ${KMACHINE}-${LINUX_KERNEL_TYPE}"
-		if [ ${KCONF_AUDIT_LEVEL} -gt 1 ]; then
-			bbfatal_log "`cat ${meta_dir}/cfg/merge_config_build.log`"
-		else
-			bbfatal_log "Details can be found at: ${S}/${meta_dir}/cfg/merge_config_build.log"
-		fi
+	configs=$(echo "${configs}" | sed 's%.kernel-meta%${S}/.kernel-meta%g')
+	if [ -z "${configs}" ]; then
+		bbfatal_log "No configuration fragments or defconfig found for ${KMACHINE}-${LINUX_KERNEL_TYPE}"
 	fi
+	# put these in a place where the merge_config routine will find them, and use them
+	echo "${configs}" > ${WORKDIR}/kernel-cfgs
+}
+
+do_set_localversion() {
+	cd ${S}
 
 	if [ ! -z "${LINUX_VERSION_EXTENSION}" ]; then
 		echo "# Global settings from linux recipe" >> ${B}/.config
@@ -472,6 +473,8 @@ do_kernel_configme() {
 }
 
 addtask kernel_configme before do_configure after do_patch
+addtask merge_config before do_configure after do_kernel_configme
+addtask set_localversion after do_configure before do_compile
 addtask config_analysis
 
 do_config_analysis[depends] = "virtual/kernel:do_configure"

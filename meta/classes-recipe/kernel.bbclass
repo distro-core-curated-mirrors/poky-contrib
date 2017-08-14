@@ -636,6 +636,76 @@ python check_oldest_kernel() {
 check_oldest_kernel[vardepsexclude] += "OLDEST_KERNEL KERNEL_VERSION"
 do_configure[prefuncs] += "check_oldest_kernel"
 
+# returns all the elements from the src uri that are .cfg or a defconfig
+def get_cfg_elements(d):
+    sources=src_patches(d, True)
+    sources_list=[]
+    for s in sources:
+        base, ext = os.path.splitext(os.path.basename(s))
+        if ext and ext in [".cfg"]:
+            sources_list.append(s)
+        elif base and 'defconfig' in base:
+            sources_list.append(s)
+
+    return sources_list
+
+python () {
+       src_uri_frags=get_cfg_elements(d)
+
+       # if we find fragments on the SRC_URI:
+       #   - enable the merge_config task
+       #   - disable the old KERNEL_CONFIG_COMMAND .. but save a copy
+       if src_uri_frags:
+          bb.build.addtask( "do_merge_config", "do_configure", None, d )
+          d.appendVar( "KERNEL_CONFIG_FRAGMENTS", " %s" % ' '.join(src_uri_frags) )
+          d.setVar( 'KERNEL_CONFIG_COMMAND_SAVE', d.getVar('KERNEL_CONFIG_COMMAND') )
+          d.setVar( 'KERNEL_CONFIG_COMMAND', '' )
+          bb.note("Enabling merge config support for: %s" % d.getVar('KERNEL_CONFIG_FRAGMENTS'))
+}
+
+do_merge_config() {
+    set +e
+
+    # translate the kconfig_mode into something that merge_config.sh understands
+    config_flags=""
+    case ${KCONFIG_MODE} in
+	*allnoconfig)
+	    config_flags="-n"
+	    ;;
+	*alldefconfig)
+	    config_flags=""
+	    ;;
+    esac
+
+    if [ -f "${WORKDIR}/kernel-cfgs" ]; then
+        on_disk_frags=$(cat ${WORKDIR}/kernel-cfgs)
+    fi
+
+    config_fragments=""
+    for frag in ${KERNEL_CONFIG_FRAGMENTS} ${on_disk_frags}; do
+        full_frag=${frag}
+        if [ ! -f ${frag} ]; then
+            if [ ! -f ${WORKDIR}/${frag} ]; then
+                bbfatal_log "fragment ${frag} was specified, but not found"
+            else
+                full_frag="${WORKDIR}/${frag}"
+            fi
+        fi
+        config_fragments="${config_fragments} ${full_frag}"
+    done
+
+    if [ -n "${config_fragments}" ]; then
+	cd ${S}
+	echo "CFLAGS=\"${CFLAGS} ${TOOLCHAIN_OPTIONS}\" HOSTCC=\"${BUILD_CC} ${BUILD_CFLAGS} ${BUILD_LDFLAGS}\" HOSTCPP=\"${BUILD_CPP}\" CC=\"${KERNEL_CC}\" LD=\"${KERNEL_LD}\" ARCH=${ARCH} merge_config.sh -O ${B} ${config_flags} ${config_fragments}" > ${WORKDIR}/merge_config.log 2>&1
+	CFLAGS="${CFLAGS} ${TOOLCHAIN_OPTIONS}" HOSTCC="${BUILD_CC} ${BUILD_CFLAGS} ${BUILD_LDFLAGS}" HOSTCPP="${BUILD_CPP}" CC="${KERNEL_CC}" LD="${KERNEL_LD}" ARCH=${ARCH} merge_config.sh -O ${B} ${config_flags} ${config_fragments} >> ${WORKDIR}/merge_config.log 2>&1
+	if [ $? -ne 0 -o ! -f ${B}/.config ]; then
+		bberror "Could not generate a .config for ${KMACHINE}-${LINUX_KERNEL_TYPE}"
+		bbfatal_log "`cat ${WORKDIR}/merge_config.log`"
+	fi
+    fi
+}
+do_merge_config[depends] = "kern-tools-native:do_populate_sysroot"
+
 kernel_do_configure() {
 	# fixes extra + in /lib/modules/2.6.37+
 	# $ scripts/setlocalversion . => +
