@@ -289,16 +289,25 @@ do_kernel_configme() {
 		bbfatal_log "Could not find configuration queue (${meta_dir}/config.queue)"
 	fi
 
-	CFLAGS="${CFLAGS} ${TOOLCHAIN_OPTIONS}"	ARCH=${ARCH} merge_config.sh -O ${B} ${config_flags} ${configs} > ${meta_dir}/cfg/merge_config_build.log 2>&1
-	if [ $? -ne 0 ]; then
+	configs=$(echo "${configs}" | sed 's%.kernel-meta%${S}/.kernel-meta%g')
+	if [ -z "${configs}" ]; then
 		bbfatal_log "Could not configure ${KMACHINE}-${LINUX_KERNEL_TYPE}"
 	fi
 
-	echo "# Global settings from linux recipe" >> ${B}/.config
-	echo "CONFIG_LOCALVERSION="\"${LINUX_VERSION_EXTENSION}\" >> ${B}/.config
+	# put these in a place where the merge_config routine will find them, and use them
+	echo "${configs}" > ${WORKDIR}/kernel-cfgs
+}
+
+do_set_localversion() {
+    cd ${S}
+
+    echo "# Global settings from linux recipe" >> ${B}/.config
+    echo "CONFIG_LOCALVERSION="\"${LINUX_VERSION_EXTENSION}\" >> ${B}/.config
 }
 
 addtask kernel_configme before do_configure after do_patch
+addtask merge_config before do_configure after do_kernel_configme
+addtask set_localversion after do_configure before do_compile
 
 python do_kernel_configcheck() {
     import re, string, sys
