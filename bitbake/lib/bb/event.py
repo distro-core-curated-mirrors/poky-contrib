@@ -432,6 +432,7 @@ class BuildBase(Event):
         self._pkgs = p
         Event.__init__(self)
         self._failures = failures
+        self.data = None
 
     def getPkgs(self):
         return self._pkgs
