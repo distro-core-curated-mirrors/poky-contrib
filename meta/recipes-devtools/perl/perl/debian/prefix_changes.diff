@@ -18,10 +18,10 @@ Upstream-Status: Pending
  4 files changed, 13 insertions(+), 16 deletions(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
-index 4c00129..1ea2035 100644
+index 433a8dd..7fb501e 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
-@@ -902,8 +902,6 @@ all POD files in MAN1PODS and MAN3PODS.
+@@ -1063,8 +1063,6 @@ all POD files in MAN1PODS and MAN3PODS.
  sub manifypods_target {
      my($self) = shift;
  
@@ -30,16 +30,16 @@ index 4c00129..1ea2035 100644
      my $dependencies  = '';
  
      # populate manXpods & dependencies:
-@@ -919,7 +917,7 @@ END
+@@ -1080,7 +1078,7 @@ END
      foreach my $section (qw(1 3)) {
          my $pods = $self->{"MAN${section}PODS"};
-         my $p2m = sprintf <<CMD, $] > 5.008 ? " -u" : "";
--	\$(NOECHO) \$(POD2MAN) --section=$section --perm_rw=\$(PERM_RW)%s
+         my $p2m = sprintf <<'CMD', $section, $] > 5.008 ? " -u" : "";
+-	$(NOECHO) $(POD2MAN) --section=%s --perm_rw=$(PERM_RW)%s
 +	\$(NOECHO) \$(POD2MAN) --section=\$(MAN${section}EXT) --perm_rw=\$(PERM_RW)%s
  CMD
          push @man_cmds, $self->split_command($p2m, map {($_,$pods->{$_})} sort keys %$pods);
      }
-@@ -1875,9 +1873,11 @@ sub init_INSTALL_from_PREFIX {
+@@ -2022,9 +2020,11 @@ sub init_INSTALL_from_PREFIX {
          $self->{SITEPREFIX}   ||= $sprefix;
          $self->{VENDORPREFIX} ||= $vprefix;
  
@@ -55,10 +55,10 @@ index 4c00129..1ea2035 100644
  
      my $arch    = $Config{archname};
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index 391dc22..4a8e14c 100644
+index e369ca7..05d392b 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-@@ -3077,8 +3077,7 @@ sub prefixify {
+@@ -3173,8 +3173,7 @@ sub prefixify {
      warn "  prefixify $var => $path\n" if $Verbose >= 2;
      warn "    from $sprefix to $rprefix\n" if $Verbose >= 2;
  
@@ -69,10 +69,10 @@ index 391dc22..4a8e14c 100644
  
          warn "    cannot prefix, using default.\n" if $Verbose >= 2;
 diff --git a/cpan/ExtUtils-MakeMaker/t/INST.t b/cpan/ExtUtils-MakeMaker/t/INST.t
-index 91058bb..e399ced 100644
+index 3562162..e8d8025 100644
 --- a/cpan/ExtUtils-MakeMaker/t/INST.t
 +++ b/cpan/ExtUtils-MakeMaker/t/INST.t
-@@ -65,9 +65,7 @@ isa_ok( $mm, 'ExtUtils::MakeMaker' );
+@@ -67,9 +67,7 @@ isa_ok( $mm, 'ExtUtils::MakeMaker' );
  is( $mm->{NAME}, 'Big::Dummy',  'NAME' );
  is( $mm->{VERSION}, 0.01,            'VERSION' );
  
@@ -84,7 +84,7 @@ index 91058bb..e399ced 100644
  is( !!$mm->{PERL_CORE}, !!$ENV{PERL_CORE}, 'PERL_CORE' );
  
 diff --git a/cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t b/cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t
-index e8de7c6..3fb3f12 100644
+index 5f7d395..1e6bde7 100644
 --- a/cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t
 +++ b/cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t
 @@ -10,7 +10,7 @@ BEGIN {
@@ -96,12 +96,12 @@ index e8de7c6..3fb3f12 100644
  use MakeMaker::Test::Utils;
  use MakeMaker::Test::Setup::BFD;
  use ExtUtils::MakeMaker;
-@@ -62,16 +62,16 @@ like( $stdout->read, qr{
+@@ -64,16 +64,16 @@ like( $stdout->read, qr{
                          (?:Writing\ MYMETA.yml\ and\ MYMETA.json\n)?
  }x );
  
 -is( $mm->{PREFIX}, '$(SITEPREFIX)', 'PREFIX set based on INSTALLDIRS' );
-+#is( $mm->{PREFIX}, '$(SITEPREFIX)', 'PREFIX set based on INSTALLDIRS' );
++# is( $mm->{PREFIX}, '$(SITEPREFIX)', 'PREFIX set based on INSTALLDIRS' );
  
  isa_ok( $mm, 'ExtUtils::MakeMaker' );
  
@@ -111,9 +111,9 @@ index e8de7c6..3fb3f12 100644
 -foreach my $prefix (qw(PREFIX PERLPREFIX SITEPREFIX VENDORPREFIX)) {
 -    unlike( $mm->{$prefix}, qr/\$\(PREFIX\)/ );
 -}
-+#foreach my $prefix (qw(PREFIX PERLPREFIX SITEPREFIX VENDORPREFIX)) {
-+#    unlike( $mm->{$prefix}, qr/\$\(PREFIX\)/ );
-+#}
++# foreach my $prefix (qw(PREFIX PERLPREFIX SITEPREFIX VENDORPREFIX)) {
++#     unlike( $mm->{$prefix}, qr/\$\(PREFIX\)/ );
++# }
  
  
  my $PREFIX = File::Spec->catdir('foo', 'bar');

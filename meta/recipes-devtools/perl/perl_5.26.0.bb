@@ -61,11 +61,11 @@ SRC_URI += " \
         file://t-run-switches.t-perl5-perl.patch \
         file://ext-ODBM_File-hints-linux.pl-link-libgdbm_compat.patch \
         file://ext-ODBM_File-t-odbm.t-fix-the-path-of-dbmt_common.p.patch \
-        file://perl-PathTools-don-t-filter-out-blib-from-INC.patch \
         file://perl-errno-generation-gcc5.patch \
-        file://perl-fix-conflict-between-skip_all-and-END.patch \
-        file://perl-test-customized.patch \
 "
+
+# file://perl-fix-conflict-between-skip_all-and-END.patch
+# file://perl-test-customized.patch
 
 # Fix test case issues
 SRC_URI_append_class-target = " \
@@ -73,8 +73,8 @@ SRC_URI_append_class-target = " \
             file://test/ext-DynaLoader-t-DynaLoader.t-fix-calling-dl_findfil.patch \
            "
 
-SRC_URI[md5sum] = "af6a84c7c3e2b8b269c105a5db2f6d53"
-SRC_URI[sha256sum] = "03a77bac4505c270f1890ece75afc7d4b555090b41aa41ea478747e23b2afb3f"
+SRC_URI[md5sum] = "8c6995718e4cb62188f0d5e3488cd91f"
+SRC_URI[sha256sum] = "9bf2e3d0d72aad77865c3bdbc20d3b576d769c5c255c4ceb30fdb9335266bf55"
 
 inherit perlnative siteinfo
 
