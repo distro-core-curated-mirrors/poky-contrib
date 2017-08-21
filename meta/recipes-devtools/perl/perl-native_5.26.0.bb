@@ -11,15 +11,13 @@ SRC_URI += "\
            file://perl-configpm-switch.patch \
            file://native-nopacklist.patch \
            file://native-perlinc.patch \
-           file://MM_Unix.pm.patch \
            file://debian/errno_ver.diff \
            file://dynaloaderhack.patch \
-           file://perl-PathTools-don-t-filter-out-blib-from-INC.patch \
            file://0001-Configure-Remove-fstack-protector-strong-for-native-.patch \
-          "
+"
 
-SRC_URI[md5sum] = "af6a84c7c3e2b8b269c105a5db2f6d53"
-SRC_URI[sha256sum] = "03a77bac4505c270f1890ece75afc7d4b555090b41aa41ea478747e23b2afb3f"
+SRC_URI[md5sum] = "8c6995718e4cb62188f0d5e3488cd91f"
+SRC_URI[sha256sum] = "9bf2e3d0d72aad77865c3bdbc20d3b576d769c5c255c4ceb30fdb9335266bf55"
 
 inherit native
 
