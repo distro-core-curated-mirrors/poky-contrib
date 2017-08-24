@@ -261,3 +261,57 @@ postinst-delayed-t \
                         sshargs = '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
                         result = runCmd('ssh %s root@%s %s' % (sshargs, qemu.ip, testcommand))
                         self.assertEqual(result.status, 0, 'File %s was not created at firts boot'% fileboot_name)
+
+class GeneratedImages(OESelftestTestCase):
+
+    @OETestID(1845)
+    def test_integrity_compressed_images(self):
+        '''
+        Summary: The purpose of this test is to verify the correct behavior of all the available images compression.
+        Bugzilla ID: [10745]
+        Steps:
+            1. Add IMAGE_FSTYPES += "[type(s)]" to ~/conf/local.conf
+            2. Build a "core-image-minimal" using this configuration.
+            3. Verify that the image compressed file is present in rootfs directory.
+        '''
+        # Step 1 Add configuration to conf/local.conf
+        image_types = get_bb_var('IMAGE_TYPES', 'core-image-minimal')
+        features = 'IMAGE_CONTAINER_NO_DUMMY = "1"\n'
+        features += 'MKUBIFS_ARGS = " -m 512 -e 15360 -c 3600"\n'
+        features += 'UBINIZE_ARGS = " -p 16KiB -m 512 -s 512"\n'
+        #Settings for multiubi tests
+        features += 'MULTIUBI_BUILD ?= "normal large"\n'
+        features += 'export MKUBIFS_ARGS_normal = "-F -m 2048 -e 124KiB -c 1912 -x zlib"\n'
+        features += 'export UBINIZE_ARGS_normal = "-m 2048 -p 128KiB -s 2048"\n'
+        features += 'export MKUBIFS_ARGS_large = "-F -m 4096 -e 248KiB -c 8124 -x zlib"\n'
+        features += 'export UBINIZE_ARGS_large = "-m 4096 -p 256KiB -s 4096"\n'
+        features_list = image_types.split()
+        self.write_config("IMAGE_FSTYPES += \"%s\"" % image_types)
+        self.append_config(features)
+
+        # Step 2, compile.
+        build = 'core-image-minimal'
+        bitbake(build)
+
+        for image_feature in features_list:
+            # Step 3 Verify compressed images are present in rottfs directory.
+            if image_feature == "container":
+                #container images are properly tested on containerimage.py
+                #TC ContainerImageTests.test_expected_files
+                continue
+                need_vars = ['DEPLOY_DIR_IMAGE','MACHINE']
+                bb_vars = get_bb_vars(need_vars, 'core-image-minimal')
+                deploy_dir_image = bb_vars['DEPLOY_DIR_IMAGE']
+                machine = bb_vars['MACHINE']
+                #Specific test for multiubi images
+                if image_feature == "multiubi":
+                    for multiubi in ['normal', 'large']:
+                        compressed_file = "%s-%s_%s.ubifs" % (build, machine, multiubi)
+                        complete_path = os.path.join(deploy_dir_image, compressed_file)
+                        msg = "Couldn't find compressed file: %s" % complete_path
+                        self.assertEqual(os.path.isfile(complete_path), True, msg)
+                        continue
+                    compressed_file = "%s-%s.%s" % (build, machine, image_feature)
+                    complete_path = os.path.join(deploy_dir_image, compressed_file)
+                    msg = "Couldn't find compressed file: %s" % complete_path
+                    self.assertEqual(os.path.isfile(complete_path), True, msg)
