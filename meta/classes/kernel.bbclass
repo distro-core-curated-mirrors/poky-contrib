@@ -1,4 +1,4 @@
-inherit linux-kernel-base kernel-module-split
+inherit linux-kernel-base kernel-module-split compiler-options
 
 PROVIDES += "virtual/kernel"
 DEPENDS += "virtual/${TARGET_PREFIX}binutils virtual/${TARGET_PREFIX}gcc kmod-native bc-native lzop-native"
@@ -244,32 +244,27 @@ python do_devshell_prepend () {
 
 addtask bundle_initramfs after do_install before do_deploy
 
-get_cc_option () {
-		# Check if KERNEL_CC supports the option "file-prefix-map".
-		# This option allows us to build images with __FILE__ values that do not
-		# contain the host build path.
-		if ${KERNEL_CC} -Q --help=joined | grep -q "\-ffile-prefix-map=<old=new>"; then
-			echo "-ffile-prefix-map=${S}=/kernel-source/"
+get_sde () {
+	# kernel sources do not use do_unpack, so SOURCE_DATE_EPOCH may not
+	# be set....
+	if [ "$SOURCE_DATE_EPOCH" = "0" ]; then
+		olddir=`pwd`
+		cd ${S}
+		SOURCE_DATE_EPOCH=`git log  -1 --pretty=%ct`
+		# git repo not guaranteed, so fall back to REPRODUCIBLE_TIMESTAMP_ROOTFS
+		if [ $? -ne 0 ]; then
+			SOURCE_DATE_EPOCH=${REPRODUCIBLE_TIMESTAMP_ROOTFS}
 		fi
+		cd $olddir
+	fi
+	echo "$SOURCE_DATE_EPOCH"
 }
 
 kernel_do_compile() {
 	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS MACHINE
 	if [ "$BUILD_REPRODUCIBLE_BINARIES" = "1" ]; then
-		# kernel sources do not use do_unpack, so SOURCE_DATE_EPOCH may not
-		# be set....
-		if [ "$SOURCE_DATE_EPOCH" = "0" ]; then
-			olddir=`pwd`
-			cd ${S}
-			SOURCE_DATE_EPOCH=`git log  -1 --pretty=%ct`
-			# git repo not guaranteed, so fall back to REPRODUCIBLE_TIMESTAMP_ROOTFS
-			if [ $? -ne 0 ]; then
-				SOURCE_DATE_EPOCH=${REPRODUCIBLE_TIMESTAMP_ROOTFS}
-			fi
-			cd $olddir
-		fi
-
-		ts=`LC_ALL=C date -d @$SOURCE_DATE_EPOCH`
+		sde=$(get_sde)
+		ts=`LC_ALL=C date -d @$sde`
 		export KBUILD_BUILD_TIMESTAMP="$ts"
 		export KCONFIG_NOTIMESTAMP=1
 		bbnote "KBUILD_BUILD_TIMESTAMP: $ts"
@@ -287,9 +282,9 @@ kernel_do_compile() {
 		copy_initramfs
 		use_alternate_initrd=CONFIG_INITRAMFS_SOURCE=${B}/usr/${INITRAMFS_IMAGE_NAME}.cpio
 	fi
-	cc_extra=$(get_cc_option)
+	cc_extra=$(file_prefix_map_option)
 	for typeformake in ${KERNEL_IMAGETYPE_FOR_MAKE} ; do
-		oe_runmake ${typeformake} CC="${KERNEL_CC} $cc_extra " LD="${KERNEL_LD}" ${KERNEL_EXTRA_ARGS} $use_alternate_initrd
+		oe_runmake ${typeformake} CC="${KERNEL_CC} $cc_extra" LD="${KERNEL_LD}" ${KERNEL_EXTRA_ARGS} $use_alternate_initrd
 	done
 	# vmlinux.gz is not built by kernel
 	if (echo "${KERNEL_IMAGETYPES}" | grep -wq "vmlinux\.gz"); then
@@ -301,8 +296,8 @@ kernel_do_compile() {
 do_compile_kernelmodules() {
 	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS MACHINE
 	if (grep -q -i -e '^CONFIG_MODULES=y$' ${B}/.config); then
-		cc_extra=$(get_cc_option)
-		oe_runmake -C ${B} ${PARALLEL_MAKE} modules CC="${KERNEL_CC} $cc_extra " LD="${KERNEL_LD}" ${KERNEL_EXTRA_ARGS}
+		cc_extra=$(file_prefix_map_option)
+		oe_runmake -C ${B} ${PARALLEL_MAKE} modules CC="${KERNEL_CC} $cc_extra" LD="${KERNEL_LD}" ${KERNEL_EXTRA_ARGS}
 
 		# Module.symvers gets updated during the 
 		# building of the kernel modules. We need to
@@ -626,18 +621,30 @@ MODULE_TARBALL_SYMLINK_NAME ?= "modules-${MACHINE}.tgz"
 MODULE_TARBALL_DEPLOY ?= "1"
 
 kernel_do_deploy() {
-	for type in ${KERNEL_IMAGETYPES} ; do
-		base_name=${type}-${KERNEL_IMAGE_BASE_NAME}
-		install -m 0644 ${KERNEL_OUTPUT_DIR}/${type} ${DEPLOYDIR}/${base_name}.bin
-	done
 	if [ ${MODULE_TARBALL_DEPLOY} = "1" ] && (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
 		mkdir -p ${D}/lib
-		tar -cvzf ${DEPLOYDIR}/${MODULE_TARBALL_BASE_NAME} -C ${D} lib
+		if [ "$BUILD_REPRODUCIBLE_BINARIES" = "1" ]; then
+			sde=$(get_sde)
+
+			# For some reason gzip insists on timestamps in the header for tar images.
+			# No combination of -n or --no-name seems to prevent timestams, for example
+			# this should work:
+			# tar -I "gzip -9 -n" -cvf ${DEPLOYDIR}/${MODULE_TARBALL_BASE_NAME} -C ${D} lib
+
+			# We have to "touch" the tar file before compression by gzip.
+			tar --clamp-mtime --mtime=@$sde -cvf ${DEPLOYDIR}/${MODULE_IMAGE_BASE_NAME} -C ${D} lib
+			sdate=`date -u -d @$sde +%4Y%2m%2d%2H%2M`
+			touch -t $sdate ${DEPLOYDIR}/${MODULE_IMAGE_BASE_NAME} 
+			gzip -9 --no-name -S .tgz -f ${DEPLOYDIR}/${MODULE_IMAGE_BASE_NAME}
+		else
+			tar -cvzf ${DEPLOYDIR}/${MODULE_TARBALL_BASE_NAME} -C ${D} lib
+		fi
 		ln -sf ${MODULE_TARBALL_BASE_NAME} ${DEPLOYDIR}/${MODULE_TARBALL_SYMLINK_NAME}
 	fi
 
 	for type in ${KERNEL_IMAGETYPES} ; do
 		base_name=${type}-${KERNEL_IMAGE_BASE_NAME}
+		install -m 0644 ${KERNEL_OUTPUT_DIR}/${type} ${DEPLOYDIR}/${base_name}.bin
 		symlink_name=${type}-${KERNEL_IMAGE_SYMLINK_NAME}
 		ln -sf ${base_name}.bin ${DEPLOYDIR}/${symlink_name}.bin
 		ln -sf ${base_name}.bin ${DEPLOYDIR}/${type}
