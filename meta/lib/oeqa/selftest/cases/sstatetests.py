@@ -338,6 +338,10 @@ MULTILIBS = \"\"
 
     def sstate_allarch_samesigs(self, configA, configB):
 
+        distro_features = get_bb_var('DISTRO_FEATURES')
+        if 'opengl' not in distro_features:
+            self.skipTest('some world recipes require opengl, so skip test if DISTRO_FEATURES do not contain it')
+
         self.write_config(configA)
         self.track_for_cleanup(self.topdir + "/tmp-sstatesamehash")
         bitbake("world meta-toolchain -S none")
