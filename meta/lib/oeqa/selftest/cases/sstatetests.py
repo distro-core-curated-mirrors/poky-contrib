@@ -274,13 +274,13 @@ TMPDIR = \"${TOPDIR}/tmp-sstatesamehash\"
 NATIVELSBSTRING = \"DistroA\"
 """)
         self.track_for_cleanup(self.topdir + "/tmp-sstatesamehash")
-        bitbake("core-image-sato -S none")
+        bitbake("world -S none")
         self.write_config("""
 TMPDIR = \"${TOPDIR}/tmp-sstatesamehash2\"
 NATIVELSBSTRING = \"DistroB\"
 """)
         self.track_for_cleanup(self.topdir + "/tmp-sstatesamehash2")
-        bitbake("core-image-sato -S none")
+        bitbake("world -S none")
 
         def get_files(d):
             f = []
