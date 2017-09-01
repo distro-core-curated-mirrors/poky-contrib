@@ -245,6 +245,7 @@ class BBCooker:
             bb.warn("inotify event queue overflowed, invalidating caches.")
             self.parsecache_valid = False
             self.baseconfig_valid = False
+            print("Base Cache Invalid")
             bb.parse.clear_cache()
             return
         if not event.pathname in self.configwatcher.bbwatchedfiles:
@@ -252,12 +253,14 @@ class BBCooker:
         if not event.pathname in self.inotify_modified_files:
             self.inotify_modified_files.append(event.pathname)
         self.baseconfig_valid = False
+        print("Base Cache Invalid")
 
     def notifications(self, event):
         if event.maskname == "IN_Q_OVERFLOW":
             bb.warn("inotify event queue overflowed, invalidating caches.")
             self.parsecache_valid = False
             bb.parse.clear_cache()
+            print("Parse Cache Invalid2")
             return
         if event.pathname.endswith("bitbake-cookerdaemon.log") \
                 or event.pathname.endswith("bitbake.lock"):
@@ -265,6 +268,7 @@ class BBCooker:
         if not event.pathname in self.inotify_modified_files:
             self.inotify_modified_files.append(event.pathname)
         self.parsecache_valid = False
+        print("Parse Cache Invalid")
 
     def add_filewatch(self, deps, watcher=None, dirs=False):
         if not watcher:
@@ -396,6 +400,7 @@ class BBCooker:
             self.data.disableTracking()
 
     def parseConfiguration(self):
+        print("Parse config")
         # Set log file verbosity
         verboselogs = bb.utils.to_boolean(self.data.getVar("BB_VERBOSE_LOGS", False))
         if verboselogs:
