@@ -278,6 +278,7 @@ class CookerDataBuilder(object):
         self.mcdata = {}
 
     def parseBaseConfiguration(self):
+        import gzip
         try:
             bb.parse.init_parser(self.basedata)
             self.data = self.parseConfigurationFiles(self.prefiles, self.postfiles)
@@ -301,8 +302,15 @@ class CookerDataBuilder(object):
                 bb.event.fire(bb.event.ConfigParsed(), self.data)
 
             bb.parse.init_parser(self.data)
-            self.data_hash = self.data.get_hash()
+            self.data_hash, hashed_data = self.data.get_hash()
             self.mcdata[''] = self.data
+
+            cacheinfofn = os.path.join(self.data.getVar('CACHE', True), 'bb_cache_info.gz.%s' % self.data_hash)
+            if not os.path.exists(cacheinfofn):
+                bb.utils.mkdirhier(os.path.dirname(cacheinfofn))
+                with gzip.open(cacheinfofn, 'wb') as f:
+                    for k in sorted(hashed_data.keys()):
+                        f.write(bytes('%s = "%s"\n' % (k, hashed_data[k]), 'utf-8'))
 
             multiconfig = (self.data.getVar("BBMULTICONFIG") or "").split()
             for config in multiconfig:
