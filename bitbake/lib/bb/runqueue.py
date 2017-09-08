@@ -1867,14 +1867,22 @@ class RunQueueExecuteTasks(RunQueueExecute):
                     unexpected = True
                     break
             if unexpected:
+                unexpected_tasks = []
                 # Run through the tasks in the rough order they'd have executed and print errors
                 # (since the order can be useful - usually missing sstate for the last few tasks
                 # is the cause of the problem)
                 task = self.sched.next()
                 while task is not None:
-                    check_norun_task(task, showerror=True)
+                    if check_norun_task(task, showerror=True):
+                        (mc, fn, taskname, taskfn) = split_tid_mcfn(task)
+                        setscened = (task in self.rqdata.runq_setscene_tids)
+                        pn = self.rqdata.dataCaches[mc].pkg_fn[taskfn]
+                        hash = self.rqdata.runtaskentries[task].hash
+                        unexpected_tasks.append((mc, fn, taskname, taskfn, pn, setscened, hash))
                     self.task_skip(task, 'Setscene enforcement check')
                     task = self.sched.next()
+
+                bb.event.fire(bb.event.SetSceneEnforceFailure(unexpected_tasks), self.cfgData)
 
                 self.rq.state = runQueueCleanUp
                 return True
