@@ -834,3 +834,11 @@ class FindSigInfoResult(Event):
     def __init__(self, result):
         Event.__init__(self)
         self.result = result
+
+class SetSceneEnforceFailure(Event):
+    """
+    Event to return results from BB_SETSCENE_ENFORCE failure
+    """
+    def __init__(self, failedtasks):
+        Event.__init__(self)
+        self.failedtasks = failedtasks
