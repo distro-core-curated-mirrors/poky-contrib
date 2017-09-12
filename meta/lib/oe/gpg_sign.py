@@ -3,6 +3,7 @@ import os
 
 import bb
 import oe.utils
+import subprocess
 
 class LocalSigner(object):
     """Class for handling local (on the build host) signing"""
@@ -47,7 +48,13 @@ class LocalSigner(object):
 
         # Sign in chunks
         for i in range(0, len(files), sign_chunk):
-            status, output = oe.utils.getstatusoutput(cmd + ' '.join(files[i:i+sign_chunk]))
+            fullcmd = cmd + ' '.join(files[i:i+sign_chunk])
+            try:
+                proc = subprocess.Popen(fullcmd, shell=True, stderr=subprocess.STDOUT)
+                output, errors = proc.communicate()
+                status = proc.returncode
+            except subprocess.CalledProcessError as cpe:
+                status, output = cpe.returncode, cpe.output
             if status:
                 raise bb.build.FuncFailed("Failed to sign RPM packages: %s" % output)
 
