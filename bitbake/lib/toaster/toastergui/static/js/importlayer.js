@@ -407,7 +407,7 @@ function importLayerPageInit (ctx) {
       var input = $(this);
       var reBeginWithSlash = /^\//;
       var reCheckVariable = /^\$/;
-      var re = /([ <>\\|":\.%\?\*]+)/;
+      var re = /([ <>\\|":%\?\*]+)/;
 
       var invalidDir = re.test(input.val());
       var invalidSlash = reBeginWithSlash.test(input.val());
