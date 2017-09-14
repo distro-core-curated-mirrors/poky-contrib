@@ -189,6 +189,9 @@ class LogTee(object):
 def exec_func(func, d, dirs = None, pythonexception=False):
     """Execute a BB 'function'"""
 
+    if d.getVarFlag(func, 'fakeroot', False) and not os.getuid() == 0:
+        bb.warn("fakeroot flag set on %s but not fakeroot worker" % func)
+
     try:
         oldcwd = os.getcwd()
     except:
