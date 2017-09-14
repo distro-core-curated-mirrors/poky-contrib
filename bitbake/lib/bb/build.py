@@ -281,6 +281,9 @@ logformatter = bb.msg.BBLogFormatter("%(levelname)s: %(message)s")
 def exec_func_python(func, d, runfile, cwd=None, pythonexception=False):
     """Execute a python BB 'function'"""
 
+    if d.getVarFlag(func, 'fakeroot', False) and not d.getVarFlag(func, 'task', False):
+        bb.warn("fakeroot flag set on %s but cannot be used" % func)
+
     code = _functionfmt.format(function=func)
     bb.utils.mkdirhier(os.path.dirname(runfile))
     with open(runfile, 'w') as script:
