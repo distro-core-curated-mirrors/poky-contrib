@@ -1,4 +1,4 @@
-inherit module-base kernel-module-split pkgconfig
+inherit module-base kernel-module-split pkgconfig compiler-options
 
 addtask make_scripts after do_prepare_recipe_sysroot before do_configure
 do_make_scripts[lockfiles] = "${TMPDIR}/kernel-scripts.lock"
@@ -40,9 +40,10 @@ python do_devshell_prepend () {
 
 module_do_compile() {
 	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
+	cc_extra=$(file_prefix_map_option)
 	oe_runmake KERNEL_PATH=${STAGING_KERNEL_DIR}   \
 		   KERNEL_VERSION=${KERNEL_VERSION}    \
-		   CC="${KERNEL_CC}" LD="${KERNEL_LD}" \
+		   CC="${KERNEL_CC} $cc_extra" LD="${KERNEL_LD}" \
 		   AR="${KERNEL_AR}" \
 	           O=${STAGING_KERNEL_BUILDDIR} \
 		   KBUILD_EXTRA_SYMBOLS="${KBUILD_EXTRA_SYMBOLS}" \
