@@ -329,6 +329,8 @@ base_do_compile() {
 		oe_runmake || die "make failed"
 	else
 		bbnote "nothing to compile"
+
+#whitespace to force full rebuild
 	fi
 }
 
