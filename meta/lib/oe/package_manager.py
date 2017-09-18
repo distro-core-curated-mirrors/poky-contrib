@@ -454,6 +454,104 @@ class PackageManager(object, metaclass=ABCMeta):
             return res
         return _append(uris, base_paths)
 
+def create_rpm_dir(d, rpm_repo_dir, deploydir, taskname):
+    """
+    Go through our do_package_write_X dependencies and hardlink the packages we depend
+    upon into the repo directory. This prevents us seeing other packages that may
+    have been built that we don't depend upon and also packages for architectures we don't
+    support.
+    """
+    import errno
+
+    taskdepdata = d.getVar("BB_TASKDEPDATA", False)
+    mytaskname = d.getVar("BB_RUNTASK")
+    pn = d.getVar("PN")
+    current_variant = d.getVar("BBEXTENDVARIANT")
+    seendirs = set()
+   
+    rpm_subrepo_dir = oe.path.join(rpm_repo_dir, "rpm")
+
+    # Detect bitbake -b usage
+    nodeps = d.getVar("BB_LIMITEDDEPS") or False
+    if nodeps:
+        bb.utils.mkdirhier(rpm_repo_dir)
+        oe.path.symlink(deployrpm, rpm_subrepo_dir, True)
+        return
+
+    start = None
+    for dep in taskdepdata:
+        data = taskdepdata[dep]
+        if data[1] == mytaskname and data[0] == pn:
+            start = dep
+            break
+    if start is None:
+        bb.fatal("Couldn't find ourself in BB_TASKDEPDATA?")
+    rpmdeps = set()
+    for dep in taskdepdata[start][3]:
+        if taskdepdata[dep][0] != pn:
+            if "do_" + taskname in dep:
+                rpmdeps.add(dep)
+
+    bb.utils.remove(rpm_subrepo_dir, recurse=True)
+    bb.utils.mkdirhier(rpm_subrepo_dir)
+
+    for dep in rpmdeps:
+        c = taskdepdata[dep][0]
+
+        d2 = d
+        variant = ''
+        if taskdepdata[dep][2].startswith("virtual:multilib"):
+            variant = taskdepdata[dep][2].split(":")[2]
+            if variant != current_variant:
+                if variant not in multilibs:
+                    multilibs[variant] = get_multilib_datastore(variant, d)
+                d2 = multilibs[variant]
+
+        if c.endswith("-native"):
+            manifest = d2.expand("${SSTATE_MANIFESTS}/manifest-${BUILD_ARCH}-%s.%s" % (c, taskname))
+        elif c.startswith("nativesdk-"):
+            manifest = d2.expand("${SSTATE_MANIFESTS}/manifest-${SDK_ARCH}_${SDK_OS}-%s.%s" % (c, taskname))
+        elif "-cross-canadian" in c:
+            manifest = d2.expand("${SSTATE_MANIFESTS}/manifest-${BUILD_ARCH}_${TARGET_ARCH}-nativesdk-%s.%s" % (c, taskname))
+        elif "-cross-" in c:
+            manifest = d2.expand("${SSTATE_MANIFESTS}/manifest-${BUILD_ARCH}_${TARGET_ARCH}-%s.%s" % (c, taskname))
+        elif "-crosssdk" in c:
+            manifest = d2.expand("${SSTATE_MANIFESTS}/manifest-${BUILD_ARCH}_${SDK_ARCH}_${SDK_OS}-%s.%s" % (c, taskname))
+        else:
+            pkgarchs = ['${MACHINE_ARCH}']
+            pkgarchs = pkgarchs + list(reversed(d2.getVar("PACKAGE_EXTRA_ARCHS").split()))
+            pkgarchs.append('allarch')
+            pkgarchs.append('${SDKMACHINE}_${SDK_ARCH}-nativesdk')
+            for pkgarch in pkgarchs:
+                manifest = d2.expand("${SSTATE_MANIFESTS}/manifest-%s-%s.%s" % (pkgarch, c, taskname))
+                if os.path.exists(manifest):
+                    break
+        if not os.path.exists(manifest):
+            bb.warn("Manifest %s not found?" % manifest)
+            continue
+        with open(manifest, "r") as f:
+            for l in f:
+                l = l.strip()
+                dest = l.replace(deploydir, "")
+                dest = rpm_subrepo_dir + dest
+                if l.endswith("/"):
+                    if dest not in seendirs:
+                        bb.utils.mkdirhier(dest)
+                        seendirs.add(dest)
+                    continue
+                # Try to hardlink the file, copy if that fails
+                destdir = os.path.dirname(dest)
+                if destdir not in seendirs:
+                    bb.utils.mkdirhier(destdir)
+                    seendirs.add(destdir)
+                try:
+                    os.link(l, dest)
+                except OSError as err:
+                    if err.errno == errno.EXDEV:
+                        bb.utils.copyfile(l, dest)
+                    else:
+                        raise
+
 class RpmPM(PackageManager):
     def __init__(self,
                  d,
@@ -477,8 +575,7 @@ class RpmPM(PackageManager):
             self.primary_arch = self.d.getVar('MACHINE_ARCH')
 
         self.rpm_repo_dir = oe.path.join(self.d.getVar('WORKDIR'), "oe-rootfs-repo")
-        bb.utils.mkdirhier(self.rpm_repo_dir)
-        oe.path.symlink(self.d.getVar('DEPLOY_DIR_RPM'), oe.path.join(self.rpm_repo_dir, "rpm"), True)
+        create_rpm_dir(self.d, self.rpm_repo_dir, d.getVar("DEPLOY_DIR_RPM"), "package_write_rpm")
 
         self.saved_packaging_data = self.d.expand('${T}/saved_packaging_data/%s' % self.task_name)
         if not os.path.exists(self.d.expand('${T}/saved_packaging_data')):
