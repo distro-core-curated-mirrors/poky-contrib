@@ -27,7 +27,7 @@ class Signing(OESelftestTestCase):
         cls.pub_key_path = os.path.join(cls.testlayer_path, 'files', 'signing', "key.pub")
         cls.secret_key_path = os.path.join(cls.testlayer_path, 'files', 'signing', "key.secret")
 
-        runCmd('gpg --batch --homedir %s --import %s %s' % (cls.gpg_dir, cls.pub_key_path, cls.secret_key_path))
+        runCmd('export GPG=$(tty); gpg --batch --homedir %s --import %s %s' % (cls.gpg_dir, cls.pub_key_path, cls.secret_key_path))
 
     @classmethod
     def tearDownClass(cls):
@@ -133,7 +133,7 @@ class Signing(OESelftestTestCase):
         self.assertEqual(len(recipe_sig), 1, 'Failed to find .sig file.')
         self.assertEqual(len(recipe_tgz), 1, 'Failed to find .tgz file.')
 
-        ret = runCmd('gpg --homedir %s --verify %s %s' % (self.gpg_dir, recipe_sig[0], recipe_tgz[0]))
+        ret = runCmd('export GPG=$(tty); gpg --homedir %s --verify %s %s' % (self.gpg_dir, recipe_sig[0], recipe_tgz[0]))
         # gpg: Signature made Thu 22 Oct 2015 01:45:09 PM EEST using RSA key ID 61EEFB30
         # gpg: Good signature from "testuser (nocomment) <testuser@email.com>"
         self.assertIn('gpg: Good signature from', ret.output, 'Package signed incorrectly.')
