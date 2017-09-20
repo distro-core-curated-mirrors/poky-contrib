@@ -170,7 +170,7 @@ class RecipeHandler(object):
         return results
 
     @staticmethod
-    def handle_depends(libdeps, pcdeps, deps, outlines, values, d):
+    def handle_depends(libdeps, pcdeps, deps, outlines, values, d, depcallback=None):
         if pcdeps:
             recipemap = read_pkgconfig_provides(d)
         if libdeps:
@@ -223,6 +223,9 @@ class RecipeHandler(object):
                         unmappedlibs.append(lib)
                 else:
                     unmappedlibs.append(lib)
+
+        if depcallback:
+            depcallback(deps, outlines, unmappedpc, unmappedlibs)
 
         deps = set(deps).difference(set(ignoredeps))
 

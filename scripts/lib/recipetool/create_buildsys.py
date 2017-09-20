@@ -18,7 +18,7 @@
 import re
 import logging
 import glob
-from recipetool.create import RecipeHandler, validate_pv
+from recipetool.create import RecipeHandler, validate_pv, read_pkgconfig_provides
 
 logger = logging.getLogger('recipetool')
 
@@ -817,6 +817,118 @@ class MakefileRecipeHandler(RecipeHandler):
             self.genfunction(lines_after, 'do_install', ['# Specify install commands here'])
 
 
+class MesonRecipeHandler(RecipeHandler):
+    def process(self, srctree, classes, lines_before, lines_after, handled, extravalues):
+        if 'buildsystem' in handled:
+            return False
+
+        mbuild = RecipeHandler.checkfiles(srctree, ['meson.build'])
+        if mbuild:
+            classes.append('meson')
+
+            dep_re = re.compile(r'dependency\(\s*\'([^,)\']+)\'\s*(\s*,\s*[^)]+)?\s*\)')
+            findlib_re = re.compile(r'find_library\(\s*\'([^,)\']+)\'\s*\)')
+
+            deps = []
+            libdeps = []
+
+            indep = False
+            inlib = False
+            bracketlevel = 0
+            depstr = ''
+
+            # This is crude I know...
+
+            def process_dep():
+                res = dep_re.search(depstr)
+                if res:
+                    opts = res.group(2)
+                    if opts:
+                        opts = dict([[i.strip() for i in x.split(':',1)] for x in opts.split(',') if x.strip()])
+                    else:
+                        opts = {}
+                    dep = res.group(1)
+                    if dep in ['threads']:
+                        return
+                    deps.append(dep)
+
+            def process_libdep():
+                res = findlib_re.search(depstr)
+                if res:
+                    libdeps.append(res.group(1))
+
+            with open(mbuild[0], 'r') as f:
+                for line in f:
+                    if indep:
+                        bracketlevel -= line.count(')')
+                        if bracketlevel < 1:
+                            depstr += line
+                            process_dep()
+                            indep = False
+                    elif inlib:
+                        bracketlevel -= line.count(')')
+                        if bracketlevel < 1:
+                            depstr += line
+                            process_libdep()
+                            inlib = False
+                    if 'dependency(' in line:
+                        deppos = line.index('dependency(')
+                        depstr = line[deppos:]
+                        bracketlevel = depstr.count('(') - depstr.count(')')
+                        if bracketlevel > 0:
+                            indep = True
+                        else:
+                            process_dep()
+                    elif 'find_library(' in line:
+                        deppos = line.index('find_library(')
+                        depstr = line[deppos:]
+                        bracketlevel = depstr.count('(') - depstr.count(')')
+                        if bracketlevel > 0:
+                            inlib = True
+                        else:
+                            process_libdep()
+
+            pkgdata_dir = tinfoil.config_data.getVar('PKGDATA_DIR')
+            def check_recipe(pn):
+                if tinfoil.get_recipe_info(pn):
+                    return pn
+                else:
+                    pkgfn = os.path.join(pkgdata_dir, 'runtime-reverse', pn)
+                    if os.path.exists(pkgfn):
+                        with open(pkgfn, 'r') as f:
+                            for line in f:
+                                if line.startswith('PN:'):
+                                    return line.split(':', 1)[1].strip()
+                return None
+
+            def fixupcb(cdeps, outlines, unmappedpc, unmappedlibs):
+                if unmappedpc:
+                    if not tinfoil.recipes_parsed:
+                        tinfoil.parse_recipes()
+                    for dep in unmappedpc[:]:
+                        res = check_recipe(dep)
+                        if res:
+                            cdeps.append(res)
+                            unmappedpc.remove(dep)
+                            continue
+                        if dep.startswith('lib'):
+                            res = check_recipe(dep[3:])
+                            if res:
+                                cdeps.append(res)
+                                unmappedpc.remove(dep)
+                                continue
+
+            values = {}
+            RecipeHandler.handle_depends(libdeps, deps, [], lines_before, values, tinfoil.config_data, depcallback=fixupcb)
+
+            for var, value in values.items():
+                lines_before.append('%s = "%s"' % (var, value))
+
+            handled.append('buildsystem')
+            return True
+        return False
+
+
 class VersionFileRecipeHandler(RecipeHandler):
     def process(self, srctree, classes, lines_before, lines_after, handled, extravalues):
         if 'PV' not in extravalues:
@@ -885,6 +997,7 @@ def register_recipe_handlers(handlers):
     # Set priorities with some gaps so that other plugins can insert
     # their own handlers (so avoid changing these numbers)
     handlers.append((CmakeRecipeHandler(), 50))
+    handlers.append((MesonRecipeHandler(), 45))
     handlers.append((AutotoolsRecipeHandler(), 40))
     handlers.append((SconsRecipeHandler(), 30))
     handlers.append((QmakeRecipeHandler(), 20))
