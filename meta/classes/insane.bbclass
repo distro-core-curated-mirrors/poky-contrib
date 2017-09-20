@@ -1238,44 +1238,6 @@ python do_qa_unpack() {
         bb.warn('%s: the directory %s (%s) pointed to by the S variable doesn\'t exist - please set S within the recipe to point to where the source has been unpacked to' % (d.getVar('PN'), d.getVar('S', False), s_dir))
 }
 
-python do_qa_pseudo() {
-    ###########################################################################
-    # Check pseudo.log for unexpected errors
-    #
-    # Typical pseudo.log contains many "^path mismatch" lines for all the hardlinked files
-    # e.g. in some smaller component I see 231/237 lines to be "^path mismatch" other 6
-    # lines are setup and cleanup lines like this:
-    # debug_logfile: fd 2
-    # pid 7975 [parent 7974], doing new pid setup and server start
-    # Setup complete, sending SIGUSR1 to pid 7974.
-    # db cleanup for server shutdown, 17:33:58.787
-    # memory-to-file backup complete, 17:33:58.787.
-    # db cleanup finished, 17:33:58.787
-    #
-    # but if there is one of:
-    # "^inode mismatch"
-    # "^creat ignored for existing file"
-    # "^creat for.*replaces existing"
-    # then there might be some bigger issue which sometimes results in host-user-contaminated QA warnings
-    ###########################################################################
-
-    import subprocess
-
-    pseudodir = d.getVar('PSEUDO_LOCALSTATEDIR')
-    bb.note("Checking pseudo.log for common errors")
-    pseudolog = os.path.join(pseudodir, "pseudo.log")
-    statement = "grep" \
-        " -e '^creat ignored for existing file'" \
-        " -e '^creat for.*replaces existing'" \
-        " %s" % pseudolog
-    if subprocess.call("%s -q" % statement, shell=True) == 0:
-        statement2 = "grep -v '^path mismatch' %s" % pseudolog
-        statement2_count = "grep -v '^path mismatch' -c %s" % pseudolog
-        output = subprocess.check_output(statement2, shell=True).decode("utf-8")
-        output_count = subprocess.check_output(statement2_count, shell=True).decode("utf-8").replace('\n', '')
-        bb.warn("This %s indicates %s errors, see %s or %s [qa_pseudo]: %s" % (pseudolog, output_count, statement, statement2, output))
-}
-
 # The Staging Func, to check all staging
 #addtask qa_staging after do_populate_sysroot before do_build
 do_populate_sysroot[postfuncs] += "do_qa_staging "
@@ -1287,11 +1249,6 @@ do_configure[postfuncs] += "do_qa_configure "
 
 # Check does S exist.
 do_unpack[postfuncs] += "do_qa_unpack"
-
-# Check pseudo.log for unexpected errors
-# For some reason do_build postfunction isn't executed
-# do_build[postfuncs] += "do_qa_pseudo"
-addtask do_qa_pseudo after do_populate_sysroot do_packagedata do_package before do_build
 
 python () {
     import re
