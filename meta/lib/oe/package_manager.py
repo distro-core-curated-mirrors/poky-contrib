@@ -522,6 +522,7 @@ def create_rpm_dir(d, rpm_repo_dir, deploydir, taskname):
             pkgarchs = pkgarchs + list(reversed(d2.getVar("PACKAGE_EXTRA_ARCHS").split()))
             pkgarchs.append('allarch')
             pkgarchs.append('${SDKMACHINE}_${SDK_ARCH}-nativesdk')
+            pkgarchs.append('allarch-nativesdk')
             for pkgarch in pkgarchs:
                 manifest = d2.expand("${SSTATE_MANIFESTS}/manifest-%s-%s.%s" % (pkgarch, c, taskname))
                 if os.path.exists(manifest):
