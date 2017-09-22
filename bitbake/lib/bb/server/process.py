@@ -187,7 +187,6 @@ class ProcessServer(multiprocessing.Process):
                     self.haveui = True
 
                 except (EOFError, OSError):
-                    print("Disconnection Traceback %s" % traceback.format_exc())
                     disconnect_client(self, fds)
 
             if not self.timeout == -1.0 and not self.haveui and self.lastui and self.timeout and \
@@ -209,12 +208,8 @@ class ProcessServer(multiprocessing.Process):
                 try:
                     print("Running command %s" % command)
                     self.command_channel_reply.send(self.cooker.command.runCommand(command))
-                    print("Command completed")
                 except Exception as e:
-                    print("Exception %s" % str(e))
-                    import traceback
-                    print("Exception %s" % traceback.format_exc())
-                    logger.exception('Exception in server main event loop running command %s (%s)' % (command, str(e)))
+                   logger.exception('Exception in server main event loop running command %s (%s)' % (command, str(e)))
 
             if self.xmlrpc in ready:
                 self.xmlrpc.handle_requests()
@@ -328,17 +323,10 @@ class ServerCommunicator():
         self.recv = recv
 
     def runCommand(self, command):
-        try:
-            self.connection.send(command)
-            if not self.recv.poll(30):
-                import traceback
-                print("runCommand Traceback %s" % traceback.format_stack())
-                raise ProcessTimeout("Timeout while waiting for a reply from the bitbake server")
-            return self.recv.get()
-        except:
-            import traceback
-            print("runCommand Traceback2 %s" % traceback.format_stack())
-            raise
+        self.connection.send(command)
+        if not self.recv.poll(5):
+            raise ProcessTimeout("Timeout while waiting for a reply from the bitbake server")
+        return self.recv.get()
 
     def updateFeatureSet(self, featureset):
         _, error = self.runCommand(["setFeatures", featureset])

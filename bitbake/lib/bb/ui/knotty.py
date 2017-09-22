@@ -466,25 +466,8 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                     break
                 termfilter.updateFooter()
                 event = eventHandler.waitEvent(0.25)
-                ### TRY TO GET VALUE FROM BB SERVER ###
-                print("vvv4 BEFORE SERVER.RUNCOMMAND() vvv")
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                print("^^^4 AFTER SERVER.RUNCOMMAND() ^^^")
-
                 if event is None:
                     continue
-
-            ### TRY TO GET VALUE FROM BB SERVER ###
-            print("vvv4 BEFORE SERVER.RUNCOMMAND() vvv")
-            tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-            tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-            tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-            tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-            print("^^^4 AFTER SERVER.RUNCOMMAND() ^^^")
-
             helper.eventHandler(event)
             if isinstance(event, bb.runqueue.runQueueExitWait):
                 if not main.shutdown:
@@ -544,12 +527,6 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 parseprogress = new_progress("Parsing recipes", event.total).start()
                 continue
             if isinstance(event, bb.event.ParseProgress):
-                print("vvv BEFORE SERVER.RUNCOMMAND() vvv")
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                print("^^^ AFTER SERVER.RUNCOMMAND() ^^^")
                 if params.options.quiet > 1:
                     continue
                 if parseprogress:
@@ -575,12 +552,6 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 cacheprogress = new_progress("Loading cache", event.total).start()
                 continue
             if isinstance(event, bb.event.CacheLoadProgress):
-                print("vvv BEFORE SERVER.RUNCOMMAND() vvv")
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                print("^^^ AFTER SERVER.RUNCOMMAND() ^^^")
                 if params.options.quiet > 1:
                     continue
                 cacheprogress.update(event.current)
@@ -649,15 +620,6 @@ def main(server, eventHandler, params, tf = TerminalFilter):
             if isinstance(event, bb.event.DepTreeGenerated):
                 continue
 
-            ### TRY TO GET VALUE FROM BB SERVER ###
-            print("vvv3 BEFORE SERVER.RUNCOMMAND() vvv")
-            tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-            tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-            tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-            tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-            print("^^^3 AFTER SERVER.RUNCOMMAND() ^^^")
-
-
             if isinstance(event, bb.event.ProcessStarted):
                 if params.options.quiet > 1:
                     continue
@@ -678,17 +640,6 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 if parseprogress:
                     parseprogress.finish()
                 parseprogress = None
-                continue
-
-
-            if isinstance(event, bb.build.TaskProgress):
-                ### TRY TO GET VALUE FROM BB SERVER ###
-                print("vvv3 BEFORE SERVER.RUNCOMMAND() vvv")
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                tmp_dir = server.runCommand(["getVariable", "TMPDIR"])[0]
-                print("^^^3 AFTER SERVER.RUNCOMMAND() ^^^")
                 continue
 
             # ignore
