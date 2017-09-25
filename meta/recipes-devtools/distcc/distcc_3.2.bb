@@ -41,7 +41,8 @@ INITSCRIPT_NAME = "distcc"
 SYSTEMD_PACKAGES = "${PN}"
 SYSTEMD_SERVICE_${PN} = "distcc.service"
 
-do_install_append() {
+do_install () {
+    oe_runmake 'DESTDIR=${D}'  'GZIP_BIN=gzip -n' install
     install -d ${D}${sysconfdir}/init.d/
     install -d ${D}${sysconfdir}/default
     install -m 0755 ${WORKDIR}/distcc ${D}${sysconfdir}/init.d/
@@ -51,6 +52,7 @@ do_install_append() {
     sed -i -e 's,@BINDIR@,${bindir},g' ${D}${systemd_unitdir}/system/distcc.service
     ${DESKTOPINSTALL}
 }
+
 DESKTOPINSTALL = ""
 DESKTOPINSTALL_libc-glibc () {
     install -d ${D}${datadir}/distcc/
