@@ -4,6 +4,7 @@ from oeqa.core.decorator.oeid import OETestID
 import os
 import re
 import tempfile
+import shutil
 
 class TestExport(OESelftestTestCase):
 
