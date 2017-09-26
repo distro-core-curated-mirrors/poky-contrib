@@ -1,0 +1,6 @@
+CONFIGUREOPTS := "${@d.getVar("CONFIGUREOPTS").replace("--target=${TARGET_SYS}", "--target=arm-linux-gnueabihf")}"
+CONFIGUREOPTS := "${@d.getVar("CONFIGUREOPTS").replace("--host=${TARGET_SYS}", "--host=arm-linux-gnueabihf")}"
+EXTRA_OECONF := "${@d.getVar("EXTRA_OECONF").replace("--program-prefix=${TARGET_SYS}-", "--program-prefix=arm-linux-gnueabihf-")}"
+do_install := "${@d.getVar("do_install").replace("${TARGET_SYS}", "arm-linux-gnueabihf")}"
+FILES_${PN} += "${bindir}/arm-linux-gnueabihf* ${prefix}/arm-linux-gnueabihf/bin/*"
+#FILES-${PN}-dev += "${prefix}/${TARGET_SYS}/arm-linux-gnueabihf/include/*"
