@@ -7,16 +7,17 @@ To get the MakeMaker.pm works in this case, we need perl wrapper here
 instead of real perl binary.
 
 Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
+Signed-off-by: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
 ===================================================================
 --- perl-5.12.3/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm.orig	2011-08-12 16:07:30.000000000 +0800
 +++ perl-5.12.3/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm	2011-08-12 16:08:56.000000000 +0800
-@@ -1019,6 +1019,9 @@
+@@ -1110,6 +1110,9 @@ WARNING
      }
  
      foreach my $name (@$names){
 +        # Getting MakeMaker.pm use perl wrapper instead of 'perl.real' directly
 +        $name =~ s/perl\.real/perl/ if ($name =~ /perl\.real/);
 +
-         foreach my $dir (@$dirs){
-             next unless defined $dir; # $self->{PERL_SRC} may be undefined
-             my ($abs, $val);
+         my ($abs, $use_dir);
+         if ($self->file_name_is_absolute($name)) {     # /foo/bar
+             $abs = $name;

@@ -7,19 +7,17 @@ DEPENDS += "gdbm-native zlib-native"
 EXTRA_OEMAKE = "-e MAKEFLAGS="
 
 SRC_URI += "\
-           file://Configure-multilib.patch \
            file://perl-configpm-switch.patch \
            file://native-nopacklist.patch \
-           file://native-perlinc.patch \
            file://MM_Unix.pm.patch \
            file://debian/errno_ver.diff \
            file://dynaloaderhack.patch \
-           file://perl-PathTools-don-t-filter-out-blib-from-INC.patch \
            file://0001-Configure-Remove-fstack-protector-strong-for-native-.patch \
-          "
+           "
 
-SRC_URI[md5sum] = "af6a84c7c3e2b8b269c105a5db2f6d53"
-SRC_URI[sha256sum] = "03a77bac4505c270f1890ece75afc7d4b555090b41aa41ea478747e23b2afb3f"
+SRC_URI[md5sum] = "70e988b4318739b0cf3ad5e120bfde88"
+SRC_URI[sha256sum] = "fe8208133e73e47afc3251c08d2c21c5a60160165a8ab8b669c43a420e4ec680"
+
 
 inherit native
 

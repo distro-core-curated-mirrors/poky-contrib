@@ -15,6 +15,7 @@ Upstream-Status: Inappropriate [configuration]
 [1] http://errors.yoctoproject.org/Errors/Details/109589/
 
 Signed-off-by: Aníbal Limón <anibal.limon@linux.intel.com>
+Signed-off-by: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
 ---
  Configure | 54 ------------------------------------------------------
  1 file changed, 54 deletions(-)
