@@ -1,0 +1,28 @@
+From b80278a9ac843ba3b1ffc7ba1c567df9ce6e0eb0 Mon Sep 17 00:00:00 2001
+From: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+Date: Mon, 9 Oct 2017 09:34:17 -0700
+Subject: [PATCH] utils/Makefile.PL: force miniperl usage
+
+Upstream-Status: Innapropiate [OE-Core specific]
+
+Signed-off-by: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+---
+ utils/Makefile.PL | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/utils/Makefile.PL b/utils/Makefile.PL
+index f9f80ed..c6b57d7 100644
+--- a/utils/Makefile.PL
++++ b/utils/Makefile.PL
+@@ -21,7 +21,7 @@ my $fh = open_new($target, undef, {by => $0}, 1);
+ 
+ # These use the Cwd extension.  For statically-built perls, we
+ # need perl, not just miniperl.
+-my $perl = defined $Config{usedl} ? '../miniperl' : '../perl';
++my $perl = '../miniperl'; # defined $Config{usedl} ? '../miniperl' : '../perl';
+ 
+ print $fh <<"EOT";
+ PERL = $perl
+-- 
+2.12.3
+

@@ -1,0 +1,28 @@
+From 6fecce2bf463a1dc4d953bd36de306db61f92c27 Mon Sep 17 00:00:00 2001
+From: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+Date: Fri, 6 Oct 2017 13:52:42 -0700
+Subject: [PATCH] MM_Unix.pm: avoid manifypods target execution
+
+Upstream-Status: Innapropiate [OE-Core specific]
+
+Signed-off-by: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+---
+ cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
+index 9d65a69..76b1f65 100644
+--- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
++++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
+@@ -3799,7 +3799,7 @@ sub all_target {
+     my $self = shift;
+ 
+     return <<'MAKE_EXT';
+-all :: pure_all manifypods
++all :: pure_all
+ 	$(NOECHO) $(NOOP)
+ MAKE_EXT
+ }
+-- 
+2.12.3
+

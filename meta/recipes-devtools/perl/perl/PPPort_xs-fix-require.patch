@@ -1,0 +1,36 @@
+From d265a66644af0e04518a6957f84456f3a3ad1a74 Mon Sep 17 00:00:00 2001
+From: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+Date: Fri, 6 Oct 2017 15:01:32 -0700
+Subject: [PATCH] PPPort_xs.PL: require ppptools.pl starting at local directory
+
+Otherwise, the following errors is observed:
+
+    | Can't locate parts/ppptools.pl in @INC (@INC contains: ../../lib ../../lib build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/../../../usr/lib/perl-native/perl/site_perl/5.26.1 build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/../../../usr/lib/perl-native/perl/vendor_perl/5.26.1 build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/../../../usr/lib/perl-native/perl/5.26.1 build/tmp/work/x86_64-linux/perl-native/5.26.1-r0/recipe-sysroot-native/usr/lib/perl-native/perl/site_perl/5.26.1 build/tmp/work/x86_64-linux/perl-native/5.26.1-r0/recipe-sysroot-native/usr/lib/perl-native/perl/vendor_perl/5.26.1 build/tmp/work/x86_64-linux/perl-native/5.26.1-r0/recipe-sysroot-native/usr/lib/perl-native/perl/5.26.1) at PPPort_xs.PL line 18.
+    |
+    | Can't locate parts/ppptools.pl in @INC (@INC contains: ../../lib ../../lib build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/../../../usr/lib/perl-native/perl/site_perl/5.26.1 build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/../../../usr/lib/perl-native/perl/vendor_perl/5.26.1 build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/../../../usr/lib/perl-native/perl/5.26.1 build/tmp/work/x86_64-linux/perl-native/5.26.1-r0/recipe-sysroot-native/usr/lib/perl-native/perl/site_perl/5.26.1 build/tmp/work/x86_64-linux/perl-native/5.26.1-r0/recipe-sysroot-native/usr/lib/perl-native/perl/vendor_perl/5.26.1 build/tmp/work/x86_64-linux/perl-native/5.26.1-r0/recipe-sysroot-native/usr/lib/perl-native/perl/5.26.1) at PPPort_xs.PL line 18.
+    | Makefile:538: recipe for target 'RealPPPort.xs' failed
+    | make[2]: *** [RealPPPort.xs] Error 2
+
+Upstream-Status: Innapropiate [OE-Core specific]
+
+Signed-off-by: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+---
+ cpan/Devel-PPPort/PPPort_xs.PL | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cpan/Devel-PPPort/PPPort_xs.PL b/cpan/Devel-PPPort/PPPort_xs.PL
+index 5f18940..d00cffa 100644
+--- a/cpan/Devel-PPPort/PPPort_xs.PL
++++ b/cpan/Devel-PPPort/PPPort_xs.PL
+@@ -15,7 +15,7 @@
+ 
+ use strict;
+ $^W = 1;
+-require "parts/ppptools.pl";
++require "./parts/ppptools.pl";
+ 
+ my %SECTION = (
+   xshead => { code => '', header => "/* ---- code from __FILE__ ---- */" },
+-- 
+2.12.3
+

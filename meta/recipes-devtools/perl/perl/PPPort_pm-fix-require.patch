@@ -1,0 +1,28 @@
+From 62d3500bb6a4addd96a8f2f44f5589c866dfe2e6 Mon Sep 17 00:00:00 2001
+From: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+Date: Fri, 6 Oct 2017 14:01:08 -0700
+Subject: [PATCH] PPPort_pm.PL: require ppptools.pl starting at local directory
+
+Upstream-Status: Innapropiate [OE-Core specific]
+
+Signed-off-by: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+---
+ cpan/Devel-PPPort/PPPort_pm.PL | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cpan/Devel-PPPort/PPPort_pm.PL b/cpan/Devel-PPPort/PPPort_pm.PL
+index ad75b13..7d143a2 100644
+--- a/cpan/Devel-PPPort/PPPort_pm.PL
++++ b/cpan/Devel-PPPort/PPPort_pm.PL
+@@ -15,7 +15,7 @@
+ 
+ use strict;
+ $^W = 1;
+-require "parts/ppptools.pl";
++require "./parts/ppptools.pl";
+ 
+ my $INCLUDE = 'parts/inc';
+ my $DPPP = 'DPPP_';
+-- 
+2.12.3
+

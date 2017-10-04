@@ -1,0 +1,29 @@
+From 3047280d55c6482d0e526d91f707d1308ab7e703 Mon Sep 17 00:00:00 2001
+From: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+Date: Mon, 9 Oct 2017 07:53:38 -0700
+Subject: [PATCH] Unicode-Collade/Makefile.PL: indicate to use local mkheader
+ script
+
+Upstream-Status: Innapropiate [OE-Core specific]
+
+Signed-off-by: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+---
+ cpan/Unicode-Collate/Makefile.PL | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cpan/Unicode-Collate/Makefile.PL b/cpan/Unicode-Collate/Makefile.PL
+index 4103bc9..1d127b7 100644
+--- a/cpan/Unicode-Collate/Makefile.PL
++++ b/cpan/Unicode-Collate/Makefile.PL
+@@ -6,7 +6,7 @@ my $clean = {};
+ if (-f "Collate.xs") {
+     print "Making header files for XS...\n";
+ 
+-    do 'mkheader' or die $@ || "mkheader: $!";
++    do './mkheader' or die $@ || "mkheader: $!";
+ 
+     $clean = { FILES => 'ucatbl.h' };
+ }
+-- 
+2.12.3
+

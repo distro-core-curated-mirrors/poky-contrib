@@ -1,0 +1,42 @@
+From c1786cef13f436eb9704f39428bd985f4ac6097b Mon Sep 17 00:00:00 2001
+From: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+Date: Fri, 6 Oct 2017 14:54:52 -0700
+Subject: [PATCH] pport_h.PL: require PPPort.pm starting at local directory
+
+    | running "build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/perl5.26.1.real" -I../../lib ppport_h.PL
+    |
+    | running "build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/perl5.26.1.real" -I../../lib ppport_h.PL
+    | Can't locate PPPort.pm in @INC (you may need to install the PPPort module) (@INC contains: ../../lib build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/../../../usr/lib/perl-native/perl/site_perl/5.26.1 build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/../../../usr/lib/perl-native/perl/vendor_perl/5.26.1 build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/../../../usr/lib/perl-native/perl/5.26.1 build/tmp/work/x86_64-linux/perl-native/5.26.1-r0/recipe-sysroot-native/usr/lib/perl-native/perl/site_perl/5.26.1 build/tmp/work/x86_64-linux/perl-native/5.26.1-r0/recipe-sysroot-native/usr/lib/perl-native/perl/vendor_perl/5.26.1 build/tmp/work/x86_64-linux/perl-native/5.26.1-r0/recipe-sysroot-native/usr/lib/perl-native/perl/5.26.1) at ppport_h.PL line 17.
+    |
+    | Can't locate PPPort.pm in @INC (you may need to install the PPPort module) (@INC contains: ../../lib build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/../../../usr/lib/perl-native/perl/site_perl/5.26.1 build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/../../../usr/lib/perl-native/perl/vendor_perl/5.26.1 build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/../../../usr/lib/perl-native/perl/5.26.1 build/tmp/work/x86_64-linux/perl-native/5.26.1-r0/recipe-sysroot-native/usr/lib/perl-native/perl/site_perl/5.26.1 build/tmp/work/x86_64-linux/perl-native/5.26.1-r0/recipe-sysroot-native/usr/lib/perl-native/perl/vendor_perl/5.26.1 build/tmp/work/x86_64-linux/perl-native/5.26.1-r0/recipe-sysroot-native/usr/lib/perl-native/perl/5.26.1) at ppport_h.PL line 17.
+    | "build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/perl5.26.1.real" -I../../lib ppport_h.PL failed: 512
+    |
+    | "build/tmp/work/i586-poky-linux/perl/5.26.1-r0/recipe-sysroot-native/usr/bin/perl-native/perl5.26.1.real" -I../../lib ppport_h.PL failed: 512
+    | removing temporary file PPPort.pm
+    |
+    | removing temporary file PPPort.pm
+    | makefile:395: recipe for target 'makeppport' failed
+    | make[1]: *** [makeppport] Error 2
+
+Upstream-Status: Innapropiate [OE-Core specific]
+
+Signed-off-by: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+---
+ cpan/Devel-PPPort/ppport_h.PL | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cpan/Devel-PPPort/ppport_h.PL b/cpan/Devel-PPPort/ppport_h.PL
+index e8c7c1e..b7877b3 100644
+--- a/cpan/Devel-PPPort/ppport_h.PL
++++ b/cpan/Devel-PPPort/ppport_h.PL
+@@ -14,6 +14,6 @@
+ ################################################################################
+ 
+ package Devel::PPPort;
+-require "PPPort.pm";
++require "./PPPort.pm";
+ rename 'ppport.h', 'ppport.old' if -f 'ppport.h';
+ unlink "ppport.old" if WriteFile("ppport.h") && -f 'ppport.h';
+-- 
+2.12.3
+

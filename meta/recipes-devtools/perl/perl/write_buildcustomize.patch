@@ -1,0 +1,40 @@
+From f1888a44b9720d31c35caf3d26a79824b066d43f Mon Sep 17 00:00:00 2001
+From: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+Date: Fri, 6 Oct 2017 12:13:20 -0700
+Subject: [PATCH] write_buildcustomize.pl: start at local directory when
+ looking for lib/buildcustomize.pl
+
+Otherwise, on the do_compile step we observe the following:
+
+    | mv -f miniperl miniperl-target
+    | ln -s hostperl miniperl
+    | # ./miniperl -w -Ilib -Idist/Exporter/lib -MExporter -e '<?>' || sh -c 'echo >&2 Failed to build miniperl.  Please run make minitest; exit 1'
+    | ./miniperl -Ilib -f write_buildcustomize.pl
+    | do "lib/buildcustomize.pl" failed, '.' is no longer in @INC; did you mean do "./lib/buildcustomize.pl"? at write_buildcustomize.pl line 101.
+    | Can't load generated lib/buildcustomize.pl:  at write_buildcustomize.pl line 112.
+    | makefile:373: recipe for target 'lib/buildcustomize.pl' failed
+    | make[1]: *** [lib/buildcustomize.pl] Error 2
+
+Upstream-Status: Pending
+
+Signed-off-by: Leonardo Sandoval <leonardo.sandoval.gonzalez@linux.intel.com>
+---
+ write_buildcustomize.pl | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/write_buildcustomize.pl b/write_buildcustomize.pl
+index 8666a6b..6b4de3a 100644
+--- a/write_buildcustomize.pl
++++ b/write_buildcustomize.pl
+@@ -3,7 +3,7 @@
+ use strict;
+ 
+ my $osname = $^O;
+-my $file = 'lib/buildcustomize.pl';
++my $file = './lib/buildcustomize.pl';
+ 
+ if ( @ARGV % 2 ) {
+     my $dir = shift;
+-- 
+2.12.3
+
