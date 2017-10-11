@@ -45,17 +45,6 @@ class ELFFile:
         self.objdump_output = {}
         self.data = None
 
-    # Context Manager functions to close the mmap explicitly
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
-
-    def close(self):
-        if self.data:
-            self.data.close()
-
     def open(self):
         with open(self.name, "rb") as f:
             try:
@@ -64,77 +53,23 @@ class ELFFile:
                 # This means the file is empty
                 raise NotELFFileError("%s is empty" % self.name)
 
-        # Check the file has the minimum number of ELF table entries
-        if len(self.data) < ELFFile.EI_NIDENT + 4:
-            raise NotELFFileError("%s is not an ELF" % self.name)
-
-        # ELF header
-        self.my_assert(self.data[0], 0x7f)
-        self.my_assert(self.data[1], ord('E'))
-        self.my_assert(self.data[2], ord('L'))
-        self.my_assert(self.data[3], ord('F'))
-        if self.data[ELFFile.EI_CLASS] == ELFFile.ELFCLASS32:
-            self.bits = 32
-        elif self.data[ELFFile.EI_CLASS] == ELFFile.ELFCLASS64:
-            self.bits = 64
-        else:
-            # Not 32-bit or 64.. lets assert
-            raise NotELFFileError("ELF but not 32 or 64 bit.")
-        self.my_assert(self.data[ELFFile.EI_VERSION], ELFFile.EV_CURRENT)
-
-        self.endian = self.data[ELFFile.EI_DATA]
-        if self.endian not in (ELFFile.EI_DATA_LSB, ELFFile.EI_DATA_MSB):
-            raise NotELFFileError("Unexpected EI_DATA %x" % self.endian)
-
-    def osAbi(self):
-        return self.data[ELFFile.EI_OSABI]
-
-    def abiVersion(self):
-        return self.data[ELFFile.EI_ABIVERSION]
-
     def abiSize(self):
-        return self.bits
+        if self.elf.bits == Elf.Bits.b32:
+            return 32
+        else:
+            return 64
 
     def isLittleEndian(self):
-        return self.endian == ELFFile.EI_DATA_LSB
-
-    def isBigEndian(self):
-        return self.endian == ELFFile.EI_DATA_MSB
-
-    def getStructEndian(self):
-        return {ELFFile.EI_DATA_LSB: "<",
-                ELFFile.EI_DATA_MSB: ">"}[self.endian]
-
-    def getShort(self, offset):
-        return struct.unpack_from(self.getStructEndian() + "H", self.data, offset)[0]
-
-    def getWord(self, offset):
-        return struct.unpack_from(self.getStructEndian() + "i", self.data, offset)[0]
+        return self.elf.endian == Elf.Endian.le
 
     def isDynamic(self):
-        """
-        Return True if there is a .interp segment (therefore dynamically
-        linked), otherwise False (statically linked).
-        """
-        offset = self.getWord(self.bits == 32 and 0x1C or 0x20)
-        size = self.getShort(self.bits == 32 and 0x2A or 0x36)
-        count = self.getShort(self.bits == 32 and 0x2C or 0x38)
-
-        for i in range(0, count):
-            p_type = self.getWord(offset + i * size)
-            if p_type == ELFFile.PT_INTERP:
+        for p in self.elf.header.program_headers:
+            if p.type == Elf.PhType.interp:
                 return True
         return False
 
     def machine(self):
-        """
-        We know the endian stored in self.endian and we
-        know the position
-        """
-        return self.getShort(ELFFile.E_MACHINE)
-
-    def set_objdump(self, cmd, output):
-        self.objdump_output[cmd] = output
+        return self.elf.header.machine.value
 
     def run_objdump(self, cmd, d):
         import bb.process
@@ -164,19 +99,18 @@ def elf_machine_to_string(machine):
     """
     try:
         return {
-            0x00: "Unset",
-            0x02: "SPARC",
-            0x03: "x86",
-            0x08: "MIPS",
-            0x14: "PowerPC",
-            0x28: "ARM",
-            0x2A: "SuperH",
-            0x32: "IA-64",
-            0x3E: "x86-64",
-            0xB7: "AArch64",
-            0xF7: "BPF"
+            Elf.Machine.sparc.value: "SPARC",
+            Elf.Machine.x86.value: "x86",
+            Elf.Machine.mips.value: "MIPS",
+            Elf.Machine.powerpc.value: "PowerPC",
+            Elf.Machine.arm.value: "ARM",
+            Elf.Machine.superh.value: "SuperH",
+            Elf.Machine.ia_64.value: "IA-64",
+            Elf.Machine.x86_64.value: "x86-64",
+            Elf.Machine.aarch64.value: "AArch64",
+            Elf.Machine.bpf.value: "BPF"
         }[machine]
-    except:
+    except KeyError:
         return "Unknown (%s)" % repr(machine)
 
 def write_error(type, error, d):
