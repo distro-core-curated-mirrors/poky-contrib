@@ -304,7 +304,7 @@ python populate_packages_prepend() {
 }
 
 RDEPENDS_${PN}-bash-completion += "util-linux-lsblk"
-RDEPENDS_${PN}-ptest = "bash grep coreutils"
+RDEPENDS_${PN}-ptest = "bash grep coreutils ncurses util-linux-blkid util-linux-fsck btrfs-tools"
 
 do_compile_ptest() {
     oe_runmake buildtest-TESTS
@@ -312,23 +312,39 @@ do_compile_ptest() {
 
 do_install_ptest() {
     mkdir -p ${D}${PTEST_PATH}/tests/ts
-    find . -maxdepth 1 -type f -perm -111 -exec cp {} ${D}${PTEST_PATH} \;
-    cp ${S}/tests/functions.sh ${D}${PTEST_PATH}/tests/
-    cp ${S}/tests/commands.sh ${D}${PTEST_PATH}/tests/
-    cp ${S}/tests/run.sh ${D}${PTEST_PATH}/tests/
-    cp -pR ${S}/tests/expected ${D}${PTEST_PATH}/tests/expected
+    find . -name 'test*' -maxdepth 1 -type f -perm -111 -exec cp {} ${D}${PTEST_PATH} \;
+    find ./.libs -name 'sample*' -maxdepth 1 -type f -perm -111 -exec cp {} ${D}${PTEST_PATH} \;
+    find ./.libs -name 'test*' -maxdepth 1 -type f -perm -111 -exec cp {} ${D}${PTEST_PATH} \;
 
-    list="bitops build-sys cal col colrm column dmesg fsck hexdump hwclock ipcs isosize login look md5 misc more namei paths schedutils script swapon"
-    # The following tests are not installed  yet:
-    # blkid scsi_debug module dependent
-    # cramfs gcc dependent
-    # eject gcc dependent
-    # fdisk scsi_debug module and gcc dependent
-    # lscpu gcc dependant
-    # libmount uuidgen dependent
-    # mount gcc dependant
-    # partx blkid dependant
-    for d in $list; do
-        cp -pR ${S}/tests/ts/$d ${D}${PTEST_PATH}/tests/ts/
-    done
+    cp ${S}/tests/*.sh ${D}${PTEST_PATH}/tests/
+    cp -pR ${S}/tests/expected ${D}${PTEST_PATH}/tests/expected
+    cp -pR ${S}/tests/ts ${D}${PTEST_PATH}/tests/
+    cp ${WORKDIR}/build/config.h ${D}${PTEST_PATH}
+
+    # Edit absolute paths, the original paths point to a local folder containig
+    # the executables. (We want to test the installed executables, not the local copies)
+    sed  -i \
+         '/^TS_CMD/ s|$top_builddir|/usr/bin|g' \
+         ${D}${PTEST_PATH}/tests/commands.sh
+
+    sed  -i \
+         -e 's:/usr/bin/kill:/bin/kill:g' \
+         -e 's:/usr/bin/getopt:/bin/getopt:g' \
+         -e 's:/usr/bin/mount:/bin/mount:g' \
+         -e 's:/usr/bin/dmesg:/bin/dmesg:g' \
+         -e 's:/usr/bin/umount:/bin/umount:g' \
+         -e 's:/usr/bin/mkswap:/sbin/mkswap:g' \
+         -e 's:/usr/bin/fdisk:/sbin/fdisk:g' \
+         -e 's:/usr/bin/mkfs:/sbin/mkfs:g' \
+         -e 's:/usr/bin/blkid:/sbin/blkid:g' \
+         -e 's:/usr/bin/dmsetup:/sbin/dmsetup:g' \
+         -e 's:/usr/bin/losetup:/sbin/losetup:g' \
+         -e 's:/usr/bin/swapon:/sbin/swapon:g' \
+         -e 's:/usr/bin/swaplabel:/usr/sbin/swaplabel:g' \
+         -e 's:/usr/bin/swapoff:/sbin/swapoff:g' \
+         -e 's:/usr/bin/wipefs:/usr/sbin/wipefs:g' \
+         -e 's:/usr/bin/fsck:/sbin/fsck:g' \
+         -e 's:/usr/bin/sfdisk:/usr/sbin/sfdisk:g' \
+         -e 's:/usr/bin/blkdiscard:/usr/sbin/blkdiscard:g' \
+        ${D}${PTEST_PATH}/tests/commands.sh
 }
