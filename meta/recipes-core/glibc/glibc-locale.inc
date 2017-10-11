@@ -70,6 +70,8 @@ DESCRIPTION_localedef = "glibc: compile locale definition files"
 FILES_${MLPREFIX}glibc-gconv = "${libdir}/gconv/*"
 FILES_localedef = "${bindir}/localedef"
 
+DEPENDS_glibc-gconv += "libc6"
+
 LOCALETREESRC = "${COMPONENTS_DIR}/${PACKAGE_ARCH}/glibc-stash-locale"
 
 do_install () {
