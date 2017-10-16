@@ -153,10 +153,6 @@ class DevtoolCommon(DevtoolBase):
         cls.sstate_conf += ('SSTATE_MIRRORS += "file://.* file:///%s/PATH"\n'
                             % cls.original_sstate)
 
-        # XXX: some test cases needs xz-native to unpack like mdadm recipes
-        # and it is supposed to be provided
-        cls.bitbake("xz-native")
-
     @classmethod
     def tearDownClass(cls):
         cls.logger.debug('Deleting devtool sstate cache on %s' % cls.devtool_sstate)
