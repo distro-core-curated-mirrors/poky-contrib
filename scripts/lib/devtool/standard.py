@@ -494,7 +494,6 @@ def _extract_source(srctree, keep_temp, devbranch, sync, config, basepath, works
     tempbasedir = d.getVar('WORKDIR')
     bb.utils.mkdirhier(tempbasedir)
     tempdir = tempfile.mkdtemp(prefix='devtooltmp-', dir=tempbasedir)
-    bb.utils.mkdirhier(tempdir)
     try:
         tinfoil.logger.setLevel(logging.WARNING)
 
