@@ -3,7 +3,9 @@
 # python recipe logging functions of a similar naming convention: bb.plain(),
 # bb.note(), etc.
 
-LOGFIFO = "${T}/fifo.${@os.getpid()}"
+BBPID = "${@os.getpid()}"
+
+LOGFIFO = "${T}/fifo.${BBPID}"
 
 # Print the output exactly as it is passed in. Typically used for output of
 # tasks that should be seen on the console. Use sparingly.

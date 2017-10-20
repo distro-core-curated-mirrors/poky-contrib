@@ -377,9 +377,14 @@ def generate_dependencies(d):
     deps = {}
     values = {}
 
+    #tempd = d
+    tempd = bb.data.createCopy(d)
+    for v in ["BBPID", "DATE", "TIME", "DATETIME"]:
+        tempd.setVar(v, "")
+
     tasklist = d.getVar('__BBTASKS', False) or []
     for task in tasklist:
-        deps[task], values[task] = build_dependencies(task, keys, shelldeps, varflagsexcl, d)
+        deps[task], values[task] = build_dependencies(task, keys, shelldeps, varflagsexcl, tempd)
         newdeps = deps[task]
         seen = set()
         while newdeps:
@@ -388,7 +393,7 @@ def generate_dependencies(d):
             newdeps = set()
             for dep in nextdeps:
                 if dep not in deps:
-                    deps[dep], values[dep] = build_dependencies(dep, keys, shelldeps, varflagsexcl, d)
+                    deps[dep], values[dep] = build_dependencies(dep, keys, shelldeps, varflagsexcl, tempd)
                 newdeps |=  deps[dep]
             newdeps -= seen
         #print "For %s: %s" % (task, str(deps[task]))

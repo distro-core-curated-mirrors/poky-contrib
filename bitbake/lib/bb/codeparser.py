@@ -357,6 +357,7 @@ class ShellParser():
         if h in codeparsercache.shellcacheextras:
             self.execs = set(codeparsercache.shellcacheextras[h].execs)
             return self.execs
+        #bb.warn(str(value))
 
         self._parse_shell(value)
         self.execs = set(cmd for cmd in self.allexecs if cmd not in self.funcdefs)

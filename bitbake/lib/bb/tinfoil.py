@@ -494,6 +494,8 @@ class Tinfoil:
         first need to set the internal event mask using set_event_mask()
         (otherwise whatever event mask the UI set up will be in effect).
         """
+        with open("/tmp/tlog2", "w+") as f:
+            f.write(str(timeout) + "\n")
         if not self.server_connection:
             raise Exception('Not connected to server (did you call .prepare()?)')
         return self.server_connection.events.waitEvent(timeout)

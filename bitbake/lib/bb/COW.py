@@ -150,7 +150,6 @@ class COWDictMeta(COWMeta):
                 yield value
             if type == "items":
                 yield (key, value)
-        raise StopIteration()
 
     def iterkeys(cls):
         return cls.iter("keys")
