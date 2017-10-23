@@ -25,6 +25,9 @@ APPEND_append = '${@bb.utils.contains("IMAGE_FEATURES", "read-only-rootfs", " ro
 # Generates test data file with data store variables expanded in json format
 ROOTFS_POSTPROCESS_COMMAND += "write_image_test_data ; "
 
+# Splits /boot into its own rootfs to easily turn it into its own partition
+ROOTFS_POSTPROCESS_COMMAND += '${@bb.utils.contains("MACHINE_FEATURES", "efi", "split_bootpartition; ", "",d)}'
+
 # Write manifest
 IMAGE_MANIFEST = "${IMGDEPLOYDIR}/${IMAGE_NAME}.rootfs.manifest"
 ROOTFS_POSTUNINSTALL_COMMAND =+ "write_image_manifest ; "
@@ -316,6 +319,22 @@ python write_image_test_data() {
         os.symlink(os.path.basename(testdata), testdata_link)
 }
 write_image_test_data[vardepsexclude] += "TOPDIR"
+
+IMAGE_BOOTFS="${WORKDIR}/bootfs"
+# hardlink rootfs/boot/* into bootfs/, then delete the original
+split_bootpartition () {
+	if [ ! -d ${IMAGE_BOOTFS} ];
+	then
+		mkdir -p ${IMAGE_BOOTFS}
+	else
+		rm -rf ${IMAGE_BOOTFS}/*
+	fi
+	if [ -d ${IMAGE_ROOTFS}/boot ] && [ -n "$(ls -A ${IMAGE_ROOTFS}/boot)" ];
+	then
+		cp -rla ${IMAGE_ROOTFS}/boot/* ${IMAGE_BOOTFS}/
+		rm -rf ${IMAGE_ROOTFS}/boot/*
+	fi
+}
 
 # Check for unsatisfied recommendations (RRECOMMENDS)
 python rootfs_log_check_recommends() {
