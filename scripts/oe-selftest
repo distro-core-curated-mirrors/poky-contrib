@@ -1,5 +1,7 @@
-#!/usr/bin/env python3
+#!/bin/sh
 
+# scripts/oe-selftest: calls oe-selftest-internal in a isolated environment
+#
 # Copyright (c) 2013-2017 Intel Corporation
 #
 # This program is free software; you can redistribute it and/or modify
@@ -14,62 +16,66 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
 
-# DESCRIPTION
-# This script runs tests defined in meta/lib/oeqa/selftest/
-# It's purpose is to automate the testing of different bitbake tools.
-# To use it you just need to source your build environment setup script and
-# add the meta-selftest layer to your BBLAYERS.
-# Call the script as: "oe-selftest -a" to run all the tests in meta/lib/oeqa/selftest/
-# Call the script as: "oe-selftest -r <module>.<Class>.<method>" to run just a single test
-# E.g: "oe-selftest -r bblayers.BitbakeLayers" will run just the BitbakeLayers class from meta/lib/oeqa/selftest/bblayers.py
+# Variable definitions
+ORIGBUILDDIR="$BUILDDIR"
+OESELFTESTSCRIPTDIR="$(which oe-selftest)"
+SCRIPTSDIR="$(dirname $OESELFTESTSCRIPTDIR)"
+OECOREDIR="$(dirname $SCRIPTSDIR)"
 
+# oe-selftest-$$ related
+OESELFTESTDIR="$ORIGBUILDDIR/oe-selftest-$$"
+OESELFTESTOECOREDIR="$OESELFTESTDIR/openembedded-core"
+OESELFTESTBUILDDIR="$OESELFTESTDIR/openembedded-core/build"
+TEMPLATEPATH="$OESELFTESTDIR/template/conf"
 
+# 0. Return immediately in case no test execution
+ADDTESTS="$(echo "$@" | grep -i '\-a')"
+SOMETESTS="$(echo "$@" | grep -i '\-r')"
+if [ -z "$ADDTESTS" -a -z "$SOMETESTS" ]; then
+    if [ -z "$@" ]; then
+	oe-selftest-internal -h
+    else
+	oe-selftest-internal "$@"
+    fi
+    exit 0
+fi
 
-import os
-import sys
-import argparse
-import logging
+# 1. All work will be done under OESELFTESTDIR
+mkdir $OESELFTESTDIR && cd $OESELFTESTDIR
 
-scripts_path = os.path.dirname(os.path.realpath(__file__))
-lib_path = scripts_path + '/lib'
-sys.path = sys.path + [lib_path]
-import argparse_oe
-import scriptutils
-import scriptpath
-scriptpath.add_oe_lib_path()
-scriptpath.add_bitbake_lib_path()
+# 2.1 Shallow clone OE-Core
+git clone file://$OECOREDIR --depth 1 $OESELFTESTOECOREDIR
 
-from oeqa.utils import load_test_components
-from oeqa.core.exception import OEQAPreRun
+# 2.2 Shallow clone bitbake if necessary (if OE-Core is embedded on a combo repo, like Poky, there is no need)
+if [ ! -d "$OESELFTESTOECOREDIR/bitbake" ]; then
+    git clone file://$OECOREDIR/bitbake --depth 1 $OESELFTESTOECOREDIR/bitbake
+fi
 
-logger = scriptutils.logger_create('oe-selftest', stream=sys.stdout)
+# 3. Template: create template directory based on BUILDIR/conf/local.conf
+mkdir -p $TEMPLATEPATH
+cp $ORIGBUILDDIR/conf/local.conf $TEMPLATEPATH/local.conf.sample
 
-def main():
-    description = "Script that runs unit tests against bitbake and other Yocto related tools. The goal is to validate tools functionality and metadata integrity. Refer to https://wiki.yoctoproject.org/wiki/Oe-selftest for more information."
-    parser = argparse_oe.ArgumentParser(description=description)
+# 4. re-initialized environment with new metadata and templateconf environement
+cd $OESELFTESTOECOREDIR
+export TEMPLATEPATH && source ./oe-init-build-env $OESELFTESTBUILDDIR
 
-    comp_name, comp = load_test_components(logger, 'oe-selftest').popitem()
-    comp.register_commands(logger, parser)
+# 5. Respect any site.conf and/or auto.conf and place it into conf directory
+if [ -r "$ORIGBUILDDIR/conf/site.conf" ]; then
+    cp -f $ORIGBUILDDIR/conf/site.conf $OESELFTESTBUILDDIR/conf
+fi
+if [ -r "$ORIGBUILDDIR/conf/auto.conf" ]; then
+    cp -f $ORIGBUILDDIR/conf/auto.conf $OESELFTESTBUILDDIR/conf
+fi
 
-    try:
-        args = parser.parse_args()
-        results = args.func(logger, args)
-        ret = 0 if results.wasSuccessful() else 1
-    except SystemExit as err:
-        if err.code != 0:
-            raise err
-        ret = err.code
-    except OEQAPreRun as pr:
-        ret = 1
+# 6. Execute the tests throught oe-selftest-internal
+oe-selftest-internal "$@"
 
-    return ret
+OESELFTESTRC="$?"
 
-if __name__ == '__main__':
-    try:
-        ret = main()
-    except Exception:
-        ret = 1
-        import traceback
-        traceback.print_exc()
-    sys.exit(ret)
+# 7. Echo working folder
+
+echo -e "\nAll work done under $OESELFTESTDIR\n"
+
+exit $OESELFTESTRC
