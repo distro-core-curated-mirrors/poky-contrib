@@ -222,7 +222,7 @@ class BitbakeVars(defaultdict):
                     return
             else:
                 # Get bitbake -e output
-                cmd = "bitbake -e"
+                cmd = "bitbake -e -b"
                 if image:
                     cmd += " %s" % image
 
