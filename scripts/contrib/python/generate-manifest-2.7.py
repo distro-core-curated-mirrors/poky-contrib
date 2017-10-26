@@ -250,7 +250,7 @@ if __name__ == "__main__":
     m.addPackage( "${PN}-curses", "Python curses support", "${PN}-core",
     "curses lib-dynload/_curses.so lib-dynload/_curses_panel.so" ) # directory + low level module
 
-    m.addPackage( "${PN}-ctypes", "Python C types support", "${PN}-core",
+    m.addPackage( "${PN}-ctypes", "Python C types support", "${PN}-core ${PN}-subprocess",
     "ctypes lib-dynload/_ctypes.so lib-dynload/_ctypes_test.so" ) # directory + low level module
 
     m.addPackage( "${PN}-datetime", "Python calendar and time support", "${PN}-core ${PN}-codecs",
