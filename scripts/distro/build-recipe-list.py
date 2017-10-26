@@ -54,12 +54,12 @@ def generate_recipe_list():
             rows = reader.__iter__()
             gather_recipes(rows)
 
-    with open('recipe-list.txt', 'w') as f:
+    with open('recipe-list.csv', 'w') as f:
         for recipe in sorted(recipenames):
             f.write("%s\n" % recipe)
-    print("file : recipe-list.txt is created with %d entries." % len(recipenames))
+    print("file : recipe-list.csv is created with %d entries." % len(recipenames))
 
-    with open('all-recipe-list.txt', 'w') as f:
+    with open('all-recipe-list.csv', 'w') as f:
         for recipe in sorted(allrecipes):
             f.write("%s\n" % ','.join([str(data) for data in recipe]))
 
@@ -67,7 +67,7 @@ def generate_recipe_list():
 def diff_for_new_recipes(recipe1, recipe2):
     prev_recipe_path = recipe1 + '/'
     curr_recipe_path = recipe2 + '/'
-    if not os.path.isfile(prev_recipe_path + 'recipe-list.txt') or not os.path.isfile(curr_recipe_path + 'recipe-list.txt'):
+    if not os.path.isfile(prev_recipe_path + 'recipe-list.csv') or not os.path.isfile(curr_recipe_path + 'recipe-list.csv'):
         print("recipe files do not exists. please verify that the file exists.")
         exit(1)
 
@@ -76,10 +76,10 @@ def diff_for_new_recipes(recipe1, recipe2):
     prev = []
     new = []
 
-    with open(prev_recipe_path + 'recipe-list.txt') as f:
+    with open(prev_recipe_path + 'recipe-list.csv') as f:
         prev = f.readlines()
 
-    with open(curr_recipe_path + 'recipe-list.txt') as f:
+    with open(curr_recipe_path + 'recipe-list.csv') as f:
         new = f.readlines()
 
     updates = []
@@ -88,11 +88,16 @@ def diff_for_new_recipes(recipe1, recipe2):
             updates.append(pn.rstrip())
 
     allrecipe = []
-    with open(recipe1 + '_' + recipe2 + '_new_recipe_list.txt','w') as dr:
-        with open(curr_recipe_path + 'all-recipe-list.txt') as f:
+    with open(recipe1 + '_' + recipe2 + '_new_recipe_list.csv','w') as dr:
+        header_written = False
+        with open(curr_recipe_path + 'all-recipe-list.csv') as f:
             reader = csv.reader(f, delimiter=',')
             for row in reader:
                 if row[0] in updates:
+                    if not header_written:
+                        dr.write("Recipe,License,Version,Software is part of")
+                        dr.write("\n")
+                        header_written = True
                     dr.write("%s,%s,%s" % (row[0], row[3], row[5]))
                     if len(row[9:]) > 0:
                         dr.write(",%s" % ','.join(row[9:]))

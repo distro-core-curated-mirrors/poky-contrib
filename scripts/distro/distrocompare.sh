@@ -94,11 +94,11 @@ bake_distrodata $current_version
 
 cd $workdir
 
-# compare the 2 generated recipe-list.txt
+# compare the 2 generated recipe-list.csv
 $workdir/build-recipe-list.py compare_recipe $previous_version $current_version
 
 # copy final result to current working directory
-cp $workdir/*_new_recipe_list.txt $currentworkdir
+cp $workdir/*_new_recipe_list.csv $currentworkdir
 
 if [ $? -ne 0 ]; then
     rm -rf $workdir/$previous_version
