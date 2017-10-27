@@ -42,6 +42,10 @@ SRC_URI += "file://find.pl;subdir=openssl-${PV}/util/ \
             file://Use-SHA256-not-MD5-as-default-digest.patch \
             file://0001-Fix-build-with-clang-using-external-assembler.patch \
             "
+SRC_URI_append_class-target = "\
+            file://reproducible-cflags.patch \
+            file://reproducible-mkbuildinf.patch \
+            "
 SRC_URI[md5sum] = "f85123cd390e864dfbe517e7616e6566"
 SRC_URI[sha256sum] = "ce07195b659e75f4e1db43552860070061f156a98bb37b672b101ba6e3ddf30c"
 

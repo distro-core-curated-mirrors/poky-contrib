@@ -1,0 +1,19 @@
+Allow passing custom c-flags to mkbuildinf.pl in order to pass
+flags without any build host references
+
+Upstream-Status: Inappropriate [OE specific]
+
+Signed-off-by: Juro Bystricky <juro.bystricky@intel.com>
+
+
+--- a/crypto/Makefile	2017-10-24 09:19:25.734675000 -0700
++++ b/crypto/Makefile	2017-10-26 09:45:47.383940890 -0700
+@@ -55,7 +55,7 @@
+ all: shared
+ 
+ buildinf.h: ../Makefile
+-	$(PERL) $(TOP)/util/mkbuildinf.pl "$(CC) $(CFLAGS)" "$(PLATFORM)" >buildinf.h
++	$(PERL) $(TOP)/util/mkbuildinf.pl "$(CC_INFO)" "$(PLATFORM)" >buildinf.h
+ 
+ x86cpuid.s:	x86cpuid.pl perlasm/x86asm.pl
+ 	$(PERL) x86cpuid.pl $(PERLASM_SCHEME) $(CFLAGS) $(PROCESSOR) > $@
