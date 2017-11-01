@@ -44,6 +44,16 @@ do_install_append_class-native() {
 	cp -r ${B}/tools ${D}/${STAGING_ICU_DIR_NATIVE}
 }
 
+do_install_append_class-target() {
+	# Remove build host references...
+	sed -i  \
+	    -e 's,--sysroot=${STAGING_DIR_TARGET},,g' \
+	    -e 's|${DEBUG_PREFIX_MAP}||g' \
+	    -e 's:${HOSTTOOLS_DIR}/::g' \
+	    ${D}/usr/bin/icu-config ${D}/usr/lib/icu/${PV}/Makefile.inc \
+	    ${D}/usr/lib/icu/${PV}/pkgdata.inc
+}
+
 PACKAGES =+ "libicudata libicuuc libicui18n libicutu libicuio"
 
 FILES_${PN}-dev += "${libdir}/${BPN}/"
