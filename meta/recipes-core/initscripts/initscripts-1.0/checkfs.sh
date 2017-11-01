@@ -8,7 +8,7 @@
 # Short-Description: Check all other file systems
 ### END INIT INFO
 
-. /etc/default/rcS
+[ -f /etc/default/rcS ] && . /etc/default/rcS
 
 #
 # Check the rest of the filesystems.

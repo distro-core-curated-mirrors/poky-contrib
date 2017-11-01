@@ -8,7 +8,7 @@
 # Short-Description: Misc and other.
 ### END INIT INFO
 
-. /etc/default/rcS
+[ -f /etc/default/rcS ] && . /etc/default/rcS
 #
 # Put a nologin file in /etc to prevent people from logging in before
 # system startup is complete.

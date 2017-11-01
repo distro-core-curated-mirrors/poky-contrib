@@ -9,7 +9,7 @@
 # Description:
 ### END INIT INFO
 
-. /etc/default/rcS
+[ -f /etc/default/rcS ] && . /etc/default/rcS
 
 #
 # Mount local filesystems in /etc/fstab. For some reason, people

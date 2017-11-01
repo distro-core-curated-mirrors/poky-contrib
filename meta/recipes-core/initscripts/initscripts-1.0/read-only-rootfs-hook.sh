@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. /etc/default/rcS
+[ -f /etc/default/rcS ] && . /etc/default/rcS
 
 [ "$ROOTFS_READ_ONLY" = "no" ] && exit 0
 

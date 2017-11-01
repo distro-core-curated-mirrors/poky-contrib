@@ -8,7 +8,7 @@
 # Short-Description: Check to root file system.
 ### END INIT INFO
 
-. /etc/default/rcS
+[ -f /etc/default/rcS ] && . /etc/default/rcS
 
 #
 # Set SULOGIN in /etc/default/rcS to yes if you want a sulogin to be spawned
