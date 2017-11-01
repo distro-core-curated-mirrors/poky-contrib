@@ -8,13 +8,13 @@ PR = "r155"
 
 INHIBIT_DEFAULT_DEPS = "1"
 
+MOUNTALL_SH = "${@bb.utils.contains('VIRTUAL-RUNTIME_init_manager','busybox','','file://mountall.sh',d)}"
 SRC_URI = "file://functions \
            file://halt \
            file://umountfs \
            file://devpts.sh \
            file://devpts \
            file://hostname.sh \
-           file://mountall.sh \
            file://banner.sh \
            file://bootmisc.sh \
            file://mountnfs.sh \
@@ -35,6 +35,7 @@ SRC_URI = "file://functions \
            file://dmesg.sh \
            file://logrotate-dmesg.conf \
            ${@bb.utils.contains('DISTRO_FEATURES','selinux','file://sushell','',d)} \
+           ${MOUNTALL_SH} \
 "
 
 S = "${WORKDIR}"
@@ -88,7 +89,9 @@ do_install () {
 	install -m 0755    ${WORKDIR}/checkroot.sh	${D}${sysconfdir}/init.d
 	install -m 0755    ${WORKDIR}/halt		${D}${sysconfdir}/init.d
 	install -m 0755    ${WORKDIR}/hostname.sh	${D}${sysconfdir}/init.d
-	install -m 0755    ${WORKDIR}/mountall.sh	${D}${sysconfdir}/init.d
+	if [ -n "${MOUNTALL_SH}" ]; then
+		install -m 0755    ${WORKDIR}/mountall.sh	${D}${sysconfdir}/init.d
+	fi
 	install -m 0755    ${WORKDIR}/mountnfs.sh	${D}${sysconfdir}/init.d
 	install -m 0755    ${WORKDIR}/reboot		${D}${sysconfdir}/init.d
 	install -m 0755    ${WORKDIR}/rmnologin.sh	${D}${sysconfdir}/init.d
@@ -136,7 +139,9 @@ do_install () {
 	update-rc.d -r ${D} save-rtc.sh start 25 0 6 .
 	update-rc.d -r ${D} banner.sh start 02 S .
 	update-rc.d -r ${D} checkroot.sh start 06 S .
-	update-rc.d -r ${D} mountall.sh start 03 S .
+	if [ -n "${MOUNTALL_SH}" ]; then
+		update-rc.d -r ${D} mountall.sh start 03 S .
+	fi
 	update-rc.d -r ${D} hostname.sh start 39 S .
 	update-rc.d -r ${D} mountnfs.sh start 15 2 3 4 5 .
 	update-rc.d -r ${D} bootmisc.sh start 36 S .
