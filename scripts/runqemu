@@ -1168,7 +1168,25 @@ class BaseConfig(object):
         logger.info('Running %s\n' % cmd)
         process = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
         if process.wait():
-            logger.error("Failed to run qemu: %s", process.stderr.read().decode())
+            # If starting qemu failed and kvm is enabled we try again, with the
+            # kvm related options removed. This is because we have observed
+            # failures where kvm is unable to allocate memory (particularly on
+            # Fedora 25) but where a run withou kvm may be successful.
+            if self.kvm_enabled:
+                logger.info("Failed to run qemu: %s\nRetrying without kvm...",
+                            process.stderr.read().decode())
+                nokvm_cmd = cmd
+                nokvm_cmd = nokvm_cmd.replace(' -enable-kvm', '')
+                nokvm_cmd = nokvm_cmd.replace(',vhost=on', '')
+                logger.info('Running %s\n' % nokvm_cmd)
+                process = subprocess.Popen(nokvm_cmd, shell=True,
+                                           stderr=subprocess.PIPE)
+                if process.wait():
+                    logger.error("Failed to run qemu (with kvm disabled): %s",
+                                 process.stderr.read().decode())
+            else:
+                logger.error("Failed to run qemu: %s",
+                             process.stderr.read().decode())
 
     def cleanup(self):
         if self.cleantap:
