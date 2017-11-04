@@ -299,6 +299,13 @@ python populate_packages_prepend() {
                       extra_depends='', prepend=True, allow_links=True)
 }
 
+python populate_packages_prepend_class-nativesdk() {
+    do_split_packages(d, '${libdir}', '^lib(.*)\.so\..*$',
+                      output_pattern='nativesdk-util-linux-lib%s',
+                      description='nativesdk-util-linux lib%s',
+                      extra_depends='', prepend=True, allow_links=True)
+}
+
 RDEPENDS_${PN}-bash-completion += "util-linux-lsblk"
 RDEPENDS_${PN}-ptest = "bash grep coreutils which util-linux-blkid util-linux-fsck btrfs-tools"
 
