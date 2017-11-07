@@ -58,7 +58,6 @@ class QemuRunner:
         self.host_dumper = HostDumper(dump_host_cmds, dump_dir)
 
         self.logger = logging.getLogger("BitBake.QemuRunner")
-        self.logger.addHandler(logging.StreamHandler(sys.stdout))
 
     def create_socket(self):
         try:
