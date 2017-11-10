@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# scripts/oe-selftest: calls oe-selftest-internal in a isolated environment
+#
+# Copyright (c) 2013-2017 Intel Corporation
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+ALLTESTS="run-all-tests.txt"
+
+cat > $ALLTESTS << EOF
+archiver
+bblayers
+bbtests
+buildoptions
+containerimage
+devtool
+distrodata
+eSDK
+image_typedep
+imagefeatures
+layerappend
+liboe
+lic_checksum
+manifest
+oelib.buildhistory
+oelib.elf
+oelib.license
+oelib.path
+oelib.types
+oelib.utils
+oescripts
+package
+pkgdata
+prservice
+recipetool
+runcmd
+runqemu
+runtime_test
+selftest
+signing
+sstatetests
+tinfoil
+wic
+systemd_boot
+EOF
+cat $ALLTESTS | parallel --jobs 4 --results output oe-selftest-isolated -r "$@"
