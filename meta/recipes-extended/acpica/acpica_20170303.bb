@@ -50,5 +50,4 @@ RPROVIDES_${PN} += "iasl"
 RREPLACES_${PN} += "iasl"
 RCONFLIGHTS_${PN} += "iasl"
 
-NATIVE_INSTALL_WORKS = "1"
 BBCLASSEXTEND = "native"
