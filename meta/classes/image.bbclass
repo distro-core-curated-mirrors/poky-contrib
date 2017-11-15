@@ -135,6 +135,9 @@ def build_live(d):
         return ""
     return "image-live"
 
+# uuid tools are useful for image creation
+inherit fs-uuid
+
 IMAGE_TYPE_live = "${@build_live(d)}"
 inherit ${IMAGE_TYPE_live}
 
