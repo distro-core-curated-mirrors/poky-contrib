@@ -441,14 +441,24 @@ def get_recipe_local_files(d, patches=False, archives=False):
     return ret
 
 
-def get_recipe_patches(d):
+def get_recipe_patches(d, include_path=False):
     """Get a list of the patches included in SRC_URI within a recipe."""
     import oe.patch
+    import oe.path
+    if include_path:
+        filespath = d.getVar('FILESPATH').split(':')
     patches = oe.patch.src_patches(d, expand=False)
-    patchfiles = []
+    patchfiles = OrderedDict()
     for patch in patches:
         _, _, local, _, _, parm = bb.fetch.decodeurl(patch)
-        patchfiles.append(local)
+        if include_path:
+            parm['_path'] = None
+            maxl = 0
+            for pth in filespath:
+                if len(pth) > maxl and oe.path.is_path_parent(pth, local):
+                    maxl = len(pth)
+                    parm['_path'] = os.path.relpath(local, pth)
+        patchfiles[local] = parm
     return patchfiles
 
 

@@ -98,7 +98,7 @@ def _rename_recipe_files(oldrecipe, bpn, oldpv, newpv, path):
     _rename_recipe_dirs(oldpv, newpv, path)
     return _rename_recipe_file(oldrecipe, bpn, oldpv, newpv, path)
 
-def _write_append(rc, srctree, same_dir, no_same_dir, rev, copied, workspace, d):
+def _write_append(rc, srctree, srctreetop, same_dir, no_same_dir, rev, copied, extradirs, workspace, d):
     """Writes an append file"""
     if not os.path.exists(rc):
         raise DevtoolError("bbappend not created because %s does not exist" % rc)
@@ -127,6 +127,8 @@ def _write_append(rc, srctree, same_dir, no_same_dir, rev, copied, workspace, d)
         if copied:
             f.write('# original_path: %s\n' % os.path.dirname(d.getVar('FILE')))
             f.write('# original_files: %s\n' % ' '.join(copied))
+        if extradirs:
+            standard._write_extradir_info(f, srctree, srctreetop, extradirs)
     return af
 
 def _cleanup_on_error(rf, srctree):
@@ -499,6 +501,8 @@ def _generate_license_diff(old_licenses, new_licenses):
 def upgrade(args, config, basepath, workspace):
     """Entry point for the devtool 'upgrade' subcommand"""
 
+    import oe.path
+
     if args.recipename in workspace:
         raise DevtoolError("recipe %s is already in your workspace" % args.recipename)
     if args.srcbranch and not args.srcrev:
@@ -547,6 +551,7 @@ def upgrade(args, config, basepath, workspace):
                 logger.warning('Upgrade version %s compares as less than the current version %s. If you are using a package feed for on-target upgrades or providing this recipe for general consumption, then you should increment PE in the recipe (or if there is no current PE value set, set it to "1")' % (args.version, old_ver))
             check_prerelease_version(args.version, 'devtool upgrade')
 
+        srctreetop = None
         rf = None
         license_diff = None
         try:
@@ -554,6 +559,16 @@ def upgrade(args, config, basepath, workspace):
             current_ret = standard._extract_source(srctree, False, 'devtool-orig', False, config, basepath, workspace, args.fixed_setup, rd, tinfoil, no_overrides=args.no_overrides)
             old_licenses = _extract_licenses(srctree, rd.getVar('LIC_FILES_CHKSUM'))
             logger.info('Extracting upgraded version source...')
+            extradirs = current_ret.extradirs
+            if extradirs and not oe.path.is_path_parent(current_ret.srcsubdir, *extradirs.keys()):
+                # Multiple source trees, we need to be inside the main one
+                srctreetop = srctree
+                srctree = os.path.join(srctree, current_ret.srcsubdir)
+                oldbasename = os.path.basename(srctree)
+                if args.version and old_ver in oldbasename and old_ver != args.version:
+                    newsrctree = os.path.join(os.path.dirname(srctree), oldbasename.replace(old_ver, args.version))
+                    os.rename(srctree, newsrctree)
+                    srctree = newsrctree
             rev2, md5, sha256, srcbranch, srcsubdir2 = _extract_new_source(args.version, srctree, args.no_patch,
                                                     args.srcrev, args.srcbranch, args.branch, args.keep_temp,
                                                     tinfoil, rd)
@@ -566,8 +581,8 @@ def upgrade(args, config, basepath, workspace):
             _upgrade_error(e, rf, srctree)
         standard._add_md5(config, pn, os.path.dirname(rf))
 
-        af = _write_append(rf, srctree, args.same_dir, args.no_same_dir, rev2,
-                        copied, config.workspace_path, rd)
+        af = _write_append(rf, srctree, srctreetop, args.same_dir, args.no_same_dir, rev2,
+                           copied, extradirs, config.workspace_path, rd)
         standard._add_md5(config, pn, af)
 
         update_unlockedsigs(basepath, workspace, args.fixed_setup, [pn])

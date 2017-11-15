@@ -69,7 +69,7 @@ python devtool_post_unpack() {
     import shutil
     sys.path.insert(0, os.path.join(d.getVar('COREBASE'), 'scripts', 'lib'))
     import scriptutils
-    from devtool import setup_git_repo
+    from devtool import setup_git_repo, find_git_repos
 
     tempdir = d.getVar('DEVTOOL_TEMPDIR')
     workdir = d.getVar('WORKDIR')
@@ -92,8 +92,9 @@ python devtool_post_unpack() {
 
     is_kernel_yocto = bb.data.inherits_class('kernel-yocto', d)
     # Move local source files into separate subdir
-    recipe_patches = [os.path.basename(patch) for patch in
-                        oe.recipeutils.get_recipe_patches(d)]
+    patchinfo = oe.recipeutils.get_recipe_patches(d, include_path=True)
+    recipe_patches = [value['_path'] for value in
+                        patchinfo.values()]
     local_files = oe.recipeutils.get_recipe_local_files(d)
 
     if is_kernel_yocto:
@@ -107,8 +108,37 @@ python devtool_post_unpack() {
                         shutil.copy2(os.path.join(os.path.dirname(local_files[key]), line[-1]), workdir)
                 sccfile.close()
 
-    # Ignore local files with subdir={BP}
+    excludeitems = recipe_patches + list(local_files.keys())
+    pthvars = ['RECIPE_SYSROOT', 'RECIPE_SYSROOT_NATIVE', 'S']
+    for pthvar in pthvars:
+        relp = os.path.relpath(d.getVar(pthvar), d.getVar('WORKDIR'))
+        if not relp.startswith('..'):
+            excludeitems.append(relp.split(os.sep)[0])
+    extradirs = []
     srcabspath = os.path.abspath(srcsubdir)
+    if srcabspath != os.path.abspath(workdir):
+        for pth in os.listdir(workdir):
+            if pth in excludeitems:
+                continue
+            wpth = os.path.join(workdir, pth)
+            if os.path.isdir(wpth):
+                # Exclude entire directory if it only contains excluded files
+                # FIXME this does not exclude single files if they happen to be
+                # copied into a non-excluded directory - we need something else for that
+                excluded = True
+                for root, _, files in os.walk(wpth):
+                    for fn in files:
+                        frelpth = os.path.relpath(os.path.join(root, fn), workdir)
+                        if frelpth not in excludeitems:
+                            excluded = False
+                if excluded:
+                    continue
+                extradirs.append(wpth)
+
+    repos = find_git_repos(srcabspath)
+    extradirs.extend(repos)
+
+    # Ignore local files with subdir={BP}
     local_files = [fname for fname in local_files if
                     os.path.exists(os.path.join(workdir, fname)) and
                     (srcabspath == workdir or not
@@ -157,11 +187,20 @@ python devtool_post_unpack() {
 
     (stdout, _) = bb.process.run('git rev-parse HEAD', cwd=srcsubdir)
     initial_rev = stdout.rstrip()
+
+    initial_revs = {}
+    for extradir in extradirs:
+        setup_git_repo(extradir, d.getVar('PV'), devbranch, d=d)
+        (stdout, _) = bb.process.run('git rev-parse HEAD', cwd=extradir)
+        initial_revs[extradir] = stdout.rstrip()
+
     with open(os.path.join(tempdir, 'initial_rev'), 'w') as f:
         f.write(initial_rev)
 
     with open(os.path.join(tempdir, 'srcsubdir'), 'w') as f:
-        f.write(srcsubdir)
+        f.write('%s\n' % srcsubdir)
+        for extradir in extradirs:
+            f.write('%s=%s\n' % (extradir, initial_revs[extradir]))
 }
 
 python devtool_pre_patch() {
@@ -172,18 +211,25 @@ python devtool_pre_patch() {
 python devtool_post_patch() {
     import shutil
     tempdir = d.getVar('DEVTOOL_TEMPDIR')
+
+    srcdirs = []
     with open(os.path.join(tempdir, 'srcsubdir'), 'r') as f:
-        srcsubdir = f.read()
+        for line in f:
+            line = line.rstrip()
+            if line:
+                srcdirs.append(line.split('=')[0])
+    srcsubdir = srcdirs[0]
+
     with open(os.path.join(tempdir, 'initial_rev'), 'r') as f:
         initial_rev = f.read()
 
-    def rm_patches():
-        patches_dir = os.path.join(srcsubdir, 'patches')
+    def rm_patches(pth):
+        patches_dir = os.path.join(pth, 'patches')
         if os.path.exists(patches_dir):
             shutil.rmtree(patches_dir)
         # Restore any "patches" directory that was actually part of the source tree
         try:
-            bb.process.run('git checkout -- patches', cwd=srcsubdir)
+            bb.process.run('git checkout -- patches', cwd=pth)
         except bb.process.ExecutionError:
             pass
 
@@ -206,7 +252,7 @@ python devtool_post_patch() {
             localdata = bb.data.createCopy(d)
             localdata.setVar('OVERRIDES', ':'.join(no_overrides))
             bb.build.exec_func('do_patch', localdata)
-            rm_patches()
+            rm_patches(srcsubdir)
             # Now we need to reconcile the dev branch with the no-overrides one
             # (otherwise we'd likely be left with identical commits that have different hashes)
             bb.process.run('git checkout %s' % devbranch, cwd=srcsubdir)
@@ -224,12 +270,15 @@ python devtool_post_patch() {
                 # Run do_patch function with the override applied
                 localdata.appendVar('OVERRIDES', ':%s' % override)
                 bb.build.exec_func('do_patch', localdata)
-                rm_patches()
+                rm_patches(srcsubdir)
                 # Now we need to reconcile the new branch with the no-overrides one
                 # (otherwise we'd likely be left with identical commits that have different hashes)
                 bb.process.run('git rebase devtool-no-overrides', cwd=srcsubdir)
         bb.process.run('git checkout %s' % devbranch, cwd=srcsubdir)
-    bb.process.run('git tag -f devtool-patched', cwd=srcsubdir)
+    for srcdir in srcdirs:
+        bb.process.run('git tag -f devtool-patched', cwd=srcdir)
+        if srcdir != srcsubdir:
+            rm_patches(srcdir)
 }
 
 python devtool_post_configure() {
