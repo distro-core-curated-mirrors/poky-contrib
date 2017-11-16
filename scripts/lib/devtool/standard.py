@@ -19,7 +19,7 @@ import scriptutils
 import errno
 import glob
 import filecmp
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 from devtool import exec_build_env_command, setup_tinfoil, check_workspace_recipe, use_external_build, setup_git_repo, recipe_to_append, get_bbclassextend_targets, update_unlockedsigs, check_prerelease_version, check_git_repo_dirty, check_git_repo_op, DevtoolError
 from devtool import parse_recipe
 
@@ -423,15 +423,11 @@ def extract(args, config, basepath, workspace):
             return 1
 
         srctree = os.path.abspath(args.srctree)
-        initial_rev, _ = _extract_source(srctree, args.keep_temp, args.branch, False, config, basepath, workspace, args.fixed_setup, rd, tinfoil, no_overrides=args.no_overrides)
+        _extract_source(srctree, args.keep_temp, args.branch, False, config, basepath, workspace, args.fixed_setup, rd, tinfoil, no_overrides=args.no_overrides)
         logger.info('Source tree extracted to %s' % srctree)
-
-        if initial_rev:
-            return 0
-        else:
-            return 1
     finally:
         tinfoil.shutdown()
+    return 0
 
 def sync(args, config, basepath, workspace):
     """Entry point for the devtool 'sync' subcommand"""
@@ -447,15 +443,11 @@ def sync(args, config, basepath, workspace):
             return 1
 
         srctree = os.path.abspath(args.srctree)
-        initial_rev, _ = _extract_source(srctree, args.keep_temp, args.branch, True, config, basepath, workspace, args.fixed_setup, rd, tinfoil, no_overrides=True)
+        _extract_source(srctree, args.keep_temp, args.branch, True, config, basepath, workspace, args.fixed_setup, rd, tinfoil, no_overrides=True)
         logger.info('Source tree %s synchronized' % srctree)
-
-        if initial_rev:
-            return 0
-        else:
-            return 1
     finally:
         tinfoil.shutdown()
+    return 0
 
 def symlink_oelocal_files_srctree(rd,srctree):
     import oe.patch
@@ -486,6 +478,8 @@ def symlink_oelocal_files_srctree(rd,srctree):
             oe.patch.GitApplyTree.gitCommandUserOptions(useroptions, d=rd)
             bb.process.run('git %s commit -m "Committing local file symlinks\n\n%s"' % (' '.join(useroptions), oe.patch.GitApplyTree.ignore_commit_prefix), cwd=srctree)
 
+
+ExtractSourceResult = namedtuple('ExtractSourceResult', ['initial_rev', 'srcsubdir'])
 
 def _extract_source(srctree, keep_temp, devbranch, sync, config, basepath, workspace, fixed_setup, d, tinfoil, no_overrides=False):
     """Extract sources of a recipe"""
@@ -695,7 +689,7 @@ def _extract_source(srctree, keep_temp, devbranch, sync, config, basepath, works
             logger.info('Preserving temporary directory %s' % tempdir)
         else:
             shutil.rmtree(tempdir)
-    return initial_rev, srcsubdir_rel
+    return ExtractSourceResult(initial_rev, srcsubdir_rel)
 
 def _add_md5(config, recipename, filename):
     """Record checksum of a file (or recursively for a directory) to the md5-file of the workspace"""
@@ -868,9 +862,8 @@ def modify(args, config, basepath, workspace):
                 args.no_extract = True
 
         if not args.no_extract:
-            initial_rev, _ = _extract_source(srctree, args.keep_temp, args.branch, False, config, basepath, workspace, args.fixed_setup, rd, tinfoil, no_overrides=args.no_overrides)
-            if not initial_rev:
-                return 1
+            ret = _extract_source(srctree, args.keep_temp, args.branch, False, config, basepath, workspace, args.fixed_setup, rd, tinfoil, no_overrides=args.no_overrides)
+            initial_rev = ret.initial_rev
             logger.info('Source tree extracted to %s' % srctree)
             if os.path.exists(os.path.join(srctree, '.git')):
                 # Get list of commits since this revision
