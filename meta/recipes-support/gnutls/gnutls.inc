@@ -52,6 +52,11 @@ do_configure_prepend() {
 	done
 }
 
+do_configure_append_class-target () {
+	# Remove build host references from config.h
+	sed -i -e 's:${HOSTTOOLS_DIR}/::g' ${B}/config.h
+}
+
 PACKAGES =+ "${PN}-openssl ${PN}-xx"
 
 FILES_${PN}-dev += "${bindir}/gnutls-cli-debug"
