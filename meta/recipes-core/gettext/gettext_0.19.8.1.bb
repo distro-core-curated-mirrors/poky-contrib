@@ -121,14 +121,16 @@ do_install_append() {
 }
 
 do_install_append_class-native () {
+	# These files are provided by gettext-minimal-native
+	rm ${D}${bindir}/autopoint
 	rm ${D}${datadir}/aclocal/*
 	rm ${D}${datadir}/gettext/config.rpath
+	rm ${D}${datadir}/gettext/archive.dir.tar.bz2
 	rm ${D}${datadir}/gettext/po/Makefile.in.in
 	rm ${D}${datadir}/gettext/po/remove-potcdate.sin
 
-        create_wrapper ${D}${bindir}/msgfmt \
-                GETTEXTDATADIR="${STAGING_DATADIR_NATIVE}/gettext-0.19.8/"
-
+	create_wrapper ${D}${bindir}/msgfmt \
+		GETTEXTDATADIR="${STAGING_DATADIR_NATIVE}/gettext-0.19.8/"
 }
 
 do_compile_ptest() {

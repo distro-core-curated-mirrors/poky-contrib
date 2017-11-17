@@ -9,6 +9,8 @@ SRC_URI = "file://aclocal.tgz \
            file://remove-potcdate.sin \
            file://COPYING \
            file://0001-PATCH-Disable-the-test-to-convert-euc-jp.patch \
+           file://autopoint \
+           file://archive.dir.tar.bz2;unpack=0 \
 "
 
 INHIBIT_DEFAULT_DEPS = "1"
@@ -22,10 +24,12 @@ inherit native
 S = "${WORKDIR}"
 
 do_install () {
-	install -d ${D}${datadir}/aclocal/
+	install -d ${D}${datadir}/aclocal/ ${D}${bindir} ${D}${datadir}/gettext/po/
+	sed -e "s|FIXMESTAGINGDIRHOST|${STAGING_DIR_NATIVE}|g" <${WORKDIR}/autopoint >${D}${bindir}/autopoint
+	chmod +x ${D}${bindir}/autopoint
 	cp ${WORKDIR}/*.m4 ${D}${datadir}/aclocal/
-	install -d ${D}${datadir}/gettext/po/
 	cp ${WORKDIR}/config.rpath ${D}${datadir}/gettext/
+	cp ${WORKDIR}/archive.dir.tar.bz2 ${D}${datadir}/gettext/
 	cp ${WORKDIR}/Makefile.in.in ${D}${datadir}/gettext/po/
 	cp ${WORKDIR}/remove-potcdate.sin ${D}${datadir}/gettext/po/
 }
