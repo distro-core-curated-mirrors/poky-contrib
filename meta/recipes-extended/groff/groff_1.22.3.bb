@@ -12,6 +12,7 @@ SRC_URI = "${GNU_MIRROR}/groff/groff-${PV}.tar.gz \
 	file://0001-Unset-need_charset_alias-when-building-for-musl.patch \
 	file://0001-replace-perl-w-with-use-warnings.patch \
 	file://source-date-epoch.patch \
+	file://hdtbl-examples-less-random.patch \
 "
 
 SRC_URI[md5sum] = "cc825fa64bc7306a885f2fb2268d3ec5"
