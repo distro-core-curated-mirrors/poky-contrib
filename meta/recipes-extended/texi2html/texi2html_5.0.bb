@@ -15,13 +15,6 @@ SRC_URI[sha256sum] = "e8a98b0ee20c495a6ab894398a065ef580272dbd5a15b1b19e8bd1bc89
 
 inherit autotools gettext texinfo
 
-do_configure_prepend() {
-	# autotools_do_configure updates po/Makefile.in.in, we also need
-	# update po_document.
-	cp -f ${STAGING_DATADIR_NATIVE}/gettext/po/Makefile.in.in ${S}/po_document/
-	cp -f ${STAGING_DATADIR_NATIVE}/gettext/po/Makefile.in.in ${S}/po_messages/
-}
-
 do_install_append () {
 	sed -i -e '1s,#!.*perl,#! ${USRBINPATH}/env perl,' ${D}${bindir}/texi2html
 }
