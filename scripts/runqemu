@@ -475,6 +475,7 @@ class BaseConfig(object):
             self.check_arg_machine(unknown_arg)
 
         if not (self.get('DEPLOY_DIR_IMAGE') or self.qbconfload):
+            logger.info('RP2')
             self.load_bitbake_env()
             s = re.search('^DEPLOY_DIR_IMAGE="(.*)"', self.bitbake_e, re.M)
             if s:
@@ -695,7 +696,7 @@ class BaseConfig(object):
                         self.rootfs, machine)
             else:
                 cmd = 'ls -t %s/*.qemuboot.conf' %  deploy_dir_image
-                logger.debug('Running %s...' % cmd)
+                logger.debug('BBRunning %s...' % cmd)
                 try:
                     qbs = subprocess.check_output(cmd, shell=True).decode('utf-8')
                 except subprocess.CalledProcessError as err:
@@ -721,6 +722,8 @@ class BaseConfig(object):
             raise RunQemuError("Failed to find %s (wrong image name or BSP does not support running under qemu?)." % self.qemuboot)
 
         logger.debug('CONFFILE: %s' % self.qemuboot)
+
+        logger.info('RP$ %s' % self.qemuboot)
 
         cf = configparser.ConfigParser()
         cf.read(self.qemuboot)
@@ -749,6 +752,9 @@ class BaseConfig(object):
 
         if not havenative:
             if not self.bitbake_e:
+                logger.info('RP1')
+                logger.info(self.get('STAGING_DIR_NATIVE'))
+                logger.info(self.get('STAGING_BINDIR_NATIVE'))
                 self.load_bitbake_env()
 
             if self.bitbake_e:
@@ -849,7 +855,7 @@ class BaseConfig(object):
                     raise RunQemuError("No NFS_DIR is set, and can't find %s or %s to extract" % (src1, src2))
                 logger.info('NFS_DIR not found, extracting %s to %s' % (src, dest))
                 cmd = 'runqemu-extract-sdk %s %s' % (src, dest)
-                logger.info('Running %s...' % cmd)
+                logger.info('CCRunning %s...' % cmd)
                 if subprocess.call(cmd, shell=True) != 0:
                     raise RunQemuError('Failed to run %s' % cmd)
                 self.clean_nfs_dir = True
@@ -857,7 +863,7 @@ class BaseConfig(object):
 
         # Start the userspace NFS server
         cmd = 'runqemu-export-rootfs start %s' % self.rootfs
-        logger.info('Running %s...' % cmd)
+        logger.info('DDRunning %s...' % cmd)
         if subprocess.call(cmd, shell=True) != 0:
             raise RunQemuError('Failed to run %s' % cmd)
 
@@ -922,7 +928,7 @@ class BaseConfig(object):
                 pass
 
         cmd = '%s link' % ip
-        logger.debug('Running %s...' % cmd)
+        logger.debug('EERunning %s...' % cmd)
         ip_link = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8')
         # Matches line like: 6: tap0: <foo>
         possibles = re.findall('^[0-9]+: +(tap[0-9]+): <.*', ip_link, re.M)
@@ -1163,7 +1169,8 @@ class BaseConfig(object):
 
     def start_qemu(self):
         if self.kernel:
-            kernel_opts = "-kernel %s -append '%s %s %s %s'" % (self.kernel, self.kernel_cmdline,
+            #exec,cpu,in_asm,
+            kernel_opts = "-kernel %s -append '%s %s %s %s udev.log-priority=debug powersave=off'" % (self.kernel, self.kernel_cmdline,
                                                                 self.kernel_cmdline_script, self.get('QB_KERNEL_CMDLINE_APPEND'),
                                                                 self.bootparams)
             if self.dtb:
@@ -1171,7 +1178,7 @@ class BaseConfig(object):
         else:
             kernel_opts = ""
         cmd = "%s %s" % (self.qemu_opt, kernel_opts)
-        logger.info('Running %s\n' % cmd)
+        logger.info('FFRunning %s\n' % cmd)
         process = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
         if process.wait():
             logger.error("Failed to run qemu: %s", process.stderr.read().decode())
@@ -1179,7 +1186,7 @@ class BaseConfig(object):
     def cleanup(self):
         if self.cleantap:
             cmd = 'sudo %s %s %s' % (self.qemuifdown, self.tap, self.bindir_native)
-            logger.debug('Running %s' % cmd)
+            logger.debug('GGRunning %s' % cmd)
             subprocess.check_call(cmd, shell=True)
         if self.lock_descriptor:
             logger.info("Releasing lockfile for tap device '%s'" % self.tap)
@@ -1188,7 +1195,7 @@ class BaseConfig(object):
         if self.nfs_running:
             logger.info("Shutting down the userspace NFS server...")
             cmd = "runqemu-export-rootfs stop %s" % self.rootfs
-            logger.debug('Running %s' % cmd)
+            logger.debug('HHRunning %s' % cmd)
             subprocess.check_call(cmd, shell=True)
 
         if self.saved_stty:
@@ -1216,7 +1223,7 @@ class BaseConfig(object):
         else:
             cmd = 'bitbake -e'
 
-        logger.info('Running %s...' % cmd)
+        logger.info('IIRunning %s...' % cmd)
         try:
             self.bitbake_e = subprocess.check_output(cmd, shell=True).decode('utf-8')
         except subprocess.CalledProcessError as err:
