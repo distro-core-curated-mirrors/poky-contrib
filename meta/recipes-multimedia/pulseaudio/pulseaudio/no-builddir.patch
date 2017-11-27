@@ -1,0 +1,74 @@
+Improve reproducibility.
+Remove hard coded build host references (PA_BUILDDIR) from the cross-compiled
+image. For cross-compiled images we are guaranteed not to run from build directory.
+
+Upstream-Status: Inappropriate [embedded specific]
+Signed-off-by: Juro Bystricky <juro.bystricky@intel.com>
+
+diff --git a/src/daemon/daemon-conf.c b/src/daemon/daemon-conf.c
+index f0ed0b4..94a56d3 100644
+--- a/src/daemon/daemon-conf.c
++++ b/src/daemon/daemon-conf.c
+@@ -153,11 +153,7 @@ pa_daemon_conf *pa_daemon_conf_new(void) {
+     c->dl_search_path = pa_sprintf_malloc("%s" PA_PATH_SEP "lib" PA_PATH_SEP "pulse-%d.%d" PA_PATH_SEP "modules",
+                                           pa_win32_get_toplevel(NULL), PA_MAJOR, PA_MINOR);
+ #else
+-    if (pa_run_from_build_tree()) {
+-        pa_log_notice("Detected that we are run from the build tree, fixing search path.");
+-        c->dl_search_path = pa_xstrdup(PA_BUILDDIR);
+-    } else
+-        c->dl_search_path = pa_xstrdup(PA_DLSEARCHPATH);
++    c->dl_search_path = pa_xstrdup(PA_DLSEARCHPATH);
+ #endif
+ 
+     return c;
+diff --git a/src/modules/alsa/alsa-mixer.c b/src/modules/alsa/alsa-mixer.c
+index 3dbf6b1..98cb738 100644
+--- a/src/modules/alsa/alsa-mixer.c
++++ b/src/modules/alsa/alsa-mixer.c
+@@ -2505,10 +2505,7 @@ static int path_verify(pa_alsa_path *p) {
+ }
+ 
+ static const char *get_default_paths_dir(void) {
+-    if (pa_run_from_build_tree())
+-        return PA_SRCDIR "/modules/alsa/mixer/paths/";
+-    else
+-        return PA_ALSA_PATHS_DIR;
++    return PA_ALSA_PATHS_DIR;
+ }
+ 
+ pa_alsa_path* pa_alsa_path_new(const char *paths_dir, const char *fname, pa_alsa_direction_t direction) {
+@@ -4383,9 +4380,7 @@ pa_alsa_profile_set* pa_alsa_profile_set_new(const char *fname, const pa_channel
+     if (!fname)
+         fname = "default.conf";
+ 
+-    fn = pa_maybe_prefix_path(fname,
+-                              pa_run_from_build_tree() ? PA_SRCDIR "/modules/alsa/mixer/profile-sets/" :
+-                              PA_ALSA_PROFILE_SETS_DIR);
++    fn = pa_maybe_prefix_path(fname, PA_ALSA_PROFILE_SETS_DIR);
+ 
+     r = pa_config_parse(fn, NULL, items, NULL, false, ps);
+     pa_xfree(fn);
+diff --git a/src/pulsecore/core-util.c b/src/pulsecore/core-util.c
+index 873f86a..937bac6 100644
+--- a/src/pulsecore/core-util.c
++++ b/src/pulsecore/core-util.c
+@@ -3397,17 +3397,7 @@ void pa_reset_personality(void) {
+ }
+ 
+ bool pa_run_from_build_tree(void) {
+-    char *rp;
+-    static bool b = false;
+-
+-    PA_ONCE_BEGIN {
+-        if ((rp = pa_readlink("/proc/self/exe"))) {
+-            b = pa_startswith(rp, PA_BUILDDIR);
+-            pa_xfree(rp);
+-        }
+-    } PA_ONCE_END;
+-
+-    return b;
++    return false;
+ }
+ 
+ const char *pa_get_temp_dir(void) {
