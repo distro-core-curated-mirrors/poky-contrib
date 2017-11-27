@@ -73,21 +73,7 @@ python devtool_post_unpack() {
 
     tempdir = d.getVar('DEVTOOL_TEMPDIR')
     srcsubdir = d.getVar('S')
-
-    workdir = os.path.abspath(d.getVar('WORKDIR'))
-    testsrcdir = os.path.abspath(srcsubdir)
-    if (testsrcdir + os.sep).startswith(workdir + os.sep):
-        # Double-check that either workdir or S or some directory in-between is a git repository
-        found = False
-        while testsrcdir != '/':
-            if os.path.exists(os.path.join(testsrcdir, '.git')):
-                found = True
-                break
-            if testsrcdir == workdir:
-                break
-            testsrcdir = os.path.dirname(testsrcdir)
-        if not found:
-            bb.fatal('Source is not a git repository. Refusing to continue as that may result in commits being made in your metadata repository.')
+    workdir = d.getVar('WORKDIR')
 
     def _move_file(src, dst):
         """Move a file. Creates all the directory components of destination path."""
