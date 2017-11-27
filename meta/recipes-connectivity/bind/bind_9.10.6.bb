@@ -21,6 +21,7 @@ SRC_URI = "https://ftp.isc.org/isc/bind9/${PV}/${BPN}-${PV}.tar.gz \
            file://0001-gen.c-extend-DIRNAMESIZE-from-256-to-512.patch \
            file://0001-lib-dns-gen.c-fix-too-long-error.patch \
            file://use-python3-and-fix-install-lib-path.patch \
+           file://0001-init.d-fix-owner-of-rndc.key-to-correctly-start-daem.patch \
            "
 
 SRC_URI[md5sum] = "84e663284b17aee0df1ce6f248b137d7"

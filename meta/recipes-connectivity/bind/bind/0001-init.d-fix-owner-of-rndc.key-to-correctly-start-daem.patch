@@ -1,0 +1,32 @@
+Subject: init.d: fix owner of rndc.key to correctly start daemon
+
+When starting with '-u bind' option, which is a common practice for
+most distros, we would meet the following error and the daemon would
+not be started up correctly.
+
+  /etc/bind/rndc.key: permission denied
+
+Fix this problem by changing the ownership of rndc.key to root:bind.
+
+Upstream-Status: Pending
+
+Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+---
+ init.d | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/init.d b/init.d
+index b2eec60..d6860c7 100644
+--- a/init.d
++++ b/init.d
+@@ -57,6 +57,7 @@ case "$1" in
+ 	modprobe capability >/dev/null 2>&1 || true
+ 	if [ ! -f /etc/bind/rndc.key ]; then
+ 	    /usr/sbin/rndc-confgen -a -b 512 -r /dev/urandom
++	    chown root:bind /etc/bind/rndc.key
+ 	    chmod 0640 /etc/bind/rndc.key
+ 	fi
+ 	if [ -f /var/run/named/named.pid ]; then
+-- 
+2.11.0
+
