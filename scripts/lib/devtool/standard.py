@@ -840,13 +840,11 @@ def modify(args, config, basepath, workspace):
                 # by parsing the git repo
                 args.no_extract = True
 
+        torev = 'HEAD'
         if not args.no_extract:
             ret = _extract_source(srctree, args.keep_temp, args.branch, False, config, basepath, workspace, args.fixed_setup, rd, tinfoil, no_overrides=args.no_overrides)
             initial_rev = ret.initial_rev
             logger.info('Source tree extracted to %s' % srctree)
-            # Get list of commits since this revision
-            (stdout, _) = bb.process.run('git rev-list --reverse %s..HEAD' % initial_rev, cwd=srctree)
-            commits = stdout.split()
             check_commits = True
         else:
             if os.path.exists(os.path.join(srctree, '.git')):
@@ -861,6 +859,7 @@ def modify(args, config, basepath, workspace):
                     stdout = ''
                 if stdout:
                     check_commits = True
+                    torev = 'devtool-patched'
                 for line in stdout.splitlines():
                     if line.startswith('*'):
                         (stdout, _) = bb.process.run('git rev-parse devtool-base', cwd=srctree)
@@ -869,6 +868,11 @@ def modify(args, config, basepath, workspace):
                     # Otherwise, just grab the head revision
                     (stdout, _) = bb.process.run('git rev-parse HEAD', cwd=srctree)
                     initial_rev = stdout.rstrip()
+
+        if initial_rev:
+            # Get list of commits since this revision
+            (stdout, _) = bb.process.run('git rev-list --reverse %s..%s' % (initial_rev, torev), cwd=srctree)
+            commits = stdout.split()
 
         branch_patches = {}
         if check_commits:
