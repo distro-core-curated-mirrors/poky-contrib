@@ -909,7 +909,9 @@ def modify(args, config, basepath, workspace):
 
             if bb.data.inherits_class('kernel', rd):
                 f.write('SRCTREECOVEREDTASKS = "do_validate_branches do_kernel_checkout '
-                        'do_fetch do_unpack do_kernel_configme do_kernel_configcheck"\n')
+                        'do_fetch do_kernel_configme do_kernel_configcheck"\n')
+                if bb.data.inherits_class('kernel-yocto', rd):
+                    f.write('EXTERNALSRC_KMETA = "1"\n')
                 f.write('\ndo_patch() {\n'
                         '    :\n'
                         '}\n')
@@ -917,6 +919,8 @@ def modify(args, config, basepath, workspace):
                         '    cp ${B}/.config ${S}/.config.baseline\n'
                         '    ln -sfT ${B}/.config ${S}/.config.new\n'
                         '}\n')
+                f.write('\ndef find_kernel_feature_dirs(d):\n'
+                        '    return [d.getVar("KMETA")]\n\n')
 
             if extradirs:
                 f.write('\n# srctreetop: %s\n' % srctreetop)
