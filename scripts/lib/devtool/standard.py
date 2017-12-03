@@ -919,8 +919,6 @@ def modify(args, config, basepath, workspace):
                         '    cp ${B}/.config ${S}/.config.baseline\n'
                         '    ln -sfT ${B}/.config ${S}/.config.new\n'
                         '}\n')
-                f.write('\ndef find_kernel_feature_dirs(d):\n'
-                        '    return [d.getVar("KMETA")]\n\n')
 
             if extradirs:
                 f.write('\n# srctreetop: %s\n' % srctreetop)
