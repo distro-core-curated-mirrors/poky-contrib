@@ -45,8 +45,8 @@ def find_kernel_feature_dirs(d):
     if not feature_dirs:
         # If the kernel-meta directory already exists (e.g from externalsrc)
         # with EXTERNALSRC_KMETA = "1" then use it
-        kmetadir = d.expand('${WORKDIR}/${KMETA}')
-        if os.path.exists(kmetadir):
+        kmetadir = d.getVar('KMETA')
+        if os.path.isdir(os.path.join(d.getVar('WORKDIR'), kmetadir)):
             feature_dirs.append(kmetadir)
     return feature_dirs
 
