@@ -58,6 +58,8 @@ def verify_build_env():
 
 CANNED_IMAGE_DIR = "lib/wic/canned-wks" # relative to scripts
 SCRIPTS_CANNED_IMAGE_DIR = "scripts/" + CANNED_IMAGE_DIR
+SOURCE_PLUGIN_DIR = "lib/wic/plugins/source"
+SCRIPTS_SOURCE_PLUGIN_DIR = "scripts/" + SOURCE_PLUGIN_DIR
 WIC_DIR = "wic"
 
 def build_canned_image_list(path):
@@ -75,6 +77,23 @@ def build_canned_image_list(path):
     canned_wks_layer_dirs.append(cpath)
 
     return canned_wks_layer_dirs
+
+def build_source_plugin_list(path):
+    layers_path = get_bitbake_var("BBLAYERS")
+    canned_wks_layer_dirs = []
+
+    if layers_path is not None:
+        for layer_path in layers_path.split():
+            for wks_path in (WIC_DIR, SCRIPTS_SOURCE_PLUGIN_DIR):
+                cpath = os.path.join(layer_path, wks_path)
+                if os.path.isdir(cpath):
+                    canned_wks_layer_dirs.append(cpath)
+
+    cpath = os.path.join(path, SOURCE_PLUGIN_DIR)
+    canned_wks_layer_dirs.append(cpath)
+
+    return canned_wks_layer_dirs
+
 
 def find_canned_image(scripts_path, wks_file):
     """
@@ -94,6 +113,24 @@ def find_canned_image(scripts_path, wks_file):
                     return fullpath
     return None
 
+
+def find_source_plugin(scripts_path, plugin_file):
+    """
+    Find a .py file with the given name in the source plugin dir.
+
+    Return False if not found
+    """
+    layers_source_plugin_dir = build_source_plugin_list(scripts_path)
+
+    for source_plugin_dir in layers_source_plugin_dir:
+        for root, dirs, files in os.walk(source_plugin_dir):
+            for fname in files:
+                if fname.endswith("~") or fname.endswith("#"):
+                    continue
+                if fname.endswith(".py") and plugin_file + ".py" == fname:
+                    fullpath = os.path.join(source_plugin_dir, fname)
+                    return fullpath
+    return None
 
 def list_canned_images(scripts_path):
     """
@@ -119,7 +156,7 @@ def list_canned_images(scripts_path):
                     print("  %s\t\t%s" % (basename.ljust(30), desc))
 
 
-def list_canned_image_help(scripts_path, fullpath):
+def list_canned_image_help(fullpath):
     """
     List the help and params in the specified canned image.
     """
@@ -139,6 +176,7 @@ def list_canned_image_help(scripts_path, fullpath):
             if idx != -1:
                 print(line[idx + len("#:"):].rstrip())
             else:
+                print()
                 break
 
 
@@ -150,6 +188,29 @@ def list_source_plugins():
 
     for plugin in plugins:
         print("  %s" % plugin)
+
+
+def list_source_plugins_help(fullpath):
+    """
+    List the help and params in the specified canned image.
+    """
+    found = False
+    with open(fullpath) as plugin:
+        for line in plugin:
+            if not found:
+                idx = line.find("DESCRIPTION")
+                if idx != -1:
+                    print(line[idx + len("DESCRIPTION"):].strip())
+                    found = True
+                continue
+            if not line.strip():
+                break
+            idx = line.find("#")
+            auth = line.find("AUTHORS")
+            if idx != -1 and auth == -1:
+                print(line[idx + len("#:"):].rstrip())
+            else:
+                break
 
 
 def wic_create(wks_file, rootfs_dir, bootimg_dir, kernel_dir,
@@ -204,7 +265,7 @@ def wic_create(wks_file, rootfs_dir, bootimg_dir, kernel_dir,
     logger.info("The image(s) were created using OE kickstart file:\n  %s", wks_file)
 
 
-def wic_list(args, scripts_path):
+def wic_list(scripts_path, args):
     """
     Print the list of images or source plugins.
     """
@@ -218,16 +279,20 @@ def wic_list(args, scripts_path):
     elif args.list_type == "source-plugins":
         list_source_plugins()
         return True
-    elif len(args.help_for) == 1 and args.help_for[0] == 'help':
-        wks_file = args.list_type
-        fullpath = find_canned_image(scripts_path, wks_file)
+    elif len(args.info_for) == 1 and args.info_for[0] == 'info':
+        input_file = args.list_type
+        fullpath = find_canned_image(scripts_path, input_file)
         if not fullpath:
-            raise WicError("No image named %s found, exiting. "
-                           "(Use 'wic list images' to list available images, "
-                           "or specify a fully-qualified OE kickstart (.wks) "
-                           "filename)" % wks_file)
-
-        list_canned_image_help(scripts_path, fullpath)
+            fullpath = find_source_plugin(scripts_path, input_file)
+            if not fullpath:
+                raise WicError("No image named %s found, exiting. "
+                               "(Use 'wic list images' to list available images, "
+                               "or specify a fully-qualified OE kickstart (.wks) "
+                               "filename)" % input_file)
+            else:
+                list_source_plugins_help(fullpath)
+        else:
+            list_canned_image_help(fullpath)
         return True
 
     return False

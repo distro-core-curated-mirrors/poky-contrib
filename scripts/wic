@@ -73,7 +73,6 @@ from wic.misc import get_bitbake_var, BB_VARS
 from wic import engine
 from wic import help as hlp
 
-
 def wic_logger():
     """Create and convfigure wic logger."""
     logger = logging.getLogger('wic')
@@ -119,7 +118,7 @@ class RootfsArgAction(argparse.Action):
         namespace.__dict__['rootfs_dir'][key] = rootfs_dir
 
 
-def wic_create_subcommand(options, usage_str):
+def wic_create_subcommand(options):
     """
     Command-line handling for image creation.  The real work is done
     by image.engine.wic_create()
@@ -240,91 +239,44 @@ def wic_create_subcommand(options, usage_str):
                       native_sysroot, options)
 
 
-def wic_list_subcommand(args, usage_str):
+def wic_list_subcommand(args):
     """
     Command-line handling for listing available images.
     The real work is done by image.engine.wic_list()
     """
-    if not engine.wic_list(args, scripts_path):
+    if not engine.wic_list(scripts_path, args):
         raise WicError("Bad list arguments, exiting")
 
 
-def wic_ls_subcommand(args, usage_str):
+def wic_ls_subcommand(args):
     """
     Command-line handling for list content of images.
     The real work is done by engine.wic_ls()
     """
     engine.wic_ls(args, args.native_sysroot)
 
-def wic_cp_subcommand(args, usage_str):
+def wic_cp_subcommand(args):
     """
     Command-line handling for copying files/dirs to images.
     The real work is done by engine.wic_cp()
     """
     engine.wic_cp(args, args.native_sysroot)
 
-def wic_rm_subcommand(args, usage_str):
+def wic_rm_subcommand(args):
     """
     Command-line handling for removing files/dirs from images.
     The real work is done by engine.wic_rm()
     """
     engine.wic_rm(args, args.native_sysroot)
 
-def wic_write_subcommand(args, usage_str):
+def wic_write_subcommand(args):
     """
     Command-line handling for writing images.
     The real work is done by engine.wic_write()
     """
     engine.wic_write(args, args.native_sysroot)
 
-def wic_help_subcommand(args, usage_str):
-    """
-    Command-line handling for help subcommand to keep the current
-    structure of the function definitions.
-    """
-    pass
 
-
-def wic_help_topic_subcommand(usage_str, help_str):
-    """
-    Display function for help 'sub-subcommands'.
-    """
-    print(help_str)
-    return
-
-
-wic_help_topic_usage = """
-"""
-
-helptopics = {
-    "plugins":   [wic_help_topic_subcommand,
-                  wic_help_topic_usage,
-                  hlp.wic_plugins_help],
-    "overview":  [wic_help_topic_subcommand,
-                  wic_help_topic_usage,
-                  hlp.wic_overview_help],
-    "kickstart": [wic_help_topic_subcommand,
-                  wic_help_topic_usage,
-                  hlp.wic_kickstart_help],
-    "create":    [wic_help_topic_subcommand,
-                  wic_help_topic_usage,
-                  hlp.wic_create_help],
-    "ls":        [wic_help_topic_subcommand,
-                  wic_help_topic_usage,
-                  hlp.wic_ls_help],
-    "cp":        [wic_help_topic_subcommand,
-                  wic_help_topic_usage,
-                  hlp.wic_cp_help],
-    "rm":        [wic_help_topic_subcommand,
-                  wic_help_topic_usage,
-                  hlp.wic_rm_help],
-    "write":     [wic_help_topic_subcommand,
-                  wic_help_topic_usage,
-                  hlp.wic_write_help],
-    "list":      [wic_help_topic_subcommand,
-                  wic_help_topic_usage,
-                  hlp.wic_list_help]
-}
 
 
 def wic_init_parser_create(subparser):
@@ -346,15 +298,15 @@ def wic_init_parser_create(subparser):
                       help="path to the dir containing the kernel to use "
                            "in the .wks bootimg")
     subparser.add_argument("-n", "--native-sysroot", dest="native_sysroot",
-                      help="path to the native sysroot containing the tools "
-                           "to use to build the image")
+                      help="path to the native sysroot containing the tools (parted and mtools) to use.")
     subparser.add_argument("-s", "--skip-build-check", dest="build_check",
                       action="store_false", default=True, help="skip the build check")
     subparser.add_argument("-f", "--build-rootfs", action="store_true", help="build rootfs")
     subparser.add_argument("-c", "--compress-with", choices=("gzip", "bzip2", "xz"),
                       dest='compressor',
                       help="compress image with specified compressor")
-    subparser.add_argument("-m", "--bmap", action="store_true", help="generate .bmap")
+    subparser.add_argument("-m", "--bmap", action="store_true", help="used to produce .bmap file for the image."
+                           "This file can be used to flash image using bmaptool utility")
     subparser.add_argument("--no-fstab-update" ,action="store_true",
                       help="Do not change fstab file.")
     subparser.add_argument("-v", "--vars", dest='vars_dir',
@@ -370,10 +322,10 @@ def wic_init_parser_list(subparser):
                         help="can be 'images' or 'source-plugins' "
                              "to obtain a list. "
                              "If value is a valid .wks image file")
-    subparser.add_argument("help_for", default=[], nargs='*',
+    subparser.add_argument("info_for", default=[], nargs='*',
                         help="If 'list_type' is a valid .wks image file "
-                             "this value can be 'help' to show the help information "
-                             "defined inside the .wks file")
+                             "this value can be 'info' to show the image or plugin information ")
+
     return
 
 def imgtype(arg):
@@ -398,9 +350,9 @@ def imgtype(arg):
 
 def wic_init_parser_ls(subparser):
     subparser.add_argument("path", type=imgtype,
-                        help="image spec: <image>[:<vfat partition>[<path>]]")
+                        help="image spec: <image>[:<partition>[<path>]]")
     subparser.add_argument("-n", "--native-sysroot",
-                        help="path to the native sysroot containing the tools")
+                        help="path to the native sysroot containing the tools (parted and mtools) to use.")
 
 def imgpathtype(arg):
     img = imgtype(arg)
@@ -412,15 +364,15 @@ def wic_init_parser_cp(subparser):
     subparser.add_argument("src",
                         help="source spec")
     subparser.add_argument("dest", type=imgpathtype,
-                        help="image spec: <image>:<vfat partition>[<path>]")
+                        help="image spec: <image>:<partition>[<path>]")
     subparser.add_argument("-n", "--native-sysroot",
-                        help="path to the native sysroot containing the tools")
+                        help="path to the native sysroot containing the tools (parted and mtools) to use.")
 
 def wic_init_parser_rm(subparser):
     subparser.add_argument("path", type=imgpathtype,
-                        help="path: <image>:<vfat partition><path>")
+                        help="image spec: <image>[:<partition>[<path>]")
     subparser.add_argument("-n", "--native-sysroot",
-                        help="path to the native sysroot containing the tools")
+                        help="path to the native sysroot containing the tools (parted and mtools) to use.")
 
 def expandtype(rules):
     """
@@ -461,59 +413,56 @@ def wic_init_parser_write(subparser):
     subparser.add_argument("-e", "--expand", type=expandtype,
                         help="expand rules: auto or <partition>:<size>[,<partition>:<size>]")
     subparser.add_argument("-n", "--native-sysroot",
-                        help="path to the native sysroot containing the tools")
-
-def wic_init_parser_help(subparser):
-    helpparsers = subparser.add_subparsers(dest='help_topic', help=hlp.wic_usage)
-    for helptopic in helptopics:
-        helpparsers.add_parser(helptopic, help=helptopics[helptopic][2])
-    return
+                        help="path to the native sysroot containing the tools (parted and mtools) to use.")
 
 
 subcommands = {
     "create":    [wic_create_subcommand,
-                  hlp.wic_create_usage,
-                  hlp.wic_create_help,
-                  wic_init_parser_create],
+                  hlp.wic_create_description,
+                  wic_init_parser_create,
+                  hlp.wic_create_short_description],
     "list":      [wic_list_subcommand,
-                  hlp.wic_list_usage,
-                  hlp.wic_list_help,
-                  wic_init_parser_list],
+                  hlp.wic_list_description,
+                  wic_init_parser_list,
+                  hlp.wic_list_short_description],
     "ls":        [wic_ls_subcommand,
-                  hlp.wic_ls_usage,
-                  hlp.wic_ls_help,
-                  wic_init_parser_ls],
+                  hlp.wic_ls_description,
+                  wic_init_parser_ls,
+                  hlp.wic_ls_short_description],
     "cp":        [wic_cp_subcommand,
-                  hlp.wic_cp_usage,
-                  hlp.wic_cp_help,
-                  wic_init_parser_cp],
+                  hlp.wic_cp_description,
+                  wic_init_parser_cp,
+                  hlp.wic_cp_short_description],
     "rm":        [wic_rm_subcommand,
-                  hlp.wic_rm_usage,
-                  hlp.wic_rm_help,
-                  wic_init_parser_rm],
+                  hlp.wic_rm_description,
+                  wic_init_parser_rm,
+                  hlp.wic_rm_short_description],
     "write":     [wic_write_subcommand,
-                  hlp.wic_write_usage,
-                  hlp.wic_write_help,
-                  wic_init_parser_write],
-    "help":      [wic_help_subcommand,
-                  wic_help_topic_usage,
-                  hlp.wic_help_help,
-                  wic_init_parser_help]
+                  hlp.wic_write_description,
+                  wic_init_parser_write,
+                  hlp.wic_write_short_description],
 }
+
+def invoke_subcommand(args, parser, main_command_usage, subcommands):
+        subcmd = subcommands.get(args.command, subcommand_error)
+        usage = subcmd[1]
+        subcmd[0](args, usage)
 
 
 def init_parser(parser):
     parser.add_argument("--version", action="version",
         version="%(prog)s {version}".format(version=__version__))
-    subparsers = parser.add_subparsers(dest='command', help=hlp.wic_usage)
+    subparsers = parser.add_subparsers(dest='command')
+    helpparser = subparsers.add_parser("help", help="Display usages")
     for subcmd in subcommands:
-        subparser = subparsers.add_parser(subcmd, help=subcommands[subcmd][2])
-        subcommands[subcmd][3](subparser)
+        subparser = subparsers.add_parser(subcmd, help=subcommands[subcmd][3], formatter_class=argparse.RawDescriptionHelpFormatter, description=subcommands[subcmd][1])
+        subcommands[subcmd][2](subparser)
+
 
 
 def main(argv):
     parser = argparse.ArgumentParser(
-        description="wic version %s" % __version__)
+        description="Create a customized OpenEmbedded image. Wic version %s" % __version__)
 
     init_parser(parser)
 
@@ -521,22 +470,15 @@ def main(argv):
 
     if "command" in vars(args):
         if args.command == "help":
-            if args.help_topic is None:
-                parser.print_help()
-                print()
-                print("Please specify a help topic")
-            elif args.help_topic in helptopics:
-                hlpt = helptopics[args.help_topic]
-                hlpt[0](hlpt[1], hlpt[2])
-            return 0
-
-    return hlp.invoke_subcommand(args, parser, hlp.wic_help_usage, subcommands)
-
+            parser.print_help()
+            print()
+        else:
+            subcmd = subcommands.get(args.command)
+            subcmd[0](args)
 
 if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:]))
     except WicError as err:
-        print()
         logger.error(err)
         sys.exit(1)

@@ -106,39 +106,29 @@ class Wic(OESelftestTestCase):
         self.assertEqual(0, runCmd('wic -h').status)
 
     @OETestID(1209)
-    def test_createhelp(self):
-        """Test wic create --help"""
-        self.assertEqual(0, runCmd('wic create --help').status)
+    def test_help_rm(self):
+        """Test wic rm --h"""
+        self.assertEqual(0, runCmd('wic rm -h').status)
 
     @OETestID(1210)
-    def test_listhelp(self):
-        """Test wic list --help"""
-        self.assertEqual(0, runCmd('wic list --help').status)
+    def test_help_cp(self):
+        """Test wic cp -h"""
+        self.assertEqual(0, runCmd('wic cp -h').status)
 
     @OETestID(1553)
     def test_help_create(self):
-        """Test wic help create"""
-        self.assertEqual(0, runCmd('wic help create').status)
+        """Test wic create -h"""
+        self.assertEqual(0, runCmd('wic create -h').status)
 
     @OETestID(1554)
     def test_help_list(self):
-        """Test wic help list"""
-        self.assertEqual(0, runCmd('wic help list').status)
+        """Test wic list -h"""
+        self.assertEqual(0, runCmd('wic list -h').status)
 
     @OETestID(1215)
-    def test_help_overview(self):
-        """Test wic help overview"""
-        self.assertEqual(0, runCmd('wic help overview').status)
-
-    @OETestID(1216)
-    def test_help_plugins(self):
-        """Test wic help plugins"""
-        self.assertEqual(0, runCmd('wic help plugins').status)
-
-    @OETestID(1217)
-    def test_help_kickstart(self):
-        """Test wic help kickstart"""
-        self.assertEqual(0, runCmd('wic help kickstart').status)
+    def test_help_write(self):
+        """Test wic write -h"""
+        self.assertEqual(0, runCmd('wic write -h').status)
 
     @OETestID(1555)
     def test_list_images(self):
@@ -151,12 +141,19 @@ class Wic(OESelftestTestCase):
         self.assertEqual(0, runCmd('wic list source-plugins').status)
 
     @OETestID(1557)
-    def test_listed_images_help(self):
-        """Test wic listed images help"""
+    def test_listed_images_info(self):
+        """Test wic listed images info"""
         output = runCmd('wic list images').output
         imagelist = [line.split()[0] for line in output.splitlines()]
         for image in imagelist:
-            self.assertEqual(0, runCmd('wic list %s help' % image).status)
+            self.assertEqual(0, runCmd('wic list %s info' % image).status)
+
+    def test_listed_plugins_info(self):
+        """Test wic listed plugins info"""
+        output = runCmd('wic list source-plugins').output
+        imagelist = [line.split()[0] for line in output.splitlines()]
+        for image in imagelist:
+            self.assertEqual(0, runCmd('wic list %s info' % image).status)
 
     @OETestID(1213)
     def test_unsupported_subcommand(self):
@@ -1064,3 +1061,4 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
         result = runCmd("wic ls %s:2/etc/ -n %s" % (images[0], sysroot))
         self.assertEqual(0, result.status)
         self.assertTrue('fstab' not in [line.split()[-1] for line in result.output.split('\n') if line])
+
