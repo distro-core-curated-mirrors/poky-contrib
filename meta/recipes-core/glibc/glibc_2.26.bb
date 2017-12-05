@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://LICENSES;md5=e9a558e243b36d3209f380deb394b213 \
       file://posix/rxspencer/COPYRIGHT;md5=dc5485bb394a13b2332ec1c785f5d83a \
       file://COPYING.LIB;md5=4fbd65380cdd255951079008b364516c"
 
-DEPENDS += "gperf-native"
+DEPENDS += "gperf-native bison-native"
 
 SRCREV ?= "1c9a5c270d8b66f30dcfaf1cb2d6cf39d3e18369"
 
@@ -43,6 +43,7 @@ SRC_URI = "${GLIBC_GIT_URI};branch=${SRCBRANCH};name=glibc \
            file://0026-assert-Suppress-pedantic-warning-caused-by-statement.patch \
            file://0027-glibc-reset-dl-load-write-lock-after-forking.patch \
            file://0028-Bug-4578-add-ld.so-lock-while-fork.patch \
+           file://0029-plural.c-reproducible.patch \
 "
 
 NATIVESDKFIXES ?= ""
@@ -109,6 +110,15 @@ do_configure () {
 rpcsvc = "bootparam_prot.x nlm_prot.x rstat.x \
 	  yppasswd.x klm_prot.x rex.x sm_inter.x mount.x \
 	  rusers.x spray.x nfs_prot.x rquota.x key_prot.x"
+
+do_compile_prepend_class-target () {
+	# Make sure certain build host references do not end up being compiled
+	# in the image.
+
+	sed  \
+	    -e '/^BISONFLAGS = / s|--yacc|--yacc --no-lines|g' \
+	    -i ${S}/intl/Makefile
+}
 
 do_compile () {
 	# -Wl,-rpath-link <staging>/lib in LDFLAGS can cause breakage if another glibc is in staging
