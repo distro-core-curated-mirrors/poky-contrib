@@ -77,6 +77,10 @@ python multilib_virtclass_handler () {
     if newtune:
         e.data.setVar("DEFAULTTUNE", newtune)
         e.data.setVar('DEFAULTTUNE_ML_%s' % variant, newtune)
+
+    # Update the backfilled features after DEFAULTTUNE changed
+    oe.utils.features_backfill("DISTRO_FEATURES", e.data)
+    oe.utils.features_backfill("MACHINE_FEATURES", e.data)
 }
 
 addhandler multilib_virtclass_handler

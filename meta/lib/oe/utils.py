@@ -107,13 +107,18 @@ def features_backfill(var,d):
     backfill = (d.getVar(var+"_BACKFILL") or "").split()
     considered = (d.getVar(var+"_BACKFILL_CONSIDERED") or "").split()
 
+    features_original = (d.getVar(var + "_ORIGINAL") or "").split()
+    if not features_original:
+        features_original = features
+        d.setVar(var + "_ORIGINAL", " ".join(features_original))
+
     addfeatures = []
     for feature in backfill:
-        if feature not in features and feature not in considered:
+        if feature not in features_original and feature not in considered:
             addfeatures.append(feature)
 
     if addfeatures:
-        d.appendVar(var, " " + " ".join(addfeatures))
+        d.setVar(var, " ".join(features_original) + " " + " ".join(addfeatures))
 
 def all_distro_features(d, features, truevalue="1", falsevalue=""):
     """
