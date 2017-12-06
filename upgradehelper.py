@@ -57,6 +57,7 @@ from utils.emailhandler import Email
 from statistics import Statistics
 from steps import upgrade_steps
 from steps import compile
+from steps import clean_repo
 from testimage import TestImage
 
 help_text = """Usage examples:
@@ -419,6 +420,10 @@ class Updater(object):
                 else:
                     I(" %s: Save patch in directory: %s." %
                         (pkg_ctx['PN'], pkg_ctx['workdir']))
+                    if pkg_ctx['error']:
+                        I(" %s: Remove it from repo since failed!" % pkg_ctx['PN'])
+                        self.git.reset_hard(1)
+
         except Error as e:
             msg = ''
 
@@ -569,6 +574,7 @@ class Updater(object):
         succeeded_pkgs_ctx = []
         failed_pkgs_ctx = []
         attempted_pkgs = 0
+        repo_cleaned = False
         for pn, _, _ in pkgs_to_upgrade:
             pkg_ctx = pkgs_ctx[pn]
             pkg_ctx['error'] = None
@@ -581,6 +587,12 @@ class Updater(object):
                     if step == compile and self.args.skip_compilation:
                         W(" %s: Skipping compile by user choice" % pkg_ctx['PN'])
                         continue
+                    if step == clean_repo and self.recipes:
+                        if repo_cleaned:
+                            I(" %s: Skipping clean_repo since it had been run by previous recipe" % pkg_ctx['PN'])
+                            continue
+                        else:
+                            repo_cleaned = True
                     if msg is not None:
                         I(" %s: %s" % (pkg_ctx['PN'], msg))
                     step(self.bb, self.git, self.opts, pkg_ctx)
