@@ -519,7 +519,7 @@ python () {
 #
 # Compute the rootfs size
 #
-def get_rootfs_size(d):
+def get_rootfs_size(d, force_size=None):
     import subprocess
 
     rootfs_alignment = int(d.getVar('IMAGE_ROOTFS_ALIGNMENT'))
@@ -531,9 +531,12 @@ def get_rootfs_size(d):
     initramfs_fstypes = d.getVar('INITRAMFS_FSTYPES') or ''
     initramfs_maxsize = d.getVar('INITRAMFS_MAXSIZE')
 
-    output = subprocess.check_output(['du', '-ks',
-                                      d.getVar('IMAGE_ROOTFS')])
-    size_kb = int(output.split()[0])
+    if force_size:
+        size_kb = force_size
+    else:
+        output = subprocess.check_output(['du', '-ks',
+                                          d.getVar('IMAGE_ROOTFS')])
+        size_kb = int(output.split()[0])
     base_size = size_kb * overhead_factor
     base_size = max(base_size, rootfs_req_size) + rootfs_extra_space
 
@@ -573,6 +576,14 @@ python set_image_size () {
         d.setVar('ROOTFS_SIZE', str(rootfs_size))
         d.setVarFlag('ROOTFS_SIZE', 'export', '1')
 }
+
+do_testsize[nostamp] = "1"
+python do_testsize() {
+    sz = get_rootfs_size(d, 10572)
+    bb.warn('size is %d' % sz)
+}
+addtask testsize
+
 
 #
 # Create symlinks to the newly created image
