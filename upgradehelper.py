@@ -407,7 +407,11 @@ class Updater(object):
 
             if 'recipe' in pkg_ctx:
                 I(" %s: Auto commit changes ..." % pkg_ctx['PN'])
-                self.git.commit(pkg_ctx['recipe'].commit_msg, self.opts['author'])
+                commit_msg = pkg_ctx['recipe'].commit_msg
+                if self.recipes:
+                    self.git.commit(commit_msg)
+                else:
+                    self.git.commit(commit_msg, self.opts['author'])
 
                 stdout = self.git.create_patch(pkg_ctx['workdir'])
                 pkg_ctx['patch_file'] = stdout.strip()
