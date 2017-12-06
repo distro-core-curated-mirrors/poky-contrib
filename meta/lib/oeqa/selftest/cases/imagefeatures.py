@@ -230,6 +230,7 @@ class ImageFeatures(OESelftestTestCase):
             self.assertTrue(os.path.exists(image_path),
                             "%s image %s doesn't exist" % (itype, image_path))
 
+    @OETestID(1955)
     def test_useradd_static(self):
         config = """
 USERADDEXTENSION = "useradd-staticids"
@@ -240,6 +241,7 @@ USERADD_GID_TABLES += "files/static-group"
         self.write_config(config)
         bitbake("core-image-base")
 
+    @OETestID(1956)
     def test_image_gen_debugfs(self):
         """
         Summary:     Check debugfs generation
