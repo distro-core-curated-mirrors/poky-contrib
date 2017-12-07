@@ -1,10 +1,11 @@
 inherit linux-kernel-base kernel-module-split compiler-options
 
 PROVIDES += "virtual/kernel"
-DEPENDS += "virtual/${TARGET_PREFIX}binutils virtual/${TARGET_PREFIX}gcc kmod-native bc-native lzop-native"
+DEPENDS += "virtual/${TARGET_PREFIX}binutils virtual/${TARGET_PREFIX}gcc kmod-native bc-native lzop-native pigz-native"
 PACKAGE_WRITE_DEPS += "depmodwrapper-cross"
 
 do_deploy[depends] += "depmodwrapper-cross:do_populate_sysroot"
+do_compile[depends] += "pigz-native:do_populate_sysroot"
 
 CVE_PRODUCT ?= "linux_kernel"
 
@@ -289,7 +290,7 @@ kernel_do_compile() {
 	# vmlinux.gz is not built by kernel
 	if (echo "${KERNEL_IMAGETYPES}" | grep -wq "vmlinux\.gz"); then
 		mkdir -p "${KERNEL_OUTPUT_DIR}"
-		gzip -9cn < ${B}/vmlinux > "${KERNEL_OUTPUT_DIR}/vmlinux.gz"
+		pigz -9cnT < ${B}/vmlinux > "${KERNEL_OUTPUT_DIR}/vmlinux.gz"
 	fi
 }
 
@@ -625,17 +626,7 @@ kernel_do_deploy() {
 		mkdir -p ${D}/lib
 		if [ "$BUILD_REPRODUCIBLE_BINARIES" = "1" ]; then
 			sde=$(get_sde)
-
-			# For some reason gzip insists on timestamps in the header for tar images.
-			# No combination of -n or --no-name seems to prevent timestams, for example
-			# this should work:
-			# tar -I "gzip -9 -n" -cvf ${DEPLOYDIR}/${MODULE_TARBALL_BASE_NAME} -C ${D} lib
-
-			# We have to "touch" the tar file before compression by gzip.
-			tar --clamp-mtime --mtime=@$sde -cvf ${DEPLOYDIR}/${MODULE_IMAGE_BASE_NAME} -C ${D} lib
-			sdate=`date -u -d @$sde +%4Y%2m%2d%2H%2M`
-			touch -t $sdate ${DEPLOYDIR}/${MODULE_IMAGE_BASE_NAME} 
-			gzip -9 --no-name -S .tgz -f ${DEPLOYDIR}/${MODULE_IMAGE_BASE_NAME}
+			tar --clamp-mtime --mtime=@$sde -I "pigz -9 -n -T" -cvf ${DEPLOYDIR}/${MODULE_TARBALL_BASE_NAME} -C ${D} lib
 		else
 			tar -cvzf ${DEPLOYDIR}/${MODULE_TARBALL_BASE_NAME} -C ${D} lib
 		fi
