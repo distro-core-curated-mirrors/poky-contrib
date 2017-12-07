@@ -94,6 +94,8 @@ def parse_cmdline():
                         help="do not compile, just change the checksums, remove PR, and commit")
     parser.add_argument("-c", "--config-file", default=None,
                         help="Path to the configuration file. Default is $BUILDDIR/upgrade-helper/upgrade-helper.conf")
+    parser.add_argument("-f", "--apply-failed", action="store_true", default=False,
+                        help="Apply failed patch in the repo after upgrade is done")
     return parser.parse_args()
 
 def parse_config_file(config_file):
@@ -407,7 +409,10 @@ class Updater(object):
 
             if 'recipe' in pkg_ctx:
                 I(" %s: Auto commit changes ..." % pkg_ctx['PN'])
-                commit_msg = pkg_ctx['recipe'].commit_msg
+                if pkg_ctx['error']:
+                    commit_msg = "FAILED: %s" % pkg_ctx['recipe'].commit_msg
+                else:
+                    commit_msg = pkg_ctx['recipe'].commit_msg
                 if self.recipes:
                     self.git.commit(commit_msg)
                 else:
@@ -654,6 +659,11 @@ class Updater(object):
             self.statistics.update(pkg_ctx['PN'], pkg_ctx['NPV'],
                     pkg_ctx['MAINTAINER'], pkg_ctx['error'])
             self.pkg_upgrade_handler(pkg_ctx)
+
+            if self.args.apply_failed and pkg_ctx in failed_pkgs_ctx:
+                if pkg_ctx['patch_file']:
+                    I(" %s: Applying failed patch" % pn)
+                    self.git.apply_patch(pkg_ctx['patch_file'])
 
         if attempted_pkgs > 0:
             publish_work_url = settings.get('publish_work_url', '')
