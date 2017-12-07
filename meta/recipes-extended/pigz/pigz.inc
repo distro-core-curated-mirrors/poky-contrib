@@ -7,7 +7,7 @@ HOMEPAGE = "http://zlib.net/pigz/"
 SECTION = "console/utils"
 LICENSE = "Zlib & Apache-2.0"
 
-PROVIDES_class-native += "gzip-native"
+#PROVIDES_class-native += "gzip-native"
 
 DEPENDS = "zlib"
 
@@ -25,9 +25,13 @@ do_install_class-target() {
 
 do_install() {
 	install -d ${D}${bindir}
-	install ${B}/pigz ${D}${bindir}/gzip
-	ln -nsf gzip ${D}${bindir}/gunzip
-	ln -nsf gzip ${D}${bindir}/zcat
+	install ${B}/pigz ${D}${bindir}/pigz
+	ln -nsf pigz ${D}${bindir}/unpigz
+	ln -nsf pigz ${D}${bindir}/pigzcat
+	# fake gzip...
+	#ln -nsf pigz ${D}${bindir}/gzip
+	#ln -nsf gzip ${D}${bindir}/gzcat
+	#ln -nsf gzip ${D}${bindir}/gunzip
 }
 
 ALTERNATIVE_PRIORITY = "80"
