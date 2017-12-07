@@ -953,12 +953,11 @@ class OpkgPM(OpkgDpkgPM):
             """
             if (self.d.getVar('FEED_DEPLOYDIR_BASE_URI') or "") != "":
                 for arch in self.pkg_archs.split():
-                    cfg_file_name = os.path.join(self.target_rootfs,
-                                                 self.d.getVar("sysconfdir"),
+                    cfg_file_name = os.path.join(self.d.getVar("sysconfdir", True),
                                                  "opkg",
                                                  "local-%s-feed.conf" % arch)
 
-                    with open(cfg_file_name, "w+") as cfg_file:
+                    with open(self.target_rootfs + cfg_file_name, "w+") as cfg_file:
                         cfg_file.write("src/gz local-%s %s/%s" %
                                        (arch,
                                         self.d.getVar('FEED_DEPLOYDIR_BASE_URI'),
