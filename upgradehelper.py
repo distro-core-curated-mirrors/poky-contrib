@@ -56,6 +56,7 @@ from utils.emailhandler import Email
 
 from statistics import Statistics
 from steps import upgrade_steps
+from steps import compile
 from testimage import TestImage
 
 help_text = """Usage examples:
@@ -179,7 +180,6 @@ class Updater(object):
         self.opts['send_email'] = self.args.send_emails
         self.opts['author'] = "Upgrade Helper <%s>" % \
                 settings.get('from', 'uh@not.set')
-        self.opts['skip_compilation'] = self.args.skip_compilation
         self.opts['buildhistory'] = self._buildhistory_is_enabled()
         self.opts['testimage'] = self._testimage_is_enabled()
 
@@ -231,7 +231,7 @@ class Updater(object):
                       " but need BUILDHISTORY_COMMIT=1 please set.")
                     exit(1)
 
-                if self.opts['skip_compilation']:
+                if self.args.skip_compilation:
                     W(" Buildhistory disabled because user" \
                             " skip compilation!")
                 else:
@@ -577,6 +577,9 @@ class Updater(object):
             try:
                 I(" %s: Upgrading to %s" % (pkg_ctx['PN'], pkg_ctx['NPV']))
                 for step, msg in upgrade_steps:
+                    if step == compile and self.args.skip_compilation:
+                        W(" %s: Skipping compile by user choice" % pkg_ctx['PN'])
+                        continue
                     if msg is not None:
                         I(" %s: %s" % (pkg_ctx['PN'], msg))
                     step(self.bb, self.git, self.opts, pkg_ctx)

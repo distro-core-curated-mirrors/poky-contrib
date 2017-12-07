@@ -136,10 +136,6 @@ def unpack_original_workdir(bb, git, opts, pkg_ctx):
         pass
 
 def compile(bb, git, opts, pkg_ctx):
-    if opts['skip_compilation']:
-        W(" %s: Compilation was skipped by user choice!" % pkg_ctx['PN'])
-        return
-
     for machine in opts['machines']:
         I(" %s: compiling for %s ..." % (pkg_ctx['PN'], machine))
         pkg_ctx['recipe'].compile(machine)
