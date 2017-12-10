@@ -26,7 +26,6 @@ VIRTUAL-RUNTIME_getopt ?= "util-linux-getopt"
 VIRTUAL-RUNTIME_wireless-tools ?= "iw wireless-tools"
 VIRTUAL-RUNTIME_base-utils ?= "busybox"
 VIRTUAL-RUNTIME_base-utils-hwclock ?= "busybox-hwclock"
-VIRTUAL-RUNTIME_initd-functions ?= "initscripts-functions"
 
 #
 # Default recipe providers
@@ -55,3 +54,4 @@ PREFERRED_PROVIDER_nativesdk-openssl ?= "nativesdk-openssl"
 PREFERRED_PROVIDER_pkgconfig ?= "pkgconfig"
 PREFERRED_PROVIDER_nativesdk-pkgconfig ?= "nativesdk-pkgconfig"
 PREFERRED_PROVIDER_pkgconfig-native ?= "pkgconfig-native"
+PREFERRED_RPROVIDER_initd-functions ?= "initscripts"
