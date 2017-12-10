@@ -419,8 +419,9 @@ require conf/multilib.conf
 MULTILIBS = "multilib:lib32"
 DEFAULTTUNE_virtclass-multilib-lib32 = "x86"
 """)
-        self.track_for_cleanup(self.topdir + "/tmp-sstatesamehash")
-        bitbake("world meta-toolchain -S none")
+        #self.track_for_cleanup(self.topdir + "/tmp-sstatesamehash")
+        out = bitbake("world meta-toolchain -S none")
+        print(str(out.output))
         self.write_config("""
 TMPDIR = \"${TOPDIR}/tmp-sstatesamehash2\"
 MACHINE = \"qemux86copy\"
@@ -428,8 +429,9 @@ require conf/multilib.conf
 MULTILIBS = "multilib:lib32"
 DEFAULTTUNE_virtclass-multilib-lib32 = "x86"
 """)
-        self.track_for_cleanup(self.topdir + "/tmp-sstatesamehash2")
-        bitbake("world meta-toolchain -S none")
+        #self.track_for_cleanup(self.topdir + "/tmp-sstatesamehash2")
+        out = bitbake("world meta-toolchain -S none")
+        print(str(out.output))
 
         def get_files(d):
             f = []
