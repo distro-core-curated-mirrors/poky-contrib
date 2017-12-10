@@ -47,7 +47,7 @@ DEPENDS_append = " update-rc.d-native"
 PACKAGE_WRITE_DEPS_append = " ${@bb.utils.contains('DISTRO_FEATURES','systemd','systemd-systemctl-native','',d)}"
 
 PACKAGES =+ "${PN}-functions ${PN}-sushell"
-RDEPENDS_${PN} = "initd-functions \
+RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_initd-functions} \
                   ${@bb.utils.contains('DISTRO_FEATURES','selinux','${PN}-sushell','',d)} \
 		 "
 # Recommend pn-functions so that it will be a preferred default provider for initd-functions
