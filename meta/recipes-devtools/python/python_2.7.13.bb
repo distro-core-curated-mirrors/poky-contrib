@@ -257,6 +257,14 @@ SRC_URI += "file://create_manifest2.py file://get_module_deps2.py file://python2
 
 do_create_manifest() {
 
+# This task should be run with every new release of Python.
+# We must ensure that PACKAGECONFIG enables everything when creating 
+# a new manifest, this is to base our new manifest on a complete
+# native python build, containing all dependencies, otherwise the task
+# wont be able to find the required files.
+# e.g. BerkeleyDB is an optional build dependency so it may or may not
+# be present, we must ensure it is. 
+
 cd ${WORKDIR}
 # This needs to be executed by python-native and NOT by HOST's python
 nativepython create_manifest2.py
