@@ -228,3 +228,5 @@ SUBMIT_EMAIL_SUBJECT = 'OE Layerindex layer submission'
 # RabbitMQ settings
 RABBIT_BROKER = 'amqp://'
 RABBIT_BACKEND = 'rpc://'
+
+PARALLEL_JOBS = "10"
