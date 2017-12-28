@@ -46,6 +46,15 @@ sys.path.insert(0, lib_path)
 import scriptpath
 scriptpath.add_oe_lib_path()
 
+# Within an eSDK environment, which was intialized with
+# a different environment script, we need to explicitly
+# append the bitbake path to make bitbake executable
+# discoverable by wic.
+# TO DO: get a better condition filter
+if os.environ.get('SDKTARGETSYSROOT'):
+    bitbake_basepath = os.path.join(os.path.dirname(scripts_path), 'bitbake', 'bin')
+    os.environ['PATH'] += ":" + bitbake_basepath
+
 bitbake_exe = spawn.find_executable('bitbake')
 if bitbake_exe:
     bitbake_path = scriptpath.add_bitbake_lib_path()
