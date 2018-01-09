@@ -1,0 +1,18 @@
+Disable configuring and building the examples.
+
+Upstream-Status: Inappropriate (OE-specific)
+Signed-off-by: Ross Burton <ross.burton@intel.com>
+
+diff --git a/gettext-tools/Makefile.am b/gettext-tools/Makefile.am
+index 0531c0290..faa286b56 100644
+--- a/gettext-tools/Makefile.am
++++ b/gettext-tools/Makefile.am
+@@ -22 +22 @@ ACLOCAL_AMFLAGS = -I m4 -I ../gettext-runtime/m4 -I ../m4 -I gnulib-m4 -I libgre
+-SUBDIRS = doc intl gnulib-lib libgrep src libgettextpo po projects styles misc man m4 tests gnulib-tests examples its
++SUBDIRS = doc intl gnulib-lib libgrep src libgettextpo po projects styles misc man m4 tests gnulib-tests its
+diff --git a/gettext-tools/configure.ac b/gettext-tools/configure.ac
+index ca6934c21..a2586cc6b 100644
+--- a/gettext-tools/configure.ac
++++ b/gettext-tools/configure.ac
+@@ -486 +485,0 @@ echo "GNU gettext library from gettext-$VERSION" > intl/VERSION
+-AC_CONFIG_SUBDIRS([examples])

@@ -19,6 +19,8 @@ SRC_URI = "${GNU_MIRROR}/gettext/gettext-${PV}.tar.gz \
 	   file://cr-statement.c-timsort.h-fix-formatting-issues.patch \
 	   file://use-pkgconfig.patch \
 "
+SRC_URI_append_class-native = " file://no-examples.patch"
+
 SRC_URI[md5sum] = "97e034cf8ce5ba73a28ff6c3c0638092"
 SRC_URI[sha256sum] = "ff942af0e438ced4a8b0ea4b0b6e0d6d657157c5e2364de57baa279c1c125c43"
 
