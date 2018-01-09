@@ -2,6 +2,7 @@
     "2to3": {
         "cached": [],
         "files": [
+            "${bindir}/2to3-*",
             "${libdir}/python3.5/lib2to3"
         ],
         "rdepends": [
@@ -508,7 +509,7 @@
     "idle": {
         "cached": [],
         "files": [
-            "${bindir}/idle",
+            "${bindir}/idle*",
             "${libdir}/python3.5/idlelib"
         ],
         "rdepends": [
@@ -881,7 +882,7 @@
             "${libdir}/python3.5/__pycache__/pydoc.*.pyc"
         ],
         "files": [
-            "${bindir}/pydoc",
+            "${bindir}/pydoc*",
             "${libdir}/python3.5/pydoc.py",
             "${libdir}/python3.5/pydoc_data"
         ],
