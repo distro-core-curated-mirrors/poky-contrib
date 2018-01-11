@@ -9,6 +9,7 @@ EXTRA_OECONF_append = " --disable-nls"
 
 do_configure () {
 	oe_runconf
+        exit 1
 }
 
 do_install_append () {
