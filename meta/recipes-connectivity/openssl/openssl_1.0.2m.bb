@@ -43,9 +43,20 @@ SRC_URI += "file://find.pl;subdir=openssl-${PV}/util/ \
             file://0001-Fix-build-with-clang-using-external-assembler.patch \
             file://0001-openssl-force-soft-link-to-avoid-rare-race.patch  \
             file://0001-aes-armv4-bsaes-armv7-sha256-armv4-.pl-make-it-work-.patch \
+            ${SRC_URI_REPRODUCE} \
             "
 SRC_URI[md5sum] = "10e9e37f492094b9ef296f68f24a7666"
 SRC_URI[sha256sum] = "8c6ff15ec6b319b50788f42c7abc2890c08ba5a1cdcd3810eb9092deada37b0f"
+
+SRC_URI_REPRODUCE = "file://0001-improve-reproducibility.patch"
+SRC_URI_REPRODUCE_class-native = ""
+
+EXTRA_OEMAKE += "${EXTRA_OEMAKE_REPRODUCE}"
+EXTRA_OEMAKE_REPRODUCE_class-native = ""
+EXTRA_OEMAKE_REPRODUCE  = ' \
+                 TOOLCHAIN_OPTIONS="${TOOLCHAIN_OPTIONS}" \
+                 DEBUG_PREFIX_MAP="${DEBUG_PREFIX_MAP}" \
+'
 
 PACKAGES =+ "${PN}-engines"
 FILES_${PN}-engines = "${libdir}/ssl/engines/*.so ${libdir}/engines"
