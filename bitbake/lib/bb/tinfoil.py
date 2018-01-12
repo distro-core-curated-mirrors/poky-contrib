@@ -54,6 +54,9 @@ class TinfoilUIException(Exception):
 class TinfoilCommandFailed(Exception):
     """Exception raised when run_command fails"""
 
+class TinfoilBuildEnvironmentException(Exception):
+    """Exception raised when build environment is not initialised"""
+
 class TinfoilDataStoreConnector:
     """Connector object used to enable access to datastore objects via tinfoil"""
 
@@ -371,6 +374,20 @@ class Tinfoil:
                         features.
         """
         self.quiet = quiet
+
+        fixed_setup = False
+        basepath = os.path.dirname(os.path.abspath(__file__))
+        pth = basepath
+        while pth != '' and pth != os.sep:
+            if os.path.exists(os.path.join(pth, '.devtoolbase')):
+                fixed_setup = True
+                basepath = pth
+                break
+            pth = os.path.dirname(pth)
+        if not fixed_setup:
+            basepath = os.environ.get('BUILDDIR')
+            if not basepath:
+                raise TinfoilBuildEnvironmentException('Build environment not initialised')
 
         if self.tracking:
             extrafeatures = [bb.cooker.CookerFeatures.BASEDATASTORE_TRACKING]
