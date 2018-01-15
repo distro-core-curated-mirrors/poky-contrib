@@ -921,13 +921,6 @@ def setscene_depvalid(task, taskdependees, notneeded, d, log=None):
     if taskdependees[task][1] == "do_stash_locale" or taskdependees[task][1] == "do_gcc_stash_builddir":
         return True
 
-    # Don't pull in flex-native or bison-native without a specific dependency in the recipe
-    # This improves determinism in the metadata and avoids the dependency being met incidentally,
-    # e.g. from binutils-cross which doesn't happen in the external toolchain case
-    if taskdependees[task][1] == 'do_populate_sysroot':
-        if taskdependees[task][0] == "flex-native" or taskdependees[task][0] == "bison-native":
-            return True
-
     # We only need to trigger packagedata through direct dependencies
     # but need to preserve packagedata on packagedata links
     if taskdependees[task][1] == "do_packagedata":
