@@ -129,8 +129,6 @@ def resolve_file(fn, d):
     if not os.path.isabs(fn):
         bbpath = d.getVar("BBPATH")
         newfn, attempts = bb.utils.which(bbpath, fn, history=True)
-        for af in attempts:
-            mark_dependency(d, af)
         if not newfn:
             raise IOError(errno.ENOENT, "file %s not found in %s" % (fn, bbpath))
         fn = newfn
