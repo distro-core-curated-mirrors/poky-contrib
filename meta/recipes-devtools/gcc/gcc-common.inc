@@ -104,7 +104,9 @@ ${GNU_MIRROR}/gcc	http://gcc.get-software.com/releases/ \n \
 gcclibdir = "${libdir}/gcc"
 BINV = "${PV}"
 #S = "${WORKDIR}/gcc-${PV}"
-S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${PV}"
+#S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${PV}"
+S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/git"
+
 B = "${WORKDIR}/gcc-${PV}/build.${HOST_SYS}.${TARGET_SYS}"
 
 target_includedir ?= "${includedir}"

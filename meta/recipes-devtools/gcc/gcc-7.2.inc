@@ -2,11 +2,11 @@ require gcc-common.inc
 
 # Third digit in PV should be incremented after a minor release
 
-PV = "7.2.0"
+PV = "7.2.1"
 
 # BINV should be incremented to a revision after a minor gcc release
 
-BINV = "7.2.0"
+BINV = "7.2.1"
 
 FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc-7.2:${FILE_DIRNAME}/gcc-7.2/backport:"
 
@@ -24,11 +24,15 @@ LIC_FILES_CHKSUM = "\
 "
 
 #RELEASE = "7-20170504"
-BASEURI ?= "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.xz"
+#BASEURI ?= "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.xz"
 #SRCREV = "f7cf798b73fd1a07098f9a490deec1e2a36e0bed"
 #BASEURI ?= "git://github.com/gcc-mirror/gcc;branch=gcc-6-branch;protocol=git"
 #BASEURI ?= "http://mirrors.concertpass.com/gcc/snapshots/${RELEASE}/gcc-${RELEASE}.tar.bz2"
 
+BASEURI ?= "git://github.com/gcc-mirror/gcc;branch=gcc-7-branch;protocol=git"
+SRCREV = "598768d5c31e9fc9a39a7530782068d4bdcb0891"
+
+#file://0048-gcc-Enable-static-PIE.patch
 SRC_URI = "\
            ${BASEURI} \
            file://0001-gcc-4.3.1-ARCH_FLAGS_FOR_TARGET.patch \
@@ -72,20 +76,17 @@ SRC_URI = "\
            file://0045-Link-libgcc-using-LDFLAGS-not-just-SHLIB_LDFLAGS.patch \
            file://0046-libgcc_s-Use-alias-for-__cpu_indicator_init-instead-.patch \
            file://0047-sync-gcc-stddef.h-with-musl.patch \
-           file://0048-gcc-Enable-static-PIE.patch \
            file://fix-segmentation-fault-precompiled-hdr.patch \
            file://0050-RISC-V-Handle-non-legitimate-address-in-riscv_legiti.patch \
            ${BACKPORTS} \
 "
+# already there file://0051-ARM-PR-82445-suppress-32-bit-aligned-ldrd-strd-peeph.patch
+# already there file://0001-PR-rtl-optimization-81803.patch
 BACKPORTS = "\
-           file://0051-ARM-PR-82445-suppress-32-bit-aligned-ldrd-strd-peeph.patch \
-           file://0001-PR-rtl-optimization-81803.patch \
 "
-SRC_URI[md5sum] = "ff370482573133a7fcdd96cd2f552292"
-SRC_URI[sha256sum] = "1cf7adf8ff4b5aa49041c8734bbcf1ad18cc4c94d0029aae0f4e48841088479a"
 
-S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${PV}"
-#S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/git"
+#S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${PV}"
+S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/git"
 B = "${WORKDIR}/gcc-${PV}/build.${HOST_SYS}.${TARGET_SYS}"
 
 # Language Overrides
