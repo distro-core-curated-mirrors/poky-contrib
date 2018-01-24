@@ -8,6 +8,7 @@ import fcntl
 import termios
 import readline
 import signal
+import codecs
 
 def nonblockingfd(fd):
     fcntl.fcntl(fd, fcntl.F_SETFL, fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NONBLOCK)
@@ -55,6 +56,7 @@ try:
     cbreaknoecho(sys.stdin.fileno())
     # Send our PID to the other end so they can kill us.
     pty.write(str(os.getpid()).encode('utf-8') + b"\n")
+    reader = codecs.getreader('utf-8')(pty)
     while True:
         try:
             writers = []
@@ -62,8 +64,8 @@ try:
                 writers.append(sys.stdout)
             (ready, _, _) = select.select([pty, sys.stdin], writers , [], 0)
             try:
-                if pty in ready:
-                    i = i + pty.read().decode('utf-8')
+                if pty is not None and pty in ready:
+                    i = i + reader.read(1,1)
                 if i:
                     # Write a page at a time to avoid overflowing output 
                     # d.keys() is a good way to do that
