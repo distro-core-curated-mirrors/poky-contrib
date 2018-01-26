@@ -67,8 +67,9 @@ EXTRA_OECONF_append_class-native = " --sysconfdir=/etc --localstatedir=/var --di
 
 BBCLASSEXTEND = "native nativesdk"
 
-PACKAGECONFIG ??= ""
+PACKAGECONFIG ??= "lmdb"
 PACKAGECONFIG[imaevm] = "--with-imaevm,,ima-evm-utils"
+PACKAGECONFIG[lmdb] = "--with-lmdb,--without-lmdb,lmdb"
 
 # Direct rpm-native to read configuration from our sysroot, not the one it was compiled in
 # libmagic also has sysroot path contamination, so override it
