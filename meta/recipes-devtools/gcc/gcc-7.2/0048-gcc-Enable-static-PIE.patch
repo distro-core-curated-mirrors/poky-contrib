@@ -7,31 +7,40 @@ Static PIE support in GCC
 see
 https://gcc.gnu.org/ml/gcc/2015-06/msg00008.html
 
+startfiles before patch:
+ -static -> crt1.o crti.o crtbeginT.o
+ -static -PIE -> crt1.o crti.o crtbeginT.o
+ 
+after patch:
+ -static -> crt1.o crti.o crtbeginT.o
+ -static -PIE -> rcrt1.o crti.o crtbeginS.o
+ 
 Upstream-Status: Pending
 
-Signed-off-by: Khem Raj <raj.khem@gmail.com>
+Signed-off-by: Juro Bystricky <juro.bystricky@intel.com>
+
 ---
  gcc/config/gnu-user.h | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/gcc/config/gnu-user.h b/gcc/config/gnu-user.h
-index 2787a3d16be..ee7b781319e 100644
+index de605b0..b035bbe 100644
 --- a/gcc/config/gnu-user.h
 +++ b/gcc/config/gnu-user.h
-@@ -51,10 +51,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
- #if defined HAVE_LD_PIE
+@@ -52,11 +52,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  #define GNU_USER_TARGET_STARTFILE_SPEC \
-   "%{!shared: %{pg|p|profile:gcrt1.o%s;: \
--    %{" PIE_SPEC ":Scrt1.o%s} %{" NO_PIE_SPEC ":crt1.o%s}}} \
--   crti.o%s %{static:crtbeginT.o%s;: %{shared:crtbeginS.o%s} \
-+    %{" PIE_SPEC ":%{static:rcrt1.o%s;:Scrt1.o%s}} %{" NO_PIE_SPEC ":crt1.o%s}}} \
-+   crti.o%s %{shared:crtbeginS.o%s;: \
- 	      %{" PIE_SPEC ":crtbeginS.o%s} \
--	      %{" NO_PIE_SPEC ":crtbegin.o%s}} \
-+	      %{" NO_PIE_SPEC ":%{static:crtbeginT.o%s;:crtbegin.o%s}}} \
+   "%{shared:; \
+      pg|p|profile:gcrt1.o%s; \
+-     static:crt1.o%s; \
++     static: %{" PIE_SPEC ": rcrt1.o%s; :crt1.o%s}; \
+      " PIE_SPEC ":Scrt1.o%s; \
+      :crt1.o%s} \
+    crti.o%s \
+-   %{static:crtbeginT.o%s; \
++   %{static: %{" PIE_SPEC ": crtbeginS.o%s; :crtbeginT.o%s}; \
+      shared|" PIE_SPEC ":crtbeginS.o%s; \
+      :crtbegin.o%s} \
     %{fvtable-verify=none:%s; \
-      fvtable-verify=preinit:vtv_start_preinit.o%s; \
-      fvtable-verify=std:vtv_start.o%s} \
--- 
+
 2.13.1
 

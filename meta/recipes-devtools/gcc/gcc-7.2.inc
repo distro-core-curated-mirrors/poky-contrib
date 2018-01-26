@@ -32,7 +32,9 @@ LIC_FILES_CHKSUM = "\
 BASEURI ?= "git://github.com/gcc-mirror/gcc;branch=gcc-7-branch;protocol=git"
 SRCREV = "598768d5c31e9fc9a39a7530782068d4bdcb0891"
 
-#file://0048-gcc-Enable-static-PIE.patch
+# file://0048-gcc-Enable-static-PIE.patch : see the commit f96152b2b6ff8419a06de446339e9e7abc955ba2 PR driver/81523: Make -static override -pie
+# https://patchwork.ozlabs.org/patch/792907/
+
 SRC_URI = "\
            ${BASEURI} \
            file://0001-gcc-4.3.1-ARCH_FLAGS_FOR_TARGET.patch \
@@ -76,6 +78,7 @@ SRC_URI = "\
            file://0045-Link-libgcc-using-LDFLAGS-not-just-SHLIB_LDFLAGS.patch \
            file://0046-libgcc_s-Use-alias-for-__cpu_indicator_init-instead-.patch \
            file://0047-sync-gcc-stddef.h-with-musl.patch \
+           file://0048-gcc-Enable-static-PIE.patch \
            file://fix-segmentation-fault-precompiled-hdr.patch \
            file://0050-RISC-V-Handle-non-legitimate-address-in-riscv_legiti.patch \
            ${BACKPORTS} \
