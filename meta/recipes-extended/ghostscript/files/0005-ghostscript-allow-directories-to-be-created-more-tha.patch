@@ -1,4 +1,8 @@
-ghostscript: allow directories to be created more than once
+From dcc512b4a12a4251ee6fffe6864e8c85ca7ca39c Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 30 Jan 2018 14:05:33 +0800
+Subject: [PATCH 05/10] ghostscript: allow directories to be created more than
+ once
 
 When doing parallel builds, we might try to create directories
 more than once.  This should not cause an error.
@@ -7,7 +11,14 @@ Upstream-Status: Pending
 
 Signed-off-by: Joe Slater <joe.slater@windriver.com>
 
+Rebase to 9.22
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ base/unix-end.mak | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
+diff --git a/base/unix-end.mak b/base/unix-end.mak
+index 689229f..6100eec 100644
 --- a/base/unix-end.mak
 +++ b/base/unix-end.mak
 @@ -17,15 +17,14 @@
@@ -34,3 +45,6 @@ Signed-off-by: Joe Slater <joe.slater@windriver.com>
  
  
  gs: .gssubtarget $(UNIX_END_MAK)
+-- 
+1.8.3.1
+

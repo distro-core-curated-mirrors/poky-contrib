@@ -1,0 +1,38 @@
+From 7026d9863ffd3ecc3fd1670a9b574e2bd1b5bff1 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 30 Jan 2018 14:13:09 +0800
+Subject: [PATCH 07/10] genarch
+
+Import patch from windriver linux for cross compilation, and split
+patches into oe way under different directories such as i586,
+powerpc etc according to Richard's opinion.
+
+Upstream-Status: Pending
+
+Signed-off-by: Kang Kai <kai.kang@windriver.com>
+Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
+
+Rebase to 9.22
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ base/lib.mak | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/base/lib.mak b/base/lib.mak
+index ee0247f..22e1257 100644
+--- a/base/lib.mak
++++ b/base/lib.mak
+@@ -86,8 +86,8 @@ arch_h=$(GLGEN)arch.h
+ stdpre_h=$(GLSRC)stdpre.h
+ stdint__h=$(GLSRC)stdint_.h $(std_h)
+ 
+-$(GLGEN)arch.h : $(GENARCH_XE)
+-	$(EXP)$(GENARCH_XE) $(GLGEN)arch.h $(TARGET_ARCH_FILE)
++##$(GLGEN)arch.h : $(GENARCH_XE)
++##	$(EXP)$(GENARCH_XE) $(GLGEN)arch.h $(TARGET_ARCH_FILE)
+ 
+ # Platform interfaces
+ 
+-- 
+1.8.3.1
+

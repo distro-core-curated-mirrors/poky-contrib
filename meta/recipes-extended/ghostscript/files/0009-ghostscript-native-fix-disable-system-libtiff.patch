@@ -1,19 +1,27 @@
-ghostscript-native:fix disable-system-libtiff
+From 218f1590de04f88b53147ad42cb45b04e5566c06 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 30 Jan 2018 14:33:28 +0800
+Subject: [PATCH 09/10] ghostscript-native:fix disable-system-libtiff
 
 Modify configure to add the check to make sure
 ghostscrip could work while system-libtiff is
 disabled.
 
+Upstream-Status: Pending
+
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 
 Updated to apply to ghostscript 9.21.
-
 Signed-off-by: Joe Slater <joe.slater@windriver.com>
 
-Upstream-Status: Pending
+Rebase to 9.22
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ configure.ac | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-
-
+diff --git a/configure.ac b/configure.ac
+index 44a1ed8..ad0db94 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -1259,6 +1259,7 @@ case "x$with_system_libtiff" in
@@ -35,3 +43,6 @@ Upstream-Status: Pending
  fi
  
  AC_SUBST(SHARE_LIBTIFF)
+-- 
+1.8.3.1
+
