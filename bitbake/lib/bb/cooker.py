@@ -326,11 +326,6 @@ class BBCooker:
         self.state = state.initial
         self.caches_array = []
 
-        # Need to preserve BB_CONSOLELOG over resets
-        consolelog = None
-        if hasattr(self, "data"):
-            consolelog = self.data.getVar("BB_CONSOLELOG")
-
         if CookerFeatures.BASEDATASTORE_TRACKING in self.featureset:
             self.enableDataTracking()
 
@@ -357,9 +352,6 @@ class BBCooker:
         self.data = self.databuilder.data
         self.data_hash = self.databuilder.data_hash
         self.extraconfigdata = {}
-
-        if consolelog:
-            self.data.setVar("BB_CONSOLELOG", consolelog)
 
         self.data.setVar('BB_CMDLINE', self.ui_cmdline)
 
