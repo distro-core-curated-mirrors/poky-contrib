@@ -133,12 +133,10 @@ do_compile () {
 	if [ -n "${RTLDLIST}" ]
 	then
 		prevrtld=`cat ${B}/elf/ldd | grep "^RTLDLIST=" | sed 's#^RTLDLIST="\?\([^"]*\)"\?$#\1#'`
-		if [ "${prevrtld}" != "${RTLDLIST}" ]
-		then
-			sed -i ${B}/elf/ldd -e "s#^RTLDLIST=.*\$#RTLDLIST=\"${prevrtld} ${RTLDLIST}\"#"
-		fi
+		# remove duplicate entries
+		newrtld=`echo "${prevrtld} ${RTLDLIST}" | xargs -n1 | sort -u | xargs`
+		sed -i ${B}/elf/ldd -e "s#^RTLDLIST=.*\$#RTLDLIST=\"${newrtld}\"#"
 	fi
-
 }
 
 # Use the host locale archive when built for nativesdk so that we don't need to
