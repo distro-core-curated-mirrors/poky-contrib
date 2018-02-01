@@ -176,13 +176,13 @@ class BBCooker:
         self.configuration = configuration
 
         self.configwatcher = pyinotify.WatchManager()
-        self.configwatcher.bbseen = []
+        self.configwatcher.bbseen = set()
         self.confignotifier = pyinotify.Notifier(self.configwatcher, self.config_notifications)
         self.watchmask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CREATE | pyinotify.IN_DELETE | \
                          pyinotify.IN_DELETE_SELF | pyinotify.IN_MODIFY | pyinotify.IN_MOVE_SELF | \
                          pyinotify.IN_MOVED_FROM | pyinotify.IN_MOVED_TO
         self.watcher = pyinotify.WatchManager()
-        self.watcher.bbseen = []
+        self.watcher.bbseen = set()
         self.notifier = pyinotify.Notifier(self.watcher, self.notifications)
 
         # If being called by something like tinfoil, we need to clean cached data
@@ -278,12 +278,14 @@ class BBCooker:
             watcher = self.watcher
         for i in deps:
             if dirs:
-                f = i[0]
+                f = i
             else:
-                f = os.path.dirname(i[0])
+                f = os.path.dirname(i)
             if f in watcher.bbseen:
                 continue
-            watcher.bbseen.append(f)
+            # Add both files and directories to to bbseen
+            watcher.bbseen.add(f)
+            watcher.bbseen.add(i)
             while True:
                 # We try and add watches for files that don't exist but if they did, would influence
                 # the parser. The parent directory of these files may not exist, in which case we need
@@ -296,7 +298,7 @@ class BBCooker:
                         f = os.path.dirname(f)
                         if f in watcher.bbseen:
                             break
-                        watcher.bbseen.append(f)
+                        watcher.bbseen.add(f)
                         continue
                     if 'ENOSPC' in str(e):
                         providerlog.error("No space left on device or exceeds fs.inotify.max_user_watches?")
@@ -367,7 +369,10 @@ class BBCooker:
             self.disableDataTracking()
 
         self.data.renameVar("__depends", "__base_depends")
-        self.add_filewatch(self.data.getVar("__base_depends", False), self.configwatcher)
+        deps_set = set()
+        for deps in self.data.getVar("__base_depends", False):
+            deps_set.add(deps[0])
+        self.add_filewatch(deps_set, self.configwatcher)
 
         self.baseconfig_valid = True
         self.parsecache_valid = False
@@ -1510,7 +1515,7 @@ class BBCooker:
 
             # Add inotify watches for directories searched for bb/bbappend files
             for dirent in searchdirs:
-                self.add_filewatch([[dirent]], dirs=True)
+                self.add_filewatch([dirent], dirs=True)
 
             self.parser = CookerParser(self, filelist, masked)
             self.parsecache_valid = True
@@ -2144,7 +2149,8 @@ class CookerParser(object):
                 self.cooker.skiplist[virtualfn] = SkippedPackage(info_array[0])
             (fn, cls, mc) = bb.cache.virtualfn2realfn(virtualfn)
             self.bb_cache.add_info(virtualfn, info_array, self.cooker.recipecaches[mc],
-                                        parsed=parsed, watcher = self.cooker.add_filewatch)
+                                        parsed=parsed, watcher=self.cooker.add_filewatch,
+                                        watch_manager=self.cooker.watcher)
         return True
 
     def reparse(self, filename):

@@ -713,12 +713,15 @@ class Cache(NoCache):
     def mtime(cachefile):
         return bb.parse.cached_mtime_noerror(cachefile)
 
-    def add_info(self, filename, info_array, cacheData, parsed=None, watcher=None):
+    def add_info(self, filename, info_array, cacheData, parsed=None, watcher=None, watch_manager=None):
         if isinstance(info_array[0], CoreRecipeInfo) and (not info_array[0].skipped):
             cacheData.add_from_recipeinfo(filename, info_array)
 
-            if watcher:
-                watcher(info_array[0].file_depends)
+            if watcher and watch_manager:
+                deps_set = set()
+                for deps in info_array[0].file_depends:
+                    deps_set.add(deps[0])
+                watcher(deps_set - watch_manager.bbseen)
 
         if not self.has_cache:
             return
