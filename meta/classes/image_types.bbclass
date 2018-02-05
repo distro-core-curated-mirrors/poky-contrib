@@ -98,7 +98,7 @@ IMAGE_CMD_ext2 = "oe_mkext234fs ext2 ${EXTRA_IMAGECMD}"
 IMAGE_CMD_ext3 = "oe_mkext234fs ext3 ${EXTRA_IMAGECMD}"
 IMAGE_CMD_ext4 = "oe_mkext234fs ext4 ${EXTRA_IMAGECMD}"
 
-MIN_BTRFS_SIZE ?= "16384"
+MIN_BTRFS_SIZE ?= "110592"
 IMAGE_CMD_btrfs () {
 	size=${ROOTFS_SIZE}
 	if [ ${size} -lt ${MIN_BTRFS_SIZE} ] ; then
