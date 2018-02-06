@@ -559,17 +559,18 @@ python prepare_excluded_directories() {
         if not full_path.startswith(new_rootfs):
             bb.fatal("'%s' points to a path outside the rootfs" % orig_path)
 
-        if path.endswith(os.sep):
-            # Delete content only.
-            for entry in os.listdir(full_path):
-                full_entry = os.path.join(full_path, entry)
-                if os.path.isdir(full_entry) and not os.path.islink(full_entry):
-                    shutil.rmtree(full_entry)
-                else:
-                    os.remove(full_entry)
-        else:
-            # Delete whole directory.
-            shutil.rmtree(full_path)
+        if os.path.exists(full_path):
+            if path.endswith(os.sep):
+                # Delete content only.
+                for entry in os.listdir(full_path):
+                    full_entry = os.path.join(full_path, entry)
+                    if os.path.isdir(full_entry) and not os.path.islink(full_entry):
+                        shutil.rmtree(full_entry)
+                    else:
+                        os.remove(full_entry)
+            else:
+                # Delete whole directory.
+                shutil.rmtree(full_path)
 
     # Save old value for cleanup later.
     d.setVar('IMAGE_ROOTFS_ORIG', rootfs_orig)
