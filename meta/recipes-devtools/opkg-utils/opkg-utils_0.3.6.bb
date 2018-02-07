@@ -7,15 +7,13 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f \
                     file://opkg.py;beginline=2;endline=18;md5=63ce9e6bcc445181cd9e4baf4b4ccc35"
 PROVIDES += "${@bb.utils.contains('PACKAGECONFIG', 'update-alternatives', 'virtual/update-alternatives', '', d)}"
 
-SRC_URI = "http://git.yoctoproject.org/cgit/cgit.cgi/${BPN}/snapshot/${BPN}-${PV}.tar.gz \
-           file://0001-Switch-all-scripts-to-use-Python-3.x.patch \
+SRCREV = "682f8c5e35b8854a9bb858b8ee1714d27e0c00db"
+SRC_URI = "git://git.yoctoproject.org/opkg-utils \
+		file://opkg-commit-06f067c.patch \
 "
-SRC_URI_append_class-native = " file://tar_ignore_error.patch"
-UPSTREAM_CHECK_URI = "http://git.yoctoproject.org/cgit/cgit.cgi/opkg-utils/refs/"
 
-
-SRC_URI[md5sum] = "a19e09c79bf1152aac62e8a120d679ff"
-SRC_URI[sha256sum] = "7f4b08912e26a3f4f6f423f3b4e7157a73b1f3a7483fc59b216d1a80b50b0c38"
+#UPSTREAM_CHECK_URI = "http://git.yoctoproject.org/cgit/cgit.cgi/opkg-utils/refs/"
+S = "${WORKDIR}/git/"
 
 TARGET_CC_ARCH += "${LDFLAGS}"
 

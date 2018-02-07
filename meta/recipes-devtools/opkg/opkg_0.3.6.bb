@@ -11,14 +11,16 @@ DEPENDS = "libarchive"
 
 PE = "1"
 
-SRC_URI = "http://downloads.yoctoproject.org/releases/${BPN}/${BPN}-${PV}.tar.gz \
+SRCREV = "b3f0f7cf02c6f9eb4eaf985a806aec9333164cf5"
+SRC_URI = "git://git.yoctoproject.org/opkg \
            file://opkg-configure.service \
            file://opkg.conf \
            file://0001-opkg_conf-create-opkg.lock-in-run-instead-of-var-run.patch \
 "
 
-SRC_URI[md5sum] = "d202d09ea0932943071b842626cab13c"
-SRC_URI[sha256sum] = "734bc21dea11262113fa86b928d09812618b3966f352350cf916a6ae0d343f32"
+#SRC_URI[md5sum] = "d202d09ea0932943071b842626cab13c"
+#SRC_URI[sha256sum] = "734bc21dea11262113fa86b928d09812618b3966f352350cf916a6ae0d343f32"
+S = "${WORKDIR}/git/"
 
 inherit autotools pkgconfig systemd
 
