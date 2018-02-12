@@ -1,0 +1,19 @@
+Do not ask python where to install modules, instead hardcode the path.
+Most callers of the code use pkg-config to find where it was installed anyway.
+
+Upstream-Status: Inappropriate
+Signed-off-by: Juro Bystricky <juro.bystricky@intel.com>
+
+diff --git a/configure.ac b/configure.ac
+index d140bfe..c7b68da 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -16,6 +16,8 @@
+ 
+ AM_PATH_PYTHON([2.5])
+ 
++pythondir="${libdir}/xcb-proto"
++AC_SUBST(pythondir)
+ xcbincludedir='${datadir}/xcb'
+ AC_SUBST(xcbincludedir)
+ 
