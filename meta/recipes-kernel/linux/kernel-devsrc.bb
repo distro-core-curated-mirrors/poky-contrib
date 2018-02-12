@@ -46,13 +46,15 @@ do_install() {
         cd ${B}
         find . -type d -name '.git*' -prune -o -path '.debug' -prune -o -type f -print0 | cpio --null -pdlu $kerneldir
         cd ${S}
-	find . -type d -name '.git*' -prune -o -type d -name '.kernel-meta' -prune -o -type f -print0 | cpio --null -pdlu $kerneldir
+        find . -type d -name '.git*' -prune -o -type d -name '.kernel-meta' -prune -o -type f -print0 | cpio --null -pdlu $kerneldir
 
         # Explicitly set KBUILD_OUTPUT to ensure that the image directory is cleaned and not
         # The main build artifacts. We clean the directory to avoid QA errors on mismatched
         # architecture (since scripts and helpers are native format).
         KBUILD_OUTPUT="$kerneldir"
-        oe_runmake -C $kerneldir CC="${KERNEL_CC}" LD="${KERNEL_LD}" clean _mrproper_scripts
+        oe_runmake -C $kerneldir CC="${KERNEL_CC}" LD="${KERNEL_LD}" mrproper
+        cp ${B}/.config $kerneldir
+
         # make clean generates an absolute path symlink called "source"
         # in $kerneldir points to $kerneldir, which doesn't make any
         # sense, so remove it.
@@ -68,6 +70,10 @@ do_install() {
                 mkdir -p $kerneldir/arch/powerpc/lib/
                 cp ${B}/arch/powerpc/lib/crtsavres.o $kerneldir/arch/powerpc/lib/crtsavres.o
         fi
+
+        # Keep the package small: remove sources for unneeded archs
+        cd ${D}${KERNEL_SRC_PATH}/arch
+        find . -type d -maxdepth 1 -not -name ${ARCH} -not -name "." -exec rm -rf {} +
 
         chown -R root:root ${D}
 }
