@@ -16,7 +16,13 @@ S = "${WORKDIR}/git"
 
 RDEPENDS_${PN} = "python3-core python3-compression python3-mmap python3-setuptools"
 
-inherit python3native
-inherit setuptools3
+inherit python3native setuptools3 ptest
+
+do_install_ptest() {
+    install -d ${D}${PTEST_PATH}/tests
+    install -d ${D}${PTEST_PATH}/tests/test-data
+    install ${S}/tests/*.py ${D}${PTEST_PATH}/tests/
+    install ${S}/tests/test-data/* ${D}${PTEST_PATH}/tests/test-data/
+}
 
 BBCLASSEXTEND = "native"
