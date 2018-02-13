@@ -75,6 +75,10 @@ python do_write_wks_template () {
         f.write(template_body)
 }
 
+# inherit fs-uuid for EFI systems which want a separate boot partition
+# This allows wic and the bootloader(s) to coordinate UUIDS via DISK_SIGNATURE_UUID
+inherit ${@bb.utils.contains('MACHINE_FEATURES', 'efi', 'fs-uuid', '', d) if d.getVar('USING_WIC') else ''}
+
 python () {
     if d.getVar('USING_WIC'):
         wks_file_u = d.getVar('WKS_FULL_PATH', False)
@@ -102,6 +106,9 @@ python () {
                 # a variable and let the metadata deal with the deps.
                 d.setVar('_WKS_TEMPLATE', body)
                 bb.build.addtask('do_write_wks_template', 'do_image_wic', None, d)
+        # reparse/rebuild template when rootfs-uuid changes, else template uses old DISK_SIGNATURE_UUID due to caching
+        if 'efi' in d.getVar('MACHINE_FEATURES').split():
+            d.setVarFlag('do_write_wks_template', 'file-checksums', d.getVar('DISK_SIGNATURE_UUID_FULL_PATH') + ":True")
 }
 
 #
