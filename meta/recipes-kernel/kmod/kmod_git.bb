@@ -17,6 +17,8 @@ bindir = "${base_bindir}"
 sbindir = "${base_sbindir}"
 # libdir = "${base_libdir}"
 
+EXTRA_OECONF = "--with-bashcompletiondir='${datadir}/bash-completion/'"
+
 do_install_append () {
         install -dm755 ${D}${base_bindir}
         install -dm755 ${D}${base_sbindir}
