@@ -50,6 +50,7 @@ SHARED_EXTRA_OECONF = "--disable-use-tty-group \
                        --enable-libuuid --enable-libblkid --enable-fsck \
                        --disable-minix --disable-bfs --without-udev \
                        usrsbin_execdir='${sbindir}' \
+                       --with-bashcompletiondir='${datadir}/bash-completion/' \
 "
 
 EXTRA_OECONF = "${SHARED_EXTRA_OECONF} --libdir=${base_libdir}"
