@@ -9,7 +9,6 @@ PNREAL = "gst-rtsp-server"
 
 SRC_URI = "http://gstreamer.freedesktop.org/src/${PNREAL}/${PNREAL}-${PV}.tar.xz \
            file://0001-Don-t-hardcode-libtool-name-when-using-introspection.patch \
-           file://0001-introspection.m4-prefix-pkgconfig-paths-with-PKG_CON.patch \
            file://gtk-doc-tweaks.patch"
 
 S = "${WORKDIR}/${PNREAL}-${PV}"

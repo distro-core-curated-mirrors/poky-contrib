@@ -15,7 +15,6 @@ inherit autotools pkgconfig gettext upstream-version-is-even gobject-introspecti
 acpaths = "-I ${S}/common/m4 -I ${S}/m4"
 
 SRC_URI_append = " \
-    file://0001-introspection.m4-prefix-pkgconfig-paths-with-PKG_CON.patch \
     file://gtk-doc-tweaks.patch \
     file://0001-gst-gstpluginloader.c-when-env-var-is-set-do-not-fal.patch \
 "
