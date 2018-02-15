@@ -32,8 +32,8 @@ index 4f7fe30..9610cf6 100644
                  self.gir_dep = PkgConfigDependency('gobject-introspection-1.0',
                                                     state.environment,
                                                     {'native': True})
-+            giscanner = os.environ['PKG_CONFIG_SYSROOT_DIR'] + self.gir_dep.get_pkgconfig_variable('g_ir_scanner', {})
-+            gicompiler = os.environ['PKG_CONFIG_SYSROOT_DIR'] + self.gir_dep.get_pkgconfig_variable('g_ir_compiler', {})
++            giscanner =  self.gir_dep.get_pkgconfig_variable('g_ir_scanner', {})
++            gicompiler = self.gir_dep.get_pkgconfig_variable('g_ir_compiler', {})
              pkgargs = self.gir_dep.get_compile_args()
          except Exception:
              raise MesonException('gobject-introspection dependency was not found, gir cannot be generated.')
