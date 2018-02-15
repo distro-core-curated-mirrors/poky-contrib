@@ -80,7 +80,7 @@ EXTRA_OECONF = "\
 		--disable-openssl \
 		--with-database=simple \
 		--without-zsh-completion-dir \
-		--with-udev-rules-dir=`pkg-config --variable=udevdir udev`/rules.d \
+		--with-udev-rules-dir=`unset PKG_CONFIG_SYSROOT_DIR;pkg-config --variable=udevdir udev`/rules.d \
                 ac_cv_header_valgrind_memcheck_h=no \
                 --disable-tests \
 "
