@@ -32,8 +32,6 @@ import os
 import sys
 import logging
 import pickle
-import lzma
-import gzip
 from collections import defaultdict
 import bb.utils
 
@@ -84,12 +82,6 @@ class RecipeInfoCommon(object):
     def getvar(cls, var, metadata, expand = True):
         return metadata.getVar(var, expand) or ''
 
-sharedcache = {}
-sharedcache['sets'] = []
-sharedcache['lists'] = []
-sharedcache['dicts'] = []
-sharedcache['strs'] = []
-sharedcache['tasks'] = {}
 
 class CoreRecipeInfo(RecipeInfoCommon):
     __slots__ = ()
@@ -148,79 +140,6 @@ class CoreRecipeInfo(RecipeInfoCommon):
         self.fakerootnoenv    = self.getvar('FAKEROOTNOENV', metadata)
         self.extradepsfunc    = self.getvar('calculate_extra_depends', metadata)
 
-        self.tasksigdata = None
-        #bb.warn(str(metadata))
-
-        def process_entry(ent):
-            if isinstance(ent, str):
-                #for a in sharedcache['strs']:
-                #    if ent == a:
-                #        return a
-                #newstr = sys.intern(ent)
-                #sharedcache['strs'].append(newstr)
-                #return newstr
-                return sys.intern(ent)
-            elif ent is None:
-                return None
-            elif isinstance(ent, dict):
-                basekeys = set(ent.keys())
-                for a in sharedcache['dicts']:
-                    if set(a.keys()) == basekeys:
-                        diff = {o : (ent[o], a[o]) for o in basekeys if ent[o] != a[o]}
-                        if not diff:
-                            return a
-                newdict = {}
-                for a in ent:
-                    newdict[process_entry(a)] = process_entry(ent[a])
-                sharedcache['dicts'].append(newdict)
-                return newdict
-            elif isinstance(ent, list):
-                for a in sharedcache['lists']:
-                    if ent == a:
-                        return a
-                newlist = list()
-                for a in ent:
-                    newlist.append(process_entry(a))
-                sharedcache['lists'].append(newlist)
-                return newlist
-            elif isinstance(ent, set):
-                for a in sharedcache['sets']:
-                    if ent == a:
-                        return a
-                newset = set()
-                for a in ent:
-                    newset.add(process_entry(a))
-                sharedcache['sets'].append(newset)
-                return newset
-            elif isinstance(ent, bb.data_smart.DataSmart):
-                next = [ent.dict]
-                while next:
-                    new = []
-                    for n in next:
-                        for i in n:
-                            if n == "_data":
-                                new.append(n[i])
-                                continue
-                            for j in n[i]:
-                                n[i][j] = process_entry(n[i][j])
-                    next = new
-            elif isinstance(ent, int) or isinstance(ent, bool) or isinstance(ent, tuple):
-                return ent
-            else:
-                bb.warn("%s:%s" % (type(ent), str(ent)))
-            return ent
-
-        if filename in bb.parse.siggen.taskdeps:
-            data = {}
-            for task in bb.parse.siggen.taskdeps[filename]:
-                d = bb.parse.siggen.get_sigtaskdata(filename, task, None, False)
-                data[task] = d
-                #data[task] = process_entry(d)
-
-            sharedcache['tasks'][filename] = data
-            #self.tasksigdata = data
-        #self.tasksigdata = process_entry(metadata)
-
     @classmethod
     def init_cacheData(cls, cachedata):
         # CacheData in Core RecipeInfo Class
@@ -256,7 +175,6 @@ class CoreRecipeInfo(RecipeInfoCommon):
         cachedata.fakerootnoenv = {}
         cachedata.fakerootdirs = {}
         cachedata.extradepsfunc = {}
-        cachedata.tasksigdatas = {}
 
     def add_cacheData(self, cachedata, fn):
         cachedata.task_deps[fn] = self.task_deps
@@ -268,8 +186,6 @@ class CoreRecipeInfo(RecipeInfoCommon):
         cachedata.stampclean[fn] = self.stampclean
         cachedata.stamp_extrainfo[fn] = self.stamp_extrainfo
         cachedata.file_checksums[fn] = self.file_checksums
-
-        cachedata.tasksigdatas[fn] = self.tasksigdata
 
         provides = [self.pn]
         for provide in self.provides:

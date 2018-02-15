@@ -247,9 +247,20 @@ class SignatureGeneratorBasic(SignatureGenerator):
             bb.fetch2.fetcher_parse_save()
             bb.fetch2.fetcher_parse_done()
 
-    def get_sigtaskdata(self, fn, task, referencestamp, runtime):
+    def dump_sigtask(self, fn, task, stampbase, runtime):
 
         k = fn + "." + task
+        referencestamp = stampbase
+        if isinstance(runtime, str) and runtime.startswith("customfile"):
+            sigfile = stampbase
+            referencestamp = runtime[11:]
+        elif runtime and k in self.taskhash:
+            sigfile = stampbase + "." + task + ".sigdata" + "." + self.taskhash[k]
+        else:
+            sigfile = stampbase + "." + task + ".sigbasedata" + "." + self.basehash[k]
+
+        bb.utils.mkdirhier(os.path.dirname(sigfile))
+
         data = {}
         data['task'] = task
         data['basewhitelist'] = self.basewhitelist
@@ -273,32 +284,13 @@ class SignatureGeneratorBasic(SignatureGenerator):
                 data['runtaskhashes'][dep] = self.taskhash[dep]
             data['taskhash'] = self.taskhash[k]
 
-        if runtime:
-            taint = self.read_taint(fn, task, referencestamp)
-            if taint:
-                data['taint'] = taint
+        taint = self.read_taint(fn, task, referencestamp)
+        if taint:
+            data['taint'] = taint
 
         if runtime and k in self.taints:
             if 'nostamp:' in self.taints[k]:
                 data['taint'] = self.taints[k]
-
-        return data
-
-    def dump_sigtask(self, fn, task, stampbase, runtime):
-
-        k = fn + "." + task
-        referencestamp = stampbase
-        if isinstance(runtime, str) and runtime.startswith("customfile"):
-            sigfile = stampbase
-            referencestamp = runtime[11:]
-        elif runtime and k in self.taskhash:
-            sigfile = stampbase + "." + task + ".sigdata" + "." + self.taskhash[k]
-        else:
-            sigfile = stampbase + "." + task + ".sigbasedata" + "." + self.basehash[k]
-
-        bb.utils.mkdirhier(os.path.dirname(sigfile))
-
-        data = self.get_sigtaskdata(fn, task, referencestamp, runtime)
 
         computed_basehash = calc_basehash(data)
         if computed_basehash != self.basehash[k]:
