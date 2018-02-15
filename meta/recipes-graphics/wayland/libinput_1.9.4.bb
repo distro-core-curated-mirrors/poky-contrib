@@ -19,7 +19,7 @@ PACKAGECONFIG ??= ""
 PACKAGECONFIG[libwacom] = "-Dlibwacom=true,-Dlibwacom=false,libwacom"
 PACKAGECONFIG[gui] = "-Ddebug-gui=true,-Ddebug-gui=false,cairo gtk+3"
 
-UDEVDIR = "`pkg-config --variable=udevdir udev`"
+UDEVDIR = "`unset PKG_CONFIG_SYSROOT_DIR; pkg-config --variable=udevdir udev`"
 
 EXTRA_OEMESON += "-Dudev-dir=${UDEVDIR} -Ddocumentation=false -Dtests=false"
 
