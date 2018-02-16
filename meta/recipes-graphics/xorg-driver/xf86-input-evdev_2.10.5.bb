@@ -19,3 +19,4 @@ DEPENDS += "mtdev libevdev"
 SRC_URI[md5sum] = "94c2c8354c74ab1cfbbb0a222078b9c6"
 SRC_URI[sha256sum] = "9edaa6205baf6d2922cc4db3d8e54a7e7773b5f733b0ae90f6be7725f983b70d"
 
+EXTRA_OECONF += "--with-sdkdir=${includedir}/xorg"
