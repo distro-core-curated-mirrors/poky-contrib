@@ -9,3 +9,5 @@ SRC_URI[md5sum] = "da47ef62eab1d0e922a8fa929ff81758"
 SRC_URI[sha256sum] = "abca558fc2226f295691f1cf3412d4c0edeaa439f677ca25b5c9fab310d2387b"
 
 FILES_${PN} += "${datadir}/X11/xorg.conf.d"
+
+EXTRA_OECONF += "--with-sdkdir=${includedir}/xorg"
