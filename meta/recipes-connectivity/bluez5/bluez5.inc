@@ -27,7 +27,7 @@ PACKAGECONFIG[obex-profiles] = "--enable-obex,--disable-obex,libical"
 PACKAGECONFIG[readline] = "--enable-client,--disable-client,readline,"
 PACKAGECONFIG[testing] = "--enable-testing,--disable-testing"
 PACKAGECONFIG[midi] = "--enable-midi,--disable-midi,alsa-lib"
-PACKAGECONFIG[systemd] = "--enable-systemd,--disable-systemd"
+PACKAGECONFIG[systemd] = "--enable-systemd --with-systemdsystemunitdir=${systemd_system_unitdir} --with-systemduserunitdir=${systemd_user_unitdir},--disable-systemd"
 PACKAGECONFIG[cups] = "--enable-cups,--disable-cups,,cups"
 PACKAGECONFIG[nfc] = "--enable-nfc,--disable-nfc"
 PACKAGECONFIG[sap-profiles] = "--enable-sap,--disable-sap"
@@ -61,7 +61,11 @@ EXTRA_OECONF = "\
   --enable-test \
   --enable-datafiles \
   --enable-library \
-"
+  --with-udevdir=`unset PKG_CONFIG_SYSROOT_DIR;pkg-config --variable=udevdir udev` \
+  --with-dbusconfdir=${sysconfdir}/dbus-1/system.d \
+  --with-dbussessionbusdir=${datadir}/dbus-1/services/ \
+  --with-dbussystembusdir=${datadir}/dbus-1/system-services/ \
+  "
 
 # bluez5 builds a large number of useful utilities but does not
 # install them.  Specify which ones we want put into ${PN}-noinst-tools.
