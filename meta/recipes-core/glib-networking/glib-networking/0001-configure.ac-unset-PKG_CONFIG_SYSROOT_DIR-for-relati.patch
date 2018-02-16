@@ -1,0 +1,31 @@
+From f0fe611b1b24cbeafed380b1956ab21b09419c64 Mon Sep 17 00:00:00 2001
+From: "Maxin B. John" <maxin.john@intel.com>
+Date: Fri, 16 Feb 2018 16:12:22 +0200
+Subject: [PATCH] configure.ac: unset PKG_CONFIG_SYSROOT_DIR for relative path
+
+pkgconf requires unsetting  PKG_CONFIG_SYSROOT_DIR to find
+the relative path of giomoduledir.
+
+Upstream-Status: Inappropriate [specific to pkgconf]
+
+Signed-off-by: Maxin B. John <maxin.john@intel.com>
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index ddee2a7..e31f397 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -35,7 +35,7 @@ dnl *****************************
+ AM_PATH_GLIB_2_0(2.46.0,,AC_MSG_ERROR(GLIB not found),gio)
+ GLIB_CFLAGS="$GLIB_CFLAGS -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_46"
+ 
+-GIO_MODULE_DIR=$($PKG_CONFIG --variable giomoduledir gio-2.0)
++GIO_MODULE_DIR=$(unset PKG_CONFIG_SYSROOT_DIR; $PKG_CONFIG --variable giomoduledir gio-2.0)
+ AS_IF([test "$GIO_MODULE_DIR" = ""],
+       [AC_MSG_FAILURE(GIO_MODULE_DIR is missing from gio-2.0.pc)])
+ AC_SUBST(GIO_MODULE_DIR)
+-- 
+2.4.0
+

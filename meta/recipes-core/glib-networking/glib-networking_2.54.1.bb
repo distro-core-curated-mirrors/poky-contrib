@@ -9,6 +9,8 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=5f30f0716dfdd0d91eb439ebec522ec2"
 SECTION = "libs"
 DEPENDS = "glib-2.0"
 
+SRC_URI_append = " file://0001-configure.ac-unset-PKG_CONFIG_SYSROOT_DIR-for-relati.patch"
+
 SRC_URI[archive.md5sum] = "99867463f182c2767bce0c74bc9cc981"
 SRC_URI[archive.sha256sum] = "eaa787b653015a0de31c928e9a17eb57b4ce23c8cf6f277afaec0d685335012f"
 
