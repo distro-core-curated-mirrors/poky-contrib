@@ -1,0 +1,31 @@
+From 5aca78ff82a5f79ec33c4eda1e5d8c214ee14e65 Mon Sep 17 00:00:00 2001
+From: "Maxin B. John" <maxin.john@intel.com>
+Date: Fri, 16 Feb 2018 09:44:48 +0200
+Subject: [PATCH] configure.ac: unset  PKG_CONFIG_SYSROOT_DIR for relative path
+
+pkgconf requires unsetting  PKG_CONFIG_SYSROOT_DIR to find the relative
+path.
+
+Upstream-Status: Inappropriate [specific to pkgconf]
+
+Signed-off-by: Maxin B. John <maxin.john@intel.com>
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index 290dc1d..305337d 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -204,7 +204,7 @@ AC_SUBST(BTRFSRESTORE_ZSTD)
+ # on earlier releases.
+ UDEVDIR=
+ if pkg-config udev --atleast-version 190; then
+-	UDEVDIR="$(pkg-config udev --variable=udevdir)"
++	UDEVDIR="'unset PKG_CONFIG_SYSROOT_DIR; $(pkg-config udev --variable=udevdir)'"
+ fi
+ AC_SUBST(UDEVDIR)
+ 
+-- 
+2.4.0
+
