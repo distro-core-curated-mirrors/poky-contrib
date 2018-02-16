@@ -19,7 +19,7 @@ PACKAGECONFIG ??= "\
 PACKAGECONFIG[systemd] = "--with-systemdunitdir=${systemd_unitdir}/system/,--with-systemdunitdir="
 PACKAGECONFIG[bluez] = "--enable-bluetooth, --disable-bluetooth, ${BLUEZ}"
 
-EXTRA_OECONF += "--enable-test"
+EXTRA_OECONF += "--enable-test --with-dbusconfdir=${sysconfdir}"
 
 SYSTEMD_SERVICE_${PN} = "ofono.service"
 
