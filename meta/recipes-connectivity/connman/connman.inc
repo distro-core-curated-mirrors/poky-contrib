@@ -28,6 +28,7 @@ EXTRA_OECONF += "\
     --enable-tools \
     --disable-polkit \
     --enable-client \
+    --with-dbusconfdir=${sysconfdir} \
 "
 
 PACKAGECONFIG ??= "wispr \
