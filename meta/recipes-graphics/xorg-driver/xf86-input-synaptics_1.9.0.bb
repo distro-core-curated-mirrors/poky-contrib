@@ -14,3 +14,5 @@ SRC_URI[md5sum] = "58e5b7722a402114093bf193962d1e3a"
 SRC_URI[sha256sum] = "afba3289d7a40217a19d90db98ce181772f9ca6d77e1898727b0afcf02073b5a"
 
 DEPENDS += "libxi mtdev libxtst libevdev"
+
+EXTRA_OECONF += "--with-sdkdir=${includedir}/xorg --with-xorg-conf-dir=${datadir}/X11/xorg.conf.d"
