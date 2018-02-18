@@ -12,7 +12,9 @@ BBCLASSEXTEND = "native"
 
 inherit autotools pkgconfig gnomebase gtk-doc pixbufcache upstream-version-is-even gobject-introspection
 
-SRC_URI += "file://gtk-option.patch"
+SRC_URI += "file://gtk-option.patch \
+            file://0001-configure.ac-fix-build-with-pkgconf.patch \
+           "
 
 SRC_URI[archive.md5sum] = "4949d313b0c5d9161a5c259104af5568"
 SRC_URI[archive.sha256sum] = "cff4dd3c3b78bfe99d8fcfad3b8ba1eee3289a0823c0e118d78106be6b84c92b"

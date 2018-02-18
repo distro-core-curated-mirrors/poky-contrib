@@ -1,0 +1,32 @@
+From 5935c18d1748f9b3324a4b13980df54d9a8c779f Mon Sep 17 00:00:00 2001
+From: "Maxin B. John" <maxin.john@intel.com>
+Date: Sun, 18 Feb 2018 13:41:28 +0200
+Subject: [PATCH] configure.ac: fix build with pkgconf
+
+pkgconf requires to unset PKG_CONFIG_SYSROOT_DIR for relative path.
+
+Upstream-Status: Inappropriate [specific to pkgconf]
+
+Signed-off-by: Maxin B. John <maxin.john@intel.com>
+---
+ configure.ac | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 8852862..7151503 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -170,8 +170,8 @@ if test "$enable_pixbuf_loader" = "yes"; then
+ 
+   # First try the standalone gdk-pixbuf
+   gdk_pixbuf_binary_version="`$PKG_CONFIG --variable=gdk_pixbuf_binary_version gdk-pixbuf-2.0`"
+-  gdk_pixbuf_binarydir="`$PKG_CONFIG --variable=gdk_pixbuf_binarydir gdk-pixbuf-2.0`"
+-  gdk_pixbuf_moduledir=`$PKG_CONFIG --variable gdk_pixbuf_moduledir gdk-pixbuf-2.0`
++  gdk_pixbuf_binarydir="`unset PKG_CONFIG_SYSROOT_DIR; $PKG_CONFIG --variable=gdk_pixbuf_binarydir gdk-pixbuf-2.0`"
++  gdk_pixbuf_moduledir=`unset PKG_CONFIG_SYSROOT_DIR; $PKG_CONFIG --variable gdk_pixbuf_moduledir gdk-pixbuf-2.0`
+   gdk_pixbuf_cache_file=`$PKG_CONFIG --variable gdk_pixbuf_cache_file gdk-pixbuf-2.0`
+ fi
+ 
+-- 
+2.4.0
+
