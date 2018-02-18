@@ -185,6 +185,7 @@ EXTRA_OECONF = " \
     --with-rootprefix=${rootprefix} \
     --with-sysvrcnd-path=${sysconfdir} \
     --with-firmware-path=${nonarch_base_libdir}/firmware \
+    --with-bashcompletiondir=${datadir}/bash-completion \
 "
 
 # per the systemd README, define VALGRIND=1 to run under valgrind
