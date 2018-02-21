@@ -2,15 +2,15 @@ require gcc-common.inc
 
 # Third digit in PV should be incremented after a minor release
 
-PV = "5.4.0"
+PV = "5.5.0"
 
 #SNAP = "5-20150405"
 
 # BINV should be incremented to a revision after a minor gcc release
 
-BINV = "5.4.0"
+BINV = "5.5.0"
 
-FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc-5.4:${FILE_DIRNAME}/gcc-5.4/backport:"
+FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc-5.5:${FILE_DIRNAME}/gcc-5.5/backport:"
 
 DEPENDS =+ "mpfr gmp libmpc zlib"
 NATIVEDEPS = "mpfr-native gmp-native libmpc-native zlib-native"
@@ -25,7 +25,10 @@ LIC_FILES_CHKSUM = "\
     file://COPYING.RUNTIME;md5=fe60d87048567d4fe8c8a0ed2448bcc8 \
 "
 #BASEURI = "http://www.netgull.com/gcc/snapshots/${SNAP}/gcc-${SNAP}.tar.bz2"
-BASEURI = "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.bz2"
+#BASEURI = "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.bz2"
+
+BASEURI ?= "git://github.com/hjl-tools/gcc.git;branch=hjl/indirect/gcc-5-branch/master;protocol=git"
+SRCREV = "bdc3c65d281add62a9af29adb60c2e9f924676bf"
 
 SRC_URI = "\
            ${BASEURI} \
@@ -94,13 +97,14 @@ SRC_URI = "\
 
 BACKPORTS = ""
 
-SRC_URI[md5sum] = "4c626ac2a83ef30dfb9260e6f59c2b30"
-SRC_URI[sha256sum] = "608df76dec2d34de6558249d8af4cbee21eceddbcb580d666f7a5a583ca3303a"
+#SRC_URI[md5sum] = "4c626ac2a83ef30dfb9260e6f59c2b30"
+#SRC_URI[sha256sum] = "608df76dec2d34de6558249d8af4cbee21eceddbcb580d666f7a5a583ca3303a"
 
 UPSTREAM_CHECK_REGEX = "gcc-(?P<pver>5\.\d+\.\d+).tar"
 
 #S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${SNAP}"
-S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${PV}"
+#S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${PV}"
+S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/git"
 B = "${WORKDIR}/gcc-${PV}/build.${HOST_SYS}.${TARGET_SYS}"
 
 # Language Overrides
