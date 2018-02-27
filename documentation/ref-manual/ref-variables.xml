@@ -13321,6 +13321,23 @@
                 </para>
 
                 <para>
+                    The special token <filename>"*"</filename> may be used on
+                    the left hand side of the dependency, which will match all
+                    recipes except the one on the right hand side.
+                    For example:
+                    <literallayout class='monospaced'>
+    SIGGEN_EXCLUDE_SAFE_RECIPE_DEPS += "*->quilt-native"
+                    </literallayout>
+                </para>
+
+                <para>
+                    In this example, all recipes except
+                    <filename>quilt-native</filename> will ignore task
+                    signatures from the <filename>quilt-native</filename> recipe
+                    when determining their task signatures.
+                </para>
+
+                <para>
                     Use of this variable is one mechanism to remove dependencies
                     that affect task signatures and thus force rebuilds when a
                     recipe changes.
