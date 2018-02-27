@@ -1,0 +1,86 @@
+From b8bac091279f255aafdba251f8ccc5f6afb2cd5c Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Mon, 23 Oct 2017 11:38:33 -0700
+Subject: [PATCH 17/32] Include netinet/if_ether.h
+
+Fixes
+/path/to/systemd/recipe-sysroot/usr/include/netinet/if_ether.h:101:8: error: redefinition of 'struct ethhdr'
+ struct ethhdr {
+        ^~~~~~
+
+Upstream-Status: Pending
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ src/libsystemd/sd-netlink/netlink-types.c | 1 +
+ src/network/netdev/tuntap.c               | 1 +
+ src/network/networkd-brvlan.c             | 1 +
+ src/udev/net/ethtool-util.c               | 2 +-
+ src/udev/udev-builtin-net_setup_link.c    | 2 +-
+ 5 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/src/libsystemd/sd-netlink/netlink-types.c b/src/libsystemd/sd-netlink/netlink-types.c
+index f8be296d3..46737b558 100644
+--- a/src/libsystemd/sd-netlink/netlink-types.c
++++ b/src/libsystemd/sd-netlink/netlink-types.c
+@@ -20,6 +20,7 @@
+ 
+ #include <stdint.h>
+ #include <sys/socket.h>
++#include <netinet/if_ether.h>
+ #include <linux/netlink.h>
+ #include <linux/rtnetlink.h>
+ #include <linux/can/netlink.h>
+diff --git a/src/network/netdev/tuntap.c b/src/network/netdev/tuntap.c
+index 4597a7fee..941f2a324 100644
+--- a/src/network/netdev/tuntap.c
++++ b/src/network/netdev/tuntap.c
+@@ -19,6 +19,7 @@
+ ***/
+ 
+ #include <fcntl.h>
++#include <netinet/if_ether.h>
+ #include <linux/if_tun.h>
+ #include <net/if.h>
+ #include <netinet/if_ether.h>
+diff --git a/src/network/networkd-brvlan.c b/src/network/networkd-brvlan.c
+index 99dd41629..90407c9d8 100644
+--- a/src/network/networkd-brvlan.c
++++ b/src/network/networkd-brvlan.c
+@@ -19,6 +19,7 @@
+ ***/
+ 
+ #include <netinet/in.h>
++#include <netinet/if_ether.h>
+ #include <linux/if_bridge.h>
+ #include <stdbool.h>
+ 
+diff --git a/src/udev/net/ethtool-util.c b/src/udev/net/ethtool-util.c
+index 3ed8a51fd..cfb39ba59 100644
+--- a/src/udev/net/ethtool-util.c
++++ b/src/udev/net/ethtool-util.c
+@@ -17,7 +17,7 @@
+   You should have received a copy of the GNU Lesser General Public License
+   along with systemd; If not, see <http://www.gnu.org/licenses/>.
+ ***/
+-
++#include <netinet/if_ether.h>
+ #include <net/if.h>
+ #include <sys/ioctl.h>
+ #include <linux/ethtool.h>
+diff --git a/src/udev/udev-builtin-net_setup_link.c b/src/udev/udev-builtin-net_setup_link.c
+index 40158e0af..fbead3a7b 100644
+--- a/src/udev/udev-builtin-net_setup_link.c
++++ b/src/udev/udev-builtin-net_setup_link.c
+@@ -17,7 +17,7 @@
+   You should have received a copy of the GNU Lesser General Public License
+   along with systemd; If not, see <http://www.gnu.org/licenses/>.
+ ***/
+-
++#include <netinet/if_ether.h>
+ #include "alloc-util.h"
+ #include "link-config.h"
+ #include "log.h"
+-- 
+2.11.0
+

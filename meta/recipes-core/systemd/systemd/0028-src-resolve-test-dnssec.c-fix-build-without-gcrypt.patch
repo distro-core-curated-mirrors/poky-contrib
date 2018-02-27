@@ -1,0 +1,36 @@
+From f26979d881200910e7e6b37d7ce5d1c24d0074f3 Mon Sep 17 00:00:00 2001
+From: Chen Qi <Qi.Chen@windriver.com>
+Date: Tue, 9 Jan 2018 15:36:29 +0800
+Subject: [PATCH 28/32] src/resolve/test-dnssec.c: fix build without gcrypt
+
+When gcrypt is disabled, we would meet the following error.
+
+  fatal error: gcrypt.h: No such file or directory
+
+Fix the above problem by checking HAVE_GCRYPT before including
+the gcrypt header file.
+
+Upstream-Status: Pending
+
+Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+---
+ src/resolve/test-dnssec.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/resolve/test-dnssec.c b/src/resolve/test-dnssec.c
+index 2d2b5e31b..ebabfba96 100644
+--- a/src/resolve/test-dnssec.c
++++ b/src/resolve/test-dnssec.c
+@@ -19,7 +19,9 @@
+ ***/
+ 
+ #include <arpa/inet.h>
++#if HAVE_GCRYPT
+ #include <gcrypt.h>
++#endif
+ #include <netinet/in.h>
+ #include <sys/socket.h>
+ 
+-- 
+2.11.0
+

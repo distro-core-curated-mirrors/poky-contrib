@@ -1,0 +1,47 @@
+From d337c348eb58d6070f23e736b5a4f444100e697f Mon Sep 17 00:00:00 2001
+From: Chen Qi <Qi.Chen@windriver.com>
+Date: Mon, 26 Feb 2018 17:21:11 +0800
+Subject: [PATCH 18/32] check for missing canonicalize_file_name
+
+Upstream-Status: Pending
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+---
+ meson.build                 | 2 ++
+ src/basic/missing_syscall.h | 6 ++++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/meson.build b/meson.build
+index 47a170c08..9985252a2 100644
+--- a/meson.build
++++ b/meson.build
+@@ -481,6 +481,8 @@ foreach ident : [
+         ['kcmp',              '''#include <linux/kcmp.h>'''],
+         ['keyctl',            '''#include <sys/types.h>
+                                  #include <keyutils.h>'''],
++        ['canonicalize_file_name', '''#define _GNU_SOURCE
++                                      #include <stdlib.h>'''],
+         ['copy_file_range',   '''#include <sys/syscall.h>
+                                  #include <unistd.h>'''],
+         ['bpf',               '''#include <sys/syscall.h>
+diff --git a/src/basic/missing_syscall.h b/src/basic/missing_syscall.h
+index fd82c11e9..a9b1f7cab 100644
+--- a/src/basic/missing_syscall.h
++++ b/src/basic/missing_syscall.h
+@@ -31,6 +31,12 @@ static inline int pivot_root(const char *new_root, const char *put_old) {
+ }
+ #endif
+ 
++#if !HAVE_CANONICALIZE_FILE_NAME
++static inline char *canonicalize_file_name(const char *path) {
++        return realpath(path, NULL);
++}
++#endif
++
+ /* ======================================================================= */
+ 
+ #if !HAVE_MEMFD_CREATE
+-- 
+2.11.0
+
