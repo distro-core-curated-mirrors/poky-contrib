@@ -41,24 +41,19 @@ MESON_CROSS_FILE = ""
 MESON_CROSS_FILE_class-target = "--cross-file ${WORKDIR}/meson.cross"
 MESON_CROSS_FILE_class-nativesdk = "--cross-file ${WORKDIR}/meson.cross"
 
-CCOMPILER ?= "gcc"
-CXXCOMPILER ?= "g++"
-CCOMPILER_toolchain-clang = "clang"
-CXXCOMPILER_toolchain-clang = "clang++"
-
 def meson_array(var, d):
     return "', '".join(d.getVar(var).split()).join(("'", "'"))
 
 addtask write_config before do_configure
-do_write_config[vardeps] += "MESON_C_ARGS MESON_CPP_ARGS MESON_LINK_ARGS"
+do_write_config[vardeps] += "MESON_C_ARGS MESON_CPP_ARGS MESON_LINK_ARGS CC CXX LD"
 do_write_config() {
     # This needs to be Py to split the args into single-element lists
     cat >${WORKDIR}/meson.cross <<EOF
 [binaries]
-c = '${HOST_PREFIX}${CCOMPILER}'
-cpp = '${HOST_PREFIX}${CXXCOMPILER}'
+c = [${@meson_array('CC', d)}]
+cpp = [${@meson_array('CXX', d)}]
 ar = '${HOST_PREFIX}ar'
-ld = '${HOST_PREFIX}ld'
+ld = [${@meson_array('LD', d)}]
 strip = '${HOST_PREFIX}strip'
 readelf = '${HOST_PREFIX}readelf'
 pkgconfig = 'pkg-config'
