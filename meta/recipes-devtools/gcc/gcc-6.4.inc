@@ -2,13 +2,13 @@ require gcc-common.inc
 
 # Third digit in PV should be incremented after a minor release
 
-PV = "6.2.0"
+PV = "6.4.0"
 
 # BINV should be incremented to a revision after a minor gcc release
 
-BINV = "6.2.0"
+BINV = "6.4.0"
 
-FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc-6.2:${FILE_DIRNAME}/gcc-6.2/backport:"
+FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc-6.4:${FILE_DIRNAME}/gcc-6.4/backport:"
 
 DEPENDS =+ "mpfr gmp libmpc zlib"
 NATIVEDEPS = "mpfr-native gmp-native libmpc-native zlib-native"
@@ -24,7 +24,7 @@ LIC_FILES_CHKSUM = "\
 "
 
 
-BASEURI ?= "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.bz2"
+BASEURI ?= "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.xz"
 #SRCREV = "bd9a826d5448db11d29d2ec5884e7e679066f140"
 #BASEURI ?= "git://github.com/gcc-mirror/gcc;branch=gcc-6-branch;protocol=git"
 #BASEURI ?= "ftp://sourceware.org/pub/gcc/snapshots/6.2.0-RC-20160815/gcc-6.2.0-RC-20160815.tar.bz2"
@@ -81,10 +81,21 @@ SRC_URI = "\
            ${BACKPORTS} \
 "
 BACKPORTS = "\
-           file://ubsan-fix-check-empty-string.patch \
+           file://0001-i386-Move-struct-ix86_frame-to-machine_function.patch \
+           file://0002-i386-Use-reference-of-struct-ix86_frame-to-avoid-cop.patch \
+           file://0003-i386-Use-const-reference-of-struct-ix86_frame-to-avo.patch \
+           file://0004-x86-Add-mindirect-branch.patch \
+           file://0005-x86-Add-mfunction-return.patch \
+           file://0006-x86-Add-mindirect-branch-register.patch \
+           file://0007-x86-Add-V-register-operand-modifier.patch \
+           file://0008-x86-Disallow-mindirect-branch-mfunction-return-with-.patch \
+           file://0009-Use-INVALID_REGNUM-in-indirect-thunk-processing.patch \
+           file://0010-i386-Pass-INVALID_REGNUM-as-invalid-register-number.patch \
+           file://0011-i386-Update-mfunction-return-for-return-with-pop.patch \
+           file://0012-i386-Add-TARGET_INDIRECT_BRANCH_REGISTER.patch \
 "
-SRC_URI[md5sum] = "9768625159663b300ae4de2f4745fcc4"
-SRC_URI[sha256sum] = "9944589fc722d3e66308c0ce5257788ebd7872982a718aa2516123940671b7c5"
+SRC_URI[md5sum] = "11ba51a0cfb8471927f387c8895fe232"
+SRC_URI[sha256sum] = "850bf21eafdfe5cd5f6827148184c08c4a0852a37ccf36ce69855334d2c914d4"
 
 S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${PV}"
 #S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/git"
