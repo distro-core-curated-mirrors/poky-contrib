@@ -1,0 +1,60 @@
+From d63688c72fd56187abea6370d9bf6a040c7e2506 Mon Sep 17 00:00:00 2001
+From: ebotcazou <ebotcazou@138bc75d-0d04-0410-961f-82ee72b054a4>
+Date: Thu, 29 Jun 2017 18:57:47 +0000
+Subject: [PATCH 06/20] libsanitizer: Backport from mainline
+
+	Backport from mainline
+	2017-01-10  James Clarke  <jrtc27@jrtc27.com>
+
+	PR sanitizer/78992
+	* sanitizer_common/sanitizer_platform_limits_posix.h
+	(struct __sanitizer_sigaction): Cherry-pick upstream r291561.
+
+	2016-11-30  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/78532
+	* sanitizer_common/sanitizer_platform_limits_posix.h
+	(__sanitizer_sigaction): Adjust for sparc targets and various Glibc
+	versions.
+
+git-svn-id: svn+ssh://gcc.gnu.org/svn/gcc/branches/gcc-5-branch@249808 138bc75d-0d04-0410-961f-82ee72b054a4
+---
+ .../sanitizer_common/sanitizer_platform_limits_posix.h     | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h b/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
+index aec9504..067b9c6 100644
+--- a/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
++++ b/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
+@@ -16,6 +16,10 @@
+ #include "sanitizer_internal_defs.h"
+ #include "sanitizer_platform.h"
+ 
++#ifndef __GLIBC_PREREQ
++#define __GLIBC_PREREQ(x, y) 0
++#endif
++
+ namespace __sanitizer {
+   extern unsigned struct_utsname_sz;
+   extern unsigned struct_stat_sz;
+@@ -407,7 +411,17 @@ namespace __sanitizer {
+     };
+     __sanitizer_sigset_t sa_mask;
+ #if defined(__sparc__)
++#if __GLIBC_PREREQ (2, 20)
++    // On sparc glibc 2.19 and earlier sa_flags was unsigned long.
++#if defined(__arch64__)
++    // To maintain ABI compatibility on sparc64 when switching to an int,
++    // __glibc_reserved0 was added.
++    int __glibc_reserved0;
++#endif
++    int sa_flags;
++#else
+     unsigned long sa_flags;
++#endif
+ #else
+     int sa_flags;
+ #endif
+-- 
+2.7.4
+

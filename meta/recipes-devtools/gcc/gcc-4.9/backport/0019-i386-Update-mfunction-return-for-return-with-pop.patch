@@ -1,0 +1,407 @@
+From 3dc76b53ad896494ca62550a7a752fecbca3f7a2 Mon Sep 17 00:00:00 2001
+From: hjl <hjl@138bc75d-0d04-0410-961f-82ee72b054a4>
+Date: Mon, 26 Feb 2018 15:29:30 +0000
+Subject: [PATCH 19/20] i386: Update -mfunction-return= for return with pop
+
+When -mfunction-return= is used, simple_return_pop_internal should pop
+return address into ECX register, adjust stack by bytes to pop from stack
+and jump to the return thunk via ECX register.
+
+Revision 257992 removed the bool argument from ix86_output_indirect_jmp.
+Update comments to reflect it.
+
+Tested on i686 and x86-64.
+
+gcc/
+
+	Backport from mainline
+	2018-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_output_indirect_jmp): Update comments.
+
+	2018-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/84530
+	* config/i386/i386-protos.h (ix86_output_indirect_jmp): Remove
+	the bool argument.
+	(ix86_output_indirect_function_return): New prototype.
+	(ix86_split_simple_return_pop_internal): Likewise.
+	* config/i386/i386.c (indirect_return_via_cx): New.
+	(indirect_thunk_name): Handle return va CX_REG.
+	(output_indirect_thunk_function): Create alias for
+	__x86_return_thunk_[re]cx.
+	(ix86_output_indirect_jmp): Remove the bool argument.
+	(ix86_output_indirect_function_return): New function.
+	(ix86_split_simple_return_pop_internal): Likewise.
+	* config/i386/i386.md (*indirect_jump): Don't pass false
+	to ix86_output_indirect_jmp.
+	(*tablejump_1): Likewise.
+	(simple_return_pop_internal): Change it to define_insn_and_split.
+	Call ix86_split_simple_return_pop_internal to split it for
+	-mfunction-return=.
+	(simple_return_indirect_internal): Call
+	ix86_output_indirect_function_return instead of
+	ix86_output_indirect_jmp.
+
+gcc/testsuite/
+
+	Backport from mainline
+	2018-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/84530
+	* gcc.target/i386/ret-thunk-22.c: New test.
+	* gcc.target/i386/ret-thunk-23.c: Likewise.
+	* gcc.target/i386/ret-thunk-24.c: Likewise.
+	* gcc.target/i386/ret-thunk-26.c: Likewise.
+---
+ gcc/config/i386/i386-protos.h                |   4 +-
+ gcc/config/i386/i386.c                       | 105 +++++++++++++++++++++++----
+ gcc/config/i386/i386.md                      |  11 ++-
+ gcc/testsuite/gcc.target/i386/ret-thunk-22.c |  15 ++++
+ gcc/testsuite/gcc.target/i386/ret-thunk-23.c |  15 ++++
+ gcc/testsuite/gcc.target/i386/ret-thunk-24.c |  15 ++++
+ gcc/testsuite/gcc.target/i386/ret-thunk-26.c |  40 ++++++++++
+ 7 files changed, 186 insertions(+), 19 deletions(-)
+ create mode 100644 gcc/testsuite/gcc.target/i386/ret-thunk-22.c
+ create mode 100644 gcc/testsuite/gcc.target/i386/ret-thunk-23.c
+ create mode 100644 gcc/testsuite/gcc.target/i386/ret-thunk-24.c
+ create mode 100644 gcc/testsuite/gcc.target/i386/ret-thunk-26.c
+
+diff --git a/gcc/config/i386/i386-protos.h b/gcc/config/i386/i386-protos.h
+index fd1a752..7834084 100644
+--- a/gcc/config/i386/i386-protos.h
++++ b/gcc/config/i386/i386-protos.h
+@@ -312,8 +312,10 @@ extern enum attr_cpu ix86_schedule;
+ #endif
+ 
+ extern const char * ix86_output_call_insn (rtx insn, rtx call_op);
+-extern const char * ix86_output_indirect_jmp (rtx call_op, bool ret_p);
++extern const char * ix86_output_indirect_jmp (rtx call_op);
+ extern const char * ix86_output_function_return (bool long_p);
++extern const char * ix86_output_indirect_function_return (rtx ret_op);
++extern void ix86_split_simple_return_pop_internal (rtx);
+ 
+ #ifdef RTX_CODE
+ /* Target data for multipass lookahead scheduling.
+diff --git a/gcc/config/i386/i386.c b/gcc/config/i386/i386.c
+index e9dfbf7..37a7a9d 100644
+--- a/gcc/config/i386/i386.c
++++ b/gcc/config/i386/i386.c
+@@ -9209,6 +9209,9 @@ static bool indirect_thunk_needed = false;
+    by call and return thunks functions.  */
+ static int indirect_thunks_used;
+ 
++/* True if return thunk function via CX is needed.  */
++static bool indirect_return_via_cx;
++
+ #ifndef INDIRECT_LABEL
+ # define INDIRECT_LABEL "LIND"
+ #endif
+@@ -9218,11 +9221,12 @@ static int indirect_thunks_used;
+ static void
+ indirect_thunk_name (char name[32], unsigned int regno, bool ret_p)
+ {
+-  if (regno != INVALID_REGNUM && ret_p)
++  if (regno != INVALID_REGNUM && regno != CX_REG && ret_p)
+     gcc_unreachable ();
+ 
+   if (USE_HIDDEN_LINKONCE)
+     {
++      const char *ret = ret_p ? "return" : "indirect";
+       if (regno != INVALID_REGNUM)
+ 	{
+ 	  const char *reg_prefix;
+@@ -9230,14 +9234,11 @@ indirect_thunk_name (char name[32], unsigned int regno, bool ret_p)
+ 	    reg_prefix = TARGET_64BIT ? "r" : "e";
+ 	  else
+ 	    reg_prefix = "";
+-	  sprintf (name, "__x86_indirect_thunk_%s%s",
+-		   reg_prefix, reg_names[regno]);
++	  sprintf (name, "__x86_%s_thunk_%s%s",
++		   ret, reg_prefix, reg_names[regno]);
+ 	}
+       else
+-	{
+-	  const char *ret = ret_p ? "return" : "indirect";
+-	  sprintf (name, "__x86_%s_thunk", ret);
+-	}
++	sprintf (name, "__x86_%s_thunk", ret);
+     }
+   else
+     {
+@@ -9379,7 +9380,16 @@ output_indirect_thunk_function (unsigned int regno)
+ 	ASM_OUTPUT_LABEL (asm_out_file, name);
+       }
+ 
++  /* Create alias for __x86_return_thunk or __x86_return_thunk_ecx.  */
++  bool need_alias;
+   if (regno == INVALID_REGNUM)
++    need_alias = true;
++  else if (regno == CX_REG)
++    need_alias = indirect_return_via_cx;
++  else
++    need_alias = false;
++
++  if (need_alias)
+     {
+       /* Create alias for __x86_return_thunk.  */
+       char alias[32];
+@@ -25575,18 +25585,17 @@ ix86_output_indirect_branch (rtx call_op, const char *xasm,
+   else
+     ix86_output_indirect_branch_via_push (call_op, xasm, sibcall_p);
+ }
+-/* Output indirect jump.  CALL_OP is the jump target.  Jump is a
+-   function return if RET_P is true.  */
++
++/* Output indirect jump.  CALL_OP is the jump target.  */
+ 
+ const char *
+-ix86_output_indirect_jmp (rtx call_op, bool ret_p)
++ix86_output_indirect_jmp (rtx call_op)
+ {
+   if (cfun->machine->indirect_branch_type != indirect_branch_keep)
+     {
+-      /* We can't have red-zone if this isn't a function return since
+-	 "call" in the indirect thunk pushes the return address onto
+-	 stack, destroying red-zone.  */
+-      if (!ret_p && ix86_red_zone_size != 0)
++      /* We can't have red-zone since "call" in the indirect thunk
++         pushes the return address onto stack, destroying red-zone.  */
++      if (ix86_red_zone_size != 0)
+ 	gcc_unreachable ();
+ 
+       ix86_output_indirect_branch (call_op, "%0", true);
+@@ -25627,6 +25636,74 @@ ix86_output_function_return (bool long_p)
+   return "rep%; ret";
+ }
+ 
++/* Output indirect function return.  RET_OP is the function return
++   target.  */
++
++const char *
++ix86_output_indirect_function_return (rtx ret_op)
++{
++  if (cfun->machine->function_return_type != indirect_branch_keep)
++    {
++      char thunk_name[32];
++      unsigned int regno = REGNO (ret_op);
++      gcc_assert (regno == CX_REG);
++
++      if (cfun->machine->function_return_type
++	  != indirect_branch_thunk_inline)
++	{
++	  bool need_thunk = (cfun->machine->function_return_type
++			     == indirect_branch_thunk);
++	  indirect_thunk_name (thunk_name, regno, true);
++	  if (need_thunk)
++	    {
++	      indirect_return_via_cx = true;
++	      indirect_thunks_used |= 1 << CX_REG;
++	    }
++	  fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
++	}
++      else
++	output_indirect_thunk (regno);
++
++      return "";
++    }
++  else
++    return "jmp\t%A0";
++}
++
++/* Split simple return with popping POPC bytes from stack to indirect
++   branch with stack adjustment .  */
++
++void
++ix86_split_simple_return_pop_internal (rtx popc)
++{
++  struct machine_function *m = cfun->machine;
++  rtx ecx = gen_rtx_REG (SImode, CX_REG);
++  rtx insn;
++
++  /* There is no "pascal" calling convention in any 64bit ABI.  */
++  gcc_assert (!TARGET_64BIT);
++
++  insn = emit_insn (gen_pop (ecx));
++  m->fs.cfa_offset -= UNITS_PER_WORD;
++  m->fs.sp_offset -= UNITS_PER_WORD;
++
++  rtx x = plus_constant (Pmode, stack_pointer_rtx, UNITS_PER_WORD);
++  x = gen_rtx_SET (VOIDmode, stack_pointer_rtx, x);
++  add_reg_note (insn, REG_CFA_ADJUST_CFA, x);
++  add_reg_note (insn, REG_CFA_REGISTER,
++		gen_rtx_SET (VOIDmode, ecx, pc_rtx));
++  RTX_FRAME_RELATED_P (insn) = 1;
++
++  x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, popc);
++  x = gen_rtx_SET (VOIDmode, stack_pointer_rtx, x);
++  insn = emit_insn (x);
++  add_reg_note (insn, REG_CFA_ADJUST_CFA, x);
++  RTX_FRAME_RELATED_P (insn) = 1;
++
++  /* Now return address is in ECX.  */
++  emit_jump_insn (gen_simple_return_indirect_internal (ecx));
++}
++
+ /* Output the assembly for a call instruction.  */
+ 
+ const char *
+diff --git a/gcc/config/i386/i386.md b/gcc/config/i386/i386.md
+index 8a7db41..29b961a 100644
+--- a/gcc/config/i386/i386.md
++++ b/gcc/config/i386/i386.md
+@@ -11165,7 +11165,7 @@
+ (define_insn "*indirect_jump"
+   [(set (pc) (match_operand:W 0 "indirect_branch_operand" "rw"))]
+   ""
+-  "* return ix86_output_indirect_jmp (operands[0], false);"
++  "* return ix86_output_indirect_jmp (operands[0]);"
+   [(set (attr "type")
+      (if_then_else (match_test "(cfun->machine->indirect_branch_type
+ 				 != indirect_branch_keep)")
+@@ -11219,7 +11219,7 @@
+   [(set (pc) (match_operand:W 0 "indirect_branch_operand" "rw"))
+    (use (label_ref (match_operand 1)))]
+   ""
+-  "* return ix86_output_indirect_jmp (operands[0], false);"
++  "* return ix86_output_indirect_jmp (operands[0]);"
+   [(set (attr "type")
+      (if_then_else (match_test "(cfun->machine->indirect_branch_type
+ 				 != indirect_branch_keep)")
+@@ -11636,11 +11636,14 @@
+    (set_attr "prefix_rep" "1")
+    (set_attr "modrm" "0")])
+ 
+-(define_insn "simple_return_pop_internal"
++(define_insn_and_split "simple_return_pop_internal"
+   [(simple_return)
+    (use (match_operand:SI 0 "const_int_operand"))]
+   "reload_completed"
+   "ret\t%0"
++  "&& cfun->machine->function_return_type != indirect_branch_keep"
++  [(const_int 0)]
++  "ix86_split_simple_return_pop_internal (operands[0]); DONE;"
+   [(set_attr "length" "3")
+    (set_attr "atom_unit" "jeu")
+    (set_attr "length_immediate" "2")
+@@ -11650,7 +11653,7 @@
+   [(simple_return)
+    (use (match_operand:SI 0 "register_operand" "r"))]
+   "reload_completed"
+-  "* return ix86_output_indirect_jmp (operands[0], true);"
++  "* return ix86_output_indirect_function_return (operands[0]);"
+   [(set (attr "type")
+      (if_then_else (match_test "(cfun->machine->indirect_branch_type
+ 				 != indirect_branch_keep)")
+diff --git a/gcc/testsuite/gcc.target/i386/ret-thunk-22.c b/gcc/testsuite/gcc.target/i386/ret-thunk-22.c
+new file mode 100644
+index 0000000..89e086d
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/i386/ret-thunk-22.c
+@@ -0,0 +1,15 @@
++/* PR target/r84530 */
++/* { dg-do compile { target ia32 } } */
++/* { dg-options "-O2 -mfunction-return=thunk" } */
++
++struct s { _Complex unsigned short x; };
++struct s gs = { 100 + 200i };
++struct s __attribute__((noinline)) foo (void) { return gs; }
++
++/* { dg-final { scan-assembler-times "popl\[\\t \]*%ecx" 1 } } */
++/* { dg-final { scan-assembler "lea\[l\]?\[\\t \]*4\\(%esp\\), %esp" } } */
++/* { dg-final { scan-assembler "jmp\[ \t\]*__x86_return_thunk_ecx" } } */
++/* { dg-final { scan-assembler "jmp\[ \t\]*\.LIND" } } */
++/* { dg-final { scan-assembler "call\[ \t\]*\.LIND" } } */
++/* { dg-final { scan-assembler {\tpause} } } */
++/* { dg-final { scan-assembler {\tlfence} } } */
+diff --git a/gcc/testsuite/gcc.target/i386/ret-thunk-23.c b/gcc/testsuite/gcc.target/i386/ret-thunk-23.c
+new file mode 100644
+index 0000000..43f0cca
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/i386/ret-thunk-23.c
+@@ -0,0 +1,15 @@
++/* PR target/r84530 */
++/* { dg-do compile { target ia32 } } */
++/* { dg-options "-O2 -mfunction-return=thunk-extern" } */
++
++struct s { _Complex unsigned short x; };
++struct s gs = { 100 + 200i };
++struct s __attribute__((noinline)) foo (void) { return gs; }
++
++/* { dg-final { scan-assembler-times "popl\[\\t \]*%ecx" 1 } } */
++/* { dg-final { scan-assembler "lea\[l\]?\[\\t \]*4\\(%esp\\), %esp" } } */
++/* { dg-final { scan-assembler "jmp\[ \t\]*__x86_return_thunk_ecx" } } */
++/* { dg-final { scan-assembler-not "jmp\[ \t\]*\.LIND" } } */
++/* { dg-final { scan-assembler-not "call\[ \t\]*\.LIND" } } */
++/* { dg-final { scan-assembler-not {\tpause} } } */
++/* { dg-final { scan-assembler-not {\tlfence} } } */
+diff --git a/gcc/testsuite/gcc.target/i386/ret-thunk-24.c b/gcc/testsuite/gcc.target/i386/ret-thunk-24.c
+new file mode 100644
+index 0000000..8729e35
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/i386/ret-thunk-24.c
+@@ -0,0 +1,15 @@
++/* PR target/r84530 */
++/* { dg-do compile { target ia32 } } */
++/* { dg-options "-O2 -mfunction-return=thunk-inline" } */
++
++struct s { _Complex unsigned short x; };
++struct s gs = { 100 + 200i };
++struct s __attribute__((noinline)) foo (void) { return gs; }
++
++/* { dg-final { scan-assembler-times "popl\[\\t \]*%ecx" 1 } } */
++/* { dg-final { scan-assembler "lea\[l\]?\[\\t \]*4\\(%esp\\), %esp" } } */
++/* { dg-final { scan-assembler-not "jmp\[ \t\]*__x86_return_thunk_ecx" } } */
++/* { dg-final { scan-assembler "jmp\[ \t\]*\.LIND" } } */
++/* { dg-final { scan-assembler "call\[ \t\]*\.LIND" } } */
++/* { dg-final { scan-assembler {\tpause} } } */
++/* { dg-final { scan-assembler {\tlfence} } } */
+diff --git a/gcc/testsuite/gcc.target/i386/ret-thunk-26.c b/gcc/testsuite/gcc.target/i386/ret-thunk-26.c
+new file mode 100644
+index 0000000..9144e98
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/i386/ret-thunk-26.c
+@@ -0,0 +1,40 @@
++/* PR target/r84530 */
++/* { dg-do run } */
++/* { dg-options "-Os -mfunction-return=thunk" } */
++
++struct S { int i; };
++__attribute__((const, noinline, noclone))
++struct S foo (int x)
++{
++  struct S s;
++  s.i = x;
++  return s;
++}
++
++int a[2048], b[2048], c[2048], d[2048];
++struct S e[2048];
++
++__attribute__((noinline, noclone)) void
++bar (void)
++{
++  int i;
++  for (i = 0; i < 1024; i++)
++    {
++      e[i] = foo (i);
++      a[i+2] = a[i] + a[i+1];
++      b[10] = b[10] + i;
++      c[i] = c[2047 - i];
++      d[i] = d[i + 1];
++    }
++}
++
++int
++main ()
++{
++  int i;
++  bar ();
++  for (i = 0; i < 1024; i++)
++    if (e[i].i != i)
++      __builtin_abort ();
++  return 0;
++}
+-- 
+2.7.4
+

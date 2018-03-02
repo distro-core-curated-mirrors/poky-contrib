@@ -2,13 +2,13 @@ require gcc-common.inc
 
 # Third digit in PV should be incremented after a minor release
 
-PV = "4.9.3"
+PV = "4.9.4"
 
 # BINV should be incremented to a revision after a minor gcc release
 
-BINV = "4.9.3"
+BINV = "4.9.4"
 
-FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc-4.9:"
+FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc-4.9:${FILE_DIRNAME}/gcc-4.9/backport:"
 
 DEPENDS =+ "mpfr gmp libmpc zlib"
 NATIVEDEPS = "mpfr-native gmp-native libmpc-native zlib-native"
@@ -25,6 +25,7 @@ LIC_FILES_CHKSUM = "\
 
 SRC_URI = "\
     ${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.bz2 \
+    ${BACKPORTS} \
     file://0001-gcc-4.3.1-ARCH_FLAGS_FOR_TARGET.patch \
     file://0002-uclibc-conf.patch \
     file://0003-gcc-uclibc-locale-ctype_touplow_t.patch \
@@ -82,8 +83,32 @@ SRC_URI = "\
     file://0064-handle-target-sysroot-multilib.patch \
     file://0065-gcc-483-universal-initializer-no-warning.patch \
 "
-SRC_URI[md5sum] = "6f831b4d251872736e8e9cc09746f327"
-SRC_URI[sha256sum] = "2332b2a5a321b57508b9031354a8503af6fdfb868b8c1748d33028d100a8b67e"
+
+BACKPORTS = " \
+    file://0001-Escape-braces-in-regexp-involving-strong.patch \
+    file://0002-Use-ucontext_t-not-struct-ucontext-in-linux-unwind.h.patch \
+    file://0003-Fix-PR78294-thread-sanitizer-broken-when-using-ld.go.patch \
+    file://0004-Backport-r246730.patch \
+    file://0005-libsanitizer-Cherry-pick-upstream-r280657.patch \
+    file://0006-libsanitizer-Backport-from-mainline.patch \
+    file://0007-2017-09-07-Matthias-Klose-doko-ubuntu.com.patch \
+    file://0008-2017-09-07-Matthias-Klose-doko-ubuntu.com.patch \
+    file://0009-i386-Move-struct-ix86_frame-to-machine_function.patch \
+    file://0010-i386-Use-reference-of-struct-ix86_frame-to-avoid-cop.patch \
+    file://0011-i386-Use-const-reference-of-struct-ix86_frame-to-avo.patch \
+    file://0012-x86-Add-mindirect-branch.patch \
+    file://0013-x86-Add-mfunction-return.patch \
+    file://0014-x86-Add-mindirect-branch-register.patch \
+    file://0015-x86-Add-V-register-operand-modifier.patch \
+    file://0016-x86-Disallow-mindirect-branch-mfunction-return-with-.patch \
+    file://0017-Use-INVALID_REGNUM-in-indirect-thunk-processing.patch \
+    file://0018-i386-Pass-INVALID_REGNUM-as-invalid-register-number.patch \
+    file://0019-i386-Update-mfunction-return-for-return-with-pop.patch \
+    file://0020-i386-Add-TARGET_INDIRECT_BRANCH_REGISTER.patch \
+    "
+
+SRC_URI[md5sum] = "87c24a4090c1577ba817ec6882602491"
+SRC_URI[sha256sum] = "6c11d292cd01b294f9f84c9a59c230d80e9e4a47e5c6355f046bb36d4f358092"
 
 S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${PV}"
 B = "${WORKDIR}/gcc-${PV}/build.${HOST_SYS}.${TARGET_SYS}"

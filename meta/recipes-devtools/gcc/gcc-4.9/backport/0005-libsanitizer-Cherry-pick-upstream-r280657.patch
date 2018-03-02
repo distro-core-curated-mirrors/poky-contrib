@@ -1,0 +1,46 @@
+From 25e40a9d00b82a8da1e66ce7718e1ade1aa2587b Mon Sep 17 00:00:00 2001
+From: jakub <jakub@138bc75d-0d04-0410-961f-82ee72b054a4>
+Date: Tue, 30 May 2017 07:19:49 +0000
+Subject: [PATCH 05/20] libsanitizer: Cherry-pick upstream r280657
+
+	Backported from mainline
+	2016-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/77396
+	* asan/asan_globals.cc: Cherry-pick upstream r280657.
+
+git-svn-id: svn+ssh://gcc.gnu.org/svn/gcc/branches/gcc-5-branch@248603 138bc75d-0d04-0410-961f-82ee72b054a4
+---
+ libsanitizer/asan/asan_globals.cc | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/libsanitizer/asan/asan_globals.cc b/libsanitizer/asan/asan_globals.cc
+index e97850a..e2edd5c 100644
+--- a/libsanitizer/asan/asan_globals.cc
++++ b/libsanitizer/asan/asan_globals.cc
+@@ -164,10 +164,10 @@ void __asan_unregister_globals(__asan_global *globals, uptr n) {
+ // initializer can only touch global variables in the same TU.
+ void __asan_before_dynamic_init(const char *module_name) {
+   if (!flags()->check_initialization_order ||
+-      !flags()->poison_heap)
++      !flags()->poison_heap ||
++      !dynamic_init_globals)
+     return;
+   bool strict_init_order = flags()->strict_init_order;
+-  CHECK(dynamic_init_globals);
+   CHECK(module_name);
+   CHECK(asan_inited);
+   BlockingMutexLock lock(&mu_for_globals);
+@@ -190,7 +190,8 @@ void __asan_before_dynamic_init(const char *module_name) {
+ // TU are poisoned.  It simply unpoisons all dynamically initialized globals.
+ void __asan_after_dynamic_init() {
+   if (!flags()->check_initialization_order ||
+-      !flags()->poison_heap)
++      !flags()->poison_heap ||
++      !dynamic_init_globals)
+     return;
+   CHECK(asan_inited);
+   BlockingMutexLock lock(&mu_for_globals);
+-- 
+2.7.4
+

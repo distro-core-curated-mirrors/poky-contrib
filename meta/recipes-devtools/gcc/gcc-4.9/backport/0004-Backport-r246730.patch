@@ -1,0 +1,36 @@
+From 131abefb4453649a7a99a774496205839a49bc3f Mon Sep 17 00:00:00 2001
+From: marxin <marxin@138bc75d-0d04-0410-961f-82ee72b054a4>
+Date: Mon, 29 May 2017 09:09:07 +0000
+Subject: [PATCH 04/20] Backport r246730
+
+2017-05-29  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-04-06  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/80166
+	* sanitizer_common/sanitizer_common_interceptors.inc (INTERCEPTOR):
+	Cherry-pick upstream r299036.
+
+git-svn-id: svn+ssh://gcc.gnu.org/svn/gcc/branches/gcc-5-branch@248560 138bc75d-0d04-0410-961f-82ee72b054a4
+---
+ libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc b/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc
+index e301dc1..84e64af 100644
+--- a/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc
++++ b/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc
+@@ -1997,7 +1997,8 @@ INTERCEPTOR(int, getgroups, int size, u32 *lst) {
+   void *ctx;
+   COMMON_INTERCEPTOR_ENTER(ctx, getgroups, size, lst);
+   int res = REAL(getgroups)(size, lst);
+-  if (res && lst) COMMON_INTERCEPTOR_WRITE_RANGE(ctx, lst, res * sizeof(*lst));
++  if (res >= 0 && lst && size > 0)
++    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, lst, res * sizeof(*lst));
+   return res;
+ }
+ #define INIT_GETGROUPS COMMON_INTERCEPT_FUNCTION(getgroups);
+-- 
+2.7.4
+

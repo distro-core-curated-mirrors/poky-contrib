@@ -1,0 +1,42 @@
+From 14e8645121a6b743d2dd96cc581c80b9af8f3967 Mon Sep 17 00:00:00 2001
+From: trippels <trippels@138bc75d-0d04-0410-961f-82ee72b054a4>
+Date: Wed, 16 Nov 2016 11:31:18 +0000
+Subject: [PATCH 03/20] Fix PR78294 - thread sanitizer broken when using
+ ld.gold
+
+When one uses ld.gold to build gcc, the thread sanitizer doesn't work,
+because gold is more conservative when applying TLS relaxations than
+ld.bfd. In this case a missing initial-exec attribute on a declaration
+causes gcc to assume the general dynamic model. With ld.bfd this gets
+relaxed to initial exec when linking the shared library, so the missing
+attribute doesn't matter. But ld.gold doesn't perform this optimization
+and this leads to crashes on tsan instrumented binaries.
+
+See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=78294
+and: https://sourceware.org/bugzilla/show_bug.cgi?id=20805
+
+The fix is easy, just add the missing attribute.
+
+  PR sanitizer/78294
+  * tsan/tsan_rtl.cc: Add missing attribute.
+
+git-svn-id: svn+ssh://gcc.gnu.org/svn/gcc/branches/gcc-5-branch@242483 138bc75d-0d04-0410-961f-82ee72b054a4
+---
+ libsanitizer/tsan/tsan_rtl.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/libsanitizer/tsan/tsan_rtl.cc b/libsanitizer/tsan/tsan_rtl.cc
+index 573eeb8..bbbb5c5 100644
+--- a/libsanitizer/tsan/tsan_rtl.cc
++++ b/libsanitizer/tsan/tsan_rtl.cc
+@@ -32,6 +32,7 @@ extern "C" void __tsan_resume() {
+ namespace __tsan {
+ 
+ #ifndef TSAN_GO
++__attribute__((tls_model("initial-exec")))
+ THREADLOCAL char cur_thread_placeholder[sizeof(ThreadState)] ALIGNED(64);
+ #endif
+ static char ctx_placeholder[sizeof(Context)] ALIGNED(64);
+-- 
+2.7.4
+
