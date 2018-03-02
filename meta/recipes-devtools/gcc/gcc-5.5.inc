@@ -2,15 +2,15 @@ require gcc-common.inc
 
 # Third digit in PV should be incremented after a minor release
 
-PV = "5.2.0"
+PV = "5.5.0"
 
 #SNAP = "5-20150405"
 
 # BINV should be incremented to a revision after a minor gcc release
 
-BINV = "5.2.0"
+BINV = "5.5.0"
 
-FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc-5.2:${FILE_DIRNAME}/gcc-5.2/backport:"
+FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc-5.5:${FILE_DIRNAME}/gcc-5.5/backport:"
 
 DEPENDS =+ "mpfr gmp libmpc zlib"
 NATIVEDEPS = "mpfr-native gmp-native libmpc-native zlib-native"
@@ -25,9 +25,9 @@ LIC_FILES_CHKSUM = "\
     file://COPYING.RUNTIME;md5=fe60d87048567d4fe8c8a0ed2448bcc8 \
 "
 #BASEURI = "http://www.netgull.com/gcc/snapshots/${SNAP}/gcc-${SNAP}.tar.bz2"
-BASEURI = "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.bz2"
-SRC_URI[md5sum] = "a51bcfeb3da7dd4c623e27207ed43467"
-SRC_URI[sha256sum] = "5f835b04b5f7dd4f4d2dc96190ec1621b8d89f2dc6f638f9f8bc1b1014ba8cad"
+BASEURI = "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.xz"
+SRC_URI[md5sum] = "0f70424213b4a1113c04ba66ddda0c1f"
+SRC_URI[sha256sum] = "530cea139d82fe542b358961130c69cfde8b3d14556370b65823d2f91f0ced87"
 
 SRC_URI = "\
            ${BASEURI} \
@@ -68,19 +68,28 @@ SRC_URI = "\
            file://0034-Don-t-search-host-directory-during-relink-if-inst_pr.patch \
            file://0035-Dont-link-the-plugins-with-libgomp-explicitly.patch \
            file://0036-Use-SYSTEMLIBS_DIR-replacement-instead-of-hardcoding.patch \
-           file://0037-pr65779.patch \
            file://0038-fix-g++-sysroot.patch \
            file://0039-libcc1-fix-libcc1-s-install-path-and-rpath.patch \
            file://0040-nativesdk-gcc-support.patch \
            file://0041-handle-target-sysroot-multilib.patch \
            file://0042-cxxflags-for-build.patch \
-           file://CVE-2016-4488.patch \
-           file://CVE-2016-4489.patch \
-           file://CVE-2016-2226.patch \
-           file://CVE-2016-4490.patch \
           "
 
-BACKPORTS = ""
+BACKPORTS = " \
+           file://0001-i386-Move-struct-ix86_frame-to-machine_function.patch \
+           file://0002-i386-Use-reference-of-struct-ix86_frame-to-avoid-cop.patch \
+           file://0003-i386-Use-const-reference-of-struct-ix86_frame-to-avo.patch \
+           file://0004-x86-Add-mindirect-branch.patch \
+           file://0005-x86-Add-mfunction-return.patch \
+           file://0006-x86-Add-V-register-operand-modifier.patch \
+           file://0007-x86-Add-mindirect-branch-register.patch \
+           file://0008-x86-Disallow-mindirect-branch-mfunction-return-with-.patch \
+           file://0009-Use-INVALID_REGNUM-in-indirect-thunk-processing.patch \
+           file://0010-i386-Pass-INVALID_REGNUM-as-invalid-register-number.patch \
+           file://0011-i386-Update-mfunction-return-for-return-with-pop.patch \
+           file://0012-i386-Add-TARGET_INDIRECT_BRANCH_REGISTER.patch \
+         "
+
 #S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${SNAP}"
 S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${PV}"
 B = "${WORKDIR}/gcc-${PV}/build.${HOST_SYS}.${TARGET_SYS}"

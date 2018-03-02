@@ -145,10 +145,12 @@ FILES_libstdc++-dev = "\
     ${libdir}/libstdc++.so \
     ${libdir}/libstdc++.la \
     ${libdir}/libsupc++.la \
+    ${libdir}/libstdc++fs.la \
 "
 FILES_libstdc++-staticdev = "\
     ${libdir}/libstdc++.a \
     ${libdir}/libsupc++.a \
+    ${libdir}/libstdc++fs.a \
 "
 
 FILES_libstdc++-precompile-dev = "${includedir}/c++/${TARGET_SYS}/bits/*.gch"
