@@ -226,8 +226,9 @@ def findConfigFile(configfile, data):
     return None
 
 #
-# We search for a conf/bblayers.conf under an entry in BBPATH or in cwd working 
-# up to /. If that fails, we search for a conf/bitbake.conf in BBPATH.
+# We search for a conf/bblayers.conf under an entry in BBPATH, TOPDIR or in cwd working 
+# up to /. If that fails, we search for a conf/bitbake.conf in BBPATH or TOPDIR if that
+# is unset.
 #
 
 def findTopdir():
@@ -235,8 +236,10 @@ def findTopdir():
     bbpath = None
     if 'BBPATH' in os.environ:
         bbpath = os.environ['BBPATH']
-        d.setVar('BBPATH', bbpath)
-
+    if not bbpath and 'TOPDIR' in os.environ:
+        bbpath = os.environ['TOPDIR']
+    if bbpath:
+        d.setVar('BBPATH', bbpath)        
     layerconf = findConfigFile("bblayers.conf", d)
     if layerconf:
         return os.path.dirname(os.path.dirname(layerconf))
@@ -341,6 +344,8 @@ class CookerDataBuilder(object):
         data = bb.data.createCopy(self.basedata)
         data.setVar("BB_CURRENT_MC", mc)
 
+        print("here")
+
         # Parse files for loading *before* bitbake.conf and any includes
         for f in prefiles:
             data = parse_config_file(f, data)
@@ -397,6 +402,8 @@ class CookerDataBuilder(object):
                     bb.fatal("Layer %s is not compatible with the core layer which only supports these series: %s (layer is compatible with %s)"
                               % (c, " ".join(layerseries), " ".join(compat)))
 
+        print("here3") 
+ 
         if not data.getVar("BBPATH"):
             msg = "The BBPATH variable is not set"
             if not layerconf:
@@ -404,6 +411,9 @@ class CookerDataBuilder(object):
                         " the expected location.\nMaybe you accidentally"
                         " invoked bitbake from the wrong directory?")
             raise SystemExit(msg)
+
+        print("here5") 
+
 
         data = parse_config_file(os.path.join("conf", "bitbake.conf"), data)
 
@@ -427,6 +437,8 @@ class CookerDataBuilder(object):
             bb.event.register(var, data.getVar(var, False),  (data.getVarFlag(var, "eventmask") or "").split(), handlerfn, handlerln)
 
         data.setVar('BBINCLUDED',bb.parse.get_file_depends(data))
+
+        print("here2")
 
         return data
 
