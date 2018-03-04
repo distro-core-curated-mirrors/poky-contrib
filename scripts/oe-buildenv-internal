@@ -106,9 +106,8 @@ fi
 
 BITBAKEDIR=$(readlink -f "$BITBAKEDIR")
 BUILDDIR=$(readlink -f "$BUILDDIR")
-if [ -z "$BBPATH" ]; then
-    BBPATH=$BUILDDIR
-fi
+BBPATH=$BUILDDIR
+
 export BBPATH
 TOPDIR=$BUILDDIR
 
