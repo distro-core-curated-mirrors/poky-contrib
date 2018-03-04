@@ -651,8 +651,7 @@ python () {
     # We always try to scan SRC_URI for urls with machine overrides
     # unless the package sets SRC_URI_OVERRIDES_PACKAGE_ARCH=0
     #
-    #override = d.getVar('SRC_URI_OVERRIDES_PACKAGE_ARCH')
-    override = '0'
+    override = d.getVar('SRC_URI_OVERRIDES_PACKAGE_ARCH')
     if override != '0':
         paths = []
         fpaths = (d.getVar('FILESPATH') or '').split(':')
@@ -669,20 +668,20 @@ python () {
                 local = fetcher.localpath(s)
                 for mp in paths:
                     if local.startswith(mp):
-                        bb.warn("overriding PACKAGE_ARCH from %s to %s for %s" % (pkg_arch, mach_arch, pn))
+                        #bb.note("overriding PACKAGE_ARCH from %s to %s for %s" % (pkg_arch, mach_arch, pn))
                         d.setVar('PACKAGE_ARCH', "${MACHINE_ARCH}")
                         return
 
     packages = d.getVar('PACKAGES').split()
-    #for pkg in packages:
-        #pkgarch = d.getVar("PACKAGE_ARCH_%s" % pkg)
+    for pkg in packages:
+        pkgarch = d.getVar("PACKAGE_ARCH_%s" % pkg)
 
         # We could look for != PACKAGE_ARCH here but how to choose
         # if multiple differences are present?
         # Look through PACKAGE_ARCHS for the priority order?
-    #    if pkgarch and pkgarch == mach_arch:
-    #        d.setVar('PACKAGE_ARCH', "${MACHINE_ARCH}")
-    #        bb.warn("Recipe %s is marked as only being architecture specific but seems to have machine specific packages?! The recipe may as well mark itself as machine specific directly." % d.getVar("PN"))
+        if pkgarch and pkgarch == mach_arch:
+            d.setVar('PACKAGE_ARCH', "${MACHINE_ARCH}")
+            bb.warn("Recipe %s is marked as only being architecture specific but seems to have machine specific packages?! The recipe may as well mark itself as machine specific directly." % d.getVar("PN"))
 }
 
 addtask cleansstate after do_clean
