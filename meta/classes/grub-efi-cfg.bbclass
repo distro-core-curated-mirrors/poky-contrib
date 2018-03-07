@@ -91,7 +91,7 @@ python build_efi_cfg() {
             lb = label
             if label == "install":
                 lb = "install-efi"
-            kernel = localdata.getVar('KERNEL_IMAGETYPE')
+            kernel = localdata.getVar('KERNEL_IMAGETYPES').split()[0]
             cfgfile.write('linux /%s LABEL=%s' % (kernel, lb))
 
             cfgfile.write(' %s' % replace_rootfs_uuid(d, root))

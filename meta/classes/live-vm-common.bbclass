@@ -36,13 +36,15 @@ populate_kernel() {
 	dest=$1
 	install -d $dest
 
-	# Install bzImage, initrd, and rootfs.img in DEST for all loaders to use.
-	bbnote "Trying to install ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} as $dest/${KERNEL_IMAGETYPE}"
-	if [ -e ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} ]; then
-		install -m 0644 ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} $dest/${KERNEL_IMAGETYPE}
-	else
-		bbwarn "${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} doesn't exist"
-	fi
+	for kernel in ${KERNEL_IMAGETYPES}; do
+		# Install bzImage, initrd, and rootfs.img in DEST for all loaders to use.
+		bbnote "Trying to install ${DEPLOY_DIR_IMAGE}/$kernel as $dest/$kernel"
+		if [ -e ${DEPLOY_DIR_IMAGE}/$kernel ]; then
+			install -m 0644 ${DEPLOY_DIR_IMAGE}/$kernel $dest/$kernel
+		else
+			bbwarn "${DEPLOY_DIR_IMAGE}/$kernel doesn't exist"
+		fi
+	done
 
 	# initrd is made of concatenation of multiple filesystem images
 	if [ -n "${INITRD}" ]; then

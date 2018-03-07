@@ -173,7 +173,7 @@ python build_syslinux_cfg () {
         if not root:
             bb.fatal('SYSLINUX_ROOT not defined')
 
-        kernel = localdata.getVar('KERNEL_IMAGETYPE')
+        kernel = localdata.getVar('KERNEL_IMAGETYPES').split()[0]
         for btype in btypes:
             cfgfile.write('LABEL %s%s\nKERNEL /%s\n' % (btype[0], label, kernel))
 

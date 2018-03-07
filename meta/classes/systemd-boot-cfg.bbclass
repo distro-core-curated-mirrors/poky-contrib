@@ -48,7 +48,7 @@ python build_efi_cfg() {
 
         entrycfg.write('title %s\n' % label)
 
-        kernel = localdata.getVar("KERNEL_IMAGETYPE")
+        kernel = localdata.getVar("KERNEL_IMAGETYPES").split()[0]
         entrycfg.write('linux /%s\n' % kernel)
 
         append = localdata.getVar('APPEND')
