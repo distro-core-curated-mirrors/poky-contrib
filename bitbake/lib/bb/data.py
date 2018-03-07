@@ -144,10 +144,6 @@ def emit_var(var, o=sys.__stdout__, d = init(), all=False):
 
     varExpanded = d.expand(var)
 
-    if unexport:
-        o.write('unset %s\n' % varExpanded)
-        return False
-
     if val is None:
         return False
 
@@ -172,15 +168,19 @@ def emit_var(var, o=sys.__stdout__, d = init(), all=False):
         o.write("%s() {\n%s\n}\n" % (varExpanded, val))
         return 1
 
-    if export:
-        o.write('export ')
-
     # if we're going to output this within doublequotes,
     # to a shell, we need to escape the quotes in the var
     alter = re.sub('"', '\\"', val)
     alter = re.sub('\n', ' \\\n', alter)
     alter = re.sub('\\$', '\\\\$', alter)
-    o.write('%s="%s"\n' % (varExpanded, alter))
+
+    if unexport:
+        o.write('unset %s # "%s"\n' % (varExpanded, alter))
+    elif export:
+        o.write('export %s="%s"\n' % (varExpanded, alter))
+    else:
+        o.write('%s="%s"\n' % (varExpanded, alter))
+
     return False
 
 def emit_env(o=sys.__stdout__, d = init(), all=False):
