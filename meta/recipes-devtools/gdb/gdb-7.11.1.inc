@@ -16,6 +16,7 @@ SRC_URI = "http://ftp.gnu.org/gnu/gdb/gdb-${PV}.tar.xz \
            file://0009-Change-order-of-CFLAGS.patch \
            file://0010-resolve-restrict-keyword-conflict.patch \
            file://0011-avx_mpx.patch \
+           file://0012-gdb-Fix-ia64-defining-TRAP_HWBKPT-before-including-g.patch \
 "
 
 SRC_URI[md5sum] = "5aa71522e488e358243917967db87476"
