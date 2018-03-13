@@ -1,0 +1,164 @@
+From 301a252175d8472fb54202696c3523afe13e62e7 Mon Sep 17 00:00:00 2001
+From: Chen Qi <Qi.Chen@windriver.com>
+Date: Mon, 12 Mar 2018 18:57:58 +0800
+Subject: [PATCH] add MaxUsePercent and KeepFreePercent
+
+Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+---
+ src/basic/parse-util.c           | 25 +++++++++++++++++++++++++
+ src/basic/parse-util.h           |  1 +
+ src/journal/journal-file.c       | 14 ++++++++++++--
+ src/journal/journal-file.h       |  2 ++
+ src/journal/journald-gperf.gperf |  4 ++++
+ src/shared/conf-parser.c         |  1 +
+ src/shared/conf-parser.h         |  1 +
+ 7 files changed, 46 insertions(+), 2 deletions(-)
+
+diff --git a/src/basic/parse-util.c b/src/basic/parse-util.c
+index 2c22753de..7b1ddd97b 100644
+--- a/src/basic/parse-util.c
++++ b/src/basic/parse-util.c
+@@ -93,6 +93,31 @@ int parse_mode(const char *s, mode_t *ret) {
+         return 0;
+ }
+ 
++int parse_percent_double(const char *s, double *ret) {
++        double d;
++        int l;
++
++        assert(s);
++        assert(ret);
++
++        s += strspn(s, WHITESPACE);
++
++        l = strspn(s, DIGITS".");
++        if (s[l] != '%')
++                return -ERANGE;
++
++        errno = 0;
++        d = strtod(s, NULL);
++        if (errno > 0)
++                return -errno;
++
++        if (d >= 100 || d < 0)
++                return -ERANGE;
++
++        *ret = d * 0.01;
++        return 0;
++}
++
+ int parse_ifindex(const char *s, int *ret) {
+         int ifi, r;
+ 
+diff --git a/src/basic/parse-util.h b/src/basic/parse-util.h
+index 1eda1d7f9..059cb650a 100644
+--- a/src/basic/parse-util.h
++++ b/src/basic/parse-util.h
+@@ -34,6 +34,7 @@ int parse_boolean(const char *v) _pure_;
+ int parse_dev(const char *s, dev_t *ret);
+ int parse_pid(const char *s, pid_t* ret_pid);
+ int parse_mode(const char *s, mode_t *ret);
++int parse_percent_double(const char *s, double *ret);
+ int parse_ifindex(const char *s, int *ret);
+ 
+ int parse_size(const char *t, uint64_t base, uint64_t *size);
+diff --git a/src/journal/journal-file.c b/src/journal/journal-file.c
+index 3353b3a0d..71a4ec98b 100644
+--- a/src/journal/journal-file.c
++++ b/src/journal/journal-file.c
+@@ -3677,6 +3677,8 @@ void journal_reset_metrics(JournalMetrics *m) {
+                 .max_size = (uint64_t) -1,
+                 .keep_free = (uint64_t) -1,
+                 .n_max_files = (uint64_t) -1,
++                .max_use_percent = (double) -1,
++                .keep_free_percent = (double) -1,
+         };
+ }
+ 
+@@ -3698,7 +3700,11 @@ void journal_default_metrics(JournalMetrics *m, int fd) {
+         if (m->max_use == (uint64_t) -1) {
+ 
+                 if (fs_size > 0) {
+-                        m->max_use = PAGE_ALIGN(fs_size / 10); /* 10% of file system size */
++                        if (m->max_use_percent == (double) -1) {
++                                m->max_use = PAGE_ALIGN(fs_size / 10); /* 10% of file system size */
++                        } else {
++                                m->max_use = PAGE_ALIGN(fs_size * m->max_use_percent);
++                        }
+ 
+                         if (m->max_use > DEFAULT_MAX_USE_UPPER)
+                                 m->max_use = DEFAULT_MAX_USE_UPPER;
+@@ -3751,7 +3757,11 @@ void journal_default_metrics(JournalMetrics *m, int fd) {
+         if (m->keep_free == (uint64_t) -1) {
+ 
+                 if (fs_size > 0) {
+-                        m->keep_free = PAGE_ALIGN(fs_size * 3 / 20); /* 15% of file system size */
++                        if (m->keep_free_percent == (double) -1) {
++                                m->keep_free = PAGE_ALIGN(fs_size * 3 / 20); /* 15% of file system size */
++                        } else {
++                                m->keep_free = PAGE_ALIGN(fs_size * m->keep_free_percent);
++                        }
+ 
+                         if (m->keep_free > DEFAULT_KEEP_FREE_UPPER)
+                                 m->keep_free = DEFAULT_KEEP_FREE_UPPER;
+diff --git a/src/journal/journal-file.h b/src/journal/journal-file.h
+index c5cfa3d87..56a91bd05 100644
+--- a/src/journal/journal-file.h
++++ b/src/journal/journal-file.h
+@@ -43,6 +43,8 @@ typedef struct JournalMetrics {
+         uint64_t min_use;      /* how much disk space to use in total at least, even if keep_free says not to */
+         uint64_t keep_free;    /* how much to keep free on disk */
+         uint64_t n_max_files;  /* how many files to keep around at max */
++        double max_use_percent; /* same as max_use, but evaluated with the percentage of the current storage */
++        double keep_free_percent;
+ } JournalMetrics;
+ 
+ typedef enum direction {
+diff --git a/src/journal/journald-gperf.gperf b/src/journal/journald-gperf.gperf
+index e8c1f2e2d..f3b7a4378 100644
+--- a/src/journal/journald-gperf.gperf
++++ b/src/journal/journald-gperf.gperf
+@@ -28,12 +28,16 @@ Journal.RateLimitInterval,  config_parse_sec,        0, offsetof(Server, rate_li
+ Journal.RateLimitIntervalSec,config_parse_sec,       0, offsetof(Server, rate_limit_interval)
+ Journal.RateLimitBurst,     config_parse_unsigned,   0, offsetof(Server, rate_limit_burst)
+ Journal.SystemMaxUse,       config_parse_iec_uint64, 0, offsetof(Server, system_storage.metrics.max_use)
++Journal.SystemMaxUsePercent,config_parse_percent_double, 0, offsetof(Server, system_storage.metrics.max_use_percent)
+ Journal.SystemMaxFileSize,  config_parse_iec_uint64, 0, offsetof(Server, system_storage.metrics.max_size)
+ Journal.SystemKeepFree,     config_parse_iec_uint64, 0, offsetof(Server, system_storage.metrics.keep_free)
++Journal.SystemKeepFreePercent,config_parse_percent_double, 0, offsetof(Server, system_storage.metrics.keep_free_percent)
+ Journal.SystemMaxFiles,     config_parse_uint64,     0, offsetof(Server, system_storage.metrics.n_max_files)
+ Journal.RuntimeMaxUse,      config_parse_iec_uint64, 0, offsetof(Server, runtime_storage.metrics.max_use)
++Journal.RuntimeMaxUsePercent,config_parse_percent_double, 0, offsetof(Server, runtime_storage.metrics.max_use_percent)
+ Journal.RuntimeMaxFileSize, config_parse_iec_uint64, 0, offsetof(Server, runtime_storage.metrics.max_size)
+ Journal.RuntimeKeepFree,    config_parse_iec_uint64, 0, offsetof(Server, runtime_storage.metrics.keep_free)
++Journal.RuntimeKeepFreePercent,config_parse_percent_double, 0, offsetof(Server, runtime_storage.metrics.keep_free_percent)
+ Journal.RuntimeMaxFiles,    config_parse_uint64,     0, offsetof(Server, runtime_storage.metrics.n_max_files)
+ Journal.MaxRetentionSec,    config_parse_sec,        0, offsetof(Server, max_retention_usec)
+ Journal.MaxFileSec,         config_parse_sec,        0, offsetof(Server, max_file_usec)
+diff --git a/src/shared/conf-parser.c b/src/shared/conf-parser.c
+index daddb7cf2..04fbe7ba9 100644
+--- a/src/shared/conf-parser.c
++++ b/src/shared/conf-parser.c
+@@ -529,6 +529,7 @@ DEFINE_PARSER(double, double, safe_atod);
+ DEFINE_PARSER(nsec, nsec_t, parse_nsec);
+ DEFINE_PARSER(sec, usec_t, parse_sec);
+ DEFINE_PARSER(mode, mode_t, parse_mode);
++DEFINE_PARSER(percent_double, double, parse_percent_double);
+ 
+ int config_parse_iec_size(const char* unit,
+                             const char *filename,
+diff --git a/src/shared/conf-parser.h b/src/shared/conf-parser.h
+index 2fd135baa..f77dae4c0 100644
+--- a/src/shared/conf-parser.h
++++ b/src/shared/conf-parser.h
+@@ -140,6 +140,7 @@ int config_parse_strv(const char *unit, const char *filename, unsigned line, con
+ int config_parse_sec(const char *unit, const char *filename, unsigned line, const char *section, unsigned section_line, const char *lvalue, int ltype, const char *rvalue, void *data, void *userdata);
+ int config_parse_nsec(const char *unit, const char *filename, unsigned line, const char *section, unsigned section_line, const char *lvalue, int ltype, const char *rvalue, void *data, void *userdata);
+ int config_parse_mode(const char *unit, const char *filename, unsigned line, const char *section, unsigned section_line, const char *lvalue, int ltype, const char *rvalue, void *data, void *userdata);
++int config_parse_percent_double(const char *unit, const char *filename, unsigned line, const char *section, unsigned section_line, const char *lvalue, int ltype, const char *rvalue, void *data, void *userdata);
+ int config_parse_log_facility(const char *unit, const char *filename, unsigned line, const char *section, unsigned section_line, const char *lvalue, int ltype, const char *rvalue, void *data, void *userdata);
+ int config_parse_log_level(const char *unit, const char *filename, unsigned line, const char *section, unsigned section_line, const char *lvalue, int ltype, const char *rvalue, void *data, void *userdata);
+ int config_parse_signal(const char *unit, const char *filename, unsigned line, const char *section, unsigned section_line, const char *lvalue, int ltype, const char *rvalue, void *data, void *userdata);
+-- 
+2.11.0
+
