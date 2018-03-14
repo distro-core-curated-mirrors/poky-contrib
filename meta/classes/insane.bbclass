@@ -17,6 +17,7 @@
 #  -Check that scripts in base_[bindir|sbindir|libdir] do not reference
 #   files under exec_prefix
 #  -Check if the package name is upper case
+#  -Check if shell scripts contain bashisms
 
 QA_SANE = "True"
 
@@ -379,6 +380,32 @@ def package_qa_hash_style(path, name, d, elf, messages):
     if has_syms and not sane:
         package_qa_add_message(messages, "ldflags", "No GNU_HASH in the ELF binary %s, didn't pass LDFLAGS?" % path)
 
+QADEPENDS += "checkbashisms-native"
+QAPATHTEST[bashisms] = "package_qa_check_bashisms"
+def package_qa_check_bashisms(path, name, d, elf, messages):
+    """
+    Check for bashisms in shell scripts
+    """
+    import subprocess
+
+    # Ignore symlinks and elf files
+    if os.path.islink(path) or elf is not None:
+        return
+
+    with open(path, 'rb') as f:
+        if not f.read(2) == b'#!':
+            return
+
+    try:
+        output = subprocess.check_output(["checkbashisms.pl", path], stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        # Return code is a bit field or'd together of the following values
+        #   1) bashisms were found in a non-bash script
+        #   2) File is not a script, or cannot be opened
+        #   4) No bashisms found in a bash script
+        if e.returncode & 1:
+            package_qa_add_message(messages, "bashisms", "File %s in package contained bashisms:\n %s" %
+                (package_qa_clean_path(path, d), e.output.decode('utf-8', errors='ignore')))
 
 QAPATHTEST[buildpaths] = "package_qa_check_buildpaths"
 def package_qa_check_buildpaths(path, name, d, elf, messages):
