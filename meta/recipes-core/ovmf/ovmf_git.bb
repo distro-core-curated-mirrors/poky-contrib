@@ -13,12 +13,12 @@ PACKAGECONFIG ??= ""
 PACKAGECONFIG[secureboot] = ",,,"
 
 SRC_URI = "git://github.com/tianocore/edk2.git;branch=master \
-	file://0001-ia32-Dont-use-pie.patch \
-	file://0002-ovmf-update-path-to-native-BaseTools.patch \
-	file://0003-BaseTools-makefile-adjust-to-build-in-under-bitbake.patch \
-	file://0004-ovmf-enable-long-path-file.patch \
-	file://VfrCompile-increase-path-length-limit.patch \
-	file://no-stack-protector-all-archs.patch \
+        file://0001-ia32-Dont-use-pie.patch \
+        file://0002-ovmf-update-path-to-native-BaseTools.patch \
+        file://0003-BaseTools-makefile-adjust-to-build-in-under-bitbake.patch \
+        file://0004-ovmf-enable-long-path-file.patch \
+        file://VfrCompile-increase-path-length-limit.patch \
+        file://no-stack-protector-all-archs.patch \
         "
 UPSTREAM_VERSION_UNKNOWN = "1"
 
@@ -58,21 +58,12 @@ COMPATIBLE_HOST='(i.86|x86_64).*'
 OVMF_SECURE_BOOT_EXTRA_FLAGS ??= ""
 OVMF_SECURE_BOOT_FLAGS = "-DSECURE_BOOT_ENABLE=TRUE ${OVMF_SECURE_BOOT_EXTRA_FLAGS}"
 
-do_patch[postfuncs] += "fix_basetools_location"
-fix_basetools_location () {
-}
-fix_basetools_location_class-target() {
-    # Replaces the fake path inserted by 0002-ovmf-update-path-to-native-BaseTools.patch.
-    # Necessary for finding the actual BaseTools from ovmf-native.
-    sed -i -e 's#BBAKE_EDK_TOOLS_PATH#${STAGING_BINDIR_NATIVE}/${EDK_TOOLS_DIR}#' ${S}/OvmfPkg/build.sh
-}
-
 do_patch[postfuncs] += "fix_iasl"
 fix_iasl() {
 }
 fix_iasl_class-native() {
     # iasl is not installed under /usr/bin when building with OE.
-    sed -i -e 's#/usr/bin/iasl#${STAGING_BINDIR_NATIVE}/iasl#' ${S}/BaseTools/Conf/tools_def.template
+    sed -i -e 's#/usr/bin/iasl#$STAGING_BINDIR_NATIVE/iasl#' ${S}/BaseTools/Conf/tools_def.template
 }
 
 # Inject CC and friends into the build. LINKER already is in GNUmakefile.
