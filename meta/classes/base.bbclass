@@ -170,7 +170,9 @@ do_unpack[cleandirs] = "${@d.getVar('S') if os.path.normpath(d.getVar('S')) != o
 
 python base_do_unpack() {
     src_uri = (d.getVar('SRC_URI') or "").split()
-    if len(src_uri) == 0:
+    # SRC_URI might be empty if externalsrc.bbclass is used, but we still want
+    # to process any base_do_unpack_appends
+    if len(src_uri) == 0 and not d.getVar('EXTERNALSRC'):
         return
 
     try:
