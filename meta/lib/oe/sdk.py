@@ -36,6 +36,11 @@ class Sdk(object, metaclass=ABCMeta):
     def populate(self):
         self.mkdirhier(self.sdk_output)
 
+        postinst_intercepts_dir = self.d.expand("${COREBASE}/scripts/postinst-intercepts")
+        intercepts_dir = os.path.join(self.d.getVar('WORKDIR'), "intercept_scripts")
+        bb.utils.remove(intercepts_dir, True)
+        shutil.copytree(postinst_intercepts_dir, intercepts_dir)
+
         # call backend dependent implementation
         self._populate()
 
@@ -56,6 +61,32 @@ class Sdk(object, metaclass=ABCMeta):
         os.symlink("/etc/ld.so.cache", link_name)
 
         execute_pre_post_process(self.d, self.d.getVar('SDK_POSTPROCESS_COMMAND'))
+
+    def _run_intercepts(self):
+        intercepts_dir = os.path.join(self.d.getVar('WORKDIR'),
+                                      "intercept_scripts")
+
+        bb.note("Running intercept scripts:")
+        os.environ['D'] = self.sdk_host_sysroot
+        os.environ['STAGING_DIR_NATIVE'] = self.d.getVar('STAGING_DIR_NATIVE')
+        for script in os.listdir(intercepts_dir):
+            script_full = os.path.join(intercepts_dir, script)
+
+            if script == "postinst_intercept" or not os.access(script_full, os.X_OK):
+                continue
+
+            if script == "delay_to_first_boot":
+                bb.fatal("cannot delay")
+                continue
+
+            bb.note("> Executing %s intercept ..." % script)
+
+            try:
+                output = subprocess.check_output(script_full, stderr=subprocess.STDOUT)
+                if output: bb.note(output.decode("utf-8"))
+            except subprocess.CalledProcessError as e:
+                bb.warn("The postinstall intercept hook '%s' failed, details in log.do_rootfs" % script)
+                bb.note("Exit code %d. Output:\n%s" % (e.returncode, e.output.decode("utf-8")))
 
     def movefile(self, sourcefile, destdir):
         try:
