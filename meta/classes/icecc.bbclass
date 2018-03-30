@@ -145,7 +145,7 @@ def use_icecc(bb,d):
     # when adding new entry, please document why (how it failed) so that we can re-evaluate it later
     # e.g. when there is new version
     # building libgcc-initial with icecc fails with CPP sanity check error if host sysroot contains cross gcc built for another target tune/variant
-    system_package_blacklist = ["libgcc-initial"]
+    system_package_blacklist = ["libgcc-initial", "elfutils-native", "elfutils"]
     user_package_blacklist = (d.getVar('ICECC_USER_PACKAGE_BL', False) or "").split()
     user_package_whitelist = (d.getVar('ICECC_USER_PACKAGE_WL', False) or "").split()
     package_blacklist = system_package_blacklist + user_package_blacklist
