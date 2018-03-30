@@ -58,7 +58,7 @@ def icecc_dep_prepend(d):
     # INHIBIT_DEFAULT_DEPS doesn't apply to the patch command.  Whether or  not
     # we need that built is the responsibility of the patch function / class, not
     # the application.
-    if not d.getVar('INHIBIT_DEFAULT_DEPS', False):
+    if not d.getVar('INHIBIT_DEFAULT_DEPS', True):
         return "icecc-create-env-native"
     return ""
 
@@ -66,21 +66,20 @@ DEPENDS_prepend += "${@icecc_dep_prepend(d)} "
 
 get_cross_kernel_cc[vardepsexclude] += "KERNEL_CC"
 def get_cross_kernel_cc(bb,d):
-    kernel_cc = d.getVar('KERNEL_CC', False)
+    kernel_cc = d.getVar('KERNEL_CC', True)
 
     # evaluate the expression by the shell if necessary
     if '`' in kernel_cc or '$(' in kernel_cc:
         import subprocess
         kernel_cc = subprocess.check_output("echo %s" % kernel_cc, shell=True).decode("utf-8")[:-1]
 
-    kernel_cc = d.expand(kernel_cc)
     kernel_cc = kernel_cc.replace('ccache', '').strip()
     kernel_cc = kernel_cc.split(' ')[0]
     kernel_cc = kernel_cc.strip()
     return kernel_cc
 
 def get_icecc(d):
-    return d.getVar('ICECC_PATH', False) or bb.utils.which(os.getenv("PATH"), "icecc")
+    return d.getVar('ICECC_PATH', True) or bb.utils.which(os.getenv("PATH"), "icecc")
 
 def create_path(compilers, bb, d):
     """
@@ -115,7 +114,7 @@ def create_path(compilers, bb, d):
     return staging
 
 def use_icecc(bb,d):
-    if d.getVar('ICECC_DISABLED', False) == "1":
+    if d.getVar('ICECC_DISABLED', True) == "1":
         # don't even try it, when explicitly disabled
         return "no"
 
@@ -129,7 +128,7 @@ def use_icecc(bb,d):
     pn = d.getVar('PN', True)
 
     system_class_blacklist = []
-    user_class_blacklist = (d.getVar('ICECC_USER_CLASS_BL', False) or "none").split()
+    user_class_blacklist = (d.getVar('ICECC_USER_CLASS_BL', True) or "none").split()
     package_class_blacklist = system_class_blacklist + user_class_blacklist
 
     for black in package_class_blacklist:
@@ -146,8 +145,8 @@ def use_icecc(bb,d):
     # e.g. when there is new version
     # building libgcc-initial with icecc fails with CPP sanity check error if host sysroot contains cross gcc built for another target tune/variant
     system_package_blacklist = ["libgcc-initial", "elfutils-native", "elfutils"]
-    user_package_blacklist = (d.getVar('ICECC_USER_PACKAGE_BL', False) or "").split()
-    user_package_whitelist = (d.getVar('ICECC_USER_PACKAGE_WL', False) or "").split()
+    user_package_blacklist = (d.getVar('ICECC_USER_PACKAGE_BL', True) or "").split()
+    user_package_whitelist = (d.getVar('ICECC_USER_PACKAGE_WL', True) or "").split()
     package_blacklist = system_package_blacklist + user_package_blacklist
 
     if pn in package_blacklist:
@@ -158,7 +157,7 @@ def use_icecc(bb,d):
         bb.debug(1, "%s: found in whitelist, enable icecc" % pn)
         return "yes"
 
-    if d.getVar('PARALLEL_MAKE', False) == "":
+    if d.getVar('PARALLEL_MAKE', True) == "":
         bb.debug(1, "%s: has empty PARALLEL_MAKE, disable icecc" % pn)
         return "no"
 
@@ -188,8 +187,8 @@ def icecc_version(bb, d):
     if use_icecc(bb, d) == "no":
         return ""
 
-    parallel = d.getVar('ICECC_PARALLEL_MAKE', False) or ""
-    if not d.getVar('PARALLEL_MAKE', False) == "" and parallel:
+    parallel = d.getVar('ICECC_PARALLEL_MAKE', True) or ""
+    if not d.getVar('PARALLEL_MAKE', True) == "" and parallel:
         d.setVar("PARALLEL_MAKE", parallel)
 
     # Disable showing the caret in the GCC compiler output if the workaround is
@@ -205,7 +204,7 @@ def icecc_version(bb, d):
         prefix = d.expand('${HOST_PREFIX}' )
         distro = d.expand('${DISTRO}')
         target_sys = d.expand('${TARGET_SYS}')
-        float = d.getVar('TARGET_FPU', False) or "hard"
+        float = d.getVar('TARGET_FPU', True) or "hard"
         archive_name = prefix + distro + "-"        + target_sys + "-" + float
         if icecc_is_kernel(bb, d):
             archive_name += "-kernel"
