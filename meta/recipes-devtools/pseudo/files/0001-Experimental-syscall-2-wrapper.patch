@@ -1,0 +1,116 @@
+From 517ee2d94f8f6b5507fce313ed8624c68395e750 Mon Sep 17 00:00:00 2001
+From: Seebs <seebs@seebs.net>
+Date: Thu, 29 Mar 2018 10:21:56 -0500
+Subject: [PATCH] Experimental syscall(2) wrapper.
+
+This wrapper should allow us to reject renameat2 attempts by
+coreutils, letting us regain functionality on FC27 and related
+systems.
+
+This is not safe/portable/etc even by pseudo's standards, and
+arguably it should be a separate and optional port.
+
+[Amended commit: Don't include the dodgy renameat2 wrapper
+which it turns out we'd never hit anyway.]
+
+Signed-off-by: Seebs <seebs@seebs.net>
+---
+ ports/linux/guts/syscall.c    | 15 +++++++++++++++
+ ports/linux/portdefs.h        |  3 +++
+ ports/linux/pseudo_wrappers.c | 40 ++++++++++++++++++++++++++++++++++++++++
+ ports/linux/wrapfuncs.in      |  1 +
+ 4 files changed, 59 insertions(+)
+ create mode 100644 ports/linux/guts/syscall.c
+
+diff --git a/ports/linux/guts/syscall.c b/ports/linux/guts/syscall.c
+new file mode 100644
+index 0000000..d1226c5
+--- /dev/null
++++ b/ports/linux/guts/syscall.c
+@@ -0,0 +1,15 @@
++/*
++ * Copyright (c) 2018 Wind River Systems; see
++ * guts/COPYRIGHT for information.
++ *
++ * long syscall(long nr)
++ *	long rc = -1;
++ */
++
++	/* we should never get here, syscall is hand-wrapped */
++	rc = -1;
++	errno = ENOTSUPP;
++
++/*	return rc;
++ * }
++ */
+diff --git a/ports/linux/portdefs.h b/ports/linux/portdefs.h
+index cf6b375..86aa4f9 100644
+--- a/ports/linux/portdefs.h
++++ b/ports/linux/portdefs.h
+@@ -25,3 +25,6 @@ GLIBC_COMPAT_SYMBOL(memcpy,2.2.5);
+ #elif defined(__i386__)
+ GLIBC_COMPAT_SYMBOL(memcpy,2.0);
+ #endif
++
++#include <linux/capability.h>
++#include <sys/syscall.h>
+diff --git a/ports/linux/pseudo_wrappers.c b/ports/linux/pseudo_wrappers.c
+index 0e9a41f..8e44259 100644
+--- a/ports/linux/pseudo_wrappers.c
++++ b/ports/linux/pseudo_wrappers.c
+@@ -42,3 +42,43 @@ int
+ pseudo_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+ 	return real___xmknodat(_MKNOD_VER, dirfd, path, mode, &dev);
+ }
++
++long
++syscall(long number, ...) {
++	/* In a fit of optimism, I imagine that if we didn't get at least 7
++	 * arguments, reading past the ones we did get will read into this
++	 * space and maybe not clash with or overlap with any later-declared
++	 * values. This isn't really a guarantee, and is probably just
++	 * superstition.
++	 */
++	unsigned long long padding[7];
++	(void) padding;
++
++#ifdef SYS_renameat2
++	/* concerns exist about trying to parse arguments because syscall(2)
++	 * specifies strange ABI behaviors. If we can get better clarity on
++	 * that, it could make sense to redirect to wrap_renameat2().
++	 */
++	if (number == SYS_renameat2) {
++		errno = ENOSYS;
++		return -1;
++	}
++#else
++	(void) number;
++#endif
++
++	/* gcc magic to attempt to just pass these args to syscall. we have to
++	 * guess about the number of args; the docs discuss calling conventions
++	 * up to 7, so let's try that?
++	 */
++	void *res = __builtin_apply((void (*)()) real_syscall, __builtin_apply_args(), sizeof(long long) * 7);
++	__builtin_return(res);
++}
++
++/* unused.
++ */
++static long wrap_syscall(long nr, va_list ap) {
++	(void) nr;
++	(void) ap;
++	return -1;
++}
+diff --git a/ports/linux/wrapfuncs.in b/ports/linux/wrapfuncs.in
+index c45e01a..7a4cceb 100644
+--- a/ports/linux/wrapfuncs.in
++++ b/ports/linux/wrapfuncs.in
+@@ -53,3 +53,4 @@ int euidaccess(const char *path, int mode);
+ int getpw(uid_t uid, char *buf);
+ int getpwent_r(struct passwd *pwbuf, char *buf, size_t buflen, struct passwd **pwbufp);
+ int getgrent_r(struct group *gbuf, char *buf, size_t buflen, struct group **gbufp);
++long syscall(long nr, ...); /* hand_wrapped=1 */
+-- 
+2.14.3
+
