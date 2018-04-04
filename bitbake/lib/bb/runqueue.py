@@ -83,6 +83,7 @@ class RunQueueStats:
         self.skipped = 0
         self.failed = 0
         self.active = 0
+        self.running = []
         self.total = total
 
     def copy(self):
@@ -90,20 +91,33 @@ class RunQueueStats:
         obj.__dict__.update(self.__dict__)
         return obj
 
-    def taskFailed(self):
+    def _taskRunning(self, task):
+        self.running.append(task)
+
+    def _taskRemoveRunning(self, task):
+        try:
+            self.running.remove(task)
+        except:
+            bb.warn('Trying to remove task not on queue...')
+
+    def taskFailed(self, task):
         self.active = self.active - 1
         self.failed = self.failed + 1
+        self._taskRemoveRunning(task)
 
-    def taskCompleted(self):
+    def taskCompleted(self, task):
         self.active = self.active - 1
         self.completed = self.completed + 1
+        self._taskRemoveRunning(task)
 
-    def taskSkipped(self):
+    def taskSkipped(self, task):
         self.active = self.active + 1
         self.skipped = self.skipped + 1
+        self._taskRunning(task)
 
-    def taskActive(self):
+    def taskActive(self, task):
         self.active = self.active + 1
+        self._taskRunning(task)
 
 # These values indicate the next step due to be run in the
 # runQueue state machine
@@ -1876,7 +1890,7 @@ class RunQueueExecuteTasks(RunQueueExecute):
                 logger.debug(1, "Marking task %s as buildable", revdep)
 
     def task_complete(self, task):
-        self.stats.taskCompleted()
+        self.stats.taskCompleted(task)
         bb.event.fire(runQueueTaskCompleted(task, self.stats, self.rq), self.cfgData)
         self.task_completeoutright(task)
 
@@ -1885,7 +1899,7 @@ class RunQueueExecuteTasks(RunQueueExecute):
         Called when a task has failed
         Updates the state engine with the failure
         """
-        self.stats.taskFailed()
+        self.stats.taskFailed(task)
         self.failed_tids.append(task)
         bb.event.fire(runQueueTaskFailed(task, self.stats, exitcode, self.rq), self.cfgData)
         if self.rqdata.taskData[''].abort:
@@ -1896,8 +1910,8 @@ class RunQueueExecuteTasks(RunQueueExecute):
         self.setbuildable(task)
         bb.event.fire(runQueueTaskSkipped(task, self.stats, self.rq, reason), self.cfgData)
         self.task_completeoutright(task)
-        self.stats.taskSkipped()
-        self.stats.taskCompleted()
+        self.stats.taskSkipped(task)
+        self.stats.taskCompleted(task)
 
     def execute(self):
         """
@@ -1976,7 +1990,7 @@ class RunQueueExecuteTasks(RunQueueExecute):
                                                  noexec=True)
                 bb.event.fire(startevent, self.cfgData)
                 self.runq_running.add(task)
-                self.stats.taskActive()
+                self.stats.taskActive(task)
                 if not (self.cooker.configuration.dry_run or self.rqdata.setscene_enforce):
                     bb.build.make_stamp(taskname, self.rqdata.dataCaches[mc], taskfn)
                 self.task_complete(task)
@@ -1995,7 +2009,7 @@ class RunQueueExecuteTasks(RunQueueExecute):
                     except OSError as exc:
                         logger.critical("Failed to spawn fakeroot worker to run %s: %s" % (task, str(exc)))
                         self.rq.state = runQueueFailed
-                        self.stats.taskFailed()
+                        self.stats.taskFailed(task)
                         return True
                 self.rq.fakeworker[mc].process.stdin.write(b"<runtask>" + pickle.dumps((taskfn, task, taskname, False, self.cooker.collection.get_file_appends(taskfn), taskdepdata, self.rqdata.setscene_enforce)) + b"</runtask>")
                 self.rq.fakeworker[mc].process.stdin.flush()
@@ -2006,7 +2020,7 @@ class RunQueueExecuteTasks(RunQueueExecute):
             self.build_stamps[task] = bb.build.stampfile(taskname, self.rqdata.dataCaches[mc], taskfn, noextra=True)
             self.build_stamps2.append(self.build_stamps[task])
             self.runq_running.add(task)
-            self.stats.taskActive()
+            self.stats.taskActive(task)
             if self.stats.active < self.number_tasks:
                 return True
 
@@ -2328,12 +2342,12 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
                 self.rq.state = runQueueCleanUp
 
     def task_complete(self, task):
-        self.stats.taskCompleted()
+        self.stats.taskCompleted(task)
         bb.event.fire(sceneQueueTaskCompleted(task, self.stats, self.rq), self.cfgData)
         self.task_completeoutright(task)
 
     def task_fail(self, task, result):
-        self.stats.taskFailed()
+        self.stats.taskFailed(task)
         bb.event.fire(sceneQueueTaskFailed(task, self.stats, result, self), self.cfgData)
         self.scenequeue_notcovered.add(task)
         self.scenequeue_updatecounters(task, True)
@@ -2342,8 +2356,8 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
     def task_failoutright(self, task):
         self.runq_running.add(task)
         self.runq_buildable.add(task)
-        self.stats.taskSkipped()
-        self.stats.taskCompleted()
+        self.stats.taskSkipped(task)
+        self.stats.taskCompleted(task)
         self.scenequeue_notcovered.add(task)
         self.scenequeue_updatecounters(task, True)
 
@@ -2351,8 +2365,8 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
         self.runq_running.add(task)
         self.runq_buildable.add(task)
         self.task_completeoutright(task)
-        self.stats.taskSkipped()
-        self.stats.taskCompleted()
+        self.stats.taskSkipped(task)
+        self.stats.taskCompleted(task)
 
     def execute(self):
         """
@@ -2420,7 +2434,7 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
             self.build_stamps[task] = bb.build.stampfile(taskname, self.rqdata.dataCaches[mc], taskfn, noextra=True)
             self.build_stamps2.append(self.build_stamps[task])
             self.runq_running.add(task)
-            self.stats.taskActive()
+            self.stats.taskActive(task)
             if self.stats.active < self.number_tasks:
                 return True
 
