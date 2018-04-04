@@ -168,7 +168,7 @@ class RunQueueScheduler(object):
 
         # Filter out tasks that have a max number of threads that have been exceeded
         skip_buildable = {}
-        for running in self.rq.stats.running:
+        for running in self.rq.runq_running.difference(self.rq.runq_complete):
             rtaskname = taskname_from_tid(running)
             if rtaskname not in self.skip_maxthread:
                 self.skip_maxthread[rtaskname] = self.rq.cfgData.getVarFlag(rtaskname, "number_threads")
