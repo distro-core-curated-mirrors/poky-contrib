@@ -20,6 +20,11 @@ SRC_URI[sha256sum] = "5922aba4c664ab7899a29d92ea91a87aa4c1fc7eb5ee550325c3216c48
 
 inherit autotools pkgconfig
 
+# We prefer using host Python, but for reproducible builds we need to resort to
+# python3-native in order to have timestamps in compiled modules based on SOURCE_DATE_EPOCH.
+# We cannot assume host Python supports SOURCE_DATE_EPOCH.
+inherit ${@oe.utils.ifelse(d.getVar('BUILD_REPRODUCIBLE_BINARIES') == '1', 'python3native', '')}
+
 # Force the use of Python 3 and a specific library path so we don't need to
 # depend on python3-native
 CACHED_CONFIGUREVARS += "PYTHON=python3 am_cv_python_pythondir=${libdir}/xcb-proto"
