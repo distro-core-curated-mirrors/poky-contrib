@@ -71,6 +71,24 @@ class ELFFile:
     def machine(self):
         return self.elf.header.machine.value
 
+    def symbols(self):
+        for dynsym in self.elf.header.section_headers:
+            if dynsym.type == Elf.ShType.dynsym:
+                break
+        else:
+            return []
+
+        for dynstr in self.elf.header.section_headers:
+            if dynstr.type == Elf.ShType.strtab and dynstr.name == ".dynstr":
+                break
+        else:
+            return []
+
+        def read(entry):
+            self.elf._io.seek(dynstr.offset + entry.name_offset)
+            return self.elf._io.read_bytes_term(0, False, True, True).decode(u"ASCII")
+        return [read(entry) for entry in dynsym.dynsym.entries]
+
     def run_objdump(self, cmd, d):
         import bb.process
         import sys
