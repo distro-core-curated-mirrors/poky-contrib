@@ -134,6 +134,8 @@ def enable_uninative(d):
         d.appendVarFlag("BUILD_LDFLAGS", "vardepsexclude", "UNINATIVE_LOADER")
         d.prependVar("PATH", "${STAGING_DIR}-uninative/${BUILD_ARCH}-linux${bindir_native}:")
 
+UNINATIVE_CHANGEINTERP_CMD = "patchelf-uninative --set-interpreter ${UNINATIVE_LOADER}"
+
 python uninative_changeinterp () {
     import subprocess
     import stat
