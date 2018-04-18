@@ -158,10 +158,6 @@ do_install_class-native() {
 	# N.B. is below install actually required?
 	install -m 0644 bus/session.conf ${D}${STAGING_DATADIR_NATIVE}/dbus/session.conf
 
-	if [ "${UNINATIVE_CHANGEINTERP_CMD}" != "" ]; then
-		${UNINATIVE_CHANGEINTERP_CMD} ./bus/.libs/dbus-daemon
-	fi
-
 	# dbus-glib-native and dbus-glib need this xml file
 	./bus/dbus-daemon --introspect > ${D}${STAGING_DATADIR_NATIVE}/dbus/dbus-bus-introspect.xml
 	
