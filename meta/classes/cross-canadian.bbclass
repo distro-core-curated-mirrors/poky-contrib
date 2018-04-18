@@ -165,6 +165,16 @@ USE_NLS = "${SDKUSE_NLS}"
 # and not any particular tune that is enabled.
 TARGET_ARCH[vardepsexclude] = "TUNE_ARCH"
 
+# Make sure prepare_recipe_sysroot is rerun when changing multilib
+# where TUNE_ARCH remains the same
+# e.g. switch from qemuarm to lib32 qemuarm64
+do_prepare_recipe_sysroot[vardeps] += "MLPREFIX"
+
+# Make sure recipe_sysroot is correctly constructed when changing multilib
+# where TUNE_ARCH remains the same
+# e.g. switch from qemuarm to lib32 qemuarm64
+RECIPE_SYSROOT_NATIVE = "${WORKDIR}/${MLPREFIX}recipe-sysroot-native"
+
 PKGDATA_DIR = "${TMPDIR}/pkgdata/${SDK_SYS}"
 # If MLPREFIX is set by multilib code, shlibs
 # points to the wrong place so force it
