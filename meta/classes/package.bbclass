@@ -414,7 +414,7 @@ def copydebugsources(debugsrcdir, d):
         workdir = d.getVar("WORKDIR")
         workparentdir = os.path.dirname(os.path.dirname(workdir))
         workbasedir = os.path.basename(os.path.dirname(workdir)) + "/" + os.path.basename(workdir)
-	externalsrc = d.getVar('EXTERNALSRC', True)
+        externalsrc = d.getVar('EXTERNALSRC', True)
 
         # If build path exists in sourcefile, it means toolchain did not use
         # -fdebug-prefix-map to compile
@@ -449,7 +449,7 @@ def copydebugsources(debugsrcdir, d):
             processdebugsrc += "(cd '%s' ; cpio -pd0mlL --no-preserve-owner '%s%s' 2>/dev/null)"
             cmd = processdebugsrc % (sourcefile, workbasedir, localsrc_prefix, workparentdir, dvar, debugsrcdir)
 
-	(retval, output) = oe.utils.getstatusoutput(cmd)
+        (retval, output) = oe.utils.getstatusoutput(cmd)
         # Can "fail" if internal headers/transient sources are attempted
         #if retval:
         #    bb.fatal("debug source copy failed with exit code %s (cmd was %s)" % (retval, cmd))
