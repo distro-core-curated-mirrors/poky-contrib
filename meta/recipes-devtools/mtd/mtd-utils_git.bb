@@ -28,10 +28,11 @@ CPPFLAGS_append_riscv64  = " -pthread -D_REENTRANT"
 
 EXTRA_OEMAKE = "'CC=${CC}' 'RANLIB=${RANLIB}' 'AR=${AR}' 'CFLAGS=${CFLAGS} ${@bb.utils.contains('PACKAGECONFIG', 'xattr', '', '-DWITHOUT_XATTR', d)} -I${S}/include' 'BUILDDIR=${S}'"
 
-ALTERNATIVE_${PN} = "flash_eraseall"
+ALTERNATIVE_${PN} = "nanddump nandwrite flash_eraseall"
+ALTERNATIVE_LINK_NAME[nanddump] = "${sbindir}/nanddump"
+ALTERNATIVE_LINK_NAME[nandwrite] = "${sbindir}/nandwrite"
 ALTERNATIVE_LINK_NAME[flash_eraseall] = "${sbindir}/flash_eraseall"
-# Use higher priority than busybox's flash_eraseall (created when built with CONFIG_FLASH_ERASEALL)
-ALTERNATIVE_PRIORITY[flash_eraseall] = "100"
+ALTERNATIVE_PRIORITY = "100"
 
 do_install () {
 	oe_runmake install DESTDIR=${D} SBINDIR=${sbindir} MANDIR=${mandir} INCLUDEDIR=${includedir}
