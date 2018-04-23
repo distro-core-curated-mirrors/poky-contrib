@@ -70,6 +70,7 @@ do_install_ptest () {
 	    -e 's|${DEBUG_PREFIX_MAP}||g' \
 	    -e "s,${S},,g" -e "s,${B},,g" -e "s,${STAGING_DIR_NATIVE},,g" \
 	    -e 's:${HOSTTOOLS_DIR}/::g' \
+	    -e 's:${UNINATIVE_STAGING_DIR}-uninative/${BUILD_ARCH}-linux::g' \
 	     ${D}${PTEST_PATH}/Makefile
 }
 
