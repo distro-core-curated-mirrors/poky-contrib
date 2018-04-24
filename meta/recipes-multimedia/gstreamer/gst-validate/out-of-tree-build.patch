@@ -1,0 +1,28 @@
+Upstream-Status: Submitted [https://bugzilla.gnome.org/show_bug.cgi?id=795531]
+
+Fix build error when out of source tree build.
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+---
+ gst/validate/Makefile.am | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/gst/validate/Makefile.am b/gst/validate/Makefile.am
+index 342730a..0e6ed28 100644
+--- a/gst/validate/Makefile.am
++++ b/gst/validate/Makefile.am
+@@ -50,12 +50,12 @@ nodist_libgstvalidate_@GST_API_VERSION@include_HEADERS = $(built_header_make)
+ 
+ gst-validate-enum-types.h: $(source_h)
+ 	$(AM_V_GEN)$(GLIB_MKENUMS) \
+-	--template gst-validate-enum-types.h.template \
++	--template $(top_srcdir)/gst/validate/gst-validate-enum-types.h.template \
+ 	$^ > gst-validate-enum-types.h
+ 
+ gst-validate-enum-types.c: $(source_h)
+ 	$(AM_V_GEN)$(GLIB_MKENUMS) \
+-	--template gst-validate-enum-types.c.template \
++	--template $(top_srcdir)/gst/validate/gst-validate-enum-types.c.template \
+ 	$^ > gst-validate-enum-types.c
+ 
+ EXTRA_DIST= \
