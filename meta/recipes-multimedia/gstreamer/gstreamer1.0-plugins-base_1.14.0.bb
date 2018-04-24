@@ -10,9 +10,15 @@ SRC_URI = " \
     file://0003-ssaparse-enhance-SSA-text-lines-parsing.patch \
     file://0004-subparse-set-need_segment-after-sink-pad-received-GS.patch \
     file://make-gio_unix_2_0-dependency-configurable.patch \
+    file://link-with-libvchostif.patch \
+    file://0009-glimagesink-Downrank-to-marginal.patch \
+    file://0001-gl-pick-up-GstVideo-1.0.gir-from-local-build-dir.patch \
     file://0001-introspection.m4-prefix-pkgconfig-paths-with-PKG_CON.patch \
+    file://0001-gstreamer-gl.pc.in-don-t-append-GL_CFLAGS-to-CFLAGS.patch \
 "
-SRC_URI[md5sum] = "b35b04071f69b8ab69a7f3a497ff0131"
-SRC_URI[sha256sum] = "4c306b03df0212f1b8903784e29bb3493319ba19ebebf13b0c56a17870292282"
+SRC_URI[md5sum] = "370271327dd23110421a9c2927ac989a"
+SRC_URI[sha256sum] = "7e904660ff56e02b036cf7fdfb77a50a540828ca9d2614d69ba931772e5b6940"
 
 S = "${WORKDIR}/gst-plugins-base-${PV}"
+
+FILES_${PN}-dev += "${libdir}/gstreamer-1.0/include"

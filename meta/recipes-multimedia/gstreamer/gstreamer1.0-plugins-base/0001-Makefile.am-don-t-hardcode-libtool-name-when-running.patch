@@ -6,11 +6,15 @@ Subject: [PATCH 1/4] Makefile.am: don't hardcode libtool name when running
 
 Upstream-Status: Pending [review on oe-core maillist]
 Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
+
+Update patch context. Remove patch of gst-libs/gst/fft/Makefile.am that the
+rule has been removed. Add patch for gst-libs/gst/gl/Makefile.am at same time.
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
 ---
  gst-libs/gst/allocators/Makefile.am | 2 +-
  gst-libs/gst/app/Makefile.am        | 2 +-
  gst-libs/gst/audio/Makefile.am      | 2 +-
- gst-libs/gst/fft/Makefile.am        | 2 +-
  gst-libs/gst/pbutils/Makefile.am    | 2 +-
  gst-libs/gst/riff/Makefile.am       | 2 +-
  gst-libs/gst/rtp/Makefile.am        | 2 +-
@@ -59,19 +63,6 @@ index 275d222..2374196 100644
  		--pkg gstreamer-@GST_API_VERSION@ \
  		--pkg gstreamer-base-@GST_API_VERSION@ \
  		--pkg-export gstreamer-audio-@GST_API_VERSION@ \
-diff --git a/gst-libs/gst/fft/Makefile.am b/gst-libs/gst/fft/Makefile.am
-index 09b3d68..f545354 100644
---- a/gst-libs/gst/fft/Makefile.am
-+++ b/gst-libs/gst/fft/Makefile.am
-@@ -65,7 +65,7 @@ GstFft-@GST_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libgstfft-@GST_API_VERSIO
- 		--add-include-path=`PKG_CONFIG_PATH="$(GST_PKG_CONFIG_PATH)" $(PKG_CONFIG) --variable=girdir gstreamer-@GST_API_VERSION@` \
- 		--library=libgstfft-@GST_API_VERSION@.la \
- 		--include=Gst-@GST_API_VERSION@ \
--		--libtool="$(top_builddir)/libtool" \
-+		--libtool="$(LIBTOOL)" \
- 		--pkg gstreamer-@GST_API_VERSION@ \
- 		--pkg-export gstreamer-fft-@GST_API_VERSION@ \
- 		--output $@ \
 diff --git a/gst-libs/gst/pbutils/Makefile.am b/gst-libs/gst/pbutils/Makefile.am
 index 64d5eb0..91dc214 100644
 --- a/gst-libs/gst/pbutils/Makefile.am
@@ -163,6 +154,19 @@ index 5d31fa1..ac64eb3 100644
  		--pkg gstreamer-@GST_API_VERSION@ \
  		--pkg gstreamer-base-@GST_API_VERSION@ \
  		--pkg-export gstreamer-video-@GST_API_VERSION@ \
+diff --git a/gst-libs/gst/gl/Makefile.am b/gst-libs/gst/gl/Makefile.am
+index 7f2b8ae..ab6cc55 100644
+--- a/gst-libs/gst/gl/Makefile.am
++++ b/gst-libs/gst/gl/Makefile.am
+@@ -193,7 +193,7 @@ GstGL-@GST_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libgstgl-@GST_API_VERSION@
+ 		--include=Gst-@GST_API_VERSION@ \
+ 		--include=GstBase-@GST_API_VERSION@ \
+ 		--include=GstVideo-@GST_API_VERSION@ \
+-		--libtool="$(top_builddir)/libtool" \
++		--libtool="$(LIBTOOL)" \
+ 		--pkg gstreamer-@GST_API_VERSION@ \
+ 		--pkg gstreamer-base-@GST_API_VERSION@ \
+ 		--pkg gstreamer-video-@GST_API_VERSION@ \
 -- 
 2.6.2
 

@@ -20,7 +20,7 @@ new mode 100755
 index b565e93..7741ccc
 --- a/gst/subparse/gstsubparse.c
 +++ b/gst/subparse/gstsubparse.c
-@@ -266,22 +266,20 @@ gst_sub_parse_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
+@@ -270,24 +270,20 @@ gst_sub_parse_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
          goto beach;
        }
  
@@ -45,13 +45,15 @@ index b565e93..7741ccc
 -        GST_DEBUG_OBJECT (self, "segment after seek: %" GST_SEGMENT_FORMAT,
 -            &self->segment);
 -
--        self->need_segment = TRUE;
+-        /* will mark need_segment when receiving segment from upstream,
+-         * after FLUSH and all that has happened,
+-         * rather than racing with chain */
 -      } else {
 +      if (!ret) {
          GST_WARNING_OBJECT (self, "seek to 0 bytes failed");
        }
  
-@@ -1641,8 +1639,10 @@ gst_sub_parse_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
+@@ -1873,8 +1869,10 @@ gst_sub_parse_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
        gst_event_parse_segment (event, &s);
        if (s->format == GST_FORMAT_TIME)
          gst_event_copy_segment (event, &self->segment);
