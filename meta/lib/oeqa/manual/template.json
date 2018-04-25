@@ -1,0 +1,58 @@
+[
+  {
+    "test": {
+      "@alias": "<test_suite_name>.<test_case_name>",
+      "summary": "Brief description on what is being tested.",
+      "case_status": "ACTIVE",
+      "author": {
+        "email": "",
+        "name": ""
+      },
+      "execution_owner": {
+        "email": "",
+        "name": ""
+      },
+      "blocks": "",
+      "dependson": "",
+      "bugs": "",
+      "execution": {
+        "1": {
+          "run": "Describe test step #1",
+          "result": "Expected results from the step above. Left it blank if no output."
+        },
+        "2": {
+          "run": "Describe test step #2, continue to add more if there are more steps.",
+          "result": "Expected results from the step above. Left it blank if no output."
+        }
+      }
+    }
+  },
+  {
+    "test": {
+      "@alias": "<test_suite_name>.<test_case_name>",
+      "summary": "Brief description on what is being tested.",
+      "case_status": "ACTIVE",
+      "author": {
+        "email": "",
+        "name": ""
+      },
+      "execution_owner": {
+        "email": "",
+        "name": ""
+      },
+      "blocks": "",
+      "dependson": "",
+      "bugs": "",
+      "execution": {
+        "1": {
+          "run": "Describe test step #1",
+          "result": "Expected results from the step above. Left it blank if no output."
+        },
+        "2": {
+          "run": "Describe test step #2, continue to add more if there are more steps.",
+          "result": "Expected results from the step above. Left it blank if no output."
+        }
+      }
+    }
+  }
+]
