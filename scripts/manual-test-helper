@@ -1,0 +1,190 @@
+#!/usr/bin/env python3
+
+# Manual tests execution helper
+#
+# Copyright (C) 2018 Intel Corporation
+#
+
+import os
+import sys
+import json
+import argparse
+
+
+def scan_test_case(jdata):
+    # Scan the test suite JSON and print out all the name of test cases
+    print("Test Suite Name: %s" % jdata[0]['test']['@alias'].split(".", 1)[0])
+    print("\nTotal number of test cases in this test suite: " + "%s\n" % total)
+    for i in range(0, total):
+        print("%s. " % (i+1) + jdata[i]['test']['@alias'].split(".", 1)[1])
+    sys.exit()
+
+
+def scan_test_results(tresult):
+    completed = []
+    scan = len(tresult[0]['testsuite']['testcase'])
+    for i in range(0, scan):
+        join_name = tresult[0]['testsuitename'] + "." + tresult[0]['testsuite']['testcase'][i]['testcasename']
+        completed.append(join_name)
+    return completed
+
+
+def write_json_result(args, fname, results):
+    if args.output:
+        fname = args.output
+    with open(fname, 'w') as f:
+        json.dump(results, f, ensure_ascii=True, indent=4)
+
+
+def execute_test_steps(args, testID, jdata):
+    tsuite = jdata[testID]['test']['@alias'].split(".", 1)[0]
+    tcase = jdata[testID]['test']['@alias'].split(".", 1)[1]
+    compare_tcase = []
+
+    print("------------------------------------------------------------------------")
+    print("Executing test case:" + " " + jdata[testID]['test']['@alias'])
+    print("------------------------------------------------------------------------")
+    print("You have total " + max(jdata[testID]['test']['execution'].keys()) + " test steps to be executed.")
+    print("------------------------------------------------------------------------\n")
+
+    for step in range (1, int(max(jdata[testID]['test']['execution'].keys()) + "1")):
+        print("Step %s: " % step + jdata[testID]['test']['execution']['%s' % step]['run'])
+        print("Expected output: " + jdata[testID]['test']['execution']['%s' % step]['result'])
+        if step == int(max(jdata[testID]['test']['execution'].keys())):
+            done = input("\nPlease provide test results: (P)assed/(F)ailed/(B)locked? \n")
+            break
+        else:
+            done = input("\nPlease press ENTER when you are done to proceed to next step.\n")
+            step = step + 1
+
+    if done == "p" or done == "P":
+        res = "PASSED"
+    elif done == "f" or done == "F":
+        res = "FAILED"
+    elif done == "b" or done == "B":
+        res = "BLOCKED"
+    else:
+        res = "SKIPPED"
+
+    if not temp:
+        temp.append({'testsuitename': '%s' % tsuite, 'testsuite': {'testcase': [{'testcasename': '%s' % tcase, 'testresult': '%s' % res}]}})
+    elif args.rerun:
+        for i in range(len(temp[0]['testsuite']['testcase'])):
+            compare_tcase = temp[0]['testsuite']['testcase'][i]['testcasename']
+            if tcase in compare_tcase:
+                temp[0]['testsuite']['testcase'][i]['testresult'] = res
+                break
+    else:
+        temp[0]['testsuite']['testcase'].append({'testcasename': '%s' % tcase, 'testresult': '%s' % res})
+
+    return temp
+
+
+if __name__ == '__main__':
+
+    global total
+    global temp
+    global results
+    global fname
+
+    results = []
+    temp = []
+    fname = "test_results.json"
+
+    parser = argparse.ArgumentParser(description='Helper script for results populating during manual test execution.')
+
+    # Required: test suite file path
+    required = parser.add_argument_group('required arguments')
+    required.add_argument('-F', '--file', dest='file', action='store', required=True,
+                            help='Specify path to manual test case JSON file. Note: Please use "" to encapsulate the file path.')
+
+    optional = parser._action_groups.pop()
+    # Optional: Scan and show all test cases in single test suite file
+    optional.add_argument('-S', '--scan', action='store_true',
+                            help='Scan and show all test cases in the provided JSON file in console.')
+    # Optional: Resume manual test execution
+    optional.add_argument('-R', '--resume', action='store_true',
+                            help='Resume the manual test execution with existing test result file.')
+    # Optional: Rerun specific test case
+    optional.add_argument('-r', '--rerun', dest='rerun', action='store',
+                            help='Re-run specific test case with existing test result file.')
+    # Optional: Run specific test case
+    optional.add_argument('-tc', '--testcase', dest='testcasename', action='store',
+                            help='Run a specific test case.')
+    # Optional: Choose specific test range
+    optional.add_argument('-tr', '--testrange', nargs='*', dest='testrange', action='store', type=int,
+                            help='Run a specific range of test cases. Note: Use "-S/--scan" to see the numbers associated to test cases.')
+    # Optional: Output test results to new file, if not specified, default is test_results.json
+    optional.add_argument('-o', '--out', dest='output', action='store',
+                            help='Retrieve/Save test results from/to specific result file. Provide your own test results file name. Default is test_results.json. Note: Please use "" to encapsulate the file name.')
+
+    parser._action_groups.append(optional)
+
+    args = parser.parse_args()
+
+    data = json.load(open('%s' % args.file))
+    total = len(data)
+
+    if args.scan:
+        scan_test_case(data)
+
+    if args.output:
+        fname = args.output
+
+    if os.path.isfile(fname) and not args.output and not args.resume and not args.rerun:
+        print("\nWARNING: File %s " %fname + "exists in the same location.")
+        print("\nNOTE: You can either rename the existing result file or use \"-o/--out\" option to provide a new file name.")
+        sys.exit()
+    elif args.resume:
+        temp = json.load(open(fname))
+        clist = scan_test_results(temp)
+        compare_alias = []
+        for i in range(0, total):
+            compare_alias.append(data[i]['test']['@alias'])
+        if len(clist) == len(compare_alias):
+            print("All manual test exection for \"%s\" were completed. Please check \"%s\" for test results." % (data[0]['test']['@alias'].split(".", 1)[0], fname))
+        else:
+            for i in range(0, total):
+                if compare_alias[i] not in clist:
+                    results = execute_test_steps(args, i, data)
+                    write_json_result(args, fname, results)
+        sys.exit()
+
+    if (args.testcasename or args.rerun):
+        """ Run specific test case """
+        if args.rerun:
+            args.testcasename = args.rerun
+            temp = json.load(open(fname))
+        alias = data[0]['test']['@alias'].split(".", 1)[0] + "." + args.testcasename
+        for i in range(0, total):
+            compare_alias = data[i]['test']['@alias']
+            if alias == compare_alias:
+                results = execute_test_steps(args, i, data)
+                write_json_result(args, fname, results)
+            else:
+                i = i + 1
+        sys.exit()
+
+    if args.testrange:
+        if len(args.testrange) == 2:
+            # Compute the range
+            start = args.testrange[0] - 1
+            end = args.testrange[1]
+            check_range = range(0,total)
+            if start not in check_range:
+                print("ERROR: The input you provided is out of range. \nNote: You can check the valid range using using -S/--scan option.")
+            elif end not in check_range:
+                print("ERROR: The input you provided is out of range. \nNote: You can check the valid range using using -S/--scan option.")
+            else:
+                for i in range(start, end):
+                    results = execute_test_steps(args, i, data)
+                    write_json_result(args, fname, results)
+        elif len(args.testrange) == 1:
+            print("ERROR: Please provide a range by using -tr/--testrange value1 value2")
+    else:
+        # Script will run all tests normally by having test suite file path
+        for i in range(0, total):
+            results = execute_test_steps(args, i, data)
+            write_json_result(args, fname, results)
+
+    sys.exit()
