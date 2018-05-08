@@ -183,6 +183,9 @@ def testsdkext_main(d):
         if not result.wasSuccessful():
             fail = True
 
+        # Clean the workspace/sources to avoid `devtool add' failure because of non-empty source directory
+        bb.utils.remove(sdk_dir+'workspace/sources', True)
+
     if fail:
         bb.fatal("%s - FAILED - check the task log and the commands log" % pn)
 
