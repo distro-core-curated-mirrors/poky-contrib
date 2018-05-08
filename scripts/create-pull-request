@@ -278,6 +278,7 @@ fi
 
 # Replace the SUBJECT token with it.
 if [ -n "$SUBJECT" ]; then
+	SUBJECT="`echo $SUBJECT | sed -e 's#/#\\\\/#g'`"
 	sed -i -e "s/\*\*\* SUBJECT HERE \*\*\*/$SUBJECT/" "$CL"
 fi
 
