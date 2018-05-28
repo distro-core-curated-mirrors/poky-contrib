@@ -122,7 +122,7 @@ class TestImage(OESelftestTestCase):
             self.skipTest('core-image-full-cmdline not buildable for poky-tiny')
 
         features = 'INHERIT += "testimage"\n'
-        features += 'TEST_SUITES = "ping ssh selftest"\n'
+        features += 'TEST_SUITES = "ping ssh _selftest"\n'
         self.write_config(features)
 
         # Build core-image-sato and testimage

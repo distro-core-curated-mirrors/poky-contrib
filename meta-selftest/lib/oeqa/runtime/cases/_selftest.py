@@ -17,7 +17,7 @@ class Selftest(OERuntimeTestCase):
         (status, output) = self.target.run("socat -V")
         self.assertEqual(status, 0, msg="socat is not installed")
 
-    @OETestDepends(['selftest.Selftest.test_install_package'])
+    @OETestDepends(['_selftest.Selftest.test_install_package'])
     def test_verify_uninstall(self):
         """
         Summary: Check basic package installation functionality.
