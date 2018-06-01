@@ -21,7 +21,7 @@ DEPENDS_class-native = "libxml-parser-perl-native gettext-native"
 inherit autotools pkgconfig perlnative
 
 export PERL = "${bindir}/env perl"
-PERL_class-native = "/usr/bin/env nativeperl"
+PERL_class-native = "/usr/bin/env perl"
 PERL_class-nativesdk = "/usr/bin/env perl"
 
 # gettext is assumed to exist on the host

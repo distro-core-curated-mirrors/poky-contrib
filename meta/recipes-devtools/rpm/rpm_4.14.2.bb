@@ -141,6 +141,7 @@ FILES_python3-rpm = "${PYTHON_SITEPACKAGES_DIR}/rpm/*"
 RPROVIDES_${PN} += "rpm-build"
 
 RDEPENDS_${PN} = "bash perl python3-core"
+RDEPENDS_${PN}_class-native = ""
 
 PACKAGE_PREPROCESS_FUNCS += "rpm_package_preprocess"
 
