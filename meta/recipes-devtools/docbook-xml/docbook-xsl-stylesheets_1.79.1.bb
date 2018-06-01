@@ -59,5 +59,6 @@ do_install_append_class-native () {
 }
 
 RDEPENDS_${PN} += "perl"
+RDEPENDS_${PN}_class-native = ""
 FILES_${PN} = "${datadir}/xml/* ${sysconfdir}/xml/docbook-xsl.xml"
 FILES_${PN}-doc = "${datadir}/doc/*"

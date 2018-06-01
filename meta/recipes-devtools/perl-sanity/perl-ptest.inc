@@ -7,7 +7,7 @@ do_install_ptest () {
 	sed -e "s:\/usr\/local:${bindir}:g" -i cpan/version/t/*
 	sed -e "s:\/opt:\/usr:" -i Porting/add-package.pl
 	sed -e "s:\/local\/gnu\/:\/:" -i hints/cxux.sh
-	tar -c --exclude='*.o' --exclude=libperl.so --exclude=Makefile --exclude=makefile --exclude=hostperl \
+	tar -c --exclude=try --exclude=a.out --exclude='*.o' --exclude=libperl.so --exclude=Makefile --exclude=makefile --exclude=hostperl \
 	    --exclude=cygwin --exclude=os2 --exclude=djgpp --exclude=qnx --exclude=symbian --exclude=haiku \
 	    --exclude=vms --exclude=vos --exclude=NetWare --exclude=amigaos4  --exclude=buildcustomize.pl \
 	    --exclude='win32/config.*' --exclude=plan9 --exclude=README.plan9 --exclude=perlplan9.pod --exclude=Configure \
@@ -50,7 +50,7 @@ python populate_packages_prepend() {
             '${PN}-ptest%s', '%s', recursive=True, match_path=True)
 }
 
-RDEPENDS_${PN}-ptest += "${PN}-modules ${PN}-doc ${PN}-misc sed"
+RDEPENDS_${PN}-ptest += "${PN}-modules ${PN}-doc sed"
 
 # The perl-ptest package contains Perl internal modules and generating file
 # dependencies for it causes problems.
