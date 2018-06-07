@@ -22,16 +22,19 @@ python waf_preconfigure() {
 do_configure[prefuncs] += "waf_preconfigure"
 
 waf_do_configure() {
-	${S}/waf configure --prefix=${prefix} ${WAF_EXTRA_CONF} ${EXTRA_OECONF}
+	cd ${S}/
+	./waf configure --prefix=${prefix} ${WAF_EXTRA_CONF} ${EXTRA_OECONF}
 }
 
 do_compile[progress] = "outof:^\[\s*(\d+)/\s*(\d+)\]\s+"
 waf_do_compile()  {
-	${S}/waf build ${@oe.utils.parallel_make_argument(d, '-j%d', limit=64)}
+	cd ${S}/
+	./waf build ${@oe.utils.parallel_make_argument(d, '-j%d', limit=64)}
 }
 
 waf_do_install() {
-	${S}/waf install --destdir=${D}
+	cd ${S}/
+	./waf install --destdir=${D}
 }
 
 EXPORT_FUNCTIONS do_configure do_compile do_install
