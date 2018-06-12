@@ -1,0 +1,27 @@
+#!/usr/bin/python3
+#
+# Helper script for creating test result & log data then storage it to git
+# Then update test result status from test log into the git repo
+#
+import os
+import sys
+import argparse
+script_path = os.path.dirname(os.path.realpath(__file__))
+lib_path = script_path + '/lib'
+sys.path = sys.path + [lib_path]
+import testresultlog.testresultcreator
+import testresultlog.testresultupdator
+import testresultlog.testresultviewer
+
+def main():
+    parser = argparse.ArgumentParser(description="test-result-log script.")
+    subparser = parser.add_subparsers()
+    testresultlog.testresultcreator.register_commands(subparser)
+    testresultlog.testresultupdator.register_commands(subparser)
+    testresultlog.testresultviewer.register_commands(subparser)
+    args = parser.parse_args()
+    args.script_path = script_path
+    args.func(args)
+
+if __name__ == "__main__":
+    sys.exit(main())
