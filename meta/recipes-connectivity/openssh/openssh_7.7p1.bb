@@ -28,6 +28,8 @@ SRC_URI = "http://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${PV}.tar
            file://disable-ciphers-not-supported-by-OpenSSL-DES.patch \
            "
 
+SRC_URI_append_class-native = " file://0001-don-t-use-absolute-path-for-ssh-program.patch"
+
 PAM_SRC_URI = "file://sshd"
 
 SRC_URI[md5sum] = "68ba883aff6958297432e5877e9a0fe2"
@@ -148,6 +150,8 @@ RDEPENDS_${PN} += "${PN}-scp ${PN}-ssh ${PN}-sshd ${PN}-keygen"
 RDEPENDS_${PN}-sshd += "${PN}-keygen ${@bb.utils.contains('DISTRO_FEATURES', 'pam', 'pam-plugin-keyinit pam-plugin-loginuid', '', d)}"
 RDEPENDS_${PN}-ptest += "${PN}-sftp ${PN}-misc ${PN}-sftp-server make"
 
+RDEPENDS_${PN}_class-native = ""
+
 RPROVIDES_${PN}-ssh = "ssh"
 RPROVIDES_${PN}-sshd = "sshd"
 
@@ -161,4 +165,4 @@ ALTERNATIVE_PRIORITY = "90"
 ALTERNATIVE_${PN}-scp = "scp"
 ALTERNATIVE_${PN}-ssh = "ssh"
 
-BBCLASSEXTEND += "nativesdk"
+BBCLASSEXTEND += "native nativesdk"
