@@ -343,8 +343,8 @@ class RunQueueSchedulerCompletion(RunQueueSchedulerSpeed):
 
 class RunTaskEntry(object):
     def __init__(self):
-        self.depends = set()
-        self.revdeps = set()
+        self.depends = set() # of tids
+        self.revdeps = set() # of tids
         self.hash = None
         self.task = None
         self.weight = 1
