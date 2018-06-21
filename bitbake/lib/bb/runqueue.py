@@ -346,6 +346,7 @@ class RunTaskEntry(object):
         self.depends = set() # of tids
         self.revdeps = set() # of tids
         self.hash = None
+        self.depid = None
         self.task = None
         self.weight = 1
         self.rehash = False
@@ -385,6 +386,9 @@ class RunQueueData:
 
     def get_task_hash(self, tid):
         return self.runtaskentries[tid].hash
+
+    def get_task_depid(self, tid):
+        return self.runtaskentries[tid].depid
 
     def get_user_idstring(self, tid, task_name_suffix = ""):
         return tid + task_name_suffix
@@ -1148,6 +1152,7 @@ class RunQueueData:
         (mc, fn, taskname, taskfn) = split_tid_mcfn(tid)
         taskhash = bb.parse.siggen.get_taskhash(taskfn, taskname, procdep, self.dataCaches[mc])
         self.runtaskentries[tid].hash = taskhash
+        self.runtaskentries[tid].depid = bb.parse.siggen.get_depid(fn + "." + taskname)
         self.runtaskentries[tid].rehash = False
 
     def dump_data(self):
@@ -2076,7 +2081,8 @@ class RunQueueExecuteTasks(RunQueueExecute):
                 deps = self.rqdata.runtaskentries[revdep].depends
                 provides = self.rqdata.dataCaches[mc].fn_provides[taskfn]
                 taskhash = self.rqdata.runtaskentries[revdep].hash
-                taskdepdata[revdep] = [pn, taskname, fn, deps, provides, taskhash]
+                depid = self.rqdata.runtaskentries[revdep].depid
+                taskdepdata[revdep] = [pn, taskname, fn, deps, provides, taskhash, depid]
                 for revdep2 in deps:
                     if revdep2 not in taskdepdata:
                         additional.append(revdep2)
@@ -2514,7 +2520,8 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
                 deps = getsetscenedeps(revdep)
                 provides = self.rqdata.dataCaches[mc].fn_provides[taskfn]
                 taskhash = self.rqdata.runtaskentries[revdep].hash
-                taskdepdata[revdep] = [pn, taskname, fn, deps, provides, taskhash]
+                depid = self.rqdata.runtaskentries[revdep].depid
+                taskdepdata[revdep] = [pn, taskname, fn, deps, provides, taskhash, depid]
                 for revdep2 in deps:
                     if revdep2 not in taskdepdata:
                         additional.append(revdep2)
