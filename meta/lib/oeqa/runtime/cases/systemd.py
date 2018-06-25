@@ -81,7 +81,19 @@ class SystemdBasicTests(SystemdTest):
     @OETestID(551)
     @OETestDepends(['systemd.SystemdBasicTests.test_systemd_basic'])
     def test_systemd_list(self):
-        self.systemctl('list-unit-files')
+        command = 'systemctl list-unit-files'
+        status, output = self.target.run(command)
+        message = '\n'.join([command, output])
+        match = re.search('Connection timed out', output)
+        if match:
+            # it's possible that qemu is running slow
+            # use busctl to check the results with timeout set to 240s
+            command = 'busctl --timeout=240 call org.freedesktop.systemd1 /org/freedesktop/systemd1 org.freedesktop.systemd1.Manager ListUnitFilesByPatterns asas 0 0'
+            status, output = self.target.run(command)
+            message = '\n'.join([command, output])
+            self.assertEqual(status, 0, message)
+        else:
+            self.assertEqual(status, 0, message)
 
     @OETestID(550)
     @OETestDepends(['systemd.SystemdBasicTests.test_systemd_basic'])
