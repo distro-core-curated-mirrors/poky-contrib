@@ -25,8 +25,8 @@ IMAGE_ROOTFS_EXTRA_SPACE = "0"
 
 BAD_RECOMMENDATIONS += "busybox-syslog"
 
-# Use the same restriction as initramfs-live-install
-COMPATIBLE_HOST = "(i.86|x86_64).*-linux"
+# Should be compatible with initramfs-live-install
+COMPATIBLE_HOST = "(i.86|x86_64|arm).*-linux"
 
 python tinyinitrd () {
   # Modify our init file so the user knows we drop to shell prompt on purpose
@@ -41,3 +41,6 @@ python tinyinitrd () {
 IMAGE_PREPROCESS_COMMAND += "tinyinitrd;"
 
 QB_KERNEL_CMDLINE_APPEND += "debugshell=3 init=/bin/busybox sh init"
+
+# Avoid getting input from previously listed console tty
+QB_KERNEL_CMDLINE_APPEND_append_arm  = " console=ttyAMA0,115200"
