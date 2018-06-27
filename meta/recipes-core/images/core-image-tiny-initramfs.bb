@@ -28,18 +28,6 @@ BAD_RECOMMENDATIONS += "busybox-syslog"
 # Should be compatible with initramfs-live-install
 COMPATIBLE_HOST = "(i.86|x86_64|arm).*-linux"
 
-python tinyinitrd () {
-  # Modify our init file so the user knows we drop to shell prompt on purpose
-  newinit = None
-  with open(d.expand('${IMAGE_ROOTFS}/init'), 'r') as init:
-    newinit = init.read()
-    newinit = newinit.replace('Cannot find $ROOT_IMAGE file in /run/media/* , dropping to a shell ', 'Poky Tiny Reference Distribution:')
-  with open(d.expand('${IMAGE_ROOTFS}/init'), 'w') as init:
-    init.write(newinit)
-}
-
-IMAGE_PREPROCESS_COMMAND += "tinyinitrd;"
-
 QB_KERNEL_CMDLINE_APPEND += "debugshell=3 init=/bin/busybox sh init"
 
 # Avoid getting input from previously listed console tty
