@@ -1,13 +1,6 @@
 import os
 import unittest
 
-#import json
-#import subprocess
-#import scriptpath
-#scriptpath.add_bitbake_lib_path()
-#scriptpath.add_oe_lib_path()
-#from oeqa.utils.git import GitRepo, GitError
-#from testresultlog.testresultlogconfigparser import TestResultLogConfigParser
 from testresultlog.testresultgitstore import TestResultGitStore
 from testresultlog.testlogparser import TestLogParser
 

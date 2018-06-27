@@ -224,14 +224,14 @@ class TestResultGitStore(object):
             print("The push origin % failed inside the Git repository" % git_branch)
 
     def create_test_result(self, git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict):
-        git_dir = self._get_default_git_dir(git_dir)
+        #git_dir = self._get_default_git_dir(git_dir)
         if self._check_if_git_dir_exist(git_dir):
             self._create_test_result_from_existing(git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict)
         else:
             self._create_test_result_from_empty(git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict)
 
     def update_test_result(self, git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, testcase_status_dict, testcase_logs_dict):
-        git_dir = self._get_default_git_dir(git_dir)
+        #git_dir = self._get_default_git_dir(git_dir)
         repo = self._init_git(git_dir)
         self._checkout_git_repo(repo, git_branch)
         project_dir = os.path.join(git_dir, project)
@@ -267,7 +267,7 @@ class TestResultGitStore(object):
         update in target git dir
         push to target git dir
         '''
-        git_dir = self._get_default_git_dir(git_dir)
+        #git_dir = self._get_default_git_dir(git_dir)
         git_dir_and_git_branch_exist = False
         if self._check_if_git_dir_exist(git_dir):
             repo = self._init_git(git_dir)
@@ -295,7 +295,7 @@ class TestResultGitStore(object):
             self.update_test_result(git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, testcase_status_dict, testcase_logs_dict)
 
     def git_remote_fetch_rebase_push(self, git_dir, git_branch, git_remote):
-        git_dir = self._get_default_git_dir(git_dir)
+        #git_dir = self._get_default_git_dir(git_dir)
         repo = self._init_git(git_dir)
         print('Fetching, Rebasing, Pushing to remote')
         if self._git_check_if_local_repo_contain_remote_origin(repo):
@@ -311,3 +311,17 @@ class TestResultGitStore(object):
             self._git_push_local_branch_to_remote_origin(repo, git_branch)
         else:
             print('Git fetch origin failed. Stop proceeding to git push.')
+
+    def checkout_git_branch(self, git_dir, git_branch):
+        if self._check_if_git_dir_exist(git_dir):
+            repo = self._init_git(git_dir)
+            if self._check_if_git_branch_exist(repo, git_branch):
+                git_dir_and_git_branch_exist = True
+                self._checkout_git_repo(repo, git_branch)
+                return True
+            else:
+                print('Could not find git_branch: %s' % git_branch)
+                return False
+        else:
+            print('Could not find git_dir: %s' % git_dir)
+            return False
