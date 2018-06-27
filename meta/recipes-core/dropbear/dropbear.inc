@@ -43,9 +43,10 @@ SBINCOMMANDS = "dropbear dropbearkey dropbearconvert"
 BINCOMMANDS = "dbclient ssh scp"
 EXTRA_OEMAKE = 'MULTI=1 SCPPROGRESS=1 PROGRAMS="${SBINCOMMANDS} ${BINCOMMANDS}"'
 
-PACKAGECONFIG ?= ""
+PACKAGECONFIG ?= "zlib"
+PACKAGECONFIG_poky-tiny = ""
 PACKAGECONFIG[system-libtom] = "--disable-bundled-libtom,--enable-bundled-libtom,libtommath libtomcrypt"
-
+PACKAGECONFIG[zlib] = "--enable-zlib,--disable-zlib"
 EXTRA_OECONF += "\
  ${@bb.utils.contains('DISTRO_FEATURES', 'pam', '--enable-pam', '--disable-pam', d)}"
 
@@ -91,7 +92,9 @@ do_install() {
 		${D}${systemd_unitdir}/system/dropbear.socket ${D}${systemd_unitdir}/system/*.service
 }
 
-inherit update-alternatives
+
+
+inherit update-alternatives pkgconfig
 
 ALTERNATIVE_PRIORITY = "20"
 ALTERNATIVE_${PN} = "scp ssh"
