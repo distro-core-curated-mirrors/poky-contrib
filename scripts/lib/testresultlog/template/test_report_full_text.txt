@@ -1,6 +1,33 @@
+============================================================================
+Test Report (Count of passed, failed, skipped group by test_component, test_environment)
+============================================================================
 ----------------------------------------------------------------------------
 test_component | test_environment | passed | failed | skipped
 ----------------------------------------------------------------------------
 {% for report in test_reports |sort(attribute='test_component_environment') %}
 {{ report.test_component }} | {{ report.test_environment }} | {{ report.passed }} | {{ report.failed }} | {{ report.skipped }}
 {% endfor %}
+----------------------------------------------------------------------------
+
+============================================================================
+Test Report (Percent of passed, failed, skipped group by test_component, test_environment)
+============================================================================
+----------------------------------------------------------------------------
+test_component | test_environment | passed_percent | failed_percent | skipped_percent
+----------------------------------------------------------------------------
+{% for report in test_reports |sort(attribute='test_component_environment') %}
+{{ report.test_component }} | {{ report.test_environment }} | {{ report.passed_percent }} | {{ report.failed_percent }} | {{ report.skipped_percent }}
+{% endfor %}
+----------------------------------------------------------------------------
+
+============================================================================
+Test Report (Failed test cases group by test_component, test_environment)
+============================================================================
+----------------------------------------------------------------------------
+{% for report in test_reports |sort(attribute='test_component_environment') %}
+test_component | test_environment : {{ report.test_component }} | {{ report.test_environment }}
+    {% for testcase in report.failed_testcases %}
+        {{ testcase }}
+    {% endfor %}
+{% endfor %}
+----------------------------------------------------------------------------
