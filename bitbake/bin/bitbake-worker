@@ -292,16 +292,28 @@ def fork_off_task(cfg, data, databuilder, workerdata, fn, task, taskname, taskha
 
     return pid, pipein, pipeout
 
-class runQueueWorkerPipe():
+class runQueueHandler(object):
+    def __init__(self):
+        self.queue = b""
+
+    def handle_item(self, item, func):
+        if self.queue.startswith(b"<" + item + b">"):
+            index = self.queue.find(b"</" + item + b">")
+            while index != -1:
+                func(self.queue[(len(item) + 2):index])
+                self.queue = self.queue[(index + len(item) + 3):]
+                index = self.queue.find(b"</" + item + b">")
+
+class runQueueWorkerPipe(runQueueHandler):
     """
     Abstraction for a pipe between a worker thread and the worker server
     """
     def __init__(self, pipein, pipeout):
+        super().__init__()
         self.input = pipein
         if pipeout:
             pipeout.close()
         bb.utils.nonblockingfd(self.input)
-        self.queue = b""
 
     def read(self):
         start = len(self.queue)
@@ -312,12 +324,12 @@ class runQueueWorkerPipe():
                 raise
 
         end = len(self.queue)
-        index = self.queue.find(b"</event>")
-        while index != -1:
-            worker_fire_prepickled(self.queue[:index+8])
-            self.queue = self.queue[index+8:]
-            index = self.queue.find(b"</event>")
+        if end:
+            self.handle_item(b"event", self.handle_event)
         return (end > start)
+
+    def handle_event(self, data):
+        worker_fire_prepickled(b"<event>" + data + b"</event>")
 
     def close(self):
         while self.read():
@@ -328,11 +340,11 @@ class runQueueWorkerPipe():
 
 normalexit = False
 
-class BitbakeWorker(object):
+class BitbakeWorker(runQueueHandler):
     def __init__(self, din):
+        super().__init__()
         self.input = din
         bb.utils.nonblockingfd(self.input)
-        self.queue = b""
         self.cookercfg = None
         self.databuilder = None
         self.data = None
@@ -384,15 +396,6 @@ class BitbakeWorker(object):
             if len(self.build_pids):
                 while self.process_waitpid():
                     continue
-
-
-    def handle_item(self, item, func):
-        if self.queue.startswith(b"<" + item + b">"):
-            index = self.queue.find(b"</" + item + b">")
-            while index != -1:
-                func(self.queue[(len(item) + 2):index])
-                self.queue = self.queue[(index + len(item) + 3):]
-                index = self.queue.find(b"</" + item + b">")
 
     def handle_cookercfg(self, data):
         self.cookercfg = pickle.loads(data)
