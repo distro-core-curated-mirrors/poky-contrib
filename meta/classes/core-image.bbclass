@@ -47,6 +47,7 @@ FEATURE_PACKAGES_nfs-client = "packagegroup-core-nfs-client"
 FEATURE_PACKAGES_ssh-server-dropbear = "packagegroup-core-ssh-dropbear"
 FEATURE_PACKAGES_ssh-server-openssh = "packagegroup-core-ssh-openssh"
 FEATURE_PACKAGES_hwcodecs = "${MACHINE_HWCODECS}"
+FEATURE_PACKAGES_gui-testing = "packagegroup-core-gui-testing"
 
 
 # IMAGE_FEATURES_REPLACES_foo = 'bar1 bar2'
