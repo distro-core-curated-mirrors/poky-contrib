@@ -183,7 +183,7 @@ class LogTee(object):
 
 #
 # pythonexception allows the python exceptions generated to be raised
-# as the real exceptions (not FuncFailed) and without a backtrace at the 
+# as the real exceptions (not FuncFailed) and without a backtrace at the
 # origin of the failure.
 #
 def exec_func(func, d, dirs = None, pythonexception=False):
@@ -619,6 +619,11 @@ def _exec_task(fn, task, d, quieterr):
 
     if not localdata.getVarFlag(task, 'nostamp', False) and not localdata.getVarFlag(task, 'selfstamp', False):
         make_stamp(task, localdata)
+
+    retvars = localdata.getVar('BB_RETVARS') or ''
+    for var in retvars.split():
+        d.setVar(var, localdata.getVar(var, False))
+    d.setVar('BB_RETVARS', retvars)
 
     return 0
 

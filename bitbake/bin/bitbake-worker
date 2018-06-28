@@ -109,18 +109,21 @@ def worker_flush(worker_queue):
 worker_thread = Thread(target=worker_flush, args=(worker_queue,))
 worker_thread.start()
 
-def worker_child_fire(event, d):
+def worker_child_send(name, data):
     global worker_pipe
     global worker_pipe_lock
 
-    data = b"<event>" + pickle.dumps(event) + b"</event>"
+    msg = b"<" + name + b">" + pickle.dumps(data) + b"</" + name + b">"
     try:
         worker_pipe_lock.acquire()
-        worker_pipe.write(data)
+        worker_pipe.write(msg)
         worker_pipe_lock.release()
     except IOError:
         sigterm_handler(None, None)
         raise
+
+def worker_child_fire(event, d):
+    worker_child_send(b"event", event)
 
 bb.event.worker_fire = worker_fire
 
@@ -269,7 +272,15 @@ def fork_off_task(cfg, data, databuilder, workerdata, fn, task, taskname, taskha
             try:
                 if dry_run:
                     return 0
-                return bb.build.exec_task(fn, taskname, the_data, cfg.profile)
+                ret = bb.build.exec_task(fn, taskname, the_data, cfg.profile)
+                retvars = {}
+
+                for var in (the_data.getVar('BB_RETVARS') or '').split():
+                    retvars[var] = the_data.getVar(var, True)
+
+                if retvars:
+                    worker_child_send(b"retvars", retvars)
+                return ret
             except:
                 os._exit(1)
         if not profiling:
@@ -314,6 +325,7 @@ class runQueueWorkerPipe(runQueueHandler):
         if pipeout:
             pipeout.close()
         bb.utils.nonblockingfd(self.input)
+        self.retvars = {}
 
     def read(self):
         start = len(self.queue)
@@ -326,10 +338,14 @@ class runQueueWorkerPipe(runQueueHandler):
         end = len(self.queue)
         if end:
             self.handle_item(b"event", self.handle_event)
+            self.handle_item(b"retvars", self.handle_retvars)
         return (end > start)
 
     def handle_event(self, data):
         worker_fire_prepickled(b"<event>" + data + b"</event>")
+
+    def handle_retvars(self, data):
+        self.retvars = pickle.loads(data)
 
     def close(self):
         while self.read():
@@ -460,10 +476,12 @@ class BitbakeWorker(runQueueHandler):
         task = self.build_pids[pid]
         del self.build_pids[pid]
 
+        retvars = self.build_pipes[pid].retvars
+
         self.build_pipes[pid].close()
         del self.build_pipes[pid]
 
-        worker_fire_prepickled(b"<exitcode>" + pickle.dumps((task, status)) + b"</exitcode>")
+        worker_fire_prepickled(b"<exitcode>" + pickle.dumps((task, status, retvars)) + b"</exitcode>")
 
         return True
 

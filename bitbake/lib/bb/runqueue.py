@@ -1666,7 +1666,7 @@ class RunQueueExecute:
         if self.number_tasks <= 0:
              bb.fatal("Invalid BB_NUMBER_THREADS %s" % self.number_tasks)
 
-    def runqueue_process_waitpid(self, task, status):
+    def runqueue_process_waitpid(self, task, status, retvars):
 
         # self.build_stamps[pid] may not exist when use shared work directory.
         if task in self.build_stamps:
@@ -2463,8 +2463,8 @@ class RunQueueExecuteScenequeue(RunQueueExecute):
 
         return True
 
-    def runqueue_process_waitpid(self, task, status):
-        RunQueueExecute.runqueue_process_waitpid(self, task, status)
+    def runqueue_process_waitpid(self, task, status, retvars):
+        RunQueueExecute.runqueue_process_waitpid(self, task, status, retvars)
 
 
     def build_taskdepdata(self, task):
@@ -2658,10 +2658,10 @@ class runQueuePipe():
             index = self.queue.find(b"</exitcode>")
             while index != -1 and self.queue.startswith(b"<exitcode>"):
                 try:
-                    task, status = pickle.loads(self.queue[10:index])
+                    task, status, retvars = pickle.loads(self.queue[10:index])
                 except ValueError as e:
                     bb.msg.fatal("RunQueue", "failed load pickle '%s': '%s'" % (e, self.queue[10:index]))
-                self.rqexec.runqueue_process_waitpid(task, status)
+                self.rqexec.runqueue_process_waitpid(task, status, retvars)
                 found = True
                 self.queue = self.queue[index+11:]
                 index = self.queue.find(b"</exitcode>")
