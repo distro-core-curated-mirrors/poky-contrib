@@ -69,6 +69,22 @@ class TestResultViewer(object):
             test_result['failed_percent'] = format(test_result['failed']/total_tested * 100, '.2f')
             test_result['skipped_percent'] = format(test_result['skipped']/total_tested * 100, '.2f')
 
+    def _convert_test_result_value_to_string(self, test_result):
+        test_result['passed_percent'] = str(test_result['passed_percent'])
+        test_result['failed_percent'] = str(test_result['failed_percent'])
+        test_result['skipped_percent'] = str(test_result['skipped_percent'])
+        test_result['passed'] = str(test_result['passed'])
+        test_result['failed'] = str(test_result['failed'])
+        test_result['skipped'] = str(test_result['skipped'])
+
+    def _get_max_string_len_from_test_result_list(self, test_result_list, key, default_max_len):
+        max_len = default_max_len
+        for test_result in test_result_list:
+            value_len = len(test_result[key])
+            if value_len > max_len:
+                max_len = value_len
+        return max_len
+
     def compile_test_result_for_test_report_directory(self, report_dir):
         test_result_files = self._get_list_of_test_result_files(report_dir)
         test_result = {'passed':0, 'failed':0, 'skipped':0, 'failed_testcases':[]}
@@ -82,6 +98,7 @@ class TestResultViewer(object):
             test_result['failed_testcases'] += failed_error_test_case_list
             #total_failed_error_test_case_list = total_failed_error_test_case_list + failed_error_test_case_list
         self._compute_test_result_percent_indicator(test_result)
+        self._convert_test_result_value_to_string(test_result)
         return test_result
 
     def get_test_component_environment_from_test_report_dir(self, git_repo, report_dir):
@@ -90,12 +107,12 @@ class TestResultViewer(object):
         test_environment = test_component_environment.replace(test_component + '/', '')
         return test_component, test_environment, test_component_environment
 
-    def create_text_based_test_report(self, test_result_list):
+    def create_text_based_test_report(self, test_result_list, max_len_component, max_len_environment):
         script_path = os.path.dirname(os.path.realpath(__file__))
         file_loader = FileSystemLoader(script_path + '/template')
-        env = Environment(loader=file_loader)
+        env = Environment(loader=file_loader, trim_blocks=True)
         template = env.get_template('test_report_full_text.txt')
-        output = template.render(test_reports=test_result_list)
+        output = template.render(test_reports=test_result_list, max_len_component=max_len_component, max_len_environment=max_len_environment)
         print('Printing text-based test report:')
         print(output)
 
@@ -113,7 +130,9 @@ def main(args):
             test_result['test_environment'] = test_environment
             test_result['test_component_environment'] = test_component_environment
             test_result_list.append(test_result)
-        testviewer.create_text_based_test_report(test_result_list)
+        max_len_component = testviewer._get_max_string_len_from_test_result_list(test_result_list, 'test_component', len('test_component'))
+        max_len_environment = testviewer._get_max_string_len_from_test_result_list(test_result_list, 'test_environment', len('test_environment'))
+        testviewer.create_text_based_test_report(test_result_list, max_len_component, max_len_environment)
 
 def register_commands(subparsers):
     """Register subcommands from this plugin"""
