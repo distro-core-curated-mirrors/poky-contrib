@@ -7,6 +7,7 @@ import glob
 import sys
 import imp
 import signal
+import difflib
 from shutil import copyfile
 from random import choice
 
@@ -70,21 +71,21 @@ class OESelftestTestContextExecutor(OETestContextExecutor):
 
         parser.add_argument('--machine', required=False, choices=['random', 'all'],
                             help='Run tests on different machines (random/all).')
-        
+
         parser.set_defaults(func=self.run)
 
     def _get_available_machines(self):
         machines = []
 
         bbpath = self.tc_kwargs['init']['td']['BBPATH'].split(':')
-    
+
         for path in bbpath:
             found_machines = glob.glob(os.path.join(path, 'conf', 'machine', '*.conf'))
             if found_machines:
                 for i in found_machines:
                     # eg: '/home/<user>/poky/meta-intel/conf/machine/intel-core2-32.conf'
                     machines.append(os.path.splitext(os.path.basename(i))[0])
-    
+
         return machines
 
     def _get_cases_paths(self, bbpath):
@@ -133,7 +134,7 @@ class OESelftestTestContextExecutor(OETestContextExecutor):
 
         copyfile(self.tc_kwargs['init']['config_paths']['localconf'],
                 self.tc_kwargs['init']['config_paths']['localconf_backup'])
-        copyfile(self.tc_kwargs['init']['config_paths']['bblayers'], 
+        copyfile(self.tc_kwargs['init']['config_paths']['bblayers'],
                 self.tc_kwargs['init']['config_paths']['bblayers_backup'])
 
         self.tc_kwargs['run']['skips'] = args.skips
@@ -219,7 +220,19 @@ class OESelftestTestContextExecutor(OETestContextExecutor):
 
     def _signal_clean_handler(self, signum, frame):
         sys.exit(1)
-    
+
+
+    def diff_and_restore(self, backup, current):
+        if os.path.exists(backup):
+            with open(current, 'r') as c, open(backup, 'r') as b:
+                l = difflib.unified_diff(b.readlines(), c.readlines(), fromfile=backup, tofile=current)
+                l = list(l)
+                if l:
+                    self.tc.logger.warn("%s has the following changes. This may mean a test did not properly cleanup:\n%s" %
+                            (current, ''.join(l)))
+            copyfile(backup, current)
+            os.remove(backup)
+
     def run(self, logger, args):
         self._process_args(logger, args)
 
@@ -253,15 +266,11 @@ class OESelftestTestContextExecutor(OETestContextExecutor):
                 rc = self._internal_run(logger, args)
         finally:
             config_paths = self.tc_kwargs['init']['config_paths']
-            if os.path.exists(config_paths['localconf_backup']):
-                copyfile(config_paths['localconf_backup'],
-                        config_paths['localconf'])
-                os.remove(config_paths['localconf_backup'])
+            self.diff_and_restore(config_paths['localconf_backup'],
+                    config_paths['localconf'])
 
-            if os.path.exists(config_paths['bblayers_backup']):
-                copyfile(config_paths['bblayers_backup'], 
-                        config_paths['bblayers'])
-                os.remove(config_paths['bblayers_backup'])
+            self.diff_and_restore(config_paths['bblayers_backup'],
+                    config_paths['bblayers'])
 
             if os.path.exists(config_paths['localconf_class_backup']):
                 os.remove(config_paths['localconf_class_backup'])
