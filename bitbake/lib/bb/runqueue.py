@@ -348,6 +348,7 @@ class RunTaskEntry(object):
         self.hash = None
         self.task = None
         self.weight = 1
+        self.rehash = False
 
 class RunQueueData:
     """
@@ -1133,17 +1134,21 @@ class RunQueueData:
                 if len(self.runtaskentries[tid].depends - dealtwith) == 0:
                     dealtwith.add(tid)
                     todeal.remove(tid)
-                    procdep = []
-                    for dep in self.runtaskentries[tid].depends:
-                        procdep.append(fn_from_tid(dep) + "." + taskname_from_tid(dep))
-                    (mc, fn, taskname, taskfn) = split_tid_mcfn(tid)
-                    self.runtaskentries[tid].hash = bb.parse.siggen.get_taskhash(taskfn, taskname, procdep, self.dataCaches[mc])
-                    task = self.runtaskentries[tid].task
+                    self.prepare_task_hash(tid)
 
         bb.parse.siggen.writeout_file_checksum_cache()
 
         #self.dump_data()
         return len(self.runtaskentries)
+
+    def prepare_task_hash(self, tid):
+        procdep = []
+        for dep in self.runtaskentries[tid].depends:
+            procdep.append(fn_from_tid(dep) + "." + taskname_from_tid(dep))
+        (mc, fn, taskname, taskfn) = split_tid_mcfn(tid)
+        taskhash = bb.parse.siggen.get_taskhash(taskfn, taskname, procdep, self.dataCaches[mc])
+        self.runtaskentries[tid].hash = taskhash
+        self.runtaskentries[tid].rehash = False
 
     def dump_data(self):
         """
@@ -1676,7 +1681,7 @@ class RunQueueExecute:
         if status != 0:
             self.task_fail(task, status)
         else:
-            self.task_complete(task)
+            self.task_complete(task, retvars)
         return True
 
     def finish_now(self):
@@ -1869,14 +1874,21 @@ class RunQueueExecuteTasks(RunQueueExecute):
         self.runq_buildable.add(task)
         self.sched.newbuildable(task)
 
-    def task_completeoutright(self, task):
+    def task_completeoutright(self, task, retvars=None):
         """
         Mark a task as completed
         Look at the reverse dependencies and mark any task with
         completed dependencies as buildable
         """
+        # Sanity check: A task should never have a rehash requested while it is
+        # running!
+        if self.rqdata.runtaskentries[task].rehash:
+            logger.error("Rehash of task %s requested while it was running", task)
+
+        need_rehash = bb.parse.siggen.task_complete(task, retvars)
         self.runq_complete.add(task)
         for revdep in self.rqdata.runtaskentries[task].revdeps:
+            self.rqdata.runtaskentries[revdep].rehash = need_rehash or self.rqdata.runtaskentries[revdep].rehash
             if revdep in self.runq_running:
                 continue
             if revdep in self.runq_buildable:
@@ -1890,10 +1902,10 @@ class RunQueueExecuteTasks(RunQueueExecute):
                 self.setbuildable(revdep)
                 logger.debug(1, "Marking task %s as buildable", revdep)
 
-    def task_complete(self, task):
+    def task_complete(self, task, retvars=None):
         self.stats.taskCompleted()
         bb.event.fire(runQueueTaskCompleted(task, self.stats, self.rq), self.cfgData)
-        self.task_completeoutright(task)
+        self.task_completeoutright(task, retvars)
 
     def task_fail(self, task, exitcode):
         """
@@ -1973,6 +1985,11 @@ class RunQueueExecuteTasks(RunQueueExecute):
         task = self.sched.next()
         if task is not None:
             (mc, fn, taskname, taskfn) = split_tid_mcfn(task)
+
+            if self.rqdata.runtaskentries[task].rehash:
+                oldhash = self.rqdata.get_task_hash(task)
+                self.rqdata.prepare_task_hash(task)
+                logger.debug(2, "Task %s rehashed from %s -> %s", task, oldhash, self.rqdata.get_task_hash(task))
 
             if task in self.rq.scenequeue_covered:
                 logger.debug(2, "Setscene covered task %s", task)
