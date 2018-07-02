@@ -47,6 +47,9 @@ class SignatureGenerator(object):
     def get_taskhash(self, fn, task, deps, dataCache):
         return "0"
 
+    def get_task_vars(self, task):
+        return {}
+
     def task_complete(self, task, retvars):
         return False
 
