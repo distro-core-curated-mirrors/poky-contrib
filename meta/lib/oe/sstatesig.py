@@ -1,5 +1,6 @@
 import bb.siggen
 import oe
+import urllib.request
 
 def sstate_rundepfilter(siggen, fn, recipename, task, dep, depname, dataCache):
     # Return True if we should keep the dependency, False to drop it
@@ -45,7 +46,7 @@ def sstate_rundepfilter(siggen, fn, recipename, task, dep, depname, dataCache):
 
     # allarch packagegroups are assumed to have well behaved names which don't change between architecures/tunes
     if isPackageGroup(fn) and isAllArch(fn) and not isNative(depname):
-        return False  
+        return False
 
     # Exclude well defined machine specific configurations which don't change ABI
     if depname in siggen.abisaferecipes and not isImage(fn):
@@ -256,10 +257,33 @@ class SignatureGeneratorOEBasicHash(bb.siggen.SignatureGeneratorBasicHash):
         if error_msgs:
             bb.fatal("\n".join(error_msgs))
 
+class SignatureGeneratorOEEquivHash(SignatureGeneratorOEBasicHash):
+    name = "OEEquivHash"
+
+    def init_rundepcheck(self, data):
+        super().__init__(data)
+        self.depids = {}
+        self.server = data.getVar('BB_HASHEQUIV_SERVER', True)
+
+    def get_depid(self, task):
+        if task in self.depids:
+            return self.depids[task]
+        url = 'http://%s/v1/tasks'
+        pass
+
+    def get_task_vars(self, task):
+        return {}
+
+    def task_complete(self, task, retvars):
+        if not 'BB_OUTHASH' in retvars:
+            return False
+        return False
+
 
 # Insert these classes into siggen's namespace so it can see and select them
 bb.siggen.SignatureGeneratorOEBasic = SignatureGeneratorOEBasic
 bb.siggen.SignatureGeneratorOEBasicHash = SignatureGeneratorOEBasicHash
+bb.siggen.SIgnatureGeneratorOEEquivHash = SignatureGeneratorOEEquivHash
 
 
 def find_siginfo(pn, taskname, taskhashlist, d):
