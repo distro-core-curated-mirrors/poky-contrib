@@ -41,7 +41,7 @@ class TestResultGitStore(object):
         testcase_dict = {}
         for testcase in sorted(testcase_list):
             #testcase_key = '%s.%s' % (testsuite_name, testcase)
-            testcase_dict[testcase] = {"testlog": "","testresult": ""}
+            testcase_dict[testcase] = {"testresult": "","bugs": ""}
         #print('DEBUG: testcase_dict: %s' % testcase_dict)
         return testcase_dict
 

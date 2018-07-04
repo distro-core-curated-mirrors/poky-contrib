@@ -15,7 +15,7 @@ class TestResultViewer(object):
     def _replace_existing_parent_dir_with_new_dir(self, dir_list, new_dir):
         return [new_dir if dir in new_dir else dir for dir in dir_list]
 
-    def get_test_report_directory_list(self, git_dir):
+    def _get_test_report_directory_list(self, git_dir):
         exclude = ['.git']
         report_dir_list = []
         for root, dirs, files in os.walk(git_dir, topdown=True):
@@ -85,7 +85,7 @@ class TestResultViewer(object):
                 max_len = value_len
         return max_len
 
-    def compile_test_result_for_test_report_directory(self, report_dir):
+    def _compile_test_result_for_test_report_directory(self, report_dir):
         test_result_files = self._get_list_of_test_result_files(report_dir)
         test_result = {'passed':0, 'failed':0, 'skipped':0, 'failed_testcases':[]}
         #total_failed_error_test_case_list = []
@@ -101,13 +101,13 @@ class TestResultViewer(object):
         self._convert_test_result_value_to_string(test_result)
         return test_result
 
-    def get_test_component_environment_from_test_report_dir(self, git_repo, report_dir):
+    def _get_test_component_environment_from_test_report_dir(self, git_repo, report_dir):
         test_component_environment = report_dir.replace(git_repo + '/', '')
         test_component = test_component_environment[:test_component_environment.find("/")]
         test_environment = test_component_environment.replace(test_component + '/', '')
         return test_component, test_environment, test_component_environment
 
-    def create_text_based_test_report(self, test_result_list, max_len_component, max_len_environment):
+    def _rendering_text_based_test_report(self, test_result_list, max_len_component, max_len_environment):
         script_path = os.path.dirname(os.path.realpath(__file__))
         file_loader = FileSystemLoader(script_path + '/template')
         env = Environment(loader=file_loader, trim_blocks=True)
@@ -116,28 +116,31 @@ class TestResultViewer(object):
         print('Printing text-based test report:')
         print(output)
 
-def main(args):
-    testresultstore = TestResultGitStore()
-    if testresultstore.checkout_git_branch(args.git_repo, args.git_branch):
-        testviewer = TestResultViewer()
-        report_dir_list = testviewer.get_test_report_directory_list(args.git_repo)
+    def create_text_based_test_report(self, git_repo):
+        report_dir_list = self._get_test_report_directory_list(git_repo)
         test_result_list = []
         for report_dir in report_dir_list:
             print('Compiling test result for %s:' % report_dir)
-            test_result = testviewer.compile_test_result_for_test_report_directory(report_dir)
-            test_component, test_environment, test_component_environment = testviewer.get_test_component_environment_from_test_report_dir(args.git_repo, report_dir)
+            test_result = self._compile_test_result_for_test_report_directory(report_dir)
+            test_component, test_environment, test_component_environment = self._get_test_component_environment_from_test_report_dir(git_repo, report_dir)
             test_result['test_component'] = test_component
             test_result['test_environment'] = test_environment
             test_result['test_component_environment'] = test_component_environment
             test_result_list.append(test_result)
-        max_len_component = testviewer._get_max_string_len_from_test_result_list(test_result_list, 'test_component', len('test_component'))
-        max_len_environment = testviewer._get_max_string_len_from_test_result_list(test_result_list, 'test_environment', len('test_environment'))
-        testviewer.create_text_based_test_report(test_result_list, max_len_component, max_len_environment)
+        max_len_component = self._get_max_string_len_from_test_result_list(test_result_list, 'test_component', len('test_component'))
+        max_len_environment = self._get_max_string_len_from_test_result_list(test_result_list, 'test_environment', len('test_environment'))
+        self._rendering_text_based_test_report(test_result_list, max_len_component, max_len_environment)
+
+def main(args):
+    testresultstore = TestResultGitStore()
+    if testresultstore.checkout_git_branch(args.git_repo, args.git_branch):
+        testresultviewer = TestResultViewer()
+        testresultviewer.create_text_based_test_report(args.git_repo)
 
 def register_commands(subparsers):
     """Register subcommands from this plugin"""
     parser_build = subparsers.add_parser('view', help='View summary test result',
                                          description='View summary test result')
     parser_build.set_defaults(func=main)
-    parser_build.add_argument('-g', '--git_repo', required=False, default='default', help='(Optional) Git repository to be view summary test result ,default will be /poky/test-result-log.git')
+    parser_build.add_argument('-g', '--git_repo', required=False, default='default', help='(Optional) Git repository to be used for generating the summary test result ,default will be <top_dir>/test-result-log.git')
     parser_build.add_argument('-b', '--git_branch', required=True, help='Git branch to be updated with test result')

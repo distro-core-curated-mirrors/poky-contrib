@@ -2,9 +2,9 @@ import os
 import unittest
 from testresultlog.testresultlogconfigparser import TestResultLogConfigParser
 from testresultlog.testresultgitstore import TestResultGitStore
-import scriptpath
-scriptpath.add_oe_lib_path()
-scriptpath.add_bitbake_lib_path()
+#import scriptpath
+#scriptpath.add_oe_lib_path()
+#scriptpath.add_bitbake_lib_path()
 
 class TestPlanCreator(object):
 
@@ -30,17 +30,6 @@ class TestPlanCreator(object):
                 #multiplied_list.append('%s,%s' % (cur_env, '%s_%s' % (new_env_header, new_env)))
                 multiplied_list.append('%s,%s' % (cur_env, new_env))
         return multiplied_list
-
-    def get_test_environment_multiplication_matrix(self, test_component, component_conf, environment_conf):
-        test_environment_list = self._get_test_configuration_list(component_conf, test_component)
-        env_matrix = []
-        for env in test_environment_list:
-            env_value_list = self._get_test_configuration_list(environment_conf, env)
-            if len(env_matrix) == 0:
-                self._init_environment_multiplication_matrix(env_matrix, env_value_list, env)
-            else:
-                env_matrix = self._multiply_current_env_list_with_new_env_list(env_matrix, env_value_list, env)
-        return env_matrix
 
     def _get_oeqa_source_dir(self, source):
         if source == 'runtime':
@@ -81,6 +70,17 @@ class TestPlanCreator(object):
     def _get_testmodule_from_testsuite(self, testsuite):
         testmodule = testsuite[0:testsuite.find(".")]
         return testmodule
+
+    def get_test_environment_multiplication_matrix(self, test_component, component_conf, environment_conf):
+        test_environment_list = self._get_test_configuration_list(component_conf, test_component)
+        env_matrix = []
+        for env in test_environment_list:
+            env_value_list = self._get_test_configuration_list(environment_conf, env)
+            if len(env_matrix) == 0:
+                self._init_environment_multiplication_matrix(env_matrix, env_value_list, env)
+            else:
+                env_matrix = self._multiply_current_env_list_with_new_env_list(env_matrix, env_value_list, env)
+        return env_matrix
 
     def get_testsuite_testcase_dictionary(self, source):
         work_dir = self._get_oeqa_source_dir(source)

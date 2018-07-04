@@ -1,6 +1,5 @@
 import os
 import unittest
-
 from testresultlog.testresultgitstore import TestResultGitStore
 from testresultlog.testlogparser import TestLogParser
 
@@ -18,45 +17,32 @@ class TestResultUpdator(object):
         testmodule = testsuite[0:testsuite.find(".")]
         return testmodule
 
-    def get_testsuite_testcase_dictionary(self, testcase_status_dict):
-        testcase_list = testcase_status_dict.keys()
-        testsuite_testcase_dict = {}
-        for testcase in testcase_list:
-            testsuite = self._get_testsuite_from_testcase(testcase)
-            if testsuite in testsuite_testcase_dict:
-                testsuite_testcase_dict[testsuite].append(testcase)
-            else:
-                testsuite_testcase_dict[testsuite] = [testcase]
-        return testsuite_testcase_dict
+    # def get_testsuite_testcase_dictionary(self, testcase_status_dict):
+    #     testcase_list = testcase_status_dict.keys()
+    #     testsuite_testcase_dict = {}
+    #     for testcase in testcase_list:
+    #         testsuite = self._get_testsuite_from_testcase(testcase)
+    #         if testsuite in testsuite_testcase_dict:
+    #             testsuite_testcase_dict[testsuite].append(testcase)
+    #         else:
+    #             testsuite_testcase_dict[testsuite] = [testcase]
+    #     return testsuite_testcase_dict
 
-    def get_testmodule_testsuite_dictionary(self, testsuite_testcase_dict):
-        testsuite_list = testsuite_testcase_dict.keys()
-        testmodule_testsuite_dict = {}
-        for testsuite in testsuite_list:
-            testmodule = self._get_testmodule_from_testsuite(testsuite)
-            if testmodule in testmodule_testsuite_dict:
-                testmodule_testsuite_dict[testmodule].append(testsuite)
-            else:
-                testmodule_testsuite_dict[testmodule] = [testsuite]
-        return testmodule_testsuite_dict
+    # def get_testmodule_testsuite_dictionary(self, testsuite_testcase_dict):
+    #     testsuite_list = testsuite_testcase_dict.keys()
+    #     testmodule_testsuite_dict = {}
+    #     for testsuite in testsuite_list:
+    #         testmodule = self._get_testmodule_from_testsuite(testsuite)
+    #         if testmodule in testmodule_testsuite_dict:
+    #             testmodule_testsuite_dict[testmodule].append(testsuite)
+    #         else:
+    #             testmodule_testsuite_dict[testmodule] = [testsuite]
+    #     return testmodule_testsuite_dict
 
     def _remove_testsuite_from_testcase(self, testcase, testsuite):
         testsuite = testsuite + '.'
         testcase_remove_testsuite = testcase.replace(testsuite, '')
         return testcase_remove_testsuite
-
-    def get_testcase_failed_or_error_logs_dictionary(self, log_file, testcase_status_dict):
-        testlogparser = TestLogParser()
-        testcase_list = testcase_status_dict.keys()
-        testcase_failed_or_error_logs_dict = {}
-        for testcase in testcase_list:
-            test_status = testcase_status_dict[testcase]
-            if test_status == 'FAILED' or test_status == 'ERROR':
-                testsuite = self._get_testsuite_from_testcase(testcase)
-                testfunction = self._remove_testsuite_from_testcase(testcase, testsuite)
-                logs = testlogparser.get_test_log(log_file, test_status, testfunction, testsuite)
-                testcase_failed_or_error_logs_dict[testcase] = logs
-        return testcase_failed_or_error_logs_dict
 
     def _get_oeqa_source_dir(self, source):
         if source == 'runtime':
@@ -98,13 +84,23 @@ class TestResultUpdator(object):
         testmodule = testsuite[0:testsuite.find(".")]
         return testmodule
 
-    def _add_environment_to_list(self, environment_list, environment):
-        if len(environment) > 0 and environment not in environment_list:
+    def _add_new_environment_to_environment_list(self, environment_list, new_environment):
+        if len(new_environment) > 0 and new_environment not in environment_list:
             if len(environment_list) == 0:
-                environment_list = environment
+                environment_list = new_environment
             else:
-                environment_list = '%s,%s' % (environment_list, environment)
+                environment_list = '%s,%s' % (environment_list, new_environment)
         return environment_list
+
+    def get_environment_list_for_test_log(self, log_file, log_file_source, environment_list, testlogparser):
+        if log_file_source == 'runtime':
+            runtime_image_env = testlogparser.get_runtime_test_image_environment(log_file)
+            print('runtime image environment: %s' % runtime_image_env)
+            runtime_qemu_env = testlogparser.get_runtime_test_qemu_environment(log_file)
+            print('runtime qemu environment: %s' % runtime_qemu_env)
+            environment_list = self._add_new_environment_to_environment_list(environment_list, runtime_image_env)
+            environment_list = self._add_new_environment_to_environment_list(environment_list, runtime_qemu_env)
+        return environment_list.split(",")
 
     def get_testsuite_testcase_dictionary(self, source):
         work_dir = self._get_oeqa_source_dir(source)
@@ -132,20 +128,26 @@ class TestResultUpdator(object):
                 testmodule_testsuite_dict[testmodule] = [testsuite]
         return testmodule_testsuite_dict
 
+    def get_testcase_failed_or_error_logs_dictionary(self, log_file, testcase_status_dict):
+        testlogparser = TestLogParser()
+        testcase_list = testcase_status_dict.keys()
+        testcase_failed_or_error_logs_dict = {}
+        for testcase in testcase_list:
+            test_status = testcase_status_dict[testcase]
+            if test_status == 'FAILED' or test_status == 'ERROR':
+                testsuite = self._get_testsuite_from_testcase(testcase)
+                testfunction = self._remove_testsuite_from_testcase(testcase, testsuite)
+                logs = testlogparser.get_test_log(log_file, test_status, testfunction, testsuite)
+                testcase_failed_or_error_logs_dict[testcase] = logs
+        return testcase_failed_or_error_logs_dict
+
 def main(args):
     testlogparser = TestLogParser()
     testcase_status_dict = testlogparser.get_test_status(args.log_file)
     print('DEGUG: testcase_status_dict: %s' % testcase_status_dict)
 
     testresultupdator = TestResultUpdator()
-    if args.source == 'runtime':
-        runtime_image_env = testlogparser.get_runtime_test_image_environment(args.log_file)
-        print('runtime image environment: %s' % runtime_image_env)
-        runtime_qemu_env = testlogparser.get_runtime_test_qemu_environment(args.log_file)
-        print('runtime qemu environment: %s' % runtime_qemu_env)
-        args.environment_list = testresultupdator._add_environment_to_list(args.environment_list, runtime_image_env)
-        args.environment_list = testresultupdator._add_environment_to_list(args.environment_list, runtime_qemu_env)
-    env_list = args.environment_list.split(",")
+    environment_list = testresultupdator.get_environment_list_for_test_log(args.log_file, args.source, args.environment_list, testlogparser)
     testsuite_testcase_dict = testresultupdator.get_testsuite_testcase_dictionary(args.source)
     print('DEGUG: testsuite_testcase_dict:')
     print(testsuite_testcase_dict)
@@ -157,7 +159,7 @@ def main(args):
     print(test_logs_dict)
 
     testresultstore = TestResultGitStore()
-    testresultstore.smart_update_test_result(args.git_repo, args.git_branch, args.component, env_list, testmodule_testsuite_dict, testsuite_testcase_dict, testcase_status_dict, test_logs_dict)
+    testresultstore.smart_update_test_result(args.git_repo, args.git_branch, args.component, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, testcase_status_dict, test_logs_dict)
     if (len(args.git_remote) > 0):
         testresultstore.git_remote_fetch_rebase_push(args.git_repo, args.git_branch, args.git_remote)
 
