@@ -159,7 +159,7 @@ def main(args):
     print(test_logs_dict)
 
     testresultstore = TestResultGitStore()
-    testresultstore.smart_update_test_result(args.git_repo, args.git_branch, args.component, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, testcase_status_dict, test_logs_dict)
+    testresultstore.smart_update_automated_test_result(args.git_repo, args.git_branch, args.component, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, testcase_status_dict, test_logs_dict)
     if (len(args.git_remote) > 0):
         testresultstore.git_remote_fetch_rebase_push(args.git_repo, args.git_branch, args.git_remote)
 

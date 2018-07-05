@@ -2,9 +2,6 @@ import os
 import unittest
 from testresultlog.testresultlogconfigparser import TestResultLogConfigParser
 from testresultlog.testresultgitstore import TestResultGitStore
-#import scriptpath
-#scriptpath.add_oe_lib_path()
-#scriptpath.add_bitbake_lib_path()
 
 class TestPlanCreator(object):
 
@@ -72,10 +69,13 @@ class TestPlanCreator(object):
         return testmodule
 
     def get_test_environment_multiplication_matrix(self, test_component, component_conf, environment_conf):
+        print('Trying to get test_environment_list at: %s' % component_conf)
         test_environment_list = self._get_test_configuration_list(component_conf, test_component)
+        print('test_environment_list: %s' % test_environment_list)
         env_matrix = []
         for env in test_environment_list:
             env_value_list = self._get_test_configuration_list(environment_conf, env)
+            print('env_value_list: %s' % env_value_list)
             if len(env_matrix) == 0:
                 self._init_environment_multiplication_matrix(env_matrix, env_value_list, env)
             else:
@@ -129,7 +129,7 @@ def main(args):
         env_list = env.split(",")
         print(env_list)
         testresultstore = TestResultGitStore()
-        testresultstore.create_test_result(args.git_repo, args.git_branch, args.component, env_list, testmodule_testsuite_dict, testsuite_testcase_dict)
+        testresultstore.create_automated_test_result(args.git_repo, args.git_branch, args.component, env_list, testmodule_testsuite_dict, testsuite_testcase_dict)
 
 def register_commands(subparsers):
     """Register subcommands from this plugin"""
