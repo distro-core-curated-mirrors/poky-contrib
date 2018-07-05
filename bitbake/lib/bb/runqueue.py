@@ -2029,6 +2029,7 @@ class RunQueueExecuteTasks(RunQueueExecute):
             taskdep = self.rqdata.dataCaches[mc].task_deps[taskfn]
             taskhash = self.rqdata.get_task_hash(task)
             extraconfigdata = bb.parse.siggen.get_task_vars(task)
+            extraconfigdata['BB_DEPID'] = self.rqdata.get_task_depid(task)
             if 'fakeroot' in taskdep and taskname in taskdep['fakeroot'] and not (self.cooker.configuration.dry_run or self.rqdata.setscene_enforce):
                 if not mc in self.rq.fakeworker:
                     try:
