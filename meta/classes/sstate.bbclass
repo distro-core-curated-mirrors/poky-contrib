@@ -12,7 +12,9 @@ SSTATE_PKGARCH    = "${PACKAGE_ARCH}"
 SSTATE_PKGSPEC    = "sstate:${PN}:${PACKAGE_ARCH}${TARGET_VENDOR}-${TARGET_OS}:${PV}:${PR}:${SSTATE_PKGARCH}:${SSTATE_VERSION}:"
 SSTATE_SWSPEC     = "sstate:${PN}::${PV}:${PR}::${SSTATE_VERSION}:"
 SSTATE_PKGNAME    = "${SSTATE_EXTRAPATH}${@generate_sstatefn(d.getVar('SSTATE_PKGSPEC'), d.getVar('BB_TASKHASH'), d)}"
+SSTATE_SIGINFONAME= "${SSTATE_EXTRAPATH}${@generate_sstatefn(d.getVar('SSTATE_PKGSPEC'), d.getVar('BB_TASKHASH'), d)}"
 SSTATE_PKG        = "${SSTATE_DIR}/${SSTATE_PKGNAME}"
+SSTATE_SIGINFO    = "${SSTATE_DIR}/${SSTATE_SIGINFONAME}"
 SSTATE_EXTRAPATH   = ""
 SSTATE_EXTRAPATHWILDCARD = ""
 SSTATE_PATHSPEC   = "${SSTATE_DIR}/${SSTATE_EXTRAPATHWILDCARD}*/${SSTATE_PKGSPEC}"
@@ -296,11 +298,13 @@ def sstate_installpkg(ss, d):
     from oe.gpg_sign import get_signer
 
     sstateinst = d.expand("${WORKDIR}/sstate-install-%s/" % ss['task'])
-    sstatefetch = d.getVar('SSTATE_PKGNAME') + '_' + ss['task'] + ".tgz"
+    sstatepkgfetch = d.getVar('SSTATE_PKGNAME') + '_' + ss['task'] + ".tgz"
+    sstatesiginfofectch = d.getVar('SSTATE_SIGINFONAME') + '_' + ss['task'] + ".tgz.siginfo"
     sstatepkg = d.getVar('SSTATE_PKG') + '_' + ss['task'] + ".tgz"
+    sstatesiginfo = d.getVar('SSTATE_SIGINFO') + '_' + ss['task'] + ".tgz.siginfo"
 
     if not os.path.exists(sstatepkg):
-        pstaging_fetch(sstatefetch, d)
+        pstaging_fetch(sstatepkgfetch, sstatesiginfofetch, d)
 
     if not os.path.isfile(sstatepkg):
         bb.note("Staging package %s does not exist" % sstatepkg)
@@ -310,6 +314,7 @@ def sstate_installpkg(ss, d):
 
     d.setVar('SSTATE_INSTDIR', sstateinst)
     d.setVar('SSTATE_PKG', sstatepkg)
+    d.setVar('SSTATE_SIGINFO', sstatesiginfo)
 
     if bb.utils.to_boolean(d.getVar("SSTATE_VERIFY_SIG"), False):
         signer = get_signer(d, 'local')
@@ -587,9 +592,11 @@ def sstate_package(ss, d):
 
     sstatebuild = d.expand("${WORKDIR}/sstate-build-%s/" % ss['task'])
     sstatepkg = d.getVar('SSTATE_PKG') + '_'+ ss['task'] + ".tgz"
+    sstatesiginfo = d.getVar('SSTATE_SIGINFO') + '_' + ss['task'] + '.tgz.siginfo'
     bb.utils.remove(sstatebuild, recurse=True)
     bb.utils.mkdirhier(sstatebuild)
     bb.utils.mkdirhier(os.path.dirname(sstatepkg))
+    bb.utils.mkdirhier(os.path.dirname(sstatesiginfo))
     for state in ss['dirs']:
         if not os.path.exists(state[1]):
             continue
@@ -620,6 +627,7 @@ def sstate_package(ss, d):
 
     d.setVar('SSTATE_BUILDDIR', sstatebuild)
     d.setVar('SSTATE_PKG', sstatepkg)
+    d.setVar('SSTATE_SIGINFO', sstatesiginfo)
     d.setVar('SSTATE_INSTDIR', sstatebuild)
 
     if d.getVar('SSTATE_SKIP_CREATION') == '1':
@@ -631,11 +639,11 @@ def sstate_package(ss, d):
         # All hooks should run in SSTATE_BUILDDIR.
         bb.build.exec_func(f, d, (sstatebuild,))
 
-    bb.siggen.dump_this_task(sstatepkg + ".siginfo", d)
+    bb.siggen.dump_this_task(sstatesiginfo, d)
 
     return
 
-def pstaging_fetch(sstatefetch, d):
+def pstaging_fetch(sstatepkgfetch, sstatesiginfofetch, d):
     import bb.fetch2
 
     # Only try and fetch if the user has configured a mirror
@@ -661,8 +669,8 @@ def pstaging_fetch(sstatefetch, d):
 
     # Try a fetch from the sstate mirror, if it fails just return and
     # we will build the package
-    uris = ['file://{0};downloadfilename={0}'.format(sstatefetch),
-            'file://{0}.siginfo;downloadfilename={0}.siginfo'.format(sstatefetch)]
+    uris = ['file://{0};downloadfilename={0}'.format(sstatepkgfetch),
+            'file://{0};downloadfilename={0}'.format(sstatesiginfofetch)]
     if bb.utils.to_boolean(d.getVar("SSTATE_VERIFY_SIG"), False):
         uris += ['file://{0}.sig;downloadfilename={0}.sig'.format(sstatefetch)]
 
@@ -750,16 +758,19 @@ python sstate_sign_package () {
 sstate_unpack_package () {
 	tar -xvzf ${SSTATE_PKG}
 	# update .siginfo atime on local/NFS mirror
-	[ -w ${SSTATE_PKG}.siginfo ] && [ -h ${SSTATE_PKG}.siginfo ] && touch -a ${SSTATE_PKG}.siginfo
+	[ -w ${SSTATE_SIGINFO} ] && [ -h ${SSTATE_SIGINFO} ] && touch -a ${SSTATE_SIGINFO}
 	# Use "! -w ||" to return true for read only files
 	[ ! -w ${SSTATE_PKG} ] || touch --no-dereference ${SSTATE_PKG}
 	[ ! -w ${SSTATE_PKG}.sig ] || [ ! -e ${SSTATE_PKG}.sig ] || touch --no-dereference ${SSTATE_PKG}.sig
-	[ ! -w ${SSTATE_PKG}.siginfo ] || [ ! -e ${SSTATE_PKG}.siginfo ] || touch --no-dereference ${SSTATE_PKG}.siginfo
+	[ ! -w ${SSTATE_SIGINFO} ] || [ ! -e ${SSTATE_SIGINFO} ] || touch --no-dereference ${SSTATE_SIGINFO}
 }
 
 BB_HASHCHECK_FUNCTION = "sstate_checkhashes"
 
 def sstate_checkhashes(sq_fn, sq_task, sq_hash, sq_hashfn, sq_depid, d, siginfo=False):
+    # TODO: Need to figure out how this is going to get fixed....
+    # Eventually, the "easy" solution is to use sq_depid as the hashes if siginfo == False
+    # and sq_hash if siginfo == True
 
     ret = []
     missed = []
@@ -989,17 +1000,17 @@ addhandler sstate_eventhandler
 sstate_eventhandler[eventmask] = "bb.build.TaskSucceeded"
 python sstate_eventhandler() {
     d = e.data
-    # When we write an sstate package we rewrite the SSTATE_PKG
-    spkg = d.getVar('SSTATE_PKG')
-    if not spkg.endswith(".tgz"):
+    # When we write an sstate package we rewrite the SSTATE_SIGINFO
+    sinfo = d.getVar('SSTATE_SIGINFO')
+    if not sinfo.endswith(".tgz.siginfo"):
         taskname = d.getVar("BB_RUNTASK")[3:]
         spec = d.getVar('SSTATE_PKGSPEC')
         swspec = d.getVar('SSTATE_SWSPEC')
         if taskname in ["fetch", "unpack", "patch", "populate_lic", "preconfigure"] and swspec:
             d.setVar("SSTATE_PKGSPEC", "${SSTATE_SWSPEC}")
             d.setVar("SSTATE_EXTRAPATH", "")
-        sstatepkg = d.getVar('SSTATE_PKG')
-        bb.siggen.dump_this_task(sstatepkg + '_' + taskname + ".tgz" ".siginfo", d)
+        sstatesiginfo = d.getVar('SSTATE_SIGINFO')
+        bb.siggen.dump_this_task(sstatesiginfo + '_' + taskname + ".tgz.siginfo", d)
 }
 
 SSTATE_PRUNE_OBSOLETEWORKDIR = "1"
