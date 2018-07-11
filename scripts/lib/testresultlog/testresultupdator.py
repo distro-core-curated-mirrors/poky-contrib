@@ -5,9 +5,9 @@ from testresultlog.testlogparser import TestLogParser
 
 class TestResultUpdator(object):
 
-    def __init__(self):
-        self.script_path = os.path.dirname(os.path.realpath(__file__))
-        self.base_path = self.script_path + '/../../..'
+    # def __init__(self):
+    #     self.script_path = os.path.dirname(os.path.realpath(__file__))
+    #     self.base_path = self.script_path + '/../../..'
 
     def _get_testsuite_from_testcase(self, testcase):
         testsuite = testcase[0:testcase.rfind(".")]
@@ -17,43 +17,21 @@ class TestResultUpdator(object):
         testmodule = testsuite[0:testsuite.find(".")]
         return testmodule
 
-    # def get_testsuite_testcase_dictionary(self, testcase_status_dict):
-    #     testcase_list = testcase_status_dict.keys()
-    #     testsuite_testcase_dict = {}
-    #     for testcase in testcase_list:
-    #         testsuite = self._get_testsuite_from_testcase(testcase)
-    #         if testsuite in testsuite_testcase_dict:
-    #             testsuite_testcase_dict[testsuite].append(testcase)
-    #         else:
-    #             testsuite_testcase_dict[testsuite] = [testcase]
-    #     return testsuite_testcase_dict
-
-    # def get_testmodule_testsuite_dictionary(self, testsuite_testcase_dict):
-    #     testsuite_list = testsuite_testcase_dict.keys()
-    #     testmodule_testsuite_dict = {}
-    #     for testsuite in testsuite_list:
-    #         testmodule = self._get_testmodule_from_testsuite(testsuite)
-    #         if testmodule in testmodule_testsuite_dict:
-    #             testmodule_testsuite_dict[testmodule].append(testsuite)
-    #         else:
-    #             testmodule_testsuite_dict[testmodule] = [testsuite]
-    #     return testmodule_testsuite_dict
-
     def _remove_testsuite_from_testcase(self, testcase, testsuite):
         testsuite = testsuite + '.'
         testcase_remove_testsuite = testcase.replace(testsuite, '')
         return testcase_remove_testsuite
 
-    def _get_oeqa_source_dir(self, source):
-        if source == 'runtime':
-            oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/runtime/cases')
-        elif source == 'selftest':
-            oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/selftest/cases')
-        elif source == 'sdk':
-            oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/sdk/cases')
-        else:
-            oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/sdkext/cases')
-        return oeqa_dir
+    # def _get_oeqa_source_dir(self, source):
+    #     if source == 'runtime':
+    #         oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/runtime/cases')
+    #     elif source == 'selftest':
+    #         oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/selftest/cases')
+    #     elif source == 'sdk':
+    #         oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/sdk/cases')
+    #     else:
+    #         oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/sdkext/cases')
+    #     return oeqa_dir
 
     def _discover_unittest_testsuite_testcase(self, test_dir):
         loader = unittest.TestLoader()
@@ -70,14 +48,12 @@ class TestResultUpdator(object):
 
     def _get_testsuite_from_unittest_testcase(self, unittest_testcase):
         testsuite = unittest_testcase[unittest_testcase.find("(")+1:unittest_testcase.find(")")]
-        #print('DEBUG: %s : testsuite : %s' % (unittest_testcase, testsuite))
         return testsuite
 
     def _get_testcase_from_unittest_testcase(self, unittest_testcase):
         testcase = unittest_testcase[0:unittest_testcase.find("(")-1]
         testsuite = self._get_testsuite_from_unittest_testcase(unittest_testcase)
         testcase = '%s.%s' % (testsuite, testcase)
-        #print('DEBUG: %s : testcase : %s' % (unittest_testcase, testcase))
         return testcase
 
     def _get_testmodule_from_testsuite(self, testsuite):
@@ -93,6 +69,7 @@ class TestResultUpdator(object):
         return environment_list
 
     def get_environment_list_for_test_log(self, log_file, log_file_source, environment_list, testlogparser):
+        print('Getting test environment information from test log at %s' % log_file)
         if log_file_source == 'runtime':
             runtime_image_env = testlogparser.get_runtime_test_image_environment(log_file)
             print('runtime image environment: %s' % runtime_image_env)
@@ -102,9 +79,8 @@ class TestResultUpdator(object):
             environment_list = self._add_new_environment_to_environment_list(environment_list, runtime_qemu_env)
         return environment_list.split(",")
 
-    def get_testsuite_testcase_dictionary(self, source):
-        work_dir = self._get_oeqa_source_dir(source)
-        print('work_dir: %s' % work_dir)
+    def get_testsuite_testcase_dictionary(self, work_dir):
+        print('Getting testsuite testcase information from oeqa directory at %s' % work_dir)
         unittest_testsuite_testcase = self._discover_unittest_testsuite_testcase(work_dir)
         unittest_testcase_list = self._generate_flat_list_of_unittest_testcase(unittest_testsuite_testcase)
         testsuite_testcase_dict = {}
@@ -118,6 +94,7 @@ class TestResultUpdator(object):
         return testsuite_testcase_dict
 
     def get_testmodule_testsuite_dictionary(self, testsuite_testcase_dict):
+        print('Getting testmodule testsuite information')
         testsuite_list = testsuite_testcase_dict.keys()
         testmodule_testsuite_dict = {}
         for testsuite in testsuite_list:
@@ -129,6 +106,7 @@ class TestResultUpdator(object):
         return testmodule_testsuite_dict
 
     def get_testcase_failed_or_error_logs_dictionary(self, log_file, testcase_status_dict):
+        print('Getting testcase failed or error log from %s' % log_file)
         testlogparser = TestLogParser()
         testcase_list = testcase_status_dict.keys()
         testcase_failed_or_error_logs_dict = {}
@@ -144,19 +122,12 @@ class TestResultUpdator(object):
 def main(args):
     testlogparser = TestLogParser()
     testcase_status_dict = testlogparser.get_test_status(args.log_file)
-    print('DEGUG: testcase_status_dict: %s' % testcase_status_dict)
 
     testresultupdator = TestResultUpdator()
     environment_list = testresultupdator.get_environment_list_for_test_log(args.log_file, args.source, args.environment_list, testlogparser)
-    testsuite_testcase_dict = testresultupdator.get_testsuite_testcase_dictionary(args.source)
-    print('DEGUG: testsuite_testcase_dict:')
-    print(testsuite_testcase_dict)
+    testsuite_testcase_dict = testresultupdator.get_testsuite_testcase_dictionary(args.oeqa_dir)
     testmodule_testsuite_dict = testresultupdator.get_testmodule_testsuite_dictionary(testsuite_testcase_dict)
-    print('DEGUG: testmodule_testsuite_dict:')
-    print(testmodule_testsuite_dict)
     test_logs_dict = testresultupdator.get_testcase_failed_or_error_logs_dictionary(args.log_file, testcase_status_dict)
-    print('DEGUG: test_logs:')
-    print(test_logs_dict)
 
     testresultstore = TestResultGitStore()
     testresultstore.smart_update_automated_test_result(args.git_repo, args.git_branch, args.component, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, testcase_status_dict, test_logs_dict)
@@ -179,5 +150,6 @@ def register_commands(subparsers):
          '"selftest" will search testcase available in meta/lib/oeqa/selftest/cases. '
          '"sdk" will search testcase available in meta/lib/oeqa/sdk/cases. '
          '"sdkext" will search testcase available in meta/lib/oeqa/sdkext/cases. ')
+    parser_build.add_argument('-d', '--poky_dir', required=False, default='default', help='(Optional) Poky directory to be used for oeqa testcase(s) discovery, default will use current poky directory')
     parser_build.add_argument('-c', '--component', required=True, help='Component selected (as the top folder) to store the related test environments')
     parser_build.add_argument('-e', '--environment_list', required=False, default='', help='List of environment to be used to perform update')

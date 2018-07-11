@@ -4,7 +4,6 @@ from testresultlog.testresultgitstore import TestResultGitStore
 def main(args):
     if len(args.environment_list) > 0:
         env_list = args.environment_list.split(",")
-    print(env_list)
     testresultstore = TestResultGitStore()
     testresultstore.create_manual_test_result(args.git_repo, args.git_branch, args.component, env_list, args.manual_tests_dir)
 

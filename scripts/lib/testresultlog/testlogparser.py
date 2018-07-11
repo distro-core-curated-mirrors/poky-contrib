@@ -11,7 +11,6 @@ class TestLogParser(object):
                 line = line.strip()
                 m = regex_comp.search(line)
                 if m:
-                    print(m.group('case_name') + ': ' +  m.group('status'))
                     results[m.group('case_name')] = m.group('status')
         return results
 
@@ -24,7 +23,6 @@ class TestLogParser(object):
                 line = line.strip()
                 m = regex_comp.search(line)
                 if m:
-                    print(m.group('case_name') + ': ' +  m.group('status'))
                     results[m.group('case_name')] = m.group('status')
         return results
 
@@ -43,7 +41,6 @@ class TestLogParser(object):
         return image_env
 
     def get_runtime_test_qemu_environment(self, log_file):
-        #regex = "Output:.*Linux qemu.*"
         regex = "DEBUG: launchcmd=runqemu*"
         regex_comp = re.compile(regex)
         qemu_env = ''
@@ -94,7 +91,6 @@ class TestLogParser(object):
             for line in f:
                 line = line.strip()
                 if state == 'End':
-                    #print(results)
                     return logs
                 else:
                     state = self._search_log_to_capture(logs, line, state, regex_comp_start, regex_comp_end_fail_or, regex_comp_end_error_or, regex_comp_end)

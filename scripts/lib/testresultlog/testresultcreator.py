@@ -5,39 +5,35 @@ from testresultlog.testresultgitstore import TestResultGitStore
 
 class TestPlanCreator(object):
 
-    def __init__(self):
-        self.script_path = os.path.dirname(os.path.realpath(__file__))
-        self.base_path = self.script_path + '/../../..'
+    # def __init__(self):
+    #     self.script_path = os.path.dirname(os.path.realpath(__file__))
+    #     self.base_path = self.script_path + '/../../..'
 
     def _get_test_configuration_list(self, conf_path, section):
         config_parser = TestResultLogConfigParser(conf_path)
         return config_parser.get_config_items(section)
 
     def _init_environment_multiplication_matrix(self, env_matrix, new_env_list, new_env_header):
-        #print(env_value_list)
         for env in new_env_list:
-            #env_matrix.append('%s_%s' % (new_env_header, env))
             env_matrix.append(env)
 
     def _multiply_current_env_list_with_new_env_list(self, cur_env_list, new_env_list, new_env_header):
-        #print(env_value_list)
         multiplied_list = []
         for cur_env in cur_env_list:
             for new_env in new_env_list:
-                #multiplied_list.append('%s,%s' % (cur_env, '%s_%s' % (new_env_header, new_env)))
                 multiplied_list.append('%s,%s' % (cur_env, new_env))
         return multiplied_list
 
-    def _get_oeqa_source_dir(self, source):
-        if source == 'runtime':
-            oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/runtime/cases')
-        elif source == 'selftest':
-            oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/selftest/cases')
-        elif source == 'sdk':
-            oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/sdk/cases')
-        else:
-            oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/sdkext/cases')
-        return oeqa_dir
+    # def _get_oeqa_source_dir(self, source):
+    #     if source == 'runtime':
+    #         oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/runtime/cases')
+    #     elif source == 'selftest':
+    #         oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/selftest/cases')
+    #     elif source == 'sdk':
+    #         oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/sdk/cases')
+    #     else:
+    #         oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/sdkext/cases')
+    #     return oeqa_dir
 
     def _discover_unittest_testsuite_testcase(self, test_dir):
         loader = unittest.TestLoader()
@@ -54,14 +50,12 @@ class TestPlanCreator(object):
 
     def _get_testsuite_from_unittest_testcase(self, unittest_testcase):
         testsuite = unittest_testcase[unittest_testcase.find("(")+1:unittest_testcase.find(")")]
-        #print('DEBUG: %s : testsuite : %s' % (unittest_testcase, testsuite))
         return testsuite
 
     def _get_testcase_from_unittest_testcase(self, unittest_testcase):
         testcase = unittest_testcase[0:unittest_testcase.find("(")-1]
         testsuite = self._get_testsuite_from_unittest_testcase(unittest_testcase)
         testcase = '%s.%s' % (testsuite, testcase)
-        #print('DEBUG: %s : testcase : %s' % (unittest_testcase, testcase))
         return testcase
 
     def _get_testmodule_from_testsuite(self, testsuite):
@@ -69,22 +63,22 @@ class TestPlanCreator(object):
         return testmodule
 
     def get_test_environment_multiplication_matrix(self, test_component, component_conf, environment_conf):
-        print('Trying to get test_environment_list at: %s' % component_conf)
+        print('Getting test environment key(s) at %s for component (%s)' % (component_conf, test_component))
         test_environment_list = self._get_test_configuration_list(component_conf, test_component)
-        print('test_environment_list: %s' % test_environment_list)
+        print('test environment key(s): %s' % test_environment_list)
         env_matrix = []
         for env in test_environment_list:
+            print('Getting test environment value(s) at %s for key (%s)' % (environment_conf, env))
             env_value_list = self._get_test_configuration_list(environment_conf, env)
-            print('env_value_list: %s' % env_value_list)
+            print('test environment value(s): %s' % env_value_list)
             if len(env_matrix) == 0:
                 self._init_environment_multiplication_matrix(env_matrix, env_value_list, env)
             else:
                 env_matrix = self._multiply_current_env_list_with_new_env_list(env_matrix, env_value_list, env)
         return env_matrix
 
-    def get_testsuite_testcase_dictionary(self, source):
-        work_dir = self._get_oeqa_source_dir(source)
-        print('work_dir: %s' % work_dir)
+    def get_testsuite_testcase_dictionary(self, work_dir):
+        print('Getting testsuite testcase information from oeqa directory at %s' % work_dir)
         unittest_testsuite_testcase = self._discover_unittest_testsuite_testcase(work_dir)
         unittest_testcase_list = self._generate_flat_list_of_unittest_testcase(unittest_testsuite_testcase)
         testsuite_testcase_dict = {}
@@ -98,6 +92,7 @@ class TestPlanCreator(object):
         return testsuite_testcase_dict
 
     def get_testmodule_testsuite_dictionary(self, testsuite_testcase_dict):
+        print('Getting testmodule testsuite information')
         testsuite_list = testsuite_testcase_dict.keys()
         testmodule_testsuite_dict = {}
         for testsuite in testsuite_list:
@@ -110,31 +105,23 @@ class TestPlanCreator(object):
 
 def main(args):
     scripts_path = os.path.dirname(os.path.realpath(__file__))
-    testplan_conf = os.path.join(scripts_path, 'conf/testplan.conf')
     component_conf = os.path.join(scripts_path, 'conf/testplan_component.conf')
     environment_conf = os.path.join(scripts_path, 'conf/testplan_component_environment.conf')
 
     testplan_creator = TestPlanCreator()
     test_env_matrix = testplan_creator.get_test_environment_multiplication_matrix(args.component, component_conf, environment_conf)
-    print('DEGUG: test_env_matrix:')
-    print(test_env_matrix)
-    testsuite_testcase_dict = testplan_creator.get_testsuite_testcase_dictionary(args.source)
-    print('DEGUG: testsuite_testcase_dict:')
-    print(testsuite_testcase_dict)
+    testsuite_testcase_dict = testplan_creator.get_testsuite_testcase_dictionary(args.oeqa_dir)
     testmodule_testsuite_dict = testplan_creator.get_testmodule_testsuite_dictionary(testsuite_testcase_dict)
-    print('DEGUG: testmodule_testsuite_dict:')
-    print(testmodule_testsuite_dict)
 
     for env in test_env_matrix:
         env_list = env.split(",")
-        print(env_list)
         testresultstore = TestResultGitStore()
         testresultstore.create_automated_test_result(args.git_repo, args.git_branch, args.component, env_list, testmodule_testsuite_dict, testsuite_testcase_dict)
 
 def register_commands(subparsers):
     """Register subcommands from this plugin"""
     parser_build = subparsers.add_parser('create', help='Create testplan and test result template',
-                                         description='Create the file structure representing testplan environments and its test result templates')
+                                         description='Create testplan and test result template based on environment configuration inside testresultlog/conf/testplan_component.conf and testresultlog/conf/testplan_component_environment.conf')
     parser_build.set_defaults(func=main)
     SOURCE = ('runtime', 'selftest', 'sdk', 'sdkext')
     parser_build.add_argument('-s', '--source', required=True, choices=SOURCE,
@@ -143,6 +130,7 @@ def register_commands(subparsers):
          '"selftest" will search testcase available in meta/lib/oeqa/selftest/cases. '
          '"sdk" will search testcase available in meta/lib/oeqa/sdk/cases. '
          '"sdkext" will search testcase available in meta/lib/oeqa/sdkext/cases. ')
-    parser_build.add_argument('-c', '--component', required=True, help='Component to be selected from conf/testplan_component.conf for creation of test environments')
+    parser_build.add_argument('-d', '--poky_dir', required=False, default='default', help='(Optional) Poky directory to be used for oeqa testcase(s) discovery, default will use current poky directory')
+    parser_build.add_argument('-c', '--component', required=True, help='Component to be selected from testresultlog/conf/testplan_component.conf for creation of test environments')
     parser_build.add_argument('-g', '--git_repo', required=False, default='default', help='(Optional) Git repository to be created, default will be <top_dir>/test-result-log-git')
     parser_build.add_argument('-b', '--git_branch', required=True, help='Git branch to be created for the git repository')

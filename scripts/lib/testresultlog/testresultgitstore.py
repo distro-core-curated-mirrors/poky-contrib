@@ -280,6 +280,7 @@ class TestResultGitStore(object):
         return subprocess.run(["oe-git-archive", file_dir, "-g", git_repo, "-b", git_branch])
 
     def create_automated_test_result(self, git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict):
+        print('Creating test result for environment list: %s' % environment_list)
         if self._git_check_if_git_dir_and_git_branch_exist(git_dir, git_branch):
             repo = self._git_init(git_dir)
             self._git_checkout_git_repo(repo, git_branch)
@@ -298,6 +299,7 @@ class TestResultGitStore(object):
             self._create_automated_test_result_from_empty_git(git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, {}, {})
 
     def update_automated_test_result(self, git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, testcase_status_dict, testcase_logs_dict):
+        print('Updating test result for environment list: %s' % environment_list)
         repo = self._git_init(git_dir)
         self._git_checkout_git_repo(repo, git_branch)
         project_dir = os.path.join(git_dir, project)
@@ -312,24 +314,10 @@ class TestResultGitStore(object):
             testcase_list = self._get_testcase_list(testsuite_list, testsuite_testcase_dict)
             self._write_test_log_files(project_env_dir, testcase_list, testcase_logs_dict)
         self._remove_test_log_files(project_env_dir, testcase_log_remove_list)
-        #self._write_test_log_files(project_env_dir, testcase_logs_dict)
         self._push_testsuite_testcase_json_file_to_git_repo(git_dir, git_dir, git_branch)
 
     def smart_update_automated_test_result(self, git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, testcase_status_dict, testcase_logs_dict):
-        '''
-        if target git dir not exist
-        create template from empty & then update
-        push template in temporary to target git dir
-
-        if target git dir exist but project and environment dir not exist
-        create template from existing target git dir & then update
-        push to target git dir
-
-        if target git dir exit and project and environment dir does exist
-        update in target git dir
-        push to target git dir
-        '''
-        git_dir_and_git_branch_exist = False
+        print('Creating/Updating test result for environment list: %s' % environment_list)
         if self._git_check_if_git_dir_and_git_branch_exist(git_dir, git_branch):
             repo = self._git_init(git_dir)
             self._git_checkout_git_repo(repo, git_branch)
@@ -349,6 +337,7 @@ class TestResultGitStore(object):
             self._create_automated_test_result_from_empty_git(git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, testcase_status_dict, testcase_logs_dict)
 
     def create_manual_test_result(self, git_dir, git_branch, project, environment_list, manual_test_report_dir):
+        print('Creating test result for environment list: %s' % environment_list)
         if self._git_check_if_git_dir_and_git_branch_exist(git_dir, git_branch):
             repo = self._git_init(git_dir)
             self._git_checkout_git_repo(repo, git_branch)
@@ -367,7 +356,7 @@ class TestResultGitStore(object):
             self._create_manual_test_result_from_empty_git(git_dir, git_branch, project, environment_list, manual_test_report_dir)
 
     def git_remote_fetch_rebase_push(self, git_dir, git_branch, git_remote):
-        #git_dir = self._get_default_git_dir(git_dir)
+        print('Pushing test result to remote git ...')
         repo = self._git_init(git_dir)
         print('Fetching, Rebasing, Pushing to remote')
         if self._git_check_if_local_repo_contain_remote_origin(repo):
@@ -385,6 +374,7 @@ class TestResultGitStore(object):
             print('Git fetch origin failed. Stop proceeding to git push.')
 
     def checkout_git_branch(self, git_dir, git_branch):
+        print('Checkout git branch ...')
         if self._git_check_if_git_dir_and_git_branch_exist(git_dir, git_branch):
             repo = self._git_init(git_dir)
             self._git_checkout_git_repo(repo, git_branch)

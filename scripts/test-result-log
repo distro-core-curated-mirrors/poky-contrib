@@ -20,8 +20,25 @@ def _get_default_git_dir(git_dir):
         git_dir = os.path.join(base_path, 'test-result-log.git')
     return git_dir
 
+def _get_oeqa_source_dir(poky_dir, source):
+    if source == 'runtime':
+        oeqa_dir = os.path.join(poky_dir, 'meta/lib/oeqa/runtime/cases')
+    elif source == 'selftest':
+        oeqa_dir = os.path.join(poky_dir, 'meta/lib/oeqa/selftest/cases')
+    elif source == 'sdk':
+        oeqa_dir = os.path.join(poky_dir, 'meta/lib/oeqa/sdk/cases')
+    else:
+        oeqa_dir = os.path.join(poky_dir, 'meta/lib/oeqa/sdkext/cases')
+    return oeqa_dir
+
+def _get_poky_dir(poky_dir):
+    base_path = script_path + '/..'
+    if poky_dir == 'default':
+        poky_dir = base_path
+    return poky_dir
+
 def main():
-    parser = argparse.ArgumentParser(description="test-result-log script.")
+    parser = argparse.ArgumentParser(description="test-result-log script to store test status and failure log.")
     subparser = parser.add_subparsers()
     testresultlog.testresultcreator.register_commands(subparser)
     testresultlog.testresultupdator.register_commands(subparser)
@@ -30,6 +47,10 @@ def main():
     args = parser.parse_args()
     args.script_path = script_path
     args.git_repo = _get_default_git_dir(args.git_repo)
+    poky_dir = getattr(args,"poky_dir",None)
+    if poky_dir:
+        args.poky_dir = _get_poky_dir(args.poky_dir)
+        args.oeqa_dir = _get_oeqa_source_dir(args.poky_dir, args.source)
     args.func(args)
 
 if __name__ == "__main__":
