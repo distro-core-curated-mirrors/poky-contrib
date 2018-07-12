@@ -461,6 +461,7 @@ def package_qa_check_buildpaths(path, name, d, elf, messages):
     if os.path.islink(path):
         return
 
+    # TODO use new elf parser and dig through strings table
     tmpdir = bytes(d.getVar('TMPDIR'), encoding="utf-8")
     with open(path, 'rb') as f:
         file_content = f.read()
