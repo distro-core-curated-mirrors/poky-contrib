@@ -139,8 +139,8 @@ def main(args):
 
 def register_commands(subparsers):
     """Register subcommands from this plugin"""
-    parser_build = subparsers.add_parser('view', help='View summary test result',
-                                         description='View summary test result')
+    parser_build = subparsers.add_parser('view', help='View text-based summary test report',
+                                         description='View text-based summary test report')
     parser_build.set_defaults(func=main)
     parser_build.add_argument('-g', '--git_repo', required=False, default='default', help='(Optional) Git repository to be used for generating the summary test result ,default will be <top_dir>/test-result-log.git')
     parser_build.add_argument('-b', '--git_branch', required=True, help='Git branch to be updated with test result')

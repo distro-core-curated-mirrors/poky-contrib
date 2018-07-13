@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 #
-# Helper script for creating test result & log data then storage it to git
-# Then update test result status from test log into the git repo
+# Helper script for storing test result & log data it git repository
+# Then view summary test report
 #
 import os
 import sys
@@ -38,7 +38,7 @@ def _get_poky_dir(poky_dir):
     return poky_dir
 
 def main():
-    parser = argparse.ArgumentParser(description="test-result-log script to store test status and failure log.")
+    parser = argparse.ArgumentParser(description="test-result-log script to store test status and failure log then view summary test report.")
     subparser = parser.add_subparsers()
     testresultlog.testresultcreator.register_commands(subparser)
     testresultlog.testresultupdator.register_commands(subparser)

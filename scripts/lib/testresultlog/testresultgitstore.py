@@ -279,7 +279,7 @@ class TestResultGitStore(object):
     def _push_testsuite_testcase_json_file_to_git_repo(self, file_dir, git_repo, git_branch):
         return subprocess.run(["oe-git-archive", file_dir, "-g", git_repo, "-b", git_branch])
 
-    def create_automated_test_result(self, git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict):
+    def create_automated_test_result(self, git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, force_create):
         print('Creating test result for environment list: %s' % environment_list)
         if self._git_check_if_git_dir_and_git_branch_exist(git_dir, git_branch):
             repo = self._git_init(git_dir)
@@ -289,6 +289,9 @@ class TestResultGitStore(object):
             if self._check_if_git_dir_contain_project_and_environment_directory(git_dir, project, environment_list):
                 print('Found project and environment inside git_dir: %s' % git_dir)
                 print('Since project and environment already exist, could not proceed to create.')
+                if force_create == 'True':
+                    print('Force create activated: proceed to create.')
+                    self._create_automated_test_result_from_existing_git(git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, {}, {})
             else:
                 print('Could not find project and environment inside git_dir: %s' % git_dir)
                 print('Creating project and environment inside git_dir: %s' % git_dir)

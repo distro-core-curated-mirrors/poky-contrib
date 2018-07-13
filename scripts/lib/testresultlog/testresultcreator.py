@@ -1,13 +1,10 @@
 import os
 import unittest
 from testresultlog.testresultlogconfigparser import TestResultLogConfigParser
+from testresultlog.oeqatestcasecreator import OeqaTestCaseCreator
 from testresultlog.testresultgitstore import TestResultGitStore
 
 class TestPlanCreator(object):
-
-    # def __init__(self):
-    #     self.script_path = os.path.dirname(os.path.realpath(__file__))
-    #     self.base_path = self.script_path + '/../../..'
 
     def _get_test_configuration_list(self, conf_path, section):
         config_parser = TestResultLogConfigParser(conf_path)
@@ -24,39 +21,9 @@ class TestPlanCreator(object):
                 multiplied_list.append('%s,%s' % (cur_env, new_env))
         return multiplied_list
 
-    # def _get_oeqa_source_dir(self, source):
-    #     if source == 'runtime':
-    #         oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/runtime/cases')
-    #     elif source == 'selftest':
-    #         oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/selftest/cases')
-    #     elif source == 'sdk':
-    #         oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/sdk/cases')
-    #     else:
-    #         oeqa_dir = os.path.join(self.base_path, 'meta/lib/oeqa/sdkext/cases')
-    #     return oeqa_dir
-
-    def _discover_unittest_testsuite_testcase(self, test_dir):
-        loader = unittest.TestLoader()
-        testsuite_testcase = loader.discover(start_dir=test_dir, pattern='*.py')
-        return testsuite_testcase
-
-    def _generate_flat_list_of_unittest_testcase(self, testsuite):
-        for test in testsuite:
-            if unittest.suite._isnotsuite(test):
-                yield test
-            else:
-                for subtest in self._generate_flat_list_of_unittest_testcase(test):
-                    yield subtest
-
-    def _get_testsuite_from_unittest_testcase(self, unittest_testcase):
-        testsuite = unittest_testcase[unittest_testcase.find("(")+1:unittest_testcase.find(")")]
+    def _get_testsuite_from_testcase(self, testcase):
+        testsuite = testcase[0:testcase.rfind(".")]
         return testsuite
-
-    def _get_testcase_from_unittest_testcase(self, unittest_testcase):
-        testcase = unittest_testcase[0:unittest_testcase.find("(")-1]
-        testsuite = self._get_testsuite_from_unittest_testcase(unittest_testcase)
-        testcase = '%s.%s' % (testsuite, testcase)
-        return testcase
 
     def _get_testmodule_from_testsuite(self, testsuite):
         testmodule = testsuite[0:testsuite.find(".")]
@@ -77,14 +44,13 @@ class TestPlanCreator(object):
                 env_matrix = self._multiply_current_env_list_with_new_env_list(env_matrix, env_value_list, env)
         return env_matrix
 
-    def get_testsuite_testcase_dictionary(self, work_dir):
+    def get_testsuite_testcase_dictionary(self, work_dir, testcase_remove_source_file):
         print('Getting testsuite testcase information from oeqa directory at %s' % work_dir)
-        unittest_testsuite_testcase = self._discover_unittest_testsuite_testcase(work_dir)
-        unittest_testcase_list = self._generate_flat_list_of_unittest_testcase(unittest_testsuite_testcase)
+        oeqatestcasecreator = OeqaTestCaseCreator()
+        testcase_list = oeqatestcasecreator.get_oeqa_testcase_list(work_dir, testcase_remove_source_file)
         testsuite_testcase_dict = {}
-        for unittest_testcase in unittest_testcase_list:
-            testsuite = self._get_testsuite_from_unittest_testcase(str(unittest_testcase))
-            testcase = self._get_testcase_from_unittest_testcase(str(unittest_testcase))
+        for testcase in testcase_list:
+            testsuite = self._get_testsuite_from_testcase(testcase)
             if testsuite in testsuite_testcase_dict:
                 testsuite_testcase_dict[testsuite].append(testcase)
             else:
@@ -110,13 +76,13 @@ def main(args):
 
     testplan_creator = TestPlanCreator()
     test_env_matrix = testplan_creator.get_test_environment_multiplication_matrix(args.component, component_conf, environment_conf)
-    testsuite_testcase_dict = testplan_creator.get_testsuite_testcase_dictionary(args.oeqa_dir)
+    testsuite_testcase_dict = testplan_creator.get_testsuite_testcase_dictionary(args.oeqa_dir, args.testcase_remove_source_file)
     testmodule_testsuite_dict = testplan_creator.get_testmodule_testsuite_dictionary(testsuite_testcase_dict)
 
     for env in test_env_matrix:
         env_list = env.split(",")
         testresultstore = TestResultGitStore()
-        testresultstore.create_automated_test_result(args.git_repo, args.git_branch, args.component, env_list, testmodule_testsuite_dict, testsuite_testcase_dict)
+        testresultstore.create_automated_test_result(args.git_repo, args.git_branch, args.component, env_list, testmodule_testsuite_dict, testsuite_testcase_dict, args.force_create)
 
 def register_commands(subparsers):
     """Register subcommands from this plugin"""
@@ -134,3 +100,5 @@ def register_commands(subparsers):
     parser_build.add_argument('-c', '--component', required=True, help='Component to be selected from testresultlog/conf/testplan_component.conf for creation of test environments')
     parser_build.add_argument('-g', '--git_repo', required=False, default='default', help='(Optional) Git repository to be created, default will be <top_dir>/test-result-log-git')
     parser_build.add_argument('-b', '--git_branch', required=True, help='Git branch to be created for the git repository')
+    parser_build.add_argument('-m', '--testcase_remove_source_file', required=False, default='', help='(Optional) Testcase remove source file used to define pattern(s) for testcase to be removed')
+    parser_build.add_argument('-f', '--force_create', required=False, default='False', help='Force create even when test result files already exist')
