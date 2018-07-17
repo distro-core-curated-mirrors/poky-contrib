@@ -9,6 +9,7 @@ import os
 import sys
 import json
 import argparse
+import glob
 
 
 def scan_test_case(jdata):
@@ -22,9 +23,10 @@ def scan_test_case(jdata):
 
 def scan_test_results(tresult):
     completed = []
-    scan = len(tresult[0]['testsuite']['testcase'])
+   # scan = len(tresult[0]['testsuite']['testcase'])
     for i in range(0, scan):
-        join_name = tresult[0]['testsuitename'] + "." + tresult[0]['testsuite']['testcase'][i]['testcasename']
+        join_name = tresult[0]["testsuite"]["BitbakeTests.BitbakeTests"]["testcase"][i]
+       #join_name = tresult[0]['testsuitename'] + "." + tresult[0]['testsuite']['testcase'][i]['testcasename']
         completed.append(join_name)
     return completed
 
@@ -40,6 +42,9 @@ def execute_test_steps(args, testID, jdata):
     tsuite = jdata[testID]['test']['@alias'].split(".", 1)[0]
     tcase = jdata[testID]['test']['@alias'].split(".", 1)[1]
     compare_tcase = []
+    module_id = tsuite + '.' + tsuite
+    tcase_id = module_id + '.' + tcase
+    file_id = tcase_id + '.log'
 
     print("------------------------------------------------------------------------")
     print("Executing test case:" + " " + jdata[testID]['test']['@alias'])
@@ -61,21 +66,39 @@ def execute_test_steps(args, testID, jdata):
         res = "PASSED"
     elif done == "f" or done == "F":
         res = "FAILED"
+        log_input = input("\nPlease enter the error and the description of the log: (Ex:log:211 Error Bitbake)\n")
+        with open(file_id, 'w+') as f:
+            f.write("---------------------This is the log file-----------------------\n")
+            f.write(log_input)
+
     elif done == "b" or done == "B":
         res = "BLOCKED"
     else:
         res = "SKIPPED"
 
     if not temp:
-        temp.append({'testsuitename': '%s' % tsuite, 'testsuite': {'testcase': [{'testcasename': '%s' % tcase, 'testresult': '%s' % res}]}})
+        temp.append({"testsuite":{module_id :{"testcase":[{tcase_id :{"testresult": "%s" % res}}]}}})
+       #temp.append({'testsuitename': '%s' % tsuite, 'testsuite': {'testcase': [{'testcasename': '%s' % tcase, 'testresult': '%s' % res}]}})
     elif args.rerun:
         for i in range(len(temp[0]['testsuite']['testcase'])):
             compare_tcase = temp[0]['testsuite']['testcase'][i]['testcasename']
             if tcase in compare_tcase:
                 temp[0]['testsuite']['testcase'][i]['testresult'] = res
+
+        for i in range(len(temp[0]["testsuite"][module_id]["testcase"])):
+            compare_tcase = temp[0]["testsuite"][module_id]["testcase"][i]
+            if tcase_id in compare_tcase:
+                if res == "FAILED":
+                    temp[0]["testsuite"][module_id]["testcase"][i][tcase_id]["testresult"] = res
+
+                elif res == "PASSED" or res == "SKIPPED" or res == "BLOCKED":
+                    temp[0]["testsuite"][module_id]["testcase"][i][tcase_id]["testresult"] = res
+                    for filename in glob.glob(tcase_id + '.*'):
+                        os.remove(filename)
                 break
     else:
-        temp[0]['testsuite']['testcase'].append({'testcasename': '%s' % tcase, 'testresult': '%s' % res})
+        temp[0]["testsuite"][module_id]["testcase"].append({tcase_id:{"testresult": "%s" % res}})
+       #temp[0]['testsuite']['testcase'].append({'testcasename': '%s' % tcase, 'testresult': '%s' % res})
 
     return temp
 
