@@ -17,33 +17,51 @@ def scan_test_case(jdata):
     print("Test Suite Name: %s" % jdata[0]['test']['@alias'].split(".", 1)[0])
     print("\nTotal number of test cases in this test suite: " + "%s\n" % total)
     for i in range(0, total):
-        print("%s. " % (i+1) + jdata[i]['test']['@alias'].split(".", 1)[1])
+        print("%s. " % (i+1) + jdata[i]['test']['@alias'].split(".", 2)[2])
     sys.exit()
 
 
 def scan_test_results(tresult):
     completed = []
-   # scan = len(tresult[0]['testsuite']['testcase'])
-    for i in range(0, scan):
-        join_name = tresult[0]["testsuite"]["BitbakeTests.BitbakeTests"]["testcase"][i]
-       #join_name = tresult[0]['testsuitename'] + "." + tresult[0]['testsuite']['testcase'][i]['testcasename']
-        completed.append(join_name)
+    for tmodule in tresult["testsuite"].keys():
+        for tcase in tresult["testsuite"][tmodule]["testcase"]:
+            completed.append(tcase)
     return completed
+
+
+def write_resume_rerun_json_result(args, fname, results):
+    # write the result in format dict when rerun or resume
+    if args.output:
+        fname = args.output
+    with open(fname, "w") as f:
+            json.dump(results, f, ensure_ascii=True, indent=4)
 
 
 def write_json_result(args, fname, results):
     if args.output:
         fname = args.output
-    with open(fname, 'w') as f:
-        json.dump(results, f, ensure_ascii=True, indent=4)
 
+    tcase_dict = {}
+    for tsuite in results[0].keys():
+        for tmodule in results[0]["testsuite"].keys():
+            testcases = results[0]["testsuite"][tmodule]["testcase"]
+            for tcase in testcases:
+                tcase_dict.update(tcase)
+    json_object = {'testsuite': {}}
+    testsuite_dict = json_object[tsuite]
+    testsuite_dict[tmodule] = {'testcase': {}}
+    testsuite_dict[tmodule]["testcase"] = tcase_dict
+
+    with open(fname, "w") as f:
+            json.dump(json_object, f, ensure_ascii=True, indent=4)
 
 def execute_test_steps(args, testID, jdata):
-    tsuite = jdata[testID]['test']['@alias'].split(".", 1)[0]
-    tcase = jdata[testID]['test']['@alias'].split(".", 1)[1]
+    tmodule = jdata[testID]['test']['@alias'].split(".", 2)[0]
+    tsuite = jdata[testID]["test"]["@alias"].split(".", 2)[1]
+    tcase = jdata[testID]['test']['@alias'].split(".", 2)[2]
     compare_tcase = []
-    module_id = tsuite + '.' + tsuite
-    tcase_id = module_id + '.' + tcase
+    tmodule_id = tmodule + '.' + tsuite
+    tcase_id = tmodule + '.' + tsuite + '.' + tcase
     file_id = tcase_id + '.log'
 
     print("------------------------------------------------------------------------")
@@ -77,29 +95,26 @@ def execute_test_steps(args, testID, jdata):
         res = "SKIPPED"
 
     if not temp:
-        temp.append({"testsuite":{module_id :{"testcase":[{tcase_id :{"testresult": "%s" % res}}]}}})
-       #temp.append({'testsuitename': '%s' % tsuite, 'testsuite': {'testcase': [{'testcasename': '%s' % tcase, 'testresult': '%s' % res}]}})
+        temp.append({"testsuite":{tmodule_id :{"testcase":[{tcase_id :{"testresult": "%s" % res}}]}}})
     elif args.rerun:
-        for i in range(len(temp[0]['testsuite']['testcase'])):
-            compare_tcase = temp[0]['testsuite']['testcase'][i]['testcasename']
-            if tcase in compare_tcase:
-                temp[0]['testsuite']['testcase'][i]['testresult'] = res
+        for tmodule in temp["testsuite"].keys():
+            for i in range(len(temp["testsuite"][tmodule]["testcase"])):
+                compare_tcase = temp["testsuite"][tmodule]["testcase"].keys()
+                if tcase_id in compare_tcase:
+                    if res == "FAILED":
+                        temp["testsuite"][tmodule_id]["testcase"][tcase_id]["testresult"] = res
 
-        for i in range(len(temp[0]["testsuite"][module_id]["testcase"])):
-            compare_tcase = temp[0]["testsuite"][module_id]["testcase"][i]
-            if tcase_id in compare_tcase:
-                if res == "FAILED":
-                    temp[0]["testsuite"][module_id]["testcase"][i][tcase_id]["testresult"] = res
+                    elif res == "PASSED" or res == "SKIPPED" or res == "BLOCKED":
+                        temp["testsuite"][tmodule_id]["testcase"][tcase_id]["testresult"] = res
+                        for filename in glob.glob(tcase_id + '.*'):
+                            os.remove(filename)
+                    break
+    elif args.resume:
+        temp["testsuite"][tmodule_id]["testcase"].update({tcase_id: {"testresult": "%s" % res}})
 
-                elif res == "PASSED" or res == "SKIPPED" or res == "BLOCKED":
-                    temp[0]["testsuite"][module_id]["testcase"][i][tcase_id]["testresult"] = res
-                    for filename in glob.glob(tcase_id + '.*'):
-                        os.remove(filename)
-                break
     else:
-        temp[0]["testsuite"][module_id]["testcase"].append({tcase_id:{"testresult": "%s" % res}})
-       #temp[0]['testsuite']['testcase'].append({'testcasename': '%s' % tcase, 'testresult': '%s' % res})
-
+        temp[0]["testsuite"][tmodule_id]["testcase"].append({tcase_id: {"testresult": "%s" % res}})
+    
     return temp
 
 
@@ -170,7 +185,7 @@ if __name__ == '__main__':
             for i in range(0, total):
                 if compare_alias[i] not in clist:
                     results = execute_test_steps(args, i, data)
-                    write_json_result(args, fname, results)
+                    write_resume_rerun_json_result(args, fname, results)
         sys.exit()
 
     if (args.testcasename or args.rerun):
@@ -178,31 +193,36 @@ if __name__ == '__main__':
         if args.rerun:
             args.testcasename = args.rerun
             temp = json.load(open(fname))
-        alias = data[0]['test']['@alias'].split(".", 1)[0] + "." + args.testcasename
+        alias = data[0]['test']['@alias'].split(".", 2)[1] + "." + args.testcasename
         for i in range(0, total):
-            compare_alias = data[i]['test']['@alias']
+            compare_alias = data[i]['test']['@alias'].split(".",1)[1]
             if alias == compare_alias:
                 results = execute_test_steps(args, i, data)
-                write_json_result(args, fname, results)
+                write_resume_rerun_json_result(args, fname, results)
             else:
                 i = i + 1
         sys.exit()
 
     if args.testrange:
-        if len(args.testrange) == 2:
+        if len(args.testrange)%2 == 0:
             # Compute the range
-            start = args.testrange[0] - 1
-            end = args.testrange[1]
-            check_range = range(0,total)
-            if start not in check_range:
-                print("ERROR: The input you provided is out of range. \nNote: You can check the valid range using using -S/--scan option.")
-            elif end not in check_range:
-                print("ERROR: The input you provided is out of range. \nNote: You can check the valid range using using -S/--scan option.")
-            else:
-                for i in range(start, end):
-                    results = execute_test_steps(args, i, data)
-                    write_json_result(args, fname, results)
-        elif len(args.testrange) == 1:
+            for test in range(len(args.testrange)): 
+                start = args.testrange[test] - 1
+                end = args.testrange[test]
+                test = test + 1
+                check_range = range(0, total)
+                if start not in check_range:
+                    print(
+                        "ERROR: The input you provided is out of range. \nNote: You can check the valid range using using -S/--scan option.")
+                elif end not in check_range:
+                    print(
+                        "ERROR: The input you provided is out of range. \nNote: You can check the valid range using using -S/--scan option.")
+                else:
+                    for i in range(start, end):
+                        results = execute_test_steps(args, i, data)
+                        write_json_result(args, fname, results)
+        
+        elif len(args.testrange)%2 != 0:
             print("ERROR: Please provide a range by using -tr/--testrange value1 value2")
     else:
         # Script will run all tests normally by having test suite file path
