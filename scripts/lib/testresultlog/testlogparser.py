@@ -3,7 +3,7 @@ import re
 class TestLogParser(object):
 
     def get_test_status(self, log_file):
-        regex = ".*RESULTS - (?P<case_name>.*) - Testcase (?P<case_id>\d+): (?P<status>PASSED|FAILED|SKIPPED|ERROR)$"
+        regex = ".*RESULTS - (?P<case_name>.*) - Testcase .*: (?P<status>PASSED|FAILED|SKIPPED|ERROR|UNKNOWN).*$"
         regex_comp = re.compile(regex)
         results = {}
         with open(log_file, "r") as f:
