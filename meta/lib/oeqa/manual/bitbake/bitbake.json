@@ -1,7 +1,7 @@
 [
   {
     "test": {
-      "@alias": "BitbakeTests.test_prserv_remote_local",
+      "@alias": "BitbakeTests.BitbakeTests.test_prserv_remote_local",
       "summary": "Test PR service with remote server/local client mode capability",
       "case_status": "ACTIVE",
       "author": {
@@ -57,7 +57,7 @@
   },
   {
     "test": {
-      "@alias": "BitbakeTests.test_kernel_menuconfig",
+      "@alias": "BitbakeTests.BitbakeTests.test_kernel_menuconfig",
       "summary": "Bitbake - Test bitbake can compile kernel and display menuconfig",
       "case_status": "ACTIVE",
       "author": {
@@ -109,7 +109,7 @@
   },
   {
     "test": {
-      "@alias": "BitbakeTests.test_alternate_download",
+      "@alias": "BitbakeTests.BitbakeTests.test_alternate_download",
       "summary": "Bitbake - Test bitbake can use alternate download methods than git",
       "case_status": "ACTIVE",
       "author": {
@@ -153,7 +153,7 @@
   },
   {
     "test": {
-      "@alias": "BitbakeTests.test_devshell_display",
+      "@alias": "BitbakeTests.BitbakeTests.test_devshell_display",
       "summary": "Bitbake - Test bitbake can display and enter devshell",
       "case_status": "ACTIVE",
       "author": {
@@ -201,7 +201,7 @@
   },
   {
     "test": {
-      "@alias": "BitbakeTests.test_dependency_explorer_display",
+      "@alias": "BitbakeTests.BitbakeTests.test_dependency_explorer_display",
       "summary": "Bitbake - Test bitbake can display dependency explorer",
       "case_status": "ACTIVE",
       "author": {
@@ -241,7 +241,7 @@
   },
   {
     "test": {
-      "@alias": "BitbakeTests.test_sane_error_for_invalid_layer",
+      "@alias": "BitbakeTests.BitbakeTests.test_sane_error_for_invalid_layer",
       "summary": "Bitbake - Test bitbake can display error if we included an invalid meta layer.",
       "case_status": "ACTIVE",
       "author": {
@@ -277,7 +277,7 @@
   },
   {
     "test": {
-      "@alias": "BitbakeTests.test_bitbake_selftest",
+      "@alias": "BitbakeTests.BitbakeTests.test_bitbake_selftest",
       "summary": "Bitbake - Test bitbake can run selftest.",
       "case_status": "ACTIVE",
       "author": {
