@@ -38,7 +38,8 @@ class TestResultViewer(object):
         with open(file, "r") as f:
             return json.load(f)
 
-    def _get_test_result_and_failed_error_testcase(self, test_result_dict):
+    def _get_test_result_and_failed_error_testcase(self, test_result_dict, show_idle):
+        count_idle = 0
         count_passed = 0
         count_failed = 0
         count_skipped = 0
@@ -57,7 +58,12 @@ class TestResultViewer(object):
                     count_passed += 1
                 elif test_status == 'SKIPPED':
                     count_skipped += 1
-        return count_passed, count_failed, count_skipped, failed_error_test_case_list
+                elif test_status == "":
+                    count_idle += 1
+        if show_idle:
+            return count_idle, count_passed, count_failed, count_skipped, failed_error_test_case_list
+        else:
+            return count_passed, count_failed, count_skipped, failed_error_test_case_list
 
     def _compute_test_result_percent_indicator(self, test_result):
         total_tested = test_result['passed'] + test_result['failed'] + test_result['skipped']
@@ -69,6 +75,18 @@ class TestResultViewer(object):
             test_result['failed_percent'] = format(test_result['failed']/total_tested * 100, '.2f')
             test_result['skipped_percent'] = format(test_result['skipped']/total_tested * 100, '.2f')
 
+    def _compute_test_result_include_idle_percent_indicator(self, test_result):
+        total_tested = test_result['idle'] + test_result['passed'] + test_result['failed'] + test_result['skipped']
+        test_result['idle_percent'] = 0
+        test_result['passed_percent'] = 0
+        test_result['failed_percent'] = 0
+        test_result['skipped_percent'] = 0
+        if total_tested > 0:
+            test_result['idle_percent'] = format(test_result['idle']/total_tested * 100, '.2f')
+            test_result['passed_percent'] = format(test_result['passed']/total_tested * 100, '.2f')
+            test_result['failed_percent'] = format(test_result['failed']/total_tested * 100, '.2f')
+            test_result['skipped_percent'] = format(test_result['skipped']/total_tested * 100, '.2f')
+
     def _convert_test_result_value_to_string(self, test_result):
         test_result['passed_percent'] = str(test_result['passed_percent'])
         test_result['failed_percent'] = str(test_result['failed_percent'])
@@ -76,6 +94,10 @@ class TestResultViewer(object):
         test_result['passed'] = str(test_result['passed'])
         test_result['failed'] = str(test_result['failed'])
         test_result['skipped'] = str(test_result['skipped'])
+        if 'idle' in test_result:
+            test_result['idle'] = str(test_result['idle'])
+        if 'idle_percent' in test_result:
+            test_result['idle_percent'] = str(test_result['idle_percent'])
 
     def _get_max_string_len_from_test_result_list(self, test_result_list, key, default_max_len):
         max_len = default_max_len
@@ -88,16 +110,29 @@ class TestResultViewer(object):
     def _compile_test_result_for_test_report_directory(self, report_dir):
         test_result_files = self._get_list_of_test_result_files(report_dir)
         test_result = {'passed':0, 'failed':0, 'skipped':0, 'failed_testcases':[]}
-        #total_failed_error_test_case_list = []
         for file in test_result_files:
             test_result_dict = self._load_test_module_file_with_json_into_dictionary(file)
-            count_passed, count_failed, count_skipped, failed_error_test_case_list = self._get_test_result_and_failed_error_testcase(test_result_dict)
+            count_passed, count_failed, count_skipped, failed_error_test_case_list = self._get_test_result_and_failed_error_testcase(test_result_dict, False)
             test_result['passed'] += count_passed
             test_result['failed'] += count_failed
             test_result['skipped'] += count_skipped
             test_result['failed_testcases'] += failed_error_test_case_list
-            #total_failed_error_test_case_list = total_failed_error_test_case_list + failed_error_test_case_list
         self._compute_test_result_percent_indicator(test_result)
+        self._convert_test_result_value_to_string(test_result)
+        return test_result
+
+    def _compile_test_result_include_idle_for_test_report_directory(self, report_dir):
+        test_result_files = self._get_list_of_test_result_files(report_dir)
+        test_result = {'idle':0, 'passed':0, 'failed':0, 'skipped':0, 'failed_testcases':[]}
+        for file in test_result_files:
+            test_result_dict = self._load_test_module_file_with_json_into_dictionary(file)
+            count_idle, count_passed, count_failed, count_skipped, failed_error_test_case_list = self._get_test_result_and_failed_error_testcase(test_result_dict, True)
+            test_result['idle'] += count_idle
+            test_result['passed'] += count_passed
+            test_result['failed'] += count_failed
+            test_result['skipped'] += count_skipped
+            test_result['failed_testcases'] += failed_error_test_case_list
+        self._compute_test_result_include_idle_percent_indicator(test_result)
         self._convert_test_result_value_to_string(test_result)
         return test_result
 
@@ -107,21 +142,27 @@ class TestResultViewer(object):
         test_environment = test_component_environment.replace(test_component + '/', '')
         return test_component, test_environment, test_component_environment
 
-    def _rendering_text_based_test_report(self, test_result_list, max_len_component, max_len_environment):
+    def _rendering_text_based_test_report(self, template_file_name, test_result_list, max_len_component, max_len_environment):
         script_path = os.path.dirname(os.path.realpath(__file__))
         file_loader = FileSystemLoader(script_path + '/template')
         env = Environment(loader=file_loader, trim_blocks=True)
-        template = env.get_template('test_report_full_text.txt')
+        #template = env.get_template('test_report_full_text.txt')
+        template = env.get_template(template_file_name)
         output = template.render(test_reports=test_result_list, max_len_component=max_len_component, max_len_environment=max_len_environment)
         print('Printing text-based test report:')
         print(output)
 
-    def create_text_based_test_report(self, git_repo):
+    def create_text_based_test_report(self, git_repo, show_idle):
         report_dir_list = self._get_test_report_directory_list(git_repo)
         test_result_list = []
         for report_dir in report_dir_list:
             print('Compiling test result for %s:' % report_dir)
-            test_result = self._compile_test_result_for_test_report_directory(report_dir)
+            if show_idle == 'True':
+                template_file_name = 'test_report_include_idle_full_text.txt'
+                test_result = self._compile_test_result_include_idle_for_test_report_directory(report_dir)
+            else:
+                template_file_name = 'test_report_full_text.txt'
+                test_result = self._compile_test_result_for_test_report_directory(report_dir)
             test_component, test_environment, test_component_environment = self._get_test_component_environment_from_test_report_dir(git_repo, report_dir)
             test_result['test_component'] = test_component
             test_result['test_environment'] = test_environment
@@ -129,13 +170,13 @@ class TestResultViewer(object):
             test_result_list.append(test_result)
         max_len_component = self._get_max_string_len_from_test_result_list(test_result_list, 'test_component', len('test_component'))
         max_len_environment = self._get_max_string_len_from_test_result_list(test_result_list, 'test_environment', len('test_environment'))
-        self._rendering_text_based_test_report(test_result_list, max_len_component, max_len_environment)
+        self._rendering_text_based_test_report(template_file_name, test_result_list, max_len_component, max_len_environment)
 
 def main(args):
     testresultstore = TestResultGitStore()
     if testresultstore.checkout_git_branch(args.git_repo, args.git_branch):
         testresultviewer = TestResultViewer()
-        testresultviewer.create_text_based_test_report(args.git_repo)
+        testresultviewer.create_text_based_test_report(args.git_repo, args.show_idle)
 
 def register_commands(subparsers):
     """Register subcommands from this plugin"""
@@ -144,3 +185,4 @@ def register_commands(subparsers):
     parser_build.set_defaults(func=main)
     parser_build.add_argument('-g', '--git_repo', required=False, default='default', help='(Optional) Git repository to be used for generating the summary test result ,default will be <top_dir>/test-result-log.git')
     parser_build.add_argument('-b', '--git_branch', required=True, help='Git branch to be updated with test result')
+    parser_build.add_argument('-i', '--show_idle', required=False, default='', help='(Optional) Input "True" to show idle test case and its statistic')
