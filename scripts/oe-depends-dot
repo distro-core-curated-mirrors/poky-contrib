@@ -31,6 +31,7 @@ class Dot(object):
             help = "Remove duplicated dependencies to reduce the size of the dot files."
                     " For example, A->B, B->C, A->C, then A->C can be removed.",
             action="store_true", default=False)
+        parser.add_argument("-l", "--lonely", action="store_true", default=False)
 
         self.args = parser.parse_args()
 
@@ -103,7 +104,7 @@ class Dot(object):
                     if not key in depends[key]:
                         depends[key].add(dep)
                     else:
-                        print('WARNING: Fonud duplicated line: %s' % line)
+                        print('WARNING: Found duplicated line: %s' % line)
                 else:
                     depends[key] = set()
                     depends[key].add(dep)
@@ -138,13 +139,22 @@ class Dot(object):
             if self.args.key in depends:
                 print('Depends: %s' % ' '.join(depends[self.args.key]))
 
-        reverse_deps = []
         if self.args.why:
+            reverse_deps = []
             for k, v in depends.items():
                 if self.args.key in v and not k in reverse_deps:
                     reverse_deps.append(k)
             print('Because: %s' % ' '.join(reverse_deps))
             Dot.print_dep_chains(self.args.key, reverse_deps, depends)
+
+        if self.args.lonely:
+            has_reverse_deps = set()
+            for k,v in depends.items():
+                for dep in v:
+                    has_reverse_deps.add(dep)
+            for k in depends:
+                if k not in has_reverse_deps and k+"-native" not in has_reverse_deps:
+                    print(k)
 
 if __name__ == "__main__":
     try:
