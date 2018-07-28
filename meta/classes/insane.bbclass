@@ -379,11 +379,12 @@ def package_qa_check_desktop(path, name, d, elf, messages):
     Run all desktop files through desktop-file-validate.
     """
     if path.endswith(".desktop"):
-        desktop_file_validate = os.path.join(d.getVar('STAGING_BINDIR_NATIVE'),'desktop-file-validate')
-        output = os.popen("%s %s" % (desktop_file_validate, path))
-        # This only produces output on errors
-        for l in output:
-            package_qa_add_message(messages, "desktop", "Desktop file issue: " + l.strip())
+        try:
+            subprocess.check_output(("desktop-file-validate", path), stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            output = e.output.decode("utf-8")
+            for l in output:
+                package_qa_add_message(messages, "desktop", "Desktop file issue: " + l.strip())
 
 QAPATHTEST[textrel] = "package_qa_textrel"
 def package_qa_textrel(path, name, d, elf, messages):
