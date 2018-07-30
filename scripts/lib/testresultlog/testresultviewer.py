@@ -77,11 +77,13 @@ class TestResultViewer(object):
 
     def _compute_test_result_include_idle_percent_indicator(self, test_result):
         total_tested = test_result['idle'] + test_result['passed'] + test_result['failed'] + test_result['skipped']
+        test_result['complete_percent'] = 0
         test_result['idle_percent'] = 0
         test_result['passed_percent'] = 0
         test_result['failed_percent'] = 0
         test_result['skipped_percent'] = 0
         if total_tested > 0:
+            test_result['complete_percent'] = format(test_result['complete']/total_tested * 100, '.2f')
             test_result['idle_percent'] = format(test_result['idle']/total_tested * 100, '.2f')
             test_result['passed_percent'] = format(test_result['passed']/total_tested * 100, '.2f')
             test_result['failed_percent'] = format(test_result['failed']/total_tested * 100, '.2f')
@@ -98,6 +100,10 @@ class TestResultViewer(object):
             test_result['idle'] = str(test_result['idle'])
         if 'idle_percent' in test_result:
             test_result['idle_percent'] = str(test_result['idle_percent'])
+        if 'complete' in test_result:
+            test_result['complete'] = str(test_result['complete'])
+        if 'complete_percent' in test_result:
+            test_result['complete_percent'] = str(test_result['complete_percent'])
 
     def _get_max_string_len_from_test_result_list(self, test_result_list, key, default_max_len):
         max_len = default_max_len
@@ -123,10 +129,12 @@ class TestResultViewer(object):
 
     def _compile_test_result_include_idle_for_test_report_directory(self, report_dir):
         test_result_files = self._get_list_of_test_result_files(report_dir)
-        test_result = {'idle':0, 'passed':0, 'failed':0, 'skipped':0, 'failed_testcases':[]}
+        test_result = {'complete':0, 'idle':0, 'passed':0, 'failed':0, 'skipped':0, 'failed_testcases':[]}
         for file in test_result_files:
             test_result_dict = self._load_test_module_file_with_json_into_dictionary(file)
             count_idle, count_passed, count_failed, count_skipped, failed_error_test_case_list = self._get_test_result_and_failed_error_testcase(test_result_dict, True)
+            count_complete = count_passed + count_failed + count_skipped
+            test_result['complete'] += count_complete
             test_result['idle'] += count_idle
             test_result['passed'] += count_passed
             test_result['failed'] += count_failed
@@ -183,6 +191,6 @@ def register_commands(subparsers):
     parser_build = subparsers.add_parser('view', help='View text-based summary test report',
                                          description='View text-based summary test report')
     parser_build.set_defaults(func=main)
-    parser_build.add_argument('-g', '--git_repo', required=False, default='default', help='(Optional) Git repository to be used for generating the summary test result ,default will be <top_dir>/test-result-log.git')
-    parser_build.add_argument('-b', '--git_branch', required=True, help='Git branch to be updated with test result')
+    parser_build.add_argument('-b', '--git_branch', required=True, help='Git branch to be used to compute test summary report')
+    parser_build.add_argument('-g', '--git_repo', required=False, default='default', help='(Optional) Git repository to be used to compute the test summary report, default will be <top_dir>/test-result-log.git')
     parser_build.add_argument('-i', '--show_idle', required=False, default='', help='(Optional) Input "True" to show idle test case and its statistic')

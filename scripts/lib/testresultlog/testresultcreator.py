@@ -1,5 +1,4 @@
 import os
-import unittest
 from testresultlog.testresultlogconfigparser import TestResultLogConfigParser
 from testresultlog.oeqatestcasecreator import OeqaTestCaseCreator
 from testresultlog.testresultgitstore import TestResultGitStore
@@ -10,11 +9,11 @@ class TestPlanCreator(object):
         config_parser = TestResultLogConfigParser(conf_path)
         return config_parser.get_config_items(section)
 
-    def _init_environment_multiplication_matrix(self, env_matrix, new_env_list, new_env_header):
+    def _init_environment_multiplication_matrix(self, env_matrix, new_env_list):
         for env in new_env_list:
             env_matrix.append(env)
 
-    def _multiply_current_env_list_with_new_env_list(self, cur_env_list, new_env_list, new_env_header):
+    def _multiply_current_env_list_with_new_env_list(self, cur_env_list, new_env_list):
         multiplied_list = []
         for cur_env in cur_env_list:
             for new_env in new_env_list:

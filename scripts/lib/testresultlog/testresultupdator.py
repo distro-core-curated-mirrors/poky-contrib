@@ -101,21 +101,21 @@ def main(args):
 
 def register_commands(subparsers):
     """Register subcommands from this plugin"""
-    parser_build = subparsers.add_parser('update', help='Store test status & log into git repository',
-                                         description='Store test status & log into git repository')
+    parser_build = subparsers.add_parser('update', help='Store OEQA automated test status & log into git repository',
+                                         description='Store OEQA automated test status & log into git repository')
     parser_build.set_defaults(func=main)
+    parser_build.add_argument('-c', '--component', required=True, help='Component folder (as the top folder) to store the test status & log')
     parser_build.add_argument('-l', '--log_file', required=True, help='Full path to the test log file to be used for test result update')
-    parser_build.add_argument('-g', '--git_repo', required=False, default='default', help='(Optional) Git repository to be updated ,default will be <top_dir>/test-result-log-git')
-    parser_build.add_argument('-b', '--git_branch', required=True, help='Git branch to be updated with test result')
-    parser_build.add_argument('-r', '--git_remote', required=False, default='', help='(Optional) Git remote repository to be updated')
+    parser_build.add_argument('-b', '--git_branch', required=True, help='Git branch to store the test status & log')
     SOURCE = ('runtime', 'selftest', 'sdk', 'sdkext')
     parser_build.add_argument('-s', '--source', required=True, choices=SOURCE,
-    help='Testcase source to be selected from the list (runtime, selftest, sdk or sdkext). '
+    help='Selected testcase sources to be used for OEQA testcase discovery and testcases discovered will be used as the base testcases for storing test status & log. '
          '"runtime" will search testcase available in meta/lib/oeqa/runtime/cases. '
          '"selftest" will search testcase available in meta/lib/oeqa/selftest/cases. '
          '"sdk" will search testcase available in meta/lib/oeqa/sdk/cases. '
          '"sdkext" will search testcase available in meta/lib/oeqa/sdkext/cases. ')
-    parser_build.add_argument('-d', '--poky_dir', required=False, default='default', help='(Optional) Poky directory to be used for oeqa testcase(s) discovery, default will use current poky directory')
-    parser_build.add_argument('-c', '--component', required=True, help='Component selected (as the top folder) to store the related test environments')
-    parser_build.add_argument('-e', '--environment_list', required=False, default='', help='List of environment to be used to perform update')
-    parser_build.add_argument('-m', '--testcase_remove_source_file', required=False, default='', help='(Optional) Testcase remove source file used to define pattern(s) for testcase to be removed')
+    parser_build.add_argument('-g', '--git_repo', required=False, default='default', help='(Optional) Git repository used for storage, default will be <top_dir>/test-result-log.git')
+    parser_build.add_argument('-e', '--environment_list', required=False, default='', help='(Optional) List of environment seperated by comma (",") used to label the test environments for the stored test status & log')
+    parser_build.add_argument('-r', '--git_remote', required=False, default='', help='(Optional) Git remote repository used for storage')
+    parser_build.add_argument('-d', '--poky_dir', required=False, default='default', help='(Optional) Top directory to be used for OEQA testcase discovery, default will use current <top_dir> directory')
+    parser_build.add_argument('-m', '--testcase_remove_source_file', required=False, default='', help='(Optional) Full path to the file (created during test planning) used to define list of testcases to be excluded from storage')
