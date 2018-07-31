@@ -15,8 +15,6 @@ DEPENDS = "util-macros-native font-util-native"
 RDEPENDS_${PN} = "encodings font-util"
 RDEPENDS_${PN}_class-native = "font-util-native"
 
-inherit allarch
-
 PE = "1"
 PR = "${INC_PR}.3"
 

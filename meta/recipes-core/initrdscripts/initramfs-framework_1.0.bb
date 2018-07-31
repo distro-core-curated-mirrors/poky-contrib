@@ -5,8 +5,6 @@ RDEPENDS_${PN} += "${VIRTUAL-RUNTIME_base-utils}"
 
 PR = "r4"
 
-inherit allarch
-
 SRC_URI = "file://init \
            file://exec \
            file://nfsrootfs \

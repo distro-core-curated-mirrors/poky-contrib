@@ -17,7 +17,6 @@ UPSTREAM_CHECK_REGEX = "/docbook-xsl/(?P<pver>(\d+[\.\-_]*)+(?!\.0)\.\d+)/"
 
 S = "${WORKDIR}/docbook-xsl-${PV}"
 
-inherit allarch
 BBCLASSEXTEND = "native"
 
 do_configure (){

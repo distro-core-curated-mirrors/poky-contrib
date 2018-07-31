@@ -27,8 +27,6 @@ SRC_URI = "git://salsa.debian.org/debian/ca-certificates.git;protocol=https \
 
 S = "${WORKDIR}/git"
 
-inherit allarch
-
 EXTRA_OEMAKE = "\
     'CERTSDIR=${datadir}/ca-certificates' \
     'SBINDIR=${sbindir}' \

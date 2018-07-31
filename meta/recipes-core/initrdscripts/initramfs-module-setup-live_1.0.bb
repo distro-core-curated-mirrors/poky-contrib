@@ -5,8 +5,6 @@ RDEPENDS_${PN} = "initramfs-framework-base udev-extraconf"
 
 PR = "r4"
 
-inherit allarch
-
 FILESEXTRAPATHS_prepend := "${THISDIR}/initramfs-framework:"
 SRC_URI = "file://setup-live"
 
