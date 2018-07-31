@@ -1,6 +1,6 @@
 import unittest
 
-class OeqaTestCaseCreator(object):
+class OeqaTestDiscover(object):
 
     def _discover_unittest_testsuite_testcase(self, test_dir):
         loader = unittest.TestLoader()
@@ -54,12 +54,12 @@ class OeqaTestCaseCreator(object):
             if testcase_remove in testcase_list:
                 testcase_list.remove(testcase_remove)
 
-    def get_oeqa_testcase_list(self, work_dir, testcase_remove_source_file):
-        unittest_testsuite_testcase = self._discover_unittest_testsuite_testcase(work_dir)
+    def get_oeqa_testcase_list(self, testcase_dir, testcase_remove_file):
+        unittest_testsuite_testcase = self._discover_unittest_testsuite_testcase(testcase_dir)
         unittest_testcase_list = self._generate_flat_list_of_unittest_testcase(unittest_testsuite_testcase)
         testcase_list = self._get_testcase_list(unittest_testcase_list)
-        if len(testcase_remove_source_file) > 0:
-            testcase_remove_pattern_list = self._get_testcase_remove_pattern_list(testcase_remove_source_file)
+        if len(testcase_remove_file) > 0:
+            testcase_remove_pattern_list = self._get_testcase_remove_pattern_list(testcase_remove_file)
             self._remove_test_case_from_removal_pattern_list(testcase_list, testcase_remove_pattern_list)
         return testcase_list
 

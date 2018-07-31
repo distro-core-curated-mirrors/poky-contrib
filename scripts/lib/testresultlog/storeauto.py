@@ -1,9 +1,8 @@
-import unittest
-from testresultlog.testresultgitstore import TestResultGitStore
-from testresultlog.oeqatestcasecreator import OeqaTestCaseCreator
-from testresultlog.testlogparser import TestLogParser
+from testresultlog.gitstore import GitStore
+from testresultlog.oeqatestdiscover import OeqaTestDiscover
+from testresultlog.oeqalogparser import OeqaLogParser
 
-class TestResultUpdator(object):
+class StoreAuto(object):
 
     def _get_testsuite_from_testcase(self, testcase):
         testsuite = testcase[0:testcase.rfind(".")]
@@ -34,21 +33,21 @@ class TestResultUpdator(object):
                 environment_list = '%s,%s' % (environment_list, new_environment)
         return environment_list
 
-    def get_environment_list_for_test_log(self, log_file, log_file_source, environment_list, testlogparser):
+    def get_environment_list_for_test_log(self, log_file, log_file_source, environment_list, oeqa_logparser):
         print('Getting test environment information from test log at %s' % log_file)
         if log_file_source == 'runtime':
-            runtime_image_env = testlogparser.get_runtime_test_image_environment(log_file)
+            runtime_image_env = oeqa_logparser.get_runtime_test_image_environment(log_file)
             print('runtime image environment: %s' % runtime_image_env)
-            runtime_qemu_env = testlogparser.get_runtime_test_qemu_environment(log_file)
+            runtime_qemu_env = oeqa_logparser.get_runtime_test_qemu_environment(log_file)
             print('runtime qemu environment: %s' % runtime_qemu_env)
             environment_list = self._add_new_environment_to_environment_list(environment_list, runtime_image_env)
             environment_list = self._add_new_environment_to_environment_list(environment_list, runtime_qemu_env)
         return environment_list.split(",")
 
-    def get_testsuite_testcase_dictionary(self, work_dir, testcase_remove_source_file):
-        print('Getting testsuite testcase information from oeqa directory at %s' % work_dir)
-        oeqatestcasecreator = OeqaTestCaseCreator()
-        testcase_list = oeqatestcasecreator.get_oeqa_testcase_list(work_dir, testcase_remove_source_file)
+    def get_testsuite_testcase_dictionary(self, testcase_dir, testcase_remove_file):
+        print('Getting testsuite testcase information from oeqa directory at %s' % testcase_dir)
+        oeqatestdiscover = OeqaTestDiscover()
+        testcase_list = oeqatestdiscover.get_oeqa_testcase_list(testcase_dir, testcase_remove_file)
         testsuite_testcase_dict = {}
         for testcase in testcase_list:
             testsuite = self._get_testsuite_from_testcase(testcase)
@@ -72,7 +71,7 @@ class TestResultUpdator(object):
 
     def get_testcase_failed_or_error_logs_dictionary(self, log_file, testcase_status_dict):
         print('Getting testcase failed or error log from %s' % log_file)
-        testlogparser = TestLogParser()
+        testresultlogparser = OeqaLogParser()
         testcase_list = testcase_status_dict.keys()
         testcase_failed_or_error_logs_dict = {}
         for testcase in testcase_list:
@@ -80,42 +79,44 @@ class TestResultUpdator(object):
             if test_status == 'FAILED' or test_status == 'ERROR':
                 testsuite = self._get_testsuite_from_testcase(testcase)
                 testfunction = self._remove_testsuite_from_testcase(testcase, testsuite)
-                logs = testlogparser.get_test_log(log_file, test_status, testfunction, testsuite)
+                logs = testresultlogparser.get_test_log(log_file, test_status, testfunction, testsuite)
                 testcase_failed_or_error_logs_dict[testcase] = logs
         return testcase_failed_or_error_logs_dict
 
 def main(args):
-    testlogparser = TestLogParser()
-    testcase_status_dict = testlogparser.get_test_status(args.log_file)
+    oeqa_logparser = OeqaLogParser()
+    testcase_status_dict = oeqa_logparser.get_test_status(args.log_file)
 
-    testresultupdator = TestResultUpdator()
-    environment_list = testresultupdator.get_environment_list_for_test_log(args.log_file, args.source, args.environment_list, testlogparser)
-    testsuite_testcase_dict = testresultupdator.get_testsuite_testcase_dictionary(args.oeqa_dir, args.testcase_remove_source_file)
-    testmodule_testsuite_dict = testresultupdator.get_testmodule_testsuite_dictionary(testsuite_testcase_dict)
-    test_logs_dict = testresultupdator.get_testcase_failed_or_error_logs_dictionary(args.log_file, testcase_status_dict)
+    store_auto = StoreAuto()
+    environment_list = store_auto.get_environment_list_for_test_log(args.log_file, args.source, args.environment_list, oeqa_logparser)
+    testsuite_testcase_dict = store_auto.get_testsuite_testcase_dictionary(args.case_dir, args.testcase_remove_file)
+    testmodule_testsuite_dict = store_auto.get_testmodule_testsuite_dictionary(testsuite_testcase_dict)
+    test_logs_dict = store_auto.get_testcase_failed_or_error_logs_dictionary(args.log_file, testcase_status_dict)
 
-    testresultstore = TestResultGitStore()
-    testresultstore.smart_update_automated_test_result(args.git_repo, args.git_branch, args.component, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, testcase_status_dict, test_logs_dict)
+    gitstore = GitStore()
+    gitstore.smart_update_automated_test_result(args.git_repo, args.git_branch, args.component, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, testcase_status_dict, test_logs_dict)
     if (len(args.git_remote) > 0):
-        testresultstore.git_remote_fetch_rebase_push(args.git_repo, args.git_branch, args.git_remote)
+        gitstore.git_remote_fetch_rebase_push(args.git_repo, args.git_branch, args.git_remote)
+    return 0
 
 def register_commands(subparsers):
     """Register subcommands from this plugin"""
-    parser_build = subparsers.add_parser('update', help='Store OEQA automated test status & log into git repository',
-                                         description='Store OEQA automated test status & log into git repository')
+    parser_build = subparsers.add_parser('store-auto', help='Store OEQA automated test status & log into git repository',
+                                         description='Store OEQA automated test status & log into git repository',
+                                         group='store')
     parser_build.set_defaults(func=main)
-    parser_build.add_argument('-c', '--component', required=True, help='Component folder (as the top folder) to store the test status & log')
-    parser_build.add_argument('-l', '--log_file', required=True, help='Full path to the test log file to be used for test result update')
-    parser_build.add_argument('-b', '--git_branch', required=True, help='Git branch to store the test status & log')
+    parser_build.add_argument('component', help='Component folder (as the top folder) to store the test status & log')
+    parser_build.add_argument('git_branch', help='Git branch to store the test status & log')
+    parser_build.add_argument('log_file', help='Full path to the OEQA automated test log file to be used for test result storing')
     SOURCE = ('runtime', 'selftest', 'sdk', 'sdkext')
-    parser_build.add_argument('-s', '--source', required=True, choices=SOURCE,
+    parser_build.add_argument('source', choices=SOURCE,
     help='Selected testcase sources to be used for OEQA testcase discovery and testcases discovered will be used as the base testcases for storing test status & log. '
          '"runtime" will search testcase available in meta/lib/oeqa/runtime/cases. '
          '"selftest" will search testcase available in meta/lib/oeqa/selftest/cases. '
          '"sdk" will search testcase available in meta/lib/oeqa/sdk/cases. '
          '"sdkext" will search testcase available in meta/lib/oeqa/sdkext/cases. ')
-    parser_build.add_argument('-g', '--git_repo', required=False, default='default', help='(Optional) Git repository used for storage, default will be <top_dir>/test-result-log.git')
-    parser_build.add_argument('-e', '--environment_list', required=False, default='', help='(Optional) List of environment seperated by comma (",") used to label the test environments for the stored test status & log')
-    parser_build.add_argument('-r', '--git_remote', required=False, default='', help='(Optional) Git remote repository used for storage')
-    parser_build.add_argument('-d', '--poky_dir', required=False, default='default', help='(Optional) Top directory to be used for OEQA testcase discovery, default will use current <top_dir> directory')
-    parser_build.add_argument('-m', '--testcase_remove_source_file', required=False, default='', help='(Optional) Full path to the file (created during test planning) used to define list of testcases to be excluded from storage')
+    parser_build.add_argument('-g', '--git_repo', default='default', help='(Optional) Full path to the git repository used for storage, default will be <top_dir>/test-result-log.git')
+    parser_build.add_argument('-e', '--environment_list', default='default', help='(Optional) List of environment seperated by comma (",") used to label the test environments for the stored test status & log')
+    parser_build.add_argument('-r', '--git_remote', default='default', help='(Optional) Git remote repository used for storage')
+    parser_build.add_argument('-o', '--oe_dir', default='default', help='(Optional) OE top directory to be used for OEQA testcase discovery, default will use current <top_dir> directory')
+    parser_build.add_argument('-m', '--testcase_remove_file', default='default', help='(Optional) Full path to the file (created during test planning) used to define list of testcases to be excluded from storage')

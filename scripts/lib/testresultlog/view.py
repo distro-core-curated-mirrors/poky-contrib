@@ -2,9 +2,9 @@ import glob
 import os
 import json
 from jinja2 import Environment, FileSystemLoader
-from testresultlog.testresultgitstore import TestResultGitStore
+from testresultlog.gitstore import GitStore
 
-class TestResultViewer(object):
+class TestResultView(object):
 
     def _check_if_existing_dir_list_contain_parent_for_new_dir(self, dir_list, new_dir):
         for existing_dir in dir_list:
@@ -160,12 +160,12 @@ class TestResultViewer(object):
         print('Printing text-based test report:')
         print(output)
 
-    def create_text_based_test_report(self, git_repo, show_idle):
+    def create_text_based_test_report(self, git_repo, show_completion):
         report_dir_list = self._get_test_report_directory_list(git_repo)
         test_result_list = []
         for report_dir in report_dir_list:
             print('Compiling test result for %s:' % report_dir)
-            if show_idle == 'True':
+            if show_completion:
                 template_file_name = 'test_report_include_idle_full_text.txt'
                 test_result = self._compile_test_result_include_idle_for_test_report_directory(report_dir)
             else:
@@ -181,16 +181,18 @@ class TestResultViewer(object):
         self._rendering_text_based_test_report(template_file_name, test_result_list, max_len_component, max_len_environment)
 
 def main(args):
-    testresultstore = TestResultGitStore()
-    if testresultstore.checkout_git_branch(args.git_repo, args.git_branch):
-        testresultviewer = TestResultViewer()
-        testresultviewer.create_text_based_test_report(args.git_repo, args.show_idle)
+    gitstore = GitStore()
+    if gitstore.checkout_git_branch(args.git_repo, args.git_branch):
+        testresultview = TestResultView()
+        testresultview.create_text_based_test_report(args.git_repo, args.show_completion)
+    return 0
 
 def register_commands(subparsers):
     """Register subcommands from this plugin"""
     parser_build = subparsers.add_parser('view', help='View text-based summary test report',
-                                         description='View text-based summary test report')
+                                         description='View text-based summary test report',
+                                         group='view')
     parser_build.set_defaults(func=main)
-    parser_build.add_argument('-b', '--git_branch', required=True, help='Git branch to be used to compute test summary report')
-    parser_build.add_argument('-g', '--git_repo', required=False, default='default', help='(Optional) Git repository to be used to compute the test summary report, default will be <top_dir>/test-result-log.git')
-    parser_build.add_argument('-i', '--show_idle', required=False, default='', help='(Optional) Input "True" to show idle test case and its statistic')
+    parser_build.add_argument('git_branch', help='Git branch to be used to compute test summary report')
+    parser_build.add_argument('-g', '--git_repo', default='default', help='(Optional) Full path to the git repository to be used to compute the test summary report, default will be <top_dir>/test-result-log.git')
+    parser_build.add_argument('-i', '--show_completion', action='store_true', help='(Optional) To show completion test case and its statistic')

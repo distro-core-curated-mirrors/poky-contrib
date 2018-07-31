@@ -1,6 +1,6 @@
 import re
 
-class TestLogParser(object):
+class OeqaLogParser(object):
 
     def get_test_status(self, log_file):
         regex = ".*RESULTS - (?P<case_name>.*) - Testcase .*: (?P<status>PASSED|FAILED|SKIPPED|ERROR|UNKNOWN).*$"

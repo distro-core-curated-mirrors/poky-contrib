@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 
-class TestResultLogConfigParser(object):
+class TestPlanConfigParser(object):
 
     def __init__(self, config):
         self.parser = ConfigParser()

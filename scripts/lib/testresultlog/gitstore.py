@@ -9,7 +9,7 @@ scriptpath.add_bitbake_lib_path()
 scriptpath.add_oe_lib_path()
 from oeqa.utils.git import GitRepo, GitError
 
-class TestResultGitStore(object):
+class GitStore(object):
 
     def __init__(self):
         self.script_path = os.path.dirname(os.path.realpath(__file__))
@@ -289,7 +289,7 @@ class TestResultGitStore(object):
             if self._check_if_git_dir_contain_project_and_environment_directory(git_dir, project, environment_list):
                 print('Found project and environment inside git_dir: %s' % git_dir)
                 print('Since project and environment already exist, could not proceed to create.')
-                if force_create == 'True':
+                if force_create:
                     print('Force create activated: proceed to create.')
                     self._create_automated_test_result_from_existing_git(git_dir, git_branch, project, environment_list, testmodule_testsuite_dict, testsuite_testcase_dict, {}, {})
             else:
