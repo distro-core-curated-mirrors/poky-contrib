@@ -31,6 +31,7 @@ tests = ["bb.tests.codeparser",
          "bb.tests.event",
          "bb.tests.fetch",
          "bb.tests.parse",
+         "bb.tests.persist_data",
          "bb.tests.utils"]
 
 for t in tests:
