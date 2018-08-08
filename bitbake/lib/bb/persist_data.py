@@ -278,7 +278,12 @@ class PersistData(object):
 
 def connect(database):
     connection = sqlite3.connect(database, timeout=5)
-    connection.execute("pragma synchronous = off;")
+    connection.execute("pragma synchronous = normal;")
+    # Enable WAL and keep the autocheckpoint length small (the default is
+    # usually 1000). Persistent caches are usually read-mostly, so keeping
+    # this short will keep readers running quickly
+    connection.execute("pragma journal_mode = WAL;")
+    connection.execute("pragma wal_autocheckpoint = 100;")
     connection.text_factory = str
     return connection
 
