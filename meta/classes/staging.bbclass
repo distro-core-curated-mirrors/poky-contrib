@@ -481,7 +481,7 @@ python extend_recipe_sysroot() {
             d2.setVar("WORKDIR", d.getVar("WORKDIR"))
         destsysroot = d2.getVar("RECIPE_SYSROOT")
         # We put allarch recipes into the default sysroot
-        if manifest and "allarch" in manifest:
+        if manifest and "allarch" in manifest and not d.getVar("MULTILIB_VARIANTS"):
             destsysroot = d.getVar("RECIPE_SYSROOT")
 
         native = False

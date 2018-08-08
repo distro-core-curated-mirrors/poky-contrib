@@ -5,6 +5,10 @@
 PACKAGE_ARCH = "all"
 
 python () {
+    # only enable allarch when multilib is not used
+    if not d.getVar("MULTILIB_VARIANTS"):
+        d.setVar("PACKAGE_ARCH", "all")
+
     # Allow this class to be included but overridden - only set
     # the values if we're still "all" package arch.
     if d.getVar("PACKAGE_ARCH") == "all":
