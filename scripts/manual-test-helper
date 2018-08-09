@@ -9,7 +9,6 @@ import os
 import sys
 import json
 import argparse
-import glob
 
 
 def scan_test_case(jdata):
@@ -61,11 +60,12 @@ def execute_test_steps(args, testID, jdata):
     tcase = jdata[testID]['test']['@alias'].split(".", 2)[2]
     compare_tcase = []
     tmodule_id = tmodule + '.' + tsuite
-    tcase_id = tmodule + '.' + tsuite + '.' + tcase
-    file_id = tcase_id + '.log'
+    tcase_id = tmodule_id + '.' + tcase
+    file_id = tcase_id + ".log"
+    file_path = os.path.join(path_module, file_id)
 
     print("------------------------------------------------------------------------")
-    print("Executing test case:" + " " + jdata[testID]['test']['@alias'])
+    print("Executing test case:" + " " + tcase )
     print("------------------------------------------------------------------------")
     print("You have total " + max(jdata[testID]['test']['execution'].keys()) + " test steps to be executed.")
     print("------------------------------------------------------------------------\n")
@@ -85,7 +85,7 @@ def execute_test_steps(args, testID, jdata):
     elif done == "f" or done == "F":
         res = "FAILED"
         log_input = input("\nPlease enter the error and the description of the log: (Ex:log:211 Error Bitbake)\n")
-        with open(file_id, 'w+') as f:
+        with open(file_path, 'w+') as f:
             f.write("---------------------This is the log file-----------------------\n")
             f.write(log_input)
 
@@ -106,8 +106,11 @@ def execute_test_steps(args, testID, jdata):
 
                     elif res == "PASSED" or res == "SKIPPED" or res == "BLOCKED":
                         temp["testsuite"][tmodule_id]["testcase"][tcase_id]["testresult"] = res
-                        for filename in glob.glob(tcase_id + '.*'):
-                            os.remove(filename)
+                        if os.path.exists(file_path):
+                            try:
+                                os.remove(file_path)
+                            except OSError as e:
+                                print("Error: %s - %s." % (e.file_path, e.strerror))
                     break
     elif args.resume:
         temp["testsuite"][tmodule_id]["testcase"].update({tcase_id: {"testresult": "%s" % res}})
@@ -124,10 +127,10 @@ if __name__ == '__main__':
     global temp
     global results
     global fname
+    global path_module
 
     results = []
     temp = []
-    fname = "test_results.json"
 
     parser = argparse.ArgumentParser(description='Helper script for results populating during manual test execution.')
 
@@ -136,38 +139,56 @@ if __name__ == '__main__':
     required.add_argument('-F', '--file', dest='file', action='store', required=True,
                             help='Specify path to manual test case JSON file. Note: Please use "" to encapsulate the file path.')
 
-    optional = parser._action_groups.pop()
+    optional = parser.add_argument_group('optional arguments')
     # Optional: Scan and show all test cases in single test suite file
-    optional.add_argument('-S', '--scan', action='store_true',
-                            help='Scan and show all test cases in the provided JSON file in console.')
+    optional.add_argument('-S', '--scan', action='store_true',required=False,
+                          help='Scan and show all test cases in the provided JSON file in console.')
     # Optional: Resume manual test execution
-    optional.add_argument('-R', '--resume', action='store_true',
-                            help='Resume the manual test execution with existing test result file.')
+    optional.add_argument('-R', '--resume', action='store_true',required=False,
+                          help='Resume the manual test execution with existing test result file.')
     # Optional: Rerun specific test case
-    optional.add_argument('-r', '--rerun', dest='rerun', action='store',
-                            help='Re-run specific test case with existing test result file.')
+    optional.add_argument('-r', '--rerun', dest='rerun', action='store',required=False,
+                          help='Re-run specific test case with existing test result file.')
     # Optional: Run specific test case
-    optional.add_argument('-tc', '--testcase', dest='testcasename', action='store',
-                            help='Run a specific test case.')
+    optional.add_argument('-tc', '--testcase', dest='testcasename',required=False, action='store', help='Run a specific test case.')
     # Optional: Choose specific test range
-    optional.add_argument('-tr', '--testrange', nargs='*', dest='testrange', action='store', type=int,
-                            help='Run a specific range of test cases. Note: Use "-S/--scan" to see the numbers associated to test cases.')
+    optional.add_argument('-tr', '--testrange', nargs='*', dest='testrange', action='store',required=False, type=int,
+                          help='Run a specific range of test cases. Note: Use "-S/--scan" to see the numbers associated to test cases.')
     # Optional: Output test results to new file, if not specified, default is test_results.json
-    optional.add_argument('-o', '--out', dest='output', action='store',
-                            help='Retrieve/Save test results from/to specific result file. Provide your own test results file name. Default is test_results.json. Note: Please use "" to encapsulate the file name.')
-
-    parser._action_groups.append(optional)
+    optional.add_argument('-o', '--out', dest='output', action='store',required=False,
+                          help='Retrieve/Save test results from/to specific result file. Provide your own test results file name. Default is <module>.json. Note: Please use "" to encapsulate the file name.')
+    # Optional: Test planning, exclude test cases in file config
+    optional.add_argument('-tp', '--testplan', dest='testplan', action='store', required=False,
+                          help='Please provide what the testcases need to be exclude in config file ')
 
     args = parser.parse_args()
 
     data = json.load(open('%s' % args.file))
     total = len(data)
+    tmodule = data[0]["test"]["@alias"].split(".", 2)[0]
+    path_module = os.path.dirname(os.path.abspath(args.file))
+    filename = tmodule + ".json"
+    fname = os.path.join(path_module,filename)
 
     if args.scan:
         scan_test_case(data)
 
     if args.output:
         fname = args.output
+
+    if args.testplan:
+        testcases_remove = []
+        list_test_cases = []
+        with open(args.testplan, 'r') as f:
+            next(f)
+            for line in f:
+                testcases_remove.append(line.rstrip('\n'))
+        for i in range(0, total):
+            list_test_cases.append(data[i]['test']['@alias'])
+            if list_test_cases[i] not in testcases_remove:
+                results = execute_test_steps(args, i, data)
+                write_json_result(args,fname, results)
+        sys.exit()
 
     if os.path.isfile(fname) and not args.output and not args.resume and not args.rerun:
         print("\nWARNING: File %s " %fname + "exists in the same location.")
