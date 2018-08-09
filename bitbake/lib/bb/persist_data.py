@@ -30,6 +30,8 @@ from bb.compat import total_ordering
 from collections import Mapping
 import sqlite3
 import contextlib
+import bb.fork
+import weakref
 
 sqlversion = sqlite3.sqlite_version_info
 if sqlversion[0] < 3 or (sqlversion[0] == 3 and sqlversion[1] < 3):
@@ -37,6 +39,28 @@ if sqlversion[0] < 3 or (sqlversion[0] == 3 and sqlversion[1] < 3):
 
 
 logger = logging.getLogger("BitBake.PersistData")
+
+# Carrying an open database connection across a fork() confuses sqlite and
+# results in fun errors like 'database disk image is malformed'.
+# To remedy this, close all connections before forking, then they will be
+# (lazily) reopen them on the other side. This will cause a lot of problems if
+# there are threads running and trying to access the database at the same time,
+# but if you are mixing threads and fork() you have no one to blame but
+# yourself. If that is discovered to be a problem in the future, some sort of
+# per-table reader-writer lock could be used to block the fork() until all
+# pending transactions complete
+sql_table_weakrefs = []
+def _fork_before_handler():
+    for ref in sql_table_weakrefs:
+        t = ref()
+        if t is not None and t.connection is not None:
+            t.connection.close()
+            t.connection = None
+
+bb.fork.register_at_fork(before=_fork_before_handler)
+
+def _remove_table_weakref(ref):
+    sql_table_weakrefs.remove(ref)
 
 @total_ordering
 class SQLTable(collections.MutableMapping):
@@ -48,6 +72,10 @@ class SQLTable(collections.MutableMapping):
             exception occurs.
             """
             def wrap_func(self, *args, **kwargs):
+                # Reconnect if necessary
+                if self.connection is None:
+                    self.reconnect()
+
                 count = 0
                 while True:
                     try:
@@ -55,8 +83,7 @@ class SQLTable(collections.MutableMapping):
                     except sqlite3.OperationalError as exc:
                         if 'is locked' in str(exc) and count < 500:
                             count = count + 1
-                            self.connection.close()
-                            self.connection = connect(self.cachefile)
+                            self.reconnect()
                             continue
                         raise
             return wrap_func
@@ -89,6 +116,11 @@ class SQLTable(collections.MutableMapping):
         self.connection = connect(self.cachefile)
 
         self._execute_single("CREATE TABLE IF NOT EXISTS %s(key TEXT PRIMARY KEY NOT NULL, value TEXT);" % table)
+
+    def reconnect(self):
+        if self.connection is not None:
+            self.connection.close()
+        self.connection = connect(self.cachefile)
 
     @_Decorators.retry
     @_Decorators.transaction
@@ -292,4 +324,10 @@ def persist(domain, d):
 
     bb.utils.mkdirhier(cachedir)
     cachefile = os.path.join(cachedir, "bb_persist_data.sqlite3")
-    return SQLTable(cachefile, domain)
+    t = SQLTable(cachefile, domain)
+
+    # Add a weak reference to the table list. The weak reference will not keep
+    # the object alive by itself, so it prevents circular reference counts
+    sql_table_weakrefs.append(weakref.ref(t, _remove_table_weakref))
+
+    return t
