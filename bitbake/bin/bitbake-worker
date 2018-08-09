@@ -181,7 +181,7 @@ def fork_off_task(cfg, data, databuilder, workerdata, fn, task, taskname, append
         pipein, pipeout = os.pipe()
         pipein = os.fdopen(pipein, 'rb', 4096)
         pipeout = os.fdopen(pipeout, 'wb', 0)
-        pid = os.fork()
+        pid = bb.fork.fork()
     except OSError as e:
         logger.critical("fork failed: %d (%s)" % (e.errno, e.strerror))
         sys.exit(1)
