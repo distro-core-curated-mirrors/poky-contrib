@@ -112,6 +112,7 @@ EOF
 }
 
 addtask generate_toolchain_file after do_patch before do_configure
+do_generate_toolchain_file[vardeps] += "${STAGING_DIR_TARGET}"
 
 CONFIGURE_FILES = "CMakeLists.txt"
 
