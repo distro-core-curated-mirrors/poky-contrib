@@ -39,7 +39,9 @@ EXTRA_OECONF += "${@get_cairo_fpu_setting(bb, d)} \
                  --enable-tee \
                 "
 
-inherit autotools pkgconfig upstream-version-is-even gtk-doc
+inherit autotools pkgconfig upstream-version-is-even gtk-doc multilib_script
+
+MULTILIB_SCRIPTS = "${PN}-perf-utils:${bindir}/cairo-trace"
 
 # We don't depend on binutils so we need to disable this
 export ac_cv_lib_bfd_bfd_openr="no"
