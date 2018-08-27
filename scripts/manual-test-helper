@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+#
 # Manual tests execution helper
 #
 # Copyright (C) 2018 Intel Corporation
@@ -16,7 +16,7 @@ def scan_test_case(jdata):
     print("Test Suite Name: %s" % jdata[0]['test']['@alias'].split(".", 1)[0])
     print("\nTotal number of test cases in this test suite: " + "%s\n" % total)
     for i in range(0, total):
-        print("%s. " % (i+1) + jdata[i]['test']['@alias'].split(".", 2)[2])
+        print("%s. " % (i+1) + jdata[i]['test']['@alias'].split(".",2)[2])
     sys.exit()
 
 
@@ -57,7 +57,7 @@ def write_json_result(args, fname, results):
 def execute_test_steps(args, testID, jdata):
     tmodule = jdata[testID]['test']['@alias'].split(".", 2)[0]
     tsuite = jdata[testID]["test"]["@alias"].split(".", 2)[1]
-    tcase = jdata[testID]['test']['@alias'].split(".", 2)[2]
+    tcase = jdata[testID]['test']['@alias'].split(".")[2]
     compare_tcase = []
     tmodule_id = tmodule + '.' + tsuite
     tcase_id = tmodule_id + '.' + tcase
@@ -159,7 +159,7 @@ if __name__ == '__main__':
                           help='Retrieve/Save test results from/to specific result file. Provide your own test results file name. Default is <module>.json. Note: Please use "" to encapsulate the file name.')
     # Optional: Test planning, exclude test cases in file config
     optional.add_argument('-tp', '--testplan', dest='testplan', action='store', required=False,
-                          help='Please provide what the testcases need to be exclude in config file ')
+                          help='Please provide the testcases to be excluded in test_paln.conf file ')
 
     args = parser.parse_args()
 
@@ -176,6 +176,11 @@ if __name__ == '__main__':
     if args.output:
         fname = args.output
 
+    if os.path.isfile(fname) and not args.output and not args.resume and not args.rerun:
+        print("\nWARNING: File %s " %fname + "exists in the same location.")
+        print("\nNOTE: You can either rename the existing result file or use \"-o/--out\" option to provide a new file name.")
+        sys.exit()
+
     if args.testplan:
         testcases_remove = []
         list_test_cases = []
@@ -184,17 +189,26 @@ if __name__ == '__main__':
             for line in f:
                 testcases_remove.append(line.rstrip('\n'))
         for i in range(0, total):
-            list_test_cases.append(data[i]['test']['@alias'])
+            list_test_cases.append(data[i]['test']['@alias'].split(".", 2)[2])
             if list_test_cases[i] not in testcases_remove:
-                results = execute_test_steps(args, i, data)
-                write_json_result(args,fname, results)
+                if args.resume:
+                    temp = json.load(open(fname))
+                    completed_list = scan_test_results(temp)
+                    # to get only testcase name from the dict
+                    clist_split = [i.split(".", 2)[2] for i in completed_list]
+                    if list_test_cases[i] not in (clist_split or testcases_remove):
+                        results = execute_test_steps(args, i, data)
+                        write_resume_rerun_json_result(args, fname, results)
+                    else:
+                        if len(completed_list) == len(list_test_cases):
+                            print("All manual in test plan for \"%s\" were completed. Please check \"%s\" for test results." % (data[0]['test']['@alias'].split(".", 1)[0], fname))
+                            sys.exit()
+                else:
+                    results = execute_test_steps(args, i, data)
+                    write_json_result(args, fname, results)
         sys.exit()
 
-    if os.path.isfile(fname) and not args.output and not args.resume and not args.rerun:
-        print("\nWARNING: File %s " %fname + "exists in the same location.")
-        print("\nNOTE: You can either rename the existing result file or use \"-o/--out\" option to provide a new file name.")
-        sys.exit()
-    elif args.resume:
+    if args.resume:
         temp = json.load(open(fname))
         clist = scan_test_results(temp)
         compare_alias = []
@@ -223,28 +237,26 @@ if __name__ == '__main__':
             else:
                 i = i + 1
         sys.exit()
-
+    
     if args.testrange:
-        if len(args.testrange)%2 == 0:
+        if len(args.testrange) == 2:
             # Compute the range
-            for test in range(len(args.testrange)): 
-                start = args.testrange[test] - 1
-                end = args.testrange[test]
-                test = test + 1
-                check_range = range(0, total)
-                if start not in check_range:
-                    print(
-                        "ERROR: The input you provided is out of range. \nNote: You can check the valid range using using -S/--scan option.")
-                elif end not in check_range:
-                    print(
-                        "ERROR: The input you provided is out of range. \nNote: You can check the valid range using using -S/--scan option.")
-                else:
-                    for i in range(start, end):
-                        results = execute_test_steps(args, i, data)
-                        write_json_result(args, fname, results)
-        
-        elif len(args.testrange)%2 != 0:
+            start = args.testrange[0] - 1
+            end = args.testrange[1]
+            check_range = range(0, total)
+            if start not in check_range:
+                print(
+                    "ERROR: The input you provided is out of range. \nNote: You can check the valid range using using -S/--scan option.")
+            elif end not in check_range:
+                print(
+                    "ERROR: The input you provided is out of range. \nNote: You can check the valid range using using -S/--scan option.")
+            else:
+                for i in range(start, end):
+                    results = execute_test_steps(args, i, data)
+                    write_json_result(args, fname, results)
+        elif len(args.testrange) == 1:
             print("ERROR: Please provide a range by using -tr/--testrange value1 value2")
+
     else:
         # Script will run all tests normally by having test suite file path
         for i in range(0, total):

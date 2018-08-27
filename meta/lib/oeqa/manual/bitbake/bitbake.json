@@ -277,7 +277,7 @@
   },
   {
     "test": {
-      "@alias": "BitbakeTests.BitbakeTests.test_bitbake_selftest",
+      "@alias": "BitbakeTests.BitbakeTests.test_bitbake_selftest.",
       "summary": "Bitbake - Test bitbake can run selftest.",
       "case_status": "ACTIVE",
       "author": {
