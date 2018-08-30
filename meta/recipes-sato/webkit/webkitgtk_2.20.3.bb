@@ -22,6 +22,8 @@ SRC_URI = "http://www.webkitgtk.org/releases/${BPN}-${PV}.tar.xz \
            file://detect-gstreamer-gl.patch \
            file://0012-soup-Forward-declare-URL-class.patch \
            file://0001-Fix-PaintingData-has-no-member-named-lightVector-on-.patch \
+           file://0001-Fix-CVE-2017-17821.patch \
+           file://0002-Fix-CVE-2018-12911.patch \
            "
 
 SRC_URI[md5sum] = "efb69a0cc3cc67ef2647efec22e44c69"
