@@ -29,6 +29,13 @@ FILES_${PN}-udhcpd = "${sysconfdir}/init.d/busybox-udhcpd"
 FILES_${PN}-udhcpc = "${sysconfdir}/udhcpc.d ${datadir}/udhcpc"
 FILES_${PN}-hwclock = "${sysconfdir}/init.d/hwclock.sh"
 
+ALTERNATIVE_${PN}-httpd = "httpd"
+ALTERNATIVE_${PN}-syslog = "syslogd klogd"
+ALTERNATIVE_${PN}-mdev = "mdev"
+ALTERNATIVE_${PN}-udhcpd = "udhcpd"
+ALTERNATIVE_${PN}-udhcpc = "udhcpc"
+ALTERNATIVE_${PN}-hwclock = "hwclock"
+
 INITSCRIPT_PACKAGES = "${PN}-httpd ${PN}-syslog ${PN}-udhcpd ${PN}-mdev ${PN}-hwclock"
 
 INITSCRIPT_NAME_${PN}-httpd = "busybox-httpd"
@@ -357,21 +364,46 @@ python do_package_prepend () {
 
     dvar = d.getVar('D')
     pn = d.getVar('PN')
+    pkgs = d.getVar('PACKAGES').split()
     def set_alternative_vars(links, target):
         links = d.expand(links)
         target = d.expand(target)
         f = open('%s%s' % (dvar, links), 'r')
+        valid_names = []
         for alt_link_name in f:
             alt_link_name = alt_link_name.strip()
             alt_name = os.path.basename(alt_link_name)
             # Match coreutils
             if alt_name == '[':
                 alt_name = 'lbracket'
-            d.appendVar('ALTERNATIVE_%s' % (pn), ' ' + alt_name)
+            valid_names.append(alt_name)
+            # if not already specified by ALTERNATIVE_pkg, default to put it in ALTERNATIVE_${PN}
+            flag_default = True
+            for pkg in pkgs:
+                if pkg == pn:
+                    continue
+                if alt_name in (d.getVar('ALTERNATIVE_%s' % pkg) or '').split():
+                    flag_default = False
+                    break
+            if flag_default:
+                d.appendVar('ALTERNATIVE_%s' % (pn), ' ' + alt_name)
             d.setVarFlag('ALTERNATIVE_LINK_NAME', alt_name, alt_link_name)
             if os.path.exists('%s%s' % (dvar, target)):
                 d.setVarFlag('ALTERNATIVE_TARGET', alt_name, target)
         f.close()
+        # iterate over pkgs to remove invalid entries for ALTERNATIVE_pkg
+        for pkg in pkgs:
+            if pkg == pn:
+                continue
+            final_names = []
+            names = (d.getVar('ALTERNATIVE_%s' % pkg) or '').split()
+            for name in names:
+                if name in valid_names:
+                    final_names.append(name)
+            if final_names:
+                d.setVar('ALTERNATIVE_%s' % pkg, ' '.join(final_names))
+            else:
+                d.delVar('ALTERNATIVE_%s' % pkg)
         return
 
     if os.path.exists('%s/etc/busybox.links' % (dvar)):
