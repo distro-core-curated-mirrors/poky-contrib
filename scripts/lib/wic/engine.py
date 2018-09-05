@@ -151,6 +151,14 @@ def list_source_plugins():
     for plugin in plugins:
         print("  %s" % plugin)
 
+def list_imager_plugins():
+    """
+    List the available imager plugins i.e. plugins available for --imager.
+    """
+    plugins = PluginMgr.get_plugins('imager')
+
+    for plugin in plugins:
+        print("  %s" % plugin)
 
 def wic_create(wks_file, rootfs_dir, bootimg_dir, kernel_dir,
                native_sysroot, options):
@@ -216,6 +224,9 @@ def wic_list(args, scripts_path):
         return True
     elif args.list_type == "source-plugins":
         list_source_plugins()
+        return True
+    elif args.list_type == "imager-plugins":
+        list_imager_plugins()
         return True
     elif len(args.help_for) == 1 and args.help_for[0] == 'help':
         wks_file = args.list_type
