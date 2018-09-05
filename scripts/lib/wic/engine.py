@@ -191,10 +191,9 @@ def wic_create(wks_file, rootfs_dir, bootimg_dir, kernel_dir,
     if not os.path.exists(options.outdir):
         os.makedirs(options.outdir)
 
-    pname = 'direct'
-    plugin_class = PluginMgr.get_plugins('imager').get(pname)
+    plugin_class = PluginMgr.get_plugins('imager').get(options.imager)
     if not plugin_class:
-        raise WicError('Unknown plugin: %s' % pname)
+        raise WicError('Unknown plugin: %s' % options.imager)
 
     plugin = plugin_class(wks_file, rootfs_dir, bootimg_dir, kernel_dir,
                           native_sysroot, oe_builddir, options)
