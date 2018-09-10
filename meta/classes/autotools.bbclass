@@ -113,6 +113,8 @@ autotools_preconfigure() {
 				cd ${S}
 				if [ "${CLEANBROKEN}" != "1" -a \( -e Makefile -o -e makefile -o -e GNUmakefile \) ]; then
 					oe_runmake clean
+					oe_runmake distclean
+					rm -f ${B}/config.cache
 				fi
 				find ${S} -ignore_readdir_race -name \*.la -delete
 			fi
