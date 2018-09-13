@@ -29,7 +29,7 @@ do_configure_prepend_class-target() {
         # The wrapper will call a native vapigen
         cat > ${B}/vapigen-wrapper << EOF
 #!/bin/sh
-vapigen-${SHRT_VER} "\$@"
+vapigen-${SHRT_VER} --girdir=${STAGING_LIBDIR}/gir-1.0 "\$@"
 EOF
         chmod +x ${B}/vapigen-wrapper
 }
@@ -55,3 +55,5 @@ vapigen_sysroot_preprocess() {
            -e "s|vapigen=.*|vapigen=${bindir}/vapigen-wrapper|" \
            ${SYSROOT_DESTDIR}${libdir}/pkgconfig/vapigen-${SHRT_VER}.pc
 }
+
+SSTATE_SCAN_FILES += "vapigen-wrapper"
