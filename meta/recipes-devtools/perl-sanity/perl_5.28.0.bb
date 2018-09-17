@@ -3,20 +3,21 @@ HOMEPAGE = "http://www.perl.org/"
 SECTION = "devel"
 LICENSE = "Artistic-1.0 | GPL-1.0+"
 LIC_FILES_CHKSUM = "file://Copying;md5=5b122a36d0f6dc55279a0ebc69f3c60b \
-                    file://Artistic;md5=2e6fd2475335af892494fe1f7327baf3"
+                    file://Artistic;md5=71a4d5d9acc18c0952a6df2218bb68da \
+                    "
 
 
 SRC_URI = "https://www.cpan.org/src/5.0/perl-${PV}.tar.gz;name=perl \
-           https://github.com/arsv/perl-cross/releases/download/1.1.9/perl-cross-1.1.9.tar.gz;name=perl-cross \
+           https://github.com/arsv/perl-cross/releases/download/1.2/perl-cross-1.2.tar.gz;name=perl-cross \
            file://0001-configure_tool.sh-do-not-quote-the-argument-to-comma.patch \
            file://0001-ExtUtils-MakeMaker-add-LDFLAGS-when-linking-binary-m.patch \
            file://0001-Somehow-this-module-breaks-through-the-perl-wrapper-.patch \
            "
 
-SRC_URI[perl.md5sum] = "dc0fea097f3992a8cd53f8ac0810d523"
-SRC_URI[perl.sha256sum] = "572f9cea625d6062f8a63b5cee9d3ee840800a001d2bb201a41b9a177ab7f70d"
-SRC_URI[perl-cross.md5sum] = "af8f6f288019e670f0fdf7de4f28cd12"
-SRC_URI[perl-cross.sha256sum] = "0bbb450e48d07e7fdf867d578b1780ac8f0e8dc284d52301dac4d763b42f6041"
+SRC_URI[perl.md5sum] = "c7c63781745e280e08401a306a83bfb8"
+SRC_URI[perl.sha256sum] = "7e929f64d4cb0e9d1159d4a59fc89394e27fa1f7004d0836ca0d514685406ea8"
+SRC_URI[perl-cross.md5sum] = "2d702f8fa1dba84d0a62de30e8a9c263"
+SRC_URI[perl-cross.sha256sum] = "599077beb86af5e6097da8922a84474a5484f61475d2899eae0f8634e9619109"
 
 S = "${WORKDIR}/perl-${PV}"
 
@@ -31,15 +32,15 @@ do_copy_perlcross() {
 }
 
 do_configure_class-target() {
-    ./configure --prefix=${prefix} --target=${TARGET_SYS}
+    ./configure --prefix=${prefix} --target=${TARGET_SYS} -Dvendorprefix=${prefix}
 }
 
 do_configure_class-nativesdk() {
-    ./configure --prefix=${prefix} --target=${TARGET_SYS}
+    ./configure --prefix=${prefix} --target=${TARGET_SYS} -Dvendorprefix=${prefix}
 }
 
 do_configure() {
-    ./configure --prefix=${prefix}
+    ./configure --prefix=${prefix} -Dvendorprefix=${prefix}
 }
 
 do_compile() {
@@ -50,6 +51,15 @@ do_compile() {
 
 do_install() {
     oe_runmake 'DESTDIR=${D}' install
+
+    install -d ${D}${libdir}/perl
+    install -d ${D}${libdir}/perl/${PV}/
+    install -d ${D}${libdir}/perl/${PV}/ExtUtils/
+
+    # Save native config
+    install config.sh ${D}${libdir}/perl
+    install lib/Config.pm ${D}${libdir}/perl/${PV}/
+    install lib/ExtUtils/typemap ${D}${libdir}/perl/${PV}/ExtUtils/
 }
 
 do_install_append_class-native () {
@@ -128,4 +138,3 @@ PACKAGES_append = " ${PN}-misc"
 RDEPENDS_${PN}-misc += "perl perl-modules"
 
 BBCLASSEXTEND = "native nativesdk"
-
