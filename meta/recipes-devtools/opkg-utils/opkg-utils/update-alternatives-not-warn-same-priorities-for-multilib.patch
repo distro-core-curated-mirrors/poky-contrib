@@ -1,0 +1,30 @@
+From 5d9ab3a3575267517c3c8fd9847b68f5987a4820 Mon Sep 17 00:00:00 2001
+From: Kai Kang <kai.kang@windriver.com>
+Date: Tue, 18 Sep 2018 04:35:54 -0400
+Subject: [PATCH] update-alternatives: not warn same priorities for multilib
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+---
+ update-alternatives | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/update-alternatives b/update-alternatives
+index 89a440b..61b7ef5 100644
+--- a/update-alternatives
++++ b/update-alternatives
+@@ -94,7 +94,11 @@ add_alt() {
+ 	local priority="$3"
+ 	remove_alt $name $path
+ 	if grep -qw "$priority" $ad/$name; then
+-		echo "Warn: update-alternatives: $name has multiple providers with the same priority, please check $ad/$name for details"
++		target=`head -1 $ad/$name`
++		# not warn same priorities from multilib packages
++		if grep -w "$priority" $ad/$name | grep -qv "^$target"; then
++			echo "Warn: update-alternatives: $name has multiple providers with the same priority, please check $ad/$name for details"
++		fi
+ 	fi
+ 	echo "$path $priority" >> $ad/$name
+ }
+-- 
+2.19.0.rc2
+
