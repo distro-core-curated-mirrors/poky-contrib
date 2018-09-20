@@ -211,20 +211,20 @@ do_install_append() {
     sed -i s:OEINCDIR:${includedir}/nss3:g ${D}${libdir}/pkgconfig/nss.pc
 }
 
-do_install_append_class-target() {
-    # Create a blank certificate
-    mkdir -p ${D}${sysconfdir}/pki/nssdb/
-    touch ./empty_password
-    certutil -N -d sql:${D}${sysconfdir}/pki/nssdb/ -f ./empty_password
-    chmod 644 ${D}${sysconfdir}/pki/nssdb/*.db
-    rm ./empty_password
-    # Remove build path prefix
-    sed -i "s:${D}::g"  ${D}${sysconfdir}/pki/nssdb/pkcs11.txt
-}
-
 PACKAGE_WRITE_DEPS += "nss-native"
 pkg_postinst_${PN} () {
     if [ -n "$D" ]; then
+        if [ ! -d $D${sysconfdir}/pki/nssdb/ ]; then
+            # Create a blank certificate
+            mkdir -p $D${sysconfdir}/pki/nssdb/
+            touch $D/empty_password
+            certutil -N -d sql:$D${sysconfdir}/pki/nssdb/ -f $D/empty_password
+            chmod 644 $D${sysconfdir}/pki/nssdb/*.db
+            rm $D/empty_password
+            # Remove build path prefix
+            sed -i "s:$D::g"  $D${sysconfdir}/pki/nssdb/pkcs11.txt
+        fi
+
         for I in $D${libdir}/lib*.chk; do
             DN=`dirname $I`
             BN=`basename $I .chk`
@@ -235,6 +235,15 @@ pkg_postinst_${PN} () {
             fi
         done
     else
+        if [ ! -d ${sysconfdir}/pki/nssdb ]; then
+            # Create a blank certificate
+            mkdir -p ${sysconfdir}/pki/nssdb
+            empty_password=`mktemp`
+            certutil -N -d sql:$D${sysconfdir}/pki/nssdb/ -f $empty_password
+            chmod 644 $D${sysconfdir}/pki/nssdb/*.db
+            rm $empty_password
+        fi
+
         signlibs.sh
     fi
 }
@@ -244,7 +253,6 @@ FILES_${PN}-smime = "\
     ${bindir}/smime \
 "
 FILES_${PN} = "\
-    ${sysconfdir} \
     ${bindir} \
     ${libdir}/lib*.chk \
     ${libdir}/lib*.so \
