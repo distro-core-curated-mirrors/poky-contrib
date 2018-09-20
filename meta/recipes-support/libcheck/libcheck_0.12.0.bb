@@ -16,6 +16,11 @@ inherit autotools pkgconfig texinfo
 
 CACHED_CONFIGUREVARS += "ac_cv_path_AWK_PATH=${bindir}/gawk"
 
+do_install_append_class-target () {
+    # remove the only one line comment which causes multilib install file conflict
+    sed -i '/^\/\*/ d' ${D}${includedir}/check_stdint.h
+}
+
 RREPLACES_${PN} = "check (<= 0.9.5)"
 RDEPENDS_${PN} += "gawk"
 RDEPENDS_${PN}_class-native = ""
