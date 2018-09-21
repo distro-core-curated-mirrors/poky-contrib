@@ -57,7 +57,7 @@ def write_json_result(args, fname, results):
 def execute_test_steps(args, testID, jdata):
     tmodule = jdata[testID]['test']['@alias'].split(".", 2)[0]
     tsuite = jdata[testID]["test"]["@alias"].split(".", 2)[1]
-    tcase = jdata[testID]['test']['@alias'].split(".")[2]
+    tcase = jdata[testID]['test']['@alias'].split(".", 2)[2]
     compare_tcase = []
     tmodule_id = tmodule + '.' + tsuite
     tcase_id = tmodule_id + '.' + tcase
@@ -71,8 +71,8 @@ def execute_test_steps(args, testID, jdata):
     print("------------------------------------------------------------------------\n")
 
     for step in range (1, int(max(jdata[testID]['test']['execution'].keys()) + "1")):
-        print("Step %s: " % step + jdata[testID]['test']['execution']['%s' % step]['run'])
-        print("Expected output: " + jdata[testID]['test']['execution']['%s' % step]['result'])
+        print("Step %s: " % step + jdata[testID]['test']['execution']['%s' % step]['action'])
+        print("Expected output: " + jdata[testID]['test']['execution']['%s' % step]['expected_results'])
         if step == int(max(jdata[testID]['test']['execution'].keys())):
             done = input("\nPlease provide test results: (P)assed/(F)ailed/(B)locked? \n")
             break
