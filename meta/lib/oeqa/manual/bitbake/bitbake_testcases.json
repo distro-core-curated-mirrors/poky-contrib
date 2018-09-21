@@ -1,0 +1,192 @@
+[
+    {
+        "test": {
+            "@alias": "bitbake.bitbake.Test_bitbake_menuconfig",
+            "author": [
+                {
+                    "email": "jose.perez.carranza@intel.com",
+                    "name": "jose.perez.carranza@intel.com"
+                }
+            ],
+            "execution": {
+                "1": {
+                    "action": "clone poky\n",
+                    "expected_results": ""
+                },
+                "2": {
+                    "action": "cd poky  \n",
+                    "expected_results": ""
+                },
+                "3": {
+                    "action": "source oe-init-build-env && cd build \n",
+                    "expected_results": ""
+                },
+                "4": {
+                    "action": "set below in local.conf \n\tMACHINE = \"qemux86\"\n",
+                    "expected_results": ""
+                },
+                "5": {
+                    "action": "bitbake linux-yocto -c kernel_configme -f\n",
+                    "expected_results": ""
+                },
+                "6": {
+                    "action": "bitbake linux-yocto -c menuconfig\n",
+                    "expected_results": ""
+                },
+                "7": {
+                    "action": "Once menuconfig launches, use the interface to navigate through the selections and\n   enable option \"64-bit kernel\"\n",
+                    "expected_results": ""
+                },
+                "8": {
+                    "action": "Save changes and set name of the file as \"test.config\"\n\n\n\n </pre>  ",
+                    "expected_results": "Open file:</pre>poky/build//tmp/work/qemux86-poky-linux/linux-yocto/4.X.X+*/linux-qemux86-standard-build/test.config</pre>and verify that changes are present in the file as follows:CONFIG_64BIT=yCONFIG_X86_64=y"
+                }
+            },
+            "summary": "Test_bitbake_menuconfig"
+        }
+    },
+    {
+        "test": {
+            "@alias": "bitbake.bitbake.test_bitbake_devshell",
+            "author": [
+                {
+                    "email": "jose.perez.carranza@intel.com",
+                    "name": "jose.perez.carranza@intel.com"
+                }
+            ],
+            "execution": {
+                "1": {
+                    "action": "clone poky",
+                    "expected_results": ""
+                },
+                "2": {
+                    "action": "cd poky ",
+                    "expected_results": ""
+                },
+                "3": {
+                    "action": "source oe-init-build-env && cd build",
+                    "expected_results": ""
+                },
+                "4": {
+                    "action": "bitbake matchbox-desktop",
+                    "expected_results": "Package was build correctly"
+                },
+                "5": {
+                    "action": "bitbake matchbox-desktop -c devshell",
+                    "expected_results": "A terminal with a shell prompt within the OpenEmbedded build environment is opened"
+                },
+                "6": {
+                    "action": "Verify that \"matchbox-desktop\" binary file is not created under\"src\" directory",
+                    "expected_results": ""
+                },
+                "7": {
+                    "action": "Run command:./configure && make",
+                    "expected_results": "Verify that \"matchbox-desktop\" binary file was created successfully under \"src/\" directory"
+                },
+                "8": {
+                    "action": "Exit fromthe devshell terminal,exit ",
+                    "expected_results": "Terminal back to the build directory"
+                }
+            },
+            "summary": "test_bitbake_devshell"
+        }
+    },
+    {
+        "test": {
+            "@alias": "bitbake.bitbake.test_dependency_explorer_is_launched",
+            "author": [
+                {
+                    "email": "jose.perez.carranza@intel.com",
+                    "name": "jose.perez.carranza@intel.com"
+                }
+            ],
+            "execution": {
+                "1": {
+                    "action": "clone poky",
+                    "expected_results": ""
+                },
+                "2": {
+                    "action": "cd poky",
+                    "expected_results": ""
+                },
+                "3": {
+                    "action": "source oe-init-build-env",
+                    "expected_results": ""
+                },
+                "4": {
+                    "action": "bitbake core-image-full-cmdline",
+                    "expected_results": "Image should be successfullybuilt"
+                },
+                "5": {
+                    "action": "bitbake -u taskexp -g core-image-full-cmdline NOTE: To execute the last command of this test, it's necessary that the machine is executing an X11 server, or if that's not the case (for example, if running the test on a headless server), it is required to enable ssh X11 forwarding on both, the server and the client, and have the X11 server running on the client. The instructions to enable X11 forwarding vary between distributions. But for example, these are the steps to enable it between a server running openSUSE Leap 42.1 and a client with Fedora 24:A. On the server, make sure /home//.ssh/config contains the line:  ForwardX11 yesB. On the server, make sure xauth is installed by running:  which xauthC. On the client, connect to the server, enabling X11 forwarding, for example by using:  ssh -X user@server NOTE 2: depexp was renamed to taskexp on 2.3 M4",
+                    "expected_results": "Verify that a \"dependency explorer\" is openedand file dependenciesare listed "
+                }
+            },
+            "summary": "test_dependency_explorer_is_launched"
+        }
+    },
+    {
+        "test": {
+            "@alias": "bitbake.bitbake.test_bitbake_sane_error_for_invalid_layer",
+            "author": [
+                {
+                    "email": "jose.perez.carranza@intel.com",
+                    "name": "jose.perez.carranza@intel.com"
+                }
+            ],
+            "execution": {
+                "1": {
+                    "action": "clone poky",
+                    "expected_results": ""
+                },
+                "2": {
+                    "action": "cd poky ",
+                    "expected_results": ""
+                },
+                "3": {
+                    "action": "source oe-init-build-env && cd build",
+                    "expected_results": ""
+                },
+                "4": {
+                    "action": "Add a invalid layer to conf/bblayers.conf   \"/my-invalid-layer\" \t",
+                    "expected_results": ""
+                },
+                "5": {
+                    "action": "bitbake core-image-minimal",
+                    "expected_results": "Below error should be displayed:  \"ERROR: Layer directory  does not exist!  Please check BBLAYERS in //conf/bblayers.conf\""
+                }
+            },
+            "summary": "test_bitbake_sane_error_for_invalid_layer"
+        }
+    },
+    {
+        "test": {
+            "@alias": "bitbake.bitbake.Test_bitbake-selftest",
+            "author": [
+                {
+                    "email": "jair.de.jesus.gonzalez.plascencia@intel.com",
+                    "name": "jair.de.jesus.gonzalez.plascencia@intel.com"
+                }
+            ],
+            "execution": {
+                "1": {
+                    "action": "clone poky",
+                    "expected_results": ""
+                },
+                "2": {
+                    "action": "cd poky",
+                    "expected_results": ""
+                },
+                "3": {
+                    "action": "source oe-init-build-env ",
+                    "expected_results": ""
+                },
+                "4": {
+                    "action": "bitbake-selftest -v\n",
+                    "expected_results": "All test cases are executed and no errors are reported.\n"
+                }
+            },
+            "summary": "Test_bitbake-selftest"
+        }
+    }
+]

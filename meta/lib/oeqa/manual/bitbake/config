@@ -1,3 +1,0 @@
-#This file for test plan :User need add test cases name for exclude from the execution ex : <module>.<testsuite>.<testcase>
-BitbakeTests.BitbakeTests.test_prserv_remote_local
-BitbakeTests.BitbakeTests.test_dependency_explorer_display

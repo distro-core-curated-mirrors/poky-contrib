@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 #
 # Manual tests execution helper
 #
@@ -202,7 +202,8 @@ if __name__ == '__main__':
                     else:
                         if len(completed_list) == len(list_test_cases):
                             print("All manual in test plan for \"%s\" were completed. Please check \"%s\" for test results." % (data[0]['test']['@alias'].split(".", 1)[0], fname))
-                            sys.exit()
+                            break
+                            #sys.exit()
                 else:
                     results = execute_test_steps(args, i, data)
                     write_json_result(args, fname, results)
