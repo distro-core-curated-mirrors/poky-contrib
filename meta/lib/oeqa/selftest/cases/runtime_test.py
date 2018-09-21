@@ -161,6 +161,8 @@ class TestImage(OESelftestTestCase):
         features += 'GPG_PATH = "%s"\n' % self.gpg_home
         self.write_config(features)
 
+        self.assertTrue(False)
+
         # Build core-image-sato and testimage
         bitbake('core-image-full-cmdline socat')
         bitbake('-c testimage core-image-full-cmdline')
