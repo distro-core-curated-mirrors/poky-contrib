@@ -78,6 +78,9 @@ do_install () {
 	    rm -rf ${D}${sysconfdir}/init.d/
 	    rm -rf ${D}${sysconfdir}/rc*
 	fi
+
+	# workaround for multilib install file conflicts
+	sed -i "s:\(^#.*\)${libdir}:\1${nonarch_libdir}:" ${D}${sysconfdir}/cups/cups-files.conf*
 }
 
 PACKAGES =+ "${PN}-lib ${PN}-libimage"
