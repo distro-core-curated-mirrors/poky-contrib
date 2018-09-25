@@ -26,6 +26,9 @@ do_install() {
 	        install -d ${D}/etc/default/volatiles
 		install -m 0644 ${WORKDIR}/99_mandb ${D}/etc/default/volatiles
 	fi
+
+    # the 1st line of man_db.conf is package name which causes multilib install file conflict
+    sed -i '1d' ${D}${sysconfdir}/man_db.conf
 }
 
 do_install_append_libc-musl() {
