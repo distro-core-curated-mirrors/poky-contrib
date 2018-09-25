@@ -55,7 +55,6 @@ SRC_URI = "\
            file://0024-gcc-4.8-won-t-build-with-disable-dependency-tracking.patch \
            file://0025-Don-t-search-host-directory-during-relink-if-inst_pr.patch \
            file://0026-Use-SYSTEMLIBS_DIR-replacement-instead-of-hardcoding.patch \
-           file://0027-aarch64-Add-support-for-musl-ldso.patch \
            file://0028-libcc1-fix-libcc1-s-install-path-and-rpath.patch \
            file://0029-handle-sysroot-support-for-nativesdk-gcc.patch \
            file://0030-Search-target-sysroot-gcc-version-specific-dirs-with.patch \
