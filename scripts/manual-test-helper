@@ -13,10 +13,10 @@ import argparse
 
 def scan_test_case(jdata):
     # Scan the test suite JSON and print out all the name of test cases
-    print("Test Suite Name: %s" % jdata[0]['test']['@alias'].split(".", 1)[0])
+    print("Test Suite Name: %s" % jdata[0]["test"]["@alias"].split(".", 1)[0])
     print("\nTotal number of test cases in this test suite: " + "%s\n" % total)
     for i in range(0, total):
-        print("%s. " % (i+1) + jdata[i]['test']['@alias'].split(".",2)[2])
+        print("%s. " % (i+1) + jdata[i]["test"]["@alias"].split(".",2)[2])
     sys.exit()
 
 
@@ -46,34 +46,34 @@ def write_json_result(args, fname, results):
             testcases = results[0]["testsuite"][tmodule]["testcase"]
             for tcase in testcases:
                 tcase_dict.update(tcase)
-    json_object = {'testsuite': {}}
+    json_object = {"testsuite": {}}
     testsuite_dict = json_object[tsuite]
-    testsuite_dict[tmodule] = {'testcase': {}}
+    testsuite_dict[tmodule] = {"testcase": {}}
     testsuite_dict[tmodule]["testcase"] = tcase_dict
 
     with open(fname, "w") as f:
             json.dump(json_object, f, ensure_ascii=True, indent=4)
 
 def execute_test_steps(args, testID, jdata):
-    tmodule = jdata[testID]['test']['@alias'].split(".", 2)[0]
+    tmodule = jdata[testID]["test"]["@alias"].split(".", 2)[0]
     tsuite = jdata[testID]["test"]["@alias"].split(".", 2)[1]
-    tcase = jdata[testID]['test']['@alias'].split(".", 2)[2]
+    tcase = jdata[testID]["test"]["@alias"].split(".", 2)[2]
     compare_tcase = []
-    tmodule_id = tmodule + '.' + tsuite
-    tcase_id = tmodule_id + '.' + tcase
+    tmodule_id = tmodule + "." + tsuite
+    tcase_id = tmodule_id + "." + tcase
     file_id = tcase_id + ".log"
     file_path = os.path.join(path_module, file_id)
 
     print("------------------------------------------------------------------------")
     print("Executing test case:" + " " + tcase )
     print("------------------------------------------------------------------------")
-    print("You have total " + max(jdata[testID]['test']['execution'].keys()) + " test steps to be executed.")
+    print("You have total " + max(jdata[testID]["test"]["execution"].keys()) + " test steps to be executed.")
     print("------------------------------------------------------------------------\n")
 
-    for step in range (1, int(max(jdata[testID]['test']['execution'].keys()) + "1")):
-        print("Step %s: " % step + jdata[testID]['test']['execution']['%s' % step]['action'])
-        print("Expected output: " + jdata[testID]['test']['execution']['%s' % step]['expected_results'])
-        if step == int(max(jdata[testID]['test']['execution'].keys())):
+    for step in range (1, int(max(jdata[testID]["test"]["execution"].keys()) + "1")):
+        print("Step %s: " % step + jdata[testID]["test"]["execution"]["%s" % step]["action"])
+        print("Expected output: " + jdata[testID]["test"]["execution"]["%s" % step]["expected_results"])
+        if step == int(max(jdata[testID]["test"]["execution"].keys())):
             done = input("\nPlease provide test results: (P)assed/(F)ailed/(B)locked? \n")
             break
         else:
@@ -85,7 +85,7 @@ def execute_test_steps(args, testID, jdata):
     elif done == "f" or done == "F":
         res = "FAILED"
         log_input = input("\nPlease enter the error and the description of the log: (Ex:log:211 Error Bitbake)\n")
-        with open(file_path, 'w+') as f:
+        with open(file_path, "w+") as f:
             f.write("---------------------This is the log file-----------------------\n")
             f.write(log_input)
 
@@ -121,7 +121,7 @@ def execute_test_steps(args, testID, jdata):
     return temp
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     global total
     global temp
@@ -132,38 +132,38 @@ if __name__ == '__main__':
     results = []
     temp = []
 
-    parser = argparse.ArgumentParser(description='Helper script for results populating during manual test execution.')
+    parser = argparse.ArgumentParser(description="Helper script for results populating during manual test execution.")
 
     # Required: test suite file path
-    required = parser.add_argument_group('required arguments')
-    required.add_argument('-F', '--file', dest='file', action='store', required=True,
-                            help='Specify path to manual test case JSON file. Note: Please use "" to encapsulate the file path.')
+    required = parser.add_argument_group("required arguments")
+    required.add_argument("-F", "--file", dest="file", action="store", required=True,
+                            help="Specify path to manual test case JSON file. Note: Please use \"\" to encapsulate the file path.")
 
-    optional = parser.add_argument_group('optional arguments')
+    optional = parser.add_argument_group("optional arguments")
     # Optional: Scan and show all test cases in single test suite file
-    optional.add_argument('-S', '--scan', action='store_true',required=False,
-                          help='Scan and show all test cases in the provided JSON file in console.')
+    optional.add_argument("-S", "--scan", action="store_true",required=False,
+                          help="Scan and show all test cases in the provided JSON file in console.")
     # Optional: Resume manual test execution
-    optional.add_argument('-R', '--resume', action='store_true',required=False,
-                          help='Resume the manual test execution with existing test result file.')
+    optional.add_argument("-R", "--resume", action="store_true",required=False,
+                          help="Resume the manual test execution with existing test result file.")
     # Optional: Rerun specific test case
-    optional.add_argument('-r', '--rerun', dest='rerun', action='store',required=False,
-                          help='Re-run specific test case with existing test result file.')
+    optional.add_argument("-r", "--rerun", dest="rerun", action="store",required=False,
+                          help="Re-run specific test case with existing test result file.")
     # Optional: Run specific test case
-    optional.add_argument('-tc', '--testcase', dest='testcasename',required=False, action='store', help='Run a specific test case.')
+    optional.add_argument("-tc", "--testcase", dest="testcasename",required=False, action="store", help="Run a specific test case.")
     # Optional: Choose specific test range
-    optional.add_argument('-tr', '--testrange', nargs='*', dest='testrange', action='store',required=False, type=int,
-                          help='Run a specific range of test cases. Note: Use "-S/--scan" to see the numbers associated to test cases.')
+    optional.add_argument("-tr", "--testrange", nargs="*", dest="testrange", action="store",required=False, type=int,
+                          help="Run a specific range of test cases. Note: Use \"-S --scan\" to see the numbers associated to test cases.")
     # Optional: Output test results to new file, if not specified, default is test_results.json
-    optional.add_argument('-o', '--out', dest='output', action='store',required=False,
-                          help='Retrieve/Save test results from/to specific result file. Provide your own test results file name. Default is <module>.json. Note: Please use "" to encapsulate the file name.')
+    optional.add_argument("-o", "--out", dest="output", action="store",required=False,
+                          help="Retrieve/Save test results from/to specific result file. Provide your own test results file name. Default is <module>.json. Note: Please use \"\" to encapsulate the file name.")
     # Optional: Test planning, exclude test cases in file config
-    optional.add_argument('-tp', '--testplan', dest='testplan', action='store', required=False,
-                          help='Please provide the testcases to be excluded in test_paln.conf file ')
+    optional.add_argument("-tp", "--testplan", dest="testplan", action="store", required=False,
+                          help="Please provide the testcases to be excluded in test_plan.conf file.")
 
     args = parser.parse_args()
 
-    data = json.load(open('%s' % args.file))
+    data = json.load(open("%s" % args.file))
     total = len(data)
     tmodule = data[0]["test"]["@alias"].split(".", 2)[0]
     path_module = os.path.dirname(os.path.abspath(args.file))
@@ -182,28 +182,32 @@ if __name__ == '__main__':
         sys.exit()
 
     if args.testplan:
-        testcases_remove = []
+        testcases_exclude = []
         list_test_cases = []
-        with open(args.testplan, 'r') as f:
+        list_test_cases_to_run = []
+        with open(args.testplan, "r") as f:
             next(f)
             for line in f:
-                testcases_remove.append(line.rstrip('\n'))
+                testcases_exclude.append(line.rstrip("\n"))
         for i in range(0, total):
-            list_test_cases.append(data[i]['test']['@alias'].split(".", 2)[2])
-            if list_test_cases[i] not in testcases_remove:
+            list_test_cases.append(data[i]["test"]["@alias"].split(".", 2)[2])
+            if list_test_cases[i] not in testcases_exclude:
+                list_test_cases_to_run.append(list_test_cases)
+
+        for i in range(0, len(list_test_cases)):
+            if list_test_cases[i] not in testcases_exclude:
                 if args.resume:
                     temp = json.load(open(fname))
-                    completed_list = scan_test_results(temp)
-                    # to get only testcase name from the dict
-                    clist_split = [i.split(".", 2)[2] for i in completed_list]
-                    if list_test_cases[i] not in (clist_split or testcases_remove):
-                        results = execute_test_steps(args, i, data)
-                        write_resume_rerun_json_result(args, fname, results)
+                    clist = scan_test_results(temp)
+                    #get only testcase name from the dict
+                    clist_split = [i.split(".", 2)[2] for i in clist]
+                    if len(clist) == len(list_test_cases_to_run):
+                        print("Test execution in test plan for \"%s\" were completed. Please check \"%s\" for test results." % (data[0]['test']['@alias'].split(".", 1)[0], fname))
+                        break
                     else:
-                        if len(completed_list) == len(list_test_cases):
-                            print("All manual in test plan for \"%s\" were completed. Please check \"%s\" for test results." % (data[0]['test']['@alias'].split(".", 1)[0], fname))
-                            break
-                            #sys.exit()
+                        if list_test_cases[i] not in (clist_split or testcases_remove):
+                            results = execute_test_steps(args, i, data)
+                            write_resume_rerun_json_result(args, fname, results)
                 else:
                     results = execute_test_steps(args, i, data)
                     write_json_result(args, fname, results)
@@ -214,9 +218,9 @@ if __name__ == '__main__':
         clist = scan_test_results(temp)
         compare_alias = []
         for i in range(0, total):
-            compare_alias.append(data[i]['test']['@alias'])
+            compare_alias.append(data[i]["test"]["@alias"])
         if len(clist) == len(compare_alias):
-            print("All manual test exection for \"%s\" were completed. Please check \"%s\" for test results." % (data[0]['test']['@alias'].split(".", 1)[0], fname))
+            print("All manual test execution for \"%s\" were completed. Please check \"%s\" for test results." % (data[0]['test']['@alias'].split(".", 1)[0], fname))
         else:
             for i in range(0, total):
                 if compare_alias[i] not in clist:
@@ -229,9 +233,9 @@ if __name__ == '__main__':
         if args.rerun:
             args.testcasename = args.rerun
             temp = json.load(open(fname))
-        alias = data[0]['test']['@alias'].split(".", 2)[1] + "." + args.testcasename
+        alias = data[0]["test"]["@alias"].split(".", 2)[1] + "." + args.testcasename
         for i in range(0, total):
-            compare_alias = data[i]['test']['@alias'].split(".",1)[1]
+            compare_alias = data[i]["test"]["@alias"].split(".",1)[1]
             if alias == compare_alias:
                 results = execute_test_steps(args, i, data)
                 write_resume_rerun_json_result(args, fname, results)
