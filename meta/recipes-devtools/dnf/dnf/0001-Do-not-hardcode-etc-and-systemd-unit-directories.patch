@@ -5,6 +5,7 @@ Subject: [PATCH 3/5] Do not hardcode /etc and systemd unit directories
 
 Upstream-Status: Inappropriate [oe-core specific]
 Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
+Signed-off-by: Tim Orling <timothy.t.orling@linux.intel.com>
 
 ---
  CMakeLists.txt | 4 ++--
@@ -14,16 +15,16 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 650b624a..10199618 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -7,8 +7,8 @@ if (NOT PYTHON_DESIRED)
-     set (PYTHON_DESIRED "2")
- endif()
+@@ -3,7 +3,7 @@ if (NOT PYTHON_DESIRED)
+ INCLUDE ($(CMAKE_SOURCE_DIR)/VERSION.cmake)
+
  
 -SET( SYSCONFDIR /etc)
 -SET( SYSTEMD_DIR /usr/lib/systemd/system)
 +SET( SYSCONFDIR ${CMAKE_INSTALL_SYSCONFDIR})
 +SET( SYSTEMD_DIR $ENV{systemd_system_unitdir})
  
- if (${PYTHON_DESIRED} STREQUAL "2")
+ IF (NOT PYTHON_DESIRED)
  	FIND_PACKAGE (PythonInterp REQUIRED)
 -- 
 2.14.2
