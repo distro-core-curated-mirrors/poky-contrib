@@ -1,0 +1,35 @@
+From 59c04daa31f8083bf4eff8304b13f34dd79d00a3 Mon Sep 17 00:00:00 2001
+From: Chen Qi <Qi.Chen@windriver.com>
+Date: Sat, 29 Sep 2018 16:32:57 +0800
+Subject: [PATCH] fix to build with libepoxy
+
+In source codes, there are places checking USE(LIBEPOXY), but
+in cmake files, there's nowhere to handle it.
+
+Fix to define USE_LIBEPOXY to 1 if ENABLE_LIBEPOXY is turned on.
+
+Upstream-Status: Pending
+
+Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+---
+ Source/cmake/OptionsGTK.cmake | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/Source/cmake/OptionsGTK.cmake b/Source/cmake/OptionsGTK.cmake
+index 386fa1d..6e86257 100644
+--- a/Source/cmake/OptionsGTK.cmake
++++ b/Source/cmake/OptionsGTK.cmake
+@@ -240,6 +240,10 @@ endif ()
+ 
+ SET_AND_EXPOSE_TO_BUILD(USE_TEXTURE_MAPPER TRUE)
+ 
++if (ENABLE_LIBEPOXY)
++    SET_AND_EXPOSE_TO_BUILD(USE_LIBEPOXY TRUE)
++endif ()
++
+ if (ENABLE_OPENGL)
+     # ENABLE_OPENGL is true if either USE_OPENGL or ENABLE_GLES2 is true.
+     # But USE_OPENGL is the opposite of ENABLE_GLES2.
+-- 
+2.7.4
+
