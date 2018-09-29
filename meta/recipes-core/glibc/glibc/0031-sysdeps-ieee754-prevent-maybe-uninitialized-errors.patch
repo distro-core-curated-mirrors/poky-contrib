@@ -1,4 +1,4 @@
-From c6cc5a6ef46837e341fe271b5ffa6def23810082 Mon Sep 17 00:00:00 2001
+From 113241a738662854256c5e2e415397721b842862 Mon Sep 17 00:00:00 2001
 From: Martin Jansa <Martin.Jansa@gmail.com>
 Date: Fri, 14 Sep 2018 23:23:03 +0000
 Subject: [PATCH] sysdeps/ieee754: prevent maybe-uninitialized errors
@@ -21,13 +21,14 @@ Upstream-Status: Submitted [https://www.sourceware.org/ml/libc-alpha/2018-09/msg
 
 Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
 ---
- sysdeps/ieee754/dbl-64/e_jn.c    | 2 ++
- sysdeps/ieee754/ldbl-128/e_jnl.c | 4 ++++
- sysdeps/ieee754/ldbl-96/e_jnl.c  | 4 ++++
- 3 files changed, 10 insertions(+)
+ sysdeps/ieee754/dbl-64/e_jn.c       | 2 ++
+ sysdeps/ieee754/ldbl-128/e_jnl.c    | 4 ++++
+ sysdeps/ieee754/ldbl-128ibm/e_jnl.c | 4 ++++
+ sysdeps/ieee754/ldbl-96/e_jnl.c     | 4 ++++
+ 4 files changed, 14 insertions(+)
 
 diff --git a/sysdeps/ieee754/dbl-64/e_jn.c b/sysdeps/ieee754/dbl-64/e_jn.c
-index 9181b22bb8..74a6b5f149 100644
+index 9181b22..74a6b5f 100644
 --- a/sysdeps/ieee754/dbl-64/e_jn.c
 +++ b/sysdeps/ieee754/dbl-64/e_jn.c
 @@ -108,6 +108,7 @@ __ieee754_jn (int n, double x)
@@ -47,7 +48,7 @@ index 9181b22bb8..74a6b5f149 100644
  	b = invsqrtpi * temp / sqrt (x);
        }
 diff --git a/sysdeps/ieee754/ldbl-128/e_jnl.c b/sysdeps/ieee754/ldbl-128/e_jnl.c
-index 7739eec291..b6a1275464 100644
+index 7739eec..b6a1275 100644
 --- a/sysdeps/ieee754/ldbl-128/e_jnl.c
 +++ b/sysdeps/ieee754/ldbl-128/e_jnl.c
 @@ -149,6 +149,8 @@ __ieee754_jnl (int n, _Float128 x)
@@ -68,8 +69,30 @@ index 7739eec291..b6a1275464 100644
  	  }
  	b = invsqrtpi * temp / sqrtl (x);
        }
+diff --git a/sysdeps/ieee754/ldbl-128ibm/e_jnl.c b/sysdeps/ieee754/ldbl-128ibm/e_jnl.c
+index 71b3add..46c45db 100644
+--- a/sysdeps/ieee754/ldbl-128ibm/e_jnl.c
++++ b/sysdeps/ieee754/ldbl-128ibm/e_jnl.c
+@@ -149,6 +149,8 @@ __ieee754_jnl (int n, long double x)
+ 	      case 3:
+ 		temp = c - s;
+ 		break;
++	      default:
++		temp = 0;
+ 	      }
+ 	    b = invsqrtpi * temp / sqrtl (x);
+ 	  }
+@@ -385,6 +387,8 @@ __ieee754_ynl (int n, long double x)
+ 	  case 3:
+ 	    temp = s + c;
+ 	    break;
++	  default:
++	    temp = 0;
+ 	  }
+ 	b = invsqrtpi * temp / sqrtl (x);
+       }
 diff --git a/sysdeps/ieee754/ldbl-96/e_jnl.c b/sysdeps/ieee754/ldbl-96/e_jnl.c
-index 394921f564..2263b02203 100644
+index 394921f..2263b02 100644
 --- a/sysdeps/ieee754/ldbl-96/e_jnl.c
 +++ b/sysdeps/ieee754/ldbl-96/e_jnl.c
 @@ -142,6 +142,8 @@ __ieee754_jnl (int n, long double x)
@@ -91,5 +114,5 @@ index 394921f564..2263b02203 100644
  	b = invsqrtpi * temp / sqrtl (x);
        }
 -- 
-2.17.1
+2.7.4
 
