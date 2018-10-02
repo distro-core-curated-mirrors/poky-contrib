@@ -25,10 +25,19 @@ index e0db651..de137fa 100644
  }
  
 -.PHONY: check-TESTS
-+.PHONY: check-TESTS buildtest-TESTS runtest-TESTS
++.PHONY: check-TESTS build-TESTS buildtest-TESTS runtest-TESTS
  
  if !%?SERIAL_TESTS%
  
+@@ -401,6 +401,8 @@ RECHECK_LOGS = $(TEST_LOGS)
+ ## Running all tests, or rechecking failures. ##
+ ## ------------------------------------------ ##
+ 
++build-TESTS: $(TESTS)
++
+ check-TESTS: %CHECK_DEPS%
+ 	@list='$(RECHECK_LOGS)';           test -z "$$list" || rm -f $$list
+ 	@list='$(RECHECK_LOGS:.log=.trs)'; test -z "$$list" || rm -f $$list
 @@ -466,7 +466,14 @@ else %?SERIAL_TESTS%
  
  ## Obsolescent serial testsuite driver.
