@@ -83,6 +83,17 @@ def testsdk_main(d):
 
         result.logDetails()
         result.logSummary(component, context_msg)
+        if (d.getVar('OEQA_SKIP_OUTPUT_JSON')) == '1':
+            bb.debug(2, 'Skip the OEQA output json testresult as OEQA_SKIP_OUTPUT_JSON=1')
+        else:
+            workdir = d.getVar("WORKDIR")
+            image_basename = d.getVar("IMAGE_BASENAME")
+            json_result_dir = os.path.join(workdir,
+                                           'temp',
+                                           'json_testresults-%s' % os.getpid(),
+                                           'sdk',
+                                           image_basename)
+            result.logDetailsInJson(json_result_dir)
 
         if not result.wasSuccessful():
             fail = True
@@ -187,6 +198,17 @@ def testsdkext_main(d):
 
         result.logDetails()
         result.logSummary(component, context_msg)
+        if (d.getVar('OEQA_SKIP_OUTPUT_JSON')) == '1':
+            bb.debug(2, 'Skip the OEQA output json testresult as OEQA_SKIP_OUTPUT_JSON=1')
+        else:
+            workdir = d.getVar("WORKDIR")
+            image_basename = d.getVar("IMAGE_BASENAME")
+            json_result_dir = os.path.join(workdir,
+                                           'temp',
+                                           'json_testresults-%s' % os.getpid(),
+                                           'sdkext',
+                                           image_basename)
+            result.logDetailsInJson(json_result_dir)
 
         if not result.wasSuccessful():
             fail = True
