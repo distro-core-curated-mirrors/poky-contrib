@@ -9,6 +9,7 @@ BOOST_LIBS = "\
 	atomic \
 	chrono \
 	container \
+	contract \
 	date_time \
 	exception \
 	filesystem \
@@ -32,6 +33,7 @@ BOOST_LIBS = "\
 BOOST_LIBS_append_x86 = " context coroutine"
 BOOST_LIBS_append_x86-64 = " context coroutine"
 BOOST_LIBS_append_powerpc = " context coroutine"
+BOOST_LIBS_append_arm = " context coroutine"
 # need consistent settings for native builds (x86 override not applied for native)
 BOOST_LIBS_remove_class-native = " context coroutine"
 # does not compile
@@ -133,9 +135,8 @@ BJAM_TOOLS   = "--ignore-site-config \
 		'--layout=system' \
 		"
 
-# use PARALLEL_MAKE to speed up the build, but limit it by -j 64, greater parallelism causes bjam to segfault or to ignore -j
-# https://svn.boost.org/trac/boost/ticket/7634
-BOOST_PARALLEL_MAKE = "${@oe.utils.parallel_make_argument(d, '-j%d', limit=64)}"
+# use PARALLEL_MAKE to speed up the build
+BOOST_PARALLEL_MAKE = "${@oe.utils.parallel_make_argument(d, '-j%d')}"
 BJAM_OPTS    = '${BOOST_PARALLEL_MAKE} -d+2 -q \
 		${BJAM_TOOLS} \
 		-sBOOST_BUILD_USER_CONFIG=${WORKDIR}/user-config.jam \
@@ -148,6 +149,9 @@ BJAM_OPTS_append_class-native = ' -sNO_BZIP2=1'
 
 # Adjust the build for x32
 BJAM_OPTS_append_x86-x32 = " abi=x32 address-model=64"
+
+# cross compiling for arm fails to detect abi, so provide some help
+BJAM_OPTS_append_arm = " abi=aapcs architecture=arm"
 
 do_configure() {
 	cp -f ${S}/boost/config/platform/linux.hpp ${S}/boost/config/platform/linux-gnueabi.hpp

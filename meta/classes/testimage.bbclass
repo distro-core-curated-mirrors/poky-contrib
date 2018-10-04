@@ -10,6 +10,11 @@
 # - first add IMAGE_CLASSES += "testimage" in local.conf
 # - build a qemu core-image-sato
 # - then bitbake core-image-sato -c testimage. That will run a standard suite of tests.
+#
+# The tests can be run automatically each time an image is built if you set
+# TESTIMAGE_AUTO = "1"
+
+TESTIMAGE_AUTO ??= "0"
 
 # You can set (or append to) TEST_SUITES in local.conf to select the tests
 # which you want to run for your target.
@@ -117,13 +122,6 @@ testimage_dump_host () {
 }
 
 python do_testimage() {
-
-    testimage_sanity(d)
-
-    if (d.getVar('IMAGE_PKGTYPE') == 'rpm'
-       and 'dnf' in d.getVar('TEST_SUITES')):
-        create_rpm_index(d)
-
     testimage_main(d)
 }
 
@@ -158,6 +156,12 @@ def testimage_main(d):
         Catch SIGTERM from worker in order to stop qemu.
         """
         raise RuntimeError
+
+    testimage_sanity(d)
+
+    if (d.getVar('IMAGE_PKGTYPE') == 'rpm'
+       and ('dnf' in d.getVar('TEST_SUITES') or 'auto' in d.getVar('TEST_SUITES'))):
+        create_rpm_index(d)
 
     logger = make_logger_bitbake_compatible(logging.getLogger("BitBake"))
     pn = d.getVar("PN")
@@ -217,8 +221,8 @@ def testimage_main(d):
     # Get use_kvm
     qemu_use_kvm = d.getVar("QEMU_USE_KVM")
     if qemu_use_kvm and \
-       (oe.types.boolean(qemu_use_kvm) and 'x86' in machine or \
-        d.getVar('MACHINE') in qemu_use_kvm.split()):
+       (d.getVar('MACHINE') in qemu_use_kvm.split() or \
+        oe.types.boolean(qemu_use_kvm) and 'x86' in machine):
         kvm = True
     else:
         kvm = False
@@ -260,10 +264,16 @@ def testimage_main(d):
     # Load tests before starting the target
     test_paths = get_runtime_paths(d)
     test_modules = d.getVar('TEST_SUITES').split()
+    if not test_modules:
+        bb.fatal('Empty test suite, please verify TEST_SUITES variable')
+
     tc.loadTests(test_paths, modules=test_modules)
 
-    if not getSuiteCases(tc.suites):
+    suitecases = getSuiteCases(tc.suites)
+    if not suitecases:
         bb.fatal('Empty test suite, please verify TEST_SUITES variable')
+    else:
+        bb.debug(2, 'test suites:\n\t%s' % '\n\t'.join([str(c) for c in suitecases]))
 
     package_extraction(d, tc.suites)
 
@@ -296,6 +306,18 @@ def testimage_main(d):
         bb.fatal('%s - FAILED - tests were interrupted during execution' % pn, forcelog=True)
     results.logDetails()
     results.logSummary(pn)
+    if (d.getVar('OEQA_SKIP_OUTPUT_JSON')) == '1':
+        bb.debug(2, 'Skip the OEQA output json testresult as OEQA_SKIP_OUTPUT_JSON=1')
+    else:
+        workdir = d.getVar("WORKDIR")
+        image_basename = d.getVar("IMAGE_BASENAME")
+        json_result_dir = os.path.join(workdir,
+                                       'temp',
+                                       'json_testresults-%s' % os.getpid(),
+                                       'runtime',
+                                       machine,
+                                       image_basename)
+        results.logDetailsInJson(json_result_dir)
     if not results.wasSuccessful():
         bb.fatal('%s - FAILED - check the task log and the ssh log' % pn, forcelog=True)
 
@@ -331,6 +353,7 @@ def create_index(arg):
     return None
 
 def create_rpm_index(d):
+    import glob
     # Index RPMs
     rpm_createrepo = bb.utils.which(os.getenv('PATH'), "createrepo_c")
     index_cmds = []
@@ -347,9 +370,13 @@ def create_rpm_index(d):
         lf = bb.utils.lockfile(lockfilename, False)
         oe.path.copyhardlinktree(rpm_dir, idx_path)
         # Full indexes overload a 256MB image so reduce the number of rpms
-        # in the feed. Filter to r* since we use the run-postinst packages and
-        # this leaves some allarch and machine arch packages too.
-        bb.utils.remove(idx_path + "*/[a-qs-z]*.rpm")
+        # in the feed by filtering to specific packages needed by the tests.
+        package_list = glob.glob(idx_path + "*/*.rpm")
+
+        for pkg in package_list:
+            if not os.path.basename(pkg).startswith(("rpm", "run-postinsts", "busybox", "bash", "update-alternatives", "libc6", "curl", "musl")):
+                bb.utils.remove(pkg)
+
         bb.utils.unlockfile(lf)
         cmd = '%s --update -q %s' % (rpm_createrepo, idx_path)
 
@@ -371,5 +398,10 @@ def package_extraction(d, test_suites):
         extract_packages(d, packages)
 
 testimage_main[vardepsexclude] += "BB_ORIGENV DATETIME"
+
+python () {
+    if oe.types.boolean(d.getVar("TESTIMAGE_AUTO") or "False"):
+        bb.build.addtask("testimage", "do_build", "do_image_complete", d)
+}
 
 inherit testsdk

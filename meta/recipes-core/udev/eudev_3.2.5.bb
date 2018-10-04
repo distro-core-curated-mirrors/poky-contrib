@@ -30,6 +30,7 @@ CONFLICT_DISTRO_FEATURES = "systemd"
 EXTRA_OECONF = " \
     --sbindir=${base_sbindir} \
     --with-rootlibdir=${base_libdir} \
+    --with-rootlibexecdir=${nonarch_base_libdir}/udev \
     --with-rootprefix= \
 "
 
@@ -64,7 +65,7 @@ PACKAGES =+ "libudev"
 PACKAGES =+ "eudev-hwdb"
 
 
-FILES_${PN} += "${libexecdir} ${base_libdir}/udev ${bindir}/udevadm"
+FILES_${PN} += "${libexecdir} ${nonarch_base_libdir}/udev ${bindir}/udevadm"
 FILES_${PN}-dev = "${datadir}/pkgconfig/udev.pc \
                    ${includedir}/libudev.h ${libdir}/libudev.so \
                    ${includedir}/udev.h ${libdir}/libudev.la \
@@ -80,8 +81,12 @@ RPROVIDES_eudev-hwdb += "udev-hwdb"
 PACKAGE_WRITE_DEPS += "qemu-native"
 pkg_postinst_eudev-hwdb () {
     if test -n "$D"; then
-        ${@qemu_run_binary(d, '$D', '${bindir}/udevadm')} hwdb --update --root $D
-        chown root:root $D${sysconfdir}/udev/hwdb.bin
+        if ${@bb.utils.contains('MACHINE_FEATURES', 'qemu-usermode', 'true','false', d)}; then
+            ${@qemu_run_binary(d, '$D', '${bindir}/udevadm')} hwdb --update --root $D
+            chown root:root $D${sysconfdir}/udev/hwdb.bin
+        else
+            $INTERCEPT_DIR/postinst_intercept delay_to_first_boot ${PKG} mlprefix=${MLPREFIX}
+        fi
     else
         udevadm hwdb --update
     fi
