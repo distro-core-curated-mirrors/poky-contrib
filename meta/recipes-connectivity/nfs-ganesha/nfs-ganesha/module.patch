@@ -1,0 +1,26 @@
+Upstream-Status: Submitted [https://github.com/nfs-ganesha/nfs-ganesha/pull/354]
+Signed-off-by: Ross Burton <ross.burton@intel.com>
+
+From 5e2fafdb827b949c80a7d89f1aa5dc1d6bcdcc6d Mon Sep 17 00:00:00 2001
+From: Ross Burton <ross@burtonini.com>
+Date: Fri, 5 Oct 2018 15:12:46 +0100
+Subject: [PATCH] Install fsalmem as a module
+
+This isn't a shared library, it's a module.
+---
+ src/FSAL/FSAL_MEM/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/FSAL/FSAL_MEM/CMakeLists.txt b/src/FSAL/FSAL_MEM/CMakeLists.txt
+index 6701f0a5d..058bc5a5d 100644
+--- a/src/FSAL/FSAL_MEM/CMakeLists.txt
++++ b/src/FSAL/FSAL_MEM/CMakeLists.txt
+@@ -15,7 +15,7 @@ SET(fsalmem_LIB_SRCS
+    mem_up.c
+ )
+ 
+-add_library(fsalmem SHARED ${fsalmem_LIB_SRCS})
++add_library(fsalmem MODULE ${fsalmem_LIB_SRCS})
+ add_sanitizers(fsalmem)
+ 
+ target_link_libraries(fsalmem ${SYSTEM_LIBRARIES} ${LTTNG_LIBRARIES})

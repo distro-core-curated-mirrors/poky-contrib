@@ -1,0 +1,32 @@
+Fix some uninitialized value errors.
+
+Upstream-Status: Submitted [https://github.com/nfs-ganesha/nfs-ganesha/issues/355]
+Signed-off-by: Ross Burton <ross.burton@intel.com>
+---
+ src/Protocols/NFS/nfs_proto_tools.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Protocols/NFS/nfs_proto_tools.c b/src/Protocols/NFS/nfs_proto_tools.c
+index 4a4e0529d..3d9bb3f5e 100644
+--- a/src/Protocols/NFS/nfs_proto_tools.c
++++ b/src/Protocols/NFS/nfs_proto_tools.c
+@@ -514,7 +514,7 @@ static fattr_xdr_result encode_change(XDR *xdr, struct xdr_attrs_args *args)
+ 
+ static fattr_xdr_result decode_change(XDR *xdr, struct xdr_attrs_args *args)
+ {
+-	uint64_t change;
++	uint64_t change = 0;
+ 
+ 	if (!xdr_u_int64_t(xdr, &change))
+ 		return FATTR_XDR_FAILED;
+--- a/src/FSAL/FSAL_PROXY/handle.c
++++ b/src/FSAL/FSAL_PROXY/handle.c
+@@ -1364,7 +1364,7 @@ static fsal_status_t pxy_lookup_impl(struct fsal_obj_handle *parent,
+ 	int rc;
+ 	uint32_t opcnt = 0;
+ 	GETATTR4resok *atok;
+-	GETATTR4resok *atok_per_file_system_attr;
++	GETATTR4resok *atok_per_file_system_attr = NULL;
+ 	GETFH4resok *fhok;
+ 	sessionid4 sid;
+ 	/* SEQUENCE PUTROOTFH/PUTFH LOOKUP GETFH GETATTR (GETATTR) */
