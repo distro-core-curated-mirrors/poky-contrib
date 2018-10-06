@@ -16,11 +16,11 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 8875bbf..ca280f3 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -29,7 +29,8 @@ find_package (PkgConfig REQUIRED)
- SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+@@ -49,7 +49,8 @@ find_package (PkgConfig REQUIRED)
  PKG_CHECK_MODULES(GLIB gio-unix-2.0>=2.46.0 REQUIRED)
+ pkg_check_modules(SMARTOOLS REQUIRED smartools)
  FIND_LIBRARY (RPMDB_LIBRARY NAMES rpmdb)
--find_package (LibSolv 0.6.21 REQUIRED COMPONENTS ext)
+-find_package (LibSolv 0.6.30 REQUIRED COMPONENTS ext)
 +PKG_CHECK_MODULES (LIBSOLV REQUIRED libsolv)
 +set(LIBSOLV_LIBRARY ${LIBSOLV_LIBRARIES})
  if (ENABLE_RHSM_SUPPORT)
