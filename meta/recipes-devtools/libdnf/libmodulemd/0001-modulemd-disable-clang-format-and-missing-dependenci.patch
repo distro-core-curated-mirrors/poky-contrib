@@ -1,0 +1,87 @@
+From f8ecf86d5c63cbb4eb568620a49b277d38dcc135 Mon Sep 17 00:00:00 2001
+From: Tim Orling <ticotimo@gmail.com>
+Date: Thu, 11 Oct 2018 18:27:31 -0700
+Subject: [PATCH] modulemd: disable clang-format and missing dependencies
+
+Upstream-Status: Inappropriate [configuration]
+
+Signed-off-by: Tim Orling <ticotimo@gmail.com>
+---
+ modulemd/meson.build | 52 ++++++++++++++++++++++----------------------
+ 1 file changed, 26 insertions(+), 26 deletions(-)
+
+diff --git a/modulemd/meson.build b/modulemd/meson.build
+index c7d42e8..bcafbf8 100644
+--- a/modulemd/meson.build
++++ b/modulemd/meson.build
+@@ -14,22 +14,22 @@ test_dirty_git = get_option('test_dirty_git')
+ 
+ python3 = pymod.find_python()
+ 
+-clang_format = find_program('clang-format', required: developer_build)
+-if not clang_format.found()
+-    clang_format = disabler()
+-endif
++#clang_format = find_program('clang-format', required: developer_build)
++#if not clang_format.found()
++#    clang_format = disabler()
++#endif
+ 
+-autopep8 = find_program('python3-autopep8', 'autopep8',
+-                        required : developer_build)
+-if not autopep8.found()
+-    autopep8 = disabler()
+-endif
++#autopep8 = find_program('python3-autopep8', 'autopep8',
++#                        required : developer_build)
++#if not autopep8.found()
++#    autopep8 = disabler()
++#endif
+ 
+-valgrind = find_program('valgrind', required: developer_build)
++#valgrind = find_program('valgrind', required: developer_build)
+ 
+-if not valgrind.found()
+-    valgrind = disabler()
+-endif
++#if not valgrind.found()
++#    valgrind = disabler()
++#endif
+ 
+ build_api_v1 = get_option('build_api_v1')
+ 
+@@ -118,21 +118,21 @@ libmodulemd_version = meson.project_version()
+ libmodulemd_version_array = libmodulemd_version.split('.')
+ 
+ # Fake test to ensure that all sources and headers are formatted properly
+-clang_args = [ '-i' ]
+-test('clang_format', clang_format,
+-     args : clang_args +
+-            modulemd_v1_srcs +
+-            modulemd_v1_hdrs +
+-            modulemd_priv_hdrs +
+-            test_v1_srcs)
++#clang_args = [ '-i' ]
++#test('clang_format', clang_format,
++#     args : clang_args +
++#            modulemd_v1_srcs +
++#            modulemd_v1_hdrs +
++#            modulemd_priv_hdrs +
++#            test_v1_srcs)
+ 
+ # Fake test to ensure that the python tests are formatted according to PEP8
+-autopep8_args = [ '--in-place', '-a', '-a' ]
+-autopep8_scripts = [ files('v1/tests/test-modulemd-python.py',
+-                           'common/tests/test-dirty.py',
+-                           'v1/tests/test-valgrind.py') ]
+-test('autopep8', autopep8,
+-     args: autopep8_args + autopep8_scripts)
++#autopep8_args = [ '--in-place', '-a', '-a' ]
++#autopep8_scripts = [ files('v1/tests/test-modulemd-python.py',
++#                           'common/tests/test-dirty.py',
++#                           'v1/tests/test-valgrind.py') ]
++#test('autopep8', autopep8,
++#     args: autopep8_args + autopep8_scripts)
+ 
+ 
+ # Fake test to ensure that the autoformatters didn't end up making changes

@@ -1,0 +1,35 @@
+From a12d17024a8056fc0f870d02f91701d7f44163c1 Mon Sep 17 00:00:00 2001
+From: Tim Orling <ticotimo@gmail.com>
+Date: Thu, 11 Oct 2018 19:04:00 -0700
+Subject: [PATCH] modulemd/v1/meson.build: disable valgrind dependency
+
+Signed-off-by: Tim Orling <ticotimo@gmail.com>
+---
+ modulemd/v1/meson.build | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/modulemd/v1/meson.build b/modulemd/v1/meson.build
+index 6a22a1d..a3fcb7d 100644
+--- a/modulemd/v1/meson.build
++++ b/modulemd/v1/meson.build
+@@ -270,13 +270,13 @@ test ('test_v1_import_headers', import_header_script,
+       env : test_env,
+       args : modulemd_v1_hdrs)
+ 
+-if valgrind.found()
+-    modulemd_valgrind_scripts = files('tests/test-valgrind.py')
+-    test ('test_v1_valgrind', python3,
+-          env : test_env,
+-          args : modulemd_valgrind_scripts,
+-          timeout : 300)
+-endif
++#if valgrind.found()
++#    modulemd_valgrind_scripts = files('tests/test-valgrind.py')
++#    test ('test_v1_valgrind', python3,
++#          env : test_env,
++#          args : modulemd_valgrind_scripts,
++#          timeout : 300)
++#endif
+ 
+ gnome.generate_gir(
+     modulemd_v1_lib,
