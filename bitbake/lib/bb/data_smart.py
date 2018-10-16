@@ -720,7 +720,7 @@ class DataSmart(MutableMapping):
                 self.dict["__exportlist"]["_content"] = set()
             self.dict["__exportlist"]["_content"].add(var)
 
-    def getVarFlag(self, var, flag, expand=True, noweakdefault=False, parsing=False):
+    def getVarFlag(self, var, flag, expand=True, noweakdefault=False, parsing=False, retremoves=False):
         local_var, overridedata = self._findVar(var)
         value = None
         if flag == "_content" and overridedata is not None and not parsing:
@@ -794,8 +794,8 @@ class DataSmart(MutableMapping):
                 cachename = var + "[" + flag + "]"
             value = self.expand(value, cachename)
 
+        removes = []
         if value and flag == "_content" and local_var is not None and "_remove" in local_var:
-            removes = []
             self.need_overrides()
             for (r, o) in local_var["_remove"]:
                 match = True
@@ -814,6 +814,9 @@ class DataSmart(MutableMapping):
                     # We need to ensure the expand cache has the correct value
                     # flag == "_content" here
                     self.expand_cache[var].value = value
+
+        if retremoves:
+            return value, removes
         return value
 
     def delVarFlag(self, var, flag, **loginfo):

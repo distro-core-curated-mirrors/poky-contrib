@@ -290,7 +290,7 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
             return deps, value
         varflags = d.getVarFlags(key, ["vardeps", "vardepvalue", "vardepsexclude", "exports", "postfuncs", "prefuncs", "lineno", "filename"]) or {}
         vardeps = varflags.get("vardeps")
-        value = d.getVarFlag(key, "_content", False)
+        value, removes = d.getVarFlag(key, "_content", False, retremoves=True)
 
         def handle_contains(value, contains, d):
             newvalue = ""
@@ -308,6 +308,16 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
             if not value:
                 return newvalue
             return value + newvalue
+
+        def handle_remove(value, deps, expandedval, removes, d):
+            activeremoves = []
+            for r in removes:
+                r2 = d.expandWithRefs(r, None)
+                if r2.value in expandedval.split():
+                    value += "\n_remove of %s(%s)" % (r, r2.value)
+                    deps |= r2.references
+                    deps = deps | (keys & r2.execs)
+            return value
 
         if "vardepvalue" in varflags:
            value = varflags.get("vardepvalue")
@@ -328,6 +338,8 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
                 deps = deps | parsedvar.references
                 deps = deps | (keys & parser.execs) | (keys & parsedvar.execs)
                 value = handle_contains(value, parsedvar.contains, d)
+                if removes:
+                    value = handle_remove(value, deps, parser.value, removes, d)
             if vardeps is None:
                 parser.log.flush()
             if "prefuncs" in varflags:
@@ -341,6 +353,8 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
             deps |= parser.references
             deps = deps | (keys & parser.execs)
             value = handle_contains(value, parser.contains, d)
+            if removes:
+                value = handle_remove(value, deps, parser.value, removes, d)
 
         if "vardepvalueexclude" in varflags:
             exclude = varflags.get("vardepvalueexclude")
