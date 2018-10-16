@@ -39,6 +39,7 @@
 
 #include "ptest_list.h"
 #include "utils.h"
+#include "flags.h"
 
 #define GET_STIME_BUF_SIZE 1024
 #define WAIT_CHILD_POLL_TIMEOUT_MS 200
@@ -358,6 +359,7 @@ run_ptests(struct ptest_list *head, const struct ptest_options opts,
 		fprintf(fp, "START: %s\n", progname);
 		PTEST_LIST_ITERATE_START(head, p);
 			char *ptest_dir = strdup(p->run_ptest);
+			char *ptest = strdup(p->ptest);
 			if (ptest_dir == NULL) {
 				rc = -1;
 				break;
@@ -376,6 +378,11 @@ run_ptests(struct ptest_list *head, const struct ptest_options opts,
 				int fds[2]; fds[0] = pipefd_stdout[0]; fds[1] = pipefd_stderr[0];
 				FILE *fps[2]; fps[0] = fp; fps[1] = fp_stderr;
 
+				char result[5]; // pass\0, fail\0, skip\0
+
+				if (opts.flags & LAVA_SIGNAL_ENABLE) {
+					fprintf(stdout, "<LAVA_SIGNAL_STARTTC %s>\n", ptest);
+				}
 				fprintf(fp, "%s\n", get_stime(stime, GET_STIME_BUF_SIZE));
 				fprintf(fp, "BEGIN: %s\n", ptest_dir);
 
@@ -389,6 +396,14 @@ run_ptests(struct ptest_list *head, const struct ptest_options opts,
 
 				fprintf(fp, "END: %s\n", ptest_dir);
 				fprintf(fp, "%s\n", get_stime(stime, GET_STIME_BUF_SIZE));
+				if (opts.flags & LAVA_SIGNAL_ENABLE) {
+					if (status)
+						sprintf(result, "fail");
+					else
+						sprintf(result, "pass");
+					fprintf(stdout, "<LAVA_SIGNAL_ENDTC %s>\n", ptest);
+					fprintf(stdout, "<LAVA_SIGNAL_TESTCASE TEST_CASE_ID=%s RESULT=%s>\n", ptest, result);
+				}
 			}
 		PTEST_LIST_ITERATE_END;
 		fprintf(fp, "STOP: %s\n", progname);

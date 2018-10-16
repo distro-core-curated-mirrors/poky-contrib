@@ -36,6 +36,7 @@
 #endif
 
 #include "utils.h"
+#include "flags.h"
 
 #define DEFAULT_DIRECTORY "/usr/lib"
 #define DEFAULT_TIMEOUT 300
@@ -70,8 +71,9 @@ main(int argc, char *argv[])
 	opts.timeout = DEFAULT_TIMEOUT;
 	opts.ptests = NULL;
 	opts.xml_filename = NULL;
+	opts.flags = 0;
 
-	while ((opt = getopt(argc, argv, "d:e:lt:x:h")) != -1) {
+	while ((opt = getopt(argc, argv, "d:e:lt:x:Lh")) != -1) {
 		switch (opt) {
 			case 'd':
 				free(opts.directory);
@@ -117,6 +119,11 @@ main(int argc, char *argv[])
 				free(opts.xml_filename);
 				opts.xml_filename = strdup(optarg);
 				CHECK_ALLOCATION(opts.xml_filename, 1, 1);
+			break;
+			case 'L':
+				// set LAVA signal mode
+				opts.flags |= LAVA_SIGNAL_ENABLE;
+				fprintf(stdout, "LAVA_SIGNAL_ENABLE == %d\n", opts.flags);
 			break;
 			default:
 				print_usage(stdout, argv[0]);

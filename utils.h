@@ -37,8 +37,8 @@ struct ptest_options {
 	int timeout;
 	char **ptests;
 	char *xml_filename;
+	unsigned int flags;
 };
-
 
 extern void check_allocation1(void *, size_t, char *, int, int);
 extern struct ptest_list *get_available_ptests(const char *);
