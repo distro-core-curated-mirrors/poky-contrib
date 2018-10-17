@@ -133,7 +133,7 @@ set( CMAKE_BUILD_RPATH_USE_ORIGIN ON )
 list(APPEND CMAKE_MODULE_PATH "${STAGING_DATADIR}/cmake/Modules/")
 
 # add for non /usr/lib libdir, e.g. /usr/lib64
-set( CMAKE_LIBRARY_PATH ${libdir} ${base_libdir})
+set( CMAKE_SYSTEM_LIBRARY_PATH ${libdir} ${base_libdir})
 
 # add include dir to implicit includes in case it differs from /usr/include
 list(APPEND CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES ${includedir})
