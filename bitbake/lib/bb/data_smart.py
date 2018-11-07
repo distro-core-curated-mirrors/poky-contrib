@@ -733,12 +733,14 @@ class DataSmart(MutableMapping):
                     # end of processing
                     removes = subparser.removes
 
+        if local_var and "deprecated" in local_var:
+            bb.warn("deprecated use of %s: %s" % (var, local_var["deprecated"]))
+
         if local_var is not None and value is None:
             if flag in local_var:
                 value = copy.copy(local_var[flag])
             elif flag == "_content" and "_defaultval" in local_var and not noweakdefault:
                 value = copy.copy(local_var["_defaultval"])
-
 
         if flag == "_content" and local_var is not None and "_append" in local_var and not parsing:
             if not value:
