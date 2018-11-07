@@ -1,6 +1,6 @@
 inherit goarch
 
-GO_PARALLEL_BUILD ?= "${@oe.utils.parallel_make_argument(d, '-p %d')}"
+GO_PARALLEL_BUILD ?= "-p ${BB_NUMBER_TASKTHREADS}"
 
 GOROOT_class-native = "${STAGING_LIBDIR_NATIVE}/go"
 GOROOT_class-nativesdk = "${STAGING_DIR_TARGET}${libdir}/go"
