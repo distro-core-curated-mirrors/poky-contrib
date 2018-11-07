@@ -141,9 +141,7 @@ BJAM_TOOLS   = "--ignore-site-config \
 		'--layout=system' \
 		"
 
-# use PARALLEL_MAKE to speed up the build
-BOOST_PARALLEL_MAKE = "${@oe.utils.parallel_make_argument(d, '-j%d')}"
-BJAM_OPTS    = '${BOOST_PARALLEL_MAKE} -d+2 -q \
+BJAM_OPTS    = '-j${BB_NUMBER_TASKTHREADS} -d+2 -q \
 		${BJAM_TOOLS} \
 		-sBOOST_BUILD_USER_CONFIG=${WORKDIR}/user-config.jam \
 		--build-dir=${S}/${TARGET_SYS} \
