@@ -55,7 +55,7 @@ waf_do_configure() {
 
 do_compile[progress] = "outof:^\[\s*(\d+)/\s*(\d+)\]\s+"
 waf_do_compile()  {
-	(cd ${S} && ./waf build ${@oe.utils.parallel_make_argument(d, '-j%d', limit=64)})
+	(cd ${S} && ./waf build -j${BB_NUMBER_TASKTHREADS})
 }
 
 waf_do_install() {
