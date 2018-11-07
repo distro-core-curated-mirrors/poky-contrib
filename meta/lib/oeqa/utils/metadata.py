@@ -19,7 +19,7 @@ def metadata_from_bb():
 
         Data will be gathered using bitbake -e thanks to get_bb_vars.
     """
-    metadata_config_vars = ('MACHINE', 'BB_NUMBER_THREADS', 'PARALLEL_MAKE')
+    metadata_config_vars = ('MACHINE', 'BB_NUMBER_THREADS', 'BB_NUMBER_TASKTHREADS')
 
     info_dict = OrderedDict()
     hostname = runCmd('hostname')
