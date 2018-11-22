@@ -60,13 +60,13 @@ conffiles = "${sysconfdir}/debian_version ${sysconfdir}/host.conf \
              ${sysconfdir}/nsswitch.conf ${sysconfdir}/profile \
              ${sysconfdir}/default"
 
-# By default the hostname is the machine name. If the hostname is unset then a
+# By default the hostname is 'localhost'. If the hostname is unset then a
 # /etc/hostname file isn't written, suitable for environments with dynamic
 # hostnames.
 #
 # The hostname can be changed outside of this recipe by using
 # hostname_pn-base-files = "my-host-name".
-hostname = "${MACHINE}"
+hostname = "localhost"
 
 BASEFILESISSUEINSTALL ?= "do_install_basefilesissue"
 
