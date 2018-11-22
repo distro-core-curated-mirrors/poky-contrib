@@ -132,8 +132,14 @@ if is_inuse $ACTUAL_DEVICE ; then
 fi
 
 
+if [ ! -e "$DEVICE" ]; then
+	echo "ERROR: Device $DEVICE does not exist"
+	usage
+	exit 1
+fi
+
 if [ ! -w "$DEVICE" ]; then
-	echo "ERROR: Device $DEVICE does not exist or is not writable"
+	echo "ERROR: Device $DEVICE is not writable"
 	usage
 	exit 1
 fi
