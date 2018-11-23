@@ -25,8 +25,7 @@ image_details() {
 }
 
 device_details() {
-	ACTUAL_DEVICE=`readlink -f $DEVICE`
-	DEV=`basename $ACTUAL_DEVICE`
+	DEV=`basename $DEVICE`
 	BLOCK_SIZE=512
 
 	echo "Device details"
@@ -39,11 +38,8 @@ device_details() {
 	fi
 
 	# Default / Linux information collection
-	if [ "$ACTUAL_DEVICE" != "$DEVICE" ] ; then
-		echo "  device: $DEVICE -> $ACTUAL_DEVICE"
-	else
-		echo "  device: $DEVICE"
-	fi
+	echo "  device: $DEVICE"
+
 	if [ -f "/sys/class/block/$DEV/device/vendor" ]; then
 		echo "  vendor: $(cat /sys/class/block/$DEV/device/vendor)"
 	else
@@ -119,13 +115,12 @@ if [ ! -e "$IMAGE" ]; then
 	exit 1
 fi
 
-ACTUAL_DEVICE=`readlink -f $DEVICE`
-if is_mounted $ACTUAL_DEVICE ; then
+if is_mounted $DEVICE ; then
 	echo "ERROR: Device $DEVICE is currently mounted - check if this is the right device!"
 	device_details
 	exit 1
 fi
-if is_inuse $ACTUAL_DEVICE ; then
+if is_inuse $DEVICE ; then
 	echo "ERROR: Device $DEVICE is currently in use (possibly part of LVM) - check if this is the right device!"
 	device_details
 	exit 1
