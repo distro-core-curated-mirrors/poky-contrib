@@ -232,7 +232,7 @@
                      "IMAGE_FSTYPES_append = ' wic wic.bmap'"
                 ]
             },
-            "step3" : {
+            "step2" : {
                 "SANITYTARGETS" : "core-image-sato:do_testsdk core-image-minimal:do_testsdkext core-image-sato:do_testsdkext"
             }
         },
@@ -261,7 +261,7 @@
                      "IMAGE_FSTYPES_append = ' wic wic.bmap'"
                 ]
             },
-            "step3" : {
+            "step2" : {
                 "SANITYTARGETS" : "core-image-sato:do_testsdk core-image-minimal:do_testsdkext core-image-sato:do_testsdkext"
             }
         },
