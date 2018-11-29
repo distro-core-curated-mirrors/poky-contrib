@@ -26,9 +26,12 @@ import zipfile
 SDK_TITLE = "@SDK_TITLE@"
 SDK_VERSION = "@SDK_VERSION@"
 SDK_ARCH = '@SDK_ARCH@'
-SDKPATH = '@SDKPATH@'
+SDK_EXTENSIBLE = ('@SDK_EXTENSIBLE@' == '1')
+SDKPATH = '@SDKEXTPATH@' if SDK_EXTENSIBLE else '@SDKPATH@'
 SELF_ZIP = os.path.dirname(os.path.abspath(__file__))
 SDK_TAR_NAME = '@SDK_TAR_NAME@'
+SDK_GCC_VER = '@SDK_GCC_VER@'
+SDK_EXT_TYPE = '@SDK_EXT_TYPE@'
 OLDEST_KERNEL = '@OLDEST_KERNEL@'
 CHECKPOINT = 25600000
 PRESERVED_ENVS = ('HOME', 'TERM', 'ICECC_PATH', 'http_proxy', 'https_proxy',
@@ -128,6 +131,9 @@ def main():
     debug_args.add_argument('-R', dest='relocate', help='Do not relocate executables', action='store_false')
     debug_args.add_argument('-D', dest='debug', help='Print debugging output', action='count', default=0)
     debug_args.add_argument('-l', dest='list_files', help='List files that will be extracted', action='store_true')
+    ext_args = parser.add_argument_group(title='Extensible SDK Only Options')
+    ext_args.add_argument('-n', dest='prepare_buildsystem', help='Do not prepare build system', action='store_false')
+    ext_args.add_argument('-p', dest='publish', help='Publish mode (implies -n)', action='store_true')
 
     args = parser.parse_args()
 
@@ -155,6 +161,18 @@ def main():
         if host_arch != 'x86_64' or sdk_arch != 'ix86':
             print("Error: Incompatible SDK installer! Your host is %s and this SDK was built for %s hosts." % (host_arch, sdk_arch))
             return 1
+
+    if SDK_EXTENSIBLE:
+        host_gcc_ver = get_gcc_version()
+        if (host_gcc_ver == '4.8' and SDK_GCC_VER == '4.9') or \
+                (host_gcc_ver == '4.8' and SDK_GCC_VER == '') or \
+                (host_gcc_ver == '4.9' and SDK_GCC_VER == ''):
+            print("Error: Incompatible SDK installer! Your host gcc version is %s and this SDK was built by gcc higher version." % host_gcc_ver)
+            return 1
+
+        extract_exclude.add('ext-sdk-prepare.py')
+        if SDK_EXT_TYPE == 'minimal':
+            extract_exclude.add('sstate-cache')
 
     title = '{title} installer version {version}'.format(title=SDK_TITLE, version=SDK_VERSION)
     print(title)
