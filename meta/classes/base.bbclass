@@ -176,6 +176,14 @@ python base_do_unpack() {
     try:
         fetcher = bb.fetch2.Fetch(src_uri, d)
         fetcher.unpack(d.getVar('WORKDIR'))
+
+
+
+
+
+
+
+
     except bb.fetch2.BBFetchException as e:
         bb.fatal(str(e))
 }
