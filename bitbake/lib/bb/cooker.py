@@ -928,9 +928,8 @@ class BBCooker:
 
         if appends_without_recipes:
             msg = 'No recipes available for:\n  %s' % '\n  '.join(appends_without_recipes)
-            warn_only = self.data.getVar("BB_DANGLINGAPPENDS_WARNONLY", \
-                 False) or "no"
-            if warn_only.lower() in ("1", "yes", "true"):
+            warn_only = self.data.getVar("BB_DANGLINGAPPENDS_WARNONLY")
+            if bb.utils.to_boolean(warn_only):
                 bb.warn(msg)
             else:
                 bb.fatal(msg)
