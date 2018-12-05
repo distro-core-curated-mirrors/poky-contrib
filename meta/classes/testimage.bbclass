@@ -229,11 +229,13 @@ def testimage_main(d):
 
     # Get use_kvm
     qemu_use_kvm = d.getVar("QEMU_USE_KVM")
-    if qemu_use_kvm and \
-       (d.getVar('MACHINE') in qemu_use_kvm.split() or \
-        oe.types.boolean(qemu_use_kvm) and 'x86' in machine):
-        kvm = True
-    else:
+    try:
+        kvm = oe.types.boolean(qemu_use_kvm)
+    except ValueError as e:
+        bb.fatal("%s\nQEMU_USE_KVM needs to be set to a boolean value. It no longer supports accepting a list of machines.\n"
+                 "  e.g.\n"
+                 "  QEMU_USE_KVM_qemux86-64 = '1'" % e)
+    if kvm and not d.getVar('QB_CPU_KVM'):
         kvm = False
 
     slirp = False

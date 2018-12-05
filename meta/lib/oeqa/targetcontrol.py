@@ -108,11 +108,13 @@ class QemuTarget(BaseTarget):
         dump_host_cmds = d.getVar("testimage_dump_host")
         dump_dir = d.getVar("TESTIMAGE_DUMP_DIR")
         qemu_use_kvm = d.getVar("QEMU_USE_KVM")
-        if qemu_use_kvm and \
-           (oe.types.boolean(qemu_use_kvm) and "x86" in d.getVar("MACHINE") or \
-            d.getVar("MACHINE") in qemu_use_kvm.split()):
-            use_kvm = True
-        else:
+        try:
+            use_kvm = oe.types.boolean(qemu_use_kvm)
+        except ValueError as e:
+            bb.fatal("%s\nQEMU_USE_KVM needs to be set to a boolean value. It no longer supports accepting a list of machines.\n"
+                     "  e.g.\n"
+                     "  QEMU_USE_KVM_qemux86-64 = '1'" % e)
+        if use_kvm and not d.getVar('QB_CPU_KVM'):
             use_kvm = False
 
         # Log QemuRunner log output to a file
