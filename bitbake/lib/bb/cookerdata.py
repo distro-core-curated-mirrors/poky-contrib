@@ -340,14 +340,14 @@ class CookerDataBuilder(object):
     def parseConfigurationFiles(self, prefiles, postfiles, mc = "default"):
         data = bb.data.createCopy(self.basedata)
         data.setVar("BB_CURRENT_MC", mc)
-
+        bb.warn("parsing conf files for %s" % mc)
         # Parse files for loading *before* bitbake.conf and any includes
         for f in prefiles:
             data = parse_config_file(f, data)
 
         layerconf = self._findLayerConf(data)
         if layerconf:
-            parselog.debug(2, "Found bblayers.conf (%s)", layerconf)
+            parselog.debug(2, "Found bblayers.conf for mc %s (%s) ", (mc,layerconf))
             # By definition bblayers.conf is in conf/ of TOPDIR.
             # We may have been called with cwd somewhere else so reset TOPDIR
             data.setVar("TOPDIR", os.path.dirname(os.path.dirname(layerconf)))
@@ -416,6 +416,7 @@ class CookerDataBuilder(object):
         # Handle any INHERITs and inherit the base class
         bbclasses  = ["base"] + (data.getVar('INHERIT') or "").split()
         for bbclass in bbclasses:
+            bb.warn("inheriting bbclass %s for mc %s" %(bbclass, mc))
             data = _inherit(bbclass, data)
 
         # Nomally we only register event handlers at the end of parsing .bb files
