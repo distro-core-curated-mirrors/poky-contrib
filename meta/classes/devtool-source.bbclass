@@ -270,6 +270,7 @@ python devtool_post_patch() {
             bb.process.run('git checkout %s -b devtool-no-overrides' % devbranch, cwd=srcsubdir)
 
         for override in extra_overrides:
+            bb.verbnote('Processing override %s' % override)
             localdata = bb.data.createCopy(d)
             if override in default_overrides:
                 bb.process.run('git branch devtool-override-%s %s' % (override, devbranch), cwd=srcsubdir)
