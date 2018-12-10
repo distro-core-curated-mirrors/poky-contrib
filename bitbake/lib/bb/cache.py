@@ -401,7 +401,7 @@ class Cache(NoCache):
         self.cachefile = self.getCacheFile("bb_cache.dat")
 
         self.logger.debug(1, "Cache dir: %s", self.cachedir)
-        bb.utils.mkdirhier(self.cachedir)
+        os.makedirs(self.cachedir, exist_ok=True)
 
         cache_ok = True
         if self.caches_array:
@@ -882,7 +882,7 @@ class MultiProcessCache(object):
                     d.getVar("CACHE"))
         if cachedir in [None, '']:
             return
-        bb.utils.mkdirhier(cachedir)
+        os.makedirs(cachedir, exist_ok=True)
         self.cachefile = os.path.join(cachedir,
                                       cache_file_name or self.__class__.cache_file_name)
         logger.debug(1, "Using cache in '%s'", self.cachefile)
