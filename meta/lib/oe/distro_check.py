@@ -152,7 +152,7 @@ def create_distro_packages_list(distro_check_dir, d):
 
     pkglst_dir = os.path.join(distro_check_dir, "package_lists")
     bb.utils.remove(pkglst_dir, True)
-    bb.utils.mkdirhier(pkglst_dir)
+    os.makedirs(pkglst_dir)
 
     per_distro_functions = (
                             ("Debian", get_latest_released_debian_source_package_list),
@@ -279,7 +279,7 @@ def compare_in_distro_packages_list(distro_check_dir, d):
 
 def create_log_file(d, logname):
     logpath = d.getVar('LOG_DIR')
-    bb.utils.mkdirhier(logpath)
+    os.makedirs(logpath, exist_ok=True)
     logfn, logsuffix = os.path.splitext(logname)
     logfile = os.path.join(logpath, "%s.%s%s" % (logfn, d.getVar('DATETIME'), logsuffix))
     if not os.path.exists(logfile):
@@ -298,7 +298,7 @@ def save_distro_check_result(result, datetime, result_file, d):
     if not logdir:
         bb.error("LOG_DIR variable is not defined, can't write the distro_check results")
         return
-    bb.utils.mkdirhier(logdir)
+    os.makedirs(logdir, exist_ok=True)
 
     line = pn
     for i in result:
