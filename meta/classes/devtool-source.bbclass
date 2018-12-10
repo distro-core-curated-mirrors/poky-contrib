@@ -82,6 +82,13 @@ python devtool_post_unpack() {
             bb.utils.mkdirhier(dst_d)
         shutil.move(src, dst)
 
+    def _copy_file(src, dst):
+        """Copy a file. Creates all the directory components of destination path."""
+        dst_d = os.path.dirname(dst)
+        if dst_d:
+            bb.utils.mkdirhier(dst_d)
+        shutil.copyfile(src, dst)
+
     def _ls_tree(directory):
         """Recursive listing of files in a directory"""
         ret = []
@@ -146,7 +153,9 @@ python devtool_post_unpack() {
                         os.sep))]
     if local_files:
         for fname in local_files:
-            _move_file(os.path.join(workdir, fname),
+            # Only copy the file, in case we have e.g. a do_patch postfunc
+            # that wants to copy the file across
+            _copy_file(os.path.join(workdir, fname),
                         os.path.join(tempdir, 'oe-local-files', fname))
         with open(os.path.join(tempdir, 'oe-local-files', '.gitignore'),
                     'w') as f:
