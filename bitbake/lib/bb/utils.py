@@ -445,7 +445,7 @@ def lockfile(name, shared=False, retry=True, block=False):
     out - at which point you want block=True rather than retry=True.
     """
     dirname = os.path.dirname(name)
-    mkdirhier(dirname)
+    os.makedirs(dirname, exist_ok=True)
 
     if not os.access(dirname, os.W_OK):
         logger.error("Unable to acquire lock '%s', directory is not writable",
