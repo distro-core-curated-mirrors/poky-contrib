@@ -192,7 +192,7 @@ def exec_func(func, d, dirs = None):
     if cleandirs:
         for cdir in d.expand(cleandirs).split():
             bb.utils.remove(cdir, True)
-            bb.utils.mkdirhier(cdir)
+            os.makedirs(cdir)
 
     if flags and dirs is None:
         dirs = flags.get('dirs')
@@ -201,7 +201,7 @@ def exec_func(func, d, dirs = None):
 
     if dirs:
         for adir in dirs:
-            bb.utils.mkdirhier(adir)
+            os.makedirs(adir, exist_ok=True)
         adir = dirs[-1]
     else:
         adir = None
@@ -233,7 +233,7 @@ def exec_func(func, d, dirs = None):
     runfmt = d.getVar('BB_RUNFMT') or "run.{func}.{pid}"
     runfn = runfmt.format(taskfunc=taskfunc, task=task, func=func, pid=os.getpid())
     runfile = os.path.join(tempdir, runfn)
-    bb.utils.mkdirhier(os.path.dirname(runfile))
+    os.makedirs(os.path.dirname(runfile), exist_ok=True)
 
     # Setup the courtesy link to the runfn, only for tasks
     # we create the link 'just' before the run script is created
@@ -275,7 +275,7 @@ def exec_func_python(func, d, runfile, cwd=None):
     """Execute a python BB 'function'"""
 
     code = _functionfmt.format(function=func)
-    bb.utils.mkdirhier(os.path.dirname(runfile))
+    os.makedirs(os.path.dirname(runfile), exist_ok=True)
     with open(runfile, 'w') as script:
         bb.data.emit_func_python(func, script, d)
 
@@ -605,7 +605,7 @@ def _exec_task(fn, task, d, quieterr):
         except:
             bb.warn("Invalid ionice level %s" % ionice)
 
-    bb.utils.mkdirhier(tempdir)
+    os.makedirs(tempdir, exist_ok=True)
 
     # Determine the logfile to generate
     logfmt = localdata.getVar('BB_LOGFMT') or 'log.{task}.{pid}'
@@ -646,7 +646,7 @@ def _exec_task(fn, task, d, quieterr):
 
     # Handle logfiles
     try:
-        bb.utils.mkdirhier(os.path.dirname(logfn))
+        os.makedirs(os.path.dirname(logfn), exist_ok=True)
         logfile = open(logfn, 'w')
     except OSError:
         logger.exception("Opening log file '%s'", logfn)
@@ -793,7 +793,7 @@ def stamp_internal(taskname, d, file_name, baseonly=False, noextra=False):
 
     stampdir = os.path.dirname(stamp)
     if cached_mtime_noerror(stampdir) == 0:
-        bb.utils.mkdirhier(stampdir)
+        os.makedirs(stampdir, exist_ok=True)
 
     return stamp
 
@@ -874,7 +874,7 @@ def write_taint(task, d, file_name = None):
         taintfn = d.stamp[file_name] + '.' + task + '.taint'
     else:
         taintfn = d.getVar('STAMP') + '.' + task + '.taint'
-    bb.utils.mkdirhier(os.path.dirname(taintfn))
+    os.makedirs(os.path.dirname(taintfn), exist_ok=True)
     # The specific content of the taint file is not really important,
     # we just need it to be random, so a random UUID is used
     with open(taintfn, 'w') as taintf:
