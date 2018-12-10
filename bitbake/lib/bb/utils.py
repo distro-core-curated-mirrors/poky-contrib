@@ -711,15 +711,11 @@ def prune_suffix(var, suffixes, d):
     return var
 
 def mkdirhier(directory):
-    """Create a directory like 'mkdir -p', but does not complain if
-    directory already exists like os.makedirs
+    """Create a directory like 'mkdir -p'.
     """
-
-    try:
-        os.makedirs(directory)
-    except OSError as e:
-        if e.errno != errno.EEXIST or not os.path.isdir(directory):
-            raise e
+    import warnings
+    warnings.warn("Use os.makedirs()", DeprecationWarning, stacklevel=2)
+    os.makedirs(directory, exist_ok=True)
 
 def movefile(src, dest, newmtime = None, sstat = None):
     """Moves a file from src to dest, preserving all permissions and
