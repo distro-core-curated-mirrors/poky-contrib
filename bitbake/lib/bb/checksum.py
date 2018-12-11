@@ -22,7 +22,7 @@ import stat
 import pickle
 import bb.utils
 import logging
-from bb.cache import MultiProcessCache
+from bb.cache import MultiProcessCache, split_file_checksum_value
 
 logger = logging.getLogger("BitBake.Cache")
 
@@ -109,11 +109,9 @@ class FileChecksumCache(MultiProcessCache):
             return dirchecksums
 
         checksums = []
-        for pth in filelist.split():
-            exist = pth.split(":")[1]
+        for pth, exist in split_file_checksum_value(filelist):
             if exist == "False":
                 continue
-            pth = pth.split(":")[0]
             if '*' in pth:
                 # Handle globs
                 for f in glob.glob(pth):
