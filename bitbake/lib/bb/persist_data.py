@@ -296,6 +296,6 @@ def persist(domain, d):
         logger.critical("Please set the 'PERSISTENT_DIR' or 'CACHE' variable")
         sys.exit(1)
 
-    bb.utils.mkdirhier(cachedir)
+    os.makedirs(cachedir, exist_ok=True)
     cachefile = os.path.join(cachedir, "bb_persist_data.sqlite3")
     return SQLTable(cachefile, domain)
