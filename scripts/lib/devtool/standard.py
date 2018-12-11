@@ -497,9 +497,17 @@ def _extract_source(srctree, keep_temp, devbranch, sync, config, basepath, works
         bb.utils.mkdirhier(srctree)
         os.rmdir(srctree)
 
+
+    if 'gcc-source' in (d.getVarFlag('do_configure', 'depends') or ''):
+        prepare_pn = d.expand('gcc-source-${PV}')
+        rd = tinfoil.parse_recipe(prepare_pn)
+    else:
+        prepare_pn = pn
+        rd = d
+
     extra_overrides = []
     if not no_overrides:
-        history = d.varhistory.variable('SRC_URI')
+        history = rd.varhistory.variable('SRC_URI')
         for event in history:
             if not 'flag' in event:
                 if event['op'].startswith(('_append[', '_prepend[')):
@@ -508,7 +516,7 @@ def _extract_source(srctree, keep_temp, devbranch, sync, config, basepath, works
             logger.info('SRC_URI contains some conditional appends/prepends - will create branches to represent these')
 
     appendexisted = False
-    recipefile = d.getVar('FILE')
+    recipefile = rd.getVar('FILE')
     appendfile = recipe_to_append(recipefile, config)
     is_kernel_yocto = bb.data.inherits_class('kernel-yocto', d)
 
@@ -524,7 +532,7 @@ def _extract_source(srctree, keep_temp, devbranch, sync, config, basepath, works
     # would have to fall back to copying the files which is a waste of
     # time. Put the temp directory under the WORKDIR to prevent that from
     # being a problem.
-    tempbasedir = d.getVar('WORKDIR')
+    tempbasedir = rd.getVar('WORKDIR')
     bb.utils.mkdirhier(tempbasedir)
     tempdir = tempfile.mkdtemp(prefix='devtooltmp-', dir=tempbasedir)
     try:
@@ -557,17 +565,22 @@ def _extract_source(srctree, keep_temp, devbranch, sync, config, basepath, works
         sstate_manifests = d.getVar('SSTATE_MANIFESTS')
         bb.utils.mkdirhier(sstate_manifests)
         preservestampfile = os.path.join(sstate_manifests, 'preserve-stamps')
+        work_shared = False
         with open(preservestampfile, 'w') as f:
-            f.write(d.getVar('STAMP'))
+            f.write(rd.getVar('STAMP'))
         try:
             if bb.data.inherits_class('kernel-yocto', d):
                 # We need to generate the kernel config
                 task = 'do_configure'
-            else:
+            elif rd.getVarFlag('do_patch', 'task'):
                 task = 'do_patch'
+            elif rd.getVarFlag('do_unpack', 'task'):
+                task = 'do_unpack'
+            else:
+                raise DevtoolError('The recipe does not have a do_patch or do_unpack task, unable to continue')
 
             # Run the fetch + unpack tasks
-            res = tinfoil.build_targets(pn,
+            res = tinfoil.build_targets(prepare_pn,
                                         task,
                                         handle_events=True)
         finally:
@@ -641,7 +654,7 @@ def _extract_source(srctree, keep_temp, devbranch, sync, config, basepath, works
                         json.dump(data, f, indent='    ')
             shutil.move(srcsubdir, srctree)
 
-            if os.path.abspath(d.getVar('S')) == os.path.abspath(d.getVar('WORKDIR')):
+            if os.path.abspath(rd.getVar('S')) == os.path.abspath(rd.getVar('WORKDIR')):
                 # If recipe extracts to ${WORKDIR}, symlink the files into the srctree
                 # (otherwise the recipe won't build as expected)
                 local_files_dir = os.path.join(srctree, 'oe-local-files')
@@ -661,7 +674,7 @@ def _extract_source(srctree, keep_temp, devbranch, sync, config, basepath, works
                 if addfiles:
                     bb.process.run('git add %s' % ' '.join(addfiles), cwd=srctree)
                     useroptions = []
-                    oe.patch.GitApplyTree.gitCommandUserOptions(useroptions, d=d)
+                    oe.patch.GitApplyTree.gitCommandUserOptions(useroptions, d=rd)
                     bb.process.run('git %s commit -a -m "Committing local file symlinks\n\n%s"' % (' '.join(useroptions), oe.patch.GitApplyTree.ignore_commit_prefix), cwd=srctree)
 
         if is_kernel_yocto:
