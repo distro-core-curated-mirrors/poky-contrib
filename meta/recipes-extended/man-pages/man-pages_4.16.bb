@@ -17,6 +17,8 @@ MAN_PKG = "${PN}"
 PACKAGECONFIG ??= ""
 PACKAGECONFIG[manpages] = ""
 
+CLEANBROKEN = "1"
+
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
