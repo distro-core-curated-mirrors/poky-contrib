@@ -20,6 +20,8 @@ S = "${WORKDIR}/docbook-xsl-${PV}"
 inherit allarch
 BBCLASSEXTEND = "native"
 
+CLEANBROKEN = "1"
+
 do_configure (){
 	:
 }
