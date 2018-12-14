@@ -711,7 +711,7 @@ def bbappend_recipe(rd, destlayerdir, srcfiles, install=None, wildcardver=False,
 
     appenddir = os.path.dirname(appendpath)
     if not redirect_output:
-        bb.utils.mkdirhier(appenddir)
+        os.makedirs(appenddir, exist_ok=True)
 
     # FIXME check if the bbappend doesn't get overridden by a higher priority layer?
 
@@ -909,7 +909,7 @@ def bbappend_recipe(rd, destlayerdir, srcfiles, install=None, wildcardver=False,
                     bb.note('Copying %s to %s (dry-run)' % (newfiledisp, os.path.join(appenddir, destsubdir, os.path.basename(srcfile))))
                 else:
                     bb.note('Copying %s to %s' % (newfiledisp, filedest))
-                bb.utils.mkdirhier(os.path.dirname(filedest))
+                os.makedirs(os.path.dirname(filedest), exist_ok=True)
                 shutil.copyfile(newfile, filedest)
 
     return (appendpath, os.path.join(appenddir, destsubdir))
