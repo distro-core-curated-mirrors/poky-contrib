@@ -358,7 +358,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
         else:
             sigfile = stampbase + "." + task + ".sigbasedata" + "." + self.basehash[tid]
 
-        bb.utils.mkdirhier(os.path.dirname(sigfile))
+        os.makedirs(os.path.dirname(sigfile), exist_ok=True)
 
         data = {}
         data['task'] = task
