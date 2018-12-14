@@ -48,7 +48,7 @@ MACHINE = "%s"
         result_copy = runCmd('cp %s %s' %(path_copy_from, path_copy_to))
         #with open (path_copy_to, 'a') as file:
          #file.write('PV = \"${%s}\"'  %linux_kernel_version )
-        #build_dir = os.chdir(build_path)
-        #result = runCmd('bitbake-layers add-layer ../%s' %layername)
+        build_dir = os.chdir(build_path)
+        result = runCmd('bitbake-layers add-layer ../%s' %layername)
         
         
