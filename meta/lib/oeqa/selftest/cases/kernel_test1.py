@@ -24,10 +24,10 @@ class KernelDevTc(OESelftestTestCase):
         poky_path, tail = os.path.split(build_path)
         poky_dir = os.chdir(poky_path)
         patch_file = build_path + '/tmp/work-shared/qemux86-64/kernel-source/0001-KERNEL-DEV-TEST-CASE.patch'
-        new_path = poky_path + '/meta-kernelautomated/recipes-kernel/linux/linux-yocto/'
+        new_path = poky_path + '/meta-kerneltest/recipes-kernel/linux/linux-yocto/'
         result = runCmd('mv %s %s' %(patch_file, new_path))
         self.assertEqual(result.output, "")
-        file_name = poky_path + '/meta-kernelautomated/recipes-kernel/linux/linux-yocto_4%.bbappend'
+        file_name = poky_path + '/meta-kerneltest/recipes-kernel/linux/linux-yocto_4%.bbappend'
         with open (file_name, 'w') as file:
             file.write("SRC_URI += \"file://0001-KERNEL-DEV-TEST-CASE.patch\"" + "\n")
             file.write('FILESEXTRAPATHS_prepend := \"${THISDIR}/${PN}:\"')
