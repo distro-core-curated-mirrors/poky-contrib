@@ -37,7 +37,6 @@ class ManualTestRunner(object):
         self.test_suite = self.jdata[0]['test']['@alias'].split('.', 2)[1]
         for i in range(0, len(self.jdata)):
             self.test_case.append(self.jdata[i]['test']['@alias'].split('.', 2)[2])
-        return self.jdata, self.test_module, self.test_suite, self.test_case
     
     def _get_input(self, config):
         while True:
@@ -67,11 +66,9 @@ class ManualTestRunner(object):
         self.starttime = current_datetime.strftime('%Y%m%d%H%M%S')
         self.configuration['STARTTIME'] = self.starttime
         self.configuration['TEST_TYPE'] = self.test_module
-        return self.configuration
 
     def _create_result_id(self):
         self.result_id = 'manual_' + self.test_module + '_' + self.starttime
-        return self.result_id
 
     def _execute_test_steps(self, test_id):
         test_result = {}
@@ -110,7 +107,6 @@ class ManualTestRunner(object):
     def _create_write_dir(self):
         basepath = os.environ['BUILDDIR']
         self.write_dir = basepath + '/tmp/log/manual/'
-        sys.path.insert(0, self.write_dir)
 
     def run_test(self, file):
         self._read_json(file)
