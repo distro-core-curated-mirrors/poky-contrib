@@ -8,7 +8,7 @@
 # test-case-mgmt script was designed as part of the helper script for below purpose:
 # 1. To store test result inside git repository
 # 2. To report text-based test result summary
-# 3. (Future) To execute manual test cases
+# 3. To execute manual test cases
 #
 # To look for help information.
 #    $ test-case-mgmt
@@ -18,6 +18,12 @@
 #
 # To report test result summary, execute the below
 #     $ test-case-mgmt report <git_branch>
+#
+# To execute manual test cases, execute the below
+#    $ test-case-mgmt manualexecution <manualjsonfile>
+#
+# By default testresults.json for manualexecution store in <build_dir>/tmp/log/manual/
+#
 #
 # Copyright (c) 2018, Intel Corporation.
 #
@@ -42,6 +48,7 @@ import argparse_oe
 import scriptutils
 import testcasemgmt.store
 import testcasemgmt.report
+import testcasemgmt.manualexecution
 logger = scriptutils.logger_create('test-case-mgmt')
 
 def _validate_user_input_arguments(args):
@@ -72,6 +79,8 @@ def main():
     parser.add_argument('-q', '--quiet', help='print only errors', action='store_true')
     subparsers = parser.add_subparsers(dest="subparser_name", title='subcommands', metavar='<subcommand>')
     subparsers.required = True
+    subparsers.add_subparser_group('manualexecution', 'execute manual test cases', 300)
+    testcasemgmt.manualexecution.register_commands(subparsers)
     subparsers.add_subparser_group('store', 'store test result', 200)
     testcasemgmt.store.register_commands(subparsers)
     subparsers.add_subparser_group('report', 'report test result summary', 100)
