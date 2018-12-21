@@ -56,7 +56,7 @@ class ManualTestRunner(object):
                 print('Invalid input. Please provide input as a number not character.')
         for i in range(conf_total):
             print('---------------------------------------------')
-            print('This is your %s ' % (i + 1) + 'configuration. Please provide configuration name and its value')
+            print('This is configuration #%s ' % (i + 1) + '. Please provide configuration name and its value')
             print('---------------------------------------------')
             name_conf = self._get_input('Configuration Name')
             value_conf = self._get_input('Configuration Value')
@@ -73,35 +73,40 @@ class ManualTestRunner(object):
     def _execute_test_steps(self, test_id):
         test_result = {}
         testcase_id = self.test_module + '.' + self.test_suite + '.' + self.test_case[test_id]
+        total_steps = len(self.jdata[test_id]['test']['execution'].keys())
         print('------------------------------------------------------------------------')
         print('Executing test case:' + '' '' + self.test_case[test_id])
         print('------------------------------------------------------------------------')
-        print('You have total ' + max(self.jdata[test_id]['test']['execution'].keys()) + ' test steps to be executed.')
+        print('You have total ' + str(total_steps) + ' test steps to be executed.')
         print('------------------------------------------------------------------------\n')
 
-        for step in range(1, int(max(self.jdata[test_id]['test']['execution'].keys()) + '1')):
+        for step in range (1, (total_steps + 1)):
             print('Step %s: ' % step + self.jdata[test_id]['test']['execution']['%s' % step]['action'])
             print('Expected output: ' + self.jdata[test_id]['test']['execution']['%s' % step]['expected_results'])
-            if step == int(max(self.jdata[test_id]['test']['execution'].keys())):
-                done = input('\nPlease provide test results: (P)assed/(F)ailed/(B)locked? \n')
-                break
+            if step == total_steps:
+                while True:
+                    try:
+                        done = input('\nPlease provide test results: (P)assed/(F)ailed/(B)locked/(S)kipped? \n')
+                        done = done.lower()
+                        if done == 'p':
+                            res = 'PASSED'
+                        elif done == 'f':
+                            res = 'FAILED'
+                            log_input = input('\nPlease enter the error and the description of the log: (Ex:log:211 Error Bitbake)\n')
+                        elif done == 'b':
+                            res = 'BLOCKED'
+                        elif done == 's':
+                            res = 'SKIPPED'
+                          
+                        if res == 'FAILED':
+                            test_result.update({testcase_id: {'status': '%s' % res, 'log': '%s' % log_input}})
+                        else:
+                            test_result.update({testcase_id: {'status': '%s' % res}})
+                        break
+                    except:
+                        print('Invalid input!')
             else:
                 done = input('\nPlease press ENTER when you are done to proceed to next step.\n')
-
-        if done == 'p' or done == 'P':
-            res = 'PASSED'
-        elif done == 'f' or done == 'F':
-            res = 'FAILED'
-            log_input = input('\nPlease enter the error and the description of the log: (Ex:log:211 Error Bitbake)\n')
-        elif done == 'b' or done == 'B':
-            res = 'BLOCKED'
-        else:
-            res = 'SKIPPED'
-            
-        if res == 'FAILED':
-            test_result.update({testcase_id: {'status': '%s' % res, 'log': '%s' % log_input}})
-        else:
-            test_result.update({testcase_id: {'status': '%s' % res}})
         return test_result
 
     def _create_write_dir(self):
