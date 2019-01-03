@@ -50,16 +50,16 @@ MACHINE = '%s'
         result = runCmd('cp %s %s' %(path_copy_from, path_copy_to))
         sys.stdout = sys.__stdout__
         with fileinput.FileInput(path_copy_to, inplace=True, backup='.bak') as file:
-        for line in file:
-            replace = line.replace('PV = "${LINUX_VERSION}+git${SRCPV}"', 'PV = "${%s}+git${SRCPV}"' %linux_version_version)
-            print(replace.strip())
+            for line in file:
+                replace = line.replace('PV = "${LINUX_VERSION}+git${SRCPV}"', 'PV = "${%s}+git${SRCPV}"' %linux_kernel_version)
+                sys.stdout.write(replace)
         #with open (path_copy_to, 'a') as file:
             #file.write('PV = \'${%s}\''  %linux_kernel_version )
         build_dir = os.chdir(build_path)
         result = runCmd('bitbake-layers add-layer ../%s' %layername)
         result = runCmd('bitbake-layers show-layers')
-        #find_in_contents = re.search(re.escape(layername) + r'\s+', result.output)
-        #self.assertTrue(find_in_contents, "%s found in layers\n%s" % (layername, result.output))
+        find_in_contents = re.search(re.escape(layername) + r'\s+', result.output)
+        self.assertTrue(find_in_contents, "%s found in layers\n%s" % (layername, result.output))
     
     def test_createpatch(self):
         result = runCmd('echo This is a test to apply a patch to the kernel. >> tmp/work-shared/qemux86-64/kernel-source/README')
