@@ -627,7 +627,10 @@ class Wic2(WicTestCase):
         with runqemu('wic-image-minimal', ssh=False) as qemu:
             cmd = "mount |grep '^/dev/' | cut -f1,3 -d ' ' | sort"
             status, output = qemu.run_serial(cmd)
-            self.assertEqual(output, '/dev/root /\r\n/dev/sda1 /boot\r\n/dev/sda3 /media\r\n/dev/sda4 /mnt')
+            if 'sysvinit' in get_bb_var('DISTRO_FEATURES'):
+                self.assertEqual(output, '/dev/root /\r\n/dev/sda1 /boot\r\n/dev/sda3 /media\r\n/dev/sda4 /mnt')
+            else:
+                self.assertEqual(output, '/dev/sda1 /boot\r\n/dev/sda2 /\r\n/dev/sda3 /media\r\n/dev/sda4 /mnt')
             cmd = "grep UUID= /etc/fstab"
             status, output = qemu.run_serial(cmd)
             self.assertEqual(1, status, 'Failed to run command "%s": %s' % (cmd, output))
