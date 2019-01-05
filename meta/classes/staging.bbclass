@@ -282,6 +282,10 @@ python extend_recipe_sysroot() {
     for dep in taskdepdata:
         data = taskdepdata[dep]
         if data[1] == mytaskname and data[0] == pn:
+            if mc != 'default':
+                depmc = dep.split(':')[1]
+                if depmc != mc:
+                    continue
             start = dep
         elif data[0] == pn:
             owntaskdeps.append(data[1])
