@@ -10,7 +10,7 @@ class KernelDev(OESelftestTestCase):
 
     def setUp(self):
         #common prerequisites
-        super(KernelDev, self).setUpLocal()
+        super(KernelDev, self).setUp()
         self.recipe = 'core-image-minimal'
         self.machine = 'qemux86-64'
         self.write_config(
