@@ -19,12 +19,6 @@
 # To report test result summary, execute the below
 #     $ test-case-mgmt report <git_branch>
 #
-# To execute manual test cases, execute the below
-#    $ test-case-mgmt manualexecution <manualjsonfile>
-#
-# By default testresults.json for manualexecution store in <build_dir>/tmp/log/manual/
-#
-#
 # Copyright (c) 2018, Intel Corporation.
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -49,6 +43,7 @@ import scriptutils
 import testcasemgmt.store
 import testcasemgmt.report
 import testcasemgmt.manualexecution
+import testcasemgmt.consolidate
 logger = scriptutils.logger_create('test-case-mgmt')
 
 def _validate_user_input_arguments(args):
@@ -81,6 +76,8 @@ def main():
     subparsers.required = True
     subparsers.add_subparser_group('manualexecution', 'execute manual test cases', 300)
     testcasemgmt.manualexecution.register_commands(subparsers)
+    subparsers.add_subparser_group('consolidate', 'consolidate test result', 250)
+    testcasemgmt.consolidate.register_commands(subparsers)
     subparsers.add_subparser_group('store', 'store test result', 200)
     testcasemgmt.store.register_commands(subparsers)
     subparsers.add_subparser_group('report', 'report test result summary', 100)
