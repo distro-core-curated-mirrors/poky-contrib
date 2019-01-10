@@ -44,6 +44,7 @@ import testcasemgmt.store
 import testcasemgmt.report
 import testcasemgmt.manualexecution
 import testcasemgmt.consolidate
+import testcasemgmt.regression
 logger = scriptutils.logger_create('test-case-mgmt')
 
 def _validate_user_input_arguments(args):
@@ -82,6 +83,8 @@ def main():
     testcasemgmt.store.register_commands(subparsers)
     subparsers.add_subparser_group('report', 'report test result summary', 100)
     testcasemgmt.report.register_commands(subparsers)
+    subparsers.add_subparser_group('regression', 'regression for test result', 90)
+    testcasemgmt.regression.register_commands(subparsers)
     args = parser.parse_args()
     if args.debug:
         logger.setLevel(logging.DEBUG)
