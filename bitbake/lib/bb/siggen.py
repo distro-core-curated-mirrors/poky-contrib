@@ -206,7 +206,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
         if 'nostamp' in taskdep and task in taskdep['nostamp']:
             # Nostamp tasks need an implicit taint so that they force any dependent tasks to run
             import uuid
-            taint = str(uuid.uuid4())
+            taint = 'uuid4-%s' % str(uuid.uuid4())
             data = data + taint
             self.taints[k] = "nostamp:" + taint
 

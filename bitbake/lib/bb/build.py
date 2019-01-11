@@ -767,7 +767,7 @@ def write_taint(task, d, file_name = None):
     # The specific content of the taint file is not really important,
     # we just need it to be random, so a random UUID is used
     with open(taintfn, 'w') as taintf:
-        taintf.write(str(uuid.uuid4()))
+        taintf.write('uuid4-%s' % str(uuid.uuid4()))
 
 def stampfile(taskname, d, file_name = None, noextra=False):
     """
