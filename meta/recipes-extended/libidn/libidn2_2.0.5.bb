@@ -26,4 +26,8 @@ EXTRA_OECONF += "--disable-rpath \
 LICENSE_${PN} = "(GPLv2+ | LGPLv3)"
 LICENSE_${PN}-bin = "GPLv3+"
 
+do_install_append () {
+    sed -i 's#${RECIPE_SYSROOT}##' ${D}${libdir}/pkgconfig/libidn2.pc
+}
+
 BBCLASSEXTEND = "native nativesdk"
