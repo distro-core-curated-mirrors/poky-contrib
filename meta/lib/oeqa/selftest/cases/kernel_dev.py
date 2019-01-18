@@ -11,6 +11,7 @@ class KernelDev(OESelftestTestCase):
     def setUp(self):
         #common prerequisites
         super(KernelDev, self).setUp()
+        global build_path, poky_path
         self.recipe = 'core-image-minimal'
         self.machine = 'qemux86-64'
         self.write_config(
@@ -67,8 +68,6 @@ MACHINE = '%s'
         repo.run_cmd(git_commit) 
         git_patch = ['format-patch', '-1']
         repo.run_cmd(git_patch)
-        build_path = os.environ.get('BUILDDIR')
-        poky_path, tail = os.path.split(build_path)
         poky_dir = os.chdir(poky_path)
         patch_file = build_path + '/tmp/work-shared/qemux86-64/kernel-source/0001-KERNEL-DEV-TEST-CASE.patch'
         linux_yocto_path = poky_path + '/meta-kerneltest/recipes-kernel/linux/linux-yocto/'
