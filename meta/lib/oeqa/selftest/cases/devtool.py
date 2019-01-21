@@ -446,6 +446,7 @@ class DevtoolAddTests(DevtoolBase):
         # Test devtool add
         self.track_for_cleanup(self.workspacedir)
         self.add_command_to_tearDown('bitbake -c cleansstate %s' % testrecipe)
+        self.add_command_to_tearDown('rm -rf %s/git2/*%s*' % (get_bb_var('DL_DIR', None), testrecipe))
         self.add_command_to_tearDown('bitbake-layers remove-layer */workspace')
         result = runCmd('devtool add %s %s -a -f %s' % (testrecipe, srcdir, url))
         self.assertExists(os.path.join(self.workspacedir, 'conf', 'layer.conf'), 'Workspace directory not created: %s' % result.output)
@@ -464,6 +465,8 @@ class DevtoolAddTests(DevtoolBase):
         checkvars['SRCREV'] = '${AUTOREV}'
         self._test_recipe_contents(recipefile, checkvars, [])
         # Try with revision and version specified
+        result = runCmd('bitbake -c cleansstate %s' % testrecipe)
+        result = runCmd('rm -rf %s/git2/*%s*' % (get_bb_var('DL_DIR', None), testrecipe))
         result = runCmd('devtool reset -n %s' % testrecipe)
         shutil.rmtree(srcdir)
         url_rev = '%s;rev=%s' % (url, checkrev)
