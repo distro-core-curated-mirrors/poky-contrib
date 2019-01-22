@@ -24,25 +24,28 @@ class ManualTestRunner(object):
         self.jdata = ''
         self.test_module = ''
         self.test_suite = ''
-        self.test_case = ''
+        self.test_cases = ''
         self.configuration = ''
         self.starttime = ''
         self.result_id = ''
         self.write_dir = ''
 
-    def _read_json(self, file):
-        self.jdata = json.load(open('%s' % file))
-        self.test_case = []
+    def _read_testcases(self, file):
+#        self.jdata = json.load(open('%s' % file))
+        with open('%s' % file, 'r') as f:
+            data = f.read()
+        self.jdata = json.loads(data)
+        self.test_cases = []
         self.test_module = self.jdata[0]['test']['@alias'].split('.', 2)[0]
         self.test_suite = self.jdata[0]['test']['@alias'].split('.', 2)[1]
         for i in range(0, len(self.jdata)):
-            self.test_case.append(self.jdata[i]['test']['@alias'].split('.', 2)[2])
+            self.test_cases.append(self.jdata[i]['test']['@alias'].split('.', 2)[2])
     
     def _get_input(self, config):
         while True:
             output = input('{} = '.format(config))
             if re.match('^[a-zA-Z0-9_]+$', output):
-                break
+                breaks
             print('Only alphanumeric and underscore are allowed. Please try again')
         return output
 
@@ -72,10 +75,10 @@ class ManualTestRunner(object):
 
     def _execute_test_steps(self, test_id):
         test_result = {}
-        testcase_id = self.test_module + '.' + self.test_suite + '.' + self.test_case[test_id]
+        testcase_id = self.test_module + '.' + self.test_suite + '.' + self.test_cases[test_id]
         total_steps = len(self.jdata[test_id]['test']['execution'].keys())
         print('------------------------------------------------------------------------')
-        print('Executing test case:' + '' '' + self.test_case[test_id])
+        print('Executing test case:' + '' '' + self.test_cases[test_id])
         print('------------------------------------------------------------------------')
         print('You have total ' + str(total_steps) + ' test steps to be executed.')
         print('------------------------------------------------------------------------\n')
@@ -85,26 +88,23 @@ class ManualTestRunner(object):
             print('Expected output: ' + self.jdata[test_id]['test']['execution']['%s' % step]['expected_results'])
             if step == total_steps:
                 while True:
-                    try:
-                        done = input('\nPlease provide test results: (P)assed/(F)ailed/(B)locked/(S)kipped? \n')
-                        done = done.lower()
-                        if done == 'p':
-                            res = 'PASSED'
-                        elif done == 'f':
-                            res = 'FAILED'
-                            log_input = input('\nPlease enter the error and the description of the log: (Ex:log:211 Error Bitbake)\n')
-                        elif done == 'b':
-                            res = 'BLOCKED'
-                        elif done == 's':
-                            res = 'SKIPPED'
-                          
-                        if res == 'FAILED':
-                            test_result.update({testcase_id: {'status': '%s' % res, 'log': '%s' % log_input}})
-                        else:
-                            test_result.update({testcase_id: {'status': '%s' % res}})
+                    done = input('\nPlease provide test results: (P)assed/(F)ailed/(B)locked/(S)kipped? \n')
+                    done = done.lower()
+                    result_types = {'p':'PASSED',
+                                'f':'FAILED',
+                                'b':'BLOCKED',
+                                's':'SKIPPED'}
+                    if done in result_types:
+                        for r in result_types:
+                            if done == r:
+                                res = result_types[r]
+                                if res == 'FAILED':
+                                    log_input = input('\nPlease enter the error and the description of the log: (Ex:log:211 Error Bitbake)\n')
+                                    test_result.update({testcase_id: {'status': '%s' % res, 'log': '%s' % log_input}})
+                                else:
+                                    test_result.update({testcase_id: {'status': '%s' % res}})
                         break
-                    except:
-                        print('Invalid input!')
+                    print('Invalid input!')
             else:
                 done = input('\nPlease press ENTER when you are done to proceed to next step.\n')
         return test_result
@@ -114,7 +114,7 @@ class ManualTestRunner(object):
         self.write_dir = basepath + '/tmp/log/manual/'
 
     def run_test(self, file):
-        self._read_json(file)
+        self._read_testcases(file)
         self._create_config()
         self._create_result_id()
         self._create_write_dir()
