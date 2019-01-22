@@ -30,22 +30,20 @@ class ManualTestRunner(object):
         self.result_id = ''
         self.write_dir = ''
 
-    def _read_testcases(self, file):
-#        self.jdata = json.load(open('%s' % file))
-        with open('%s' % file, 'r') as f:
-            data = f.read()
-        self.jdata = json.loads(data)
+    def _get_testcases(self, file):
+        with open(file, 'r') as f:
+            self.jdata = json.load(f)
         self.test_cases = []
         self.test_module = self.jdata[0]['test']['@alias'].split('.', 2)[0]
         self.test_suite = self.jdata[0]['test']['@alias'].split('.', 2)[1]
-        for i in range(0, len(self.jdata)):
-            self.test_cases.append(self.jdata[i]['test']['@alias'].split('.', 2)[2])
+        for i in self.jdata:
+            self.test_cases.append(i['test']['@alias'].split('.', 2)[2])
     
     def _get_input(self, config):
         while True:
             output = input('{} = '.format(config))
             if re.match('^[a-zA-Z0-9_]+$', output):
-                breaks
+                break
             print('Only alphanumeric and underscore are allowed. Please try again')
         return output
 
@@ -82,31 +80,28 @@ class ManualTestRunner(object):
         print('------------------------------------------------------------------------')
         print('You have total ' + str(total_steps) + ' test steps to be executed.')
         print('------------------------------------------------------------------------\n')
-
-        for step in range (1, (total_steps + 1)):
+        for step in sorted((self.jdata[test_id]['test']['execution']).keys()):
             print('Step %s: ' % step + self.jdata[test_id]['test']['execution']['%s' % step]['action'])
             print('Expected output: ' + self.jdata[test_id]['test']['execution']['%s' % step]['expected_results'])
-            if step == total_steps:
-                while True:
-                    done = input('\nPlease provide test results: (P)assed/(F)ailed/(B)locked/(S)kipped? \n')
-                    done = done.lower()
-                    result_types = {'p':'PASSED',
+            done = input('\nPlease press ENTER when you are done to proceed to next step.\n')
+        while True:
+            done = input('\nPlease provide test results: (P)assed/(F)ailed/(B)locked/(S)kipped? \n')
+            done = done.lower()
+            result_types = {'p':'PASSED',
                                 'f':'FAILED',
                                 'b':'BLOCKED',
                                 's':'SKIPPED'}
-                    if done in result_types:
-                        for r in result_types:
-                            if done == r:
-                                res = result_types[r]
-                                if res == 'FAILED':
-                                    log_input = input('\nPlease enter the error and the description of the log: (Ex:log:211 Error Bitbake)\n')
-                                    test_result.update({testcase_id: {'status': '%s' % res, 'log': '%s' % log_input}})
-                                else:
-                                    test_result.update({testcase_id: {'status': '%s' % res}})
-                        break
-                    print('Invalid input!')
-            else:
-                done = input('\nPlease press ENTER when you are done to proceed to next step.\n')
+            if done in result_types:
+                for r in result_types:
+                    if done == r:
+                        res = result_types[r]
+                        if res == 'FAILED':
+                            log_input = input('\nPlease enter the error and the description of the log: (Ex:log:211 Error Bitbake)\n')
+                            test_result.update({testcase_id: {'status': '%s' % res, 'log': '%s' % log_input}})
+                        else:
+                            test_result.update({testcase_id: {'status': '%s' % res}})
+                break
+            print('Invalid input!')
         return test_result
 
     def _create_write_dir(self):
@@ -114,7 +109,7 @@ class ManualTestRunner(object):
         self.write_dir = basepath + '/tmp/log/manual/'
 
     def run_test(self, file):
-        self._read_testcases(file)
+        self._get_testcases(file)
         self._create_config()
         self._create_result_id()
         self._create_write_dir()
