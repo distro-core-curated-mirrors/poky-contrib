@@ -28,13 +28,18 @@ from oeqa.buildperf import (BuildPerfTestLoader, BuildPerfTestResult,
 from oeqa.utils.commands import runCmd
 from oeqa.utils.metadata import metadata_from_bb, write_metadata_file
 
-
 # Set-up logging
 LOG_FORMAT = '[%(asctime)s] %(levelname)s: %(message)s'
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT,
                     datefmt='%Y-%m-%d %H:%M:%S')
 log = logging.getLogger()
 
+# Needed by metadata_from_bb()
+try:
+    from git import Repo, InvalidGitRepositoryError, NoSuchPathError
+except ImportError:
+    log.error("Please install python3-git")
+    sys.exit(1)
 
 def acquire_lock(lock_f):
     """Acquire flock on file"""
