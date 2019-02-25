@@ -13,7 +13,7 @@ from oeqa.utils.commands import get_bb_var, get_bb_vars
 class Test1P1(BuildPerfTestCase):
     build_target = 'core-image-sato'
 
-    def test1(self):
+    def atest1(self):
         """Build core-image-sato"""
         self.rm_tmp()
         self.rm_sstate()
@@ -28,7 +28,7 @@ class Test1P1(BuildPerfTestCase):
 class Test1P2(BuildPerfTestCase):
     build_target = 'virtual/kernel'
 
-    def test12(self):
+    def atest12(self):
         """Build virtual/kernel"""
         # Build and cleans state in order to get all dependencies pre-built
         self.run_cmd(['bitbake', self.build_target])
@@ -42,7 +42,7 @@ class Test1P2(BuildPerfTestCase):
 class Test1P3(BuildPerfTestCase):
     build_target = 'core-image-sato'
 
-    def test13(self):
+    def atest13(self):
         """Build core-image-sato with rm_work enabled"""
         postfile = os.path.join(self.tmp_dir, 'postfile.conf')
         with open(postfile, 'w') as fobj:
@@ -62,7 +62,7 @@ class Test1P3(BuildPerfTestCase):
 class Test2(BuildPerfTestCase):
     build_target = 'core-image-sato'
 
-    def test2(self):
+    def atest2(self):
         """Run core-image-sato do_rootfs with sstate"""
         # Build once in order to populate sstate cache
         self.run_cmd(['bitbake', self.build_target])
@@ -95,7 +95,7 @@ class Test3(BuildPerfTestCase):
 class Test4(BuildPerfTestCase):
     build_target = 'core-image-sato'
 
-    def test4(self):
+    def atest4(self):
         """eSDK metrics"""
         self.run_cmd(['bitbake', '-c', 'do_populate_sdk_ext',
                      self.build_target])
