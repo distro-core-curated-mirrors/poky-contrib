@@ -4,7 +4,7 @@ SECTION = "base"
 LICENSE = "GPLv2"
 
 RPROVIDES_${PN} += "initd-functions"
-RDEPENDS_${PN} += "util-linux"
+RDEPENDS_${PN} += "util-linux procps"
 RCONFLICTS_${PN} = "initscripts-functions"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=ebf4e8b49780ab187d51bd26aaa022c6"
