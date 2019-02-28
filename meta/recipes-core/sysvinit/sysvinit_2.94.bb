@@ -11,7 +11,6 @@ RDEPENDS_${PN} = "${PN}-inittab"
 SRC_URI = "${SAVANNAH_GNU_MIRROR}/sysvinit/sysvinit-${PV}.tar.xz \
            file://install.patch \
            file://crypt-lib.patch \
-           file://pidof-add-m-option.patch;apply=0 \
            file://rcS-default \
            file://rc \
            file://rcS \
@@ -41,6 +40,7 @@ ALTERNATIVE_LINK_NAME[poweroff] = "${base_sbindir}/poweroff"
 
 ALTERNATIVE_${PN}-pidof = "pidof"
 ALTERNATIVE_LINK_NAME[pidof] = "${base_bindir}/pidof"
+ALTERNATIVE_PRIORITY[pidof] = "50"
 
 ALTERNATIVE_${PN}-sulogin = "sulogin"
 ALTERNATIVE_LINK_NAME[sulogin] = "${base_sbindir}/sulogin"
