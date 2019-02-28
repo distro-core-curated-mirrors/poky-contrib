@@ -4,18 +4,14 @@ HOMEPAGE = "http://savannah.nongnu.org/projects/sysvinit/"
 SECTION = "base"
 LICENSE = "GPLv2+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe \
-                    file://COPYRIGHT;endline=15;md5=349c872e0066155e1818b786938876a4"
-PR = "r14"
+                    file://COPYRIGHT;endline=15;md5=a1d3b3526501d3546d530bbe6ab6cdbe"
 
 RDEPENDS_${PN} = "${PN}-inittab"
 
-SRC_URI = "${SAVANNAH_GNU_MIRROR}/sysvinit/sysvinit-${PV}.tar.bz2 \
+SRC_URI = "${SAVANNAH_GNU_MIRROR}/sysvinit/sysvinit-${PV}.tar.xz \
            file://install.patch \
            file://crypt-lib.patch \
-           file://pidof-add-m-option.patch \
-           file://0001-This-fixes-an-issue-that-clang-reports-about-mutlipl.patch \
-           file://realpath.patch \
-           file://0001-include-sys-sysmacros.h-for-major-minor-defines-in-g.patch \
+           file://pidof-add-m-option.patch;apply=0 \
            file://rcS-default \
            file://rc \
            file://rcS \
@@ -23,26 +19,19 @@ SRC_URI = "${SAVANNAH_GNU_MIRROR}/sysvinit/sysvinit-${PV}.tar.bz2 \
            file://01_bootlogd \
 "
 
-SRC_URI[md5sum] = "6eda8a97b86e0a6f59dabbf25202aa6f"
-SRC_URI[sha256sum] = "60bbc8c1e1792056e23761d22960b30bb13eccc2cabff8c7310a01f4d5df1519"
-
-S = "${WORKDIR}/sysvinit-${PV}"
-B = "${S}/src"
+SRC_URI[md5sum] = "885ae742d51dbae8d16f535455c0240a"
+SRC_URI[sha256sum] = "7e09c5641fe5436ad3e158720acd2e6e0d4eba074abb9b53bce3ca989f839a17"
 
 inherit update-alternatives distro_features_check
 DEPENDS_append = " update-rc.d-native base-passwd virtual/crypt"
 
 REQUIRED_DISTRO_FEATURES = "sysvinit"
 
-ALTERNATIVE_${PN} = "init mountpoint halt reboot runlevel shutdown poweroff last lastb mesg utmpdump wall"
-
+ALTERNATIVE_${PN} = "init halt reboot runlevel shutdown poweroff last lastb mesg utmpdump wall"
 ALTERNATIVE_PRIORITY = "200"
 
 ALTERNATIVE_LINK_NAME[init] = "${base_sbindir}/init"
 ALTERNATIVE_PRIORITY[init] = "50"
-
-ALTERNATIVE_LINK_NAME[mountpoint] = "${base_bindir}/mountpoint"
-ALTERNATIVE_PRIORITY[mountpoint] = "20"
 
 ALTERNATIVE_LINK_NAME[halt] = "${base_sbindir}/halt"
 ALTERNATIVE_LINK_NAME[reboot] = "${base_sbindir}/reboot"
@@ -56,12 +45,11 @@ ALTERNATIVE_LINK_NAME[pidof] = "${base_bindir}/pidof"
 ALTERNATIVE_${PN}-sulogin = "sulogin"
 ALTERNATIVE_LINK_NAME[sulogin] = "${base_sbindir}/sulogin"
 
-ALTERNATIVE_${PN}-doc = "mountpoint.1 last.1 lastb.1 mesg.1 wall.1 sulogin.8 utmpdump.1"
+ALTERNATIVE_${PN}-doc = "last.1 lastb.1 mesg.1 wall.1 sulogin.8 utmpdump.1"
 
 ALTERNATIVE_LINK_NAME[last.1] = "${mandir}/man1/last.1"
 ALTERNATIVE_LINK_NAME[lastb.1] = "${mandir}/man1/lastb.1"
 ALTERNATIVE_LINK_NAME[mesg.1] = "${mandir}/man1/mesg.1"
-ALTERNATIVE_LINK_NAME[mountpoint.1] = "${mandir}/man1/mountpoint.1"
 ALTERNATIVE_LINK_NAME[sulogin.8] = "${mandir}/man8/sulogin.8"
 ALTERNATIVE_LINK_NAME[utmpdump.1] = "${mandir}/man1/utmpdump.1"
 ALTERNATIVE_LINK_NAME[wall.1] = "${mandir}/man1/wall.1"
@@ -73,18 +61,19 @@ FILES_sysvinit-sulogin = "${base_sbindir}/sulogin.sysvinit"
 
 RDEPENDS_${PN} += "sysvinit-pidof initd-functions"
 
-CFLAGS_prepend = "-D_GNU_SOURCE "
-export LCRYPT = "-lcrypt"
-EXTRA_OEMAKE += "'base_bindir=${base_bindir}' \
+EXTRA_OEMAKE += "-C ${S}/src \
+		 'base_bindir=${base_bindir}' \
 		 'base_sbindir=${base_sbindir}' \
 		 'bindir=${bindir}' \
-		 'sbindir=${sbindir}' \
 		 'sysconfdir=${sysconfdir}' \
 		 'includedir=${includedir}' \
 		 'mandir=${mandir}'"
 
 do_install () {
 	oe_runmake 'ROOT=${D}' install
+
+	# This conflicts with e2fsprogs so remove it for now
+	find ${D} -name logsave* -delete
 
 	install -d ${D}${sysconfdir} \
 		   ${D}${sysconfdir}/default \

@@ -1,25 +1,27 @@
+Upstream looks at the host libraries to determine whether to link to libcrypt
+which breaks in cross compilation.  Just always link.
+
 Upstream-Status: Inappropriate [configuration]
+Signed-off-by: Ross Burton <ross.burton@intel.com>
 
-# The src Makefile was checking for libcrypt.a on the host, not in the
-# build environment.  This patch checks for $LCRYPT in the environment
-# and uses it if it's there.
-# - jdike@linux.intel.com
-
-Index: sysvinit-2.88dsf/src/Makefile
-===================================================================
---- sysvinit-2.88dsf.orig/src/Makefile
-+++ sysvinit-2.88dsf/src/Makefile
-@@ -85,9 +85,13 @@ else
+diff --git a/src/Makefile b/src/Makefile
+index e54c051..8c5b2e8 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -89,15 +89,7 @@ else
+   SULOGINLIBS	=
  endif
  
- # Additional libs for GNU libc.
-+ifneq ($(LCRYPT),)
-+  SULOGINLIBS	+= $(LCRYPT)
-+else
- ifneq ($(wildcard /usr/lib*/libcrypt.a),)
-   SULOGINLIBS	+= -lcrypt
- endif
-+endif
+-# Additional libs for GNU libc.
+-ifneq ($(wildcard /usr/lib*/libcrypt.*),)
+-  SULOGINLIBS	+= -lcrypt
+-endif
+-
+-# Additional libs for GNU libc / multiarch on Debian based systems.
+-ifneq ($(wildcard /usr/lib/*/libcrypt.*),)
+-  SULOGINLIBS	+= -lcrypt
+-endif
++SULOGINLIBS	+= -lcrypt
  
  all:		$(BIN) $(SBIN) $(USRBIN)
  
