@@ -1,5 +1,4 @@
 import sys
-import fileinput
 import os
 import re
 from oeqa.selftest.case import OESelftestTestCase
@@ -21,35 +20,20 @@ MACHINE = '%s'
 % (self.machine)
        )
         bitbake(self.recipe)
-        getmachine = get_bb_var('MACHINE')
-        self.assertEqual(getmachine, 'qemux86-64')
-        result = runCmd('bitbake virtual/kernel -e | grep LINUX_VERSION= > kernel_version')
-        result = runCmd('bitbake virtual/kernel -e | grep LINUX_VERSION=')
-        with open ('kernel_version', 'r') as file:
-           for line in file:
-               linux_kernel_version = line.strip()
-        self.assertEqual(result.output, linux_kernel_version)
-        linux_kernel_version = linux_kernel_version.split('\"')[1]
-        linux_kernel_version = linux_kernel_version.split('.')[0] + '.' + linux_kernel_version.split('.')[1]
+        result = runCmd('bitbake virtual/kernel -e | grep LINUX_VERSION= | cut -b 16-19')
+        linux_kernel_version = result.output
         build_path = os.environ.get('BUILDDIR')
         poky_path, tail = os.path.split(build_path)
         poky_dir = os.chdir(poky_path)
         layername = 'meta-kerneltest'
-        layerpath = os.path.exists(layername)        
-        self.assertTrue(os.path.exists(layerpath), '%s should not exist at this point in time' % layerpath)
         result = runCmd('bitbake-layers create-layer %s' %layername)
-        self.assertTrue(os.path.exists(layerpath), '%s should exist' % layerpath)
-        result = runCmd('mkdir -p ' + layername +'/recipes-kernel/linux/')
-        result =runCmd('mkdir ' + layername +'/recipes-kernel/linux/linux-yocto/')
-        result =runCmd('mkdir ' + layername +'/recipes-kernel/linux/linux-yocto-custom/')
+        self.assertTrue(os.path.exists(layername), '%s should exist' % layername)
+        result =runCmd('mkdir -p ' + layername +'/recipes-kernel/linux/linux-yocto/')
+        result =runCmd('mkdir -p ' + layername +'/recipes-kernel/linux/linux-yocto-custom/')
         result =runCmd('touch ' + layername + '/recipes-kernel/linux/linux-yocto_4%.bbappend')       
         path_copy_from = poky_path + ('/meta/recipes-kernel/linux/linux-yocto_%s.bb' %linux_kernel_version)
         path_copy_to = poky_path + ('/%s/recipes-kernel/linux/linux-yocto-custom_%s.bb' %(layername, linux_kernel_version))
         result = runCmd('cp %s %s' %(path_copy_from, path_copy_to))
-        with fileinput.FileInput(path_copy_to, inplace=True) as file:
-            for line in file:
-                replace = line.replace('PV = "${LINUX_VERSION}+git${SRCPV}"', 'PV = "${%s}+git${SRCPV}"' %linux_kernel_version)
-                sys.stdout.write(replace)
         build_dir = os.chdir(build_path)
         result = runCmd('bitbake-layers add-layer ../%s' %layername)
         result = runCmd('bitbake-layers show-layers')
