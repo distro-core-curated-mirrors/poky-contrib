@@ -25,6 +25,8 @@ SRC_URI[sha256sum] = "1ff33929f042fa333aed1e8923aa628c3ee9e1eb85512686c55092d1e5
 LIC_FILES_CHKSUM = "file://COPYING;md5=e77fe93202736b47c07035910f47974a"
 
 CVE_PRODUCT = "libsndfile"
+# Unreproducable and disputed upstream
+CVE_CHECK_WHITELIST = "CVE-2018-13419"
 
 S = "${WORKDIR}/libsndfile-${PV}"
 
