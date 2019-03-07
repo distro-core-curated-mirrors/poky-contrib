@@ -44,3 +44,6 @@ BBCLASSEXTEND = "native"
 
 # exclude version 2.3.2 which triggers a false positive
 UPSTREAM_CHECK_REGEX = "^zip(?P<pver>(?!232).+)\.tgz"
+
+# disputed
+CVE_CHECK_WHITELIST = "CVE-2018-13410"
