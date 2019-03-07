@@ -10,6 +10,10 @@ LIC_FILES_CHKSUM ?= "file://LICENSES;md5=1541fd8f5e8f1579512bf05f533371ba \
       file://COPYING.LIB;md5=4fbd65380cdd255951079008b364516c"
 
 CVE_PRODUCT = "glibc"
+# 9192 and 20796 need crafted input, so according to
+# https://sourceware.org/glibc/wiki/Security%20Exceptions
+# are not security issues.
+CVE_CHECK_WHITELIST = "CVE-2018-20796 CVE-2019-9192"
 
 INHIBIT_DEFAULT_DEPS = "1"
 
