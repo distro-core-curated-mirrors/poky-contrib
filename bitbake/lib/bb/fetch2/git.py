@@ -248,7 +248,7 @@ class Git(FetchMethod):
                     ud.unresolvedrev[name] = ud.revisions[name]
                 ud.revisions[name] = self.latest_revision(ud, d, name)
 
-        gitsrcname = '%s%s' % (ud.host.replace(':', '.'), ud.path.replace('/', '.').replace('*', '.'))
+        gitsrcname = bb.fetch2.get_mirrorname(ud)
         if gitsrcname.startswith('.'):
             gitsrcname = gitsrcname[1:]
 
