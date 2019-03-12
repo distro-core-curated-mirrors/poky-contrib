@@ -889,6 +889,9 @@ def runfetchcmd(cmd, d, quiet=False, cleanup=None, log=None, workdir=None):
 
     return output
 
+def get_mirrorname(ud):
+    return ud.host.replace(':','.') + ud.path.replace('/', '.').replace('*', '.')
+
 def check_network_access(d, info, url):
     """
     log remote network access, and error if BB_NO_NETWORK is set or the given
@@ -910,7 +913,10 @@ def build_mirroruris(origud, mirrors, ld):
     replacements["HOST"] = origud.host
     replacements["PATH"] = origud.path
     replacements["BASENAME"] = origud.path.split("/")[-1]
-    replacements["MIRRORNAME"] = origud.host.replace(':','.') + origud.path.replace('/', '.').replace('*', '.')
+    if hasattr(origud, "mirrorname"):
+        replacements["MIRRORNAME"] = origud.mirrorname
+    else:
+        replacements["MIRRORNAME"] = get_mirrorname(origud)
 
     def adduri(ud, uris, uds, mirrors, tarballs):
         for line in mirrors:
