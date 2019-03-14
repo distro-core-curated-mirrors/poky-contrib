@@ -1807,6 +1807,35 @@ class Fetch(object):
             if ud.lockfile:
                 bb.utils.unlockfile(lf)
 
+    def process_submodules(self, ud, workdir, function, urls=None):
+        if not hasattr(ud.method, 'process_submodules'):
+            return
+
+        if not urls:
+            urls = self.urls
+
+        for url in urls:
+            if url not in self.ud:
+                self.ud[url] = FetchData(url, d)
+            ud = self.ud[url]
+            ud.setup_localpath(self.d)
+
+            if not ud.localfile and ud.localpath is None:
+                continue
+
+
+            if ud.lockfile:
+                lf = bb.utils.lockfile(ud.lockfile)
+
+            ud.method.process_submodules(ud, workdir, function, self.d)
+
+            if ud.donestamp:
+                bb.utils.remove(ud.donestamp)
+
+            if ud.lockfile:
+                bb.utils.unlockfile(lf)
+
+
 class FetchConnectionCache(object):
     """
         A class which represents an container for socket connections.
