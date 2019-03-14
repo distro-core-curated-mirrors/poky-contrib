@@ -76,8 +76,8 @@ class GitSM(Git):
         for name in ud.names:
             try:
                 gitmodules = runfetchcmd("%s show %s:.gitmodules" % (ud.basecmd, ud.revisions[name]), d, quiet=True, workdir=workdir)
-            except:
-                # No submodules to update
+            except Exception as esc:
+                logger.info("No submodules found: %s" % workdir)
                 continue
 
             for m, md in parse_gitmodules(gitmodules).items():
@@ -163,6 +163,17 @@ class GitSM(Git):
 
         Git.download(self, ud, d)
         self.process_submodules(ud, ud.clonedir, download_submodule, d)
+
+    def clean(self, ud, d):
+        def clean_submodule(ud, url, module, modpath, d):
+            try:
+                newfetch = Fetch([url], d, cache=False)
+                newfetch.clean()
+            except Exception as e:
+                logger.warn('gitsm: submodule clean failed: %s %s' % (type(e).__name__, str(e)))
+
+        self.process_submodules(ud, ud.clonedir, clean_submodule, d)
+        Git.clean(self, ud, d)
 
     def unpack(self, ud, destdir, d):
         def unpack_submodules(ud, url, module, modpath, d):
