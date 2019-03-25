@@ -85,7 +85,7 @@ class ManualTestRunner(object):
         print('------------------------------------------------------------------------')
         print('You have total ' + str(total_steps) + ' test steps to be executed.')
         print('------------------------------------------------------------------------\n')
-        for step in sorted((self.jdata[test_id]['test']['execution']).keys()):
+        for step in range(1, int(total_steps) + 1):
             print('Step %s: ' % step + self.jdata[test_id]['test']['execution']['%s' % step]['action'])
             print('Expected output: ' + self.jdata[test_id]['test']['execution']['%s' % step]['expected_results'])
             done = input('\nPlease press ENTER when you are done to proceed to next step.\n')
