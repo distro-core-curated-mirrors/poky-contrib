@@ -87,8 +87,9 @@ class ManualTestRunner(object):
         print('------------------------------------------------------------------------\n')
         for step in range(1, int(total_steps) + 1):
             print('Step %s: ' % step + self.jdata[test_id]['test']['execution']['%s' % step]['action'])
-            print('Expected output: ' + self.jdata[test_id]['test']['execution']['%s' % step]['expected_results'])
-            done = input('\nPlease press ENTER when you are done to proceed to next step.\n')
+            expected_results = self.jdata[test_id]['test']['execution']['%s' % step]['expected_results']
+            if expected_results != '':
+                print('Expected output: ' + expected_results + '\n')
         while True:
             done = input('\nPlease provide test results: (P)assed/(F)ailed/(B)locked/(S)kipped? \n')
             done = done.lower()
