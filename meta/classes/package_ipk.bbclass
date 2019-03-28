@@ -233,6 +233,8 @@ def ipk_write_pkg(pkg, d):
             ipk_to_sign = "%s/%s_%s_%s.ipk" % (pkgoutdir, pkgname, ipkver, d.getVar('PACKAGE_ARCH'))
             sign_ipk(d, ipk_to_sign)
 
+    except subprocess.CalledProcessError as exc:
+        bb.error("OPKG Build failed: %s" % exc.output)
     finally:
         cleanupcontrol(root)
         bb.utils.unlockfile(lf)
