@@ -10,13 +10,7 @@ LIC_FILES_CHKSUM="\
     file://bfd/COPYING;md5=d32239bcb673463ab874e80d47fae504\
     "
 
-def binutils_branch_version(d):
-    pvsplit = d.getVar('PV').split('.')
-    return pvsplit[0] + "_" + pvsplit[1]
-
-PV = "2.32.0"
-BINUPV = "${@binutils_branch_version(d)}"
-#BRANCH = "binutils-${BINUPV}-branch"
+PV = "2.32"
 BRANCH ?= "binutils-2_32-branch"
 
 UPSTREAM_CHECK_GITTAGREGEX = "binutils-(?P<pver>\d+_(\d_?)*)"
