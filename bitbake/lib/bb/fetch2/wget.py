@@ -216,7 +216,7 @@ class Wget(FetchMethod):
                         # Apparently urllib then uses the file descriptor, expecting it to be
                         # connected, when in reality the connection is already gone.
                         # We let the request fail and expect it to be
-                        # tried once more ("try_again" in check_status()),
+                        # tried once more ("try_again" in checkstatus()),
                         # with the dead connection removed from the cache.
                         # If it still fails, we give up, which can happend for bad
                         # HTTP proxy settings.
@@ -338,8 +338,7 @@ class Wget(FetchMethod):
                 logger.debug(2, "checkstatus: trying again")
                 return self.checkstatus(fetch, ud, d, False)
             else:
-                # debug for now to avoid spamming the logs in e.g. remote sstate searches
-                logger.debug(2, "checkstatus() urlopen failed: %s" % e)
+                logger.warning("checkstatus() urlopen failed: %s" % e)
                 return False
         return True
 
