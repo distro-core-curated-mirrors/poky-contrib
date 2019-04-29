@@ -24,6 +24,10 @@ SRC_URI = "git://github.com/openssh/openssh-portable;branch=master \
            file://fix-potential-signed-overflow-in-pointer-arithmatic.patch \
            file://sshd_check_keys \
            file://add-test-support-for-busybox.patch \
+           file://CVE-2018-20685.patch \
+           file://CVE-2019-6109.patch \
+           file://0001-upstream-Have-progressmeter-force-an-update-at-the-b.patch \
+           file://CVE-2019-6111.patch \
            "
 
 PAM_SRC_URI = "file://sshd"
