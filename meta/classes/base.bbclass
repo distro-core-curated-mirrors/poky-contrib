@@ -324,6 +324,11 @@ base_do_compile() {
 	else
 		bbnote "nothing to compile"
 	fi
+
+
+# Invalidate SSTATE
+
+
 }
 
 addtask install after do_compile
