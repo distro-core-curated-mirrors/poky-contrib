@@ -5,6 +5,7 @@
 import unittest
 import pprint
 import datetime
+import bb
 
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.depends import OETestDepends
@@ -26,6 +27,7 @@ class PTestBase(OERuntimeTestCase):
     @classmethod
     def ptest_startup(cls):
         cls.failmsg = ""
+        cls.ptests = []
 
         cls.test_log_dir = cls.td.get('TEST_LOG_DIR', '')
         # The TEST_LOG_DIR maybe NULL when testimage is added after
@@ -46,6 +48,8 @@ class PTestBase(OERuntimeTestCase):
             cls.tc.extraresults = {}
 
         cls.extras = cls.tc.extraresults
+        cls.extras['ptestresult.rawlogs'] = {'log': ""}
+        cls.extras['ptestresult.sections'] = {}
 
     @classmethod
     def ptest_finishup(cls):
@@ -60,35 +64,23 @@ class PTestBase(OERuntimeTestCase):
             cls.fail(cls.failmsg)
 
 class PtestRunnerTest(PTestBase):
-
-    @skipIfNotFeature('ptest', 'Test requires ptest to be in DISTRO_FEATURES')
-    @OETestDepends(['ssh.SSHTest.test_ssh'])
-    @OEHasPackage(['ptest-runner'])
-    def test_ptestrunner_check(self):
-        status, output = self.target.run('which ptest-runner')
-        msg = 'ptest-runner not installed .  %s' % output
-        self.assertEqual(status, 0, msg=msg)
-
-    @OETestDepends(['ptest.PtestRunnerTest.test_ptestrunner_check'])
-    def test_ptests_installed(self):
-        status, output = self.target.run('ptest-runner -l')
-        msg = 'No ptests found.  %s' % output
-        self.assertEqual(status, 0, msg=msg)
-
-    @OETestDepends(['ptest.PtestRunnerTest.test_ptests_installed'])
-    @unittest.expectedFailure
-    def test_ptestrunner(self):
-        status, output = self.target.run('ptest-runner', 0)
-        with open(self.ptest_runner_log, 'w') as f:
+    def run_ptest(self, ptest):
+        status, output = self.target.run('ptest-runner %s' % ptest, 0)
+        ptest_raw_log = os.path.join(self.ptest_log_dir, "%s-raw.log" % ptest)
+        with open(ptest_raw_log, 'w') as f:
             f.write(output)
 
         # Parse and save results
         parser = PtestParser()
-        results, sections = parser.parse(self.ptest_runner_log)
+        results, sections = parser.parse(ptest_raw_log)
         parser.results_as_files(self.ptest_log_dir)
 
-        self.extras['ptestresult.rawlogs'] = {'log': output}
-        self.extras['ptestresult.sections'] = sections
+        self.extras['ptestresult.rawlogs']['log']  = self.extras['ptestresult.rawlogs']['log'] + output
+        try:
+            self.extras['ptestresult.sections'][ptest]  = sections[ptest]
+        except KeyError:
+            bb.warn("ptest %s timedout or crashed for some reason. Check the log: %s" % (ptest, self.ptest_log_dir))
+            return
 
         trans = str.maketrans("()", "__")
         for section in results:
@@ -110,3 +102,29 @@ class PtestRunnerTest(PTestBase):
         if failed_tests:
             self.failmsg = self.failmsg + "Failed ptests:\n%s" % pprint.pformat(failed_tests)
 
+
+    @skipIfNotFeature('ptest', 'Test requires ptest to be in DISTRO_FEATURES')
+    @OETestDepends(['ssh.SSHTest.test_ssh'])
+    @OEHasPackage(['ptest-runner'])
+    def test_ptestrunner_check(self):
+        status, output = self.target.run('which ptest-runner')
+        msg = 'ptest-runner not installed .  %s' % output
+        self.assertEqual(status, 0, msg=msg)
+
+    @OETestDepends(['ptest.PtestRunnerTest.test_ptestrunner_check'])
+    def test_ptests_installed(self):
+        status, output = self.target.run('ptest-runner -l')
+        msg = 'No ptests found.  %s' % output
+        self.assertEqual(status, 0, msg=msg)
+
+        # built ptest list
+        for ptest in output.split("\n"):
+            if ptest.startswith("Available"):
+                continue
+            self.ptests.append(ptest.split()[0])
+
+    @OETestDepends(['ptest.PtestRunnerTest.test_ptests_installed'])
+    @unittest.expectedFailure
+    def test_ptestrunner(self):
+        for ptest in self.ptests:
+            self.run_ptest(ptest)
