@@ -11,12 +11,12 @@ if [ ! -e /dev/tty ]; then
     /bin/mknod -m 0666 /dev/tty c 5 0
 fi
 
-if ( > /dev/tty0 ) 2>/dev/null; then
+if ( > /dev/console ) 2>/dev/null; then
+    vtmaster=/dev/console
+elif ( > /dev/tty0 ) 2>/dev/null; then
     vtmaster=/dev/tty0
 elif ( > /dev/vc/0 ) 2>/dev/null; then
     vtmaster=/dev/vc/0
-elif ( > /dev/console ) 2>/dev/null; then
-    vtmaster=/dev/console
 else
     vtmaster=/dev/null
 fi
