@@ -1,0 +1,134 @@
+#! /usr/bin/env python3
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright 2019 by Garmin Ltd. or its subsidiaries
+#
+# A script to help run diffoscope when a reproducibility test fails
+
+import sys
+import os
+import argparse
+import json
+
+scripts_path = os.path.dirname(os.path.realpath(__file__))
+lib_path = scripts_path + '/lib'
+sys.path = sys.path + [lib_path]
+import resulttool.resultutils as resultutils
+import scriptutils
+import scriptpath
+scriptpath.add_oe_lib_path()
+scriptpath.add_bitbake_lib_path()
+
+PROGNAME = 'repro-diffoscope'
+logger = scriptutils.logger_create(PROGNAME, stream=sys.stdout)
+
+import bb.tinfoil
+import logging
+try:
+    import iterfzf
+    has_iterfzf = True
+except:
+    has_iterfzf = False
+
+def tinfoil_init(parserecipes):
+    return tinfoil
+
+def get_json_result_dir(d):
+    json_result_dir = os.path.join(d.getVar("LOG_DIR"), 'oeqa')
+    custom_json_result_dir = d.getVar("OEQA_JSON_RESULT_DIR")
+    if custom_json_result_dir:
+        json_result_dir = custom_json_result_dir
+    return json_result_dir
+
+def main():
+    if not os.environ.get('BUILDDIR', ''):
+        logger.error("This script can only be run after initializing the build environment (e.g. by using oe-init-build-env)")
+        sys.exit(1)
+
+    parser = argparse.ArgumentParser(description="Run diffoscope on reproducible build packages")
+    parser.add_argument('--source', default=None, help='the results file/directory/URL to import. If unspecified, the QA test results file will be used')
+    resultutils.add_run_slice_arg(parser, (0,))
+    parser.add_argument('package', help='''Package to examine. If more than one
+        matching package is found, a prompt will be shown to select one. Note
+        that supplying an empty string (e.g. "") can be used to select from all
+        packages''')
+    parser.add_argument('--logging', default='WARNING', help='Set log level (default is %(default)s)')
+    parser.add_argument('--no-fzf', dest='fzf', action='store_false', help='Do not use fzf to choose a package, even in present')
+    parser.add_argument('diffoscope', help='Extra arguments to pass to diffoscope',
+            metavar='ARG', nargs=argparse.REMAINDER)
+
+    args = parser.parse_args()
+
+    logger.setLevel(args.logging)
+
+    import scriptpath
+    bitbakepath = scriptpath.add_bitbake_lib_path()
+    if not bitbakepath:
+        logger.error("Unable to find bitbake by searching parent directory of this script or PATH")
+        sys.exit(1)
+    logger.debug('Found bitbake path: %s' % bitbakepath)
+    scriptpath.add_oe_lib_path()
+
+    with bb.tinfoil.Tinfoil(tracking=False) as tinfoil:
+        tinfoil.logger.setLevel(logger.getEffectiveLevel())
+        tinfoil.prepare(True)
+        topdir = tinfoil.config_data.getVar('TOPDIR')
+        logger.debug('TOPDIR: %s' % topdir)
+
+        if args.source is None:
+            args.source = os.path.join(get_json_result_dir(tinfoil.config_data), 'testresults.json')
+
+        logger.debug('Test result source: %s' % args.source)
+
+        packages = []
+        testresults = resultutils.load_resultsdata(args.source)
+        for path, run_name, _, result in resultutils.test_run_results(testresults, args.run):
+            logger.debug('Checking %s from %s' % (run_name, path))
+            for v in result.get('reproducible', {}).get('files', {}).values():
+                packages.extend(v.get('different', []))
+
+        matches = {}
+        for p in packages:
+            b = os.path.basename(p['test'])
+            if args.package in b:
+                matches[b] = p
+
+        if not matches:
+            logger.error('No packages matching "%s" found in %s' % (args.package, args.source))
+            return 1
+
+        if len(matches) > 1:
+            if has_iterfzf and args.fzf:
+                choice = iterfzf.iterfzf(matches.keys(), prompt='Choose package> ', query=args.package)
+                if choice is None:
+                    return 1
+                package = matches[choice]
+            else:
+                logger.error('%i packages matching "%s" found: %s"' % (
+                    len(matches), args.package, ' '.join(sorted(matches.keys()))))
+                return 1
+        else:
+            package = matches[list(matches.keys())[0]]
+
+        logger.debug('Checking package: %s' % package)
+    logger.debug('Diffoscope args %r' % args.diffoscope)
+
+    command = [os.path.join(scripts_path, 'oe-run-native'),
+            'diffoscope-native', 'diffoscope'] + args.diffoscope + [
+                    package['reference'], package['test']]
+
+    logger.debug('Running command %r' % command)
+
+    os.execv(command[0], command)
+    return 1
+
+if __name__ == "__main__":
+    try:
+        ret = main()
+    except Exception:
+        ret = 1
+        import traceback
+        traceback.print_exc()
+    sys.exit(ret)
+
