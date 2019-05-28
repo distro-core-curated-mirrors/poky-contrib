@@ -12,6 +12,8 @@ inherit linux-kernel-base
 # Whilst not a module, this ensures we don't get multilib extended (which would make no sense)
 inherit module-base
 
+inherit pkgconfig
+
 # We need the kernel to be staged (unpacked, patched and configured) before
 # we can grab the source and make the source package. We also need the bits from
 # ${B} not to change while we install, so virtual/kernel must finish do_compile.
@@ -32,7 +34,19 @@ B = "${STAGING_KERNEL_BUILDDIR}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
+PACKAGES =+ "linux-source linux-headers"
+
+PKG_linux-source = "linux-source-${@legitimize_package_name('${KERNEL_VERSION}')}"
+PKG_linux-headers = "linux-headers-${@legitimize_package_name('${KERNEL_VERSION}')}"
+FILES:linux-headers = "/usr/src/${PKG_linux-headers}/"
+FILES:linux-source = "/usr/src/${PKG_linux-source}/"
+
+# add "linux-source" to PACKAGECONFIG to have the full source packaged
+PACKAGECONFIG ?= ""
+
 KERNEL_BUILD_ROOT="${nonarch_base_libdir}/modules/"
+KERNELDEV_COMPRESSED_SOURCE ?= "1"
+KERNELDEV_SYMLINKS ?= "1"
 
 do_install() {
     kerneldir=${D}${KERNEL_BUILD_ROOT}${KERNEL_VERSION}
@@ -361,6 +375,97 @@ do_install() {
     done
 
     chown -R root:root ${D}
+
+    ################################################################################
+    #
+    # Additional/extra packages for compatibility or use cases that need entire source
+    # code or headers (and things we don't necessarily want in the minimal devsrc package)
+    #
+    # linux-source package installs to: /usr/src/linux-source-<version>
+    # linux-headers package install to: /usr/src/linux-headers-<version>
+    #
+    # TODO: create a /usr/src/kernel-<version> symlink to /lib/modules as well, and make the
+    #       /usr/src/kernel symlink be a postinst creation to the latest kernel-devsrc installed
+    #
+    # TODO: since the linux-source copy takes a long time, should it be optional and only
+    #       done if a variable is set ? The linux-headers variant is small and doesn't add
+    #       significant time.
+    #
+    # As a comparison, ubuntu installs both of the above:
+    #       ii  linux-headers-4.18.0-17      4.18.0-17.18   all     Header files related to Linux kernel version 4.18.0
+    #           -->: linux-headers-<version>: /usr/src/linux-headers-4.18.0-17
+    #       ii  linux-source-4.18.0          4.18.0-20.21   all      Linux kernel source for version 4.18.0 with Ubuntu patches
+    #           -->: linux-source-<version>: /usr/src/linux-source-4.18.0/
+    #
+    #################################################################################
+    mkdir -p ${D}/usr/src/${PKG_linux-headers}
+    mkdir -p ${D}/usr/src/${PKG_linux-source}
+    (
+	# The linux-headers package is a superset of the kernel-devsrc
+	# package. So we start by copying the work that was done there, and
+	# then adding extra headers into the new package. This adds about 14M
+	# to the kernel-devsrc package, but contains a complete set of
+	# headers for "what-if" situations
+	cp -a -r $kerneldir/build/* ${D}/usr/src/${PKG_linux-headers}/
+	cp -a -r $kerneldir/build/.config ${D}/usr/src/${PKG_linux-headers}/
+
+	cd ${S}
+	find arch -path '*/include/*.h' -print0 | cpio --null -pdlu ${D}/usr/src/${PKG_linux-headers}
+	find include -name '*.h' -print0 | cpio --null -pdlu ${D}/usr/src/${PKG_linux-headers}
+
+	set +e
+	echo ${PACKAGECONFIG} | grep -q linux-source
+	if [ $? -eq 0 ]; then
+	    # Make a complete copy of the kernel source, as a reference package
+	    # for those that may want it. This copy takes time due to i/o, but
+	    # there's no much we can do about that
+	    if [ -n "${KERNELDEV_COMPRESSED_SOURCE}" ]; then
+		find . -type d -name '.git*' -prune -o -type d -name '.kernel-meta' -prune -o -type f -print0 | tar --null --no-recursion -cjf ${D}/usr/src/${PKG_linux-source}/${PKG_linux-source}.tar.bz2 --files-from -
+	    else
+		find . -type d -name '.git*' -prune -o -type d -name '.kernel-meta' -prune -o -type f -print0 | cpio --null -pdlu ${D}/usr/src/${PKG_linux-source}/
+	    fi
+	else
+	    echo "linux-source is empty. Enable linux-source in PACKAGECONFIG for full source copy" > ${D}/usr/src/${PKG_linux-source}/README.txt
+	fi
+	set -e
+
+	chown -R root:root ${D}/usr/src/${PKG_linux-headers}
+	chown -R root:root ${D}/usr/src/${PKG_linux-source}
+    )
+}
+
+#
+# Convienince symlink creation...
+#
+# We are doing this via python, since there are bugs in some package managers
+# that are throwing errors when a postinst is added to a package that is renamed
+# via PGK_ mappings. With the python technique (versus the commented out blocks
+# below), we can give full control on whether or not the symlinks are created
+# AND if the postinsts are even created.
+#
+# We are not using update-alternatives, since it has caused problems for kernel
+# packages in the past ([kernel: Stop using update-alternatives]) due to relative
+# symlinks. We are also not installing the symlink as part of the package, since
+# that breaks upgrade scenarios where two packages need to be installed at the
+# same time (and we have a file conflict).
+#
+# python __anonymous () {
+#     source_pkg = d.getVar( "PKG_linux-source" )
+#     headers_pkg = d.getVar( "PKG_linux-headers" )
+#     if d.getVar( "KERNELDEV_SYMLINKS"):
+#        d.setVar('pkg_postinst_ontarget_linux-source', 'cd /usr/src/; ln -sf %s linux-source' % source_pkg)
+#        d.setVar('pkg_postinst_ontarget_linux-headers', 'cd /usr/src/; ln -sf %s linux-headers' % headers_pkg)
+# }
+
+# once all package managers are fixed, we can switch to these routines instead
+# of the anonymous python method.
+pkg_postinst_ontarget_linux-source () {
+    cd /usr/src/
+    ln -sf ${PKG_linux-source} linux-source
+}
+pkg_postinst_ontarget_linux-headers () {
+    cd /usr/src/
+    ln -sf ${PKG_linux-headers} linux-headers
 }
 
 # Ensure we don't race against "make scripts" during cpio
