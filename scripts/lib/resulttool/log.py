@@ -28,12 +28,12 @@ def show_reproducible(result, reproducible, logger):
 def log(args, logger):
     results = resultutils.load_resultsdata(args.source)
 
-    ptest_count = sum(1 for _, _, _, r in resultutils.test_run_results(results) if 'ptestresult.sections' in r)
+    ptest_count = sum(1 for _, _, _, r in resultutils.test_run_results(results, args.run) if 'ptestresult.sections' in r)
     if ptest_count > 1 and not args.prepend_run:
         print("%i ptest sections found. '--prepend-run' is required" % ptest_count)
         return 1
 
-    for _, run_name, _, r in resultutils.test_run_results(results):
+    for _, run_name, _, r in resultutils.test_run_results(results, args.run):
         if args.dump_ptest and 'ptestresult.sections' in r:
             for name, ptest in r['ptestresult.sections'].items():
                 logdata = resultutils.ptestresult_get_log(r, name)
@@ -77,6 +77,7 @@ def register_commands(subparsers):
                                          description='show the logs from test results',
                                          group='analysis')
     parser.set_defaults(func=log)
+    resultutils.add_run_slice_arg(parser)
     parser.add_argument('source',
             help='the results file/directory/URL to import')
     parser.add_argument('--ptest', action='append', default=[],
