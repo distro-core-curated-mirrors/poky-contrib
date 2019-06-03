@@ -14,6 +14,8 @@ import scriptpath
 import copy
 import urllib.request
 import posixpath
+import datetime
+import argparse
 scriptpath.add_oe_lib_path()
 
 flatten_map = {
@@ -201,7 +203,28 @@ def git_get_result(repo, tags, configmap=store_map):
 
     return results
 
-def test_run_results(results):
+class SliceAction(argparse.Action):
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        super().__init__(option_strings, dest, nargs, **kwargs)
+
+    def __call__(self, parser, namespace, value, options_string=None):
+        s = [int(x) for x in value.split(':')]
+        if len(s) < 1 or len(s) > 3:
+            raise ValueError("'%s' is not a valid slice" % value)
+        setattr(namespace, self.dest, s)
+
+def add_run_slice_arg(parser, default=None):
+    if default:
+        default_help = ':'.join("%d" % d for d in default)
+    else:
+        default_help = 'all test runs'
+
+    parser.add_argument('--run', help='''Filter out runs by timestamp. Uses
+        Python list indexing and slice notation where 0 is the newest test
+        run and -1 is the oldest. The default if unspecified is ''' + default_help,
+        metavar='SLICE', action=SliceAction, default=default)
+
+def test_run_results(results, run_slice=None):
     """
     Convenient generator function that iterates over all test runs that have a
     result section.
@@ -210,9 +233,35 @@ def test_run_results(results):
         (result json file path, test run name, test run (dict), test run "results" (dict))
     for each test run that has a "result" section
     """
+    def has_starttime(r):
+        return 'configuration' in r and 'STARTTIME' in r['configuration']
+
+    def get_starttime(r):
+        return datetime.datetime.strptime(r["configuration"]["STARTTIME"], '%Y%m%d%H%M%S')
+
+    test_runs = []
     for path in results:
-        for run_name, test_run in results[path].items():
-            if not 'result' in test_run:
-                continue
-            yield path, run_name, test_run, test_run['result']
+        test_runs.extend((path, name, results[path][name]) for name in results[path].keys())
+
+    if run_slice is not None:
+        # Filter out any test runs without a starting time
+        test_runs = [(path, name, run) for (path, name, run) in test_runs if has_starttime(run)]
+
+        # Sort remaining test runs by date
+        test_runs.sort(key=lambda x: get_starttime(x[2]), reverse=True)
+
+        if len(run_slice) == 1:
+            test_runs = [test_runs[run_slice[0]]]
+        elif len(run_slice) == 2:
+            test_runs = test_runs[run_slice[0]:run_slice[1]]
+        elif len(run_slice) == 3:
+            test_runs = test_runs[run_slice[0]:run_slice[1]:run_slice[2]]
+        else:
+            raise ValueError("Invalid slice '%r' specified" % run_slice)
+
+    for path, run_name, run in test_runs:
+        if not 'result' in run:
+            continue
+
+        yield path, run_name, run, run['result']
 
