@@ -3,7 +3,10 @@ HOMEPAGE = "https://diffoscope.org/"
 LICENSE = "GPL-3.0+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504"
 
-SRC_URI = "git://anonscm.debian.org/git/reproducible/diffoscope.git;protocol=https"
+SRC_URI = "\
+    git://anonscm.debian.org/git/reproducible/diffoscope.git;protocol=https \
+    file://0001-Skip-NOBITS-.eh_frame-ELF-sections.patch \
+    "
 
 UPSTREAM_CHECK_GITTAGREGEX = "(?P<pver>\d+)"
 

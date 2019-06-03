@@ -1,0 +1,29 @@
+From 67a85c60f0560e05d193607c2e93156312f21f98 Mon Sep 17 00:00:00 2001
+From: Joshua Watt <JPEWhacker@gmail.com>
+Date: Tue, 28 May 2019 13:05:58 -0500
+Subject: [PATCH] Skip NOBITS .eh_frame ELF sections
+
+Skips .eh_frame sections that are marked as NOBITS. These sections are
+present in split debug ELF file generated with 'objcopy --split-debug',
+but have no meaning. 'readelf --debug-dump=frames' fails with an error
+("section '.eh_frame' has the NOBITS type - its contents are
+unreliable.") when it encounters these sections.
+---
+ diffoscope/comparators/elf.py | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/diffoscope/comparators/elf.py b/diffoscope/comparators/elf.py
+index d19f7a3..c74f7cd 100644
+--- a/diffoscope/comparators/elf.py
++++ b/diffoscope/comparators/elf.py
+@@ -42,7 +42,6 @@ DEBUG_SECTION_GROUPS = (
+     'pubnames',
+     'aranges',
+     'macro',
+-    'frames',
+     'loc',
+     'ranges',
+     'pubtypes',
+-- 
+2.21.0
+
