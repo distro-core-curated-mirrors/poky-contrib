@@ -47,10 +47,11 @@ class OePkgdataUtilTests(OESelftestTestCase):
         self.assertGreater(pkgsize, 1, "Size should be greater than 1. %s" % result.output)
 
     def test_find_path(self):
-        result = runCmd('oe-pkgdata-util find-path /lib/libz.so.1')
-        self.assertEqual(result.output, 'zlib: /lib/libz.so.1')
+        base_libdir = get_bb_var('base_libdir')
+        result = runCmd('oe-pkgdata-util find-path %s/libz.so.1' % base_libdir)
+        self.assertEqual(result.output, 'zlib: %s/libz.so.1' % base_libdir)
         result = runCmd('oe-pkgdata-util find-path /usr/bin/m4')
-        self.assertEqual(result.output, 'm4: /usr/bin/m4')
+        self.assertTrue('m4: /usr/bin/m4' in result.output)
         result = runCmd('oe-pkgdata-util find-path /not/exist', ignore_status=True)
         self.assertEqual(result.status, 1, "Status different than 1. output: %s" % result.output)
         self.assertEqual(result.output, 'ERROR: Unable to find any package producing path /not/exist')
