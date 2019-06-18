@@ -3,13 +3,14 @@
 # on the target are still usable, only the sysroot is disabled.
 #
 
+inherit binconfig
+
 # The list of scripts which should be disabled, for example ${bindir}/foo-config.
 BINCONFIG ?= ""
 
-FILES_${PN}-dev += "${bindir}/*-config"
-
-SYSROOT_PREPROCESS_FUNCS += "binconfig_disabled_sysroot_preprocess"
-binconfig_disabled_sysroot_preprocess () {
+# This replaces the function in binconfig.bbclass to stub out instead of mangle
+# the sysroot config scripts.
+binconfig_sysroot_preprocess () {
 	for x in ${BINCONFIG}; do
 		# Only write a stub if the config actually exists, as some recipes list
 		# all *potential* names.
