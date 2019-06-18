@@ -38,6 +38,7 @@ binconfig_package_preprocess () {
 		    -e 's:${STAGING_INCDIR}:${includedir}:g;' \
 		    -e 's:${STAGING_DATADIR}:${datadir}:' \
 		    -e 's:${STAGING_DIR_HOST}${prefix}:${prefix}:' \
+		    -e 's:${STAGING_BINDIR_CROSS}:${bindir}:' \
                     $config
 	done
 }
