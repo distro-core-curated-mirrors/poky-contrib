@@ -159,7 +159,7 @@ def add(args, config, basepath, workspace):
     tempdir = tempfile.mkdtemp(prefix='devtool')
     try:
         try:
-            stdout, _ = exec_build_env_command(config.init_path, basepath, 'recipetool --color=%s create --devtool -o %s \'%s\' %s' % (color, tempdir, source, extracmdopts), watch=True)
+            stdout, _ = exec_build_env_command(config.init_path, basepath, 'recipetool -d --color=%s create --devtool -o %s \'%s\' %s' % (color, tempdir, source, extracmdopts), watch=True)
         except bb.process.ExecutionError as e:
             if e.exitcode == 15:
                 raise DevtoolError('Could not auto-determine recipe name, please specify it on the command line')
