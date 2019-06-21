@@ -55,6 +55,8 @@ PREFERRED_PROVIDER_nativesdk-openssl ?= "nativesdk-openssl"
 PREFERRED_PROVIDER_pkgconfig ?= "pkgconfig"
 PREFERRED_PROVIDER_nativesdk-pkgconfig ?= "nativesdk-pkgconfig"
 PREFERRED_PROVIDER_pkgconfig-native ?= "pkgconfig-native"
+
+PREFERRED_RPROVIDER_gzip ?= "pigz"
 PREFERRED_RPROVIDER_initd-functions ?= "initscripts"
 
 PREFERRED_PROVIDER_nativesdk-mesa ?= "nativesdk-mesa"
