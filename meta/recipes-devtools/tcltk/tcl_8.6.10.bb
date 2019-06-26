@@ -86,8 +86,7 @@ do_install_ptest() {
 }
 
 # Fix some paths that might be used by Tcl extensions
-BINCONFIG_GLOB = "*Config.sh"
-
+BINCONFIG = "${libdir}/*Config.sh"
 # Fix the path in sstate
 SSTATE_SCAN_FILES += "*Config.sh"
 
