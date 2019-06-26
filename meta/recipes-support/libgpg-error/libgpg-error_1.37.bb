@@ -20,8 +20,6 @@ SRC_URI = "${GNUPG_MIRROR}/libgpg-error/libgpg-error-${PV}.tar.bz2 \
 SRC_URI[md5sum] = "729f22d917494fdc4b54fce5aa6547c7"
 SRC_URI[sha256sum] = "b32d6ff72a73cf79797f7f2d039e95e9c6f92f0c1450215410840ab62aea9763"
 
-BINCONFIG = "${bindir}/gpg-error-config"
-
 inherit autotools binconfig-disabled pkgconfig gettext multilib_header multilib_script
 
 MULTILIB_SCRIPTS = "${PN}-dev:${bindir}/gpgrt-config"
