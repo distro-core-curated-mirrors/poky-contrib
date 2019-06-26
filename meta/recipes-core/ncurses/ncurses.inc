@@ -7,9 +7,6 @@ SECTION = "libs"
 DEPENDS = "ncurses-native"
 DEPENDS_class-native = ""
 
-BINCONFIG = "${bindir}/ncurses5-config ${bindir}/ncursesw5-config \
-	${bindir}/ncurses6-config ${bindir}/ncursesw6-config"
-
 inherit autotools binconfig-disabled multilib_header pkgconfig
 
 # Upstream has useful patches at times at ftp://invisible-island.net/ncurses/
