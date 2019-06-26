@@ -1,5 +1,36 @@
-FILES_${PN}-dev += "${bindir}/*-config"
- 
+# The list of config scripts to mangle, for example ${bindir}/foo-config.
+BINCONFIG ?= "${bindir}/*-config"
+
+FILES_${PN}-dev += "${BINCONFIG}"
+
+expand_glob() {
+	# $1 is search base
+	# $2 onwards is a list of globs
+	RESULTS=""
+	BASE=$1
+    shift
+	for PATTERN in "$@"; do
+        RESULTS="$RESULTS $(ls $BASE$PATTERN 2>/dev/null)"
+	done
+	echo $RESULTS
+}
+
+PACKAGE_PREPROCESS_FUNCS += "binconfig_package_preprocess"
+binconfig_package_preprocess () {
+	for config in `expand_glob ${PKGD} ${BINCONFIG}`; do
+		bbdebug 1 "Replacing paths in $config"
+		sed -i \
+			-e 's:${STAGING_BASELIBDIR}:${base_libdir}:g;' \
+			-e 's:${STAGING_LIBDIR}:${libdir}:g;' \
+			-e 's:${STAGING_INCDIR}:${includedir}:g;' \
+			-e 's:${STAGING_DATADIR}:${datadir}:' \
+			-e 's:${STAGING_DIR_HOST}${prefix}:${prefix}:' \
+			-e 's:${STAGING_BINDIR_CROSS}:${bindir}:' \
+			$config
+	done
+}
+
+
 # The namespaces can clash here hence the two step replace
 def get_binconfig_mangle(d):
     s = "-e ''"
@@ -26,30 +57,20 @@ def get_binconfig_mangle(d):
 
     return s
 
-BINCONFIG_GLOB ?= "*-config"
-
-PACKAGE_PREPROCESS_FUNCS += "binconfig_package_preprocess"
-
-binconfig_package_preprocess () {
-	for config in `find ${PKGD} -type f -name '${BINCONFIG_GLOB}'`; do
-		sed -i \
-		    -e 's:${STAGING_BASELIBDIR}:${base_libdir}:g;' \
-		    -e 's:${STAGING_LIBDIR}:${libdir}:g;' \
-		    -e 's:${STAGING_INCDIR}:${includedir}:g;' \
-		    -e 's:${STAGING_DATADIR}:${datadir}:' \
-		    -e 's:${STAGING_DIR_HOST}${prefix}:${prefix}:' \
-		    -e 's:${STAGING_BINDIR_CROSS}:${bindir}:' \
-                    $config
-	done
-}
-
 SYSROOT_PREPROCESS_FUNCS += "binconfig_sysroot_preprocess"
-
 binconfig_sysroot_preprocess () {
-	for config in `find ${S} -type f -name '${BINCONFIG_GLOB}'` `find ${B} -type f -name '${BINCONFIG_GLOB}'`; do
+	for config in `expand_glob ${D} ${BINCONFIG}`; do
+		bbdebug 1 "Replacing paths in $config"
 		configname=`basename $config`
 		install -d ${SYSROOT_DESTDIR}${bindir_crossscripts}
 		sed ${@get_binconfig_mangle(d)} $config > ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
 		chmod u+x ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
 	done
+}
+
+python () {
+    if d.getVar("BINCONFIG_GLOB"):
+        bb.error("BINCONFIG_GLOB is set, please use BINCONFIG instead")
+    if not d.getVar("BINCONFIG"):
+        bb.error("binconfig.bbclass inherited but BINCONFIG not set")
 }
