@@ -7,8 +7,12 @@ inherit binconfig
 
 # This replaces the function in binconfig.bbclass to stub out instead of mangle
 # the sysroot config scripts.
+# Need to be careful because $crossscripts in bindir/crossscripts for eveything
+# but native, where it is just bindir.
 binconfig_sysroot_preprocess () {
+	FOUND=0
 	for config in `expand_glob ${D} "${BINCONFIG}"`; do
+		FOUND=1
 		bbdebug 1 "Writing a stub for $config"
 		install -d ${SYSROOT_DESTDIR}${bindir_crossscripts}
 		configname=`basename $config`
@@ -22,4 +26,5 @@ binconfig_sysroot_preprocess () {
 		EOF
 		chmod +x ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
 	done
+	test $FOUND -eq 0 && bbwarn "${BINCONFIG} didn't match any files" || :
 }
