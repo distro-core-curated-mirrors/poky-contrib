@@ -71,7 +71,8 @@ binconfig_sysroot_preprocess () {
 		bbdebug 1 "Replacing paths in $config"
 		configname=`basename $config`
 		install -d ${SYSROOT_DESTDIR}${bindir_crossscripts}
-		sed ${@get_binconfig_mangle(d)} $config > ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
+		sed ${@get_binconfig_mangle(d)} $config > $config.temp
+        mv -f $config.temp ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
 		chmod u+x ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
 	done
 }
