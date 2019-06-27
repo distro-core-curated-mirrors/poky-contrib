@@ -50,7 +50,6 @@ do_install() {
 	sed -i "s;-L${B};-L${STAGING_LIBDIR};g" tclConfig.sh
 	sed -i "s;'${WORKDIR};'${STAGING_INCDIR};g" tclConfig.sh
 	install -d ${D}${bindir_crossscripts}
-	install -m 0755 tclConfig.sh ${D}${bindir_crossscripts}
 	install -m 0755 tclConfig.sh ${D}${libdir}
 	for dir in compat generic unix; do
 		install -d ${D}${includedir}/${BPN}${VER}/$dir
@@ -58,12 +57,9 @@ do_install() {
 	done
 }
 
-SYSROOT_DIRS += "${bindir_crossscripts}"
-
 PACKAGES =+ "tcl-lib"
 FILES_tcl-lib = "${libdir}/libtcl8.6.so.*"
 FILES_${PN} += "${libdir}/tcl${VER} ${libdir}/tcl8.6 ${libdir}/tcl8"
-FILES_${PN}-dev += "${libdir}/tclConfig.sh ${libdir}/tclooConfig.sh"
 
 ALTERNATIVE_${PN}-doc = "Thread.3"
 ALTERNATIVE_LINK_NAME[Thread.3] = "${mandir}/man3/Thread.3"
@@ -94,11 +90,6 @@ SSTATE_SCAN_FILES += "*Config.sh"
 # ${bindir_crossscripts}/tclConfig.sh from target
 PACKAGE_PREPROCESS_FUNCS += "tcl_package_preprocess"
 tcl_package_preprocess() {
-	sed -i -e "s;${DEBUG_PREFIX_MAP};;g" \
-	       -e "s;-L${STAGING_LIBDIR};-L${libdir};g" \
-	       -e "s;${STAGING_INCDIR};${includedir};g" \
-	       -e "s;--sysroot=${RECIPE_SYSROOT};;g" \
+	sed -i -e "s;--sysroot=${RECIPE_SYSROOT};;g" \
 	       ${PKGD}${libdir}/tclConfig.sh
-
-	rm -f ${PKGD}${bindir_crossscripts}/tclConfig.sh
 }
