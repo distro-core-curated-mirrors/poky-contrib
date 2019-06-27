@@ -31,9 +31,10 @@ binconfig_package_preprocess () {
 			-e 's:${STAGING_BASELIBDIR}:${base_libdir}:g;' \
 			-e 's:${STAGING_LIBDIR}:${libdir}:g;' \
 			-e 's:${STAGING_INCDIR}:${includedir}:g;' \
-			-e 's:${STAGING_DATADIR}:${datadir}:' \
-			-e 's:${STAGING_DIR_HOST}${prefix}:${prefix}:' \
-			-e 's:${STAGING_BINDIR_CROSS}:${bindir}:' \
+			-e 's:${STAGING_DATADIR}:${datadir}:g;' \
+			-e 's:${STAGING_DIR_HOST}${prefix}:${prefix}:g;' \
+			-e 's:${STAGING_BINDIR_CROSS}:${bindir}:g;' \
+			-e 's:${DEBUG_PREFIX_MAP}::g;' \
 			$config
 	done
 }
@@ -73,7 +74,7 @@ binconfig_sysroot_preprocess () {
 		install -d ${SYSROOT_DESTDIR}${bindir_crossscripts}
 		sed ${@get_binconfig_mangle(d)} $config > $config.temp
         mv -f $config.temp ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
-		chmod u+x ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
+		chmod +x ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
 	done
 }
 
