@@ -76,6 +76,7 @@ prefix = "${STAGING_DIR_NATIVE}${prefix_native}"
 exec_prefix = "${STAGING_DIR_NATIVE}${prefix_native}"
 
 bindir = "${STAGING_BINDIR_NATIVE}"
+bindir_crossscripts = "${STAGING_BINDIR_NATIVE}"
 sbindir = "${STAGING_SBINDIR_NATIVE}"
 base_libdir = "${STAGING_LIBDIR_NATIVE}"
 libdir = "${STAGING_LIBDIR_NATIVE}"
