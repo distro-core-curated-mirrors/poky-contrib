@@ -32,13 +32,17 @@ PACKAGE_PREPROCESS_FUNCS += "binconfig_package_preprocess"
 
 binconfig_package_preprocess () {
 	for config in `find ${PKGD} -type f -name '${BINCONFIG_GLOB}'`; do
+		bbdebug 1 "Replacing paths in $config"
 		sed -i \
+		    -e 's:${DEBUG_PREFIX_MAP}::g;' \
+		    -e 's:${TOOLCHAIN_OPTIONS}::g;' \
+		    -e 's:${STAGING_BINDIR_CROSS}:${bindir}:g;' \
 		    -e 's:${STAGING_BASELIBDIR}:${base_libdir}:g;' \
 		    -e 's:${STAGING_LIBDIR}:${libdir}:g;' \
 		    -e 's:${STAGING_INCDIR}:${includedir}:g;' \
-		    -e 's:${STAGING_DATADIR}:${datadir}:' \
-		    -e 's:${STAGING_DIR_HOST}${prefix}:${prefix}:' \
-                    $config
+		    -e 's:${STAGING_DATADIR}:${datadir}:g;' \
+		    -e 's:${STAGING_DIR_HOST}${prefix}:${prefix}:g;' \
+		    $config
 	done
 }
 
