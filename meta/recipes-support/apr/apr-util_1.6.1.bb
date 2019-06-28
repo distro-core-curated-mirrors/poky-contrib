@@ -31,8 +31,6 @@ inherit autotools lib_package binconfig multilib_script
 
 MULTILIB_SCRIPTS = "${PN}-dev:${bindir}/apu-1-config"
 
-OE_BINCONFIG_EXTRA_MANGLE = " -e 's:location=source:location=installed:'"
-
 do_configure_append() {
 	if [ "${CLASSOVERRIDE}" = "class-target" ]; then
 		cp ${STAGING_DATADIR}/apr/apr_rules.mk ${B}/build/rules.mk
@@ -60,8 +58,7 @@ do_configure_append_class-nativesdk() {
 }
 
 do_install_append_class-target() {
-	sed -i -e 's,${STAGING_DIR_HOST},,g' \
-	       -e 's,APU_SOURCE_DIR=.*,APR_SOURCE_DIR=,g' \
+	sed -i -e 's,APU_SOURCE_DIR=.*,APR_SOURCE_DIR=,g' \
 	       -e 's,APU_BUILD_DIR=.*,APR_BUILD_DIR=,g' ${D}${bindir}/apu-1-config
 }
 

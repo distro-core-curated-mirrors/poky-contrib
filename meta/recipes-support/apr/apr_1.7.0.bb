@@ -26,8 +26,6 @@ SRC_URI[sha256sum] = "e2e148f0b2e99b8e5c6caa09f6d4fb4dd3e83f744aa72a952f94f5a144
 
 inherit autotools-brokensep lib_package binconfig multilib_header ptest multilib_script
 
-OE_BINCONFIG_EXTRA_MANGLE = " -e 's:location=source:location=installed:'"
-
 # Added to fix some issues with cmake. Refer to https://github.com/bmwcarit/meta-ros/issues/68#issuecomment-19896928
 CACHED_CONFIGUREVARS += "apr_cv_mutex_recursive=yes"
 
@@ -76,8 +74,7 @@ do_install_append() {
 do_install_append_class-target() {
 	sed -i -e 's,${DEBUG_PREFIX_MAP},,g' \
 	       -e 's,${STAGING_DIR_HOST},,g' ${D}${datadir}/build-1/apr_rules.mk
-	sed -i -e 's,${STAGING_DIR_HOST},,g' \
-	       -e 's,APR_SOURCE_DIR=.*,APR_SOURCE_DIR=,g' \
+	sed -i -e 's,APR_SOURCE_DIR=.*,APR_SOURCE_DIR=,g' \
 	       -e 's,APR_BUILD_DIR=.*,APR_BUILD_DIR=,g' ${D}${bindir}/apr-1-config
 }
 
