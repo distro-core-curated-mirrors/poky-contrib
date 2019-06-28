@@ -1,5 +1,12 @@
-FILES_${PN}-dev += "${bindir}/*-config"
- 
+# Class to fix up paths inside "binconfig" scripts, such as curl-config.  These
+# typically end up with paths that point into WORKDIR instead of the sysroot, so
+# this script attempts to fix the damage.
+
+# The list of config scripts to fix up, same format as FILES.
+BINCONFIG ?= "${bindir}/*-config"
+
+FILES_${PN}-dev += "${BINCONFIG}"
+
 # The namespaces can clash here hence the two step replace
 def get_binconfig_mangle(d):
     s = "-e ''"
@@ -27,12 +34,10 @@ def get_binconfig_mangle(d):
 
     return s
 
-BINCONFIG_GLOB ?= "*-config"
-
 PACKAGE_PREPROCESS_FUNCS += "binconfig_package_preprocess"
 
 binconfig_package_preprocess () {
-	for config in `find ${PKGD} -type f -name '${BINCONFIG_GLOB}'`; do
+	for config in `expand_glob ${PKGD} "${BINCONFIG}"`; do
 		bbdebug 1 "Replacing paths in $config"
 		sed -i \
 		    -e 's:${DEBUG_PREFIX_MAP}::g;' \
@@ -50,7 +55,7 @@ binconfig_package_preprocess () {
 SYSROOT_PREPROCESS_FUNCS += "binconfig_sysroot_preprocess"
 
 binconfig_sysroot_preprocess () {
-	for config in `find ${D} -type f -name '${BINCONFIG_GLOB}'`; do
+	for config in `expand_glob ${D} "${BINCONFIG}"`; do
 		bbdebug 1 "Replacing paths in $config"
 		install -d ${SYSROOT_DESTDIR}${bindir_crossscripts}
 		configname=`basename $config`
@@ -59,4 +64,9 @@ binconfig_sysroot_preprocess () {
 		mv -f $newconfig.temp $newconfig
 		chmod +x $newconfig
 	done
+}
+
+python () {
+    if d.getVar("BINCONFIG_GLOB"):
+        bb.error("BINCONFIG_GLOB is set, use BINCONFIG instead")
 }
