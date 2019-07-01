@@ -384,6 +384,8 @@ class DevtoolAddTests(DevtoolBase):
         result = runCmd('devtool status')
         self.assertNotIn('libftdi', result.output)
         self.assertTrue(stampprefix, 'Unable to get STAMP value for recipe libftdi')
+        # Trigger sstate sysroot cleanup
+        bitbake('-p')
         matches = glob.glob(stampprefix + '*')
         self.assertFalse(matches, 'Stamp files exist for recipe libftdi that should have been cleaned')
         self.assertFalse(os.path.isfile(os.path.join(staging_libdir, 'libftdi1.so.2.1.0')), 'libftdi binary still found in STAGING_LIBDIR after cleaning')
@@ -1198,6 +1200,8 @@ class DevtoolExtractTests(DevtoolBase):
         result = runCmd('devtool status')
         self.assertNotIn(testrecipe1, result.output)
         self.assertNotIn(testrecipe2, result.output)
+        # Trigger sstate sysroot cleanup
+        bitbake('-p')
         matches1 = glob.glob(stampprefix1 + '*')
         self.assertFalse(matches1, 'Stamp files exist for recipe %s that should have been cleaned' % testrecipe1)
         matches2 = glob.glob(stampprefix2 + '*')

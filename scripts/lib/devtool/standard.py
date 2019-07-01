@@ -1753,7 +1753,7 @@ def status(args, config, basepath, workspace):
     return 0
 
 
-def _reset(recipes, no_clean, config, basepath, workspace):
+def _reset(recipes, clean, config, basepath, workspace):
     """Reset one or more recipes"""
     import oe.path
 
@@ -1777,7 +1777,7 @@ def _reset(recipes, no_clean, config, basepath, workspace):
         else:
             os.remove(new_layerconf_file)
 
-    if recipes and not no_clean:
+    if recipes and clean:
         if len(recipes) == 1:
             logger.info('Cleaning sysroot for recipe %s...' % recipes[0])
         else:
@@ -1858,7 +1858,7 @@ def reset(args, config, basepath, workspace):
     else:
         recipes = args.recipename
 
-    _reset(recipes, args.no_clean, config, basepath, workspace)
+    _reset(recipes, args.clean, config, basepath, workspace)
 
     return 0
 
@@ -1909,7 +1909,6 @@ def finish(args, config, basepath, workspace):
         else:
             raise DevtoolError('Source tree is not clean:\n\n%s\nEnsure you have committed your changes or use -f/--force if you are sure there\'s nothing that needs to be committed' % dirty)
 
-    no_clean = False
     tinfoil = setup_tinfoil(basepath=basepath, tracking=True)
     try:
         rd = parse_recipe(config, tinfoil, args.recipename, True)
@@ -1990,7 +1989,6 @@ def finish(args, config, basepath, workspace):
         if origlayerdir == config.workspace_path and destpath:
             # Recipe file itself is in the workspace - need to move it and any
             # associated files to the specified layer
-            no_clean = True
             logger.info('Moving recipe file to %s%s' % (destpath, dry_run_suffix))
             for root, _, files in os.walk(recipedir):
                 for fn in files:
@@ -2061,7 +2059,7 @@ def finish(args, config, basepath, workspace):
     if args.dry_run:
         logger.info('Resetting recipe (dry-run)')
     else:
-        _reset([args.recipename], no_clean=no_clean, config=config, basepath=basepath, workspace=workspace)
+        _reset([args.recipename], clean=False, config=config, basepath=basepath, workspace=workspace)
 
     return 0
 
@@ -2172,7 +2170,9 @@ def register_commands(subparsers, context):
                                          group='working', order=-100)
     parser_reset.add_argument('recipename', nargs='*', help='Recipe to reset')
     parser_reset.add_argument('--all', '-a', action="store_true", help='Reset all recipes (clear workspace)')
-    parser_reset.add_argument('--no-clean', '-n', action="store_true", help='Don\'t clean the sysroot to remove recipe output')
+    group = parser_reset.add_mutually_exclusive_group()
+    group.add_argument('--no-clean', '-n', action="store_false", dest='clean', default=False, help='Don\'t clean the sysroot to remove recipe output (default, no-op)')
+    group.add_argument('--clean', '-c', action="store_true", dest='clean', default=False, help='Clean the sysroot to remove recipe output immediately, instead of it being cleaned up automatically upon the next build operation.')
     parser_reset.set_defaults(func=reset)
 
     parser_finish = subparsers.add_parser('finish', help='Finish working on a recipe in your workspace',
