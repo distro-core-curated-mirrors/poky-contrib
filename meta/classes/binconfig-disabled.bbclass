@@ -1,30 +1,27 @@
 #
-# Class to disable binconfig files instead of installing them
+# Class to disable binconfig files instead of installing them.  The config files
+# on the target are still usable, only the sysroot has the disabled scripts.
 #
 
-# The list of scripts which should be disabled.
-BINCONFIG ?= ""
+inherit binconfig
 
-FILES_${PN}-dev += "${bindir}/*-config"
-
-do_install_append () {
-	for x in ${BINCONFIG}; do
+# This replaces the function in binconfig.bbclass to stub out instead of mangle
+# the sysroot config scripts.
+# Need to be careful because $crossscripts in bindir/crossscripts for eveything
+# but native, where it is just bindir.
+binconfig_sysroot_preprocess () {
+	for config in `expand_glob ${D} "${BINCONFIG}"`; do
+		bbdebug 1 "Writing a stub for $config"
+		install -d ${SYSROOT_DESTDIR}${bindir_crossscripts}
+		configname=`basename $config`
 		# Make the disabled script emit invalid parameters for those configure
 		# scripts which call it without checking the return code.
-		echo "#!/bin/sh" > ${D}$x
-		echo "echo 'ERROR: $x should not be used, use an alternative such as pkg-config' >&2" >> ${D}$x
-		echo "echo '--should-not-have-used-$x'" >> ${D}$x
-		echo "exit 1" >> ${D}$x
-		chmod +x ${D}$x
-	done
-}
-
-SYSROOT_PREPROCESS_FUNCS += "binconfig_disabled_sysroot_preprocess"
-
-binconfig_disabled_sysroot_preprocess () {
-	for x in ${BINCONFIG}; do
-		configname=`basename $x`
-		install -d ${SYSROOT_DESTDIR}${bindir_crossscripts}
-		install ${D}$x ${SYSROOT_DESTDIR}${bindir_crossscripts}
+		cat <<- EOF >${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
+		#!/bin/sh
+		echo 'ERROR: $configname should not be used, use an alternative such as pkg-config' >&2
+		echo '--should-not-have-used-$configname'
+		exit 1
+		EOF
+		chmod +x ${SYSROOT_DESTDIR}${bindir_crossscripts}/$configname
 	done
 }
