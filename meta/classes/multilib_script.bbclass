@@ -6,8 +6,6 @@
 
 inherit update-alternatives
 
-MULTILIB_SUFFIX = "${@d.getVar('base_libdir',1).split('/')[-1]}"
-
 PACKAGE_PREPROCESS_FUNCS += "multilibscript_rename"
 
 multilibscript_rename() {
@@ -26,9 +24,10 @@ python () {
         pkg, script = entry.split(":")
         epkg = d.expand(pkg)
         scriptname = os.path.basename(script)
+        mlname = os.path.join(os.path.dirname(script), "${MLPREFIX}" + scriptname)
         d.appendVar("ALTERNATIVE_" + epkg, " " + scriptname + " ")
         d.setVarFlag("ALTERNATIVE_LINK_NAME", scriptname, script)
-        d.setVarFlag("ALTERNATIVE_TARGET", scriptname, script + "-${MULTILIB_SUFFIX}")
-        d.appendVar("multilibscript_rename",  "\n	mv ${PKGD}" + script + " ${PKGD}" + script + "-${MULTILIB_SUFFIX}")
-        d.appendVar("FILES_" + epkg, " " + script + "-${MULTILIB_SUFFIX}")
+        d.setVarFlag("ALTERNATIVE_TARGET", scriptname, mlname)
+        d.appendVar("FILES_" + epkg, " " + mlname)
+        d.appendVar("multilibscript_rename",  "\n	mv ${PKGD}" + script + " ${PKGD}" + mlname)
 }
