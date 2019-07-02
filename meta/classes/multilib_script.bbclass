@@ -6,28 +6,30 @@
 
 inherit update-alternatives
 
-PACKAGE_PREPROCESS_FUNCS += "multilibscript_rename"
+PACKAGE_PREPROCESS_FUNCS =+ "multilibscript_rename"
 
-multilibscript_rename() {
-	:
-}
-
-python () {
+python multilibscript_rename() {
     # Do nothing if multilib isn't being used
     if not d.getVar("MULTILIB_VARIANTS"):
         return
-    # Do nothing for native/cross
-    if bb.data.inherits_class('native', d) or bb.data.inherits_class('cross', d):
-        return
 
-    for entry in (d.getVar("MULTILIB_SCRIPTS", False) or "").split():
-        pkg, script = entry.split(":")
-        epkg = d.expand(pkg)
-        scriptname = os.path.basename(script)
-        mlname = os.path.join(os.path.dirname(script), "${MLPREFIX}" + scriptname)
-        d.appendVar("ALTERNATIVE_" + epkg, " " + scriptname + " ")
-        d.setVarFlag("ALTERNATIVE_LINK_NAME", scriptname, script)
-        d.setVarFlag("ALTERNATIVE_TARGET", scriptname, mlname)
-        d.appendVar("FILES_" + epkg, " " + mlname)
-        d.appendVar("multilibscript_rename",  "\n	mv ${PKGD}" + script + " ${PKGD}" + mlname)
+    import glob, oe.path
+    pkgd = d.getVar("PKGD")
+    mlprefix = d.getVar("MLPREFIX")
+
+    for entry in (d.getVar("MULTILIB_SCRIPTS") or "").split():
+        pkg, pattern = entry.split(":")
+        for script in glob.glob(oe.path.join(pkgd, pattern)):
+            scriptname = os.path.basename(script)
+            # Full name of the renamed script *in the rootfs*
+            mlname = os.path.join(os.path.dirname(script), mlprefix + scriptname)
+            if script != mlname:
+                os.rename(script, mlname)
+            # Now these need to be target paths
+            script = script.replace(pkgd, "")
+            mlname = mlname.replace(pkgd, "")
+            d.appendVar("ALTERNATIVE_" + pkg, " " + scriptname)
+            d.setVarFlag("ALTERNATIVE_LINK_NAME", scriptname, script)
+            d.setVarFlag("ALTERNATIVE_TARGET", scriptname, mlname)
+            d.appendVar("FILES_" + pkg, " " + mlname)
 }
