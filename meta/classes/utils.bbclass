@@ -258,6 +258,23 @@ hardlinkdir () {
 	(cd $from; find . -print0 | cpio --null -pdlu $to)
 }
 
+expand_glob() {
+	# $1 is the base to search from, such as ${D}.
+	# $2 is a list of globs in FILES-format.
+	# Be careful with quoting so the globs don't get expanded too early!
+	# Returns a list of paths that the glob matches.
+	set -f
+	RESULTS=""
+	BASE="$1"
+	PATTERNS="$2"
+	for PATTERN in $PATTERNS; do
+		set +f
+		RESULTS="$RESULTS $(ls $BASE/$PATTERN 2>/dev/null)"
+		set -f
+	done
+	set +f
+	echo $RESULTS
+}
 
 def check_app_exists(app, d):
     app = d.expand(app).split()[0].strip()
