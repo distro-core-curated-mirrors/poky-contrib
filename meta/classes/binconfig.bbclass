@@ -70,3 +70,6 @@ python () {
     if d.getVar("BINCONFIG_GLOB"):
         bb.error("BINCONFIG_GLOB is set, use BINCONFIG instead")
 }
+
+inherit multilib_script
+MULTILIB_SCRIPTS ?= "${@' '.join(['${PN}-dev:%s' % pn for pn in d.getVar('BINCONFIG', False).split()])}"
