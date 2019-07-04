@@ -5,6 +5,7 @@ def get_binconfig_mangle(d):
     s = "-e ''"
     if not bb.data.inherits_class('native', d):
         optional_quote = r"\(\"\?\)"
+        s += " -e 's:${DEBUG_PREFIX_MAP}::g'"
         s += " -e 's:=%s${base_libdir}:=\\1OEBASELIBDIR:;'" % optional_quote
         s += " -e 's:=%s${libdir}:=\\1OELIBDIR:;'" % optional_quote
         s += " -e 's:=%s${includedir}:=\\1OEINCDIR:;'" % optional_quote
