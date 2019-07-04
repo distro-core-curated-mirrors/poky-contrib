@@ -47,18 +47,13 @@ do_install() {
 	oe_runmake 'DESTDIR=${D}' install-private-headers
 	ln -sf ./tclsh${VER} ${D}${bindir}/tclsh
 	ln -sf tclsh8.6 ${D}${bindir}/tclsh${VER}
-	sed -i "s;-L${B};-L${STAGING_LIBDIR};g" tclConfig.sh
-	sed -i "s;'${WORKDIR};'${STAGING_INCDIR};g" tclConfig.sh
-	install -d ${D}${bindir_crossscripts}
-	install -m 0755 tclConfig.sh ${D}${bindir_crossscripts}
-	install -m 0755 tclConfig.sh ${D}${libdir}
+	sed -i "s;-L${B};-L${STAGING_LIBDIR};g" ${D}${libdir}/tclConfig.sh
+	sed -i "s:^TCL_SRC_DIR=.*:TCL_SRC_DIR='${STAGING_INCDIR}/tcl${PV}':" ${D}${libdir}/tclConfig.sh
 	for dir in compat generic unix; do
 		install -d ${D}${includedir}/${BPN}${VER}/$dir
 		install -m 0644 ${S}/../$dir/*.h ${D}${includedir}/${BPN}${VER}/$dir/
 	done
 }
-
-SYSROOT_DIRS += "${bindir_crossscripts}"
 
 PACKAGES =+ "tcl-lib"
 FILES_tcl-lib = "${libdir}/libtcl8.6.so.*"
@@ -87,18 +82,8 @@ do_install_ptest() {
 
 # Fix some paths that might be used by Tcl extensions
 BINCONFIG = "${libdir}/*Config.sh"
+# The scripts are in $libdir so the automatic inherit of multilib_script doesn't need to be used
+MULTILIB_SCRIPTS = ""
+
 # Fix the path in sstate
 SSTATE_SCAN_FILES += "*Config.sh"
-
-# Cleanup host path from ${libdir}/tclConfig.sh and remove the
-# ${bindir_crossscripts}/tclConfig.sh from target
-PACKAGE_PREPROCESS_FUNCS += "tcl_package_preprocess"
-tcl_package_preprocess() {
-	sed -i -e "s;${DEBUG_PREFIX_MAP};;g" \
-	       -e "s;-L${STAGING_LIBDIR};-L${libdir};g" \
-	       -e "s;${STAGING_INCDIR};${includedir};g" \
-	       -e "s;--sysroot=${RECIPE_SYSROOT};;g" \
-	       ${PKGD}${libdir}/tclConfig.sh
-
-	rm -f ${PKGD}${bindir_crossscripts}/tclConfig.sh
-}
