@@ -15,8 +15,6 @@ MIRRORS += "${SOURCEFORGE_MIRROR}/${BPN}/${BPN}${LIBV}/ ${SOURCEFORGE_MIRROR}/${
 
 UPSTREAM_CHECK_URI = "http://libpng.org/pub/png/libpng.html"
 
-BINCONFIG = "${bindir}/libpng-config ${bindir}/libpng16-config"
-
 inherit autotools binconfig-disabled pkgconfig
 
 # Work around missing symbols
