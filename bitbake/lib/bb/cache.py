@@ -399,6 +399,14 @@ class Cache(NoCache):
         else:
             logger.debug(1, "Cache file %s not found, building..." % self.cachefile)
 
+        symlink = os.path.join(self.cachedir, "bb_cache.dat")
+        if os.path.exists(symlink):
+            bb.utils.remove(symlink)
+        try:
+            os.symlink(os.path.basename(self.cachefile), symlink)
+        except OSError:
+            pass
+
     def load_cachefile(self):
         cachesize = 0
         previous_progress = 0
