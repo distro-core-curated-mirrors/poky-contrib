@@ -5,6 +5,8 @@ XMLCATALOGS ?= ""
 SYSROOT_PREPROCESS_FUNCS_append = " xmlcatalog_sstate_postinst"
 
 xmlcatalog_complete() {
+	# In case of eSDK, build-sysroot does not have xmlcatalog in its staging directory.
+	[ "`which xmlcatalog`" = "" ] && exit 0
 	ROOTCATALOG="${STAGING_ETCDIR_NATIVE}/xml/catalog"
 	if [ ! -f $ROOTCATALOG ]; then
 		mkdir --parents $(dirname $ROOTCATALOG)
