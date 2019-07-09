@@ -386,7 +386,7 @@ base_do_package() {
 	:
 }
 
-addtask build after do_populate_sysroot
+addtask build
 do_build[noexec] = "1"
 do_build[recrdeptask] += "do_deploy"
 do_build () {
