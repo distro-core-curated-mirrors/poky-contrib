@@ -22,3 +22,6 @@ ARM_INSTRUCTION_SET_armv5 = "arm"
 LDFLAGS += "-Wl,-z,relro,-z,now ${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-gold', ' -fuse-ld=bfd ', '', d)}"
 
 SECURITY_LDFLAGS_append_libc-musl = " -lssp_nonshared"
+
+# As the README in source codes shows, powerpc has never been listed as supported.
+COMPATIBLE_HOST_powerpc = "null"
