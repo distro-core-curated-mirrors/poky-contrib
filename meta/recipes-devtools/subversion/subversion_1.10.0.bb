@@ -18,6 +18,8 @@ SRC_URI[sha256sum] = "2cf23f3abb837dea0585a6b0ebd70e80e01f95bddef7c1aa097c18e3ea
 
 inherit autotools pkgconfig gettext
 
+CVE_PRODUCT = "apache:subversion"
+
 PACKAGECONFIG ?= ""
 
 PACKAGECONFIG[sasl] = "--with-sasl,--without-sasl,cyrus-sasl"
