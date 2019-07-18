@@ -216,3 +216,4 @@ BBCLASSEXTEND = "native nativesdk"
 inherit multilib_script
 
 MULTILIB_SCRIPTS = "${PN}-bin:${bindir}/c_rehash"
+CVE_PRODUCT = "openssl:openssl"
