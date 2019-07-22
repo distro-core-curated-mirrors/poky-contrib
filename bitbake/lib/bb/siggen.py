@@ -81,6 +81,12 @@ class SignatureGenerator(object):
     def reset(self, data):
         self.__init__(data)
 
+    def get_taskhashes(self):
+        return self.taskhash
+
+    def set_taskhashes(self, hashes):
+        self.taskhash = hashes
+
 
 class SignatureGeneratorBasic(SignatureGenerator):
     """
