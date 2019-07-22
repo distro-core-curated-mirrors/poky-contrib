@@ -298,6 +298,9 @@ class SignatureGeneratorOEEquivHash(SignatureGeneratorOEBasicHash):
 
         return super().get_stampfile_hash(task)
 
+    def set_unihash(self, task, unihash):
+        self.unihashes[self.__get_task_unihash_key(task)] = unihash
+
     def get_unihash(self, task):
         import urllib
         import json
@@ -419,6 +422,7 @@ class SignatureGeneratorOEEquivHash(SignatureGeneratorOEBasicHash):
 
                 if new_unihash != unihash:
                     bb.debug(1, 'Task %s unihash changed %s -> %s by server %s' % (taskhash, unihash, new_unihash, self.server))
+                    bb.event.fire(bb.runqueue.taskUniHashUpdate(fn + ':do_' + task, new_unihash), d)
                 else:
                     bb.debug(1, 'Reported task %s as unihash %s to %s' % (taskhash, unihash, self.server))
             except urllib.error.URLError as e:

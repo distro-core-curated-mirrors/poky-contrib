@@ -206,6 +206,9 @@ class RunQueueScheduler(object):
     def newbuildable(self, task):
         self.buildable.append(task)
 
+    def removebuildable(self, task):
+        self.buildable.remove(task)
+
     def describe_task(self, taskid):
         result = 'ID %s' % taskid
         if self.rev_prio_map:
@@ -1718,6 +1721,8 @@ class RunQueueExecute:
         self.sq_running = set()
         self.sq_live = set()
 
+        self.changed_setscene = set()
+
         self.runq_buildable = set()
         self.runq_running = set()
         self.runq_complete = set()
@@ -1924,6 +1929,7 @@ class RunQueueExecute:
         """
 
         self.rq.read_workers()
+        self.process_possible_migrations()
 
         task = None
         if not self.sqdone and self.can_start_task():
@@ -2006,7 +2012,7 @@ class RunQueueExecute:
             if self.can_start_task():
                 return True
 
-        if not self.sq_live and not self.sqdone and not self.sq_deferred:
+        if not self.sq_live and not self.sqdone and not self.sq_deferred and not self.changed_setscene:
             logger.info("Setscene tasks completed")
             logger.debug(1, 'We could skip tasks %s', "\n".join(sorted(self.scenequeue_covered)))
 
@@ -2166,6 +2172,91 @@ class RunQueueExecute:
         #bb.note("Task %s: " % task + str(taskdepdata).replace("], ", "],\n"))
         return taskdepdata
 
+    def updated_taskhash(self, tid, unihash):
+        bb.warn("Task %s now has unihash %s" % (tid, unihash))
+        changed = set()
+        if unihash != self.rqdata.runtaskentries[tid].unihash:
+            #bb.warn("Changed %s to %s" % (self.rqdata.runtaskentries[tid].unihash, unihash))
+            self.rqdata.runtaskentries[tid].unihash = unihash
+            (mc, fn, taskname, taskfn) = split_tid_mcfn(tid)
+            bb.parse.siggen.set_unihash(taskfn + "." + taskname, unihash)
+
+            next = set(self.rqdata.runtaskentries[tid].revdeps)
+            while next:
+                current = next
+                next = set()
+                for tid in current:
+                    next |= self.rqdata.runtaskentries[tid].revdeps
+                    procdep = []
+                    for dep in self.rqdata.runtaskentries[tid].depends:
+                        procdep.append(fn_from_tid(dep) + "." + taskname_from_tid(dep))
+                    (mc, fn, taskname, taskfn) = split_tid_mcfn(tid)
+                    orighash = self.rqdata.runtaskentries[tid].hash
+                    self.rqdata.runtaskentries[tid].hash = bb.parse.siggen.get_taskhash(taskfn, taskname, procdep, self.rqdata.dataCaches[mc])
+                    origuni = self.rqdata.runtaskentries[tid].unihash
+                    self.rqdata.runtaskentries[tid].unihash = bb.parse.siggen.get_unihash(taskfn + "." + taskname)
+                    #bb.warn("%s %s->%s %s->%s" % (tid, orighash, self.rqdata.runtaskentries[tid].hash, origuni, self.rqdata.runtaskentries[tid].unihash))
+                    if origuni != self.rqdata.runtaskentries[tid].unihash:
+                        changed.add(tid)
+        if changed:
+            for mc in self.rq.worker:
+                self.rq.worker[mc].process.stdin.write(b"<newtaskhashes>" + pickle.dumps(bb.parse.siggen.get_taskhashes()) + b"</newtaskhashes>")
+            for mc in self.rq.fakeworker:
+                self.rq.fakeworker[mc].process.stdin.write(b"<newtaskhashes>" + pickle.dumps(bb.parse.siggen.get_taskhashes()) + b"</newtaskhashes>")
+
+        bb.warn(pprint.pformat("Tasks changed:\n%s" % (changed)))
+
+        for tid in changed:
+            if tid not in self.rqdata.runq_setscene_tids:
+                continue
+            valid = self.rq.validate_hashes(set([tid]), self.cooker.data, None, False)
+            if not valid:
+                continue
+            bb.warn("Sstate would be valid for %s" % tid)
+            self.changed_setscene.add(tid)
+
+    def process_possible_migrations(self):
+        for tid in self.changed_setscene.copy():
+            valid = True
+            # Check no tasks this covers are running
+            for dep in self.sqdata.sq_covered_tasks[tid]:
+                if dep in self.runq_running and dep not in self.runq_complete:
+                    bb.warn("Task %s is running which blocks setscene for %s from running" % (dep, tid))
+                    valid = False
+                    break
+            if not valid:
+                continue
+
+            for dep in self.sqdata.sq_covered_tasks[tid]:
+                if dep in self.runq_buildable and dep not in self.runq_complete:
+                    self.runq_buildable.remove(dep)
+                    self.sched.removebuildable(dep)
+                if dep not in self.runq_complete:
+                    self.tasks_scenequeue_done.remove(dep)
+                    self.tasks_notcovered.remove(dep)
+
+            if tid in self.sq_buildable:
+                self.sq_buildable.remove(tid)
+            if tid in self.sq_running:
+                self.sq_running.remove(tid)
+            if self.sqdata.sq_revdeps[tid].issubset(self.scenequeue_covered | self.scenequeue_notcovered):
+                if dep not in self.sq_buildable:
+                    self.sq_buildable.add(tid)
+
+            self.sqdata.outrightfail.remove(tid)
+            self.scenequeue_notcovered.remove(tid)
+
+            (mc, fn, taskname, taskfn) = split_tid_mcfn(tid)
+            self.sqdata.stamps[tid] = bb.build.stampfile(taskname + "_setscene", self.rqdata.dataCaches[mc], taskfn, noextra=True)
+
+            if tid in self.build_stamps:
+                del self.build_stamps[tid]
+
+            bb.warn("Setscene task %s being rerun" % tid)
+            self.sqdone = False
+            self.changed_setscene.remove(tid)
+
+
     def scenequeue_process_notcovered(self, task):
         if len(self.rqdata.runtaskentries[task].depends) == 0:
             self.setbuildable(task)
@@ -2206,12 +2297,9 @@ class RunQueueExecute:
                 logger.debug(2, "%s was unavailable and is a hard dependency of %s so skipping" % (task, dep))
                 self.sq_task_failoutright(dep)
                 continue
-            if task not in self.sqdata.sq_revdeps2[dep]:
-                # May already have been removed by the fail case above
-                continue
-            self.sqdata.sq_revdeps2[dep].remove(task)
-            if len(self.sqdata.sq_revdeps2[dep]) == 0:
-                self.sq_buildable.add(dep)
+            if self.sqdata.sq_revdeps[dep].issubset(self.scenequeue_covered | self.scenequeue_notcovered):
+                if dep not in self.sq_buildable:
+                    self.sq_buildable.add(dep)
 
         next = set([task])
         while next:
@@ -2257,6 +2345,8 @@ class RunQueueExecute:
                 self.coveredtopocess.remove(task)
                 for tid in covered:
                     if len(self.rqdata.runtaskentries[tid].depends) == 0:
+                        self.setbuildable(tid)
+                    if self.rqdata.runtaskentries[tid].depends.issubset(self.runq_complete):
                         self.setbuildable(tid)
 
     def sq_task_completeoutright(self, task):
@@ -2377,8 +2467,6 @@ class SQData(object):
         self.sq_deps = {}
         # SceneQueue reverse dependencies
         self.sq_revdeps = {}
-        # Copy of reverse dependencies used by sq processing code
-        self.sq_revdeps2 = {}
         # Injected inter-setscene task dependencies
         self.sq_harddeps = {}
         # Cache of stamp files so duplicates can't run in parallel
@@ -2715,6 +2803,15 @@ class runQueueTaskSkipped(runQueueEvent):
         runQueueEvent.__init__(self, task, stats, rq)
         self.reason = reason
 
+class taskUniHashUpdate(bb.event.Event):
+    """
+    Base runQueue event class
+    """
+    def __init__(self, task, unihash):
+        self.taskid = task
+        self.unihash = unihash
+        bb.event.Event.__init__(self)
+
 class runQueuePipe():
     """
     Abstraction for a pipe between a worker thread and the server
@@ -2757,6 +2854,8 @@ class runQueuePipe():
                 except ValueError as e:
                     bb.msg.fatal("RunQueue", "failed load pickle '%s': '%s'" % (e, self.queue[7:index]))
                 bb.event.fire_from_worker(event, self.d)
+                if isinstance(event, taskUniHashUpdate):
+                    self.rqexec.updated_taskhash(event.taskid, event.unihash)
                 found = True
                 self.queue = self.queue[index+8:]
                 index = self.queue.find(b"</event>")
