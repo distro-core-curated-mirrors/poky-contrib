@@ -43,51 +43,10 @@ BUILDHISTORY_COMMIT ?= "1"
 BUILDHISTORY_COMMIT_AUTHOR ?= "buildhistory <buildhistory@${DISTRO}>"
 BUILDHISTORY_PUSH_REPO ?= ""
 
-
-# Similarly for our function that gets the output signatures
-SSTATEPOSTUNPACKFUNCS_append = " buildhistory_emit_outputsigs"
-sstate_installpkgdir[vardepsexclude] += "buildhistory_emit_outputsigs"
-SSTATEPOSTUNPACKFUNCS[vardepvalueexclude] .= "| buildhistory_emit_outputsigs"
-
 PATCH_GIT_USER_EMAIL ?= "buildhistory@oe"
 PATCH_GIT_USER_NAME ?= "OpenEmbedded"
 
 #
-
-python buildhistory_emit_outputsigs() {
-    if not "task" in (d.getVar('BUILDHISTORY_FEATURES') or "").split():
-        return
-
-    import hashlib
-
-    taskoutdir = os.path.join(d.getVar('BUILDHISTORY_DIR'), 'task', 'output')
-    bb.utils.mkdirhier(taskoutdir)
-    currenttask = d.getVar('BB_CURRENTTASK')
-    pn = d.getVar('PN')
-    taskfile = os.path.join(taskoutdir, '%s.%s' % (pn, currenttask))
-
-    cwd = os.getcwd()
-    filesigs = {}
-    for root, _, files in os.walk(cwd):
-        for fname in files:
-            if fname == 'fixmepath':
-                continue
-            fullpath = os.path.join(root, fname)
-            try:
-                if os.path.islink(fullpath):
-                    sha256 = hashlib.sha256(os.readlink(fullpath).encode('utf-8')).hexdigest()
-                elif os.path.isfile(fullpath):
-                    sha256 = bb.utils.sha256_file(fullpath)
-                else:
-                    continue
-            except OSError:
-                bb.warn('buildhistory: unable to read %s to get output signature' % fullpath)
-                continue
-            filesigs[os.path.relpath(fullpath, cwd)] = sha256
-    with open(taskfile, 'w') as f:
-        for fpath, fsig in sorted(filesigs.items(), key=lambda item: item[0]):
-            f.write('%s %s\n' % (fpath, fsig))
-}
 # rootfs_type can be: image, sdk_target, sdk_host
 #
 def buildhistory_list_installed(d, rootfs_type="image"):
@@ -188,17 +147,6 @@ buildhistory_list_files_no_owners() {
 	else
 		eval "$find_cmd"
 	fi | sort -k5 | sed 's/ * -> $//' > $2 )
-}
-
-python buildhistory_write_sigs() {
-    if not "task" in (d.getVar('BUILDHISTORY_FEATURES') or "").split():
-        return
-
-    # Create sigs file
-    if hasattr(bb.parse.siggen, 'dump_siglist'):
-        taskoutdir = os.path.join(d.getVar('BUILDHISTORY_DIR'), 'task')
-        bb.utils.mkdirhier(taskoutdir)
-        bb.parse.siggen.dump_siglist(os.path.join(taskoutdir, 'tasksigs.txt'))
 }
 
 def buildhistory_get_build_id(d):
@@ -344,6 +292,8 @@ END
 		fi) || true
 }
 
+BUILDHISTORY_COMMIT_PREFUNCS ?= ""
+
 python buildhistory_eventhandler() {
     if e.data.getVar('BUILDHISTORY_FEATURES').strip():
         reset = e.data.getVar("BUILDHISTORY_RESET")
@@ -366,7 +316,8 @@ python buildhistory_eventhandler() {
                 shutil.rmtree(olddir)
             if e.data.getVar("BUILDHISTORY_COMMIT") == "1":
                 bb.note("Writing buildhistory")
-                bb.build.exec_func("buildhistory_write_sigs", d)
+                for func in (d.getVar("BUILDHISTORY_COMMIT_PREFUNCS") or "").split():
+                    bb.build.exec_func(func, d)
                 import time
                 start=time.time()
                 localdata = bb.data.createCopy(e.data)
