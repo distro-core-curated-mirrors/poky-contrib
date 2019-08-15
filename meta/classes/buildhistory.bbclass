@@ -234,7 +234,7 @@ python buildhistory_emit_pkghistory() {
     if not os.path.exists(pkghistdir):
         bb.utils.mkdirhier(pkghistdir)
     else:
-        # Remove files for packages that no longer exist
+        # Remove non-preserved files, as well as directories corresponding to packages that no longer exist
         for item in os.listdir(pkghistdir):
             if item not in preserve:
                 if item not in packagelist:
