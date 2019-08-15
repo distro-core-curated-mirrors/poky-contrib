@@ -22,7 +22,7 @@ SSTATEPOSTINSTFUNCS[vardepvalueexclude] .= "| buildhistory_emit_pkghistory"
 BUILDHISTORY_PRESERVE = "latest latest_srcrev sysroot"
 BUILDHISTORY_PACKAGE_PRESERVE = "${BUILDHISTORY_PRESERVE}"
 
-BUILDHISTORY_PACKAGE_HOOKS = ""
+BUILDHISTORY_PACKAGE_HOOKS = "buildhistory_list_pkg_files"
 BUILDHISTORY_PACKAGE_RECIPEHISTORY_HOOKS = ""
 BUILDHISTORY_PACKAGE_PACKAGEHISTORY_HOOKS = ""
 BUILDHISTORY_PACKAGE_SRCREV_HOOKS = "default_srcrev_hook"
@@ -278,18 +278,22 @@ python buildhistory_emit_pkghistory() {
         write_pkghistory(pkginfo, d)
 
     run_buildhistory_package_hooks(d, "BUILDHISTORY_PACKAGE_HOOKS")
-
-    # Create files-in-<package-name>.txt files containing a list of files of each recipe's package
-    bb.build.exec_func("buildhistory_list_pkg_files", d)
 }
 
 def run_buildhistory_package_hooks(d, var, *args):
     g = globals()
     for hook in (d.getVar(var) or "").split():
         try:
+            bb.warn(str(len([*args])))
             g[hook](d, *args)
         except KeyError:
-            bb.error("buildhistory-package: hook '{0}' listed in {1} doesn't exist".format(hook, var))
+            # Maybe a BB function?
+            if hook in d:
+                if len([*args]) != 0:
+                    bb.fatal("buildhistory-package: hooks in {0} take arguments, so '{1}' must be a Python function.".format(var, hook))
+                bb.build.exec_func(hook, d)
+            else:
+                bb.fatal("buildhistory-package: hook '{0}' listed in {1} doesn't exist".format(hook, var))
 
 def write_recipehistory(rcpinfo, d):
     bb.debug(2, "Writing recipe history")
@@ -360,7 +364,7 @@ def write_pkghistory(pkginfo, d):
                 os.unlink(filevarpath)
 
 buildhistory_list_pkg_files() {
-	# Create individual files-in-package for each recipe's package
+    # Create files-in-<package-name>.txt files containing a list of files of each recipe's package
 	for pkgdir in $(find ${PKGDEST}/* -maxdepth 0 -type d); do
 		pkgname=$(basename $pkgdir)
 		outfolder="${BUILDHISTORY_DIR_PACKAGE}/$pkgname"
