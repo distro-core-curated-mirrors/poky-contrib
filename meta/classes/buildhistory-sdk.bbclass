@@ -1,3 +1,5 @@
+inherit buildhistory
+
 BUILDHISTORY_DIR_SDK = "${BUILDHISTORY_DIR}/sdk/${SDK_NAME}${SDK_EXT}/${IMAGE_BASENAME}"
 BUILDHISTORY_SDK_FILES ?= "conf/local.conf conf/bblayers.conf conf/auto.conf conf/locked-sigs.inc conf/devtool.conf"
 
@@ -17,18 +19,10 @@ buildhistory_get_sdk_installed() {
 	# Anything requiring the use of the packaging system should be done in here
 	# in case the packaging files are going to be removed for this SDK
 
-	if [ "${@bb.utils.contains('BUILDHISTORY_FEATURES', 'sdk', '1', '0', d)}" = "0" ] ; then
-		return
-	fi
-
 	buildhistory_get_installed ${BUILDHISTORY_DIR_SDK}/$1 sdk
 }
 
 buildhistory_get_sdkinfo() {
-	if [ "${@bb.utils.contains('BUILDHISTORY_FEATURES', 'sdk', '1', '0', d)}" = "0" ] ; then
-		return
-	fi
-
 	buildhistory_list_files ${SDK_OUTPUT} ${BUILDHISTORY_DIR_SDK}/files-in-sdk.txt
 
 	# Collect files requested in BUILDHISTORY_SDK_FILES
@@ -72,8 +66,7 @@ python buildhistory_get_extra_sdkinfo() {
     sstate_dir = d.expand('${SDK_OUTPUT}/${SDKPATH}/sstate-cache')
     extra_info = get_extra_sdkinfo(sstate_dir)
 
-    if d.getVar('BB_CURRENTTASK') == 'populate_sdk_ext' and \
-            "sdk" in (d.getVar('BUILDHISTORY_FEATURES') or "").split():
+    if d.getVar('BB_CURRENTTASK') == 'populate_sdk_ext':
         with open(d.expand('${BUILDHISTORY_DIR_SDK}/sstate-package-sizes.txt'), 'w') as f:
             filesizes_sorted = sorted(extra_info['filesizes'].items(), key=operator.itemgetter(1, 0), reverse=True)
             for fn, size in filesizes_sorted:

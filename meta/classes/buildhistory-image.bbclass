@@ -1,3 +1,5 @@
+inherit buildhistory
+
 BUILDHISTORY_DIR_IMAGE = "${BUILDHISTORY_DIR}/images/${MACHINE_ARCH}/${TCLIBC}/${IMAGE_BASENAME}"
 BUILDHISTORY_IMAGE_FILES ?= "/etc/passwd /etc/group"
 
@@ -20,19 +22,11 @@ buildhistory_get_image_installed() {
 	# Anything requiring the use of the packaging system should be done in here
 	# in case the packaging files are going to be removed for this image
 
-	if [ "${@bb.utils.contains('BUILDHISTORY_FEATURES', 'image', '1', '0', d)}" = "0" ] ; then
-		return
-	fi
-
 	buildhistory_get_installed ${BUILDHISTORY_DIR_IMAGE}
 }
 
 buildhistory_get_imageinfo() {
-	if [ "${@bb.utils.contains('BUILDHISTORY_FEATURES', 'image', '1', '0', d)}" = "0" ] ; then
-		return
-	fi
-
-        mkdir -p ${BUILDHISTORY_DIR_IMAGE}
+    mkdir -p ${BUILDHISTORY_DIR_IMAGE}
 	buildhistory_list_files ${IMAGE_ROOTFS} ${BUILDHISTORY_DIR_IMAGE}/files-in-image.txt
 
 	# Collect files requested in BUILDHISTORY_IMAGE_FILES

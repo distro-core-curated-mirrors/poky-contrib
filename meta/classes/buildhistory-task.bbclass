@@ -1,11 +1,10 @@
+inherit buildhistory
+
 SSTATEPOSTUNPACKFUNCS_append = " buildhistory_emit_outputsigs"
 sstate_installpkgdir[vardepsexclude] += "buildhistory_emit_outputsigs"
 SSTATEPOSTUNPACKFUNCS[vardepvalueexclude] .= "| buildhistory_emit_outputsigs"
 
 python buildhistory_emit_outputsigs() {
-    if not "task" in (d.getVar('BUILDHISTORY_FEATURES') or "").split():
-        return
-
     import hashlib
 
     taskoutdir = os.path.join(d.getVar('BUILDHISTORY_DIR'), 'task', 'output')
@@ -38,9 +37,6 @@ python buildhistory_emit_outputsigs() {
 }
 
 python buildhistory_write_sigs() {
-    if not "task" in (d.getVar('BUILDHISTORY_FEATURES') or "").split():
-        return
-
     # Create sigs file
     if hasattr(bb.parse.siggen, 'dump_siglist'):
         taskoutdir = os.path.join(d.getVar('BUILDHISTORY_DIR'), 'task')
