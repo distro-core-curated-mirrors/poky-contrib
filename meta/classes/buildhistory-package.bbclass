@@ -13,10 +13,11 @@ SSTATEPOSTINSTFUNCS[vardepvalueexclude] .= "| buildhistory_emit_pkghistory"
 # necessary because some of these items (package directories, files that
 # we no longer emit) might be obsolete.
 #
-# When extending build history, derive your class from buildhistory.bbclass
-# and extend this list here with the additional files created by the derived
-# class.
+# To extend the build history package feature, derive your class from
+# buildhistory-package.bbclass and append to BUILDHISTORY_PACKAGE_PRESERVE
+# the additional files created by the derived class.
 BUILDHISTORY_PRESERVE = "latest latest_srcrev sysroot"
+BUILDHISTORY_PACKAGE_PRESERVE = "${BUILDHISTORY_PRESERVE}"
 
 
 #
@@ -188,7 +189,7 @@ python buildhistory_emit_pkghistory() {
             raise
 
     packagelist = packages.split()
-    preserve = d.getVar('BUILDHISTORY_PRESERVE').split()
+    preserve = d.getVar('BUILDHISTORY_PACKAGE_PRESERVE').split()
     if not os.path.exists(pkghistdir):
         bb.utils.mkdirhier(pkghistdir)
     else:
