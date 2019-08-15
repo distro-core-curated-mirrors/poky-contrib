@@ -15,12 +15,18 @@ SSTATEPOSTINSTFUNCS[vardepvalueexclude] .= "| buildhistory_emit_pkghistory"
 # necessary because some of these items (package directories, files that
 # we no longer emit) might be obsolete.
 #
-# To extend the build history package feature, derive your class from
-# buildhistory-package.bbclass and append to BUILDHISTORY_PACKAGE_PRESERVE
-# the additional files created by the derived class.
+# To augment or modify the build history package feature, derive your class
+# from buildhistory-package.bbclass and utilize one or more of the hooks.
+# If your class creates new files in BUILDHISTORY_DIR_PACKAGE, append the
+# names of them to BUILDHISTORY_PACKAGE_PRESERVE.
 BUILDHISTORY_PRESERVE = "latest latest_srcrev sysroot"
 BUILDHISTORY_PACKAGE_PRESERVE = "${BUILDHISTORY_PRESERVE}"
 
+BUILDHISTORY_PACKAGE_HOOKS = ""
+BUILDHISTORY_PACKAGE_RECIPEHISTORY_HOOKS = ""
+BUILDHISTORY_PACKAGE_PACKAGEHISTORY_HOOKS = ""
+BUILDHISTORY_PACKAGE_SRCREV_HOOKS = "default_srcrev_hook"
+BUILDHISTORY_PACKAGE_TAGSRCREV_HOOKS = "default_tagsrcrev_hook"
 
 #
 # Write out the contents of the sysroot
@@ -271,6 +277,8 @@ python buildhistory_emit_pkghistory() {
 
         write_pkghistory(pkginfo, d)
 
+    run_buildhistory_package_hooks(d, "BUILDHISTORY_PACKAGE_HOOKS")
+
     # Create files-in-<package-name>.txt files containing a list of files of each recipe's package
     bb.build.exec_func("buildhistory_list_pkg_files", d)
 }
@@ -282,8 +290,6 @@ def run_buildhistory_package_hooks(d, var, *args):
             g[hook](d, *args)
         except KeyError:
             bb.error("buildhistory-package: hook '{0}' listed in {1} doesn't exist".format(hook, var))
-
-BUILDHISTORY_PACKAGE_RECIPEHISTORY_HOOKS = ""
 
 def write_recipehistory(rcpinfo, d):
     bb.debug(2, "Writing recipe history")
@@ -303,8 +309,6 @@ def write_recipehistory(rcpinfo, d):
         run_buildhistory_package_hooks(d, "BUILDHISTORY_PACKAGE_RECIPEHISTORY_HOOKS", rcpinfo, f)
 
     write_latest_srcrev(d, pkghistdir)
-
-BUILDHISTORY_PACKAGE_PACKAGEHISTORY_HOOKS = ""
 
 def write_pkghistory(pkginfo, d):
     bb.debug(2, "Writing package history for package %s" % pkginfo.name)
@@ -413,9 +417,6 @@ do_fetch[vardepsexclude] += "write_srcrev"
 python write_srcrev() {
     write_latest_srcrev(d, d.getVar('BUILDHISTORY_DIR_PACKAGE'))
 }
-
-BUILDHISTORY_PACKAGE_SRCREV_HOOKS = "default_srcrev_hook"
-BUILDHISTORY_PACKAGE_TAGSRCREV_HOOKS = "default_tagsrcrev_hook"
 
 def default_srcrev_hook(d, name, srcrev, ud, total_count, f):
     if total_count == 1:
