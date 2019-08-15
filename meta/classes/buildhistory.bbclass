@@ -9,7 +9,6 @@
 
 BUILDHISTORY_FEATURES ?= "image package sdk"
 BUILDHISTORY_DIR ?= "${TOPDIR}/buildhistory"
-BUILDHISTORY_DIR_IMAGE = "${BUILDHISTORY_DIR}/images/${MACHINE_ARCH}/${TCLIBC}/${IMAGE_BASENAME}"
 
 
 def bh_classes_for_features(d):
@@ -41,7 +40,6 @@ BUILDHISTORY_RESET ?= ""
 
 BUILDHISTORY_OLD_DIR = "${BUILDHISTORY_DIR}/${@ "old" if "${BUILDHISTORY_RESET}" else ""}"
 BUILDHISTORY_DIR_SDK = "${BUILDHISTORY_DIR}/sdk/${SDK_NAME}${SDK_EXT}/${IMAGE_BASENAME}"
-BUILDHISTORY_IMAGE_FILES ?= "/etc/passwd /etc/group"
 BUILDHISTORY_SDK_FILES ?= "conf/local.conf conf/bblayers.conf conf/auto.conf conf/locked-sigs.inc conf/devtool.conf"
 BUILDHISTORY_COMMIT ?= "1"
 BUILDHISTORY_COMMIT_AUTHOR ?= "buildhistory <buildhistory@${DISTRO}>"
@@ -113,10 +111,6 @@ def buildhistory_list_installed(d, rootfs_type="image"):
         with open(output_file_full, 'w') as output:
             output.write(format_pkg_list(pkgs, output_type))
 
-python buildhistory_list_installed_image() {
-    buildhistory_list_installed(d)
-}
-
 python buildhistory_list_installed_sdk_target() {
     buildhistory_list_installed(d, "sdk_target")
 }
@@ -180,17 +174,6 @@ buildhistory_get_installed() {
 	fi
 }
 
-buildhistory_get_image_installed() {
-	# Anything requiring the use of the packaging system should be done in here
-	# in case the packaging files are going to be removed for this image
-
-	if [ "${@bb.utils.contains('BUILDHISTORY_FEATURES', 'image', '1', '0', d)}" = "0" ] ; then
-		return
-	fi
-
-	buildhistory_get_installed ${BUILDHISTORY_DIR_IMAGE}
-}
-
 buildhistory_get_sdk_installed() {
 	# Anything requiring the use of the packaging system should be done in here
 	# in case the packaging files are going to be removed for this SDK
@@ -236,39 +219,6 @@ buildhistory_list_files_no_owners() {
 	fi | sort -k5 | sed 's/ * -> $//' > $2 )
 }
 
-buildhistory_get_imageinfo() {
-	if [ "${@bb.utils.contains('BUILDHISTORY_FEATURES', 'image', '1', '0', d)}" = "0" ] ; then
-		return
-	fi
-
-        mkdir -p ${BUILDHISTORY_DIR_IMAGE}
-	buildhistory_list_files ${IMAGE_ROOTFS} ${BUILDHISTORY_DIR_IMAGE}/files-in-image.txt
-
-	# Collect files requested in BUILDHISTORY_IMAGE_FILES
-	rm -rf ${BUILDHISTORY_DIR_IMAGE}/image-files
-	for f in ${BUILDHISTORY_IMAGE_FILES}; do
-		if [ -f ${IMAGE_ROOTFS}/$f ] ; then
-			mkdir -p ${BUILDHISTORY_DIR_IMAGE}/image-files/`dirname $f`
-			cp ${IMAGE_ROOTFS}/$f ${BUILDHISTORY_DIR_IMAGE}/image-files/$f
-		fi
-	done
-
-	# Record some machine-readable meta-information about the image
-	printf ""  > ${BUILDHISTORY_DIR_IMAGE}/image-info.txt
-	cat >> ${BUILDHISTORY_DIR_IMAGE}/image-info.txt <<END
-${@buildhistory_get_imagevars(d)}
-END
-	imagesize=`du -ks ${IMAGE_ROOTFS} | awk '{ print $1 }'`
-	echo "IMAGESIZE = $imagesize" >> ${BUILDHISTORY_DIR_IMAGE}/image-info.txt
-
-	# Add some configuration information
-	echo "${MACHINE}: ${IMAGE_BASENAME} configured for ${DISTRO} ${DISTRO_VERSION}" > ${BUILDHISTORY_DIR_IMAGE}/build-id.txt
-
-	cat >> ${BUILDHISTORY_DIR_IMAGE}/build-id.txt <<END
-${@buildhistory_get_build_id(d)}
-END
-}
-
 buildhistory_get_sdkinfo() {
 	if [ "${@bb.utils.contains('BUILDHISTORY_FEATURES', 'sdk', '1', '0', d)}" = "0" ] ; then
 		return
@@ -312,17 +262,6 @@ python buildhistory_get_extra_sdkinfo() {
             for task, size in tasksizes_sorted:
                 f.write('%10d KiB %s\n' % (size, task))
 }
-
-# By using ROOTFS_POSTUNINSTALL_COMMAND we get in after uninstallation of
-# unneeded packages but before the removal of packaging files
-ROOTFS_POSTUNINSTALL_COMMAND += "buildhistory_list_installed_image ;"
-ROOTFS_POSTUNINSTALL_COMMAND += "buildhistory_get_image_installed ;"
-ROOTFS_POSTUNINSTALL_COMMAND[vardepvalueexclude] .= "| buildhistory_list_installed_image ;| buildhistory_get_image_installed ;"
-ROOTFS_POSTUNINSTALL_COMMAND[vardepsexclude] += "buildhistory_list_installed_image buildhistory_get_image_installed"
-
-IMAGE_POSTPROCESS_COMMAND += "buildhistory_get_imageinfo ;"
-IMAGE_POSTPROCESS_COMMAND[vardepvalueexclude] .= "| buildhistory_get_imageinfo ;"
-IMAGE_POSTPROCESS_COMMAND[vardepsexclude] += "buildhistory_get_imageinfo"
 
 # We want these to be the last run so that we get called after complementary package installation
 POPULATE_SDK_POST_TARGET_COMMAND_append = " buildhistory_list_installed_sdk_target;"
@@ -401,13 +340,6 @@ def outputvars(vars, listvars, d):
             value = oe.utils.squashspaces(value)
         ret += "%s = %s\n" % (var, value)
     return ret.rstrip('\n')
-
-def buildhistory_get_imagevars(d):
-    if d.getVar('BB_WORKERCONTEXT') != '1':
-        return ""
-    imagevars = "DISTRO DISTRO_VERSION USER_CLASSES IMAGE_CLASSES IMAGE_FEATURES IMAGE_LINGUAS IMAGE_INSTALL BAD_RECOMMENDATIONS NO_RECOMMENDATIONS PACKAGE_EXCLUDE ROOTFS_POSTPROCESS_COMMAND IMAGE_POSTPROCESS_COMMAND"
-    listvars = "USER_CLASSES IMAGE_CLASSES IMAGE_FEATURES IMAGE_LINGUAS IMAGE_INSTALL BAD_RECOMMENDATIONS PACKAGE_EXCLUDE"
-    return outputvars(imagevars, listvars, d)
 
 def buildhistory_get_sdkvars(d):
     if d.getVar('BB_WORKERCONTEXT') != '1':
@@ -629,6 +561,7 @@ def write_latest_srcrev(d, pkghistdir):
         if os.path.exists(srcrevfile):
             os.remove(srcrevfile)
 
+#TODO: Move to buildhistory-image.bbclass?
 do_testimage[postfuncs] += "write_ptest_result"
 do_testimage[vardepsexclude] += "write_ptest_result"
 
