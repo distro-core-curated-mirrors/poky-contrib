@@ -66,6 +66,8 @@ python buildhistory_emit_pkghistory() {
             self.packages = ""
             self.srcrev = ""
             self.layer = ""
+            # Intended for use by any user-defined hooks
+            self.user_data = dict()
 
 
     class PackageInfo:
@@ -91,6 +93,8 @@ python buildhistory_emit_pkghistory() {
             self.filelist = ""
             # Variables that need to be written to their own separate file
             self.filevars = dict.fromkeys(['pkg_preinst', 'pkg_postinst', 'pkg_prerm', 'pkg_postrm'])
+            # Intended for use by any user-defined hooks
+            self.user_data = dict()
 
     # Should check PACKAGES here to see if anything removed
 
@@ -271,6 +275,16 @@ python buildhistory_emit_pkghistory() {
     bb.build.exec_func("buildhistory_list_pkg_files", d)
 }
 
+def run_buildhistory_package_hooks(d, var, *args):
+    g = globals()
+    for hook in (d.getVar(var) or "").split():
+        try:
+            g[hook](d, *args)
+        except KeyError:
+            bb.error("buildhistory-package: hook '{0}' listed in {1} doesn't exist".format(hook, var))
+
+BUILDHISTORY_PACKAGE_RECIPEHISTORY_HOOKS = ""
+
 def write_recipehistory(rcpinfo, d):
     bb.debug(2, "Writing recipe history")
 
@@ -286,7 +300,11 @@ def write_recipehistory(rcpinfo, d):
         f.write(u"PACKAGES = %s\n" %  rcpinfo.packages)
         f.write(u"LAYER = %s\n" %  rcpinfo.layer)
 
+        run_buildhistory_package_hooks(d, "BUILDHISTORY_PACKAGE_RECIPEHISTORY_HOOKS", rcpinfo, f)
+
     write_latest_srcrev(d, pkghistdir)
+
+BUILDHISTORY_PACKAGE_PACKAGEHISTORY_HOOKS = ""
 
 def write_pkghistory(pkginfo, d):
     bb.debug(2, "Writing package history for package %s" % pkginfo.name)
@@ -324,6 +342,8 @@ def write_pkghistory(pkginfo, d):
         f.write(u"PKGSIZE = %d\n" %  pkginfo.size)
         f.write(u"FILES = %s\n" %  pkginfo.files)
         f.write(u"FILELIST = %s\n" %  pkginfo.filelist)
+
+        run_buildhistory_package_hooks(d, "BUILDHISTORY_PACKAGE_PACKAGEHISTORY_HOOKS", pkginfo, f)
 
     for filevar in pkginfo.filevars:
         filevarpath = os.path.join(pkgpath, "latest.%s" % filevar)
@@ -412,14 +432,6 @@ def default_tagsrcrev_hook(d, name, srcrev, old_tag_srcrevs, f):
         pn = d.getVar('PN')
         bb.warn("Revision for tag {0} in recipe {1} was changed since last build (from {2} to {3})".format(name, pn, old_tag_srcrevs[name], srcrev))
 
-def run_srcrev_hooks(var, d, *args):
-    g = globals()
-    for hook in (d.getVar(var) or "").split():
-        try:
-            g[hook](d, *args)
-        except KeyError:
-            bb.error("buildhistory srcrev hook {0} doesn't exist".format(hook))
-
 def write_latest_srcrev(d, pkghistdir):
     srcrevfile = os.path.join(pkghistdir, 'latest_srcrev')
 
@@ -444,10 +456,10 @@ def write_latest_srcrev(d, pkghistdir):
 
             srcrev_count = len(srcrevs)
             for name, srcrev in sorted(srcrevs.items()):
-                run_srcrev_hooks("BUILDHISTORY_PACKAGE_SRCREV_HOOKS", d, name, srcrev, uds[name], srcrev_count, f)
+                run_buildhistory_package_hooks(d, "BUILDHISTORY_PACKAGE_SRCREV_HOOKS", name, srcrev, uds[name], srcrev_count, f)
 
             for name, srcrev in sorted(tag_srcrevs.items()):
-                run_srcrev_hooks("BUILDHISTORY_PACKAGE_TAGSRCREV_HOOKS", d, name, srcrev, old_tag_srcrevs, f)
+                run_buildhistory_package_hooks(d, "BUILDHISTORY_PACKAGE_TAGSRCREV_HOOKS", name, srcrev, old_tag_srcrevs, f)
     else:
         if os.path.exists(srcrevfile):
             os.remove(srcrevfile)
