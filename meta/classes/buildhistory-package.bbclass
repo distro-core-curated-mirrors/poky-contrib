@@ -350,7 +350,6 @@ buildhistory_list_pkg_files() {
 	done
 }
 
-
 # FIXME this ought to be moved into the fetcher
 def _get_srcrev_values(d):
     """
@@ -367,6 +366,7 @@ def _get_srcrev_values(d):
     autoinc_templ = 'AUTOINC+'
     dict_srcrevs = {}
     dict_tag_srcrevs = {}
+    dict_ud = {}
     for scm in scms:
         ud = urldata[scm]
         for name in ud.names:
@@ -381,11 +381,12 @@ def _get_srcrev_values(d):
             elif rev.startswith(autoinc_templ):
                 rev = rev[len(autoinc_templ):]
             dict_srcrevs[name] = rev
+            dict_ud[name] = ud
             if 'tag' in ud.parm:
                 tag = ud.parm['tag'];
                 key = name+'_'+tag
                 dict_tag_srcrevs[key] = rev
-    return (dict_srcrevs, dict_tag_srcrevs)
+    return (dict_srcrevs, dict_tag_srcrevs, dict_ud)
 
 do_fetch[postfuncs] += "write_srcrev"
 do_fetch[vardepsexclude] += "write_srcrev"
@@ -393,10 +394,36 @@ python write_srcrev() {
     write_latest_srcrev(d, d.getVar('BUILDHISTORY_DIR_PACKAGE'))
 }
 
+BUILDHISTORY_PACKAGE_SRCREV_HOOKS = "default_srcrev_hook"
+BUILDHISTORY_PACKAGE_TAGSRCREV_HOOKS = "default_tagsrcrev_hook"
+
+def default_srcrev_hook(d, name, srcrev, ud, total_count, f):
+    if total_count == 1:
+        f.write('SRCREV = "{0}"\n'.format(srcrev))
+    else:
+        orig_srcrev = d.getVar('SRCREV_{0}'.format(name), False)
+        if orig_srcrev:
+            f.write('# SRCREV_{0} = "{1}"\n'.format(name, orig_srcrev))
+        f.write('SRCREV_{0} = "{1}"\n'.format(name, srcrev))
+
+def default_tagsrcrev_hook(d, name, srcrev, old_tag_srcrevs, f):
+    f.write('# tag_{0} = "{1}"\n'.format(name, srcrev))
+    if name in old_tag_srcrevs and old_tag_srcrevs[name] != srcrev:
+        pn = d.getVar('PN')
+        bb.warn("Revision for tag {0} in recipe {1} was changed since last build (from {2} to {3})".format(name, pn, old_tag_srcrevs[name], srcrev))
+
+def run_srcrev_hooks(var, d, *args):
+    g = globals()
+    for hook in (d.getVar(var) or "").split():
+        try:
+            g[hook](d, *args)
+        except KeyError:
+            bb.error("buildhistory srcrev hook {0} doesn't exist".format(hook))
+
 def write_latest_srcrev(d, pkghistdir):
     srcrevfile = os.path.join(pkghistdir, 'latest_srcrev')
 
-    srcrevs, tag_srcrevs = _get_srcrev_values(d)
+    srcrevs, tag_srcrevs, uds = _get_srcrev_values(d)
     if srcrevs:
         if not os.path.exists(pkghistdir):
             bb.utils.mkdirhier(pkghistdir)
@@ -409,25 +436,18 @@ def write_latest_srcrev(d, pkghistdir):
                         key = key.replace('# tag_', '').strip()
                         value = value.replace('"', '').strip()
                         old_tag_srcrevs[key] = value
+
         with open(srcrevfile, 'w') as f:
             orig_srcrev = d.getVar('SRCREV', False) or 'INVALID'
             if orig_srcrev != 'INVALID':
-                f.write('# SRCREV = "%s"\n' % orig_srcrev)
-            if len(srcrevs) > 1:
-                for name, srcrev in sorted(srcrevs.items()):
-                    orig_srcrev = d.getVar('SRCREV_%s' % name, False)
-                    if orig_srcrev:
-                        f.write('# SRCREV_%s = "%s"\n' % (name, orig_srcrev))
-                    f.write('SRCREV_%s = "%s"\n' % (name, srcrev))
-            else:
-                f.write('SRCREV = "%s"\n' % next(iter(srcrevs.values())))
-            if len(tag_srcrevs) > 0:
-                for name, srcrev in sorted(tag_srcrevs.items()):
-                    f.write('# tag_%s = "%s"\n' % (name, srcrev))
-                    if name in old_tag_srcrevs and old_tag_srcrevs[name] != srcrev:
-                        pkg = d.getVar('PN')
-                        bb.warn("Revision for tag %s in package %s was changed since last build (from %s to %s)" % (name, pkg, old_tag_srcrevs[name], srcrev))
+                f.write('# SRCREV = "{0}"\n'.format(orig_srcrev))
 
+            srcrev_count = len(srcrevs)
+            for name, srcrev in sorted(srcrevs.items()):
+                run_srcrev_hooks("BUILDHISTORY_PACKAGE_SRCREV_HOOKS", d, name, srcrev, uds[name], srcrev_count, f)
+
+            for name, srcrev in sorted(tag_srcrevs.items()):
+                run_srcrev_hooks("BUILDHISTORY_PACKAGE_TAGSRCREV_HOOKS", d, name, srcrev, old_tag_srcrevs, f)
     else:
         if os.path.exists(srcrevfile):
             os.remove(srcrevfile)
