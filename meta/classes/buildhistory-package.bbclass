@@ -284,7 +284,6 @@ def run_buildhistory_package_hooks(d, var, *args):
     g = globals()
     for hook in (d.getVar(var) or "").split():
         try:
-            bb.warn(str(len([*args])))
             g[hook](d, *args)
         except KeyError:
             # Maybe a BB function?
