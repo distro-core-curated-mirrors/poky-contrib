@@ -118,6 +118,14 @@ FILES_gettext-runtime-doc = "${mandir}/man1/gettext.* \
 
 do_install_append() {
     rm -f ${D}${libdir}/preloadable_libintl.so
+    # remove useless rpath to avoid QA issue
+    useless_rpath_list="${D}${libdir}/gettext/urlget ${D}${libdir}/gettext/cldr-plurals \
+                        ${D}${libdir}/gettext/hostname ${D}${bindir}/recode-sr-latin"
+    for f in $useless_rpath_list; do
+	if [ -e $f ]; then
+	    chrpath -d $f
+	fi
+    done
 }
 
 do_install_append_class-native () {
@@ -163,6 +171,8 @@ do_install_ptest() {
         find ${D}${PTEST_PATH}/ -name "*.o" -exec rm {} \;
         chmod 0755 ${D}${PTEST_PATH}/tests/lang-vala ${D}${PTEST_PATH}/tests/plural-1 ${D}${PTEST_PATH}/tests/xgettext-tcl-4 \
                    ${D}${PTEST_PATH}/tests/xgettext-vala-1  ${D}${PTEST_PATH}/tests/xgettext-po-2
+        # avoid useless rpath
+        [ -e ${D}${PTEST_PATH}/src/cldr-plurals ] && chrpath -d ${D}${PTEST_PATH}/src/cldr-plurals
     fi
 }
 
