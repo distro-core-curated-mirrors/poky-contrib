@@ -29,7 +29,7 @@ SRC_URI = "${KERNELORG_MIRROR}/linux/utils/nfs-utils/${PV}/nfs-utils-${PV}.tar.x
            file://nfs-utils-debianize-start-statd.patch \
            file://bugfix-adjust-statd-service-name.patch \
            file://0001-cacheio-use-intmax_t-for-formatted-IO.patch \
-           file://clang-format-string.patch \
+           file://0001-Add-printf-format-checking.patch \
            file://0001-Makefile.am-fix-undefined-function-for-libnsm.a.patch \
            file://0001-Don-t-build-tools-with-CC_FOR_BUILD.patch \
            file://0001-Fix-include-order-between-config.h-and-stat.h.patch \
