@@ -90,7 +90,7 @@ class ReproducibleTests(OESelftestTestCase):
     # If you know that your sstate archives are reproducible, enabling this
     # will test that and also make the test run faster. If your sstate is not
     # reproducible, disable this in your derived test class
-    build_from_sstate = True
+    build_from_sstate = False
 
     def setUpLocal(self):
         super().setUpLocal()
