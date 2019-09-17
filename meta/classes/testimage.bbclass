@@ -144,14 +144,30 @@ def testimage_sanity(d):
 def get_testimage_configuration(d, test_type, machine):
     import platform
     from oeqa.utils.metadata import get_layers
+    distro = d.getVar("DISTRO")
+    distrooverride = d.getVar("DISTROOVERRIDES")
+
+    kernel_provider = d.getVar("PREFERRED_PROVIDER_virtual/kernel")
+    for o in distrooverride.split(":"):
+        kernel_provider_override = d.getVar("PREFERRED_PROVIDER_virtual/kernel_%s" % o)
+        if kernel_provider_override:
+            kernel_provider = kernel_provider_override
+
+    kernel_provider_version = d.getVar("PREFERRED_VERSION_%s" % kernel_provider).replace('%', '')
+    for o in distrooverride.split(":"):
+        kernel_provider_version_override = d.getVar("PREFERRED_VERSION_%s_%s" % (kernel_provider, o))
+        if kernel_provider_version_override:
+            kernel_provider_version = kernel_provider_version_override.replace('%', '')
+
     configuration = {'TEST_TYPE': test_type,
                     'MACHINE': machine,
-                    'DISTRO': d.getVar("DISTRO"),
+                    'DISTRO': distro,
                     'IMAGE_BASENAME': d.getVar("IMAGE_BASENAME"),
                     'IMAGE_PKGTYPE': d.getVar("IMAGE_PKGTYPE"),
                     'STARTTIME': d.getVar("DATETIME"),
                     'HOST_DISTRO': oe.lsb.distro_identifier().replace(' ', '-'),
-                    'LAYERS': get_layers(d.getVar("BBLAYERS"))}
+                    'LAYERS': get_layers(d.getVar("BBLAYERS")),
+                    'KERNEL_PROVIDER_VERSION': '%s_%s' % (kernel_provider, kernel_provider_version)}
     return configuration
 get_testimage_configuration[vardepsexclude] = "DATETIME"
 
