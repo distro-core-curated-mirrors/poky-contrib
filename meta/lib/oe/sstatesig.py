@@ -130,10 +130,10 @@ class SignatureGeneratorOEBasicHash(bb.siggen.SignatureGeneratorBasicHash):
 
     def get_taskdata(self):
         data = super(bb.siggen.SignatureGeneratorBasicHash, self).get_taskdata()
-        return (data, self.lockedpnmap, self.lockedhashfn)
+        return (data, self.lockedpnmap, self.lockedhashfn, self.lockedhashes)
 
     def set_taskdata(self, data):
-        coredata, self.lockedpnmap, self.lockedhashfn = data
+        coredata, self.lockedpnmap, self.lockedhashfn, self.lockedhashes = data
         super(bb.siggen.SignatureGeneratorBasicHash, self).set_taskdata(coredata)
 
     def dump_sigs(self, dataCache, options):
@@ -181,6 +181,11 @@ class SignatureGeneratorOEBasicHash(bb.siggen.SignatureGeneratorBasicHash):
                 return h_locked
         #bb.warn("%s %s %s" % (recipename, task, h))
         return h
+
+    def get_unihash(self, tid):
+        if tid in self.lockedhashes:
+            return self.lockedhashes[tid]
+        return super().get_unihash(tid)
 
     def dump_sigtask(self, fn, task, stampbase, runtime):
         tid = fn + ":" + task
