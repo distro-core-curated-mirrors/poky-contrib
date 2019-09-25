@@ -36,6 +36,8 @@ POSTINST_LOGFILE ?= "${localstatedir}/log/postinstall.log"
 # Set default target for systemd images
 SYSTEMD_DEFAULT_TARGET ?= '${@bb.utils.contains("IMAGE_FEATURES", "x11-base", "graphical.target", "multi-user.target", d)}'
 ROOTFS_POSTPROCESS_COMMAND += '${@bb.utils.contains("DISTRO_FEATURES", "systemd", "set_systemd_default_target; systemd_create_users;", "", d)}'
+# Mark /etc as updated for systemd as we have done things in rootfs time
+ROOTFS_POSTPROCESS_COMMAND += '${@bb.utils.contains("DISTRO_FEATURES", "systemd", "systemd_mark_etc_updated;", "", d)}'
 
 ROOTFS_POSTPROCESS_COMMAND += 'empty_var_volatile;'
 
@@ -84,6 +86,10 @@ systemd_create_users () {
 		fi
 		done
 	done
+}
+
+systemd_mark_etc_updated () {
+	touch ${IMAGE_ROOTFS}${sysconfdir}/.updated
 }
 
 #
