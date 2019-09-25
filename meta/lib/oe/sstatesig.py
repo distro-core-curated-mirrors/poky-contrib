@@ -172,9 +172,10 @@ class SignatureGeneratorOEBasicHash(bb.siggen.SignatureGeneratorBasicHash):
                 var = self.lockedsigs[recipename][task][1]
                 self.lockedhashes[tid] = h_locked
                 self.taskhash[tid] = h_locked
+                unihash = self.get_unihash(tid)
                 #bb.warn("Using %s %s %s" % (recipename, task, h))
 
-                if h != h_locked:
+                if h != h_locked and h_locked != unihash:
                     self.mismatch_msgs.append('The %s:%s sig is computed to be %s, but the sig is locked to %s in %s'
                                           % (recipename, task, h, h_locked, var))
 
