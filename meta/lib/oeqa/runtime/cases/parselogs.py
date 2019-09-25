@@ -162,6 +162,7 @@ ignore_errors = {
         'ttyS2 - failed to request DMA',
         'Bluetooth: hci0: Failed to send firmware data (-38)',
         'atkbd serio0: Failed to enable keyboard on isa0060/serio0',
+        'PNP0A03:00',
         ] + x86_common,
     'genericx86' : x86_common,
     'genericx86-64' : [
