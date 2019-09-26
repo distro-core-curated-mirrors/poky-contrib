@@ -90,8 +90,7 @@ class SignatureGeneratorOEBasic(bb.siggen.SignatureGeneratorBasic):
     def rundep_check(self, fn, recipename, task, dep, depname, dataCache = None):
         return sstate_rundepfilter(self, fn, recipename, task, dep, depname, dataCache)
 
-class SignatureGeneratorOEBasicHash(bb.siggen.SignatureGeneratorBasicHash):
-    name = "OEBasicHash"
+class SignatureGeneratorOEBasicHashMixIn(object):
     def init_rundepcheck(self, data):
         self.abisaferecipes = (data.getVar("SIGGEN_EXCLUDERECIPES_ABISAFE") or "").split()
         self.saferecipedeps = (data.getVar("SIGGEN_EXCLUDE_SAFE_RECIPE_DEPS") or "").split()
@@ -263,7 +262,10 @@ class SignatureGeneratorOEBasicHash(bb.siggen.SignatureGeneratorBasicHash):
         if error_msgs:
             bb.fatal("\n".join(error_msgs))
 
-class SignatureGeneratorOEEquivHash(bb.siggen.SignatureGeneratorUniHashMixIn, SignatureGeneratorOEBasicHash):
+class SignatureGeneratorOEBasicHash(SignatureGeneratorOEBasicHashMixIn, bb.siggen.SignatureGeneratorBasicHash):
+    name = "OEBasicHash"
+
+class SignatureGeneratorOEEquivHash(SignatureGeneratorOEBasicHashMixIn, bb.siggen.SignatureGeneratorUniHashMixIn, bb.siggen.SignatureGeneratorBasicHash):
     name = "OEEquivHash"
 
     def init_rundepcheck(self, data):
