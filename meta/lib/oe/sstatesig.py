@@ -270,6 +270,7 @@ class SignatureGeneratorOEEquivHash(SignatureGeneratorOEBasicHashMixIn, bb.sigge
     def init_rundepcheck(self, data):
         super().init_rundepcheck(data)
         self.server = data.getVar('BB_HASHSERVE')
+        self.server_timeout = int(data.getVar('BB_HASHSERVE_TIMEOUT') or 20)
         if not self.server:
             bb.fatal("OEEquivHash requires BB_HASHSERVE to be set")
         self.method = data.getVar('SSTATE_HASHEQUIV_METHOD')

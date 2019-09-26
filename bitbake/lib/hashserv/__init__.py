@@ -80,9 +80,9 @@ def create_server(addr, dbname, *, sync=True):
     return s
 
 
-def create_client(addr):
+def create_client(addr, *, timeout=None):
     from . import client
-    c = client.Client()
+    c = client.Client(timeout=timeout)
 
     (typ, a) = parse_address(addr)
     if typ == ADDR_TYPE_UNIX:

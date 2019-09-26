@@ -21,15 +21,16 @@ class Client(object):
     MODE_NORMAL = 0
     MODE_GET_STREAM = 1
 
-    def __init__(self):
+    def __init__(self, timeout=None):
         self._socket = None
         self.reader = None
         self.writer = None
         self.mode = self.MODE_NORMAL
+        self.timeout = timeout
 
     def connect_tcp(self, address, port):
         def connect_sock():
-            s = socket.create_connection((address, port))
+            s = socket.create_connection((address, port), timeout=self.timeout)
 
             s.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
             s.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
@@ -41,11 +42,14 @@ class Client(object):
     def connect_unix(self, path):
         def connect_sock():
             s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            s.settimeout(self.timeout)
             # AF_UNIX has path length issues so chdir here to workaround
             cwd = os.getcwd()
             try:
                 os.chdir(os.path.dirname(path))
                 s.connect(os.path.basename(path))
+            except socket.timeout as e:
+                raise HashConnectionError(str(e))
             finally:
                 os.chdir(cwd)
             return s
@@ -82,7 +86,7 @@ class Client(object):
             try:
                 self.connect()
                 return proc()
-            except (OSError, HashConnectionError, json.JSONDecodeError, UnicodeDecodeError) as e:
+            except (OSError, HashConnectionError, json.JSONDecodeError, UnicodeDecodeError, socket.timeout) as e:
                 logger.warning('Error talking to server: %s' % e)
                 if count >= 3:
                     if not isinstance(e, HashConnectionError):

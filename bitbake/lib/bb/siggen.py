@@ -372,15 +372,15 @@ class SignatureGeneratorBasicHash(SignatureGeneratorBasic):
 
 class SignatureGeneratorUniHashMixIn(object):
     def get_taskdata(self):
-        return (self.server, self.method) + super().get_taskdata()
+        return (self.server, self.server_timeout, self.method) + super().get_taskdata()
 
     def set_taskdata(self, data):
-        self.server, self.method = data[:2]
-        super().set_taskdata(data[2:])
+        self.server, self.server_timeout, self.method = data[:3]
+        super().set_taskdata(data[3:])
 
     def client(self):
         if getattr(self, '_client', None) is None:
-            self._client = hashserv.create_client(self.server)
+            self._client = hashserv.create_client(self.server, timeout=self.server_timeout)
         return self._client
 
     def __get_task_unihash_key(self, tid):
@@ -533,6 +533,7 @@ class SignatureGeneratorTestEquivHash(SignatureGeneratorUniHashMixIn, SignatureG
     def init_rundepcheck(self, data):
         super().init_rundepcheck(data)
         self.server = data.getVar('BB_HASHSERVE')
+        self.server_timeout = int(data.getVar('BB_HASHSERVE_TIMEOUT') or 20)
         self.method = "sstate_output_hash"
 
 
