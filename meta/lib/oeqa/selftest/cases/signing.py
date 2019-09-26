@@ -180,6 +180,8 @@ class LockedSignatures(OESelftestTestCase):
         AutomatedBy: Daniel Istrate <daniel.alexandrux.istrate@intel.com>
         """
 
+        import uuid
+
         test_recipe = 'ed'
         locked_sigs_file = 'locked-sigs.inc'
 
@@ -197,9 +199,10 @@ class LockedSignatures(OESelftestTestCase):
         bitbake(test_recipe)
 
         # Make a change that should cause the locked task signature to change
+        # Use uuid so hash equivalance server isn't triggered
         recipe_append_file = test_recipe + '_' + get_bb_var('PV', test_recipe) + '.bbappend'
         recipe_append_path = os.path.join(self.testlayer_path, 'recipes-test', test_recipe, recipe_append_file)
-        feature = 'SUMMARY += "test locked signature"\n'
+        feature = 'SUMMARY_${PN} = "test locked signature%s"\n' % uuid.uuid4()
 
         os.mkdir(os.path.join(self.testlayer_path, 'recipes-test', test_recipe))
         write_file(recipe_append_path, feature)
