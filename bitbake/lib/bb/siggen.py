@@ -294,7 +294,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
             data['file_checksum_values'] = [(os.path.basename(f), cs) for f,cs in self.file_checksum_values[tid]]
             data['runtaskhashes'] = {}
             for dep in data['runtaskdeps']:
-                data['runtaskhashes'][dep] = self.get_unihash(dep)
+                data['runtaskhashes'][dep] = {'taskhash': self.taskhash[dep], 'unihash': self.get_unihash(dep)}
             data['taskhash'] = self.taskhash[tid]
             data['unihash'] = self.get_unihash(tid)
 
@@ -773,8 +773,10 @@ def compare_sigfiles(a, b, recursecb=None, color=False, collapsed=False):
             for idx, task in enumerate(a_data['runtaskdeps']):
                 a = a_data['runtaskdeps'][idx]
                 b = b_data['runtaskdeps'][idx]
-                if a_data['runtaskhashes'][a] != b_data['runtaskhashes'][b] and not collapsed:
-                    changed.append("%s with hash %s\n changed to\n%s with hash %s" % (clean_basepath(a), a_data['runtaskhashes'][a], clean_basepath(b), b_data['runtaskhashes'][b]))
+                if a_data['runtaskhashes'][a]['unihash'] != b_data['runtaskhashes'][b]['unihash'] and not collapsed:
+                    changed.append("%s with hash %s (taskhash %s)\n changed to\n%s with hash %s (taskhash %s)" % (
+                                   clean_basepath(a), a_data['runtaskhashes'][a]['unihash'], a_data['runtaskhashes'][a]['taskhash'],
+                                   clean_basepath(b), b_data['runtaskhashes'][b]['unihash'], b_data['runtaskhashes'][b]['taskhash']))
 
         if changed:
             clean_a = clean_basepaths_list(a_data['runtaskdeps'])
@@ -795,25 +797,27 @@ def compare_sigfiles(a, b, recursecb=None, color=False, collapsed=False):
                 bdep_found = False
                 if removed:
                     for bdep in removed:
-                        if b[dep] == a[bdep]:
+                        if b[dep]['unihash'] == a[bdep]['unihash']:
                             #output.append("Dependency on task %s was replaced by %s with same hash" % (dep, bdep))
                             bdep_found = True
                 if not bdep_found:
-                    output.append(color_format("{color_title}Dependency on task %s was added{color_default} with hash %s") % (clean_basepath(dep), b[dep]))
+                    output.append(color_format("{color_title}Dependency on task %s was added{color_default} with hash %s (taskhash %s)") % (
+                                               clean_basepath(dep), b[dep]['unihash'], b[dep]['taskhash']))
         if removed:
             for dep in removed:
                 adep_found = False
                 if added:
                     for adep in added:
-                        if b[adep] == a[dep]:
+                        if b[adep]['unihash'] == a[dep]['unihash']:
                             #output.append("Dependency on task %s was replaced by %s with same hash" % (adep, dep))
                             adep_found = True
                 if not adep_found:
-                    output.append(color_format("{color_title}Dependency on task %s was removed{color_default} with hash %s") % (clean_basepath(dep), a[dep]))
+                    output.append(color_format("{color_title}Dependency on task %s was removed{color_default} with hash %s (taskhash %s") % (
+                                               clean_basepath(dep), a[dep]['unihash'], a[dep]['taskhash']))
         if changed:
             for dep in changed:
                 if not collapsed:
-                    output.append(color_format("{color_title}Hash for dependent task %s changed{color_default} from %s to %s") % (clean_basepath(dep), a[dep], b[dep]))
+                    output.append(color_format("{color_title}Hash for dependent task %s changed{color_default} from %s to %s") % (clean_basepath(dep), a[dep]['unihash'], b[dep]['unihash']))
                 if callable(recursecb):
                     recout = recursecb(dep, a[dep], b[dep])
                     if recout:
@@ -856,7 +860,7 @@ def calc_taskhash(sigdata):
     data = sigdata['basehash']
 
     for dep in sigdata['runtaskdeps']:
-        data = data + sigdata['runtaskhashes'][dep]
+        data = data + sigdata['runtaskhashes'][dep]['unihash']
 
     for c in sigdata['file_checksum_values']:
         if c[1]:
@@ -900,7 +904,7 @@ def dump_sigfile(a):
 
     if 'runtaskhashes' in a_data:
         for dep in a_data['runtaskhashes']:
-            output.append("Hash for dependent task %s is %s" % (dep, a_data['runtaskhashes'][dep]))
+            output.append("Hash for dependent task %s is %s (taskhash %s)" % (dep, a_data['runtaskhashes'][dep]['unihash'], a_data['runtaskhashes'][dep]['taskhash']))
 
     if 'taint' in a_data:
         if a_data['taint'].startswith('nostamp:'):
