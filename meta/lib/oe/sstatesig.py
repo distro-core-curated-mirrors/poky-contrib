@@ -170,8 +170,8 @@ class SignatureGeneratorOEBasicHashMixIn(object):
                 h_locked = self.lockedsigs[recipename][task][0]
                 var = self.lockedsigs[recipename][task][1]
                 self.lockedhashes[tid] = h_locked
+                unihash = super().get_unihash(tid)
                 self.taskhash[tid] = h_locked
-                unihash = self.get_unihash(tid)
                 #bb.warn("Using %s %s %s" % (recipename, task, h))
 
                 if h != h_locked and h_locked != unihash:
