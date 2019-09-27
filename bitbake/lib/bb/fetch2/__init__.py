@@ -1568,7 +1568,7 @@ class FetchMethod(object):
 
     def generate_revision_key(self, ud, d, name):
         key = self._revision_key(ud, d, name)
-        return "%s-%s" % (key, d.getVar("PN") or "")
+        return "%s|%s" % (key, d.getVar("PN") or "")
 
     def latest_versionstring(self, ud, d):
         """
