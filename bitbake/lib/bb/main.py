@@ -464,9 +464,9 @@ def setup_bitbake(configParams, configuration, extrafeatures=None):
                 retries -= 1
                 tryno = 8 - retries
                 if isinstance(e, (bb.server.process.ProcessTimeout, BrokenPipeError, EOFError)):
-                    logger.info("Retrying server connection (#%d)..." % tryno)
+                    logger.info("Retrying server connection (attempt #%d)..." % tryno)
                 else:
-                    logger.info("Retrying server connection (#%d)... (%s)" % (tryno, traceback.format_exc()))
+                    logger.info("Retrying server connection (attempt #%d)... (%s)" % (tryno, traceback.format_exc()))
             if not retries:
                 bb.fatal("Unable to connect to bitbake server, or start one (server startup failures would be in bitbake-cookerdaemon.log).")
             bb.event.print_ui_queue()
