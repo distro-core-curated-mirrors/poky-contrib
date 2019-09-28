@@ -1548,6 +1548,12 @@ class FetchMethod(object):
         logger.info("URL %s could not be checked for status since no method exists.", urldata.url)
         return True
 
+    def _extra_revision_data(self, key, ud, d, name):
+        """
+        Additional info to stash in the revision cache 'value' that corresponds to 'key'.
+        """
+        return {}
+
     def latest_revision(self, ud, d, name):
         """
         Look in the cache for the latest revision, if not present ask the SCM.
@@ -1568,6 +1574,7 @@ class FetchMethod(object):
 
         rev = self._latest_revision(ud, d, name)
         val = {"rev": rev, "uri_name": name}
+        val.update(self._extra_revision_data(key, ud, d, name))
         revs[key] = json.dumps(val, sort_keys=True)
         return rev
 
