@@ -22,6 +22,7 @@ import operator
 import collections
 import subprocess
 import pickle
+import json
 import errno
 import bb.persist_data, bb.utils
 import bb.checksum
@@ -1557,10 +1558,18 @@ class FetchMethod(object):
         revs = bb.persist_data.persist('BB_URI_HEADREVS', d)
         key = self.generate_revision_key(ud, d, name)
         try:
-            return revs[key]
+            val = json.loads(revs[key])
+            if isinstance(val, dict):
+                return val["rev"]
+
+            # Otherwise, assume old format
         except KeyError:
-            revs[key] = rev = self._latest_revision(ud, d, name)
-            return rev
+            pass
+
+        rev = self._latest_revision(ud, d, name)
+        val = {"rev": rev, "uri_name": name}
+        revs[key] = json.dumps(val, sort_keys=True)
+        return rev
 
     def sortable_revision(self, ud, d, name):
         latest_rev = self._build_revision(ud, d, name)
