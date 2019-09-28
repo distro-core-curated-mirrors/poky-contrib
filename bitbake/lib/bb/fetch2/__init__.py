@@ -18,7 +18,7 @@ import logging
 import urllib.request, urllib.parse, urllib.error
 if 'git' not in urllib.parse.uses_netloc:
     urllib.parse.uses_netloc.append('git')
-import operator
+
 import collections
 import subprocess
 import pickle
@@ -111,7 +111,7 @@ class MissingParameterError(BBFetchException):
         self.args = (missing, url)
 
 class ParameterError(BBFetchException):
-    """Exception raised when a url cannot be proccessed due to invalid parameters."""
+    """Exception raised when a url cannot be processed due to invalid parameters."""
     def __init__(self, message, url):
         msg = "URL: '%s' has invalid parameters. %s" % (url, message)
         self.url = url
@@ -181,9 +181,9 @@ class URI(object):
     Some notes about relative URIs: while it's specified that
     a URI beginning with <scheme>:// should either be directly
     followed by a hostname or a /, the old URI handling of the
-    fetch2 library did not comform to this. Therefore, this URI
+    fetch2 library did not conform to this. Therefore, this URI
     class has some kludges to make sure that URIs are parsed in
-    a way comforming to bitbake's current usage. This URI class
+    a way conforming to bitbake's current usage. This URI class
     supports the following:
 
      file:relative/path.diff (IETF compliant)
@@ -601,11 +601,11 @@ def verify_checksum(ud, d, precomputed={}):
     mismatch = False
     if ud.md5_expected and ud.md5_expected != md5data:
         msg = msg + "\nFile: '%s' has %s checksum %s when %s was expected" % (ud.localpath, 'md5', md5data, ud.md5_expected)
-        mismatch = True;
+        mismatch = True
 
     if ud.sha256_expected and ud.sha256_expected != sha256data:
         msg = msg + "\nFile: '%s' has %s checksum %s when %s was expected" % (ud.localpath, 'sha256', sha256data, ud.sha256_expected)
-        mismatch = True;
+        mismatch = True
 
     if mismatch:
         msg = msg + '\nIf this change is expected (e.g. you have upgraded to a new version without updating the checksums) then you can use these lines within the recipe:\nSRC_URI[%s] = "%s"\nSRC_URI[%s] = "%s"\nOtherwise you should retry the download and/or check with upstream to determine if the file has become corrupted or otherwise unexpectedly modified.\n' % (ud.md5_name, md5data, ud.sha256_name, sha256data)
@@ -761,7 +761,7 @@ def get_srcrev(d, method_name='sortable_revision'):
         return rev
 
     #
-    # Mutiple SCMs are in SRC_URI so we resort to SRCREV_FORMAT
+    # Multiple SCMs are in SRC_URI so we resort to SRCREV_FORMAT
     #
     format = d.getVar('SRCREV_FORMAT')
     if not format:
@@ -807,7 +807,7 @@ def runfetchcmd(cmd, d, quiet=False, cleanup=None, log=None, workdir=None):
     # Need to export PATH as binary could be in metadata paths
     # rather than host provided
     # Also include some other variables.
-    # FIXME: Should really include all export varaiables?
+    # FIXME: Should really include all export variables?
     exportvars = ['HOME', 'PATH',
                   'HTTP_PROXY', 'http_proxy',
                   'HTTPS_PROXY', 'https_proxy',
