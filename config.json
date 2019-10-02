@@ -3,7 +3,7 @@
     "BASE_SHAREDDIR" : "/srv/autobuilder/autobuilder.yoctoproject.org",
     "BASE_PUBLISHDIR" : "/srv/autobuilder/downloads.yoctoproject.org",
 
-    "build-history-targets" : ["qemuarm64", "qemuarm", "qemuarm-lsb", "qemumips64", "qemumips", "qemumips-lsb", "qemuppc", "qemuppc-lsb", "qemux86-64", "qemux86-64-lsb", "qemux86", "qemux86-lsb"],
+    "build-history-targets" : ["qemuarm64", "qemuarm", "qemuarm-alt", "qemumips64", "qemumips", "qemumips-alt", "qemuppc", "qemuppc-alt", "qemux86-64", "qemux86-64-alt", "qemux86", "qemux86-alt"],
     "BUILD_HISTORY_DIR" : "buildhistory",
     "BUILD_HISTORY_REPO" : "ssh://git@push.yoctoproject.org/poky-buildhistory",
     "BUILD_HISTORY_DIRECTPUSH" : ["poky:morty", "poky:pyro", "poky:rocko", "poky:sumo", "poky:thud", "poky:master"],
@@ -147,7 +147,7 @@
             "MACHINE" : "qemuarm",
             "TEMPLATE" : "arch-qemu"
         },
-        "qemuarm-lsb" : {
+        "qemuarm-alt" : {
             "MACHINE" : "qemuarm",
             "TEMPLATE" : "lsb-qemu"
         },
@@ -162,7 +162,7 @@
                 "BBTARGETS" : "core-image-minimal:do_populate_sdk_ext core-image-sato:do_populate_sdk"
             }
         },
-        "beaglebone-lsb" : {
+        "beaglebone-alt" : {
             "MACHINE" : "beaglebone-yocto",
             "TEMPLATE" : "lsb-hw"
         },
@@ -211,7 +211,7 @@
             "MACHINE" : "qemumips",
             "TEMPLATE" : "arch-qemu"
         },
-        "qemumips-lsb" : {
+        "qemumips-alt" : {
             "MACHINE" : "qemumips",
             "TEMPLATE" : "lsb-qemu"
         },
@@ -219,7 +219,7 @@
             "MACHINE" : "edgerouter",
             "TEMPLATE" : "arch-hw"
         },
-        "edgerouter-lsb" : {
+        "edgerouter-alt" : {
             "MACHINE" : "edgerouter",
             "TEMPLATE" : "lsb-hw"
         },
@@ -231,7 +231,7 @@
             "MACHINE" : "qemuppc",
             "TEMPLATE" : "arch-qemu"
         },
-        "qemuppc-lsb" : {
+        "qemuppc-alt" : {
             "MACHINE" : "qemuppc",
             "TEMPLATE" : "lsb-qemu"
         },
@@ -239,7 +239,7 @@
             "MACHINE" : "mpc8315e-rdb",
             "TEMPLATE" : "arch-hw"
         },
-        "mpc8315e-rdb-lsb" : {
+        "mpc8315e-rdb-alt" : {
             "MACHINE" : "mpc8315e-rdb",
             "TEMPLATE" : "lsb-hw"
         },
@@ -255,7 +255,7 @@
                 "SANITYTARGETS" : "core-image-sato:do_testsdk core-image-minimal:do_testsdkext core-image-sato:do_testsdkext"
             }
         },
-        "qemux86-lsb" : {
+        "qemux86-alt" : {
             "MACHINE" : "qemux86",
             "TEMPLATE" : "lsb-qemu"
         },
@@ -268,7 +268,7 @@
                 ]
             }
         },
-        "genericx86-lsb" : {
+        "genericx86-alt" : {
             "MACHINE" : "genericx86",
             "TEMPLATE" : "lsb-hw"
         },
@@ -284,7 +284,7 @@
                 "SANITYTARGETS" : "core-image-sato:do_testsdk core-image-minimal:do_testsdkext core-image-sato:do_testsdkext"
             }
         },
-        "qemux86-64-lsb" : {
+        "qemux86-64-alt" : {
             "MACHINE" : "qemux86-64",
             "TEMPLATE" : "lsb-hw"
         },
@@ -297,7 +297,7 @@
                 ]
             }
         },
-        "genericx86-64-lsb" : {
+        "genericx86-64-alt" : {
             "MACHINE" : "genericx86-64",
             "TEMPLATE" : "lsb-hw"
         },
@@ -311,7 +311,7 @@
                 "DEFAULTTUNE_virtclass-multilib-lib32 = 'x86'"
             ]
         },
-        "qemux86-world-lsb" : {
+        "qemux86-world-alt" : {
             "MACHINE" : "qemux86",
             "SDKMACHINE" : "x86_64",
             "DISTRO" : "poky-lsb",
