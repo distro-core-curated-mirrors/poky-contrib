@@ -1,0 +1,15 @@
+#! /bin/sh
+
+set -e
+
+# Replicate the behaviour of the Meson test suite
+
+TESTDIR="@PTEST_PATH@"
+
+for input in $TESTDIR/*.input; do
+    test=$(basename $input .input)
+    output="$TESTDIR/$test.reference"
+    charset="${input#*_}"
+    charset="${charset%%_*}"
+    $TESTDIR/test-runner.py @BINDIR@/fribidi $charset $input $output && echo PASS: $test || echo FAIL: $test
+done
