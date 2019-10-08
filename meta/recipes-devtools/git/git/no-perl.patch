@@ -1,0 +1,18 @@
+this perl is the target perl.  can be unset and perl stuff isn't installed.
+doesn't quite work yet though
+
+Upstream-Status: Pending
+
+diff --git a/configure.ac b/configure.ac
+index a43b476402..309658efd3 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -418,7 +418,7 @@ GIT_PARSE_WITH_SET_MAKE_VAR(editor, DEFAULT_EDITOR,
+ GIT_ARG_SET_PATH(shell)
+ #
+ # Define PERL_PATH to provide path to Perl.
+-GIT_ARG_SET_PATH(perl)
++GIT_ARG_SET_PATH(perl, allow-without)
+ #
+ # Define PYTHON_PATH to provide path to Python.
+ GIT_ARG_SET_PATH(python, allow-without)

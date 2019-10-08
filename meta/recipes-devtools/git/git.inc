@@ -7,7 +7,8 @@ DEPENDS = "openssl curl zlib expat"
 PROVIDES_append_class-native = " git-replacement-native"
 
 SRC_URI = "${KERNELORG_MIRROR}/software/scm/git/git-${PV}.tar.gz;name=tarball \
-           ${KERNELORG_MIRROR}/software/scm/git/git-manpages-${PV}.tar.gz;name=manpages"
+           ${KERNELORG_MIRROR}/software/scm/git/git-manpages-${PV}.tar.gz;name=manpages \
+           file://no-perl.patch"
 
 S = "${WORKDIR}/git-${PV}"
 
@@ -15,21 +16,20 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=7c0d7ef03a7eb04ce795b0f60e68e7e1"
 
 CVE_PRODUCT = "git-scm:git"
 
-PACKAGECONFIG ??= ""
+PACKAGECONFIG ??= "perl"
 PACKAGECONFIG[cvsserver] = ""
 PACKAGECONFIG[svn] = ""
+PACKAGECONFIG[perl] = "--with-perl='${bindir}/env perl',--without-perl"
 
-EXTRA_OECONF = "--with-perl=${STAGING_BINDIR_NATIVE}/perl-native/perl \
-		--without-tcltk \
+EXTRA_OECONF = "--without-tcltk \
 		--without-iconv \
 "
 EXTRA_OECONF_append_class-nativesdk = " --with-gitconfig=/etc/gitconfig "
 
 # Needs brokensep as this doesn't use automake
-inherit autotools-brokensep perlnative bash-completion
+inherit autotools-brokensep bash-completion
 
 EXTRA_OEMAKE = "NO_PYTHON=1 CFLAGS='${CFLAGS}' LDFLAGS='${LDFLAGS}'"
-EXTRA_OEMAKE += "'PERL_PATH=/usr/bin/env perl'"
 EXTRA_OEMAKE_append_class-native = " NO_CROSS_DIRECTORY_HARDLINKS=1"
 
 do_compile_prepend () {
@@ -49,12 +49,6 @@ do_install () {
 
 	install -d ${D}/${datadir}/bash-completion/completions/
 	install -m 644 ${S}/contrib/completion/git-completion.bash ${D}/${datadir}/bash-completion/completions/git
-}
-
-perl_native_fixup () {
-	sed -i -e 's#${STAGING_BINDIR_NATIVE}/perl-native/#${bindir}/#' \
-	       -e 's#${libdir}/perl-native/#${libdir}/#' \
-	    ${@d.getVar("PERLTOOLS").replace(' /',d.getVar('D') + '/')}
 
 	if [ ! "${@bb.utils.filter('PACKAGECONFIG', 'cvsserver', d)}" ]; then
 		# Only install the git cvsserver command if explicitly requested
@@ -68,17 +62,12 @@ perl_native_fixup () {
 		# Only install the git svn command and all Git::SVN Perl modules
 		# if explicitly requested as they require the SVN::Core Perl
 		# module, which does not exist in OE-Core.
-		rm -r ${D}${libexecdir}/git-core/git-svn \
-		      ${D}${datadir}/perl5/Git/SVN*
+		rm -rf ${D}${libexecdir}/git-core/git-svn \
+		       ${D}${datadir}/perl5/Git/SVN*
 	fi
 }
-
 REL_GIT_EXEC_PATH = "${@os.path.relpath(libexecdir, bindir)}/git-core"
 REL_GIT_TEMPLATE_DIR = "${@os.path.relpath(datadir, bindir)}/git-core/templates"
-
-do_install_append_class-target () {
-	perl_native_fixup
-}
 
 do_install_append_class-native() {
 	create_wrapper ${D}${bindir}/git \
@@ -90,7 +79,6 @@ do_install_append_class-nativesdk() {
 	create_wrapper ${D}${bindir}/git \
 		GIT_EXEC_PATH='`dirname $''realpath`'/${REL_GIT_EXEC_PATH} \
 		GIT_TEMPLATE_DIR='`dirname $''realpath`'/${REL_GIT_TEMPLATE_DIR}
-	perl_native_fixup
 }
 
 FILES_${PN} += "${datadir}/git-core ${libexecdir}/git-core/"
