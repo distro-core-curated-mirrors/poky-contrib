@@ -47,3 +47,6 @@ FILES_librsvg-gtk = "${libdir}/gdk-pixbuf-2.0/*/*/*.so \
 RRECOMMENDS_librsvg-gtk = "gdk-pixbuf-bin"
 
 PIXBUF_PACKAGES = "librsvg-gtk"
+
+# This was fixed in 2.40.20
+CVE_CHECK_WHITELIST = "CVE-2018-1000041"
