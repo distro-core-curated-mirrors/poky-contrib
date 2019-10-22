@@ -176,7 +176,4 @@ python () {
                 source_date_epoch = f.read()
             bb.debug(1, "SOURCE_DATE_EPOCH: %s" % source_date_epoch)
         d.setVar('SOURCE_DATE_EPOCH', source_date_epoch)
-
-    if d.getVar('REPRODUCIBLE_REBUILD') == '1' and d.getVar('CLASSOVERRIDE') == 'class-target':
-       d.setVarFlag('do_configure', 'nostamp', '1')
 }
