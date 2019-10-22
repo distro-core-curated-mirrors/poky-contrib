@@ -126,15 +126,15 @@ class ReproducibleTests(OESelftestTestCase):
         result.sort()
         return result
 
-    def write_package_list(self, name, package_class, result, packages):
-        self.extraresults['reproducible']['files'].setdefault(name, {}).setdefault(package_class, {})[result] = [
+    def write_package_list(self, package_class, name, packages):
+        self.extrasresults['reproducible']['files'].setdefault(package_class, {})[name] = [
                 {'reference': p.reference, 'test': p.test} for p in packages]
 
     def copy_file(self, source, dest):
         bb.utils.mkdirhier(os.path.dirname(dest))
         shutil.copyfile(source, dest)
 
-    def do_test_build(self, name, use_sstate, deploy='deploy', clean=True):
+    def do_test_build(self, name, use_sstate):
         capture_vars = ['DEPLOY_DIR_' + c.upper() for c in self.package_classes]
 
         if self.save_results:
@@ -143,17 +143,15 @@ class ReproducibleTests(OESelftestTestCase):
             self.logger.info('Non-reproducible packages will be copied to %s', save_dir)
 
         tmpdir = os.path.join(self.topdir, name, 'tmp')
-        if os.path.exists(tmpdir) and clean:
+        if os.path.exists(tmpdir):
             bb.utils.remove(tmpdir, recurse=True)
 
         config = textwrap.dedent('''\
             INHERIT += "reproducible_build"
-            REPRODUCIBLE_REBUILD = "1"
             PACKAGE_CLASSES = "{package_classes}"
             TMPDIR = "{tmpdir}"
-            DEPLOY_DIR = "${{TMPDIR}}/{deploy}"
             ''').format(package_classes=' '.join('package_%s' % c for c in self.package_classes),
-                        tmpdir=tmpdir, deploy=deploy)
+                        tmpdir=tmpdir)
 
         if not use_sstate:
             # This config fragment will disable using shared and the sstate
@@ -168,33 +166,6 @@ class ReproducibleTests(OESelftestTestCase):
         bitbake(' '.join(self.images))
         return d
 
-    def compare_builds(self, name, vars_A, vars_B, diffutils_sysroot):
-        for c in self.package_classes:
-            with self.subTest(package_class=c):
-                package_class = 'package_' + c
-
-                deploy_A = vars_A['DEPLOY_DIR_' + c.upper()]
-                deploy_B = vars_B['DEPLOY_DIR_' + c.upper()]
-
-                result = self.compare_packages(deploy_A, deploy_B, diffutils_sysroot)
-
-                self.logger.info('Reproducibility summary for %s %s: %s' % (name, c, result))
-
-                self.append_to_log('\n'.join("%s: %s" % (r.status, r.test) for r in result.total))
-
-                self.write_package_list(name, package_class, 'missing', result.missing)
-                self.write_package_list(name, package_class, 'different', result.different)
-                self.write_package_list(name, package_class, 'same', result.same)
-
-                if self.save_results:
-                    for d in result.different:
-                        self.copy_file(d.reference, '/'.join([save_dir, d.reference]))
-                        self.copy_file(d.test, '/'.join([save_dir, d.test]))
-
-                if result.missing or result.different:
-                    self.fail("The following %s %s packages are missing or different: %s" %
-                            (name, c, ' '.join(r.test for r in (result.missing + result.different))))
-
     def test_reproducible_builds(self):
         # Build native utilities
         self.write_config('')
@@ -207,8 +178,29 @@ class ReproducibleTests(OESelftestTestCase):
         # NOTE: The temp directories from the reproducible build are purposely
         # kept after the build so it can be diffed for debugging.
 
-        self.compare_builds('build', vars_A, vars_B, diffutils_sysroot)
+        for c in self.package_classes:
+            with self.subTest(package_class=c):
+                package_class = 'package_' + c
 
-        vars_A_rebuild = self.do_test_build('reproducibleA', False, deploy='deploy-rebuild', clean=False)
-        self.compare_builds('rebuild', vars_A, vars_A_rebuild, diffutils_sysroot)
+                deploy_A = vars_A['DEPLOY_DIR_' + c.upper()]
+                deploy_B = vars_B['DEPLOY_DIR_' + c.upper()]
+
+                result = self.compare_packages(deploy_A, deploy_B, diffutils_sysroot)
+
+                self.logger.info('Reproducibility summary for %s: %s' % (c, result))
+
+                self.append_to_log('\n'.join("%s: %s" % (r.status, r.test) for r in result.total))
+
+                self.write_package_list(package_class, 'missing', result.missing)
+                self.write_package_list(package_class, 'different', result.different)
+                self.write_package_list(package_class, 'same', result.same)
+
+                if self.save_results:
+                    for d in result.different:
+                        self.copy_file(d.reference, '/'.join([save_dir, d.reference]))
+                        self.copy_file(d.test, '/'.join([save_dir, d.test]))
+
+                if result.missing or result.different:
+                    self.fail("The following %s packages are missing or different: %s" %
+                            (c, ' '.join(r.test for r in (result.missing + result.different))))
 
