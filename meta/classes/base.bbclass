@@ -121,7 +121,11 @@ def get_lic_checksum_file_list(d):
 def setup_hosttools_dir(dest, toolsvar, d, fatal=True):
     tools = d.getVar(toolsvar).split()
     origbbenv = d.getVar("BB_ORIGENV", False)
-    path = origbbenv.getVar("PATH")
+    # Remove scripts/ from $PATH as these are not *host* tools
+    path = origbbenv.getVar("PATH").split(os.pathsep)
+    path.remove(d.expand("${COREBASE}/scripts"))
+    path = os.pathsep.join(path)
+
     bb.utils.mkdirhier(dest)
     notfound = []
     for tool in tools:
