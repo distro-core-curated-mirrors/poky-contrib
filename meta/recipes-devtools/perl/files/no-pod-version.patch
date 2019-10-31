@@ -1,0 +1,28 @@
+Remove the version from the Pod version report so that differences in Perl
+version doesn't change the documentation.
+
+This is used to ensure that Pod documentation built with perl-native is
+identical to documentation built with our pod2man wrapper, which removes the
+version information.
+
+Upstream-Status: Inappropriate
+Signed-off-by: Ross Burton <ross.burton@intel.com>
+
+diff --git a/cpan/Pod-Simple/lib/Pod/Simple.pm b/cpan/Pod-Simple/lib/Pod/Simple.pm
+index 2092415..8e0b0f5 100644
+--- a/cpan/Pod-Simple/lib/Pod/Simple.pm
++++ b/cpan/Pod-Simple/lib/Pod/Simple.pm
+@@ -174,12 +174,7 @@ BEGIN {
+ 
+ sub version_report {
+   my $class = ref($_[0]) || $_[0];
+-  if($class eq __PACKAGE__) {
+-    return "$class $VERSION";
+-  } else {
+-    my $v = $class->VERSION;
+-    return "$class $v (" . __PACKAGE__ . " $VERSION)";
+-  }
++  return "$class";
+ }
+ 
+ #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
