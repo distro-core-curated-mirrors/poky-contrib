@@ -1,0 +1,14 @@
+diff --git a/tap/__main__.py b/tap/__main__.py
+new file mode 100644
+index 0000000..2fc4fe4
+--- /dev/null
++++ b/tap/__main__.py
+@@ -0,0 +1,8 @@
++#! /usr/bin/env python3
++
++import tap
++import unittest
++
++runner = tap.runner.TAPTestRunner()
++runner.set_stream(True)
++unittest.main(module=None, testRunner=runner)
