@@ -371,6 +371,12 @@ class BitBakeServer(object):
 
     def __init__(self, lock, sockname, configuration, featureset):
 
+        fh = logging.FileHandler('testout.log')
+        fh.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(levelname)s - %(process)d - %(message)s')
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
+
         self.configuration = configuration
         self.featureset = featureset
         self.sockname = sockname
@@ -400,6 +406,8 @@ class BitBakeServer(object):
         self.sock.close()
         self.bitbake_lock.close()
         os.close(self.readypipein)
+
+        bb.note('### ARGV = %s' % sys.argv)
 
         ready = ConnectionReader(self.readypipe)
         r = ready.poll(5)
