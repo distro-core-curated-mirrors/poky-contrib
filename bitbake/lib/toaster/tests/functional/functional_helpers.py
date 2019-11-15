@@ -8,7 +8,6 @@
 #
 
 import os
-import logging
 import subprocess
 import signal
 import time
@@ -16,8 +15,9 @@ import re
 
 from tests.browser.selenium_helpers_base import SeleniumTestCaseBase
 from tests.builds.buildtest import load_build_environment
-
-logger = logging.getLogger("toaster")
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 class SeleniumFunctionalTestCase(SeleniumTestCaseBase):
     wait_toaster_time = 5
@@ -108,3 +108,46 @@ class SeleniumFunctionalTestCase(SeleniumTestCaseBase):
         except NoSuchElementException as e:
             return False
         return element
+    def create_new_project(self, project_name):
+        """
+        Assume there're multiple suitable "find_element_by_link_text".
+        In this circumstance we need to specify "table".
+        """
+        self.get('')
+        self.driver.find_element_by_id("new-project-button").click()
+        self.driver.find_element_by_id("new-project-name").send_keys(project_name)
+        self.driver.find_element_by_id('projectversion').click()
+        self.driver.find_element_by_id("create-project-button").click()
+        time.sleep(20)
+    def build_recipie(self,recipie_name,project_name):
+        #self.get('')
+        self.driver.find_element_by_id("build-input").click()
+        time.sleep(10)
+        self.driver.find_element_by_id("build-input").send_keys(recipie_name)
+        time.sleep(5)
+        self.driver.find_element_by_id("build-button").click()
+        time.sleep(5)
+        try:
+            WebDriverWait(self.driver,700).until(EC.element_to_be_clickable(
+                (By.XPATH, '//*[@id="latest-builds"]//span[@class="rebuild-btn alert-link danger pull-right"]')))
+            time.sleep(5)
+            self.fail(msg=" Fail Build is not successful for test case  {} ".format(project_name))
+            #logger.info("Fail Build is not successful for test case  {} ".format(project_name))
+        except:
+            WebDriverWait(self.driver, 8000).until(EC.element_to_be_clickable(
+                (By.XPATH, '//*[@id="latest-builds"]//span[@class="rebuild-btn alert-link info pull-right"]')))
+            time.sleep(5)
+
+    def search_element(self, search_table_name,search_submit_button,serach_key):
+        self.driver.find_element_by_id(search_table_name).click()
+        self.driver.find_element_by_id(search_table_name).send_keys(serach_key)
+        self.driver.find_element_by_id(search_submit_button).click()
+        time.sleep(20)
+    def edit_specicific_checkbox(self,checkbox_name):
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(5)
+        self.driver.find_element_by_id(checkbox_name).click()
+        time.sleep(5)
+        self.driver.find_element_by_id("edit-columns-button").click()
+        time.sleep(5)
+

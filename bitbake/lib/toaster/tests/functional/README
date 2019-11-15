@@ -1,0 +1,40 @@
+## Toaster automation scripts
+
+Running build tests for toaster test suit-2 which used to publish on testopia.
+
+These scripts are to test successful run of toaster module on released build and the result will be displayed on terminal and log will get created in folder 'toaster'.
+
+Your oe build environment must be sourced/initialised for these tests to run.
+
+# The simplest way to run the tests are:
+
+1) Do source oe-init-build-env from poky and make sure toaster can run in that system, means toaster perquisite has been met and Chrome driver and selenium must be installed in host system.
+
+2) Build following in toaster GUI first so that test scripts will take less time and and run effectively.
+
+	core-image-base
+	core-image-clutter
+	core-image-minimal
+	core-image-sato
+	meta-ide-support
+	meta-toolchain
+
+ After that stop or kill the toaster:
+
+	. toaster stop
+
+3) Toaster functional test case part-2 include total 50+ test cases so it has been divided into four parts for better stability and testing.
+
+4) Run below command from location "/bitbake/lib/toaster/tests/functional" one by one replacing * with [1,4]
+
+	DJANGO_SETTINGS_MODULE='toastermain.settings_test' ./manage.py test tests.functional.test_functional_basic_*
+
+
+# Limitations:
+
+This script must need optimization that will resolve stability issues.
+
+These scripts are developed and tested on google chrome.
+
+
+
