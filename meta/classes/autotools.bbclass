@@ -159,8 +159,6 @@ autotools_do_configure() {
 	# config.sub does not support.  Work around this by installing them manually
 	# regardless.
 
-	PRUNE_M4=""
-
 	for ac in `find ${S} -ignore_readdir_race -name configure.in -o -name configure.ac`; do
 		rm -f `dirname $ac`/configure
 	done
@@ -204,7 +202,9 @@ autotools_do_configure() {
 				echo "no" | glib-gettextize --force --copy
 			fi
 		elif [ "${BPN}" != "gettext" ] && grep -q "^[[:space:]]*AM_GNU_GETTEXT" $CONFIGURE_AC; then
-			PRUNE_M4="$PRUNE_M4 gettext.m4 iconv.m4 lib-ld.m4 lib-link.m4 lib-prefix.m4 nls.m4 po.m4 progtest.m4"
+			for f in gettext.m4 iconv.m4 lib-ld.m4 lib-link.m4 lib-prefix.m4 nls.m4 po.m4 progtest.m4; do
+				find ${S} -ignore_readdir_race -name $f -delete
+			done
 		fi
 		mkdir -p m4
 
@@ -215,14 +215,10 @@ autotools_do_configure() {
 			if ! echo "${DEPENDS}" | grep -q intltool-native; then
 				bbwarn "Missing DEPENDS on intltool-native"
 			fi
-			PRUNE_M4="$PRUNE_M4 intltool.m4"
+			find ${S} -ignore_readdir_race -name intltool.m4 -delete
 			bbnote Executing intltoolize --copy --force --automake
 			intltoolize --copy --force --automake
 		fi
-
-		for i in $PRUNE_M4; do
-			find ${S} -ignore_readdir_race -name $i -delete
-		done
 
 		cd $olddir
 	fi
