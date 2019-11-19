@@ -2,7 +2,8 @@ SUMMARY = "gettext-tiny"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=ca854cb9bfecb1a90c83e477f9140eb3"
 
-SRC_URI = "git://github.com/sabotage-linux/gettext-tiny;protocol=https"
+SRC_URI = "git://github.com/sabotage-linux/gettext-tiny;protocol=https \
+           file://pthread_rwlock_rdlock.m4"
 
 PV = "0.3.1+git${SRCPV}"
 SRCREV = "a76f8ad7b1b65cbaeb88120bb15bb5d59e1db07b"
@@ -26,6 +27,7 @@ do_compile() {
 
 do_install() {
 	oe_runmake DESTDIR="${D}" install
+	install ${WORKDIR}/*.m4 ${D}${datadir}/gettext-tiny/m4/
 }
 
 BBCLASSEXTEND = "native nativesdk"
