@@ -125,7 +125,7 @@ do_install_append_class-native () {
 	rm ${D}${bindir}/autopoint
 	rm ${D}${datadir}/aclocal/*
 	rm ${D}${datadir}/gettext/config.rpath
-	rm ${D}${datadir}/gettext/archive.dir.tar.bz2
+	rm ${D}${datadir}/gettext/archive.dir.tar.*
 	rm ${D}${datadir}/gettext/po/Makefile.in.in
 	rm ${D}${datadir}/gettext/po/remove-potcdate.sin
 
