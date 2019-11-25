@@ -143,6 +143,7 @@ class ServerClient(object):
             handlers = {
                 'get': self.handle_get,
                 'report': self.handle_report,
+                'report-equiv': self.handle_equivreport,
                 'get-stream': self.handle_get_stream,
                 'get-stats': self.handle_get_stats,
                 'reset-stats': self.handle_reset_stats,
@@ -302,6 +303,66 @@ class ServerClient(object):
                 d = {k: row[k] for k in ('taskhash', 'method', 'unihash')}
 
         self.write_message(d)
+
+    async def handle_equivreport(self, data):
+        with closing(self.db.cursor()) as cursor:
+            cursor.execute('''
+                -- Find the task entry for the matching taskhash
+                SELECT unihash, outhash FROM tasks_v2 WHERE method=:method AND taskhash=:unihash
+
+                -- Only return one row
+                LIMIT 1
+                ''', {k: data[k] for k in ('method', 'unihash')})
+
+            row = cursor.fetchone()
+
+            if row is None:
+                self.write_message(None)
+                return
+
+            insert_data = {
+                'method': data['method'],
+                'outhash': row['outhash'],
+                'taskhash': data['taskhash'],
+                'unihash': row['unihash'],
+                'created': datetime.now()
+            }
+
+
+            cursor.execute('''
+                -- Find the task entry for the matching taskhash
+                SELECT outhash FROM tasks_v2 WHERE method=:method AND taskhash=:taskhash AND outhash=:outhash
+
+                -- Only return one row
+                LIMIT 1
+                ''', {k: insert_data[k] for k in ('method', 'taskhash', 'outhash')})
+
+            row2 = cursor.fetchone()
+
+            if row2 is None:
+                for k in ('owner', 'PN', 'PV', 'PR', 'task', 'outhash_siginfo'):
+                    if k in data:
+                        insert_data[k] = data[k]
+
+                cursor.execute('''INSERT INTO tasks_v2 (%s) VALUES (%s)''' % (
+                    ', '.join(sorted(insert_data.keys())),
+                    ', '.join(':' + k for k in sorted(insert_data.keys()))),
+                    insert_data)
+
+                self.db.commit()
+
+                logger.info('Adding taskhash equivaence for %s with unihash %s',
+                                data['taskhash'], row['unihash'])
+
+            d = {
+                'taskhash': data['taskhash'],
+                'method': data['method'],
+                'unihash': row['unihash'],
+                'outhash': row['outhash'],
+            }
+
+        self.write_message(d)
+
 
     async def handle_get_stats(self, request):
         d = {

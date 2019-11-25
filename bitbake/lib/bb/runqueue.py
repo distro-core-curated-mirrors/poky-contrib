@@ -1718,6 +1718,7 @@ class RunQueueExecute:
         self.sq_deferred = {}
 
         self.stampcache = {}
+        self.rehashes = {}
 
         self.holdoff_tasks = set()
         self.holdoff_need_update = True
@@ -2286,6 +2287,11 @@ class RunQueueExecute:
                         self.rqdata.runtaskentries[tid].hash = bb.parse.siggen.get_taskhash(tid, procdep, self.rqdata.dataCaches[mc_from_tid(tid)])
                         origuni = self.rqdata.runtaskentries[tid].unihash
                         self.rqdata.runtaskentries[tid].unihash = bb.parse.siggen.get_unihash(tid)
+                        self.rehashes[tid] = origuni
+                        #if orighash == self.rqdata.runtaskentries[tid].hash and origuni == self.rqdata.runtaskentries[tid].unihash:
+                            #logger.info("Task hash didn't change for: %s" % (tid))
+                        #    continue
+                        #else:
                         logger.debug(1, "Task %s hash changes: %s->%s %s->%s" % (tid, orighash, self.rqdata.runtaskentries[tid].hash, origuni, self.rqdata.runtaskentries[tid].unihash))
                         next |= self.rqdata.runtaskentries[tid].revdeps
                         changed.add(tid)
@@ -2314,7 +2320,8 @@ class RunQueueExecute:
 
             if tid in self.scenequeue_covered or tid in self.sq_live:
                 # Already ran this setscene task or it running
-                # Potentially risky, should we report this hash as a match?
+                # Potentially risky, should we report this hash as a match
+                bb.parse.siggen.report_unihash_equiv(tid, self.rehashes[tid], self.rqdata.runtaskentries[tid].unihash, self.rqdata.dataCaches)
                 logger.info("Already covered setscene for %s so ignoring rehash" % (tid))
                 self.pending_migrations.remove(tid)
                 continue
