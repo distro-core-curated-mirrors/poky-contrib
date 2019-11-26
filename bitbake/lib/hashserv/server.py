@@ -267,9 +267,36 @@ class ServerClient(object):
                 # If a row matching the outhash was found, the unihash for
                 # the new taskhash should be the same as that one.
                 # Otherwise the caller provided unihash is used.
-                unihash = data['unihash']
-                if row is not None:
+                if row is not None and data['unihash'] != row['unihash']:
+                    # Update unihashes to ensure all branches are converging on
+                    # the same unihash. This is generally a bad thing because
+                    # it means that builds are not reproducible, but it
+                    # occasionally is unavoidable such as in the case of -cross
+                    # and -native tasks for different build host architectures.
+                    # For example, take the following taskhashes that produce
+                    # the given outhashes and unihashes:
+                    #
+                    #  taskhash outhash unihash
+                    #  A        Z       1
+                    #  B        Y       2
+                    #  C        Y       3 -> 2
+                    #  B        Z       2 -> 1
+                    #
+                    # In this case, the B task isn't being built reproducibly,
+                    # but for the second B the server sees it matches the
+                    # outhash of A, and reports that the unihash should be
+                    # changed from 2 to 1.
+                    #
+                    # The inconsistency is that there are still entries that
+                    # refer to unihash 2. These should be remapped to unihash
+                    # 1, since the latest entry shows that these are
+                    # equivalent.
+                    cursor.execute('''UPDATE tasks_v2 SET unihash=:new_unihash WHERE method=:method AND unihash=:old_unihash''',
+                            {'method': data['method'], 'new_unihash': row['unihash'], 'old_unihash': data['unihash']})
+
                     unihash = row['unihash']
+                else:
+                    unihash = data['unihash']
 
                 insert_data = {
                     'method': data['method'],

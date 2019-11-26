@@ -48,6 +48,7 @@ def setup_database(database, sync=True):
         # Create new indexes
         cursor.execute('CREATE INDEX IF NOT EXISTS taskhash_lookup_v2 ON tasks_v2 (method, taskhash, created)')
         cursor.execute('CREATE INDEX IF NOT EXISTS outhash_lookup_v2 ON tasks_v2 (method, outhash)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS unihash_lookup_v2 ON tasks_v2 (method, unihash)')
 
     return db
 

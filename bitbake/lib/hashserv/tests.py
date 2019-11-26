@@ -99,6 +99,45 @@ class TestHashEquivalenceServer(object):
         result = self.client.get_unihash(self.METHOD, taskhash)
         self.assertEqual(result, unihash)
 
+    def test_hash_merging(self):
+        # Verify that unihashes are correctly merged together when diverging
+        # hashes are found. Uses the following table which describes how each
+        # task is reported:
+        #
+        #  taskhash outhash unihash
+        #  A        Z       A
+        #  B        Y       B
+        #  C        Y       C -> B
+        #  B        Z       B -> A
+        #
+        A_taskhash = "A"
+        B_taskhash = "B"
+        C_taskhash = "C"
+        Z_outhash = "Z"
+        Y_outhash = "Y"
+
+        result = self.client.report_unihash(A_taskhash, self.METHOD, Z_outhash, A_taskhash)
+        self.assertEqual(result['unihash'], A_taskhash, 'Server reported bad unihash change for task A')
+
+        result = self.client.report_unihash(B_taskhash, self.METHOD, Y_outhash, B_taskhash)
+        self.assertEqual(result['unihash'], B_taskhash, 'Server reported bad unihash change for task A')
+
+        result = self.client.report_unihash(C_taskhash, self.METHOD, Y_outhash, C_taskhash)
+        self.assertEqual(result['unihash'], B_taskhash, 'Server reported bad unihash change for task C')
+
+        # Report a second B with the Z outhash. It should be change to A's unihash
+        result = self.client.report_unihash(B_taskhash, self.METHOD, Z_outhash, B_taskhash)
+        self.assertEqual(result['unihash'], A_taskhash, 'Server reported bad unihash change for task B')
+
+        # The unihash for C should also be A's unihash
+        result = self.client.get_unihash(self.METHOD, C_taskhash)
+        self.assertEqual(result, A_taskhash, 'Server returned bad unihash for task C')
+
+        # The reported unihash for B should also be A. NOTE: this *should*
+        # return the first B reported because it is older
+        result = self.client.get_unihash(self.METHOD, B_taskhash)
+        self.assertEqual(result, A_taskhash, 'Server returned bad unihash for task B')
+
     def test_stress(self):
         def query_server(failures):
             client = Client(self.server.address)
