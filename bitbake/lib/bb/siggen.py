@@ -525,21 +525,25 @@ class SignatureGeneratorUniHashMixIn(object):
                 except OSError:
                     pass
 
-    def report_unihash_equiv(self, tid, unihash, newunihash, datacaches):
+    def report_unihash_equiv(self, tid, oldunihash, newunihash, datacaches):
         try:
             extra_data = {}
-            data = self.client().report_unihash_equiv(newunihash, self.method, unihash, extra_data)
-            bb.warn('Reported task %s as unihash %s to %s (%s)' % (tid, newunihash, self.server, str(data)))
+            data = self.client().report_unihash_equiv(newunihash, self.method, oldunihash, extra_data)
+            bb.note('Reported task %s as unihash %s to %s (%s)' % (tid, newunihash, self.server, str(data)))
 
-            # FIXME, only rename if there is an upstream hash?
-            (mc, fn, taskname, taskfn) = bb.runqueue.split_tid_mcfn(tid)
-            stamp = bb.build.stampfile(taskname + "_setscene", datacaches[mc], taskfn, noextra=True)
-            oldstamp = stamp.replace(newunihash, unihash)
-            if os.path.exists(oldstamp):
-                bb.note("Renaming %s to %s" % (oldstamp, stamp))
-                os.rename(oldstamp, stamp)
+            if data is None:
+                bb.warn("Server unable to handle unihash report")
+                return
+
+            finalunihash = data['unihash']
+
+            if newunihash != finalunihash:
+                bb.note('Task %s unihash changed %s -> %s (%s)' % (tid, newunihash, finalunihash, oldunihash))
+                self.set_unihash(tid, finalunihash)
+                return True
             else:
-                bb.note("Not renaming %s to %s" % (oldstamp, stamp))
+                bb.note('Task %s unihash %s unchanged by server' % (tid, finalunihash))
+                return False
 
         except hashserv.client.HashConnectionError as e:
             bb.warn('Error contacting Hash Equivalence Server %s: %s' % (self.server, str(e)))
@@ -938,3 +942,4 @@ def dump_sigfile(a):
     output.append("Computed task hash is %s" % computed_taskhash)
 
     return output
+
