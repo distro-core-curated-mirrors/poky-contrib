@@ -306,60 +306,35 @@ class ServerClient(object):
 
     async def handle_equivreport(self, data):
         with closing(self.db.cursor()) as cursor:
-            cursor.execute('''
-                -- Find the task entry for the matching taskhash
-                SELECT unihash, outhash FROM tasks_v2 WHERE method=:method AND taskhash=:unihash
-
-                -- Only return one row
-                LIMIT 1
-                ''', {k: data[k] for k in ('method', 'unihash')})
-
-            row = cursor.fetchone()
-
-            if row is None:
-                self.write_message(None)
-                return
-
             insert_data = {
                 'method': data['method'],
-                'outhash': row['outhash'],
+                'outhash': "",
                 'taskhash': data['taskhash'],
-                'unihash': row['unihash'],
+                'unihash': data['unihash'],
                 'created': datetime.now()
             }
 
+            for k in ('owner', 'PN', 'PV', 'PR', 'task', 'outhash_siginfo'):
+                if k in data:
+                    insert_data[k] = data[k]
 
-            cursor.execute('''
-                -- Find the task entry for the matching taskhash
-                SELECT outhash FROM tasks_v2 WHERE method=:method AND taskhash=:taskhash AND outhash=:outhash
+            cursor.execute('''INSERT OR IGNORE INTO tasks_v2 (%s) VALUES (%s)''' % (
+                ', '.join(sorted(insert_data.keys())),
+                ', '.join(':' + k for k in sorted(insert_data.keys()))),
+                insert_data)
 
-                -- Only return one row
-                LIMIT 1
-                ''', {k: insert_data[k] for k in ('method', 'taskhash', 'outhash')})
+            self.db.commit()
 
-            row2 = cursor.fetchone()
+            # Fetch the unihash that will be reported for the taskhash. If the
+            # unihash matches, it means this row was inserted (or the mapping
+            # was already valid)
+            row = self.query_equivalent(data['method'], data['taskhash'])
 
-            if row2 is None:
-                for k in ('owner', 'PN', 'PV', 'PR', 'task', 'outhash_siginfo'):
-                    if k in data:
-                        insert_data[k] = data[k]
-
-                cursor.execute('''INSERT INTO tasks_v2 (%s) VALUES (%s)''' % (
-                    ', '.join(sorted(insert_data.keys())),
-                    ', '.join(':' + k for k in sorted(insert_data.keys()))),
-                    insert_data)
-
-                self.db.commit()
-
-                logger.info('Adding taskhash equivaence for %s with unihash %s',
+            if row['unihash'] == data['unihash']:
+                logger.info('Adding taskhash equivalence for %s with unihash %s',
                                 data['taskhash'], row['unihash'])
 
-            d = {
-                'taskhash': data['taskhash'],
-                'method': data['method'],
-                'unihash': row['unihash'],
-                'outhash': row['outhash'],
-            }
+            d = {k: row[k] for k in ('taskhash', 'method', 'unihash')}
 
         self.write_message(d)
 

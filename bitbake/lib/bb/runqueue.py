@@ -2289,12 +2289,13 @@ class RunQueueExecute:
                         newuni = bb.parse.siggen.get_unihash(tid)
                         # FIXME, need to check it can come from sstate at all for determinism?
                         remapped = False
-                        if tid in self.scenequeue_covered or tid in self.sq_live:
-                            # Already ran this setscene task or it running
-                            remapped = bb.parse.siggen.report_unihash_equiv(tid, origuni, newuni, self.rqdata.dataCaches)
-                            logger.info("Already covered setscene for %s so ignoring rehash" % (tid))
+                        if (tid in self.scenequeue_covered or tid in self.sq_live) and newuni != origuni:
+                            # Already ran this setscene task or it running. Report the new taskhash
+                            remapped = bb.parse.siggen.report_unihash_equiv(tid, newhash, origuni, newuni, self.rqdata.dataCaches)
+                            logger.info("Already covered setscene for %s so ignoring rehash (remap)" % (tid))
+
                         if not remapped:
-                            logger.debug(1, "Task %s hash changes: %s->%s %s->%s" % (tid, orighash, self.rqdata.runtaskentries[tid].hash, origuni, self.rqdata.runtaskentries[tid].unihash))
+                            logger.debug(1, "Task %s hash changes: %s->%s %s->%s" % (tid, orighash, newhash, origuni, newuni))
                             self.rqdata.runtaskentries[tid].hash = newhash
                             self.rqdata.runtaskentries[tid].unihash = newuni
                             self.rehashes[tid] = origuni
@@ -2331,9 +2332,9 @@ class RunQueueExecute:
 
             if tid in self.scenequeue_covered or tid in self.sq_live:
                 # Already ran this setscene task or it running
-                # Potentially risky, should we report this hash as a match
-                bb.parse.siggen.report_unihash_equiv(tid, self.rehashes[tid], self.rqdata.runtaskentries[tid].unihash, self.rqdata.dataCaches)
-                logger.info("Already covered setscene for %s so ignoring rehash" % (tid))
+                # "Force" the new taskhash to be equivalent to the old unihash
+                bb.parse.siggen.report_unihash_equiv(tid, self.rqdata.runtaskentries[tid].hash, self.rehashes[tid], self.rqdata.runtaskentries[tid].unihash, self.rqdata.dataCaches)
+                logger.info("Already covered setscene for %s so ignoring rehash (pending migration)" % (tid))
                 self.pending_migrations.remove(tid)
                 continue
 

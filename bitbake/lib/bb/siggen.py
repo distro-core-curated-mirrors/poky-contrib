@@ -525,28 +525,32 @@ class SignatureGeneratorUniHashMixIn(object):
                 except OSError:
                     pass
 
-    def report_unihash_equiv(self, tid, oldunihash, newunihash, datacaches):
+    def report_unihash_equiv(self, tid, taskhash, wanted_unihash, current_unihash, datacaches):
         try:
             extra_data = {}
-            data = self.client().report_unihash_equiv(newunihash, self.method, oldunihash, extra_data)
-            bb.note('Reported task %s as unihash %s to %s (%s)' % (tid, newunihash, self.server, str(data)))
+            data = self.client().report_unihash_equiv(taskhash, self.method, wanted_unihash, extra_data)
+            bb.note('Reported task %s as unihash %s to %s (%s)' % (tid, wanted_unihash, self.server, str(data)))
 
             if data is None:
                 bb.warn("Server unable to handle unihash report")
-                return
+                return False
 
             finalunihash = data['unihash']
 
-            if newunihash != finalunihash:
-                bb.note('Task %s unihash changed %s -> %s (%s)' % (tid, newunihash, finalunihash, oldunihash))
+            if finalunihash == current_unihash:
+                bb.note('Task %s unihash %s unchanged by server' % (tid, finalunihash))
+            elif finalunihash == wanted_unihash:
+                bb.note('Task %s unihash changed %s -> %s as wanted' % (tid, current_unihash, finalunihash))
                 self.set_unihash(tid, finalunihash)
                 return True
             else:
-                bb.note('Task %s unihash %s unchanged by server' % (tid, finalunihash))
-                return False
+                # TODO: What to do here?
+                bb.note('Task %s unihash reported as unwanted hash %s' % (tid, finalunihash))
 
         except hashserv.client.HashConnectionError as e:
             bb.warn('Error contacting Hash Equivalence Server %s: %s' % (self.server, str(e)))
+
+        return False
 
 #
 # Dummy class used for bitbake-selftest
