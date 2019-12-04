@@ -1063,15 +1063,24 @@ python do_package_qa () {
         for w in (d.getVar("WARN_QA") or "").split():
             if w in skip:
                continue
-            if w in testmatrix and testmatrix[w] in g:
-                warnchecks.append(g[testmatrix[w]])
-
+            if w in testmatrix:
+                if testmatrix[w] in g:
+                    warnchecks.append(g[testmatrix[w]])
+                else:
+                    bb.warn("asked for %s but function doesnt exist" % w)
+            else:
+                    bb.warn("asked for %s but doesn't exist" % w)
         errorchecks = []
         for e in (d.getVar("ERROR_QA") or "").split():
             if e in skip:
                continue
-            if e in testmatrix and testmatrix[e] in g:
-                errorchecks.append(g[testmatrix[e]])
+            if e in testmatrix:
+                if testmatrix[e] in g:
+                    errorchecks.append(g[testmatrix[e]])
+                else:
+                    bb.warn("asked for %s but function doesn't exist" % e)
+            else:
+                    bb.warn("asked for %s but doesn't exist" % w)
         return warnchecks, errorchecks
 
     for package in packages:
