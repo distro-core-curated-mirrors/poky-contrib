@@ -105,6 +105,8 @@ class SignatureGeneratorOEBasicHashMixIn(object):
         self.unlockedrecipes = { k: "" for k in self.unlockedrecipes }
         self.buildarch = data.getVar('BUILD_ARCH')
         self._internal = False
+        self.tempdebug = bool(data.getVar("TEMPDEBUG"))
+
         pass
 
     def tasks_resolved(self, virtmap, virtpnmap, dataCache):
@@ -192,10 +194,14 @@ class SignatureGeneratorOEBasicHashMixIn(object):
                 self.lockedhashes[tid] = h_locked
                 self._internal = True
                 unihash = self.get_unihash(tid)
+                uh2 =  self._get_unihash(tid)
                 self._internal = False
                 #bb.warn("Using %s %s %s" % (recipename, task, h))
+                if self.tempdebug and recipename == "ed":
+                    bb.warn("Using %s %s %s %s %s %s %s %s" % (recipename, task, h, h_locked, unihash, uh2, self.unihash[tid], self.taskhash[tid]))
 
                 if h != h_locked and h_locked != unihash:
+                    bb.warn("Mismatch warning")
                     self.mismatch_msgs.append('The %s:%s sig is computed to be %s, but the sig is locked to %s in %s'
                                           % (recipename, task, h, h_locked, var))
 
