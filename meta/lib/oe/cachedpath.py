@@ -124,28 +124,28 @@ class CachedPath(object):
         # minor reason when (say) a thousand readable directories are still
         # left to visit.  That logic is copied here.
         try:
-            names = os.listdir(top)
+            entries = os.scandir(top)
         except os.error as err:
             if onerror is not None:
                 onerror(err)
             return
 
         dirs, nondirs = [], []
-        for name in names:
-            if self.isdir(os.path.join(top, name)):
-                dirs.append(name)
+        for entry in entries:
+            if entry.is_dir():
+                dirs.append(entry)
             else:
-                nondirs.append(name)
+                nondirs.append(entry)
 
         if topdown:
-            yield top, dirs, nondirs
-        for name in dirs:
-            new_path = os.path.join(top, name)
-            if followlinks or not self.islink(new_path):
+            yield top, [e.name for e in dirs], [e.name for e in nondirs]
+        for entry in dirs:
+            new_path = os.path.join(top, entry)
+            if followlinks or not entry.is_symlink():
                 for x in self.walk(new_path, topdown, onerror, followlinks):
                     yield x
         if not topdown:
-            yield top, dirs, nondirs
+            yield top, [e.name for e in dirs], [e.name for e in nondirs]
 
     ## realpath() related functions
     def __is_path_below(self, file, root):
