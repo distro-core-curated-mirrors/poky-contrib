@@ -24,7 +24,3 @@ do_install () {
 
 	dd if=/dev/zero of=${D}${bindir}/sparsetest bs=1 count=0 seek=1M
 }
-
-RDEPENDS_${PN}-gdb += "gdb"
-PACKAGES =+ "${PN}-gdb"
-FILES_${PN}-gdb = "${bindir}/gdb.sh"

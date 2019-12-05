@@ -118,7 +118,7 @@ class PackageTests(OESelftestTestCase):
     def test_gdb_hardlink_debug(self):
         features = 'IMAGE_INSTALL_append = " selftest-hardlink"\n'
         features += 'IMAGE_INSTALL_append = " selftest-hardlink-dbg"\n'
-        features += 'IMAGE_INSTALL_append = " selftest-hardlink-gdb"\n'
+        features += 'IMAGE_INSTALL_append = " gdb"\n'
         self.write_config(features)
         bitbake("core-image-minimal")
 
