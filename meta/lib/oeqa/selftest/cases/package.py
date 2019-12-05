@@ -149,6 +149,7 @@ class PackageTests(OESelftestTestCase):
                 if not gdbtest(qemu, binary):
                     self.fail('GDB %s failed' % binary)
 
+
     def test_preserve_ownership(self):
         import os, stat, oe.cachedpath
         features = 'IMAGE_INSTALL_append = " selftest-chown"\n'
@@ -171,3 +172,41 @@ class PackageTests(OESelftestTestCase):
                           sysconfdir + "/selftest-chown/symlink"]:
                 if not check_ownership(qemu, "test", "test", path):
                     self.fail('Test ownership %s failed' % path)
+
+
+class InsaneTest(OESelftestTestCase):
+    def test_insane_package_walk(self):
+        """
+        Check that the package walking in insane.bbclass is listing the files we
+        expect.
+        """
+
+        import re
+
+        config = """
+INHERIT += "insane-test"
+WARN_QA_append_pn-selftest-hardlink = " selftest-walk"
+        """
+        self.write_config(config)
+
+        result = bitbake("selftest-hardlink -c package_qa -f")
+        expected = set((
+            "selftest-hardlink:/usr/libexec/hello3:ELF",
+            "selftest-hardlink:/usr/libexec/hello4:ELF",
+            "selftest-hardlink:/usr/bin/sparsetest:FILE",
+            "selftest-hardlink:/usr/bin/gdb.sh:FILE",
+            "selftest-hardlink:/usr/bin/hello1:ELF",
+            "selftest-hardlink:/usr/bin/hello2:ELF",
+            "selftest-hardlink-dbg:/usr/libexec/.debug/hello1:ELF",
+            "selftest-hardlink-dbg:/usr/bin/.debug/hello1:ELF",
+            "selftest-hardlink-src:/usr/src/debug/selftest-hardlink/1.0-r0/hello.c:FILE"
+        ))
+
+        line_re = re.compile(r"^WARNING: WALK (.+) (.+) (FILE|ELF)$")
+        for line in result.output.splitlines():
+            m = line_re.match(line)
+            if m:
+                expected.remove(":".join(m.groups()))
+
+        if expected:
+            self.fail("Not all files were listed: " + str(expected))
