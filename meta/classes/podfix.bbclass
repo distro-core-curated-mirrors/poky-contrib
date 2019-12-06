@@ -22,7 +22,8 @@ python pod_strip_version() {
                 if not m:
                     continue
 
-            bb.note("podfix: stripping version from %s" % filename)                
+            bb.note("podfix: stripping version from %s" % filename)
+            os.unlink(filename)
             with opener(filename, "wb") as manfile:
                 manfile.write(manpage[:m.start(1)])
                 manfile.write(manpage[m.end(1):])
