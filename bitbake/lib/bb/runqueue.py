@@ -1711,6 +1711,7 @@ class RunQueueExecute:
         self.runq_buildable = set()
         self.runq_running = set()
         self.runq_complete = set()
+        self.runq_covered = set()
 
         self.build_stamps = {}
         self.build_stamps2 = []
@@ -1908,13 +1909,20 @@ class RunQueueExecute:
         if self.rqdata.taskData[''].abort:
             self.rq.state = runQueueCleanUp
 
-    def task_skip(self, task, reason):
+    def _task_skip(self, task, reason):
         self.runq_running.add(task)
         self.setbuildable(task)
         bb.event.fire(runQueueTaskSkipped(task, self.stats, self.rq, reason), self.cfgData)
         self.task_completeoutright(task)
         self.stats.taskSkipped()
         self.stats.taskCompleted()
+
+    def task_skip_covered(self, task):
+        self._task_skip(task, "covered")
+        self.runq_covered.add(task)
+
+    def task_skip_current(self, task):
+        self._task_skip(task, "current")
 
     def summarise_scenequeue_errors(self):
         err = False
@@ -2083,13 +2091,12 @@ class RunQueueExecute:
 
             if task in self.tasks_covered:
                 logger.debug(2, "Setscene covered task %s", task)
-                self.task_skip(task, "covered")
+                self.task_skip_covered(task)
                 return True
 
             if self.rq.check_stamp_task(task, taskname, cache=self.stampcache):
                 logger.debug(2, "Stamp current task %s", task)
-
-                self.task_skip(task, "existing")
+                self.task_skip_current(task)
                 return True
 
             taskdep = self.rqdata.dataCaches[mc].task_deps[taskfn]
@@ -2270,6 +2277,7 @@ class RunQueueExecute:
                         next |= self.rqdata.runtaskentries[ntid].revdeps
                         next.difference_update(total)
 
+                uncover = set()
                 # Now iterate those tasks in dependency order to regenerate their taskhash/unihash
                 done = set()
                 next = set(self.rqdata.runtaskentries[tid].revdeps)
@@ -2286,17 +2294,26 @@ class RunQueueExecute:
                         newhash = bb.parse.siggen.get_taskhash(tid, procdep, self.rqdata.dataCaches[mc_from_tid(tid)])
                         origuni = self.rqdata.runtaskentries[tid].unihash
                         newuni = bb.parse.siggen.get_unihash(tid)
-                        # FIXME, need to check it can come from sstate at all for determinism?
-                        remapped = False
-                        if newuni == origuni:
-                            # Nothing to do, we match, skip code below
-                            remapped = True
-                        elif tid in self.scenequeue_covered or tid in self.sq_live:
-                            # Already ran this setscene task or it running. Report the new taskhash
-                            remapped = bb.parse.siggen.report_unihash_equiv(tid, newhash, origuni, newuni, self.rqdata.dataCaches)
-                            logger.info("Already covered setscene for %s so ignoring rehash (remap)" % (tid))
 
-                        if not remapped:
+                        if newuni != origuni and tid in self.scenequeue_covered or tid in self.sq_live:
+                            # Already ran this setscene task or it running. Report the new taskhash
+                            serveruni = bb.parse.siggen.report_unihash_equiv(tid, newhash, origuni, newuni, self.rqdata.dataCaches)
+                            #logger.info("Already covered setscene for %s so ignoring rehash (remap)" % (tid))
+
+                            if serveruni is not None:
+                                if serveruni == newuni:
+                                    bb.note('Task %s unihash %s unchanged by server' % (tid, serveruni))
+                                    uncover |= (self.rqdata.runtaskentries[tid].depends & self.runq_covered)
+                                elif serveruni == origuni:
+                                    bb.note('Task %s unihash changed %s -> %s as wanted' % (tid, newuni, serveruni))
+                                    bb.parse.siggen.set_unihash(tid, serveruni)
+                                else:
+                                    bb.note('Task %s unihash reported as unwanted hash %s' % (tid, serveruni))
+                                    uncover |= (self.rqdata.runtaskentries[tid].depends & self.runq_covered)
+
+                                newuni = serveruni
+
+                        if newuni != origuni:
                             logger.debug(1, "Task %s hash changes: %s->%s %s->%s" % (tid, orighash, newhash, origuni, newuni))
                             self.rqdata.runtaskentries[tid].hash = newhash
                             self.rqdata.runtaskentries[tid].unihash = newuni
@@ -2305,6 +2322,30 @@ class RunQueueExecute:
                         next |= self.rqdata.runtaskentries[tid].revdeps
                         total.remove(tid)
                         next.intersection_update(total)
+
+                # Uncover any tasks previously covered by setsecene that
+                while uncover:
+                    next_uncover = set()
+                    for tid in uncover:
+                        if not tid in self.runq_complete:
+                            logger.warn("Covered task %s has not completed!" % tid)
+                            continue
+
+                        self.runq_buildable.remove(tid)
+                        self.runq_running.remove(tid)
+                        self.runq_complete.remove(tid)
+
+                        uncovered_deps = (self.rqdata.runtaskentries[tid].depends & self.runq_covered)
+                        for dep in self.rqdata.runtaskentries[tid].depends:
+                            if dep not in self.runq_complete or dep in uncovered_deps:
+                                break
+                        else:
+                            self.setbuildable(tid)
+                            logger.info("Previously covered task %s now buildable", tid)
+
+                        next_uncover |= uncovered_deps
+
+                    uncover = next_uncover
 
         if changed:
             for mc in self.rq.worker:

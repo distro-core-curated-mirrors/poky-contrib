@@ -538,24 +538,24 @@ class SignatureGeneratorUniHashMixIn(object):
 
             if data is None:
                 bb.warn("Server unable to handle unihash report")
-                return False
+                return None
 
-            finalunihash = data['unihash']
+            return data['unihash']
 
-            if finalunihash == current_unihash:
-                bb.note('Task %s unihash %s unchanged by server' % (tid, finalunihash))
-            elif finalunihash == wanted_unihash:
-                bb.note('Task %s unihash changed %s -> %s as wanted' % (tid, current_unihash, finalunihash))
-                self.set_unihash(tid, finalunihash)
-                return True
-            else:
-                # TODO: What to do here?
-                bb.note('Task %s unihash reported as unwanted hash %s' % (tid, finalunihash))
+            #if finalunihash == current_unihash:
+            #    bb.note('Task %s unihash %s unchanged by server' % (tid, finalunihash))
+            #elif finalunihash == wanted_unihash:
+            #    bb.note('Task %s unihash changed %s -> %s as wanted' % (tid, current_unihash, finalunihash))
+            #    self.set_unihash(tid, finalunihash)
+            #    return True
+            #else:
+            #    # TODO: What to do here?
+            #    bb.note('Task %s unihash reported as unwanted hash %s' % (tid, finalunihash))
 
         except hashserv.client.HashConnectionError as e:
             bb.warn('Error contacting Hash Equivalence Server %s: %s' % (self.server, str(e)))
 
-        return False
+        return None
 
 #
 # Dummy class used for bitbake-selftest
