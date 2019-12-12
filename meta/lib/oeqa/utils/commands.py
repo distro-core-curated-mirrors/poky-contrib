@@ -296,7 +296,7 @@ def create_temp_layer(templayerdir, templayername, priority=999, recipepathspec=
         f.write('LAYERSERIES_COMPAT_%s = "${LAYERSERIES_COMPAT_core}"\n' % templayername)
 
 @contextlib.contextmanager
-def runqemu(pn, ssh=True, runqemuparams='', image_fstype=None, launch_cmd=None, qemuparams=None, overrides={}, discard_writes=True):
+def runqemu(pn, ssh=True, runqemuparams='', image_fstype=None, launch_cmd=None, qemuparams=None, overrides={}, discard_writes=True, use_slirp=False):
     """
     launch_cmd means directly run the command, don't need set rootfs or env vars.
     """
@@ -322,6 +322,8 @@ def runqemu(pn, ssh=True, runqemuparams='', image_fstype=None, launch_cmd=None, 
             tinfoil.config_data.setVar("FIND_ROOTFS", '0')
         else:
             tinfoil.config_data.setVar("FIND_ROOTFS", '1')
+        if use_slirp:
+            tinfoil.config_data.setVar('QEMU_USE_SLIRP', '1')
 
         recipedata = tinfoil.parse_recipe(pn)
         for key, value in overrides.items():

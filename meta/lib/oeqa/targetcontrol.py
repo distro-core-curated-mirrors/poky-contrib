@@ -112,6 +112,7 @@ class QemuTarget(BaseTarget):
         if not dump_dir:
             dump_dir = os.path.join(d.getVar('LOG_DIR'), 'runtime-hostdump')
         use_kvm = oe.types.qemu_use_kvm(d.getVar('QEMU_USE_KVM'), d.getVar('TARGET_ARCH'))
+        use_slirp = oe.types.boolean(d.getVar('QEMU_USE_SLIRP'))
 
         # Log QemuRunner log output to a file
         import oe.path
@@ -141,6 +142,7 @@ class QemuTarget(BaseTarget):
                             logfile = self.qemulog,
                             boottime = int(d.getVar("TEST_QEMUBOOT_TIMEOUT")),
                             use_kvm = use_kvm,
+                            use_slirp = use_slirp,
                             dump_dir = dump_dir,
                             dump_host_cmds = d.getVar("testimage_dump_host"),
                             logger = logger,

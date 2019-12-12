@@ -105,7 +105,7 @@ SYSLINUX_TIMEOUT = "10"
     def test_boot_machine_slirp(self):
         """Test runqemu machine slirp"""
         cmd = "%s slirp %s" % (self.cmd_common, self.machine)
-        with runqemu(self.recipe, ssh=False, launch_cmd=cmd) as qemu:
+        with runqemu(self.recipe, ssh=True, use_slirp=True, launch_cmd=cmd) as qemu:
             with open(qemu.qemurunnerlog) as f:
                 self.assertIn(' -netdev user', f.read(), "Failed: %s" % cmd)
 
