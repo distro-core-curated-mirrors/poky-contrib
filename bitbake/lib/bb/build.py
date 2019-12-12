@@ -270,7 +270,7 @@ def exec_func(func, d, dirs = None):
 _functionfmt = """
 {function}(d)
 """
-logformatter = bb.msg.BBLogFormatter("%(levelname)s: %(message)s")
+logformatter = bb.msg.BBLogFormatter("%(asctime)s %(levelname)s: %(message)s")
 def exec_func_python(func, d, runfile, cwd=None):
     """Execute a python BB 'function'"""
 
