@@ -373,9 +373,7 @@ def package_qa_hash_style(path, name, d, elf, messages):
     for line in phdrs.split("\n"):
         if "SYMTAB" in line:
             has_syms = True
-        if "GNU_HASH" in line:
-            sane = True
-        if "[mips32]" in line or "[mips64]" in line:
+        if "GNU_HASH" or "DT_MIPS_XHASH" in line:
             sane = True
 
     if has_syms and not sane:
