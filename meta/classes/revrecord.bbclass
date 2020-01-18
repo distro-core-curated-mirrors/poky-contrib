@@ -5,7 +5,7 @@
 #
 
 REVRECORD_INCFILE_NAME    ??= "revs.inc"
-#REVRECORD_JSON_FILE_NAME  ??= "revs.json"
+REVRECORD_JSON_FILE_NAME  ??= "revs.json"
 
 REVRECORD_TOPDIR = "${TOPDIR}/revs"
 REVRECORD_SESSION_DIR = "${REVRECORD_TOPDIR}/${REVRECORD_DATETIME}"
@@ -114,11 +114,14 @@ def handle_recipe_parsed(d):
     if not revs:
         return
 
+    import json
     unexpanded_by_name = get_unexpanded_src_uris_by_name(d)
 
     inclines = []
+    json_entries = []
     pn = d.getVar("PN")
     for name in sorted(revs):
+        jsondata = {}
         var = get_effective_srcrev_var(d, name)
 
         # We only care about SRCREV that is set to AUTOREV (which will cause it to report as AUTOINC).
@@ -131,15 +134,24 @@ def handle_recipe_parsed(d):
 
         inclines.append('{0} = "{1}"'.format(var, revs[name]))
 
+        ud = uds[name]
+        jsondata["rev"] = revs[name]
+        jsondata["uri_name"] = name
+        jsondata["path"] = ud.path
+        jsondata["host"] = ud.host
+        jsondata["pn"] = pn
+
         # Depending on the fetcher scheme, there may be other parameters we want to capture
         raw_src_uri = unexpanded_by_name[name]
-        ud = uds[name]
         if ud.type == "git":
             # Also want to capture branch; TODO what about tags?
             ref = ud.unresolvedrev[name]
+            jsondata["branch"] = ref
             branch_var = extract_src_uri_param_var(raw_src_uri, "branch")
             if branch_var:
                 inclines.append('{0}_pn-{1} = "{2}"'.format(branch_var, pn, ref))
+
+        json_entries.append(jsondata)
 
     pndir = d.expand("${REVRECORD_MC_DIR}/${PN}")
     if inclines:
@@ -147,15 +159,21 @@ def handle_recipe_parsed(d):
         incfile = os.path.join(pndir, d.getVar("REVRECORD_INCFILE_NAME"))
         with open(incfile, "w") as f:
             f.write("\n".join(inclines))
+        jsonfile = os.path.join(pndir, d.getVar("REVRECORD_JSON_FILE_NAME"))
+        with open(jsonfile, "w") as f:
+            json.dump(json_entries, f, indent=4, sort_keys=True)
 
 def handle_parse_completed(d):
+    import json
     outdir = d.getVar("REVRECORD_MC_DIR")
     bb.utils.mkdirhier(outdir)
 
     # Aggregate all the per-PN revs files into a unified one at the base of the outdir
     incfile_name = d.getVar("REVRECORD_INCFILE_NAME")
-    revsfile = os.path.join(outdir, incfile_name)
-    with open(revsfile, "w") as f:
+    jsonfile_name = d.getVar("REVRECORD_JSON_FILE_NAME")
+
+    json_entries = []
+    with open(os.path.join(outdir, incfile_name), "w") as f:
         for root, dirs, files in os.walk(outdir):
             # Sorted by PN
             dirs.sort()
@@ -167,6 +185,13 @@ def handle_parse_completed(d):
                 f.write("# {0}\n".format(pn))
                 f.writelines(line for line in g)
                 f.write("\n\n")
+
+            with open(os.path.join(root, jsonfile_name), "r") as g:
+                json_entries.extend(json.load(g))
+
+    with open(os.path.join(outdir, jsonfile_name), "w") as f:
+        json.dump(json_entries, f, indent=4, sort_keys=True)
+
 
 python revrecord_handler() {
     if isinstance(e, bb.event.MultiConfigParsed):
