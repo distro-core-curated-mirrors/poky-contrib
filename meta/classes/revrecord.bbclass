@@ -8,13 +8,10 @@ REVRECORD_INCFILE_NAME    ??= "revs.inc"
 REVRECORD_JSON_FILE_NAME  ??= "revs.json"
 
 REVRECORD_TOPDIR = "${TOPDIR}/revs"
-REVRECORD_SESSION_DIR = "${REVRECORD_TOPDIR}/${REVRECORD_DATETIME}"
+REVRECORD_LATEST_DIR = "${REVRECORD_TOPDIR}/latest"
 
-# A per-multiconfig directory (or just the REVRECORD_SESSION_DIR if multiconfig isn't enabled) for output
-REVRECORD_MC_DIR = "${REVRECORD_SESSION_DIR}${@"/${BB_CURRENT_MC}" if d.getVar("BBMULTICONFIG") else ""}"
-
-# See event handler at bottom - some trickery is needed to keep this in sync across multiconfigs
-REVRECORD_DATETIME = "${DATETIME}"
+# A per-multiconfig directory (or just the REVRECORD_LATEST_DIR if multiconfig isn't enabled) for output
+REVRECORD_MC_DIR = "${REVRECORD_LATEST_DIR}${@"/${BB_CURRENT_MC}" if d.getVar("BBMULTICONFIG") else ""}"
 
 def get_effective_srcrev_var(d, name):
     """ Determine the effective SRCREV variable for given SRC_URI name. """
@@ -195,18 +192,12 @@ def handle_parse_completed(d):
 
 
 python revrecord_handler() {
-    if isinstance(e, bb.event.MultiConfigParsed):
-        # Propogate REVRECORD_DATETIME (as set in the base configuration) to all multiconfigs
-        for key in e.mcdata:
-            if key != "":
-                e.mcdata[key].setVar("REVRECORD_DATETIME", e.mcdata[""].getVar("REVRECORD_DATETIME"))
-    elif isinstance(e, bb.event.ParseStarted):
-        session_dir = d.getVar("REVRECORD_SESSION_DIR")
+    if isinstance(e, bb.event.ParseStarted):
+        session_dir = d.expand("${REVRECORD_TOPDIR}/${DATETIME}")
         bb.utils.mkdirhier(session_dir)
 
         # Set up a convienence symlink
-        topdir = d.getVar("REVRECORD_TOPDIR")
-        latest_dir = os.path.join(topdir, "latest")
+        latest_dir = d.getVar("REVRECORD_LATEST_DIR")
         if os.path.exists(latest_dir):
             os.unlink(latest_dir)
         os.symlink(session_dir, latest_dir)
@@ -227,7 +218,6 @@ python revrecord_handler() {
 
 addhandler revrecord_handler
 revrecord_handler[eventmask] = " \
-    bb.event.MultiConfigParsed \
     bb.event.ParseCompleted \
     bb.event.ParseStarted \
     bb.event.RecipeParsed \
