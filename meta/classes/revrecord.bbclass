@@ -34,6 +34,7 @@ def get_effective_srcrev_var(d, name):
 def get_unexpanded_src_uris_by_name(d, only_scm=True):
     """ Return dict of SRC_URI entry name => unexpanded SRC_URI entry """
     import collections
+    import oe.recipeutils
     ret = {}
     src_uris = collections.deque()
 
