@@ -164,16 +164,28 @@ python do_create_source_date_epoch_stamp() {
         f.write(str(source_date_epoch))
 }
 
+def get_source_date_epoch_value(d):
+    if d.getVar('BUILD_REPRODUCIBLE_BINARIES') != '1':
+        return ''
+
+    epochfile = d.getVar('SDE_FILE')
+    source_date_epoch = 0
+    if os.path.isfile(epochfile):
+        with open(epochfile, 'r') as f:
+            s = f.read()
+            try:
+                source_date_epoch = int(s)
+            except ValueError:
+                bb.warn("SOURCE_DATE_EPOCH value '%s' is invalid. Reverting to 0" % s)
+                source_date_epoch = 0
+        bb.debug(1, "SOURCE_DATE_EPOCH: %d" % source_date_epoch)
+    d.setVar('SOURCE_DATE_EPOCH', str(source_date_epoch))
+    return str(source_date_epoch)
+
+export SOURCE_DATE_EPOCH ?= "${@get_source_date_epoch_value(d)}"
 BB_HASHBASE_WHITELIST += "SOURCE_DATE_EPOCH"
 
 python () {
     if d.getVar('BUILD_REPRODUCIBLE_BINARIES') == '1':
         d.appendVarFlag("do_unpack", "postfuncs", " do_create_source_date_epoch_stamp")
-        epochfile = d.getVar('SDE_FILE')
-        source_date_epoch = "0"
-        if os.path.isfile(epochfile):
-            with open(epochfile, 'r') as f:
-                source_date_epoch = f.read()
-            bb.debug(1, "SOURCE_DATE_EPOCH: %s" % source_date_epoch)
-        d.setVar('SOURCE_DATE_EPOCH', source_date_epoch)
 }
