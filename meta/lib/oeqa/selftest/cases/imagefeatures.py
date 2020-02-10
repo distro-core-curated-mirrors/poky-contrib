@@ -239,8 +239,33 @@ USERADD_GID_TABLES += "files/static-group"
 
     def test_no_busybox_base_utils(self):
         config = """
+INHERIT += "testimage"
+
 # Enable x11
-DISTRO_FEATURES_append += "x11"
+DISTRO_FEATURES_append = " x11"
+
+# Involve ptest packages
+IMAGE_FEATURES_append = " ptest-pkgs"
+
+# Replace busybox
+PREFERRED_PROVIDER_virtual/base-utils = "packagegroup-core-base-utils"
+VIRTUAL-RUNTIME_base-utils = "packagegroup-core-base-utils"
+VIRTUAL-RUNTIME_base-utils-hwclock = "util-linux-hwclock"
+VIRTUAL-RUNTIME_base-utils-syslog = "sysklogd"
+VIRTUAL-RUNTIME_login_manager = "shadow-base"
+
+# Blacklist busybox
+PNBLACKLIST[busybox] = "Don't build this"
+"""
+        self.write_config(config)
+
+        bitbake("core-image-sato")
+        bitbake("-c testimage core-image-sato")
+
+    def test_no_busybox_base_utils_systemd(self):
+        config = """
+# Enable x11
+DISTRO_FEATURES_append = " x11"
 
 # Switch to systemd
 DISTRO_FEATURES += "systemd"
