@@ -146,6 +146,17 @@ def get_source_date_epoch_from_youngest_file(d, sourcedir):
         bb.debug(1, "Newest file found: %s" % newest_file)
     return source_date_epoch
 
+def source_date_epoch_var(d):
+    # If the unexpanded SOURCE_DATE_EPOCH value is an integer (e.g. a recipe or
+    # user sets it to a specific value), keep it
+    sde = d.getVar('SOURCE_DATE_EPOCH', False)
+    try:
+        sde = int(sde)
+        bb.debug(1, "SOURCE_DATE_EPOCH variable: %d" % sde)
+        return sde
+    except ValueError:
+        return None
+
 def fixed_source_date_epoch():
     bb.debug(1, "No tarball or git repo found to determine SOURCE_DATE_EPOCH")
     return 0
@@ -156,13 +167,18 @@ python do_create_source_date_epoch_stamp() {
         bb.debug(1, "Reusing SOURCE_DATE_EPOCH from: %s" % epochfile)
         return
 
-    sourcedir = d.getVar('S')
-    source_date_epoch = (
-        get_source_date_epoch_from_git(d, sourcedir) or
-        get_source_date_epoch_from_known_files(d, sourcedir) or
-        get_source_date_epoch_from_youngest_file(d, sourcedir) or
-        fixed_source_date_epoch()       # Last resort
-    )
+    def get_sde(d):
+        sourcedir = d.getVar('S')
+        yield source_date_epoch_var(d) # must be first
+        yield get_source_date_epoch_from_git(d, sourcedir)
+        yield get_source_date_epoch_from_known_files(d, sourcedir)
+        yield get_source_date_epoch_from_youngest_file(d, sourcedir)
+        yield fixed_source_date_epoch() # last resort
+
+    source_date_epoch = None
+    i = get_sde(d)
+    while source_date_epoch is None:
+        source_date_epoch = next(i, 0)
 
     bb.debug(1, "SOURCE_DATE_EPOCH: %d" % source_date_epoch)
     bb.utils.mkdirhier(d.getVar('SDE_DIR'))
