@@ -209,7 +209,11 @@ def get_source_date_epoch_value(d):
     return str(source_date_epoch)
 
 export SOURCE_DATE_EPOCH ?= "${@get_source_date_epoch_value(d)}"
-BB_HASHBASE_WHITELIST += "SOURCE_DATE_EPOCH"
+
+# If SOURCE_DATE_EPOCH is a fixed integer value, then include it in taskhashes.
+# Otherwise, it must be excluded because it's value depends on things that
+# cannot be known at parse time
+BB_HASHBASE_WHITELIST += "${@"SOURCE_DATE_EPOCH" if source_date_epoch_var(d) is None else ""}"
 
 python () {
     if d.getVar('BUILD_REPRODUCIBLE_BINARIES') == '1':
