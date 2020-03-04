@@ -39,7 +39,6 @@ from bldcontrol.models import BuildEnvironment, BuildRequest
 from bldcontrol.models import BRLayer
 from bldcontrol import bbcontroller
 
-from bb.msg import BBLogFormatter as formatter
 from django.db import models
 from pprint import pformat
 import logging
@@ -1589,7 +1588,7 @@ class BuildInfoHelper(object):
 
     def store_log_error(self, text):
         mockevent = MockEvent()
-        mockevent.levelno = formatter.ERROR
+        mockevent.levelno = logging.ERROR
         mockevent.msg = text
         mockevent.pathname = '-- None'
         mockevent.lineno = LogMessage.ERROR
@@ -1606,7 +1605,7 @@ class BuildInfoHelper(object):
     def store_log_event(self, event,cli_backlog=True):
         self._ensure_build()
 
-        if event.levelno < formatter.WARNING:
+        if event.levelno < logging.WARNING:
             return
 
         # early return for CLI builds
@@ -1629,11 +1628,11 @@ class BuildInfoHelper(object):
 
         log_information = {}
         log_information['build'] = self.internal_state['build']
-        if event.levelno == formatter.CRITICAL:
+        if event.levelno == logging.CRITICAL:
             log_information['level'] = LogMessage.CRITICAL
-        elif event.levelno == formatter.ERROR:
+        elif event.levelno == logging.ERROR:
             log_information['level'] = LogMessage.ERROR
-        elif event.levelno == formatter.WARNING:
+        elif event.levelno == logging.WARNING:
             log_information['level'] = LogMessage.WARNING
         elif event.levelno == -2:   # toaster self-logging
             log_information['level'] = -2

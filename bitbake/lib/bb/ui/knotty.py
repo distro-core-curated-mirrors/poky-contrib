@@ -113,7 +113,7 @@ class InteractConsoleLogFilter(logging.Filter):
         self.tf = tf
 
     def filter(self, record):
-        if record.levelno == bb.msg.BBLogFormatter.NOTE and (record.msg.startswith("Running") or record.msg.startswith("recipe ")):
+        if record.levelno == logging.NOTE and (record.msg.startswith("Running") or record.msg.startswith("recipe ")):
             return False
         self.tf.clearFooter()
         return True
@@ -392,9 +392,9 @@ def main(server, eventHandler, params, tf = TerminalFilter):
     if params.options.quiet == 0:
         console_loglevel = loglevel
     elif params.options.quiet > 2:
-        console_loglevel = bb.msg.BBLogFormatter.ERROR
+        console_loglevel = logging.ERROR
     else:
-        console_loglevel = bb.msg.BBLogFormatter.WARNING
+        console_loglevel = logging.WARNING
 
     logconfig = {
         "version": 1,
@@ -626,21 +626,21 @@ def main(server, eventHandler, params, tf = TerminalFilter):
             if isinstance(event, logging.LogRecord):
                 lastprint = time.time()
                 printinterval = 5000
-                if event.levelno >= bb.msg.BBLogFormatter.ERROR:
+                if event.levelno >= logging.ERROR:
                     errors = errors + 1
                     return_value = 1
-                elif event.levelno == bb.msg.BBLogFormatter.WARNING:
+                elif event.levelno == logging.WARNING:
                     warnings = warnings + 1
 
                 if event.taskpid != 0:
                     # For "normal" logging conditions, don't show note logs from tasks
                     # but do show them if the user has changed the default log level to
                     # include verbose/debug messages
-                    if event.levelno <= bb.msg.BBLogFormatter.NOTE and (event.levelno < llevel or (event.levelno == bb.msg.BBLogFormatter.NOTE and llevel != bb.msg.BBLogFormatter.VERBOSE)):
+                    if event.levelno <= logging.NOTE and (event.levelno < llevel or (event.levelno == logging.NOTE and llevel != logging.VERBOSE)):
                         continue
 
                     # Prefix task messages with recipe/task
-                    if event.taskpid in helper.pidmap and event.levelno != bb.msg.BBLogFormatter.PLAIN:
+                    if event.taskpid in helper.pidmap and event.levelno != logging.PLAIN:
                         taskinfo = helper.running_tasks[helper.pidmap[event.taskpid]]
                         event.msg = taskinfo['title'] + ': ' + event.msg
                 if hasattr(event, 'fn'):

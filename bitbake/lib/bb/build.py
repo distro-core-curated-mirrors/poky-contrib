@@ -560,7 +560,7 @@ def _exec_task(fn, task, d, quieterr):
     handler = logging.StreamHandler(logfile)
     handler.setFormatter(logformatter)
     # Always enable full debug output into task logfiles
-    handler.setLevel(logging.DEBUG - 2)
+    handler.setLevel(logging.DEBUG3)
     bblogger.addHandler(handler)
 
     errchk = ErrorCheckHandler()

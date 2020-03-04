@@ -21,8 +21,8 @@ class BBHandledException(Exception):
     The big dilemma for generic bitbake code is what information to give the user
     when an exception occurs. Any exception inheriting this base exception class
     has already provided information to the user via some 'fired' message type such as
-    an explicitly fired event using bb.fire, or a bb.error message. If bitbake 
-    encounters an exception derived from this class, no backtrace or other information 
+    an explicitly fired event using bb.fire, or a bb.error message. If bitbake
+    encounters an exception derived from this class, no backtrace or other information
     will be given to the user, its assumed the earlier event provided the relevant information.
     """
     pass
@@ -52,21 +52,38 @@ class BBLogger(Logger):
         return self.log(loglevel, msg, *args, **kwargs)
 
     def plain(self, msg, *args, **kwargs):
-        return self.log(logging.INFO + 1, msg, *args, **kwargs)
+        return self.log(logging.PLAIN, msg, *args, **kwargs)
 
     def verbose(self, msg, *args, **kwargs):
-        return self.log(logging.INFO - 1, msg, *args, **kwargs)
+        return self.log(logging.VERBOSE, msg, *args, **kwargs)
 
     def verbnote(self, msg, *args, **kwargs):
-        return self.log(logging.INFO + 2, msg, *args, **kwargs)
+        return self.log(logging.VERBNOTE, msg, *args, **kwargs)
 
+# Add bitbake's logging levels and names to the logging module. This isn't
+# considered the best practice, but bitbake has many legacy logging levels
+# to deal with
+logging.DEBUG3 = logging.DEBUG - 2
+logging.DEBUG2 = logging.DEBUG - 1
+logging.VERBOSE = logging.INFO - 1
+logging.NOTE = logging.INFO
+logging.PLAIN = logging.INFO + 1
+logging.VERBNOTE = logging.INFO + 2
+
+logging.addLevelName(logging.DEBUG3, 'DEBUG')
+logging.addLevelName(logging.DEBUG2, 'DEBUG')
+logging.addLevelName(logging.VERBOSE, 'NOTE')
+logging.addLevelName(logging.NOTE, 'NOTE')
+logging.addLevelName(logging.PLAIN, '')
+logging.addLevelName(logging.VERBNOTE, 'NOTE')
+logging.addLevelName(logging.CRITICAL, 'ERROR')
 
 logging.raiseExceptions = False
 logging.setLoggerClass(BBLogger)
 
 logger = logging.getLogger("BitBake")
 logger.addHandler(NullHandler())
-logger.setLevel(logging.DEBUG - 2)
+logger.setLevel(logging.DEBUG3)
 
 mainlogger = logging.getLogger("BitBake.Main")
 
