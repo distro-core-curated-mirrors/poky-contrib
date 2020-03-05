@@ -2,6 +2,8 @@ KBRANCH ?= "v5.4/standard/base"
 
 require recipes-kernel/linux/linux-yocto.inc
 
+inherit kernel-alt-headers
+
 # board specific branches
 KBRANCH_qemuarm  ?= "v5.4/standard/arm-versatile-926ejs"
 KBRANCH_qemuarm64 ?= "v5.4/standard/qemuarm64"
