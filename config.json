@@ -820,6 +820,6 @@
         }
     },
     "buildtools" : {
-        "centos7*" : "${BUILDTOOLS_URL}"
+        "disabled-centos7*" : "${BUILDTOOLS_URL}"
     }
 }
