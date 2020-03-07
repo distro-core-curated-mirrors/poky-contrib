@@ -605,27 +605,14 @@ class Cache(NoCache):
                     return False
 
         if hasattr(info_array[0], 'file_checksums'):
+            import re
             for _, fl in info_array[0].file_checksums.items():
                 fl = fl.strip()
-                while fl:
-                    # A .split() would be simpler but means spaces or colons in filenames would break
-                    a = fl.find(":True")
-                    b = fl.find(":False")
-                    if ((a < 0) and b) or ((b > 0) and (b < a)):
-                        f = fl[:b+6]
-                        fl = fl[b+7:]
-                    elif ((b < 0) and a) or ((a > 0) and (a < b)):
-                        f = fl[:a+5]
-                        fl = fl[a+6:]
-                    else:
-                        break
-                    fl = fl.strip()
-                    if "*" in f:
-                        continue
-                    f, exist = f.split(":")
-                    if (exist == "True" and not os.path.exists(f)) or (exist == "False" and os.path.exists(f)):
+                flist = re.split(r'(:True|:False)',fl)
+                for i in range(len(flist)):
+                    if(flist[i]==":True" and not os.path.exists(flist[i-1].strip())) or (flist[i]==":False" and  os.path.exists(flist[i-1].strip())):
                         logger.debug(2, "Cache: %s's file checksum list file %s changed",
-                                        fn, f)
+                                        fn, flist[i-1])
                         self.remove(fn)
                         return False
 
