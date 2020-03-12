@@ -322,11 +322,11 @@ class OETestResultJSONHelper(object):
         try:
             import bb
             has_bb = True
+            bb.utils.mkdirhier(write_dir)
             lf = bb.utils.lockfile(os.path.join(write_dir, 'jsontestresult.lock'))
-            bb.utils.mkdirhier(write_dir, exist_ok=True)
         except ImportError:
             has_bb = False
-            os.makedirs(write_dir)
+            os.makedirs(write_dir, exist_ok=True)
         test_results = self._get_existing_testresults_if_available(write_dir)
         test_results[result_id] = {'configuration': configuration, 'result': test_result}
         json_testresults = json.dumps(test_results, sort_keys=True, indent=4)
