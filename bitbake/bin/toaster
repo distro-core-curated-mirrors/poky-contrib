@@ -8,12 +8,13 @@
 #
 
 HELP="
-Usage: source toaster start|stop [webport=<address:port>] [noweb] [nobuild] [toasterdir]
+Usage 1: source toaster start|stop [webport=<address:port>] [noweb] [nobuild] [toasterdir]
     Optional arguments:
         [nobuild] Setup the environment for capturing builds with toaster but disable managed builds
         [noweb] Setup the environment for capturing builds with toaster but don't start the web server
         [webport] Set the development server (default: localhost:8000)
         [toasterdir] Set absolute path to be used as TOASTER_DIR (default: BUILDDIR/../)
+Usage 2: source toaster manage [createsuperuser|lsupdates|migrate|makemigrations|checksettings|collectstatic|...]
 "
 
 custom_extention()
@@ -180,6 +181,7 @@ WEBSERVER=1
 export TOASTER_BUILDSERVER=1
 ADDR_PORT="localhost:8000"
 TOASTERDIR=`dirname $BUILDDIR`
+MANAGE="python3 $OE_ROOT/bitbake/lib/toaster/manage.py"
 unset CMD
 for param in $*; do
     case $param in
@@ -207,6 +209,9 @@ for param in $*; do
     ;;
     toasterdir=*)
             TOASTERDIR="${param#*=}"
+    ;;
+    manage )
+            CMD=$param
     ;;
     --help)
             echo "$HELP"
@@ -305,6 +310,9 @@ case $CMD in
     stop )
         stop_system
         echo "Successful ${CMD}."
+    ;;
+    manage )
+        $MANAGE $manage_cmd
     ;;
 esac
 custom_extention toaster_postpend $CMD $ADDR_PORT
