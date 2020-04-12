@@ -4,9 +4,6 @@
 # in any manuals must be .PNG files and live in the individual book's figures
 # directory as well as in the figures directory for the mega-manual.
 #
-# Note that the figures for the Yocto Project Development Tasks Manual
-# differ depending on the BRANCH being built.
-#
 # The Makefile has these targets:
 #    all:       If you leave off the target then "all" is implied.
 #               You will generate HTML and a tarball of files.
@@ -25,37 +22,23 @@
 # of all the individual Yocto Project manuals.  You can generate these two manuals
 # in HTML form only.  The variable DOC indicates the folder name for a given manual.
 # The variable VER represents the distro version of the Yocto Release for which the
-# manuals are being generated.  The variable BRANCH is used to indicate the
-# branch (edison or denzil) and is used only when DOC=dev-manual or
-# DOC=mega-manual.  If you do not specify a BRANCH, the default branch used
-# will be for the latest Yocto Project release.  If you build for either
-# edison or denzil, you must use BRANCH. You do not need to use BRANCH for
-# any release beyond denzil.
+# manuals are being generated. 
 #
 # To build a manual, you must invoke Makefile with the DOC argument.  If you
 # are going to publish the manual, then you must invoke Makefile with both the
-# DOC and the VER argument.  Furthermore, if you are building or publishing
-# the edison or denzil versions of the Yocto Project Development Tasks Manual or
-# the mega-manual, you must also use the BRANCH argument.
+# DOC and the VER argument.
 #
 # Examples:
 #
 #     make DOC=bsp-guide
 #     make html DOC=brief-yoctoprojectqs
 #     make pdf DOC=ref-manual
-#     make DOC=dev-manual BRANCH=edison
-#     make DOC=mega-manual BRANCH=denzil
 #
 # The first example generates the HTML version of the BSP Guide.
 # The second example generates the HTML version only of the Quick Start.  Note
 # that the Quick Start only has an HTML version available.  So, the
 # 'make DOC=brief-yoctoprojectqs' command would be equivalent. The third example
 # generates just the PDF version of the Yocto Project Reference Manual.
-# The fourth example generates the HTML 'edison' version of the YP Development
-# Tasks Manual.  The last example
-# generates the HTML version of the mega-manual and uses the 'denzil'
-# branch when choosing figures for the tarball of figures.  Any example that does
-# not use the BRANCH argument builds the current version of the manual set.
 #
 # The publish target pushes the generated manuals to the Yocto Project
 # website.  Unless you are a developer on the YP team, you will not succeed in
@@ -66,15 +49,10 @@
 #
 #    make publish DOC=bsp-guide VER=1.7
 #    make publish DOC=adt-manual VER=1.6
-#    make publish DOC=dev-manual VER=1.1.1 BRANCH=edison
-#    make publish DOC=dev-manual VER=1.2 BRANCH=denzil
 #
 # The first example publishes the 1.7 version of both the PDF and HTML versions of
 # the BSP Guide.  The second example publishes the 1.6 version of both the PDF and
-# HTML versions of the ADT Manual. The third example publishes the 1.1.1 version of
-# the PDF and HTML YP Development Tasks Manual for the 'edison' branch.  The fourth
-# example publishes the 1.2 version of the PDF and HTML YP Development Tasks Manual
-# for the 'denzil' branch.
+# HTML versions of the ADT Manual. 
 #
 # IN MEMORIAM: This comment is to remember Scott Rifenbark (scottrif), whom we lost
 # in January, 2020. Scott was the primary technical writer for the Yocto Project for
@@ -129,40 +107,10 @@ endif
 ifeq ($(DOC),dev-manual)
 XSLTOPTS = --xinclude
 ALLPREQ = html tarball
-#
-# Note that the tarfile might produce the "Cannot stat: No such file or
-# directory" error message for .PNG files that are not present when building
-# a particular branch.  The list of files is all-inclusive for all branches.
-# Note, if you don't provide a BRANCH option, it defaults to the latest stuff.
-# This would be appropriate for "master" branch.
-#
-
-	ifeq ($(BRANCH),edison)
-TARFILES = dev-style.css dev-manual.html \
-           figures/app-dev-flow.png figures/bsp-dev-flow.png \
-           figures/dev-title.png figures/git-workflow.png \
-           figures/index-downloads.png figures/kernel-dev-flow.png \
-           figures/kernel-example-repos-edison.png \
-           figures/kernel-overview-1.png figures/kernel-overview-2.png \
-           figures/kernel-overview-3-edison.png \
-           figures/source-repos.png figures/yp-download.png \
-           figures/wip.png
-	else ifeq ($(BRANCH),denzil)
-TARFILES = dev-style.css dev-manual.html \
-           figures/app-dev-flow.png figures/bsp-dev-flow.png \
-           figures/dev-title.png figures/git-workflow.png \
-           figures/index-downloads.png figures/kernel-dev-flow.png \
-           figures/kernel-example-repos-denzil.png \
-           figures/kernel-overview-1.png figures/kernel-overview-2.png \
-           figures/kernel-overview-3-denzil.png \
-           figures/source-repos.png figures/yp-download.png \
-           figures/wip.png
-        else
 TARFILES = dev-style.css dev-manual.html figures/buildhistory-web.png \
            figures/dev-title.png figures/buildhistory.png \
            figures/recipe-workflow.png figures/bitbake-build-flow.png \
            figures/multiconfig_files.png figures/cute-files-npm-example.png
-	endif
 
 MANUALS = $(DOC)/$(DOC).html
 FIGURES = figures
@@ -177,38 +125,6 @@ XSLTOPTS = --stringparam html.stylesheet mega-style.css \
            --stringparam  section.label.includes.component.label 1 \
            --xinclude
 ALLPREQ = html tarball
-
-	ifeq ($(BRANCH),edison)
-TARFILES = mega-manual.html mega-style.css figures/yocto-environment.png \
-        figures/building-an-image.png  \
-	figures/using-a-pre-built-image.png \
-	figures/poky-title.png \
-	figures/adt-title.png figures/bsp-title.png \
-	figures/kernel-title.png figures/kernel-architecture-overview.png \
-	figures/app-dev-flow.png figures/bsp-dev-flow.png \
-        figures/dev-title.png figures/git-workflow.png \
-        figures/index-downloads.png figures/kernel-dev-flow.png \
-	figures/kernel-example-repos-edison.png \
-	figures/kernel-overview-1.png figures/kernel-overview-2.png \
-	figures/kernel-overview-3-edison.png \
-	figures/source-repos.png figures/yp-download.png \
-	figures/wip.png
-	else ifeq ($(BRANCH),denzil)
-TARFILES = mega-manual.html mega-style.css figures/yocto-environment.png \
-        figures/building-an-image.png  \
-	figures/using-a-pre-built-image.png \
-	figures/poky-title.png \
-	figures/adt-title.png figures/bsp-title.png \
-	figures/kernel-title.png figures/kernel-architecture-overview.png \
-	figures/app-dev-flow.png figures/bsp-dev-flow.png \
-        figures/dev-title.png figures/git-workflow.png \
-        figures/index-downloads.png figures/kernel-dev-flow.png \
-	figures/kernel-example-repos-denzil.png \
-	figures/kernel-overview-1.png figures/kernel-overview-2.png \
-	figures/kernel-overview-3-denzil.png \
-	figures/source-repos.png figures/yp-download.png \
-	figures/wip.png
-        else
 TARFILES = mega-manual.html mega-style.css \
         figures/YP-flow-diagram.png \
 	figures/using-a-pre-built-image.png \
@@ -266,7 +182,6 @@ TARFILES = mega-manual.html mega-style.css \
 	figures/sdk-devtool-upgrade-flow.png figures/bitbake-build-flow.png figures/bypqs-title.png \
 	figures/overview-manual-title.png figures/sdk-autotools-flow.png figures/sdk-makefile-flow.png \
 	figures/bb_multiconfig_files.png figures/bitbake-title.png figures/cute-files-npm-example.png
-	endif
 
 MANUALS = $(DOC)/$(DOC).html
 FIGURES = figures
