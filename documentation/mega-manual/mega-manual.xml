@@ -1,7 +1,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"
-[<!ENTITY % poky SYSTEM "../poky.ent"> %poky; ] >
-
+[ <!ENTITY YOCTO_DOC_NAME "Mega-Manual">
+<!ENTITY % poky SYSTEM "../poky.ent"> %poky; ] >
 
 <book id='mega-manual' lang='en'
       xmlns:xi="http://www.w3.org/2003/XInclude"
@@ -11,7 +11,7 @@
     <bookinfo>
 
         <abstract>
-            The Yocto Project Mega-Manual is a concatenation of the published
+            The Yocto Project &YOCTO_DOC_NAME; is a concatenation of the published
             Yocto Project HTML manuals along with the corresponding BitBake
             User Manual for the given release.
             The Mega-Manual exists to help users efficiently search for strings
@@ -27,132 +27,24 @@
             </imageobject>
         </mediaobject>
 
-        <title>
-            Yocto Project Mega-Manual
-        </title>
+        <title> &YOCTO_DOC_NAME; </title>
 
-        <authorgroup>
-            <author>
-                <affiliation>
-                    <orgname>&ORGNAME;</orgname>
-                </affiliation>
-                <email>&ORGEMAIL;</email>
-            </author>
-        </authorgroup>
+    <xi:include
+        xmlns:xi="http://www.w3.org/2003/XInclude" href="../common/author_group.xml"/>
 
-        <revhistory>
-            <revision>
-                <revnumber>1.8</revnumber>
-                <date>April 2015</date>
-                <revremark>The initial document released with the Yocto Project 1.8 Release.</revremark>
-            </revision>
-            <revision>
-                <revnumber>2.0</revnumber>
-                <date>October 2015</date>
-                <revremark>Released with the Yocto Project 2.0 Release.</revremark>
-            </revision>
-            <revision>
-                <revnumber>2.1</revnumber>
-                <date>April 2016</date>
-                <revremark>Released with the Yocto Project 2.1 Release.</revremark>
-            </revision>
-            <revision>
-                <revnumber>2.2</revnumber>
-                <date>October 2016</date>
-                <revremark>Released with the Yocto Project 2.2 Release.</revremark>
-            </revision>
-            <revision>
-                <revnumber>2.3</revnumber>
-                <date>May 2017</date>
-                <revremark>Released with the Yocto Project 2.3 Release.</revremark>
-            </revision>
-            <revision>
-                <revnumber>2.4</revnumber>
-                <date>October 2017</date>
-                <revremark>Released with the Yocto Project 2.4 Release.</revremark>
-            </revision>
-            <revision>
-                <revnumber>2.5</revnumber>
-                <date>May 2018</date>
-                <revremark>Released with the Yocto Project 2.5 Release.</revremark>
-            </revision>
-            <revision>
-                <revnumber>2.6</revnumber>
-                <date>November 2018</date>
-                <revremark>Released with the Yocto Project 2.6 Release.</revremark>
-            </revision>
-            <revision>
-                <revnumber>2.7</revnumber>
-                <date>May 2019</date>
-                <revremark>Released with the Yocto Project 2.7 Release.</revremark>
-            </revision>
-            <revision>
-                <revnumber>3.0</revnumber>
-                <date>October 2019</date>
-                <revremark>Released with the Yocto Project 3.0 Release.</revremark>
-            </revision>
-            <revision>
-                <revnumber>3.1</revnumber>
-                <date>&REL_MONTH_YEAR;</date>
-                <revremark>Released with the Yocto Project 3.1 Release.</revremark>
-            </revision>
-       </revhistory>
+    <xi:include
+        xmlns:xi="http://www.w3.org/2003/XInclude" href="../common/revhistory.xml"/>
 
-    <copyright>
-      <year>&COPYRIGHT_YEAR;</year>
-      <holder>Linux Foundation</holder>
-    </copyright>
+    <xi:include
+        xmlns:xi="http://www.w3.org/2003/XInclude" href="../common/copyright.xml"/>
 
-    <legalnotice>
-      <para>
-        Permission is granted to copy, distribute and/or modify this document under
-        the terms of the <ulink type="http" url="http://creativecommons.org/licenses/by-sa/2.0/uk/">Creative Commons Attribution-Share Alike 2.0 UK: England &amp; Wales</ulink> as published by Creative Commons.
-      </para>
-           <note><title>Manual Notes</title>
-               <itemizedlist>
-                   <listitem><para>
-                       This version of the
-                       <emphasis>Yocto Project Mega-Manual</emphasis>
-                       is for the &YOCTO_DOC_VERSION; release of the
-                       Yocto Project.
-                       To be sure you have the latest version of the manual
-                       for this release, go to the
-                       <ulink url='&YOCTO_DOCS_URL;'>Yocto Project documentation page</ulink>
-                       and select the manual from that site.
-                       Manuals from the site are more up-to-date than manuals
-                       derived from the Yocto Project released TAR files.
-                       </para></listitem>
-                   <listitem><para>
-                       If you located this manual through a web search, the
-                       version of the manual might not be the one you want
-                       (e.g. the search might have returned a manual much
-                       older than the Yocto Project version with which you
-                       are working).
-                       You can see all Yocto Project major releases by
-                       visiting the
-                       <ulink url='&YOCTO_WIKI_URL;/wiki/Releases'>Releases</ulink>
-                       page.
-                       If you need a version of this manual for a different
-                       Yocto Project release, visit the
-                       <ulink url='&YOCTO_DOCS_URL;'>Yocto Project documentation page</ulink>
-                       and select the manual set by using the
-                       "ACTIVE RELEASES DOCUMENTATION" or "DOCUMENTS ARCHIVE"
-                       pull-down menus.
-                       </para></listitem>
-                   <listitem>
-                       <para>
-                       To report any inaccuracies or problems with this
-                       (or any other Yocto Project) manual, send an email to
-                       the Yocto Project documentation mailing list at
-                       <filename>docs@lists.yoctoproject.org</filename> or
-                       log into the freenode <filename>#yocto</filename> channel.
-                       </para>
-                   </listitem>
-               </itemizedlist>
-           </note>
+    <xi:include
+        xmlns:xi="http://www.w3.org/2003/XInclude" href="../common/legalnotice.xml"/>
 
-    </legalnotice>
-
+        <note><title>&YOCTO_DOC_NAME;</title>
+        <xi:include
+            xmlns:xi="http://www.w3.org/2003/XInclude" href="../common/doc_note.xml"/>
+        </note>
     </bookinfo>
 
 <!-- Includes brief-yoctoprojectqs -->
