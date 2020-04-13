@@ -1,0 +1,12 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"
+[<!ENTITY % poky SYSTEM "../poky.ent"> %poky; ] >
+
+<copyright>
+  <year>&COPYRIGHT_YEAR;</year>
+  <holder>Linux Foundation</holder>
+</copyright>
+
+<!--
+vim: expandtab tw=80 ts=4
+-->

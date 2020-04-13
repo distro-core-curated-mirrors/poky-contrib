@@ -1,0 +1,16 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"
+[<!ENTITY % poky SYSTEM "../poky.ent"> %poky; ] >
+
+<authorgroup>
+    <author>
+        <affiliation>
+            <orgname>&ORGNAME;</orgname>
+        </affiliation>
+        <email>&ORGEMAIL;</email>
+    </author>
+</authorgroup>
+
+<!--
+vim: expandtab tw=80 ts=4
+-->

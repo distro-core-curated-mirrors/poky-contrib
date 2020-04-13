@@ -1,0 +1,66 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"
+[<!ENTITY % poky SYSTEM "../poky.ent"> %poky; ] >
+
+
+<revhistory>
+    <revision>
+        <revnumber>1.8</revnumber>
+        <date>April 2015</date>
+        <revremark>The initial document released with the Yocto Project 1.8 Release.</revremark>
+    </revision>
+    <revision>
+        <revnumber>2.0</revnumber>
+        <date>October 2015</date>
+        <revremark>Released with the Yocto Project 2.0 Release.</revremark>
+    </revision>
+    <revision>
+        <revnumber>2.1</revnumber>
+        <date>April 2016</date>
+        <revremark>Released with the Yocto Project 2.1 Release.</revremark>
+    </revision>
+    <revision>
+        <revnumber>2.2</revnumber>
+        <date>October 2016</date>
+        <revremark>Released with the Yocto Project 2.2 Release.</revremark>
+    </revision>
+    <revision>
+        <revnumber>2.3</revnumber>
+        <date>May 2017</date>
+        <revremark>Released with the Yocto Project 2.3 Release.</revremark>
+    </revision>
+    <revision>
+        <revnumber>2.4</revnumber>
+        <date>October 2017</date>
+        <revremark>Released with the Yocto Project 2.4 Release.</revremark>
+    </revision>
+    <revision>
+        <revnumber>2.5</revnumber>
+        <date>May 2018</date>
+        <revremark>Released with the Yocto Project 2.5 Release.</revremark>
+    </revision>
+    <revision>
+        <revnumber>2.6</revnumber>
+        <date>November 2018</date>
+        <revremark>Released with the Yocto Project 2.6 Release.</revremark>
+    </revision>
+    <revision>
+        <revnumber>2.7</revnumber>
+        <date>May 2019</date>
+        <revremark>Released with the Yocto Project 2.7 Release.</revremark>
+    </revision>
+    <revision>
+        <revnumber>3.0</revnumber>
+        <date>October 2019</date>
+        <revremark>Released with the Yocto Project 3.0 Release.</revremark>
+    </revision>
+    <revision>
+        <revnumber>3.1</revnumber>
+        <date>&REL_MONTH_YEAR;</date>
+        <revremark>Released with the Yocto Project 3.1 Release.</revremark>
+    </revision>
+</revhistory>
+
+<!--
+vim: expandtab tw=80 ts=4
+-->
