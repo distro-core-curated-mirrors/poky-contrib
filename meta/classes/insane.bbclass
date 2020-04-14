@@ -28,7 +28,7 @@ WARN_QA ?= "ldflags useless-rpaths rpaths staticdev libdir xorg-driver-abi \
             pn-overrides infodir build-deps src-uri-bad \
             unknown-configure-option symlink-to-sysroot multilib \
             invalid-packageconfig host-user-contaminated uppercase-pn patch-fuzz \
-            mime mime-xdg \
+            mime mime-xdg so-file-version \
             "
 ERROR_QA ?= "dev-so debug-deps dev-deps debug-files arch pkgconfig la \
             perms dep-cmp pkgvarcheck perm-config perm-line perm-link \
@@ -487,6 +487,24 @@ def package_qa_check_symlink_to_sysroot(path, name, d, elf, messages):
             if target.startswith(tmpdir):
                 trimmed = path.replace(os.path.join (d.getVar("PKGDEST"), name), "")
                 package_qa_add_message(messages, "symlink-to-sysroot", "Symlink %s in %s points to TMPDIR" % (trimmed, name))
+
+QAPATHTEST[so-file-version] = "package_qa_check_so_file_version"
+def package_qa_check_so_file_version(path, name, d, elf, messages):
+    """
+    Check for ".so" files that do not match the package version
+    """
+    import re
+
+    pv = d.getVar('PV')
+    # Search for .so file with version number following
+    prog = re.compile(r'.*\.so\.(\d+\.\d+\.\d+)')
+    matches = prog.findall(path)
+    if len(matches) > 0:
+        so_file_version = matches[0]
+        if so_file_version != pv:
+            package_qa_add_message(messages, "so-file-version",
+                ".so file version does not match package version:\nFile: {}\nFile version:\t{}\nPV:\t\t{}\n".format(
+                    path, so_file_version, pv))
 
 # Check license variables
 do_populate_lic[postfuncs] += "populate_lic_qa_checksum"
