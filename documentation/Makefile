@@ -60,6 +60,8 @@
 # documentation tree, and enabled tens of thousands of developers to succeed with
 # embedded Linux. He ran this Makefile many thousands of times. Godspeed, Dude.
 
+BBPATH := ../..
+
 ifeq ($(DOC),brief-yoctoprojectqs)
 XSLTOPTS = --stringparam html.stylesheet brief-yoctoprojectqs-style.css \
            --stringparam  chapter.autolabel 0 \
@@ -300,6 +302,8 @@ ifeq ($(DOC),mega-manual)
 	@echo " "
 	@echo "******** Building "$(DOC)
 	@echo " "
+	sed -i -e "s:<!ENTITY BBPATH.*::" poky.ent
+	echo '<!ENTITY BBPATH "${BBPATH}">' >> poky.ent
 	cd $(DOC); xsltproc $(XSLTOPTS) -o $(DOC).html $(DOC)-customization.xsl $(DOC).xml; cd ..
 	@echo " "
 	@echo "******** Using mega-manual.sed to process external links"
