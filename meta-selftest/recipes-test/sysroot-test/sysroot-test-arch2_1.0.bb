@@ -10,3 +10,5 @@ do_install() {
 	install -d ${D}${includedir}
 	echo "# test ${TESTSTRING}" > ${D}${includedir}/sysroot-test.h
 }
+
+EXCLUDE_FROM_WORLD = "1"
