@@ -179,6 +179,24 @@ python do_symlink_kernsrc () {
 # do_configure on do_symlink_kernsrc.
 addtask symlink_kernsrc before do_patch do_configure after do_unpack
 
+def get_kernel_source_date_epoch(d):
+    import subprocess
+
+    s_d_e = d.getVar("SOURCE_DATE_EPOCH")
+    if not s_d_e:
+        s_d_e = d.getVar("REPRODUCIBLE_TIMESTAMP_ROOTFS")
+        try:
+            s_d_e = subprocess.check_output(['git', '--git-dir=%s/.git' % d.getVar('S'), 'log', '-1', '--pretty=%ct']).decode('utf-8')
+        except:
+            # we go with the default assigned above
+            pass
+
+    env = os.environ.copy()
+    env['LC_ALL'] = 'C'
+    ts = subprocess.check_output(['date', '-d @%s' % s_d_e], env=env).decode('utf-8')
+
+    return ts
+
 inherit kernel-arch deploy
 
 PACKAGES_DYNAMIC += "^${KERNEL_PACKAGE_NAME}-module-.*"
@@ -319,19 +337,9 @@ get_cc_option () {
 kernel_do_compile() {
 	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS MACHINE
 	if [ "${BUILD_REPRODUCIBLE_BINARIES}" = "1" ]; then
-		# kernel sources do not use do_unpack, so SOURCE_DATE_EPOCH may not
-		# be set....
-		if [ "${SOURCE_DATE_EPOCH}" = "" -o "${SOURCE_DATE_EPOCH}" = "0" ]; then
-			# The source directory is not necessarily a git repository, so we
-			# specify the git-dir to ensure that git does not query a
-			# repository in any parent directory.
-			SOURCE_DATE_EPOCH=`git --git-dir="${S}/.git" log -1 --pretty=%ct 2>/dev/null || echo "${REPRODUCIBLE_TIMESTAMP_ROOTFS}"`
-		fi
-
-		ts=`LC_ALL=C date -d @$SOURCE_DATE_EPOCH`
-		export KBUILD_BUILD_TIMESTAMP="$ts"
+		export KBUILD_BUILD_TIMESTAMP="${@ get_kernel_source_date_epoch(d)}"
 		export KCONFIG_NOTIMESTAMP=1
-		bbnote "KBUILD_BUILD_TIMESTAMP: $ts"
+		bbnote "KBUILD_BUILD_TIMESTAMP: $KBUILD_BUILD_TIMESTAMP"
 	fi
 	# The $use_alternate_initrd is only set from
 	# do_bundle_initramfs() This variable is specifically for the
@@ -360,19 +368,9 @@ kernel_do_compile() {
 do_compile_kernelmodules() {
 	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS MACHINE
 	if [ "${BUILD_REPRODUCIBLE_BINARIES}" = "1" ]; then
-		# kernel sources do not use do_unpack, so SOURCE_DATE_EPOCH may not
-		# be set....
-		if [ "${SOURCE_DATE_EPOCH}" = "" -o "${SOURCE_DATE_EPOCH}" = "0" ]; then
-			# The source directory is not necessarily a git repository, so we
-			# specify the git-dir to ensure that git does not query a
-			# repository in any parent directory.
-			SOURCE_DATE_EPOCH=`git --git-dir="${S}/.git" log -1 --pretty=%ct 2>/dev/null || echo "${REPRODUCIBLE_TIMESTAMP_ROOTFS}"`
-		fi
-
-		ts=`LC_ALL=C date -d @$SOURCE_DATE_EPOCH`
-		export KBUILD_BUILD_TIMESTAMP="$ts"
+		export KBUILD_BUILD_TIMESTAMP="${@ get_kernel_source_date_epoch(d)}"
 		export KCONFIG_NOTIMESTAMP=1
-		bbnote "KBUILD_BUILD_TIMESTAMP: $ts"
+		bbnote "KBUILD_BUILD_TIMESTAMP: $KBUILD_BUILD_TIMESTAMP"
 	fi
 	if (grep -q -i -e '^CONFIG_MODULES=y$' ${B}/.config); then
 		cc_extra=$(get_cc_option)
