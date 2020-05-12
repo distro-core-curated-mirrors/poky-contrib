@@ -207,6 +207,24 @@ python do_symlink_kernsrc () {
 # do_configure on do_symlink_kernsrc.
 addtask symlink_kernsrc before do_patch do_configure after do_unpack
 
+def get_kernel_source_date_epoch(d):
+    import subprocess
+
+    s_d_e = d.getVar("SOURCE_DATE_EPOCH")
+    if not s_d_e:
+        s_d_e = d.getVar("REPRODUCIBLE_TIMESTAMP_ROOTFS")
+        try:
+            s_d_e = subprocess.check_output(['git', '--git-dir=%s/.git' % d.getVar('S'), 'log', '-1', '--pretty=%ct']).decode('utf-8')
+        except:
+            # we go with the default assigned above
+            pass
+
+    env = os.environ.copy()
+    env['LC_ALL'] = 'C'
+    ts = subprocess.check_output(['date', '-d @%s' % s_d_e], env=env).decode('utf-8')
+
+    return ts
+
 inherit kernel-arch deploy
 
 PACKAGES_DYNAMIC += "^${KERNEL_PACKAGE_NAME}-module-.*"
