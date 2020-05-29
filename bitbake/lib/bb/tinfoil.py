@@ -117,15 +117,16 @@ class TinfoilCookerAdapter:
 
     class TinfoilCookerCollectionAdapter:
         """ cooker.collection adapter """
-        def __init__(self, tinfoil):
+        def __init__(self, tinfoil, mc=''):
             self.tinfoil = tinfoil
+            self.mc = mc
         def get_file_appends(self, fn):
-            return self.tinfoil.get_file_appends(fn)
+            return self.tinfoil.get_file_appends(fn, self.mc)
         def __getattr__(self, name):
             if name == 'overlayed':
-                return self.tinfoil.get_overlayed_recipes()
+                return self.tinfoil.get_overlayed_recipes(self.mc)
             elif name == 'bbappends':
-                return self.tinfoil.run_command('getAllAppends')
+                return self.tinfoil.run_command('getAllAppends', self.mc)
             else:
                 raise AttributeError("%s instance has no attribute '%s'" % (self.__class__.__name__, name))
 
@@ -185,10 +186,11 @@ class TinfoilCookerAdapter:
 
     def __init__(self, tinfoil):
         self.tinfoil = tinfoil
-        self.collection = self.TinfoilCookerCollectionAdapter(tinfoil)
+        self.collections = {}
         self.recipecaches = {}
         self.recipecaches[''] = self.TinfoilRecipeCacheAdapter(tinfoil)
         for mc in (tinfoil.config_data.getVar('BBMULTICONFIG') or '').split():
+            self.collections[mc] = self.TinfoilCookerCollectionAdapter(tinfoil)
             self.recipecaches[mc] = self.TinfoilRecipeCacheAdapter(tinfoil, mc)
         self._cache = {}
     def __getattr__(self, name):
@@ -196,7 +198,7 @@ class TinfoilCookerAdapter:
         if name in self._cache:
             return self._cache[name]
         elif name == 'skiplist':
-            attrvalue = self.tinfoil.get_skipped_recipes()
+            attrvalue = self.tinfoil.get_skipped_recipes(self.mc)
         elif name == 'bbfile_config_priorities':
             ret = self.tinfoil.run_command('getLayerPriorities')
             bbfile_config_priorities = []
@@ -492,18 +494,18 @@ class Tinfoil:
             raise Exception('Not connected to server (did you call .prepare()?)')
         return self.server_connection.events.waitEvent(timeout)
 
-    def get_overlayed_recipes(self):
+    def get_overlayed_recipes(self, mc=''):
         """
         Find recipes which are overlayed (i.e. where recipes exist in multiple layers)
         """
-        return defaultdict(list, self.run_command('getOverlayedRecipes'))
+        return defaultdict(list, self.run_command('getOverlayedRecipes', mc))
 
-    def get_skipped_recipes(self):
+    def get_skipped_recipes(self, mc=''):
         """
         Find recipes which were skipped (i.e. SkipRecipe was raised
         during parsing).
         """
-        return OrderedDict(self.run_command('getSkippedRecipes'))
+        return OrderedDict(self.run_command('getSkippedRecipes', mc))
 
     def get_all_providers(self, mc=''):
         return defaultdict(list, self.run_command('allProviders', mc))
@@ -534,11 +536,11 @@ class Tinfoil:
                 raise bb.providers.NoProvider('Unable to find any recipe file matching "%s"' % pn)
         return best[3]
 
-    def get_file_appends(self, fn):
+    def get_file_appends(self, fn, mc=''):
         """
         Find the bbappends for a recipe file
         """
-        return self.run_command('getFileAppends', fn)
+        return self.run_command('getFileAppends', fn, mc)
 
     def all_recipes(self, mc='', sort=True):
         """
