@@ -58,10 +58,10 @@ class SignatureGenerator(object):
     def get_unihash(self, tid):
         return self.taskhash[tid]
 
-    def prep_taskhash(self, tid, deps, dataCache):
+    def prep_taskhash(self, tid, deps, dataCaches):
         return
 
-    def get_taskhash(self, tid, deps, dataCache):
+    def get_taskhash(self, tid, deps, dataCaches):
         self.taskhash[tid] = hashlib.sha256(tid.encode("utf-8")).hexdigest()
         return self.taskhash[tid]
 
@@ -200,7 +200,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
         self.lookupcache = {}
         self.taskdeps = {}
 
-    def rundep_check(self, fn, recipename, task, dep, depname, dataCache):
+    def rundep_check(self, fn, recipename, task, dep, depname, dataCaches):
         # Return True if we should keep the dependency, False to drop it
         # We only manipulate the dependencies for packages not in the whitelist
         if self.twl and not self.twl.search(recipename):
@@ -218,37 +218,35 @@ class SignatureGeneratorBasic(SignatureGenerator):
             pass
         return taint
 
-    def prep_taskhash(self, tid, deps, dataCache):
+    def prep_taskhash(self, tid, deps, dataCaches):
 
         (mc, _, task, fn) = bb.runqueue.split_tid_mcfn(tid)
 
-        self.basehash[tid] = dataCache.basetaskhash[tid]
+        self.basehash[tid] = dataCaches[mc].basetaskhash[tid]
         self.runtaskdeps[tid] = []
         self.file_checksum_values[tid] = []
-        recipename = dataCache.pkg_fn[fn]
+        recipename = dataCaches[mc].pkg_fn[fn]
 
         self.tidtopn[tid] = recipename
 
         for dep in sorted(deps, key=clean_basepath):
-            (depmc, _, deptaskname, depfn) = bb.runqueue.split_tid_mcfn(dep)
-            if mc != depmc:
-                continue
-            depname = dataCache.pkg_fn[depfn]
-            if not self.rundep_check(fn, recipename, task, dep, depname, dataCache):
+            (depmc, _, _, depmcfn) = bb.runqueue.split_tid_mcfn(dep)
+            depname = dataCaches[depmc].pkg_fn[depmcfn]
+            if not self.rundep_check(fn, recipename, task, dep, depname, dataCaches):
                 continue
             if dep not in self.taskhash:
                 bb.fatal("%s is not in taskhash, caller isn't calling in dependency order?" % dep)
             self.runtaskdeps[tid].append(dep)
 
-        if task in dataCache.file_checksums[fn]:
+        if task in dataCaches[mc].file_checksums[fn]:
             if self.checksum_cache:
-                checksums = self.checksum_cache.get_checksums(dataCache.file_checksums[fn][task], recipename, self.localdirsexclude)
+                checksums = self.checksum_cache.get_checksums(dataCaches[mc].file_checksums[fn][task], recipename, self.localdirsexclude)
             else:
-                checksums = bb.fetch2.get_file_checksums(dataCache.file_checksums[fn][task], recipename, self.localdirsexclude)
+                checksums = bb.fetch2.get_file_checksums(dataCaches[mc].file_checksums[fn][task], recipename, self.localdirsexclude)
             for (f,cs) in checksums:
                 self.file_checksum_values[tid].append((f,cs))
 
-        taskdep = dataCache.task_deps[fn]
+        taskdep = dataCaches[mc].task_deps[fn]
         if 'nostamp' in taskdep and task in taskdep['nostamp']:
             # Nostamp tasks need an implicit taint so that they force any dependent tasks to run
             if tid in self.taints and self.taints[tid].startswith("nostamp:"):
@@ -259,14 +257,14 @@ class SignatureGeneratorBasic(SignatureGenerator):
                 taint = str(uuid.uuid4())
                 self.taints[tid] = "nostamp:" + taint
 
-        taint = self.read_taint(fn, task, dataCache.stamp[fn])
+        taint = self.read_taint(fn, task, dataCaches[mc].stamp[fn])
         if taint:
             self.taints[tid] = taint
             logger.warning("%s is tainted from a forced run" % tid)
 
         return
 
-    def get_taskhash(self, tid, deps, dataCache):
+    def get_taskhash(self, tid, deps, dataCaches):
 
         data = self.basehash[tid]
         for dep in self.runtaskdeps[tid]:
