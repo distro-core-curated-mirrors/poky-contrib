@@ -38,22 +38,15 @@ UPSTREAM_CHECK_URI = "https://github.com/unicode-org/icu/releases"
 EXTRA_OECONF_append_libc-musl = " ac_cv_func_strtod_l=no"
 
 do_make_icudata_class-target () {
-    cd ${S}
-    rm -rf data
-    cp -a ${WORKDIR}/data .
-    AR='${BUILD_AR}' \
-    CC='${BUILD_CC}' \
-    CPP='${BUILD_CPP}' \
-    CXX='${BUILD_CXX}' \
-    RANLIB='${BUILD_RANLIB}' \
-    CFLAGS='${BUILD_CFLAGS}' \
-    CPPFLAGS='${BUILD_CPPFLAGS}' \
-    CXXFLAGS='${BUILD_CXXFLAGS}' \
-    LDFLAGS='${BUILD_LDFLAGS}' \
+    rm -rf ${S}/data
+    cp -a ${WORKDIR}/data ${S}
+
+    cd ${B}
     ICU_DATA_FILTER_FILE=${WORKDIR}/filter.json \
-    ./runConfigureICU Linux --with-data-packaging=archive
-    oe_runmake ${PARALLEL_MAKE}
-    install -Dm644 ${S}/data/out/icudt${ICU_MAJOR_VER}l.dat ${S}/data/in/icudt${ICU_MAJOR_VER}l.dat
+      ${S}/configure --with-cross-build=${STAGING_ICU_DIR_NATIVE} --with-data-packaging=archive
+
+    oe_runmake -C ${B}/data packagedata
+    install -Dm644 ${B}/data/out/icudt${ICU_MAJOR_VER}l.dat ${S}/data/in/
 }
 
 do_make_icudata() {
@@ -61,3 +54,5 @@ do_make_icudata() {
 }
 
 addtask make_icudata before do_configure after do_patch
+do_make_icudata[cleandirs] = "${B}"
+do_configure[cleandirs] = "${B}"
