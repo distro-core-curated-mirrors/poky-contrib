@@ -37,10 +37,17 @@ UPSTREAM_CHECK_URI = "https://github.com/unicode-org/icu/releases"
 
 EXTRA_OECONF_append_libc-musl = " ac_cv_func_strtod_l=no"
 
+icu_disable_parallel() {
+    sed -i -e '1 i .NOTPARALLEL:' ${S}/data/Makefile.in
+}
+do_unpack[postfuncs] = "icu_disable_parallel"
+
 do_make_icudata_class-target () {
-    cd ${S}
-    rm -rf data
-    cp -a ${WORKDIR}/data .
+    rm -rf ${S}/data
+    cp -a ${WORKDIR}/data ${S}
+    icu_disable_parallel
+
+    cd ${B}
     AR='${BUILD_AR}' \
     CC='${BUILD_CC}' \
     CPP='${BUILD_CPP}' \
@@ -51,13 +58,16 @@ do_make_icudata_class-target () {
     CXXFLAGS='${BUILD_CXXFLAGS}' \
     LDFLAGS='${BUILD_LDFLAGS}' \
     ICU_DATA_FILTER_FILE=${WORKDIR}/filter.json \
-    ./runConfigureICU Linux --with-data-packaging=archive
+    ${S}/configure --with-cross-build=${STAGING_ICU_DIR_NATIVE} --with-data-packaging=archive
+
     oe_runmake ${PARALLEL_MAKE}
-    install -Dm644 ${S}/data/out/icudt${ICU_MAJOR_VER}l.dat ${S}/data/in/icudt${ICU_MAJOR_VER}l.dat
+    install -Dm644 ${B}/data/out/icudt${ICU_MAJOR_VER}l.dat ${S}/data/in/
 }
 
 do_make_icudata() {
     :
 }
 
-addtask make_icudata before do_configure after do_patch
+addtask make_icudata before do_configure after do_prepare_recipe_sysroot do_patch
+do_make_icudata[cleandirs] = "${B}"
+do_configure[cleandirs] = "${B}"

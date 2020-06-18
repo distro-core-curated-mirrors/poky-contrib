@@ -7,7 +7,6 @@ HOMEPAGE = "http://site.icu-project.org/"
 
 LICENSE = "ICU"
 DEPENDS = "icu-native"
-DEPENDS_class-native = ""
 
 CVE_PRODUCT = "international_components_for_unicode"
 
@@ -27,7 +26,7 @@ MULTILIB_SCRIPTS = "${PN}-dev:${bindir}/icu-config"
 # cross-compiling. Taken the situation that different builds may share a common sstate-cache
 # into consideration, the native build directory needs to be staged.
 EXTRA_OECONF = "--with-cross-build=${STAGING_ICU_DIR_NATIVE}"
-EXTRA_OECONF_class-native = ""
+EXTRA_OECONF_class-native = "--disable-samples --disable-tests --disable-extras"
 EXTRA_OECONF_class-nativesdk = "--with-cross-build=${STAGING_ICU_DIR_NATIVE}"
 
 EXTRA_OECONF_append_class-target = "${@oe.utils.conditional('SITEINFO_ENDIANNESS', 'be', ' --with-data-packaging=archive', '', d)}"
