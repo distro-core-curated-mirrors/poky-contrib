@@ -31,8 +31,8 @@ EXTRA_OECONF_class-nativesdk = "--with-cross-build=${STAGING_ICU_DIR_NATIVE}"
 # Don't need these for native
 EXTRA_OECONF_class-native = "--disable-samples --disable-tests --disable-extras"
 
-EXTRA_OECONF_append_class-target = "${@oe.utils.conditional('SITEINFO_ENDIANNESS', 'be', ' --with-data-packaging=archive', '', d)}"
-TARGET_CXXFLAGS_append = "${@oe.utils.conditional('SITEINFO_ENDIANNESS', 'be', ' -DICU_DATA_DIR=\\""${datadir}/${BPN}/${PV}\\""', '', d)}"
+EXTRA_OECONF_append_class-target = "--with-data-packaging=archive"
+TARGET_CXXFLAGS_append = " -DICU_DATA_DIR=\\""${datadir}/${BPN}/${PV}\\"""
 
 ASNEEDED = ""
 

@@ -36,23 +36,10 @@ UPSTREAM_CHECK_REGEX = "icu4c-(?P<pver>\d+(_\d+)+)-src"
 UPSTREAM_CHECK_URI = "https://github.com/unicode-org/icu/releases"
 
 EXTRA_OECONF_append_libc-musl = " ac_cv_func_strtod_l=no"
+EXTRA_OECONF_append_class-target = " ICU_DATA_FILTER_FILE=${WORKDIR}/filter.json"
 
-do_make_icudata_class-target () {
+# todo proper task
+do_configure_prepend_class-target() {
     rm -rf ${S}/data
     cp -a ${WORKDIR}/data ${S}
-
-    cd ${B}
-    ICU_DATA_FILTER_FILE=${WORKDIR}/filter.json \
-      ${S}/configure --with-cross-build=${STAGING_ICU_DIR_NATIVE} --with-data-packaging=archive
-
-    oe_runmake -C ${B}/data packagedata
-    install -Dm644 ${B}/data/out/icudt${ICU_MAJOR_VER}l.dat ${S}/data/in/
 }
-
-do_make_icudata() {
-    :
-}
-
-addtask make_icudata before do_configure after do_patch
-do_make_icudata[cleandirs] = "${B}"
-do_configure[cleandirs] = "${B}"
