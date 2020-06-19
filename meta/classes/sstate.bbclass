@@ -857,8 +857,8 @@ sstate_unpack_package () {
 BB_HASHCHECK_FUNCTION = "sstate_checkhashes"
 
 def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, **kwargs):
-    found = set()
-    missed = set()
+    found = sq_data.setdefault('sstate_found', set())
+    missed = sq_data.setdefault('sstate_missed', set())
 
     def gethash(task):
         return sq_data['unihash'][task]
@@ -947,7 +947,7 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
         tasklist = []
         min_tasks = 100
         for tid in sq_data['hash']:
-            if tid in found:
+            if tid in found or tid in missed:
                 continue
             spec, extrapath, tname = getpathcomponents(tid, d)
             sstatefile = d.expand(extrapath + generate_sstatefn(spec, gethash(tid), tname, siginfo, d))
