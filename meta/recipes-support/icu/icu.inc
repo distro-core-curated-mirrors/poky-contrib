@@ -19,7 +19,7 @@ BINCONFIG = "${bindir}/icu-config"
 
 ICU_MAJOR_VER = "${@d.getVar('PV').split('.')[0]}"
 
-inherit autotools pkgconfig binconfig multilib_script
+inherit autotools pkgconfig binconfig multilib_script lib_package
 
 MULTILIB_SCRIPTS = "${PN}-dev:${bindir}/icu-config"
 
@@ -71,14 +71,19 @@ do_install_append_class-target() {
 	    ${D}/${libdir}/${BPN}/${PV}/pkgdata.inc
 }
 
-PACKAGES =+ "libicudata libicuuc libicui18n libicutu libicuio"
+PACKAGES =+ "libicudata libicuuc libicui18n libicutu libicuio libicutest"
 
-FILES_${PN}-dev += "${libdir}/${BPN}/"
+FILES_${PN}-dev += "${libdir}/${BPN}/ \
+                    ${datadir}/${BPN}/${PV}/config/ \
+                    ${datadir}/${BPN}/${PV}/LICENSE \
+                    ${datadir}/${BPN}/${PV}/install-sh \
+                    ${datadir}/${BPN}/${PV}/mkinstalldirs"
 
-FILES_libicudata = "${libdir}/libicudata.so.*"
+FILES_libicudata = "${libdir}/libicudata.so.* ${datadir}/${BPN}/${PV}/icudt*.dat"
 FILES_libicuuc = "${libdir}/libicuuc.so.*"
 FILES_libicui18n = "${libdir}/libicui18n.so.*"
 FILES_libicutu = "${libdir}/libicutu.so.*"
 FILES_libicuio = "${libdir}/libicuio.so.*"
+FILES_libicutest = "${libdir}/libicutest.so.*"
 
 BBCLASSEXTEND = "native nativesdk"
