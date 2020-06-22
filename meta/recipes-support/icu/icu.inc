@@ -58,10 +58,10 @@ do_install_append_class-native() {
 do_install_append_class-target() {
     # The native pkgdata can not generate the correct data file.
     # Use icupkg to re-generate it.
-    if [ "${SITEINFO_ENDIANNESS}" = "be" ] ; then
-        rm -f ${D}/${datadir}/${BPN}/${PV}/icudt${ICU_MAJOR_VER}b.dat
-        icupkg -tb ${S}/data/in/icudt${ICU_MAJOR_VER}l.dat ${D}/${datadir}/${BPN}/${PV}/icudt${ICU_MAJOR_VER}b.dat
-    fi
+    #if [ "${SITEINFO_ENDIANNESS}" = "be" ] ; then
+    #    rm -f ${D}/${datadir}/${BPN}/${PV}/icudt${ICU_MAJOR_VER}b.dat
+    #    icupkg -tb ${S}/data/in/icudt${ICU_MAJOR_VER}l.dat ${D}/${datadir}/${BPN}/${PV}/icudt${ICU_MAJOR_VER}b.dat
+    #fi
 	
 	# Remove build host references...
 	sed -i  \
