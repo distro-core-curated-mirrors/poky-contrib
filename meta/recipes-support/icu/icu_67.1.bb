@@ -24,6 +24,7 @@ SRC_URI = "${BASE_SRC_URI};name=code \
            file://filter.json \
            file://fix-install-manx.patch \
            file://0001-icu-Added-armeb-support.patch \
+           file://not-parallel.patch \
            "
 
 SRC_URI_append_class-target = "\

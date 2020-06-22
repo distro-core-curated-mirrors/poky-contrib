@@ -1,0 +1,16 @@
+The rules in this directory appear not to be parallel-safe at all and cause
+segfaults occasionally, for example:
+
+*** [../data/rules.mk:747: out/build/icudt67l/zoneinfo64.res] Segmentation fault (core dumped)
+*** [../data/rules.mk:732: out/build/icudt66l/pluralRanges.res] Segmentation fault (core dumped)
+
+Upstream-Status: Pending
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+
+--- a/data/Makefile.in~	2020-04-22 21:04:20.000000000 +0100
++++ b/data/Makefile.in	2020-06-22 21:52:16.970662183 +0100
+@@ -1,2 +1,4 @@
++.NOTPARALLEL:
++
+ ## Makefile.in for ICU data
+ ## Copyright (C) 2016 and later: Unicode, Inc. and others.
