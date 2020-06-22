@@ -39,8 +39,12 @@ UPSTREAM_CHECK_URI = "https://github.com/unicode-org/icu/releases"
 EXTRA_OECONF_append_libc-musl = " ac_cv_func_strtod_l=no"
 EXTRA_OECONF_append_class-target = " ICU_DATA_FILTER_FILE=${WORKDIR}/filter.json"
 
-# todo proper task
-do_configure_prepend_class-target() {
+# maybe always do this: performance hit?
+do_unpack[postfuncs] += "inject_icu_data"
+inject_icu_data_class-target() {
     rm -rf ${S}/data
     cp -a ${WORKDIR}/data ${S}
+}
+inject_icu_data() {
+    :
 }
