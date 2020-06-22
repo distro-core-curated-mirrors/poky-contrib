@@ -72,19 +72,24 @@ do_install_append_class-target() {
 	    ${D}/${libdir}/${BPN}/${PV}/pkgdata.inc
 }
 
-PACKAGES =+ "libicudata libicuuc libicui18n libicutu libicuio libicutest"
+# Put each ICU library into a sub-package
+python icu_libpackages () {
+    import re
+    match = r"(libicu.+)\.so\..+"
+    packages = do_split_packages(d, d.getVar('libdir'), match, '%s', 'ICU library %s',
+              allow_links=True, extra_depends='', prepend=True)
+    d.appendVar('RDEPENDS_' + d.getVar('PN'), " " + " ".join(packages))
+}
+PACKAGESPLITFUNCS_prepend = "icu_libpackages "
 
+# icu is a meta-package pulling in all the sub-packages
+ALLOW_EMPTY_${PN} = "1"
 FILES_${PN}-dev += "${libdir}/${BPN}/ \
                     ${datadir}/${BPN}/${PV}/config/ \
                     ${datadir}/${BPN}/${PV}/LICENSE \
                     ${datadir}/${BPN}/${PV}/install-sh \
                     ${datadir}/${BPN}/${PV}/mkinstalldirs"
 
-FILES_libicudata = "${libdir}/libicudata.so.* ${datadir}/${BPN}/${PV}/icudt*.dat"
-FILES_libicuuc = "${libdir}/libicuuc.so.*"
-FILES_libicui18n = "${libdir}/libicui18n.so.*"
-FILES_libicutu = "${libdir}/libicutu.so.*"
-FILES_libicuio = "${libdir}/libicuio.so.*"
-FILES_libicutest = "${libdir}/libicutest.so.*"
+FILES_libicudata += "${datadir}/${BPN}/${PV}/icudt*.dat"
 
 BBCLASSEXTEND = "native nativesdk"
