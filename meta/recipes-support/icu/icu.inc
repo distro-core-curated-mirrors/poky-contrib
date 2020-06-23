@@ -26,7 +26,7 @@ MULTILIB_SCRIPTS = "${PN}-dev:${bindir}/icu-config"
 # ICU needs the native build directory as an argument to its --with-cross-build option when
 # cross-compiling. Taken the situation that different builds may share a common sstate-cache
 # into consideration, the native build directory needs to be staged.
-EXTRA_OECONF = "--with-cross-build=${STAGING_ICU_DIR_NATIVE} --disable-tests"
+EXTRA_OECONF = "--with-cross-build=${STAGING_ICU_DIR_NATIVE} --enable-tests"
 EXTRA_OECONF_class-nativesdk = "--with-cross-build=${STAGING_ICU_DIR_NATIVE}"
 # Don't need these for native
 EXTRA_OECONF_class-native = "--disable-samples --disable-tests --disable-extras"
@@ -70,6 +70,9 @@ do_install_append_class-target() {
 	    -e 's:${HOSTTOOLS_DIR}/::g' \
 	    ${D}/${bindir}/icu-config ${D}/${libdir}/${BPN}/${PV}/Makefile.inc \
 	    ${D}/${libdir}/${BPN}/${PV}/pkgdata.inc
+
+	# TODO proper test dir
+	install -m755 ${B}/test/iotest/iotest ${B}/test/intltest/intltest ${D}${bindir}
 }
 
 # Put each ICU library into a sub-package
@@ -91,5 +94,8 @@ FILES_${PN}-dev += "${libdir}/${BPN}/ \
                     ${datadir}/${BPN}/${PV}/mkinstalldirs"
 
 FILES_libicudata += "${datadir}/${BPN}/${PV}/icudt*.dat"
+
+PACKAGES += "${PN}-ptest"
+FILES_${PN}-ptest += "${bindir}/*test"
 
 BBCLASSEXTEND = "native nativesdk"
