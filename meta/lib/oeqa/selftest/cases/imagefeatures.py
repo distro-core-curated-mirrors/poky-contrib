@@ -206,20 +206,20 @@ class ImageFeatures(OESelftestTestCase):
         skip_image_types = set(('container', 'elf', 'f2fs', 'multiubi', 'tar.zst', 'wic.zst', 'squashfs-lzo'))
         img_types = all_image_types - skip_image_types
 
-        config = 'IMAGE_FSTYPES += "%s"\n'\
-                 'MKUBIFS_ARGS ?= "-m 2048 -e 129024 -c 2047"\n'\
-                 'UBINIZE_ARGS ?= "-m 2048 -p 128KiB -s 512"' % ' '.join(img_types)
-        self.write_config(config)
-
-        bitbake(image_name)
-
         deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
-        link_name = get_bb_var('IMAGE_LINK_NAME', image_name)
         for itype in img_types:
-            image_path = os.path.join(deploy_dir_image, "%s.%s" % (link_name, itype))
-            # check if result image is in deploy directory
-            self.assertTrue(os.path.exists(image_path),
-                            "%s image %s doesn't exist" % (itype, image_path))
+            with self.subTest(image_type=itype):
+                config = 'IMAGE_FSTYPES = "%s"\n'\
+                         'MKUBIFS_ARGS ?= "-m 2048 -e 129024 -c 2047"\n'\
+                         'UBINIZE_ARGS ?= "-m 2048 -p 128KiB -s 512"' % itype
+                self.write_config(config)
+
+                bitbake(image_name)
+
+                link_name = get_bb_var('IMAGE_LINK_NAME', image_name)
+                image_path = os.path.join(deploy_dir_image, "%s.%s" % (link_name, itype))
+                self.assertTrue(os.path.exists(image_path),
+                                "%s image %s doesn't exist" % (itype, image_path))
 
     def test_useradd_static(self):
         config = """
