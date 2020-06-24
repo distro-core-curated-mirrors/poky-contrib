@@ -12,6 +12,9 @@ DEPENDS_append_x86 = " syslinux grub-efi systemd-boot"
 DEPENDS_append_x86-64 = " syslinux grub-efi systemd-boot"
 DEPENDS_append_x86-x32 = " syslinux grub-efi"
 
+# TODO just on arm hosts
+DEPENDS_remove = "syslinux-native"
+
 INHIBIT_DEFAULT_DEPS = "1"
 
 inherit nopackages
