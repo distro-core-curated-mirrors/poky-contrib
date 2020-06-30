@@ -325,6 +325,16 @@ python do_devshell_prepend () {
 
 addtask bundle_initramfs after do_install before do_deploy
 
+get_hostcc_option () {
+		# Check if host cc is gcc10+, if so add return -fcommon for kernels that
+		# are not build gcc10 safe.
+		host_version=$(${BUILD_CC} --version | grep ^gcc | sed 's/^.* //g')
+		echo $host_version | greq -q "10.*"
+		if $? -eq 0
+			echo "-fcommon"
+		fi
+}
+
 get_cc_option () {
 		# Check if KERNEL_CC supports the option "file-prefix-map".
 		# This option allows us to build images with __FILE__ values that do not

@@ -31,6 +31,9 @@ DEPENDS_append_arc = " libgcc"
 KERNEL_CC_append_arc = " ${TOOLCHAIN_OPTIONS}"
 KERNEL_LD_append_arc = " ${TOOLCHAIN_OPTIONS}"
 
+# append -fcommon to ensure that we build on gcc10 hosts for all versions
+BUILD_CC_append = " -fcommon"
+
 KERNEL_FEATURES_append_qemuall=" features/debug/printk.scc"
 
 KERNEL_FEATURES_append = " ${@bb.utils.contains('MACHINE_FEATURES', 'numa', 'features/numa/numa.scc', '', d)}"
