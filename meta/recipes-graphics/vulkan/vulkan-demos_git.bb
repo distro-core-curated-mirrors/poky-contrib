@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://LICENSE.md;md5=dcf473723faabf17baa9b5f2207599d0 \
                     file://examples/triangle/triangle.cpp;endline=12;md5=bccd1bf9cadd9e10086cf7872157e4fa"
 
 SRCREV_glm = "1ad55c5016339b83b7eec98c31007e0aee57d2bf"
-SRCREV_ktx = "726d14d02c95bb21ec9e43807751b491d295dd3c"
+SRCREV_ktx = "2179edf2bead34d1ec1102b2e7ce0383414d837c"
 
 SRC_URI = "git://github.com/SaschaWillems/Vulkan.git \
            git://github.com/g-truc/glm;destsuffix=git/external/glm;name=glm \
@@ -14,7 +14,7 @@ SRC_URI = "git://github.com/SaschaWillems/Vulkan.git \
            file://0001-Don-t-build-demos-with-questionably-licensed-data.patch \
            "
 UPSTREAM_CHECK_COMMITS = "1"
-SRCREV = "4818f85916bf88c1ca8c2ed1a46e0e758651489e"
+SRCREV = "f49c3d9ede2e207393bd8be13ce1f3b3cb2283fc"
 UPSTREAM_CHECK_GITTAGREGEX = "These are not the releases you're looking for"
 S = "${WORKDIR}/git"
 
