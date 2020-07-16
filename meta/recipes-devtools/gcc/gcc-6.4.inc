@@ -99,6 +99,7 @@ BACKPORTS = "\
            file://0010-i386-Pass-INVALID_REGNUM-as-invalid-register-number.patch \
            file://0011-i386-Update-mfunction-return-for-return-with-pop.patch \
            file://0012-i386-Add-TARGET_INDIRECT_BRANCH_REGISTER.patch \
+           file://gcc-ignore-ssp.diff \
 "
 
 SRC_URI[md5sum] = "11ba51a0cfb8471927f387c8895fe232"
@@ -113,10 +114,13 @@ FORTRAN = ""
 JAVA = ""
 
 LTO = "--enable-lto"
+LIBSSP = "--enable-libssp"
+LIBSSP_virtclass-nativesdk = "--enable-ignore-ssp=yes --disable-libssp --disable-default-ssp gcc_cv_libc_provides_ssp=yes enable_ignore_ssp=yes"
+LIBSSP_INITIAL = "gcc_cv_libc_provides_ssp=yes"
+LIBSSP_INITIAL_virtclass-nativesdk = "--enable-ignore-ssp=yes --disable-libssp --disable-default-ssp enable_ignore_ssp=yes gcc_cv_libc_provides_ssp=yes"
 
 EXTRA_OECONF_BASE = "\
     ${LTO} \
-    --enable-libssp \
     --enable-libitm \
     --disable-bootstrap \
     --disable-libmudflap \
@@ -128,6 +132,7 @@ EXTRA_OECONF_BASE = "\
     --enable-checking=release \
     --enable-cheaders=c_global \
     --without-isl \
+    ${LIBSSP} \
 "
 
 EXTRA_OECONF_INITIAL = "\
@@ -140,7 +145,7 @@ EXTRA_OECONF_INITIAL = "\
     --disable-plugin \
     --enable-decimal-float=no \
     --without-isl \
-    gcc_cv_libc_provides_ssp=yes \
+    ${LIBSSP_INITIAL} \
 "
 
 EXTRA_OECONF_append_libc-uclibc = " --disable-decimal-float "

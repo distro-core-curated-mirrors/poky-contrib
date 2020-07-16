@@ -1,0 +1,103 @@
+From 5f1627685b140363c089d43b065f55f6df4a0f3d Mon Sep 17 00:00:00 2001
+From: Jeremy Puhlman <jpuhlman@mvista.com>
+Date: Wed, 15 Jul 2020 15:37:52 -0700
+Subject: Add option for accepting, but ignoring -fstack-protector
+
+Upstream-Status: Inappropriate 
+diff --git a/configure b/configure
+index 78157a8..1eb2512 100755
+--- a/configure
++++ b/configure
+@@ -797,6 +797,7 @@ enable_maintainer_mode
+ enable_stage1_checking
+ enable_werror
+ enable_host_shared
++enable_ignore_ssp
+ '
+       ac_precious_vars='build_alias
+ host_alias
+diff --git a/gcc/config.in b/gcc/config.in
+index a08ffb4..9c8c9ae 100644
+--- a/gcc/config.in
++++ b/gcc/config.in
+@@ -2123,6 +2123,12 @@
+ #undef TARGET_LIBC_PROVIDES_SSP
+ #endif
+ 
++/* ignore fstack-protector */
++#ifndef USED_FOR_TARGET
++#undef TARGET_ACCEPT_BUT_IGNORE_SSP
++#endif
++
++
+ 
+ /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+ #ifndef USED_FOR_TARGET
+diff --git a/gcc/configure b/gcc/configure
+index 111fe23..c26a1bb 100755
+--- a/gcc/configure
++++ b/gcc/configure
+@@ -679,6 +679,7 @@ zlibinc
+ zlibdir
+ HOST_LIBS
+ enable_default_ssp
++enable_ignore_ssp
+ libgcc_visibility
+ gcc_cv_readelf
+ gcc_cv_objdump
+@@ -936,6 +937,7 @@ with_glibc_version
+ enable_gnu_unique_object
+ enable_linker_build_id
+ enable_default_ssp
++enable_ignore_ssp
+ with_long_double_128
+ with_gc
+ with_system_zlib
+@@ -28661,6 +28663,20 @@ $as_echo "#define TARGET_LIBC_PROVIDES_SSP 1" >>confdefs.h
+ 
+ fi
+ 
++# Check whether --enable-ignore-ssp was given.
++# Check whether --enable-ignore-ssp was given.
++if test "${enable_ignore_ssp+set}" = set; then :
++  enableval=$enable_ignore_ssp;
++else
++  enable_ignore_ssp=no
++fi
++
++if test x$enable_ignore_ssp = xyes ; then
++
++$as_echo "#define TARGET_ACCEPT_BUT_IGNORE_SSP 1" >>confdefs.h
++
++fi
++
+ # Check whether --enable-default-ssp was given.
+ # Check whether --enable-default-ssp was given.
+ if test "${enable_default_ssp+set}" = set; then :
+diff --git a/gcc/gcc.c b/gcc/gcc.c
+index bb24e71..5b68a8b 100644
+--- a/gcc/gcc.c
++++ b/gcc/gcc.c
+@@ -861,7 +861,7 @@ proper position among the other output files.  */
+ #endif
+ 
+ #ifndef LINK_SSP_SPEC
+-#ifdef TARGET_LIBC_PROVIDES_SSP
++#if defined TARGET_LIBC_PROVIDES_SSP || defined TARGET_ACCEPT_BUT_IGNORE_SSP
+ #define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all" \
+ 		       "|fstack-protector-strong|fstack-protector-explicit:}"
+ #else
+diff --git a/gcc/toplev.c b/gcc/toplev.c
+index 3d4137b..9e08d65 100644
+--- a/gcc/toplev.c
++++ b/gcc/toplev.c
+@@ -1584,6 +1584,9 @@ process_options (void)
+     }
+   if (!flag_stack_protect)
+     warn_stack_protect = 0;
++#ifdef TARGET_ACCEPT_BUT_IGNORE_SSP
++  flag_stack_protect = 0;
++#endif
+ 
+   /* Address Sanitizer needs porting to each target architecture.  */
+ 
