@@ -25,6 +25,7 @@ TOOLCHAIN_HOST_TASK += "\
     nativesdk-libstdc++-dev \
     nativesdk-libstdc++-staticdev \
     nativesdk-libtool \
+    nativesdk-make \
     nativesdk-pkgconfig \
     nativesdk-glibc-utils \
     nativesdk-python \
