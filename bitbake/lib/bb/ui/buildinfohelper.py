@@ -894,8 +894,10 @@ class BuildInfoHelper(object):
         self.autocommit_step = 1
         self.server = server
         # we use manual transactions if the database doesn't autocommit on us
-        if not connection.features.autocommits_when_autocommit_is_off:
-            transaction.set_autocommit(False)
+        # deprecated with Django 3
+        if 2 == django.VERSION[0]:
+            if not connection.features.autocommits_when_autocommit_is_off:
+                 transaction.set_autocommit(False)
         self.orm_wrapper = ORMWrapper()
         self.has_build_history = has_build_history
         self.tmp_dir = self.server.runCommand(["getVariable", "TMPDIR"])[0]

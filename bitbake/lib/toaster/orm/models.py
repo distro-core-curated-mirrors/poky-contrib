@@ -58,7 +58,18 @@ if 'sqlite' in settings.DATABASES['default']['ENGINE']:
             return _base_insert(self, *args, **kwargs)
     QuerySet._insert = _insert
 
-    from django.utils import six
+    #from django.utils import six (deprecate with Python-3/latest 'six')
+    def six_reraise(tp, value, tb=None):
+        try:
+            if value is None:
+                value = tp()
+            if value.__traceback__ is not tb:
+                raise value.with_traceback(tb)
+            raise value
+        finally:
+            value = None
+            tb = None
+
     def _create_object_from_params(self, lookup, params):
         """
         Tries to create an object using passed params.
@@ -73,7 +84,7 @@ if 'sqlite' in settings.DATABASES['default']['ENGINE']:
                 return self.get(**lookup), False
             except self.model.DoesNotExist:
                 pass
-            six.reraise(*exc_info)
+            six_reraise(*exc_info)
 
     QuerySet._create_object_from_params = _create_object_from_params
 
