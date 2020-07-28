@@ -597,6 +597,9 @@ class Git(FetchMethod):
             elif not need_lfs:
                 bb.note("Repository %s has LFS content but it is not being fetched" % (repourl))
 
+        if self._contains_submodules(ud, d, destdir):
+            bb.warn("Repository %s uses gitsubmodules, use gitsm:" % (repourl))
+
         if not ud.nocheckout:
             if subpath:
                 runfetchcmd("%s read-tree %s%s" % (ud.basecmd, ud.revisions[ud.names[0]], readpathspec), d,
@@ -677,6 +680,21 @@ class Git(FetchMethod):
             pass
         return False
 
+    def _contains_submodules(self, ud, d, wd):
+        if not ud.nobranch:
+            branchname = ud.branches[ud.names[0]]
+        else:
+            branchname = "master"
+
+        cmd = "%s cat-file -t origin/%s:.gitmodules" % (
+            ud.basecmd, ud.branches[ud.names[0]])
+
+        try:
+            runfetchcmd(cmd, d, quiet=True, workdir=wd)
+            return True
+        except bb.fetch2.FetchError:
+            return False
+    
     def _find_git_lfs(self, d):
         """
         Return True if git-lfs can be found, False otherwise.
