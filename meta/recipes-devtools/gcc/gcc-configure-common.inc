@@ -42,6 +42,8 @@ EXTRA_OECONF = "\
     ${@get_gcc_multiarch_setting(bb, d)} \
 "
 
+EXTRA_OECONF_append_aarch64 = " --enable-standard-branch-protection"
+
 # glibc version is a minimum controlling whether features are enabled. 
 # Doesn't need to track glibc exactly
 EXTRA_OECONF_append_libc-glibc = " --with-glibc-version=2.28 "
