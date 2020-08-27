@@ -29,3 +29,4 @@ python populate_packages:prepend() {
     d.appendVar("RREPLACES:%s" % p, "${DUMMYPROVIDES_PACKAGES_MULTILIB}")
 }
 
+INHIBIT_DEFAULT_DEPS = "1"
