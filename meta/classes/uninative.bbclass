@@ -63,7 +63,14 @@ python uninative_event_fetchloader() {
                 except ValueError:
                     continue
                 if find.startswith("http"):
-                    localdata.appendVar("PREMIRRORS", " ${UNINATIVE_URL}${UNINATIVE_TARBALL} %s/uninative/%s/${UNINATIVE_TARBALL}" % (replace, chksum))
+                    # Check if PREMIRROR url is using parameters
+                    if ";" in replace:
+                        premirror_url, premirror_parameter = replace.split(";", 1)
+                        premirror = " %s/uninative/%s/${UNINATIVE_TARBALL};%s" % (premirror_url, chksum, premirror_parameter)
+                    else:
+                        premirror = " %s/uninative/%s/${UNINATIVE_TARBALL}" % (replace, chksum)
+
+                    localdata.appendVar("PREMIRRORS", " ${UNINATIVE_URL}${UNINATIVE_TARBALL} " + premirror)
 
             srcuri = d.expand("${UNINATIVE_URL}${UNINATIVE_TARBALL};sha256sum=%s" % chksum)
             bb.note("Fetching uninative binary shim %s (will check PREMIRRORS first)" % srcuri)
