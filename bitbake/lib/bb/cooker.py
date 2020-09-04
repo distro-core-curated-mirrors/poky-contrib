@@ -1989,99 +1989,61 @@ class CookerCollectFiles(object):
 
         return priorities
 
-class ParsingFailure(Exception):
-    def __init__(self, realexception, recipe):
-        self.realexception = realexception
-        self.recipe = recipe
-        Exception.__init__(self, realexception, recipe)
+def serverlog(msg):
+    sys.stdout.write("%s: %s\n" % (multiprocessing.current_process().name, msg))
+    sys.stdout.flush()
 
-class Parser(multiprocessing.Process):
-    def __init__(self, jobs, results, quit, init, profile):
-        self.jobs = jobs
-        self.results = results
-        self.quit = quit
-        self.init = init
-        multiprocessing.Process.__init__(self)
-        self.context = bb.utils.get_context().copy()
-        self.handlers = bb.event.get_class_handlers().copy()
-        self.profile = profile
+def parse(mc, filename, appends):
+    global bb_caches
 
-    def run(self):
+    origfilter = bb.event.LogHandler.filter
+    try:
+        # Record the filename we're parsing into any events generated
+        def parse_filter(self, record):
+            record.taskpid = bb.event.worker_pid
+            record.fn = filename
+            return True
 
-        if not self.profile:
-            self.realrun()
-            return
+        # Reset our environment and handlers to the original settings
+        bb.utils.set_context(bb.utils.get_context().copy())
+        bb.event.set_class_handlers(bb.event.get_class_handlers().copy())
+        bb.event.LogHandler.filter = parse_filter
 
+        # Block termination signals until parsing finishes. The signal handler
+        # dumps caches and we want them to be in a valid state when it does
+        sigmask = signal.pthread_sigmask(signal.SIG_BLOCK, (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT))
         try:
-            import cProfile as profile
-        except:
-            import profile
-        prof = profile.Profile()
-        try:
-            profile.Profile.runcall(prof, self.realrun)
+            return True, mc, bb_caches[mc].parse(filename, appends)
         finally:
-            logfile = "profile-parse-%s.log" % multiprocessing.current_process().name
-            prof.dump_stats(logfile)
+            signal.pthread_sigmask(signal.SIG_SETMASK, sigmask)
+    except BaseException as e:
+        e.recipe = filename
+        raise e
+    finally:
+        bb.event.LogHandler.filter = origfilter
 
-    def realrun(self):
-        if self.init:
-            self.init()
+def profile_parse(*args, **kwargs):
+    try:
+        import cProfile as profile
+    except:
+        import profile
 
-        pending = []
-        while True:
-            try:
-                self.quit.get_nowait()
-            except queue.Empty:
-                pass
-            else:
-                self.results.close()
-                self.results.join_thread()
-                break
+    prof = profile.Profile()
+    try:
+        profile.Profile.runcall(prof, parse, *args, **kwargs)
+    finally:
+        logfile = "profile-parse-%s.log" % multiprocessing.current_process().name
 
-            if pending:
-                result = pending.pop()
-            else:
-                try:
-                    job = self.jobs.pop()
-                except IndexError:
-                    self.results.close()
-                    self.results.join_thread()
-                    break
-                result = self.parse(*job)
-                # Clear the siggen cache after parsing to control memory usage, its huge
-                bb.parse.siggen.postparsing_clean_cache()
-            try:
-                self.results.put(result, timeout=0.25)
-            except queue.Full:
-                pending.append(result)
+    prof.dump_stats(logfile)
 
-    def parse(self, mc, cache, filename, appends):
-        try:
-            origfilter = bb.event.LogHandler.filter
-            # Record the filename we're parsing into any events generated
-            def parse_filter(self, record):
-                record.taskpid = bb.event.worker_pid
-                record.fn = filename
-                return True
-
-            # Reset our environment and handlers to the original settings
-            bb.utils.set_context(self.context.copy())
-            bb.event.set_class_handlers(self.handlers.copy())
-            bb.event.LogHandler.filter = parse_filter
-
-            return True, mc, cache.parse(filename, appends)
-        except Exception as exc:
-            tb = sys.exc_info()[2]
-            exc.recipe = filename
-            exc.traceback = list(bb.exceptions.extract_traceback(tb, context=3))
-            return True, exc
-        # Need to turn BaseExceptions into Exceptions here so we gracefully shutdown
-        # and for example a worker thread doesn't just exit on its own in response to
-        # a SystemExit event for example.
-        except BaseException as exc:
-            return True, ParsingFailure(exc, filename)
-        finally:
-            bb.event.LogHandler.filter = origfilter
+def handle_worker_signal(signum, frame):
+    serverlog("Got signal %d" % signum)
+    bb.codeparser.parser_cache_save()
+    bb.fetch.fetcher_parse_save()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    serverlog("Exiting")
+    os._exit(0)
 
 class CookerParser(object):
     def __init__(self, cooker, mcfilelist, masked):
@@ -2131,27 +2093,50 @@ class CookerParser(object):
         if self.toparse:
             bb.event.fire(bb.event.ParseStarted(self.toparse), self.cfgdata)
             def init():
-                signal.signal(signal.SIGTERM, signal.SIG_DFL)
+                serverlog("Starting")
+                signal.signal(signal.SIGTERM, handle_worker_signal)
+                signal.signal(signal.SIGINT, handle_worker_signal)
+                signal.signal(signal.SIGQUIT, handle_worker_signal)
                 signal.signal(signal.SIGHUP, signal.SIG_DFL)
-                signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+                # bb_caches can't be passed in apply_async because it cannot be
+                # pickled, so do a little trick here to pass it to the worker
+                # pool: define a global variable to hold the current caches
+                # in the processes init procedure. The processing function
+                # can then use this global to get the caches. This only
+                # works because the child processes are forks.
+                global bb_caches
+                bb_caches = self.bb_caches
                 bb.utils.set_process_name(multiprocessing.current_process().name)
-                multiprocessing.util.Finalize(None, bb.codeparser.parser_cache_save, exitpriority=1)
-                multiprocessing.util.Finalize(None, bb.fetch.fetcher_parse_save, exitpriority=1)
 
-            self.parser_quit = multiprocessing.Queue(maxsize=self.num_processes)
-            self.result_queue = multiprocessing.Queue()
+            logger = multiprocessing.get_logger()
+            formatter = logging.Formatter(multiprocessing.util.DEFAULT_LOGGING_FORMAT)
+            handler = logging.StreamHandler(sys.stdout)
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+            logger.setLevel(logging.DEBUG)
 
-            def chunkify(lst,n):
-                return [lst[i::n] for i in range(n)]
-            self.jobs = chunkify(list(self.willparse), self.num_processes)
+            # We *must* use a forking context because that's how we transfer
+            # the bb_caches to the workers (see init())
+            self.pool = multiprocessing.get_context('fork').Pool(self.num_processes, init)
+            try:
+                if self.cooker.configuration.profile:
+                    job_proc = profile_parse
+                else:
+                    job_proc = parse
 
-            for i in range(0, self.num_processes):
-                parser = Parser(self.jobs[i], self.result_queue, self.parser_quit, init, self.cooker.configuration.profile)
-                parser.start()
-                self.process_names.append(parser.name)
-                self.processes.append(parser)
+                jobs = []
+                for mc, _, filename, appends in self.willparse:
+                    jobs.append(self.pool.apply_async(job_proc, (mc, filename, appends)))
+                self.pool.close()
 
-            self.results = itertools.chain(self.results, self.parse_generator())
+                self.results = itertools.chain(self.results, self.parse_generator(jobs))
+            except:
+                # In the event there is an error or bug in the code above, cleanup
+                # the worker pool
+                self.pool.terminate()
+                self.pool.join()
+                raise
 
     def shutdown(self, clean=True, force=False):
         if not self.toparse:
@@ -2168,27 +2153,10 @@ class CookerParser(object):
 
             bb.event.fire(event, self.cfgdata)
 
-        for process in self.processes:
-            self.parser_quit.put(None)
-
-        # Cleanup the queue before call process.join(), otherwise there might be
-        # deadlocks.
-        while True:
-            try:
-               self.result_queue.get(timeout=0.25)
-            except queue.Empty:
-                break
-
-        for process in self.processes:
-            if force:
-                process.join(.1)
-                process.terminate()
-            else:
-                process.join()
-
-        self.parser_quit.close()
-        # Allow data left in the cancel queue to be discarded
-        self.parser_quit.cancel_join_thread()
+        serverlog("Terminating pool")
+        self.pool.terminate()
+        self.pool.join()
+        serverlog("Done terminating pool")
 
         def sync_caches():
             for c in self.bb_caches.values():
@@ -2219,33 +2187,9 @@ class CookerParser(object):
             cached, infos = cache.load(filename, appends)
             yield not cached, mc, infos
 
-    def parse_generator(self):
-        empty = False
-        while self.processes or not empty:
-            for process in self.processes.copy():
-                if not process.is_alive():
-                    process.join()
-                    self.processes.remove(process)
-
-            if self.parsed >= self.toparse:
-                break
-
-            try:
-                result = self.result_queue.get(timeout=0.25)
-            except queue.Empty:
-                empty = True
-                pass
-            else:
-                empty = False
-                value = result[1]
-                if isinstance(value, BaseException):
-                    raise value
-                else:
-                    yield result
-
-        if not (self.parsed >= self.toparse):
-            raise bb.parse.ParseError("Not all recipes parsed, parser thread killed/died? Exiting.", None)
-
+    def parse_generator(self, results):
+        for r in results:
+            yield r.get(10000)
 
     def parse_next(self):
         result = []
@@ -2258,12 +2202,6 @@ class CookerParser(object):
         except bb.BBHandledException as exc:
             self.error += 1
             logger.error('Failed to parse recipe: %s' % exc.recipe)
-            self.shutdown(clean=False, force=True)
-            return False
-        except ParsingFailure as exc:
-            self.error += 1
-            logger.error('Unable to parse %s: %s' %
-                     (exc.recipe, bb.exceptions.to_string(exc.realexception)))
             self.shutdown(clean=False, force=True)
             return False
         except bb.parse.ParseError as exc:
@@ -2282,10 +2220,8 @@ class CookerParser(object):
             return False
         except Exception as exc:
             self.error += 1
-            etype, value, tb = sys.exc_info()
-            if hasattr(value, "recipe"):
-                logger.error('Unable to parse %s' % value.recipe,
-                            exc_info=(etype, value, exc.traceback))
+            if hasattr(exc, "recipe"):
+                logger.error('Unable to parse %s' % exc.recipe, exc_info=exc)
             else:
                 # Most likely, an exception occurred during raising an exception
                 import traceback
