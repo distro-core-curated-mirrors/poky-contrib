@@ -16,6 +16,7 @@ try:
     import bb
     import hashserv
     import layerindexlib
+    import pysimplemp
 except RuntimeError as exc:
     sys.exit(str(exc))
 
@@ -33,6 +34,7 @@ tests = ["bb.tests.codeparser",
          "bb.tests.utils",
          "bb.tests.compression",
          "hashserv.tests",
+         "pysimplemp.tests",
          "layerindexlib.tests.layerindexobj",
          "layerindexlib.tests.restapi",
          "layerindexlib.tests.cooker"]
