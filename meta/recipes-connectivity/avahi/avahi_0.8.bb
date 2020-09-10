@@ -94,6 +94,8 @@ do_install() {
 
 PACKAGES =+ "${@bb.utils.contains("PACKAGECONFIG", "libdns_sd", "libavahi-compat-libdnssd", "", d)}"
 
+RPROVIDES_avahi-daemon = "${PN}"
+
 FILES_libavahi-compat-libdnssd = "${libdir}/libdns_sd.so.*"
 
 RPROVIDES_libavahi-compat-libdnssd = "libdns-sd"
