@@ -28,6 +28,7 @@ import json
 import pickle
 import codecs
 import hashserv
+import pysimplemp
 
 logger      = logging.getLogger("BitBake")
 collectlog  = logging.getLogger("BitBake.Collection")
@@ -1990,7 +1991,7 @@ class CookerCollectFiles(object):
         return priorities
 
 def serverlog(msg):
-    sys.stdout.write("%s: %s\n" % (multiprocessing.current_process().name, msg))
+    sys.stdout.write("%d: %s\n" % (os.getpid(), msg))
     sys.stdout.flush()
 
 def parse(mc, filename, appends):
@@ -2032,18 +2033,9 @@ def profile_parse(*args, **kwargs):
     try:
         profile.Profile.runcall(prof, parse, *args, **kwargs)
     finally:
-        logfile = "profile-parse-%s.log" % multiprocessing.current_process().name
+        logfile = "profile-parse-%d.log" % os.getpid()
 
     prof.dump_stats(logfile)
-
-def handle_worker_signal(signum, frame):
-    serverlog("Got signal %d" % signum)
-    bb.codeparser.parser_cache_save()
-    bb.fetch.fetcher_parse_save()
-    sys.stdout.flush()
-    sys.stderr.flush()
-    serverlog("Exiting")
-    os._exit(0)
 
 class CookerParser(object):
     def __init__(self, cooker, mcfilelist, masked):
@@ -2091,13 +2083,12 @@ class CookerParser(object):
         self.results = self.load_cached()
         self.processes = []
         if self.toparse:
-            bb.event.fire(bb.event.ParseStarted(self.toparse), self.cfgdata)
-            def init():
+            def worker_init():
                 serverlog("Starting")
-                signal.signal(signal.SIGTERM, handle_worker_signal)
-                signal.signal(signal.SIGINT, handle_worker_signal)
-                signal.signal(signal.SIGQUIT, handle_worker_signal)
-                signal.signal(signal.SIGHUP, signal.SIG_DFL)
+
+                # Restore default signal handlers inherited from main process
+                for s in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT, signal.SIGHUP):
+                    signal.signal(s, signal.SIG_DFL)
 
                 # bb_caches can't be passed in apply_async because it cannot be
                 # pickled, so do a little trick here to pass it to the worker
@@ -2107,36 +2098,30 @@ class CookerParser(object):
                 # works because the child processes are forks.
                 global bb_caches
                 bb_caches = self.bb_caches
-                bb.utils.set_process_name(multiprocessing.current_process().name)
+                bb.utils.set_process_name("Worker %d" % os.getpid())
 
-            logger = multiprocessing.get_logger()
-            formatter = logging.Formatter(multiprocessing.util.DEFAULT_LOGGING_FORMAT)
-            handler = logging.StreamHandler(sys.stdout)
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)
-            logger.setLevel(logging.DEBUG)
+            def worker_deinit():
+                bb.codeparser.parser_cache_save()
+                bb.fetch.fetcher_parse_save()
+                serverlog("Exiting")
 
-            # We *must* use a forking context because that's how we transfer
-            # the bb_caches to the workers (see init())
-            self.pool = multiprocessing.get_context('fork').Pool(self.num_processes, init)
-            try:
-                if self.cooker.configuration.profile:
-                    job_proc = profile_parse
-                else:
-                    job_proc = parse
 
-                jobs = []
-                for mc, _, filename, appends in self.willparse:
-                    jobs.append(self.pool.apply_async(job_proc, (mc, filename, appends)))
-                self.pool.close()
+            bb.event.fire(bb.event.ParseStarted(self.toparse), self.cfgdata)
 
-                self.results = itertools.chain(self.results, self.parse_generator(jobs))
-            except:
-                # In the event there is an error or bug in the code above, cleanup
-                # the worker pool
-                self.pool.terminate()
-                self.pool.join()
-                raise
+            if self.cooker.configuration.profile:
+                job_proc = profile_parse
+            else:
+                job_proc = parse
+
+            self.pool = pysimplemp.MapPool(job_proc,
+                    [(mc, filename, appends) for mc, _, filename, appends in self.willparse],
+                    num_processes=self.num_processes,
+                    interruptable=False,
+                    init=worker_init,
+                    deinit=worker_deinit
+                    )
+            self.pool.start()
+            self.results = itertools.chain(self.results, self.pool.results())
 
     def shutdown(self, clean=True, force=False):
         if not self.toparse:
@@ -2159,12 +2144,16 @@ class CookerParser(object):
         serverlog("Done terminating pool")
 
         def sync_caches():
-            for c in self.bb_caches.values():
+            caches = self.bb_caches.values()
+            serverlog("Syncing %d caches" % len(caches))
+            for c in caches:
                 c.sync()
+            serverlog("Done syncing caches")
 
         sync = threading.Thread(target=sync_caches, name="SyncThread")
         self.syncthread = sync
         sync.start()
+        serverlog("Merging caches")
         bb.codeparser.parser_cache_savemerge()
         bb.fetch.fetcher_parse_done()
         if self.cooker.configuration.profile:
@@ -2177,19 +2166,18 @@ class CookerParser(object):
             pout = "profile-parse.log.processed"
             bb.utils.process_profilelog(profiles, pout = pout)
             print("Processed parsing statistics saved to %s" % (pout))
+        serverlog("shutdown complete")
 
     def final_cleanup(self):
+        serverlog("Joining syncthread")
         if self.syncthread:
             self.syncthread.join()
+        serverlog("Done joining syncthread")
 
     def load_cached(self):
         for mc, cache, filename, appends in self.fromcache:
             cached, infos = cache.load(filename, appends)
             yield not cached, mc, infos
-
-    def parse_generator(self, results):
-        for r in results:
-            yield r.get(10000)
 
     def parse_next(self):
         result = []
