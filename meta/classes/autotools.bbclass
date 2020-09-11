@@ -1,9 +1,14 @@
+SLIBTOOL = "rlibtool"
+
 def autotools_dep_prepend(d):
     if d.getVar('INHIBIT_AUTOTOOLS_DEPS'):
         return ''
 
     pn = d.getVar('PN')
     deps = ''
+
+    if pn != "slibtool-native" and d.getVar("SLIBTOOL"):
+        deps += ' slibtool-native '
 
     if pn in ['autoconf-native', 'automake-native']:
         return deps
@@ -83,6 +88,8 @@ AUTOTOOLS_SCRIPT_PATH ?= "${S}"
 CONFIGURE_SCRIPT ?= "${AUTOTOOLS_SCRIPT_PATH}/configure"
 
 AUTOTOOLS_AUXDIR ?= "${AUTOTOOLS_SCRIPT_PATH}"
+
+EXTRA_OEMAKE_append = "${@d.getVar('SLIBTOOL') and ' LIBTOOL="${SLIBTOOL} --heuristics=${HOST_SYS}-libtool"' or ''}"
 
 oe_runconf () {
 	# Use relative path to avoid buildpaths in files
