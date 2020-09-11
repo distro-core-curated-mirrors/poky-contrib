@@ -239,8 +239,7 @@ def get_bb_vars(variables=None, target=None, postconfig=None):
     if variables is not None:
         variables = list(variables)
     var_re = re.compile(r'^(export )?(?P<var>\w+(_.*)?)="(?P<value>.*)"$')
-    unset_re = re.compile(r'^unset (?P<var>\w+)$')
-    lastline = None
+    unset_re = re.compile(r'^unset (?P<var>\w+) # "(?P<value>.*)"$')
     values = {}
     for line in bbenv.splitlines():
         match = var_re.match(line)
@@ -250,9 +249,7 @@ def get_bb_vars(variables=None, target=None, postconfig=None):
         else:
             match = unset_re.match(line)
             if match:
-                # Handle [unexport] variables
-                if lastline.startswith('#   "'):
-                    val = lastline.split('"')[1]
+                val = match.group('value')
         if val:
             var = match.group('var')
             if variables is None:
@@ -264,7 +261,6 @@ def get_bb_vars(variables=None, target=None, postconfig=None):
                 # Stop after all required variables have been found
                 if not variables:
                     break
-        lastline = line
     if variables:
         # Fill in missing values
         for var in variables:
