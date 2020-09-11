@@ -591,7 +591,7 @@ class DpkgOpkgRootfs(Rootfs):
 
     def _save_postinsts_common(self, dst_postinst_dir, src_postinst_dir):
         if bb.utils.contains("IMAGE_FEATURES", "package-management",
-                         True, False, self.d):
+                         False, True, self.d):
             return
         num = 0
         for p in self._get_delayed_postinsts():
