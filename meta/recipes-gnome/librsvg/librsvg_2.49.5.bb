@@ -6,24 +6,22 @@ the screen or to generate output for printing."
 HOMEPAGE = "https://gitlab.gnome.org/GNOME/librsvg"
 BUGTRACKER = "https://gitlab.gnome.org/GNOME/librsvg/issues"
 
+# to fix ***
 RECIPE_NO_UPDATE_REASON = "Versions from 2.41.0 requires Rust compiler to build it"
 
 LICENSE = "LGPLv2+"
-LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f \
-                    file://rsvg.h;beginline=3;endline=24;md5=20b4113c4909bbf0d67e006778302bc6"
+LIC_FILES_CHKSUM = "file://COPYING.LIB;md5=4fbd65380cdd255951079008b364516c"
 
 SECTION = "x11/utils"
 DEPENDS = "cairo gdk-pixbuf glib-2.0 libcroco libxml2 pango"
-BBCLASSEXTEND = "native nativesdk"
+# BBCLASSEXTEND = "native nativesdk"
 
-inherit gnomebase gtk-doc pixbufcache upstream-version-is-even gobject-introspection
+# inherit gnomebase gtk-doc pixbufcache upstream-version-is-even gobject-introspection
+inherit gettext gnomebase gobject-introspection gtk-doc pixbufcache upstream-version-is-even
+inherit cargo
 
-SRC_URI += "file://gtk-option.patch \
-            file://0001-Auto-detect-Bsymbolic-fixes-configure-on-macOS.patch \
-            file://0001-Remove-non-reproducible-SRCDIR.patch \
-"
 
-SRC_URI[archive.sha256sum] = "f7628905f1cada84e87e2b14883ed57d8094dca3281d5bcb24ece4279e9a92ba"
+SRC_URI[archive.sha256sum] = "daa64941bb4732bdf51b902a72c6e04063235cfce6986d910ba0759c76917795"
 
 CACHED_CONFIGUREVARS = "ac_cv_path_GDK_PIXBUF_QUERYLOADERS=${STAGING_LIBDIR_NATIVE}/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders"
 
