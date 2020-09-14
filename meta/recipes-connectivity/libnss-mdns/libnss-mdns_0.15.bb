@@ -9,6 +9,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=2d5025d4aa3495befef8f17206a5b0a1"
 DEPENDS = "avahi"
 
 SRC_URI = "git://github.com/lathiat/nss-mdns \
+           file://version.patch \
            "
 
 SRCREV = "65ad25563937682ab2770c36d56667a754837102"

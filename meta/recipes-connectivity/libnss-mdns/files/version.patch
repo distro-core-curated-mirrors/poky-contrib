@@ -1,0 +1,28 @@
+Fix the link with slibtool by using -version-info instead of
+-avoid-version and forcing .2 into the filename.
+
+Upstream-Status: Submitted [https://github.com/lathiat/nss-mdns/pull/74]
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+
+diff --git a/Makefile.am b/Makefile.am
+index 1572736..44a06ae 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -24,7 +24,7 @@ AM_CFLAGS = \
+ 	-DMDNS_ALLOW_FILE=\"$(MDNS_ALLOW_FILE)\" \
+ 	-DAVAHI_SOCKET=\"$(AVAHI_SOCKET)\"
+ 
+-AM_LDFLAGS=-avoid-version -module -export-dynamic
++AM_LDFLAGS=-module -export-dynamic
+ 
+ lib_LTLIBRARIES = \
+ 	libnss_mdns.la \
+@@ -38,7 +38,7 @@ check_PROGRAMS = nss-test avahi-test
+ 
+ libnss_mdns_la_SOURCES=src/util.c src/util.h src/avahi.c src/avahi.h src/nss.c
+ libnss_mdns_la_CFLAGS=$(AM_CFLAGS)
+-libnss_mdns_la_LDFLAGS=$(AM_LDFLAGS) -shrext .so.2 -Wl,-version-script=$(srcdir)/src/map-file
++libnss_mdns_la_LDFLAGS=$(AM_LDFLAGS) -version-info 2:0:0 -Wl,-version-script=$(srcdir)/src/map-file
+ 
+ libnss_mdns_minimal_la_SOURCES=$(libnss_mdns_la_SOURCES)
+ libnss_mdns_minimal_la_CFLAGS=$(libnss_mdns_la_CFLAGS) -DMDNS_MINIMAL
