@@ -10,7 +10,7 @@ LIBCOVERRIDE = ":${NATIVESDKLIBC}"
 CLASSOVERRIDE = "class-nativesdk"
 MACHINEOVERRIDES = ""
 MACHINE_FEATURES = ""
-
+MACHINE = "${SDKMACHINE}"
 MULTILIBS = ""
 
 # we need consistent staging dir whether or not multilib is enabled
