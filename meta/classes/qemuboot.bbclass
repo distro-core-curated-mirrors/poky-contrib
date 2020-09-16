@@ -78,7 +78,7 @@
 
 QB_MEM ?= "-m 256"
 QB_SERIAL_OPT ?= "-serial mon:stdio -serial null"
-QB_DEFAULT_KERNEL ?= "${KERNEL_IMAGETYPE}"
+QB_DEFAULT_KERNEL ??= "${KERNEL_IMAGETYPE}"
 QB_DEFAULT_FSTYPE ?= "ext4"
 QB_RNG ?= "-object rng-random,filename=/dev/urandom,id=rng0 -device virtio-rng-pci,rng=rng0"
 QB_OPT_APPEND ?= ""
