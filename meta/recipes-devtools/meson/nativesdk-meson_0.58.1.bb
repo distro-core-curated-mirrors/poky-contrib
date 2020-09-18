@@ -3,8 +3,7 @@ include meson.inc
 inherit meson-routines
 inherit nativesdk
 
-SRC_URI += "file://meson-setup.py \
-            file://meson-wrapper"
+SRC_URI += "file://meson-setup.py" 
 
 # The cross file logic is similar but not identical to that in meson.bbclass,
 # since it's generating for an SDK rather than a cross-compile. Important
@@ -42,9 +41,6 @@ EOF
     install -d ${D}${SDKPATHNATIVE}/post-relocate-setup.d
     install -m 0755 ${WORKDIR}/meson-setup.py ${D}${SDKPATHNATIVE}/post-relocate-setup.d/
 
-    # We need to wrap the real meson with a thin env setup wrapper.
-    mv ${D}${bindir}/meson ${D}${bindir}/meson.real
-    install -m 0755 ${WORKDIR}/meson-wrapper ${D}${bindir}/meson
 }
 
 RDEPENDS_${PN} += "\
