@@ -117,9 +117,16 @@ class BitBakeXMLRPCServerCommands():
         """
         Run a cooker command on the server
         """
+        logger.info("BitBakeXMLRPCServerCommands: runCommand: {}".format(command))
         return self.server.cooker.command.runCommand(command, self.server.readonly)
 
     def getEventHandle(self):
+        if not self.event_handle:
+            try:
+                self.event_handle = bb.event.register_UIHhandler(self, True)
+            except Exception as e:
+                logger.error("ERROR: getEventHandle: {}".format(e))
+                sys.exit(1)
         return self.event_handle
 
     def terminateServer(self):
