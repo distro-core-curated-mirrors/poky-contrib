@@ -1258,14 +1258,6 @@ python split_and_strip_files () {
             src = file[len(dvar):]
             dest = debuglibdir + os.path.dirname(src) + debugdir + "/" + os.path.basename(src) + debugappend
             fpath = dvar + dest
-            # Skip it if the target doesn't exist
-            try:
-                s = os.stat(fpath)
-            except OSError as e:
-                (err, strerror) = e.args
-                if err != errno.ENOENT:
-                    raise
-                continue
 
             ltarget = symlinks[file]
             lpath = os.path.dirname(ltarget)
