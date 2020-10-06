@@ -145,10 +145,14 @@ def main(server, eventHandler, params):
     logger.addHandler(console)
     logger.setLevel(logging.INFO)
     llevel, debug_domains = bb.msg.constructLogOptions()
-    result, error = server.runCommand(["setEventMask", server.getEventHandle(), llevel, debug_domains, _evt_list])
-    if not result or error:
-        logger.error("can't set event mask: %s", error)
-        return 1
+    try:
+        result, error = server.runCommand(["setEventMask", server.getEventHandle(), llevel, debug_domains, _evt_list])
+        if not result or error:
+            logger.error("can't set event mask: %s", error)
+            return 1
+    except Exception as e:
+        logger.error('Error in server.runCommand\(\["setEventMask"...: {}'.format(e))
+        sys.exit(1)
 
     # verify and warn
     build_history_enabled = True
