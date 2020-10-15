@@ -13,6 +13,7 @@ import inspect
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 
 import bb
+import pdb
 
 # This request handler checks if the request has a "Bitbake-token" header
 # field (this comes from the client side) and compares it with its internal
@@ -92,11 +93,11 @@ class BitBakeXMLRPCServerCommands():
         self.server = server
         self.has_client = False
 
-    def registerEventHandler(self, host, port):
+    def registerEventHandler(self, host, port, timeout = 60.0):
         """
         Register a remote UI Event Handler
         """
-        s, t = bb.server.xmlrpcclient._create_server(host, port)
+        s, t = bb.server.xmlrpcclient._create_server(host, port, timeout)
 
         # we don't allow connections if the cooker is running
         if (self.server.cooker.state in [bb.cooker.state.parsing, bb.cooker.state.running]):
@@ -117,9 +118,16 @@ class BitBakeXMLRPCServerCommands():
         """
         Run a cooker command on the server
         """
-        return self.server.cooker.command.runCommand(command, self.server.readonly)
+        #pdb.set_trace()
+        try:
+            ret = self.server.cooker.command.runCommand(command, self.server.readonly)
+            return ret
+        except Exception as err:
+            sys.exit("xmlrpcserver.runCommand: err {}".format(err))
 
     def getEventHandle(self):
+        if not self.event_handle:
+            bb.fatal("no event_handle")
         return self.event_handle
 
     def terminateServer(self):
@@ -127,6 +135,7 @@ class BitBakeXMLRPCServerCommands():
         Trigger the server to quit
         """
         self.server.parent.quit = True
+        #pdb.pm()
         print("XMLRPC Server triggering exit")
         return
 
