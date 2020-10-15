@@ -22,8 +22,9 @@ class BitbakeController(object):
 
     def __init__(self, be):
         import bb.server.xmlrpcclient
+        timeout = 60
         self.connection = bb.server.xmlrpcclient._create_server(be.bbaddress,
-                                                          int(be.bbport))[0]
+                                                          int(be.bbport), timeout)[0]
 
     def _runCommand(self, command):
         result, error = self.connection.runCommand(command)
