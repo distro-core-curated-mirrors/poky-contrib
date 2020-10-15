@@ -352,6 +352,7 @@ class BBCooker:
                 self.caches_array.append(getattr(module, cache_name))
             except ImportError as exc:
                 logger.critical("Unable to import extra RecipeInfo '%s' from '%s': %s" % (cache_name, module_name, exc))
+                sys.exit("cooker: 355")
                 raise bb.BBHandledException()
 
         self.databuilder = bb.cookerdata.CookerDataBuilder(self.configuration, False)
@@ -1127,6 +1128,7 @@ class BBCooker:
             from bb import shell
         except ImportError:
             parselog.exception("Interactive mode not available")
+            sys.exit("cooker: 1131")
             raise bb.BBHandledException()
         else:
             shell.start( self )
@@ -1564,6 +1566,8 @@ class BBCooker:
             if hasattr(self.parser, 'shutdown'):
                 self.parser.shutdown(clean=False, force = True)
                 self.parser.final_cleanup()
+            logger.critical("cooker.updateCache")
+            sys.exit("cooker: 1570")
             raise bb.BBHandledException()
 
         if self.state != state.parsing:
@@ -1588,6 +1592,7 @@ class BBCooker:
             mcfilelist = {}
             total_masked = 0
             searchdirs = set()
+
             for mc in self.multiconfigs:
                 self.collections[mc] = CookerCollectFiles(self.bbfile_config_priorities, mc)
                 (filelist, masked, search) = self.collections[mc].collect_bbfiles(self.databuilder.mcdata[mc], self.databuilder.mcdata[mc])
@@ -1608,6 +1613,7 @@ class BBCooker:
         if not self.parser.parse_next():
             collectlog.debug(1, "parsing complete")
             if self.parser.error:
+                sys.exit("cooker: 1615")
                 raise bb.BBHandledException()
             self.show_appends_with_no_recipes()
             self.handlePrefProviders()
@@ -2207,6 +2213,7 @@ class CookerParser(object):
         except bb.BBHandledException as exc:
             self.error += 1
             logger.error('Failed to parse recipe: %s' % exc.recipe)
+            sys.exit("cooker: 2215")
             self.shutdown(clean=False)
             return False
         except ParsingFailure as exc:
