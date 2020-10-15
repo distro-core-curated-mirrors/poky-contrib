@@ -13,9 +13,12 @@ import xmlrpc.client
 
 import bb
 from bb.ui import uievent
+import logging
+
+logger = logging.getLogger('BitBake')
 
 class BBTransport(xmlrpc.client.Transport):
-    def __init__(self, timeout):
+    def __init__(self, timeout = 120):
         self.timeout = timeout
         self.connection_token = None
         xmlrpc.client.Transport.__init__(self)
@@ -41,9 +44,18 @@ class BBTransport(xmlrpc.client.Transport):
             h.putheader("Bitbake-token", self.connection_token)
         xmlrpc.client.Transport.send_content(self, h, body)
 
-def _create_server(host, port, timeout = 60):
-    t = BBTransport(timeout)
-    s = xmlrpc.client.ServerProxy("http://%s:%d/" % (host, port), transport=t, allow_none=True, use_builtin_types=True)
+def _create_server(host, port, timeout = 60.0):
+    t = None
+    s = None
+    try:
+        t = BBTransport(timeout)
+        s = xmlrpc.client.ServerProxy("http://%s:%d/" % (host, port), transport=t, allow_none=True, use_builtin_types=True)
+        logger.info("BBTransport = {}".format(t))
+        bb.note("BBTransport = {}".format(t))
+        logger.info("xmlrpc.client.ServeryProxy = {}".format(s))
+        bb.note("xmlrpc.client.ServerProxy = {}".format(s))
+    except Exception as err:
+        bb.error("_create_server {}".format(err))
     return s, t
 
 def check_connection(remote, timeout):
