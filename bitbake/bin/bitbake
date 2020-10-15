@@ -12,6 +12,7 @@
 
 import os
 import sys
+import pdb
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                 'lib'))
@@ -32,13 +33,25 @@ if __name__ == "__main__":
     if __version__ != bb.__version__:
         sys.exit("Bitbake core version and program version mismatch!")
     try:
+        #pdb.set_trace()
+        #sys.exit("cookerdata.CookerConfiguration() {}".format(cookerdata.CookerConfiguration()))
+        print("bin/bitbake: sys.argv => {}".format(sys.argv))
+        print("bin/bitbake: BitBakeConfigParameters => {}".format(BitBakeConfigParameters(sys.argv)))
+        print("bin/bitbake: cookerdata => {}".format(cookerdata))
+        if 'toasterui' in sys.argv:
+            try:
+                print("BitBakeConfigParameters(sys.argv) = {}".format(BitBakeConfigParameters(sys.argv)))
+                print("cookerdata.CookerConfiguration() = {}".format(cookerdata.CookerConfiguration()))
+            except:
+                sys.exit("bin/bitbake: 46")
         sys.exit(bitbake_main(BitBakeConfigParameters(sys.argv),
                               cookerdata.CookerConfiguration()))
     except BBMainException as err:
         sys.exit(err)
     except bb.BBHandledException:
-        sys.exit(1)
-    except Exception:
+        sys.exit("bin/bitbake")
+    except Exception as err:
+        sys.exit("bin/bitbake Exception = {}".format(err))
         import traceback
         traceback.print_exc()
         sys.exit(1)
