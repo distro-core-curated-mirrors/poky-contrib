@@ -153,7 +153,7 @@ def error(*args, **kwargs):
 
 def fatal(*args, **kwargs):
     mainlogger.critical(''.join(args), extra=kwargs)
-    raise BBHandledException()
+    raise BBHandledException("bb.fatal")
 
 def deprecated(func, name=None, advice=""):
     """This is a decorator which can be used to mark functions
