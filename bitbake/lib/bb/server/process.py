@@ -29,6 +29,7 @@ import pickle
 import bb.server.xmlrpcserver
 from bb import daemonize
 from multiprocessing import queues
+import pdb
 
 logger = logging.getLogger('BitBake')
 
@@ -63,7 +64,7 @@ class ProcessServer():
         self.sock = sock
         self.sockname = sockname
 
-        self.server_timeout = server_timeout
+        self.server_timeout = float(20) #server_timeout
         self.timeout = self.server_timeout
         self.xmlrpcinterface = xmlrpcinterface
 
@@ -123,6 +124,7 @@ class ProcessServer():
             fds.append(self.xmlrpc)
         seendata = False
         serverlog("Entering server connection loop")
+        serverlog("Foobar")
 
         def disconnect_client(self, fds):
             serverlog("Disconnecting Client")
@@ -131,6 +133,7 @@ class ProcessServer():
                 self.controllersock.close()
                 self.controllersock = False
             if self.haveui:
+                #pdb.set_trace()
                 fds.remove(self.command_channel)
                 bb.event.unregister_UIHhandler(self.event_handle, True)
                 self.command_channel_reply.writer.close()
@@ -152,6 +155,11 @@ class ProcessServer():
                 self.quit = True
 
         self.lastui = time.time()
+        serverlog("self.lastui = {}".format(self.lastui))
+        serverlog("self.quit = {}".format(self.quit))
+        serverlog("self.sock = {}".format(self.sock))
+        serverlog("self.controllersock = {}".format(self.controllersock))
+        serverlog("self.timeout = {}".format(self.timeout))
         while not self.quit:
             if self.sock in ready:
                 while select.select([self.sock],[],[],0)[0]:
@@ -188,9 +196,10 @@ class ProcessServer():
 
                 except (EOFError, OSError):
                     disconnect_client(self, fds)
-
             if not self.timeout == -1.0 and not self.haveui and self.timeout and \
-                    (self.lastui + self.timeout) < time.time():
+                    (float(self.lastui) + float(self.timeout)) < time.time():
+                #pdb.set_trace()
+                #pdb.pm()
                 serverlog("Server timeout, exiting.")
                 self.quit = True
 
@@ -392,14 +401,17 @@ class ServerCommunicator():
 
     def runCommand(self, command):
         self.connection.send(command)
-        if not self.recv.poll(30):
-            logger.info("No reply from server in 30s")
-            if not self.recv.poll(30):
-                raise ProcessTimeout("Timeout while waiting for a reply from the bitbake server (60s)")
+        if not self.recv.poll(10):
+            logger.info("No reply from server in 10s")
+            if not self.recv.poll(10):
+                #pdb.set_trace()
+                raise ProcessTimeout("Timeout while waiting for a reply from the bitbake server (20s)")
         ret, exc = self.recv.get()
         # Should probably turn all exceptions in exc back into exceptions?
         # For now, at least handle BBHandledException
         if exc and ("BBHandledException" in exc or "SystemExit" in exc):
+            logger.warn("ServerCommunicator: exc {}".format(exc))
+            sys.exit("process.runCommand 407")
             raise bb.BBHandledException()
         return ret, exc
 
@@ -541,6 +553,8 @@ def execServer(lockfd, readypipeinfd, lockname, sockname, server_timeout, xmlrpc
             featureset = []
             cooker = bb.cooker.BBCooker(featureset, server.register_idle_function)
         except bb.BBHandledException:
+            bb.warn("execServer")
+            sys.exit("execServer")
             return None
         writer.send("r")
         writer.close()
