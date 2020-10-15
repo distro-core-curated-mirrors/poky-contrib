@@ -12,6 +12,7 @@ import os
 
 DEBUG = True
 
+
 # Set to True to see the SQL queries in console
 SQL_DEBUG = False
 if os.environ.get("TOASTER_SQLDEBUG", None) is not None:
@@ -190,6 +191,7 @@ TEMPLATES = [
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -239,6 +241,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'bldcollector',
     'toastermain',
+    'debug_toolbar',
 )
 
 
@@ -255,7 +258,7 @@ if os.environ.get('TOASTER_DEVEL', None) is not None:
     except:
         pass
 
-DEBUG_PANEL_ENABLED = False
+DEBUG_PANEL_ENABLED = True
 if os.environ.get('TOASTER_DEVEL', None) is not None:
     try:
         import debug_toolbar, debug_panel
