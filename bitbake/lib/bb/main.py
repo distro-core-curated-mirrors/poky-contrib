@@ -28,6 +28,7 @@ from bb import cookerdata
 
 import bb.server.process
 import bb.server.xmlrpcclient
+import pdb
 
 logger = logging.getLogger("BitBake")
 
@@ -131,6 +132,7 @@ class BitBakeConfigParameters(cookerdata.ConfigParameters):
     It is assumed there is a conf/bblayers.conf available in cwd or in BBPATH which
     will provide the layer, BBFILES and other configuration information.""")
 
+        #pdb.set_trace()
         parser.add_option("-b", "--buildfile", action="store", dest="buildfile", default=None,
                           help="Execute tasks from a specific .bb recipe directly. WARNING: Does "
                                "not handle any dependencies from other recipes.")
@@ -378,10 +380,14 @@ def bitbake_main(configParams, configuration):
             for event in bb.event.ui_queue:
                 server_connection.events.queue_event(event)
             bb.event.ui_queue = []
-
+            logger.info("bb/main: server_connection = {}".format(server_connection))
+            logger.info("bb/main: server_connection.connection = {}".format(server_connection.connection))
+            logger.info("bb/main: server_connection.events = {}".format(server_connection.events))
+            logger.info("bb/main: configParams = {}".format(configParams))
             return ui_module.main(server_connection.connection, server_connection.events,
                                   configParams)
         finally:
+            logger.error("bb/main 390")
             server_connection.terminate()
     else:
         return 0
@@ -416,8 +422,19 @@ def setup_bitbake(configParams, extrafeatures=None):
 
     if configParams.remote_server:
         # Connect to a remote XMLRPC server
-        server_connection = bb.server.xmlrpcclient.connectXMLRPC(configParams.remote_server, featureset,
-                                                                 configParams.observe_only, configParams.xmlrpctoken)
+        print("configParams.remote_server {}".format(configParams.remote_server))
+        print("featureset".format(featureset))
+        print("configParams.observe_only {}".format(configParams.observe_only))
+        print("configParams.xmlrpctoken {}".format(configParams.xmlrpctoken))
+        try:
+            server_connection = bb.server.xmlrpcclient.connectXMLRPC(configParams.remote_server, featureset,
+                                                                    configParams.observe_only, configParams.xmlrpctoken)
+        except Exception as err:
+            sys.exit("err: {}".format(err))
+        finally:
+            print("server_connection: {}".format(server_connection))
+            print("configParams.__dict__ {}".format(configParams.__dict__))
+
     else:
         retries = 8
         while retries:
@@ -455,6 +472,7 @@ def setup_bitbake(configParams, extrafeatures=None):
                 if server_connection or configParams.server_only:
                     break
             except BBMainFatal:
+                sys.exit("bb main 465")
                 raise
             except (Exception, bb.server.process.ProcessTimeout) as e:
                 if not retries:
@@ -484,6 +502,8 @@ def setup_bitbake(configParams, extrafeatures=None):
 
     logger.removeHandler(handler)
 
+    print("server_connection: {}".format(server_connection))
+    print("ui_module: {}".format(ui_module))
     return server_connection, ui_module
 
 def lockBitbake():
