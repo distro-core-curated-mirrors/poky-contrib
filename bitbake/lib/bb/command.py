@@ -251,6 +251,7 @@ class CommandsSync:
     getUIHandlerNum.readonly = True
 
     def setEventMask(self, command, params):
+        #pdb.set_trace()
         handlerNum = params[0]
         llevel = params[1]
         debug_domains = params[2]
