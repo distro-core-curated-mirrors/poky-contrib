@@ -24,7 +24,7 @@ from bb.ui.buildinfohelper import BuildInfoHelper
 import bb.msg
 import logging
 import os
-
+import pdb
 # pylint: disable=invalid-name
 # module properties for UI modules are read by bitbake and the contract should not be broken
 
@@ -145,7 +145,16 @@ def main(server, eventHandler, params):
     logger.addHandler(console)
     logger.setLevel(logging.INFO)
     llevel, debug_domains = bb.msg.constructLogOptions()
+    handle = server.getEventHandle()
+    logger.info("toasterui: handle = server.getEventHandle() => {}".format(handle))
+    logger.info("toasterui: llevel = {}".format(llevel))
+    logger.info("toasterui: debug_domains = {}".format(debug_domains))
+    logger.info("toasterui: _evt_list = {}".format(_evt_list))
+    logger.info("toasterui: server = {}".format(server))
     result, error = server.runCommand(["setEventMask", server.getEventHandle(), llevel, debug_domains, _evt_list])
+    logger.info("toasterui: result = {}".format(result))
+    logger.info("toasterui: error = {}".format(error))
+    #pdb.set_trace()
     if not result or error:
         logger.error("can't set event mask: %s", error)
         return 1
