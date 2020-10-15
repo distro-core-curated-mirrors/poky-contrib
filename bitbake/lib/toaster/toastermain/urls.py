@@ -46,7 +46,7 @@ if toastermain.settings.FRESH_ENABLED:
 
 if toastermain.settings.DEBUG_PANEL_ENABLED:
     import debug_toolbar
-    urlpatterns.insert(1, url(r'', include(debug_toolbar.urls)))
+    urlpatterns.insert(1, url(r'^__debug__/', include(debug_toolbar.urls)))
     #logger.info("Enabled django_toolbar extension")
 
 urlpatterns = [
