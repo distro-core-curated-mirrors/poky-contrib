@@ -30,6 +30,12 @@ class BBHandledException(Exception):
 import os
 import logging
 
+existing_record_factory = logging.getLogRecordFactory()
+def record_factory(*args, **kwargs):
+    record = existing_record_factory(*args, **kwargs)
+    record.recipe = record.origmsg = None
+    return record
+#logging.setLogRecordFactory(record_factory)
 
 class NullHandler(logging.Handler):
     def emit(self, record):
@@ -193,4 +199,3 @@ def deprecate_import(current, modulename, fromlist, renames = None):
             newname = objname
 
         setattr(sys.modules[current], newname, newobj)
-
