@@ -29,3 +29,10 @@ PACKAGES =+ "libsysfs"
 FILES_libsysfs = "${libdir}/lib*${SOLIBS}"
 
 export libdir = "${base_libdir}"
+
+addtask testit
+python do_testit() {
+    bb.note("this is a note")
+    bb.warn("this is a warning")
+    bb.error("this is an error")
+}
