@@ -18,4 +18,8 @@ SRC_URI[sha256sum] = "d9e40e641164150394b74b719b9726fc734f24b2cde679cf5f3be6915c
 
 do_configure_prepend () {
     mkdir -p ${S}/build-aux
+    bbwarn Cannot find flibs
+}
+do_compile() {
+    bbfatal foocc: not enough flibs present
 }
