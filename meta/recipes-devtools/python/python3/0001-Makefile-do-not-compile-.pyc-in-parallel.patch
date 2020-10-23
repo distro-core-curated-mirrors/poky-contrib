@@ -1,4 +1,4 @@
-From c501e121a872cbcef8ffe626c1de173a125be9f8 Mon Sep 17 00:00:00 2001
+From 04b5cbff2126339417763f908c89eba076e60c4e Mon Sep 17 00:00:00 2001
 From: Alexander Kanavin <alex.kanavin@gmail.com>
 Date: Thu, 16 Jan 2020 12:34:20 +0100
 Subject: [PATCH] Makefile: do not compile .pyc in parallel
@@ -11,15 +11,16 @@ https://github.com/python/cpython/commit/1a2dd82f56bd813aacc570e172cefe55a8a4150
 
 Upstream-Status: Pending
 Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
+
 ---
  Makefile.pre.in | 12 ++++++------
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/Makefile.pre.in b/Makefile.pre.in
-index 1241112..5dfdf44 100644
+index 09763f5..59b95be 100644
 --- a/Makefile.pre.in
 +++ b/Makefile.pre.in
-@@ -1457,30 +1457,30 @@ libinstall:	build_all $(srcdir)/Modules/xxmodule.c
+@@ -1529,30 +1529,30 @@ libinstall:	build_all $(srcdir)/Modules/xxmodule.c
  	fi
  	-PYTHONPATH=$(DESTDIR)$(LIBDEST)  $(RUNSHARED) \
  		$(PYTHON_FOR_BUILD) -Wi $(DESTDIR)$(LIBDEST)/compileall.py \

@@ -1,4 +1,4 @@
-From a2dd127b4163aff6cc35af0d0251321964232ad4 Mon Sep 17 00:00:00 2001
+From 5d85a94fd0965aa26adf593b5f84948e9c502121 Mon Sep 17 00:00:00 2001
 From: Alexander Kanavin <alex.kanavin@gmail.com>
 Date: Mon, 7 Oct 2019 13:22:14 +0200
 Subject: [PATCH] setup.py: do not report missing dependencies for disabled
@@ -11,20 +11,24 @@ build completeness checker which relies on the report.
 Upstream-Status: Inappropriate [oe-core specific]
 Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
 
+Rebased for 3.9 [10/2020]
+Signed-off-by: Alejandro Enedino Hernandez Samaniego <alejandro.hernandez@linux.microsoft.com>
+
 ---
- setup.py | 4 ++++
- 1 file changed, 4 insertions(+)
+ setup.py | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/setup.py b/setup.py
-index 7691258..ec3f2a4 100644
+index ab9fb8e..8cf058c 100644
 --- a/setup.py
 +++ b/setup.py
-@@ -408,6 +408,10 @@ class PyBuildExt(build_ext):
+@@ -495,6 +495,11 @@ class PyBuildExt(build_ext):
                  print("%-*s   %-*s   %-*s" % (longest, e, longest, f,
                                                longest, g))
  
 +        # There is no need to report missing module dependencies,
 +        # if the modules have been disabled in the first place.
++        sysconf_dis = sysconfig.get_config_var('MODDISABLED_NAMES').split()
 +        self.missing = list(set(self.missing) - set(sysconf_dis))
 +
          if self.missing:

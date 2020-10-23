@@ -1,4 +1,4 @@
-From 7019ba184b828ed7253750cf409fc5760ef90a54 Mon Sep 17 00:00:00 2001
+From 1bf39bd881a73fd0b9564b46c9e5a126f8483b3d Mon Sep 17 00:00:00 2001
 From: Alexander Kanavin <alex.kanavin@gmail.com>
 Date: Thu, 9 Jan 2020 17:44:05 +0100
 Subject: [PATCH] setup.py: pass missing libraries to Extension for
@@ -50,15 +50,16 @@ Upstream-Status: Pending
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
+
 ---
  setup.py | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/setup.py b/setup.py
-index ec3f2a4..b0f1541 100644
+index 8cf058c..9c1c33b 100644
 --- a/setup.py
 +++ b/setup.py
-@@ -1671,7 +1671,7 @@ class PyBuildExt(build_ext):
+@@ -1777,7 +1777,7 @@ class PyBuildExt(build_ext):
                                     libraries=libs,
                                     include_dirs=["Modules/_multiprocessing"]))
  
