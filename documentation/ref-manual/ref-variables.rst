@@ -5932,6 +5932,14 @@ system and gives an overview of their function and contents.
       service <dev-manual/dev-manual-common-tasks:working with a pr service>`. You can
       set ``PRSERV_HOST`` to other values to use a remote PR service.
 
+
+   :term:`PSEUDO_IGNORE_PATHS`
+      A comma-separated (without spaces) list of files that should be ignored
+      by pseudo when monitoring and recording file operations, in order to avoid
+      problems with files being written to outside of the pseudo context and
+      reduce pseudo's overhead.
+
+
    :term:`PTEST_ENABLED`
       Specifies whether or not :ref:`Package
       Test <dev-manual/dev-manual-common-tasks:testing packages with ptest>` (ptest)
