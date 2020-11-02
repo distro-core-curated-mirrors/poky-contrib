@@ -16,9 +16,9 @@ SRC_URI += " \
 	"
 
 # TODO: Add hashes for other architecture toolchains as well. Make a script?
-SRC_URI[rust-std-snapshot-x86_64.md5sum] = "cb78b0da8ded02b9b80b58d608b58ef8"
+SRC_URI[rust-std-snapshot-aarch64.sha256sum] = "d0006b1ec413cd0f698195584cc478d3ceb44ea4232fe1971970be22f1470e1d"
 SRC_URI[rust-std-snapshot-x86_64.sha256sum] = "02309322467af8e37256ccf1f064f5233c7fca4423dffde0bd5eb32cde46942a"
-SRC_URI[rustc-snapshot-x86_64.md5sum] = "e32ae176d4f35935ffe39b477a3ded2a"
+SRC_URI[rustc-snapshot-aarch64.sha256sum] = "efcdb593c79a5ecf7a5a62297de92137290299d1ef9fb25129b5cdc81879c01e"
 SRC_URI[rustc-snapshot-x86_64.sha256sum] = "0be5c8506fd9317c7d0dc8044b5fef8501caa74f88a9a22be795d68362dc57f6"
-SRC_URI[cargo-snapshot-x86_64.md5sum] = "89f06274bbd387d7e7f5476011a61f34"
+SRC_URI[cargo-snapshot-aarch64.sha256sum] = "caccf4f85703c6de77f143e7e24cc5e40a02f23e3d1138aa965922b4531023b6"
 SRC_URI[cargo-snapshot-x86_64.sha256sum] = "a27eb5d47b520ef2c554605bf789f80652af63531b4f6a1195d61b3dfd0f6e9c"
