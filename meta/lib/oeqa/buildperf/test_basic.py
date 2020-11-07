@@ -11,10 +11,10 @@ from oeqa.buildperf import BuildPerfTestCase
 from oeqa.utils.commands import get_bb_var, get_bb_vars
 
 class Test1P1(BuildPerfTestCase):
-    build_target = 'core-image-sato'
+    build_target = 'core-image-weston'
 
     def test1(self):
-        """Build core-image-sato"""
+        """Build core-image-weston"""
         self.rm_tmp()
         self.rm_sstate()
         self.rm_cache()
@@ -40,10 +40,10 @@ class Test1P2(BuildPerfTestCase):
 
 
 class Test1P3(BuildPerfTestCase):
-    build_target = 'core-image-sato'
+    build_target = 'core-image-weston'
 
     def test13(self):
-        """Build core-image-sato with rm_work enabled"""
+        """Build core-image-weston with rm_work enabled"""
         postfile = os.path.join(self.tmp_dir, 'postfile.conf')
         with open(postfile, 'w') as fobj:
             fobj.write('INHERIT += "rm_work"\n')
@@ -60,10 +60,10 @@ class Test1P3(BuildPerfTestCase):
 
 
 class Test2(BuildPerfTestCase):
-    build_target = 'core-image-sato'
+    build_target = 'core-image-weston'
 
     def test2(self):
-        """Run core-image-sato do_rootfs with sstate"""
+        """Run core-image-weston do_rootfs with sstate"""
         # Build once in order to populate sstate cache
         self.run_cmd(['bitbake', self.build_target])
 
@@ -93,7 +93,7 @@ class Test3(BuildPerfTestCase):
 
 
 class Test4(BuildPerfTestCase):
-    build_target = 'core-image-sato'
+    build_target = 'core-image-weston'
 
     def test4(self):
         """eSDK metrics"""
