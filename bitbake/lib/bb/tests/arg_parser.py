@@ -9,9 +9,11 @@
 
 import collections
 import shlex
+import types
 import unittest
 
 from bb.main import create_bitbake_parser, BitBakeConfigParameters, LazyUiChoices
+from bb.tinfoil import TinfoilConfigParameters
 
 ParseResult = collections.namedtuple("ParseResult", ("options", "targets"))
 
@@ -53,3 +55,8 @@ class ArgParserTests(unittest.TestCase):
         ui_action = ui_actions[0]
         self.assertIs(type(ui_action.type), LazyUiChoices, "'ui' action has wrong type")
         self.assertFalse(ui_action.type.has_loaded_modules, "Creation of the arg parser loaded the bb.ui modules")
+
+    def test_tinfoil_default_ui_arg(self):
+        # Ensure the default 'ui' parameter is a module, not a str
+        params = TinfoilConfigParameters(config_only=True)
+        self.assertIs(type(params.ui), types.ModuleType)
