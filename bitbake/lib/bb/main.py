@@ -40,9 +40,9 @@ class BBMainFatal(bb.BBHandledException):
     pass
 
 
-def list_extension_modules(pkg, checkattr):
+def load_extension_modules(pkg, checkattr):
     """
-    Lists extension modules in a specific Python package
+    Loads extension modules in a specific Python namespace package.
     (e.g. UIs, servers). NOTE: Calling this function will import all of the
     submodules of the specified module in order to check for the specified
     attribute; this can have unusual side-effects. As a result, this should
@@ -51,6 +51,7 @@ def list_extension_modules(pkg, checkattr):
         pkg: previously imported Python package to list
         checkattr: attribute to look for in module to determine if it's valid
             as the type of extension you are looking for
+    Returns: list of modules (imported via importlib)
     """
     import pkgutil
     import importlib
@@ -101,7 +102,7 @@ class LazyUiChoices:
 
     def _lazy_load_modules(self):
         if not self._modules:
-            self._modules = {module.__name__.split(".")[-1]: module for module in list_extension_modules(bb.ui, "main")}
+            self._modules = {module.__name__.split(".")[-1]: module for module in load_extension_modules(bb.ui, "main")}
 
     def __iter__(self):
         self._lazy_load_modules()
