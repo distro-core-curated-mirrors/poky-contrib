@@ -132,7 +132,6 @@ def create_bitbake_parser():
     It is assumed there is a conf/bblayers.conf available in cwd or in BBPATH which
     will provide the layer, BBFILES and other configuration information.
     """, add_help=False)
-    parser.add_argument("targets", nargs="*")
 
     # List options that the user is most likely to use first
     frequent_group = parser.add_argument_group("frequently used")
@@ -304,7 +303,7 @@ def create_bitbake_parser():
 class BitBakeConfigParameters(cookerdata.ConfigParameters):
     def parseCommandLine(self, argv=None):
         parser = create_bitbake_parser()
-        args = parser.parse_args(argv or sys.argv)
+        args, targets = parser.parse_known_args(argv or sys.argv)
 
         if args.quiet and args.verbose:
             parser.error("options --quiet and --verbose are mutually exclusive")
@@ -336,7 +335,7 @@ class BitBakeConfigParameters(cookerdata.ConfigParameters):
         else:
             args.xmlrpcinterface = (None, 0)
 
-        return args, args.targets[1:]
+        return args, targets[1:]
 
 
 def bitbake_main(configParams, configuration):
