@@ -12,10 +12,10 @@
 import os
 import sys
 import logging
-import optparse
 import warnings
 import fcntl
 import time
+import argparse
 import traceback
 
 import bb
@@ -31,30 +31,14 @@ import bb.server.xmlrpcclient
 
 logger = logging.getLogger("BitBake")
 
+
 class BBMainException(Exception):
     pass
+
 
 class BBMainFatal(bb.BBHandledException):
     pass
 
-def present_options(optionlist):
-    if len(optionlist) > 1:
-        return ' or '.join([', '.join(optionlist[:-1]), optionlist[-1]])
-    else:
-        return optionlist[0]
-
-class BitbakeHelpFormatter(optparse.IndentedHelpFormatter):
-    def format_option(self, option):
-        # We need to do this here rather than in the text we supply to
-        # add_option() because we don't want to call list_extension_modules()
-        # on every execution (since it imports all of the modules)
-        # Note also that we modify option.help rather than the returned text
-        # - this is so that we don't have to re-format the text ourselves
-        if option.dest == 'ui':
-            valid_uis = list_extension_modules(bb.ui, 'main')
-            option.help = option.help.replace('@CHOICES@', present_options(valid_uis))
-
-        return optparse.IndentedHelpFormatter.format_option(self, option)
 
 def list_extension_modules(pkg, checkattr):
     """
@@ -69,36 +53,22 @@ def list_extension_modules(pkg, checkattr):
             as the type of extension you are looking for
     """
     import pkgutil
-    pkgdir = os.path.dirname(pkg.__file__)
+    import importlib
 
     modules = []
-    for _, modulename, _ in pkgutil.iter_modules([pkgdir]):
-        if os.path.isdir(os.path.join(pkgdir, modulename)):
-            # ignore directories
-            continue
+    # bb.ui uses namespace packaging: https://packaging.python.org/guides/packaging-namespace-packages/
+    for _, modulename, _ in pkgutil.iter_modules(pkg.__path__, pkg.__name__ + "."):
         try:
-            module = __import__(pkg.__name__, fromlist=[modulename])
+            module = importlib.import_module(modulename)
         except:
             # If we can't import it, it's not valid
             continue
-        module_if = getattr(module, modulename)
-        if getattr(module_if, 'hidden_extension', False):
-            continue
-        if not checkattr or hasattr(module_if, checkattr):
-            modules.append(modulename)
+        # if getattr(module_if, 'hidden_extension', False):
+        #     continue
+        if not checkattr or hasattr(module, checkattr):
+            modules.append(module)
     return modules
 
-def import_extension_module(pkg, modulename, checkattr):
-    try:
-        # Dynamically load the UI based on the ui name. Although we
-        # suggest a fixed set this allows you to have flexibility in which
-        # ones are available.
-        module = __import__(pkg.__name__, fromlist=[modulename])
-        return getattr(module, modulename)
-    except AttributeError:
-        modules = present_options(list_extension_modules(pkg, checkattr))
-        raise BBMainException('FATAL: Unable to import extension module "%s" from %s. '
-                              'Valid extension modules: %s' % (modulename, pkg.__name__, modules))
 
 # Display bitbake/OE warnings via the BitBake.Warnings logger, ignoring others"""
 warnlog = logging.getLogger("BitBake.Warnings")
@@ -120,51 +90,65 @@ warnings.filterwarnings("ignore", category=DeprecationWarning, module="<string>$
 warnings.filterwarnings("ignore", message="With-statements now directly support multiple context managers")
 
 
+class LazyUiChoices:
+    """
+    A proxy object that will act as both the 'choices' (via __iter__ and __contains__) and the 'type' (via __call__) for
+    the 'ui' argparse argument.
+    """
+    def __init__(self):
+        # map module name => imported module
+        self._modules = {}
+
+    def _lazy_load_modules(self):
+        if not self._modules:
+            self._modules = {module.__name__.split(".")[-1]: module for module in list_extension_modules(bb.ui, "main")}
+
+    def __iter__(self):
+        self._lazy_load_modules()
+        yield from self._modules.keys()
+
+    def __contains__(self, item):
+        self._lazy_load_modules()
+        return item in self._modules.values()
+
+    def __call__(self, *args, **kwargs):
+        """ Called by argparse to convert string name into the module itself """
+        self._lazy_load_modules()
+        try:
+            return self._modules[args[0]]
+        except KeyError:
+            # invalid choice, just return the string - will be rejected when argparse uses  __contains__ to check it
+            return args[0]
+
+
 def create_bitbake_parser():
-    parser = optparse.OptionParser(
-        formatter=BitbakeHelpFormatter(),
-        version="BitBake Build Tool Core version %s" % bb.__version__,
-        usage="""%prog [options] [recipename/target recipe:do_task ...]
+    parser = argparse.ArgumentParser(usage="""%(prog)s [options] [recipename/target recipe:do_task ...]
 
     Executes the specified task (default is 'build') for a given set of target recipes (.bb files).
     It is assumed there is a conf/bblayers.conf available in cwd or in BBPATH which
-    will provide the layer, BBFILES and other configuration information.""")
+    will provide the layer, BBFILES and other configuration information.
+    """)
+    parser.add_argument("targets", nargs="*")
+    parser.add_argument("--version",
+                        action="version",
+                        version="BitBake Build Tool Core version {0}".format(bb.__version__))
 
-    parser.add_option("-b", "--buildfile", action="store", dest="buildfile", default=None,
-                      help="Execute tasks from a specific .bb recipe directly. WARNING: Does "
-                           "not handle any dependencies from other recipes.")
+    ui_choices = LazyUiChoices()
+    # Setting metavar="" is necessary otherwise argparse will immediately try to expand the choices
+    parser.add_argument("-u", "--ui",
+                        default=os.environ.get('BITBAKE_UI', 'knotty'),
+                        help="The user interface to use (%(choices)s) - default: %(default)s",
+                        choices=ui_choices, metavar="", type=ui_choices)
 
-    parser.add_option("-k", "--continue", action="store_false", dest="abort", default=True,
-                      help="Continue as much as possible after an error. While the target that "
-                           "failed and anything depending on it cannot be built, as much as "
-                           "possible will be built before stopping.")
-
-    parser.add_option("-f", "--force", action="store_true", dest="force", default=False,
-                      help="Force the specified targets/task to run (invalidating any "
-                           "existing stamp file).")
-
-    parser.add_option("-c", "--cmd", action="store", dest="cmd",
-                      help="Specify the task to execute. The exact options available "
-                           "depend on the metadata. Some examples might be 'compile'"
-                           " or 'populate_sysroot' or 'listtasks' may give a list of "
-                           "the tasks available.")
-
-    parser.add_option("-C", "--clear-stamp", action="store", dest="invalidate_stamp",
-                      help="Invalidate the stamp for the specified task such as 'compile' "
-                           "and then run the default task for the specified target(s).")
-
-    parser.add_option("-r", "--read", action="append", dest="prefile", default=[],
-                      help="Read the specified file before bitbake.conf.")
-
-    parser.add_option("-R", "--postread", action="append", dest="postfile", default=[],
-                      help="Read the specified file after bitbake.conf.")
-
-    parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False,
+    parser.add_argument("-v", "--verbose", action="store_true", dest="verbose",
                       help="Enable tracing of shell tasks (with 'set -x'). "
                            "Also print bb.note(...) messages to stdout (in "
                            "addition to writing them to ${T}/log.do_<task>).")
 
-    parser.add_option("-D", "--debug", action="count", dest="debug", default=0,
+    parser.add_argument("-q", "--quiet", action="count", dest="quiet", default=0,
+                      help="Output less log message data to the terminal. You can specify this more than once.")
+
+    parser.add_argument("-D", "--debug", action="count", dest="debug", default=0,
                       help="Increase the debug level. You can specify this "
                            "more than once. -D sets the debug level to 1, "
                            "where only bb.debug(1, ...) messages are printed "
@@ -176,157 +160,164 @@ def create_bitbake_parser():
                            "to ${T}/log.do_taskname, regardless of the debug "
                            "level.")
 
-    parser.add_option("-q", "--quiet", action="count", dest="quiet", default=0,
-                      help="Output less log message data to the terminal. You can specify this more than once.")
+    parser.add_argument("-b", "--buildfile", dest="buildfile",
+                      help="Execute tasks from a specific .bb recipe directly. WARNING: Does "
+                           "not handle any dependencies from other recipes.")
 
-    parser.add_option("-n", "--dry-run", action="store_true", dest="dry_run", default=False,
+    parser.add_argument("-k", "--continue", action="store_false", dest="abort",
+                      help="Continue as much as possible after an error. While the target that "
+                           "failed and anything depending on it cannot be built, as much as "
+                           "possible will be built before stopping.")
+
+    parser.add_argument("-f", "--force", action="store_true", dest="force",
+                      help="Force the specified targets/task to run (invalidating any "
+                           "existing stamp file).")
+
+    parser.add_argument("-c", "--cmd", dest="cmd",
+                      help="Specify the task to execute. The exact options available "
+                           "depend on the metadata. Some examples might be 'compile'"
+                           " or 'populate_sysroot' or 'listtasks' may give a list of "
+                           "the tasks available.")
+
+    parser.add_argument("-C", "--clear-stamp", dest="invalidate_stamp",
+                      help="Invalidate the stamp for the specified task such as 'compile' "
+                           "and then run the default task for the specified target(s).")
+
+    parser.add_argument("-r", "--read", action="append", dest="prefile", default=[],
+                      help="Read the specified file before bitbake.conf.")
+
+    parser.add_argument("-R", "--postread", action="append", dest="postfile", default=[],
+                      help="Read the specified file after bitbake.conf.")
+
+    parser.add_argument("-n", "--dry-run", action="store_true", dest="dry_run", default=[],
                       help="Don't execute, just go through the motions.")
 
-    parser.add_option("-S", "--dump-signatures", action="append", dest="dump_signatures",
-                      default=[], metavar="SIGNATURE_HANDLER",
-                      help="Dump out the signature construction information, with no task "
+    parser.add_argument("-S", "--dump-signatures", action="append", dest="dump_signatures", metavar="SIGNATURE_HANDLER",
+                        default=[], help="Dump out the signature construction information, with no task "
                            "execution. The SIGNATURE_HANDLER parameter is passed to the "
                            "handler. Two common values are none and printdiff but the handler "
                            "may define more/less. none means only dump the signature, printdiff"
                            " means compare the dumped signature with the cached one.")
 
-    parser.add_option("-p", "--parse-only", action="store_true",
-                      dest="parse_only", default=False,
+    parser.add_argument("-p", "--parse-only", action="store_true", dest="parse_only",
                       help="Quit after parsing the BB recipes.")
 
-    parser.add_option("-s", "--show-versions", action="store_true",
-                      dest="show_versions", default=False,
+    parser.add_argument("-s", "--show-versions", action="store_true", dest="show_versions",
                       help="Show current and preferred versions of all recipes.")
 
-    parser.add_option("-e", "--environment", action="store_true",
-                      dest="show_environment", default=False,
+    parser.add_argument("-e", "--environment", action="store_true", dest="show_environment",
                       help="Show the global or per-recipe environment complete with information"
                            " about where variables were set/changed.")
 
-    parser.add_option("-g", "--graphviz", action="store_true", dest="dot_graph", default=False,
+    parser.add_argument("-g", "--graphviz", action="store_true", dest="dot_graph",
                       help="Save dependency tree information for the specified "
                            "targets in the dot syntax.")
 
-    parser.add_option("-I", "--ignore-deps", action="append",
-                      dest="extra_assume_provided", default=[],
+    parser.add_argument("-I", "--ignore-deps", action="append", default=[], dest="extra_assume_provided",
                       help="Assume these dependencies don't exist and are already provided "
                            "(equivalent to ASSUME_PROVIDED). Useful to make dependency "
                            "graphs more appealing")
 
-    parser.add_option("-l", "--log-domains", action="append", dest="debug_domains", default=[],
+    parser.add_argument("-l", "--log-domains", action="append", dest="debug_domains", default=[],
                       help="Show debug logging for the specified logging domains")
 
-    parser.add_option("-P", "--profile", action="store_true", dest="profile", default=False,
+    parser.add_argument("-P", "--profile", action="store_true", dest="profile", default=[],
                       help="Profile the command and save reports.")
 
-    # @CHOICES@ is substituted out by BitbakeHelpFormatter above
-    parser.add_option("-u", "--ui", action="store", dest="ui",
-                      default=os.environ.get('BITBAKE_UI', 'knotty'),
-                      help="The user interface to use (@CHOICES@ - default %default).")
-
-    parser.add_option("", "--token", action="store", dest="xmlrpctoken",
-                      default=os.environ.get("BBTOKEN"),
+    parser.add_argument("--token", dest="xmlrpctoken", default=os.environ.get("BBTOKEN"),
                       help="Specify the connection token to be used when connecting "
                            "to a remote server.")
 
-    parser.add_option("", "--revisions-changed", action="store_true",
-                      dest="revisions_changed", default=False,
+    parser.add_argument("--revisions-changed", action="store_true", dest="revisions_changed",
                       help="Set the exit code depending on whether upstream floating "
                            "revisions have changed or not.")
 
-    parser.add_option("", "--server-only", action="store_true",
-                      dest="server_only", default=False,
+    parser.add_argument("--server-only", action="store_true", dest="server_only",
                       help="Run bitbake without a UI, only starting a server "
                            "(cooker) process.")
 
-    parser.add_option("-B", "--bind", action="store", dest="bind", default=False,
+    parser.add_argument("-B", "--bind", dest="bind",
                       help="The name/address for the bitbake xmlrpc server to bind to.")
 
-    parser.add_option("-T", "--idle-timeout", type=float, dest="server_timeout",
+    parser.add_argument("-T", "--idle-timeout", type=float, dest="server_timeout",
                       default=os.getenv("BB_SERVER_TIMEOUT"),
                       help="Set timeout to unload bitbake server due to inactivity, "
                            "set to -1 means no unload, "
                            "default: Environment variable BB_SERVER_TIMEOUT.")
 
-    parser.add_option("", "--no-setscene", action="store_true",
-                      dest="nosetscene", default=False,
+    parser.add_argument("--no-setscene", action="store_true", dest="nosetscene",
                       help="Do not run any setscene tasks. sstate will be ignored and "
                            "everything needed, built.")
 
-    parser.add_option("", "--skip-setscene", action="store_true",
-                      dest="skipsetscene", default=False,
+    parser.add_argument("--skip-setscene", action="store_true", dest="skipsetscene",
                       help="Skip setscene tasks if they would be executed. Tasks previously "
                            "restored from sstate will be kept, unlike --no-setscene")
 
-    parser.add_option("", "--setscene-only", action="store_true",
-                      dest="setsceneonly", default=False,
+    parser.add_argument("--setscene-only", action="store_true", dest="setsceneonly",
                       help="Only run setscene tasks, don't run any real tasks.")
 
-    parser.add_option("", "--remote-server", action="store", dest="remote_server",
-                      default=os.environ.get("BBSERVER"),
+    parser.add_argument("--remote-server", dest="remote_server", default=os.environ.get("BBSERVER"),
                       help="Connect to the specified server.")
 
-    parser.add_option("-m", "--kill-server", action="store_true",
-                      dest="kill_server", default=False,
+    parser.add_argument("-m", "--kill-server", action="store_true", dest="kill_server",
                       help="Terminate any running bitbake server.")
 
-    parser.add_option("", "--observe-only", action="store_true",
-                      dest="observe_only", default=False,
+    parser.add_argument("--observe-only", action="store_true", dest="observe_only",
                       help="Connect to a server as an observing-only client.")
 
-    parser.add_option("", "--status-only", action="store_true",
-                      dest="status_only", default=False,
+    parser.add_argument("--status-only", action="store_true", dest="status_only",
                       help="Check the status of the remote bitbake server.")
 
-    parser.add_option("-w", "--write-log", action="store", dest="writeeventlog",
-                      default=os.environ.get("BBEVENTLOG"),
+    parser.add_argument("-w", "--write-log", dest="writeeventlog", default=os.environ.get("BBEVENTLOG"),
                       help="Writes the event log of the build to a bitbake event json file. "
                            "Use '' (empty string) to assign the name automatically.")
 
-    parser.add_option("", "--runall", action="append", dest="runall",
-                      help="Run the specified task for any recipe in the taskgraph of the specified target (even if it wouldn't otherwise have run).")
+    parser.add_argument("--runall", action="append", dest="runall", default=[],
+                      help="Run the specified task for any recipe in the taskgraph of the specified target (even if "
+                           "it wouldn't otherwise have run).")
 
-    parser.add_option("", "--runonly", action="append", dest="runonly",
-                      help="Run only the specified task within the taskgraph of the specified targets (and any task dependencies those tasks may have).")
+    parser.add_argument("--runonly", action="append", dest="runonly", default=[],
+                      help="Run only the specified task within the taskgraph of the specified targets (and any task "
+                           "dependencies those tasks may have).")
     return parser
 
 
 class BitBakeConfigParameters(cookerdata.ConfigParameters):
-    def parseCommandLine(self, argv=sys.argv):
+    def parseCommandLine(self, argv=None):
         parser = create_bitbake_parser()
-        options, targets = parser.parse_args(argv)
+        args = parser.parse_args(argv or sys.argv)
 
-        if options.quiet and options.verbose:
+        if args.quiet and args.verbose:
             parser.error("options --quiet and --verbose are mutually exclusive")
 
-        if options.quiet and options.debug:
+        if args.quiet and args.debug:
             parser.error("options --quiet and --debug are mutually exclusive")
 
         # use configuration files from environment variables
         if "BBPRECONF" in os.environ:
-            options.prefile.append(os.environ["BBPRECONF"])
+            args.prefile.append(os.environ["BBPRECONF"])
 
         if "BBPOSTCONF" in os.environ:
-            options.postfile.append(os.environ["BBPOSTCONF"])
+            args.postfile.append(os.environ["BBPOSTCONF"])
 
         # fill in proper log name if not supplied
-        if options.writeeventlog is not None and len(options.writeeventlog) == 0:
+        if args.writeeventlog is not None and len(args.writeeventlog) == 0:
             from datetime import datetime
             eventlog = "bitbake_eventlog_%s.json" % datetime.now().strftime("%Y%m%d%H%M%S")
-            options.writeeventlog = eventlog
+            args.writeeventlog = eventlog
 
-        if options.bind:
+        if args.bind:
             try:
                 #Checking that the port is a number and is a ':' delimited value
-                (host, port) = options.bind.split(':')
+                (host, port) = args.bind.split(':')
                 port = int(port)
             except (ValueError,IndexError):
                 raise BBMainException("FATAL: Malformed host:port bind parameter")
-            options.xmlrpcinterface = (host, port)
+            args.xmlrpcinterface = (host, port)
         else:
-            options.xmlrpcinterface = (None, 0)
+            args.xmlrpcinterface = (None, 0)
 
-        return options, targets[1:]
+        return args, args.targets[1:]
 
 
 def bitbake_main(configParams, configuration):
@@ -402,9 +393,9 @@ def setup_bitbake(configParams, extrafeatures=None):
         featureset = []
         ui_module = None
     else:
-        ui_module = import_extension_module(bb.ui, configParams.ui, 'main')
         # Collect the feature set for the UI
-        featureset = getattr(ui_module, "featureSet", [])
+        featureset = getattr(configParams.ui, "featureSet", [])
+        ui_module = configParams.ui
 
     if extrafeatures:
         for feature in extrafeatures:
