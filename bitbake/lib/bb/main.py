@@ -98,11 +98,14 @@ class LazyUiChoices:
     """
     def __init__(self):
         # map module name => imported module
-        self._modules = {}
+        self._modules = None
 
     def _lazy_load_modules(self):
         if not self._modules:
             self._modules = {module.__name__.split(".")[-1]: module for module in load_extension_modules(bb.ui, "main")}
+
+    @property
+    def has_loaded_modules(self): return self._modules is not None
 
     def __iter__(self):
         self._lazy_load_modules()

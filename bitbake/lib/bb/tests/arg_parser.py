@@ -7,12 +7,11 @@
 # SPDX-License-Identifier: MIT
 #
 
+import collections
 import shlex
 import unittest
-import collections
 
-
-from bb.main import create_bitbake_parser, BitBakeConfigParameters
+from bb.main import create_bitbake_parser, BitBakeConfigParameters, LazyUiChoices
 
 ParseResult = collections.namedtuple("ParseResult", ("options", "targets"))
 
@@ -41,3 +40,16 @@ class ArgParserTests(unittest.TestCase):
             res = self._parse_helper(arg_str)
             self.assertListEqual(res.targets, ["world"])
             self.assertListEqual(res.options.dump_signatures, ["none"])
+
+    def test_lazy_module_loading(self):
+        # This test ensures that the bb.ui modules weren't loaded immediately upon creation of the arg parser
+
+        # Find the UI action
+        ui_actions = [action for action in self._parser._actions if action.dest == "ui"]
+        if len(ui_actions) > 1:
+            self.fail("Found more than one 'ui' action in the argument parser?")
+        self.assertEqual(len(ui_actions), 1, "Didn't find the 'ui' action in the argument parser?")
+
+        ui_action = ui_actions[0]
+        self.assertIs(type(ui_action.type), LazyUiChoices, "'ui' action has wrong type")
+        self.assertFalse(ui_action.type.has_loaded_modules, "Creation of the arg parser loaded the bb.ui modules")
