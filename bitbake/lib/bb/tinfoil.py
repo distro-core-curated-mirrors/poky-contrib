@@ -867,13 +867,14 @@ class TinfoilConfigParameters(BitBakeConfigParameters):
     def __init__(self, config_only, **options):
         self.initial_options = options
         # Apply some sane defaults
-        if not 'parse_only' in options:
+        if 'parse_only' not in options:
             self.initial_options['parse_only'] = not config_only
         #if not 'status_only' in options:
         #    self.initial_options['status_only'] = config_only
-        if not 'ui' in options:
-            self.initial_options['ui'] = 'knotty'
-        if not 'argv' in options:
+        if 'ui' not in options:
+            import importlib
+            self.initial_options['ui'] = importlib.import_module("bb.ui.knotty")
+        if 'argv' not in options:
             self.initial_options['argv'] = []
 
         super(TinfoilConfigParameters, self).__init__()
