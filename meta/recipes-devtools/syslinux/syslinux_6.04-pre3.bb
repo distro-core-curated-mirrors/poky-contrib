@@ -10,6 +10,8 @@ DEPENDS = "nasm-native util-linux e2fsprogs"
 
 SRC_URI = "https://www.zytor.com/pub/syslinux/Testing/6.04/syslinux-${PV}.tar.xz \
            file://syslinux-remove-clean-script.patch \
+		   "
+SRC_URI_append_class-native = " \
            file://0001-linux-syslinux-support-ext2-3-4-device.patch \
            file://0002-linux-syslinux-implement-open_ext2_fs.patch \
            file://0003-linux-syslinux-implement-install_to_ext2.patch \
@@ -28,7 +30,7 @@ UPSTREAM_CHECK_URI = "https://www.zytor.com/pub/syslinux/"
 UPSTREAM_CHECK_REGEX = "syslinux-(?P<pver>.+)\.tar"
 UPSTREAM_VERSION_UNKNOWN = "1"
 
-COMPATIBLE_HOST = '(x86_64|i.86).*-(linux|freebsd.*)'
+#COMPATIBLE_HOST = '(x86_64|i.86).*-(linux|freebsd.*)'
 # Don't let the sanity checker trip on the 32 bit real mode BIOS binaries
 INSANE_SKIP_${PN}-misc = "arch"
 INSANE_SKIP_${PN}-chain = "arch"
@@ -48,29 +50,38 @@ EXTRA_OEMAKE = " \
 	RANLIB="${RANLIB}" \
 "
 
+#
+# Tasks for native/nativesdk which build the installer.
+#
 do_configure() {
-	# drop win32 targets or build fails
-	sed -e 's,win32/\S*,,g' -i Makefile
-
-	# clean installer executables included in source tarball
-	oe_runmake clean firmware="efi32" EFIINC="${includedir}"
-	# NOTE: There is a temporary work around above to specify
-	#	the efi32 as the firmware else the pre-built bios
-	#	files get erased contrary to the doc/distib.txt
-	#	In the future this should be "bios" and not "efi32".
+	oe_runmake firmware="bios" clean
 }
 
 do_compile() {
-	# Make sure the recompile is OK.
-	# Though the ${B} should always exist, still check it before find and rm.
-	[ -d "${B}" ] && find ${B} -name '.*.d' -type f -exec rm -f {} \;
-
-	# Rebuild only the installer; keep precompiled bootloaders
-	# as per author's request (doc/distrib.txt)
 	oe_runmake firmware="bios" installer
 }
 
 do_install() {
+	#install -d ${D}${bindir}
+	#install ${B}/bios/mtools/syslinux ${D}${bindir}
+	oe_runmake firmware="bios" install-native
+}
+
+#
+# Tasks for target which ship the precompiled bootloader and installer
+#
+do_configure_class-target() {
+	# No need to do anything as we're shipping the precompiled binaries
+	:
+}
+
+do_compile_class-target() {
+	# No need to do anything as we're shipping the precompiled binaries
+	:
+}
+
+do_install_class-target() {
+	sed -e 's,win32/\S*,,g' -i Makefile
 	oe_runmake firmware="bios" install INSTALLROOT="${D}"
 
 	install -d ${D}${datadir}/syslinux/
