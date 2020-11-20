@@ -49,6 +49,7 @@ RDEPENDS_${PN} = "${PYTHON_PN}-unittest \
                   ${PYTHON_PN}-threading \
                   ${PYTHON_PN}-multiprocessing \
 "
+RDEPENDS_${PN}-ptest += "ldd"
 
 RDEPENDS_${PN}_class-native = ""
 
