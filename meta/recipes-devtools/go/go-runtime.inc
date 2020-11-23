@@ -2,9 +2,7 @@ DEPENDS = "virtual/${TUNE_PKGARCH}-go go-native"
 DEPENDS_class-nativesdk = "virtual/${TARGET_PREFIX}go-crosssdk"
 PROVIDES = "virtual/${TARGET_PREFIX}go-runtime"
 
-export CGO_CFLAGS = "${CFLAGS}"
 export CGO_CPPFLAGS = "${CPPFLAGS}"
-export CGO_CXXFLAGS = "${CXXFLAGS}"
 export CGO_LDFLAGS = "${LDFLAGS}"
 export GOCACHE = "${B}/.cache"
 
@@ -20,8 +18,8 @@ do_configure_libc-musl() {
 }
 
 do_compile() {
-	export CC_FOR_${TARGET_GOTUPLE}="${CC}"
-	export CXX_FOR_${TARGET_GOTUPLE}="${CXX}"
+	export CC_FOR_${TARGET_GOTUPLE}="${CC} ${CFLAGS}"
+	export CXX_FOR_${TARGET_GOTUPLE}="${CXX} ${CXXFLAGS}"
 
 	cd src
 	./make.bash --target-only --no-banner std

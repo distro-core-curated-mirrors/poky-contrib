@@ -1,0 +1,50 @@
+From bc4413bb5185bc742e46c470a129d04dce9e15fd Mon Sep 17 00:00:00 2001
+From: Alexander Kanavin <alex.kanavin@gmail.com>
+Date: Thu, 12 Nov 2020 09:17:25 +0000
+Subject: [PATCH] src/cmd/go/internal/work/action.go: do not randomize build
+ directory name
+
+This sets off a chain that ends with go binary becoming non-reproducible
+due to having a different build id in it every time:
+
+- go build creates a directory with a random name
+- cgo module builds generates several .c files into that directory
+- those modules are being built by gcc, leaking the random path into binary .o files
+- cgo module becomes non-reproducible due to that, with a different
+build id and content each time
+- as building the final go binary depends on this module, go's build system writes a different
+build id into it every time as well (it tracks not just the inputs, but also the tools used).
+
+I have made the build directory deterministic, but this might cause
+parallel builds to clash (haven't seen it in testing though). Upstream
+would probably need a different fix (hence Inappropriate status).
+
+Upstream-Status: Inappropriate [need to file a bug with the patch attached]
+Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
+---
+ src/cmd/go/internal/work/action.go | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/cmd/go/internal/work/action.go b/src/cmd/go/internal/work/action.go
+index 2ab7860..2cc954a 100644
+--- a/src/cmd/go/internal/work/action.go
++++ b/src/cmd/go/internal/work/action.go
+@@ -13,7 +13,6 @@ import (
+ 	"debug/elf"
+ 	"encoding/json"
+ 	"fmt"
+-	"io/ioutil"
+ 	"os"
+ 	"path/filepath"
+ 	"runtime"
+@@ -249,7 +248,9 @@ func (b *Builder) Init() {
+ 	if cfg.BuildN {
+ 		b.WorkDir = "$WORK"
+ 	} else {
+-		tmp, err := ioutil.TempDir(cfg.Getenv("GOTMPDIR"), "go-build")
++		//tmp, err := ioutil.TempDir(cfg.Getenv("GOTMPDIR"), "go-build")
++                tmp := cfg.Getenv("GOTMPDIR") + "/" + "go-build"
++                err := os.MkdirAll(tmp, 0755)
+ 		if err != nil {
+ 			base.Fatalf("go: creating work dir: %v", err)
+ 		}

@@ -1,0 +1,28 @@
+From fa000199408fdac04368d17b06f415315b5db61c Mon Sep 17 00:00:00 2001
+From: Alexander Kanavin <alex.kanavin@gmail.com>
+Date: Sat, 14 Nov 2020 20:05:28 +0000
+Subject: [PATCH] src/cmd/go/internal/work/exec.go: do not add
+ -fdebug-prefix-map
+
+This thwarts both Yocto-supplied CFLAGS and Go's own mapping of
+randomized build directory to a stable one.
+
+Upstream-Status: Pending [need to file a bug]
+Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
+---
+ src/cmd/go/internal/work/exec.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/cmd/go/internal/work/exec.go b/src/cmd/go/internal/work/exec.go
+index 696db23..6e20e18 100644
+--- a/src/cmd/go/internal/work/exec.go
++++ b/src/cmd/go/internal/work/exec.go
+@@ -2225,7 +2225,7 @@ func (b *Builder) ccompile(a *Action, p *load.Package, outfile string, flags []s
+ 			}
+ 			flags = append(flags[:len(flags):len(flags)], "-fdebug-prefix-map="+from+"="+to)
+ 		} else if p.Goroot && cfg.GOROOT_FINAL != cfg.GOROOT {
+-			flags = append(flags[:len(flags):len(flags)], "-fdebug-prefix-map="+cfg.GOROOT+"="+cfg.GOROOT_FINAL)
++			//flags = append(flags[:len(flags):len(flags)], "-fdebug-prefix-map="+cfg.GOROOT+"="+cfg.GOROOT_FINAL)
+ 		}
+ 	}
+ 

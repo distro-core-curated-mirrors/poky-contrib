@@ -14,6 +14,8 @@ export GOOS = "${TARGET_GOOS}"
 export GOHOSTARCH="${BUILD_GOARCH}"
 export GOHOSTOS="${BUILD_GOOS}"
 
+export GODEBUG = "gocachehash=1"
+
 GOARM[export] = "0"
 GOARM_arm_class-target = "${TARGET_GOARM}"
 GOARM_arm_class-target[export] = "1"
@@ -52,6 +54,11 @@ GOTOOLDIR = "${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/go/pkg/tool/${BUILD_GOTUPLE}
 GOTOOLDIR_class-native = "${STAGING_LIBDIR_NATIVE}/go/pkg/tool/${BUILD_GOTUPLE}"
 export GOTOOLDIR
 
+DEBUG_PREFIX_MAP = "-fmacro-prefix-map=${WORKDIR}=/usr/src/debug/${PN}/${EXTENDPE}${PV}-${PR} \
+                     -fdebug-prefix-map=${STAGING_DIR_HOST}= \
+                     -fdebug-prefix-map=${STAGING_DIR_NATIVE}= \
+"
+
 export CGO_ENABLED ?= "1"
 export CGO_ENABLED_riscv64 = "0"
 export CGO_CFLAGS ?= "${CFLAGS}"
@@ -64,7 +71,7 @@ GO_INSTALL_FILTEROUT ?= "${GO_IMPORT}/vendor/"
 
 B = "${WORKDIR}/build"
 export GOPATH = "${B}"
-export GOTMPDIR ?= "${WORKDIR}/go-tmp"
+export GOTMPDIR ?= "${WORKDIR}/build-tmp"
 GOTMPDIR[vardepvalue] = ""
 
 python go_do_unpack() {

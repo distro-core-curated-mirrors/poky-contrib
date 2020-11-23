@@ -6,13 +6,17 @@ GO_LDFLAGS = ""
 GO_LDFLAGS_class-nativesdk = "-linkmode external"
 export GO_LDFLAGS
 
+#export GOBUILDFLAGS = "-v -trimpath"
+
+export GODEBUG = "gocachehash=1"
+
 CC_append_class-nativesdk = " ${SECURITY_NOPIE_CFLAGS}"
 
 do_configure[noexec] = "1"
 
 do_compile() {
-	export CC_FOR_${TARGET_GOOS}_${TARGET_GOARCH}="${CC}"
-	export CXX_FOR_${TARGET_GOOS}_${TARGET_GOARCH}="${CXX}"
+	export CC_FOR_${TARGET_GOOS}_${TARGET_GOARCH}="${CC} ${CFLAGS}"
+	export CXX_FOR_${TARGET_GOOS}_${TARGET_GOARCH}="${CXX} ${CXXFLAGS}"
 
 	cd src
 	./make.bash --target-only --no-banner
