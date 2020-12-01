@@ -116,3 +116,6 @@ python () {
     if d.getVar('BUILD_REPRODUCIBLE_BINARIES') == '1':
         d.appendVarFlag("do_unpack", "postfuncs", " create_source_date_epoch_stamp")
 }
+
+# Clamp the mtimes of the tarball image filesystem type
+IMAGE_CMD_tar_append = " --clamp-mtime --mtime=@${SOURCE_DATE_EPOCH}"
