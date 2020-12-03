@@ -329,6 +329,10 @@ def _check_compatible_recipe(pn, d):
                            "from working. You will need to disable this "
                            "first." % pn)
 
+    if "gitsm://" in d.getVar("SRC_URI"):
+        raise DevtoolError("The %s recipe uses git submodules, and therefore is "
+                           "not supported by this tool" % pn, 4)
+
 def _dry_run_copy(src, dst, dry_run_outdir, base_outdir):
     """Common function for copying a file to the dry run output directory"""
     relpath = os.path.relpath(dst, base_outdir)
