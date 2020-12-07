@@ -779,11 +779,13 @@ class BaseConfig(object):
 
         # The user didn't want a bios to be loaded
         if (bios_name == "" or bios_name == "none") and not self.bios:
+            logger.debug("No BIOS specified")
             return
 
         if not self.bios:
             deploy_dir_image = self.get('DEPLOY_DIR_IMAGE')
             self.bios = "%s/%s" % (deploy_dir_image, bios_name)
+            logger.debug("BIOS set to %s" % self.bios)
 
             if not self.bios:
                 raise RunQemuError('BIOS not found: %s' % bios_match_name)
@@ -984,6 +986,8 @@ class BaseConfig(object):
             logoutput.append('NFS_DIR: [%s]' % self.rootfs)
         else:
             logoutput.append('ROOTFS: [%s]' % self.rootfs)
+        if self.bios:
+            logoutput.append('BIOS: %s' % self.bios)
         if self.ovmf_bios:
             logoutput.append('OVMF: %s' % self.ovmf_bios)
         if (self.ovmf_secboot_pkkek1):
@@ -1457,6 +1461,9 @@ class BaseConfig(object):
         self.find_qemu()
 
         self.qemu_opt = "%s %s %s %s %s" % (self.qemu_bin, self.get('NETWORK_CMD'), self.get('QB_RNG'), self.get('ROOTFS_OPTIONS'), self.get('QB_OPT_APPEND').replace('@DEPLOY_DIR_IMAGE@', self.get('DEPLOY_DIR_IMAGE')))
+
+        if self.bios:
+            self.qemu_opt += " -bios %s" % self.bios
 
         for ovmf in self.ovmf_bios:
             format = ovmf.rsplit('.', 1)[-1]
