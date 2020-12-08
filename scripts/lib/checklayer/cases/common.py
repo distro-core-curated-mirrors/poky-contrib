@@ -82,5 +82,6 @@ class CommonCheckLayer(OECheckLayerTestCase):
 
     def test_layerseries_compat(self):
         for collection_name, collection_data in self.tc.layer['collections'].items():
-            self.assertTrue(collection_data['compat'], "Collection %s from layer %s does not set compatible oe-core versions via LAYERSERIES_COMPAT_collection." \
-                 % (collection_name, self.tc.layer['name']))
+            with self.subTest(collection=collection_name):
+                self.assertIsNotNone(collection_data['compat'], "Collection %s from layer %s does not set compatible oe-core versions via LAYERSERIES_COMPAT_collection." \
+                    % (collection_name, self.tc.layer['name']))
