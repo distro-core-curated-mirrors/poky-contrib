@@ -7,7 +7,6 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=0636e73ff0215e8d672dc4c32c317bb3 \
 # If you really want to run syslinux, you need mtools.  We just want the
 # ldlinux.* stuff for now, so skip mtools-native
 DEPENDS = "nasm-native util-linux e2fsprogs"
-PV = "6.04-pre2"
 
 SRC_URI = "https://www.zytor.com/pub/syslinux/Testing/6.04/syslinux-${PV}.tar.xz \
            file://syslinux-remove-clean-script.patch \
@@ -20,12 +19,10 @@ SRC_URI = "https://www.zytor.com/pub/syslinux/Testing/6.04/syslinux-${PV}.tar.xz
            file://0007-linux-syslinux-implement-ext_construct_sectmap_fs.patch \
            file://0008-libinstaller-syslinuxext-implement-syslinux_patch_bo.patch \
            file://0009-linux-syslinux-implement-install_bootblock.patch \
-           file://0010-Workaround-multiple-definition-of-symbol-errors.patch \
-           file://0001-install-don-t-install-obsolete-file-com32.ld.patch \
+           file://0010-Workaround-multiple-definition-of-symbol-errors.patch;apply=0 \
            "
 
-SRC_URI[md5sum] = "2b31c78f087f99179feb357da312d7ec"
-SRC_URI[sha256sum] = "4441a5d593f85bb6e8d578cf6653fb4ec30f9e8f4a2315a3d8f2d0a8b3fadf94"
+SRC_URI[sha256sum] = "0085ba5b6c8ff83552ff8d07a60bef456172e87dd878a451cbf72a800af72bf7"
 
 UPSTREAM_CHECK_URI = "https://www.zytor.com/pub/syslinux/"
 UPSTREAM_CHECK_REGEX = "syslinux-(?P<pver>.+)\.tar"
