@@ -314,3 +314,14 @@ class ReproducibleTests(OESelftestTestCase):
         if fails:
             self.fail('\n'.join(fails))
 
+
+    def test_images(self):
+        for fstype in "deb", "ipk", "rpm":
+            self.write_config(textwrap.dedent("""
+                INHERIT += "reproducible_build"
+                PACKAGE_CLASSES = "package_deb package_ipk package_rpm"
+                IMAGE_PKGTYPE = "%s"
+                """) % fstype)
+            bitbake("core-image-minimal")
+            # TODO hard link image to safe name,
+        # TODO compare images
