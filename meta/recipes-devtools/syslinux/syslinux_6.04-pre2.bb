@@ -39,6 +39,16 @@ INSANE_SKIP_${PN}-chain = "arch"
 EXTRA_OEMAKE = " \
 	BINDIR=${bindir} SBINDIR=${sbindir} LIBDIR=${libdir} \
 	DATADIR=${datadir} MANDIR=${mandir} INCDIR=${includedir} \
+	CC_FOR_BUILD="${BUILD_CC} ${BUILD_CFLAGS}" \
+	CC="${CC} ${CFLAGS}" \
+	LD="${LD}" \
+	LDFLAGS="${LDFLAGS}" \
+	OBJDUMP="${OBJDUMP}" \
+	OBJCOPY="${OBJCOPY}" \
+	AR="${AR}" \
+	STRIP="${STRIP}" \
+	NM="${NM}" \
+	RANLIB="${RANLIB}" \
 "
 
 do_configure() {
@@ -60,26 +70,11 @@ do_compile() {
 
 	# Rebuild only the installer; keep precompiled bootloaders
 	# as per author's request (doc/distrib.txt)
-	oe_runmake CC="${CC} ${CFLAGS}" \
-                   LD="${LD}" LDFLAGS="${LDFLAGS}" \
-                   OBJDUMP="${OBJDUMP}" \
-                   OBJCOPY="${OBJCOPY}" \
-                   AR="${AR}" \
-                   STRIP="${STRIP}" \
-                   NM="${NM}" \
-                   RANLIB="${RANLIB}" \
-                   firmware="bios" installer
+	oe_runmake firmware="bios" installer
 }
 
 do_install() {
-	oe_runmake CC="${CC} ${CFLAGS}" LD="${LD}" \
-                   OBJDUMP="${OBJDUMP}" \
-                   OBJCOPY="${OBJCOPY}" \
-                   AR="${AR}" \
-                   STRIP="${STRIP}" \
-                   NM="${NM}" \
-                   RANLIB="${RANLIB}" \
-                   firmware="bios" install INSTALLROOT="${D}"
+	oe_runmake firmware="bios" install INSTALLROOT="${D}"
 
 	install -d ${D}${datadir}/syslinux/
 	install -m 644 ${S}/bios/core/ldlinux.sys ${D}${datadir}/syslinux/
