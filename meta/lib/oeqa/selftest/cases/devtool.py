@@ -834,6 +834,8 @@ class DevtoolModifyTests(DevtoolBase):
         check('devtool-override-qemuarm', 'This is a test for qemuarm\n')
         check('devtool-override-qemux86', 'This is a test for qemux86\n')
 
+    # TODO devtool-test-multsrc-subdir
+
 class DevtoolUpdateTests(DevtoolBase):
 
     def test_devtool_update_recipe(self):

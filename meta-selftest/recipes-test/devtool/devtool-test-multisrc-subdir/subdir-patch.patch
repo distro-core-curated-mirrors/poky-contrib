@@ -1,0 +1,7 @@
+diff --git a/libfakekey/configure.ac b/libfakekey/configure.ac
+index 910bbd5..909b7bc 100644
+--- a/libfakekey/configure.ac
++++ b/libfakekey/configure.ac
+@@ -2 +2 @@
+-AC_INIT([libfakekey], 0.3, [yocto@yoctoproject.org])
++AC_INIT([libfakekey], 0.4, [yocto@yoctoproject.org])
