@@ -42,16 +42,14 @@ class BSPCheckLayer(OECheckLayerTestCase):
 
         if not self.td['machines']:
             self.skipTest('No machines set with --machines.')
-        msg = []
+
         for machine in self.td['machines']:
-            # In contrast to test_machine_signatures() below, errors are fatal here.
-            try:
-                get_signatures(self.td['builddir'], failsafe=False, machine=machine)
-            except RuntimeError as ex:
-                msg.append(str(ex))
-        if msg:
-            msg.insert(0, 'The following machines broke a world build:')
-            self.fail('\n'.join(msg))
+            with self.subTest(machine=machine):
+                # In contrast to test_machine_signatures() below, errors are fatal here.
+                try:
+                    get_signatures(self.td['builddir'], failsafe=False, machine=machine)
+                except RuntimeError as ex:
+                    self.fail(str(ex))
 
     def test_machine_signatures(self):
         '''
