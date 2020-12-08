@@ -233,20 +233,6 @@ def setup_git_repo(repodir, version, devbranch, basetag='devtool-base', d=None):
     bb.process.run('git checkout -b %s' % devbranch, cwd=repodir)
     bb.process.run('git tag -f %s' % basetag, cwd=repodir)
 
-def find_git_repos(pth, toplevel=False):
-    """
-    Find git repositories under a path
-    """
-    repos = []
-    if toplevel and os.path.isdir(os.path.join(pth, '.git')):
-        repos.append(pth)
-    for root, dirs, _ in os.walk(pth):
-        for dfn in dirs:
-            dfp = os.path.join(root, dfn)
-            if os.path.isdir(os.path.join(dfp, '.git')) and dfp not in repos:
-                repos.append(dfp)
-    return repos
-
 def recipe_to_append(recipefile, config, wildcard=False):
     """
     Convert a recipe file to a bbappend file path within the workspace.
@@ -374,11 +360,6 @@ def check_prerelease_version(ver, operation):
                        'If you prefer not to reset and re-try, you can change '
                        'the version after %s succeeds using "devtool rename" '
                        'with -V/--version.' % (ver, operation))
-
-def check_git_repo_dirty(repodir):
-    """Check if a git repository is clean or not"""
-    stdout, _ = bb.process.run('git status --porcelain', cwd=repodir)
-    return stdout
 
 def check_git_repo_op(srctree, ignoredirs=None):
     """Check if a git repository is in the middle of a rebase"""

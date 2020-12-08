@@ -21,7 +21,7 @@ import glob
 import filecmp
 import json
 from collections import OrderedDict, namedtuple
-from devtool import exec_build_env_command, setup_tinfoil, check_workspace_recipe, use_external_build, setup_git_repo, recipe_to_append, get_bbclassextend_targets, update_unlockedsigs, check_prerelease_version, check_git_repo_dirty, check_git_repo_op, find_git_repos, DevtoolError
+from devtool import exec_build_env_command, setup_tinfoil, check_workspace_recipe, use_external_build, setup_git_repo, recipe_to_append, get_bbclassextend_targets, update_unlockedsigs, check_prerelease_version, check_git_repo_op, DevtoolError
 from devtool import parse_recipe
 
 logger = logging.getLogger('devtool')
@@ -798,6 +798,7 @@ def modify(args, config, basepath, workspace):
     import oe.recipeutils
     import oe.patch
     import oe.path
+    import oe.gitutils
 
     if args.recipename in workspace:
         raise DevtoolError("recipe %s is already in your workspace" %
@@ -918,7 +919,7 @@ def modify(args, config, basepath, workspace):
                 extradirs.update(cfg.get('extradirs', {}))
             else:
                 # Find any extra source trees
-                extradirpaths = find_git_repos(srctree)
+                extradirpaths = oe.gitutils.find_git_repos(srctree)
                 for extradirpath in extradirpaths:
                     extradirs[os.path.relpath(extradirpath, srctree)], _ = _get_initial_rev(extradirpath)
 
@@ -2152,6 +2153,7 @@ def finish(args, config, basepath, workspace):
     """Entry point for the devtool 'finish' subcommand"""
     import bb
     import oe.recipeutils
+    import oe.gitutils
 
     check_workspace_recipe(workspace, args.recipename)
 
@@ -2166,7 +2168,7 @@ def finish(args, config, basepath, workspace):
     for extradirentry in workspace[args.recipename]['extradirs']:
         srctrees.append(extradirentry['path'])
     for pth in srctrees:
-        dirty = check_git_repo_dirty(pth)
+        dirty = oe.gitutils.get_repo_status(pth)
         if dirty:
             if args.force:
                 logger.warning('Source tree %s is not clean, continuing as requested by -f/--force' % pth)

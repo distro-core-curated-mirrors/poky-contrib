@@ -66,10 +66,11 @@ python() {
 
 python devtool_post_unpack() {
     import oe.recipeutils
+    import oe.gitutils
     import shutil
     sys.path.insert(0, os.path.join(d.getVar('COREBASE'), 'scripts', 'lib'))
     import scriptutils
-    from devtool import setup_git_repo, find_git_repos
+    from devtool import setup_git_repo
 
     tempdir = d.getVar('DEVTOOL_TEMPDIR')
     workdir = d.getVar('WORKDIR')
@@ -124,7 +125,7 @@ python devtool_post_unpack() {
             if os.path.isdir(wpth) and os.listdir(wpth):
                 extradirs.append(wpth)
 
-    repos = find_git_repos(srcabspath)
+    repos = oe.gitutils.find_git_repos(srcabspath)
     extradirs.extend(repos)
 
     # Ignore local files with subdir={BP}
