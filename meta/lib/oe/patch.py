@@ -476,8 +476,12 @@ class GitApplyTree(PatchTree):
 
     def _applypatch(self, patch, force = False, reverse = False, run = True):
         import shutil
+        import oe.utils
+        import oe.gitutils
 
         def _applypatchhelper(shellcmd, patch, force = False, reverse = False, run = True):
+            #bb.warn('_applypatchhelper "%s"  %s' % (shellcmd, patch))
+            #bb.warn('repo status:\n%s' % (runcmd(['git', 'status', '--porcelain'], self.dir), ))
             if reverse:
                 shellcmd.append('-R')
 
@@ -535,19 +539,32 @@ class GitApplyTree(PatchTree):
                 except CmdError:
                     # Fall back to patch
                     output = PatchTree._applypatch(self, patch, force, reverse, run)
-                # Add all files
-                shellcmd = ["git", "add", "-f", "-A", "."]
-                output += runcmd(["sh", "-c", " ".join(shellcmd)], self.dir)
-                # Exclude the patches directory
-                shellcmd = ["git", "reset", "HEAD", self.patchdir]
-                output += runcmd(["sh", "-c", " ".join(shellcmd)], self.dir)
-                # Commit the result
-                (tmpfile, shellcmd) = self.prepareCommit(patch['file'], self.commituser, self.commitemail)
-                try:
-                    shellcmd.insert(0, patchfilevar)
-                    output += runcmd(["sh", "-c", " ".join(shellcmd)], self.dir)
-                finally:
-                    os.remove(tmpfile)
+                bb.warn('repo status post-apply:\n%s' % (runcmd(['git', 'status', '--porcelain'], self.dir), ))
+                repos = [self.dir] + oe.gitutils.find_git_repos(self.dir)
+                for repodir in sorted(repos, key=len, reverse=True):
+                    # Add all files
+                    shellcmd = ["git", "add", "-f", "-A", "."]
+                    output += runcmd(["sh", "-c", " ".join(shellcmd)], repodir)
+                    excludepaths = [r for r in repos if r != repodir and oe.utils.is_path_under(r, repodir)]
+                    if oe.utils.is_path_under(self.patchdir, repodir):
+                        # Exclude the patches directory
+                        excludepaths += [self.patchdir]
+                    if excludepaths:
+                        shellcmd = ["git", "reset", "HEAD"] + excludepaths
+                        output += runcmd(["sh", "-c", " ".join(shellcmd)], repodir)
+                    # Check if anything to commit
+                    shellcmd = ["git", "diff", "--cached", "--name-only"]
+                    changes = runcmd(["sh", "-c", " ".join(shellcmd)], repodir)
+                    if changes:    
+                        # Commit the result
+                        (tmpfile, shellcmd) = self.prepareCommit(patch['file'], self.commituser, self.commitemail)
+                        try:
+                            shellcmd.insert(0, patchfilevar)
+                            bb.warn('Committing in %s: %s' % (repodir, shellcmd))
+                            output += runcmd(["sh", "-c", " ".join(shellcmd)], repodir)
+                        finally:
+                            os.remove(tmpfile)
+                    bb.warn('repo status at end:\n%s' % (runcmd(['git', 'status', '--porcelain'], self.dir), ))
                 return output
         finally:
             shutil.rmtree(hooks_dir)

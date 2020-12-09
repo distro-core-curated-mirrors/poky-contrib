@@ -61,10 +61,14 @@ python patch_task_patch_prefunc() {
 python patch_task_postfunc() {
     # Prefunc for task functions between do_unpack and do_patch
     import oe.patch
+    import oe.gitutils
     import shutil
     func = d.getVar('BB_RUNTASK')
     srcsubdir = d.getVar('S')
-
+    
+    repos = oe.gitutils.find_git_repos(srcsubdir, toplevel=False)
+    repos.insert(0, srcsubdir) # may actually not be a repo, but somewhere above there must be one
+    
     if os.path.exists(srcsubdir):
         if func == 'do_patch':
             haspatches = (d.getVar('PATCH_HAS_PATCHES_DIR') == '1')
@@ -75,11 +79,13 @@ python patch_task_postfunc() {
                     stdout, _ = bb.process.run('git status --porcelain patches', cwd=srcsubdir)
                     if stdout:
                         bb.process.run('git checkout patches', cwd=srcsubdir)
-        stdout, _ = bb.process.run('git status --porcelain .', cwd=srcsubdir)
-        if stdout:
-            useroptions = []
-            oe.patch.GitApplyTree.gitCommandUserOptions(useroptions, d=d)
-            bb.process.run('git add .; git %s commit -a -m "Committing changes from %s\n\n%s"' % (' '.join(useroptions), func, oe.patch.GitApplyTree.ignore_commit_prefix + ' - from %s' % func), cwd=srcsubdir)
+        for repopath in repos:
+            status = oe.gitutils.get_repo_status(repopath)
+            bb.warn('%s status:\n%s' % (repopath, status))
+            if status:
+                useroptions = []
+                oe.patch.GitApplyTree.gitCommandUserOptions(useroptions, d=d)
+                bb.process.run('git add .; git %s commit -a -m "Committing changes from %s\n\n%s"' % (' '.join(useroptions), func, oe.patch.GitApplyTree.ignore_commit_prefix + ' - from %s' % func), cwd=repopath)
 }
 
 def src_patches(d, all=False, expand=True):
