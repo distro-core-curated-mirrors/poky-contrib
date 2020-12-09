@@ -14,6 +14,8 @@ def find_git_repos(pth, toplevel=False):
     if toplevel and os.path.isdir(os.path.join(pth, '.git')):
         repos.append(pth)
     for root, dirs, _ in os.walk(pth):
+        if '.git' in dirs:
+            dirs.remove('.git')
         for dfn in dirs:
             dfp = os.path.join(root, dfn)
             if os.path.isdir(os.path.join(dfp, '.git')) and dfp not in repos:
