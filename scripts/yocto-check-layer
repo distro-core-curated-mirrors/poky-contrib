@@ -45,15 +45,15 @@ def main():
     parser = argparse.ArgumentParser(
             description="Yocto Project layer checking tool",
             add_help=False)
-    parser.add_argument('layers', metavar='LAYER_DIR', nargs='+',
-            help='Layer to check')
+    parser.add_argument('-l', '--layers', metavar='LAYER_DIR', nargs='+',
+            required=True, help='Layers to check')
     parser.add_argument('-o', '--output-log',
             help='File to output log (optional)', action='store')
-    parser.add_argument('--dependency', nargs="+",
+    parser.add_argument('-p', '--dependency', nargs="+", metavar='LAYER_DIR',
             help='Layers to process for dependencies', action='store')
-    parser.add_argument('--machines', nargs="+",
+    parser.add_argument('-m', '--machines', nargs="+", metavar='MACHINE',
             help='List of MACHINEs to be used during testing', action='store')
-    parser.add_argument('--additional-layers', nargs="+",
+    parser.add_argument('-a', '--additional-layers', nargs="+", metavar='LAYER_DIR',
             help='List of additional layers to add during testing', action='store')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--with-software-layer-signature-check', action='store_true', dest='test_software_layer_signatures',
