@@ -69,7 +69,11 @@ do_compile() {
 
 do_install() {
 	install -d ${D}${bindir}
-	install ${B}/bios/mtools/syslinux ${B}/bios/extlinux/extlinux ${D}${bindir}
+	install \
+		${B}/bios/mtools/syslinux \
+		${B}/bios/extlinux/extlinux \
+		${B}/bios/utils/isohybrid \
+		${D}${bindir}
 }
 
 #
