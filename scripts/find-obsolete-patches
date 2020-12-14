@@ -1,0 +1,7 @@
+#! /bin/bash
+
+PATCHES=$(find . \( -name \*.patch -o -name \*.diff \)  -printf %p\\n)
+for PATCH in $PATCHES; do
+    FILENAME=$(basename $PATCH)
+    git grep --quiet $FILENAME || echo $PATCH
+done
