@@ -111,3 +111,6 @@ target_prefix ?= "${prefix}"
 # The real WORKDIR location isn't a dependency for the shared workdir.
 src_patches[vardepsexclude] = "WORKDIR"
 should_apply[vardepsexclude] += "PN"
+
+# fixed upstream https://gcc.gnu.org/git/gitweb.cgi?p=gcc.git;h=c2be82058fb40f3ae891c68d185ff53e07f14f45
+SLIBTOOL = ""
