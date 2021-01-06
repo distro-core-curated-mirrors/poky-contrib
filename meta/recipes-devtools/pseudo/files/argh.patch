@@ -1,0 +1,214 @@
+diff --git a/Makefile.in b/Makefile.in
+index b43d2d6..d1f77d5 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -42,7 +42,7 @@ LOCALSTATE=var/pseudo
+ BINDIR=$(PREFIX)/$(BIN)
+ LOCALSTATEDIR=$(PREFIX)/$(LOCALSTATE)
+ 
+-CFLAGS_BASE=-pipe -std=gnu99 -Wall -W -Wextra
++CFLAGS_BASE=-pipe -std=gnu99 -Wall -W -Wextra -Wno-deprecated-declarations
+ CFLAGS_CODE=-fPIC -D_LARGEFILE64_SOURCE -D_ATFILE_SOURCE $(ARCH_FLAGS)
+ CFLAGS_DEFS=-DPSEUDO_PREFIX='"$(PREFIX)"' -DPSEUDO_SUFFIX='"$(SUFFIX)"' -DPSEUDO_BINDIR='"$(BIN)"' -DPSEUDO_LIBDIR='"$(LIB)"' -DPSEUDO_LOCALSTATEDIR='"$(LOCALSTATE)"' -DPSEUDO_VERSION='"$(VERSION)"' $(SQLITE_MEMORY) $(FORCE_ASYNC) -DPSEUDO_PASSWD_FALLBACK='$(PASSWD_FALLBACK)' $(OPTDEFS) $(EPOLL)
+ CFLAGS_DEBUG=-O2 -g
+diff --git a/makewrappers b/makewrappers
+index 232c08d..6681e11 100755
+--- a/makewrappers
++++ b/makewrappers
+@@ -11,6 +11,7 @@ import glob
+ import sys
+ import re
+ import os.path
++import platform
+ import string
+ import subprocess
+ from templatefile import TemplateFile
+@@ -290,10 +291,18 @@ class Function:
+ 
+         # handle special comments, such as flags=AT_SYMLINK_NOFOLLOW
+         if self.comments:
+-            modifiers = self.comments.split(', ')
+-            for mod in modifiers:
+-                key, value = mod.split('=')
+-                value = value.rstrip()
++            # Build a dictionary of key=value, key=value pairs
++            modifiers = dict(mod.split("=") for mod in self.comments.split(','))
++            # Strip all leading/trailing whitespace
++            modifiers = {k.strip():v.strip() for k, v in modifiers.items()}
++
++            arch = "-" + platform.machine()
++            # Sorted so that versions-foo appear after versions, so overrides are easy
++            for key in sorted(modifiers):
++                value = modifiers[key]
++                # If the key is version-arm64 and we're on arm64 then rename this to version
++                if key.endswith(arch):
++                    key = key.replace(arch, "")
+                 setattr(self, key, value)
+     
+     def maybe_inode64(self):
+@@ -593,7 +602,7 @@ def process_wrapfuncs(port):
+             func.directory = directory
+             funcs[func.name] = func
+             sys.stdout.write(".")
+-        except Exception(e):
++        except Exception as e:
+             print("Parsing failed:", e)
+             exit(1)
+     funclist.close()
+diff --git a/ports/linux/xattr/wrapfuncs.in b/ports/linux/xattr/wrapfuncs.in
+index b8e007d..09eba23 100644
+--- a/ports/linux/xattr/wrapfuncs.in
++++ b/ports/linux/xattr/wrapfuncs.in
+@@ -1,12 +1,12 @@
+-ssize_t getxattr(const char *path, const char *name, void *value, size_t size); /* flags=0, version="GLIBC_2.3" */ 
+-ssize_t lgetxattr(const char *path, const char *name, void *value, size_t size); /* flags=AT_SYMLINK_NOFOLLOW, version="GLIBC_2.3" */
+-ssize_t fgetxattr(int filedes, const char *name, void *value, size_t size); /* version="GLIBC_2.3" */
+-int setxattr(const char *path, const char *name, const void *value, size_t size, int xflags); /* flags=0, version="GLIBC_2.3" */
+-int lsetxattr(const char *path, const char *name, const void *value, size_t size, int xflags); /* flags=AT_SYMLINK_NOFOLLOW, version="GLIBC_2.3" */
+-int fsetxattr(int filedes, const char *name, const void *value, size_t size, int xflags); /* version="GLIBC_2.3" */
+-ssize_t listxattr(const char *path, char *list, size_t size); /* flags=0, version="GLIBC_2.3" */
+-ssize_t llistxattr(const char *path, char *list, size_t size); /* flags=AT_SYMLINK_NOFOLLOW, version="GLIBC_2.3" */
+-ssize_t flistxattr(int filedes, char *list, size_t size); /* version="GLIBC_2.3" */
+-int removexattr(const char *path, const char *name); /* flags=0, version="GLIBC_2.3" */
+-int lremovexattr(const char *path, const char *name); /* flags=AT_SYMLINK_NOFOLLOW, version="GLIBC_2.3" */
+-int fremovexattr(int filedes, const char *name); /* version="GLIBC_2.3" */
++ssize_t getxattr(const char *path, const char *name, void *value, size_t size); /* flags=0, version="GLIBC_2.3", version-aarch64="GLIBC_2.17" */
++ssize_t lgetxattr(const char *path, const char *name, void *value, size_t size); /* flags=AT_SYMLINK_NOFOLLOW, version="GLIBC_2.3", version-aarch64="GLIBC_2.17" */
++ssize_t fgetxattr(int filedes, const char *name, void *value, size_t size); /* version="GLIBC_2.3", version-aarch64="GLIBC_2.17" */
++int setxattr(const char *path, const char *name, const void *value, size_t size, int xflags); /* flags=0, version="GLIBC_2.3", version-aarch64="GLIBC_2.17" */
++int lsetxattr(const char *path, const char *name, const void *value, size_t size, int xflags); /* flags=AT_SYMLINK_NOFOLLOW, version="GLIBC_2.3", version-aarch64="GLIBC_2.17" */
++int fsetxattr(int filedes, const char *name, const void *value, size_t size, int xflags); /* version="GLIBC_2.3", version-aarch64="GLIBC_2.17" */
++ssize_t listxattr(const char *path, char *list, size_t size); /* flags=0, version="GLIBC_2.3", version-aarch64="GLIBC_2.17" */
++ssize_t llistxattr(const char *path, char *list, size_t size); /* flags=AT_SYMLINK_NOFOLLOW, version="GLIBC_2.3", version-aarch64="GLIBC_2.17" */
++ssize_t flistxattr(int filedes, char *list, size_t size); /* version="GLIBC_2.3", version-aarch64="GLIBC_2.17" */
++int removexattr(const char *path, const char *name); /* flags=0, version="GLIBC_2.3", version-aarch64="GLIBC_2.17" */
++int lremovexattr(const char *path, const char *name); /* flags=AT_SYMLINK_NOFOLLOW, version="GLIBC_2.3", version-aarch64="GLIBC_2.17" */
++int fremovexattr(int filedes, const char *name); /* version="GLIBC_2.3", version-aarch64="GLIBC_2.17" */
+diff --git a/pseudo.c b/pseudo.c
+index ff8e1b9..f2e2f87 100644
+--- a/pseudo.c
++++ b/pseudo.c
+@@ -245,10 +245,12 @@ main(int argc, char *argv[]) {
+ 	/* Options are processed, preserve them... */
+ 	pseudo_set_value("PSEUDO_OPTS", opts);
+ 
+-	if (!pseudo_get_prefix(argv[0])) {
++	s = pseudo_get_prefix(argv[0]);
++	if (!s) {
+ 		pseudo_diag("Can't figure out prefix.  Set PSEUDO_PREFIX or invoke with full path.\n");
+ 		exit(PSEUDO_EXIT_PSEUDO_PREFIX);
+ 	}
++	free(s);
+ 
+ 	/* move database */
+ 	if (opt_m || opt_M) {
+@@ -1036,6 +1038,8 @@ pseudo_op(pseudo_msg_t *msg, const char *program, const char *tag, char **respon
+ 			pdb_may_unlink_file(msg, msg->client);
+ 		}
+ 		break;
++	default:
++		break;
+ 	}
+ 
+ op_exit:
+diff --git a/pseudo_client.c b/pseudo_client.c
+index 3c49644..6310b99 100644
+--- a/pseudo_client.c
++++ b/pseudo_client.c
+@@ -431,6 +431,7 @@ pseudo_profile_report(void) {
+ void
+ pseudo_init_client(void) {
+ 	char *env;
++	int need_free = 0;
+ 
+ 	pseudo_antimagic();
+ 	pseudo_new_pid();
+@@ -450,9 +451,11 @@ pseudo_init_client(void) {
+ 	 * or it may have gone away, in which case we'd enable
+ 	 * pseudo (and cause it to reinit the defaults).
+ 	 */
++	need_free = 0;
+ 	env = getenv("PSEUDO_DISABLED");
+ 	if (!env) {
+ 		env = pseudo_get_value("PSEUDO_DISABLED");
++		need_free = 1;
+ 	}
+ 	if (env) {
+ 		int actually_disabled = 1;
+@@ -487,15 +490,19 @@ pseudo_init_client(void) {
+ 	} else {
+ 		pseudo_set_value("PSEUDO_DISABLED", "0");
+ 	}
++	if (need_free)
++		free(env);
+ 
+ 	/* ALLOW_FSYNC is here because some crazy hosts will otherwise
+ 	 * report incorrect values for st_size/st_blocks. I can sort of
+ 	 * understand st_blocks, but bogus values for st_size? Not cool,
+ 	 * dudes, not cool.
+ 	 */
++	need_free = 0;
+ 	env = getenv("PSEUDO_ALLOW_FSYNC");
+ 	if (!env) {
+ 		env = pseudo_get_value("PSEUDO_ALLOW_FSYNC");
++		need_free = 1;
+ 	} else {
+ 		pseudo_set_value("PSEUDO_ALLOW_FSYNC", env);
+ 	}
+@@ -504,6 +511,8 @@ pseudo_init_client(void) {
+ 	} else {
+ 		pseudo_allow_fsync = 0;
+ 	}
++	if (need_free)
++		free(env);
+ 
+ 	/* in child processes, PSEUDO_UNLOAD may become set to
+ 	 * some truthy value, in which case we're being asked to
+@@ -1860,7 +1869,8 @@ pseudo_client_op(pseudo_op_t op, int access, int fd, int dirfd, const char *path
+ 		break;
+ 	case OP_OPEN:
+ 		pseudo_client_path(fd, path);
+-	case OP_EXEC: /* fallthrough */
++		/* fallthrough */
++	case OP_EXEC:
+ 		do_request = pseudo_client_logging;
+ 		break;
+ 	case OP_CLOSE:
+diff --git a/pseudo_util.c b/pseudo_util.c
+index 1d06009..b6980c2 100644
+--- a/pseudo_util.c
++++ b/pseudo_util.c
+@@ -159,7 +159,7 @@ pseudo_get_value(const char *key) {
+ 	if (pseudo_util_initted == -1)
+ 		pseudo_init_util();
+ 
+-	for (i = 0; pseudo_env[i].key && memcmp(pseudo_env[i].key, key, pseudo_env[i].key_len + 1); i++)
++	for (i = 0; pseudo_env[i].key && strcmp(pseudo_env[i].key, key); i++)
+ 		;
+ 
+ 	/* Check if the environment has it and we don't ...
+@@ -188,7 +188,7 @@ pseudo_set_value(const char *key, const char *value) {
+ 	if (pseudo_util_initted == -1)
+ 		pseudo_init_util();
+ 
+-	for (i = 0; pseudo_env[i].key && memcmp(pseudo_env[i].key, key, pseudo_env[i].key_len + 1); i++)
++	for (i = 0; pseudo_env[i].key && strcmp(pseudo_env[i].key, key); i++)
+ 		;
+ 
+ 	if (pseudo_env[i].key) {
+@@ -967,6 +967,7 @@ pseudo_setupenv() {
+ 		}
+ 		snprintf(newenv, len, "%s:%s64", libdir_path, libdir_path);
+ 		SETENV(PRELINK_PATH, newenv, 1);
++		free(newenv);
+ 	} else if (!strstr(ld_library_path, libdir_path)) {
+ 		size_t len = strlen(ld_library_path) + 1 + strlen(libdir_path) + 1 + (strlen(libdir_path) + 2) + 1;
+ 		char *newenv = malloc(len);
+@@ -975,6 +976,7 @@ pseudo_setupenv() {
+ 		}
+ 		snprintf(newenv, len, "%s:%s:%s64", ld_library_path, libdir_path, libdir_path);
+ 		SETENV(PRELINK_PATH, newenv, 1);
++		free(newenv);
+ 	} else {
+ 		/* nothing to do, ld_library_path exists and contains
+ 		 * our preferred path */
