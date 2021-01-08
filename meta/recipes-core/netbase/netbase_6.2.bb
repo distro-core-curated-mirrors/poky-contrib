@@ -21,3 +21,5 @@ do_install () {
 	install -m 0644 ${S}/etc/services ${D}${sysconfdir}/services
 	install -m 0644 ${S}/etc/ethertypes ${D}${sysconfdir}/ethertypes
 }
+
+DEPENDS += "coreutils-native"
