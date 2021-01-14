@@ -75,10 +75,13 @@ PACKAGECONFIG ??= "bdb ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'inhib
 PACKAGECONFIG_remove_class-native = "inhibit"
 PACKAGECONFIG_remove_class-nativesdk = "inhibit"
 
-PACKAGECONFIG[bdb] = "--enable-bdb,--disable-bdb,db"
 PACKAGECONFIG[imaevm] = "--with-imaevm,,ima-evm-utils"
 PACKAGECONFIG[inhibit] = "--enable-inhibit-plugin,--disable-inhibit-plugin,dbus"
 PACKAGECONFIG[rpm2archive] = "--with-archive,--without-archive,libarchive"
+# Database backends
+PACKAGECONFIG[bdb] = "--enable-bdb,--disable-bdb,db"
+PACKAGECONFIG[bdb-ro] = "--enable-bdb-ro,--disable-bdb-ro"
+PACKAGECONFIG[sqlite] = "--enable-sqlite,--disable-sqlite,sqlite3"
 
 ASNEEDED = ""
 
