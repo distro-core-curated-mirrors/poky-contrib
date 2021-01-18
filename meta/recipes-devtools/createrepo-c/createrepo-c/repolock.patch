@@ -1,0 +1,106 @@
+From 1e4f76fe025324d44d5ec5c5b1696501484d4277 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ale=C5=A1=20Mat=C4=9Bj?= <amatej@redhat.com>
+Date: Tue, 15 Dec 2020 14:15:39 +0100
+Subject: [PATCH] Never leave behind .repodata lock on exit (RhBug:1906831
+
+createrepo_c was removing `.repodata` if `exit_val` was se to failure.
+Problem is `exit_val` is set only on a couple of places so most of the
+failures (no matter how rare) leave `.repodata` behind.
+
+However because on a successful run `.repodata` is renamed to normal
+output `repodata` we know that if `.repodata` are present there was an
+error and we can delete them.
+---
+ src/createrepo_c.c      |  5 +----
+ src/createrepo_shared.c | 29 +++++++++--------------------
+ 2 files changed, 10 insertions(+), 24 deletions(-)
+
+diff --git a/src/createrepo_c.c b/src/createrepo_c.c
+index fc37c90..f4f4544 100644
+--- a/src/createrepo_c.c
++++ b/src/createrepo_c.c
+@@ -665,9 +665,6 @@ main(int argc, char **argv)
+         exit(EXIT_FAILURE);
+     }
+ 
+-    // Set exit_value pointer used in cleanup handlers
+-    cr_set_global_exit_value(&exit_val);
+-
+     // Setup cleanup handlers
+     if (!cr_set_cleanup_handler(lock_dir, tmp_out_repo, &tmp_err)) {
+         g_printerr("%s\n", tmp_err->message);
+@@ -885,7 +882,7 @@ main(int argc, char **argv)
+         char *moduleindex_str = modulemd_module_index_dump_to_string (moduleindex, &tmp_err);
+         g_clear_pointer(&moduleindex, g_object_unref);
+         if (tmp_err) {
+-            g_critical("%s: Cannot cannot dump module index: %s", __func__, tmp_err->message);
++            g_critical("%s: Cannot dump module index: %s", __func__, tmp_err->message);
+             free(moduleindex_str);
+             g_clear_error(&tmp_err);
+             exit(EXIT_FAILURE);
+diff --git a/src/createrepo_shared.c b/src/createrepo_shared.c
+index f8ef998..d1a37bd 100644
+--- a/src/createrepo_shared.c
++++ b/src/createrepo_shared.c
+@@ -28,8 +28,6 @@
+ #include "misc.h"
+ #include "cleanup.h"
+ 
+-int *global_exit_status = NULL;  // pointer to exit_value used in failure_exit_cleanup
+-
+ char *global_lock_dir     = NULL;  // Path to .repodata/ dir that is used as a lock
+ char *global_tmp_out_repo = NULL;  // Path to temporary repodata directory,
+                                    // if NULL that it's same as
+@@ -43,18 +41,16 @@ char *global_tmp_out_repo = NULL;  // Path to temporary repodata directory,
+  *
+  */
+ static void
+-failure_exit_cleanup()
++exit_cleanup()
+ {
+-    if (global_exit_status && *global_exit_status != EXIT_SUCCESS) {
+-        if (global_lock_dir) {
+-            g_debug("Removing %s", global_lock_dir);
+-            cr_remove_dir(global_lock_dir, NULL);
+-        }
++    if (global_lock_dir) {
++        g_debug("Removing %s", global_lock_dir);
++        cr_remove_dir(global_lock_dir, NULL);
++    }
+ 
+-        if (global_tmp_out_repo) {
+-            g_debug("Removing %s", global_tmp_out_repo);
+-            cr_remove_dir(global_tmp_out_repo, NULL);
+-        }
++    if (global_tmp_out_repo) {
++        g_debug("Removing %s", global_tmp_out_repo);
++        cr_remove_dir(global_tmp_out_repo, NULL);
+     }
+ }
+ 
+@@ -65,16 +61,9 @@ static void
+ sigint_catcher(int sig)
+ {
+     g_message("%s caught: Terminating...", strsignal(sig));
+-    *global_exit_status = 1;
+     exit(1);
+ }
+ 
+-void
+-cr_set_global_exit_value(int *exit_val)
+-{
+-    global_exit_status = exit_val;
+-}
+-
+ gboolean
+ cr_set_cleanup_handler(const char *lock_dir,
+                        const char *tmp_out_repo,
+@@ -90,7 +79,7 @@ cr_set_cleanup_handler(const char *lock_dir,
+         global_tmp_out_repo = NULL;
+ 
+     // Register on exit cleanup function
+-    if (atexit(failure_exit_cleanup))
++    if (atexit(exit_cleanup))
+         g_warning("Cannot set exit cleanup function by atexit()");
+ 
+     // Prepare signal handler configuration
