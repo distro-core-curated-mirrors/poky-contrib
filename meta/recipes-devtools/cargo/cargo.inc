@@ -13,6 +13,7 @@ SRC_URI += "file://0001-Disable-http2.patch"
 
 S = "${RUSTSRC}/src/tools/cargo"
 CARGO_VENDORING_DIRECTORY = "${RUSTSRC}/vendor"
+EXCLUDE_FROM_WORLD = "1"
 
 inherit cargo
 
