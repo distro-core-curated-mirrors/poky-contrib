@@ -327,8 +327,9 @@ base_do_compile() {
 	if [ -e Makefile -o -e makefile -o -e GNUmakefile ]; then
 		oe_runmake || die "make failed"
 	else
-		bbnote "nothing to compile"
+		bbnote "nothing to compile now"
 	fi
+
 }
 
 addtask install after do_compile
