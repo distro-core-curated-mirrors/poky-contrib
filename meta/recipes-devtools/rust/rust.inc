@@ -9,6 +9,8 @@ inherit cargo_common
 
 DEPENDS += "file-native python3-native"
 DEPENDS_append_class-native = " rust-llvm-native"
+EXCLUDE_FROM_WORLD = "1"
+S = "${RUSTSRC}"
 
 # We generate local targets, and need to be able to locate them
 export RUST_TARGET_PATH="${WORKDIR}/targets/"
