@@ -44,6 +44,12 @@ BUILDHISTORY_COMMIT_AUTHOR ?= "buildhistory <buildhistory@${DISTRO}>"
 BUILDHISTORY_PUSH_REPO ?= ""
 BUILDHISTORY_TAG ?= "build"
 
+# Branch for checkout
+BUILDHISTORY_BRANCH ?= ""
+
+# Clone previous buildhistory from repo
+BUILDHISTORY_CLONE ?= ""
+
 SSTATEPOSTINSTFUNCS_append = " buildhistory_emit_pkghistory"
 # We want to avoid influencing the signatures of sstate tasks - first the function itself:
 sstate_install[vardepsexclude] += "buildhistory_emit_pkghistory"
@@ -858,6 +864,42 @@ END
 		fi) || true
 }
 
+python buildhistory_clone() {
+    import subprocess
+
+    histdir = d.getVar('BUILDHISTORY_DIR')
+    repo_uri = d.getVar("BUILDHISTORY_CLONE")
+    bh_branch = d.getVar("BUILDHISTORY_BRANCH")
+
+    if not bh_branch:
+        bb.note("BUILDHISTORY_BRANCH not set")
+        return
+
+    if not os.path.isdir(histdir):
+        cmd = ['git', 'clone', repo_uri, '-b', bh_branch, histdir]
+        ret = subprocess.call(cmd)
+        if ret != 0:
+            bb.error('Failed to clond %s!' % repo_uri)
+
+    if not os.path.isdir(histdir):
+       rerturn
+
+    if os.path.isdir(os.path.join(histdir, '.git')):
+        cmd =['git', '-C', histdir, 'config', '--get', 'remote.origin.url']
+        hasurl = subprocess.call(cmd, shell=True)
+        if hasurl:
+            cmd = ['git', '-C', histdir, 'remote', 'add', '-f', '-t', bh_branch, '-m', bh_branch, 'origin', repo_uri]
+            subprocess.call(cmd)
+
+            cmd = ['git', '-C', histdir, 'checkout', bh_branch]
+            ret = subprocess.call(cmd)
+            if ret != 0:
+                bb.error('Failed to checkout branch %s' % bh_branch)
+
+            cmd = ['git', '-C', histdir, 'branch', '--set-upstream-to=origin/%s' % bh_branch]
+            subprocess.call(cmd)
+}
+
 python buildhistory_eventhandler() {
     if (e.data.getVar('BUILDHISTORY_FEATURES') or "").strip():
         reset = e.data.getVar("BUILDHISTORY_RESET")
@@ -874,6 +916,11 @@ python buildhistory_eventhandler() {
                 for entry in entries:
                     os.rename(os.path.join(rootdir, entry),
                               os.path.join(olddir, entry))
+
+            if e.data.getVar("BUILDHISTORY_CLONE") != "":
+                localdata = bb.data.createCopy(e.data)
+                bb.build.exec_func("buildhistory_clone", d)
+
         elif isinstance(e, bb.event.BuildCompleted):
             if reset:
                 import shutil
