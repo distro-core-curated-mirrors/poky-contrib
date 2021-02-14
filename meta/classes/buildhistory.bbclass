@@ -1055,3 +1055,28 @@ def write_latest_ptest_result(d, histdir):
                     bb.error('Failed to run %s!' % cmd)
         finally:
             bb.utils.unlockfile(lock)
+
+
+do_cve_check[postfuncs] += "write_cve_result"
+do_cve_check[vardepsexclude] += "write_cve_result"
+
+python write_cve_result() {
+    write_latest_cve_result(d, d.getVar('BUILDHISTORY_DIR'))
+}
+
+def write_latest_cve_result(d, histdir):
+    import shutil
+
+    input_file = d.getVar("CVE_CHECK_LOG")
+    pkg = d.getVar("PN")
+
+    output_cve = os.path.join(histdir, 'cve', pkg)
+    if os.path.isfile(input_file):
+        try:
+            # Lock it avoid race issue
+            lock = bb.utils.lockfile(histdir + "/cve.lock")
+            bb.utils.mkdirhier(output_cve)
+            shutil.copyfile(input_file, output_cve+"/cve.log")
+
+        finally:
+            bb.utils.unlockfile(lock)
