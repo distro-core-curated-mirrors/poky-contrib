@@ -180,6 +180,8 @@ PACKAGECONFIG[vhost] = "--enable-vhost-net,--disable-vhost-net,,"
 PACKAGECONFIG[ust] = "--enable-trace-backend=ust,--enable-trace-backend=nop,lttng-ust,"
 PACKAGECONFIG[pie] = "--enable-pie,--disable-pie,,"
 PACKAGECONFIG[seccomp] = "--enable-seccomp,--disable-seccomp,libseccomp"
+PACKAGECONFIG[guest-agent] = "--enable-guest-agent,--disable-guest-agent,,"
+PACKAGECONFIG[ga-msi] = "--enable-guest-agent-msi,--disable-guest-agent-msi,,"
 
 INSANE_SKIP_${PN} = "arch"
 
