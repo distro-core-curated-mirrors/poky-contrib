@@ -149,9 +149,10 @@ class ReproducibleTests(OESelftestTestCase):
     package_classes = ['deb', 'ipk', 'rpm']
 
     # targets are the things we want to test the reproducibility of
-    targets = ['core-image-minimal', 'core-image-sato', 'core-image-full-cmdline', 'core-image-weston', 'world']
+    #targets = ['core-image-minimal', 'core-image-sato', 'core-image-full-cmdline', 'core-image-weston', 'world']
+    targets = ['perf']
     # sstate targets are things to pull from sstate to potentially cut build/debugging time
-    sstate_targets = []
+    sstate_targets = [ 'virtual/kernel' ]
     save_results = False
     if 'OEQA_DEBUGGING_SAVED_OUTPUT' in os.environ:
         save_results = os.environ['OEQA_DEBUGGING_SAVED_OUTPUT']
