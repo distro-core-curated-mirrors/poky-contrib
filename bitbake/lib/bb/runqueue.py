@@ -2458,6 +2458,11 @@ class RunQueueExecute:
                 if dep not in self.sq_buildable:
                     self.sq_buildable.add(dep)
 
+        # If we're failing the setscene task, we need to add it's dependencies to the unskippable list of tasks
+        if fail and task in self.sqdata.unskippable:
+            logger.debug2("Setscene task %s failed, adding deps %s to unskippable list" % (task, self.sqdata.sq_deps[task].difference(self.sqdata.unskippable)))
+            self.sqdata.unskippable |= self.sqdata.sq_deps[task]
+
         next = set([task])
         while next:
             new = set()
