@@ -2461,7 +2461,7 @@ class RunQueueExecute:
         # If we're failing the setscene task, we need to add it's dependencies to the unskippable list of tasks
         if fail and task in self.sqdata.unskippable:
             logger.debug2("Setscene task %s failed, adding deps %s to unskippable list" % (task, self.sqdata.sq_deps[task].difference(self.sqdata.unskippable)))
-            self.sqdata.unskippable |= self.sqdata.sq_deps[task]
+            #self.sqdata.unskippable |= self.sqdata.sq_deps[task]
 
         next = set([task])
         while next:
@@ -2692,9 +2692,12 @@ def build_scenequeue_data(sqdata, rqdata, rq, cooker, stampcache, sqrq):
             if len(rqdata.runtaskentries[tid].depends) == 0:
                 # These are tasks which have no setscene tasks in their chain, need to mark as directly buildable
                 sqrq.setbuildable(tid)
+            #bb.warn("Adding for %s: %s" % (tid, rqdata.runtaskentries[tid].depends.difference(sqdata.unskippable)))
             sqdata.unskippable |= rqdata.runtaskentries[tid].depends
             if sqdata.unskippable != orig:
                 new = True
+
+    #bb.warn("Unskippable: %s" % str(sqdata.unskippable))
 
     sqrq.tasks_scenequeue_done |= sqdata.unskippable.difference(rqdata.runq_setscene_tids)
 
