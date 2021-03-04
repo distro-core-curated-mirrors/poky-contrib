@@ -129,7 +129,7 @@ RRECOMMENDS_${PN}_class-nativesdk = ""
 RDEPENDS_${PN}_class-native = ""
 RDEPENDS_${PN}_class-nativesdk = ""
 
-RDEPENDS_${PN}_append += " util-linux-uuid"
+RDEPENDS_${PN}_append += " util-linux-libuuid"
 
 RPROVIDES_${PN}-dev = "${PN}-libblkid-dev ${PN}-libmount-dev ${PN}-libuuid-dev"
 
