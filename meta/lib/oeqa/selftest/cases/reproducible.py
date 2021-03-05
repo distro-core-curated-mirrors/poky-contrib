@@ -214,8 +214,8 @@ class ReproducibleTests(OESelftestTestCase):
         capture_vars = ['DEPLOY_DIR_' + c.upper() for c in self.package_classes]
 
         tmpdir = os.path.join(self.topdir, name, 'tmp')
-        if os.path.exists(tmpdir):
-            bb.utils.remove(tmpdir, recurse=True)
+        # if os.path.exists(tmpdir):
+        #     bb.utils.remove(tmpdir, recurse=True)
 
         config = textwrap.dedent('''\
             INHERIT += "reproducible_build"
@@ -259,6 +259,9 @@ class ReproducibleTests(OESelftestTestCase):
 
         # Build native utilities
         self.write_config('')
+        
+        print( "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD about to build nattive!" )
+
         bitbake("diffoscope-native diffutils-native jquery-native -c addto_recipe_sysroot")
         diffutils_sysroot = get_bb_var("RECIPE_SYSROOT_NATIVE", "diffutils-native")
         diffoscope_sysroot = get_bb_var("RECIPE_SYSROOT_NATIVE", "diffoscope-native")
@@ -280,6 +283,8 @@ class ReproducibleTests(OESelftestTestCase):
 
         fails = []
 
+        print( "blah" )
+        #sys.exit(1)
         for c in self.package_classes:
             with self.subTest(package_class=c):
                 package_class = 'package_' + c
@@ -318,7 +323,7 @@ class ReproducibleTests(OESelftestTestCase):
                 os.rmdir(save_dir)
             else:
                 self.logger.info('Running diffoscope')
-                package_dir = os.path.join(save_dir, 'packages')
+                package_dir = os.path.join(save_dir, 'packages') 
                 package_html_dir = os.path.join(package_dir, 'diff-html')
 
                 # Copy jquery to improve the diffoscope output usability
