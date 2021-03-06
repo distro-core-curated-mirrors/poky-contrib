@@ -2225,9 +2225,11 @@ class RunQueueExecute:
         notcovered |= self.sqdata.unskippable.difference(self.rqdata.runq_setscene_tids)
         notcovered.intersection_update(self.tasks_scenequeue_done)
 
-        covered = set(self.scenequeue_covered)
+        covered = set()
         for tid in self.scenequeue_covered:
-            covered |= self.sqdata.sq_covered_tasks[tid]
+            if self.sqdata.sq_revdeps[tid].issubset(self.scenequeue_covered):
+                covered.add(tid)
+                covered |= self.sqdata.sq_covered_tasks[tid]
         covered.difference_update(notcovered)
         covered.intersection_update(self.tasks_scenequeue_done)
 
