@@ -2227,7 +2227,7 @@ class RunQueueExecute:
 
         covered = set()
         for tid in self.scenequeue_covered:
-            if self.sqdata.sq_revdeps[tid].issubset(self.scenequeue_covered):
+            if self.sqdata.sq_revdeps[tid].issubset(self.tasks_scenequeue_done):
                 covered.add(tid)
                 covered |= self.sqdata.sq_covered_tasks[tid]
         covered.difference_update(notcovered)
