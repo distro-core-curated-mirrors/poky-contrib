@@ -2420,7 +2420,8 @@ class RunQueueExecute:
 
         if changed:
             self.holdoff_need_update = True
-
+            self.update_holdofftasks()
+            
     def scenequeue_updatecounters(self, task, fail=False):
 
         for dep in sorted(self.sqdata.sq_deps[task]):
@@ -2433,6 +2434,7 @@ class RunQueueExecute:
                     self.sq_buildable.add(dep)
 
         self.holdoff_need_update = True
+        self.update_holdofftasks()
 
     def sq_task_completeoutright(self, task):
         """
