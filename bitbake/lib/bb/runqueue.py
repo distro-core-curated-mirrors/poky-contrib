@@ -2250,29 +2250,6 @@ class RunQueueExecute:
         self.tasks_covered = covered
         self.tasks_notcovered = notcovered
 
-        for search in ['kernel-devsrc', 'linux-yocto_5.4', 'build-appliance-image', 'make-mod-scripts']:
-            for tid in covered:
-                if search in tid:
-                    logger.debug(1, "Task Covered %s" % tid)
-            for tid in notcovered:
-                if search in tid:
-                    logger.debug(1, "Task Notcovered %s" % tid)
-            for tid in self.scenequeue_covered:
-                if search in tid:
-                    logger.debug(1, "SQ Covered %s" % tid)
-            for tid in self.scenequeue_notcovered:
-                if search in tid:
-                    logger.debug(1, "SQ Notcovered %s" % tid)
-            for tid in self.runq_buildable:
-                if search in tid:
-                    logger.debug(1, "Buildable %s" % tid)
-            for tid in self.sqdata.sq_revdeps:
-                if search in tid:
-                    logger.debug(1, "Revdeps %s %s" % (tid, self.sqdata.sq_revdeps[tid]))
-            for tid in self.sqdata.sq_covered_tasks:
-                if search in tid:
-                    logger.debug(1, "Covered tasks %s %s" % (tid, self.sqdata.sq_covered_tasks[tid]))
-
         self.holdoff_tasks = set()
 
         for tid in self.rqdata.runq_setscene_tids:
