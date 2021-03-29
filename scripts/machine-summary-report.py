@@ -45,6 +45,12 @@ recipes = ("virtual/kernel",
            "u-boot",
            "optee-os")
 
+def is_old(version, upstream):
+    if "+git" in version:
+        # strip +git and see if this is a post-release snaoshot
+        version = version.replace("+git", "")
+    return version != upstream
+
 def write_html(context, output):
     import jinja2
 
@@ -54,6 +60,7 @@ def write_html(context, output):
         loader=jinja2.FileSystemLoader(template_dir),
         autoescape=jinja2.select_autoescape()
     )
+    env.tests["old"] = is_old
     template = env.get_template("machine-summary.html")
     output.write(template.render(context))
 
