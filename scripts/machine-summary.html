@@ -28,8 +28,8 @@
             {% for recipe in recipes|sort %}
               {% if recipe in data %}
                 {% set details = data[recipe] %}
-                {% set old = details.version != releases[recipe] %}
-                <td class="{% if old %}has-text-weight-bold{% endif %}">
+                {% set is_old = details.version is old(releases[recipe]) %}
+                <td class="{% if is_old %}has-text-weight-bold{% endif %}">
                 {{ details.recipe if details.recipe != recipe}}
                 {{ details.version }}
                 {{ "(patched)" if details.patched }}
