@@ -19,5 +19,11 @@ if [ $# -ne 1 ]; then
 fi
 
 uptime
-/usr/bin/time -f "%e" dd if=/dev/zero of=foo bs=1024 count=$1 conv=fsync
-top -b -n 1 | grep -v "0      0      0" | grep -E ' [RSD] ' | cut -c 46-47 | sort | uniq -c
+timeout 5 dd if=/dev/zero of=oe-time-dd-test.dat bs=1024 count=$1 conv=fsync
+if [ $? -ne 0 ] then
+	top -n -b1
+fi
+
+
+#/usr/bin/time -f "%e" dd if=/dev/zero of=foo bs=1024 count=$1 conv=fsync
+#top -b -n 1 | grep -v "0      0      0" | grep -E ' [RSD] ' | cut -c 46-47 | sort | uniq -c
