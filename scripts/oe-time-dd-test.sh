@@ -19,7 +19,7 @@ if [ $# -ne 1 ]; then
 fi
 
 uptime
-timeout 5 dd if=/dev/zero of=oe-time-dd-test.dat bs=1024 count=$1 conv=fsync
+timeout 0.5 dd if=/dev/zero of=oe-time-dd-test.dat bs=1024 count=$1 conv=fsync
 if [ $? -ne 0 ]; then
 	top -b -n1
 fi
