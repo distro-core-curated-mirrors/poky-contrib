@@ -10,10 +10,7 @@ inherit pypi setuptools3
 
 DEPENDS += "python3-babel-native"
 
-SRC_URI += "file://main.diff"
-
-SRC_URI[md5sum] = "64f278a1942f099970dcf90da25a7c60"
-SRC_URI[sha256sum] = "5f219d92dbad5e378f8f7549cdfe655b0d5fd2a778f9c83bee51b61c6ca40efb"
+SRC_URI[sha256sum] = "f5eeeeebfd64e53d32661752bb4c288589a3babbb96db3f391a4ec29f1359c70"
 
 BBCLASSEXTEND = "native nativesdk"
 
