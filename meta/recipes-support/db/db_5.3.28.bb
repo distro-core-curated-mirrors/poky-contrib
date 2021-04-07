@@ -66,8 +66,6 @@ PACKAGECONFIG ??= ""
 PACKAGECONFIG[verify] = "--enable-verify, --disable-verify"
 PACKAGECONFIG[dbm] = "--enable-dbm,--disable-dbm,"
 
-EXTRA_OEMAKE += "LIBTOOL='./${HOST_SYS}-libtool'"
-
 EXTRA_AUTORECONF += "--exclude=autoheader  -I ${S}/dist/aclocal -I${S}/dist/aclocal_java"
 AUTOTOOLS_SCRIPT_PATH = "${S}/dist"
 
