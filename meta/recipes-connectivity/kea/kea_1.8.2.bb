@@ -78,3 +78,7 @@ FILES_${PN}-staticdev += "${libdir}/kea/hooks/*.a ${libdir}/hooks/*.a"
 FILES_${PN} += "${libdir}/hooks/*.so"
 
 PARALLEL_MAKEINST = ""
+
+# generates paths too long to fit in argument list
+# https://dev.midipix.org/cross/slibtool/issue/41
+SLIBTOOL = ""
