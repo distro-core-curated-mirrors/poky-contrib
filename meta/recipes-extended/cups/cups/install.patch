@@ -1,0 +1,40 @@
+Upstream-Status: Backport
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+
+From 7a0b6007c7abcba4001019f383aad09da4199585 Mon Sep 17 00:00:00 2001
+From: orbea <orbea@riseup.net>
+Date: Mon, 7 Sep 2020 07:59:19 -0700
+Subject: [PATCH] backend/Makefile: Don't use libtool.
+
+This is not needed and causes problems with more strict
+implementations of libtool.
+
+With slibtool it fails.
+
+  rdlibtool: error: --mode must be specified.
+---
+ backend/Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/backend/Makefile b/backend/Makefile
+index e3ce49be6..01900fb8b 100644
+--- a/backend/Makefile
++++ b/backend/Makefile
+@@ -118,7 +118,7 @@ install-exec:	$(INSTALLXPC)
+ 	echo Installing backends in $(SERVERBIN)/backend
+ 	$(INSTALL_DIR) -m 755 $(SERVERBIN)/backend
+ 	for file in $(RBACKENDS); do \
+-		$(LIBTOOL) $(INSTALL_BIN) -m 700 $$file $(SERVERBIN)/backend; \
++		$(INSTALL_BIN) -m 700 $$file $(SERVERBIN)/backend; \
+ 	done
+ 	for file in $(UBACKENDS); do \
+ 		$(INSTALL_BIN) $$file $(SERVERBIN)/backend; \
+@@ -142,7 +142,7 @@ install-exec:	$(INSTALLXPC)
+ install-xpc:	ipp
+ 	echo Installing XPC backends in $(SERVERBIN)/apple
+ 	$(INSTALL_DIR) -m 755 $(SERVERBIN)/apple
+-	$(LIBTOOL) $(INSTALL_BIN) ipp $(SERVERBIN)/apple
++	$(INSTALL_BIN) ipp $(SERVERBIN)/apple
+ 	for file in $(IPPALIASES); do \
+ 		$(RM) $(SERVERBIN)/apple/$$file; \
+ 		$(LN) ipp $(SERVERBIN)/apple/$$file; \

@@ -16,6 +16,7 @@ SRC_URI = "https://github.com/apple/cups/releases/download/v${PV}/${BP}-source.t
            file://volatiles.99_cups \
            file://cups-volatiles.conf \
            file://CVE-2020-10001.patch \
+		   file://install.patch \
            "
 
 UPSTREAM_CHECK_URI = "https://github.com/apple/cups/releases"
