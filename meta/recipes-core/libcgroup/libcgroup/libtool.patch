@@ -1,0 +1,84 @@
+From 04d08672caacec6e62cb91a9b3a75c86098860a5 Mon Sep 17 00:00:00 2001
+From: Tom Hromatka <tom.hromatka@oracle.com>
+Date: Tue, 30 Mar 2021 08:01:31 -0600
+Subject: [PATCH] build: Remove .libs from Makefile.am files.
+
+Remove .libs from Makefile.am files.  Suggested by
+github user @orbea.
+
+Signed-off-by: Tom Hromatka <tom.hromatka@oracle.com>
+---
+ src/bindings/Makefile.am | 2 +-
+ src/daemon/Makefile.am   | 2 +-
+ src/pam/Makefile.am      | 2 +-
+ src/tools/Makefile.am    | 2 +-
+ tests/Makefile.am        | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/bindings/Makefile.am b/src/bindings/Makefile.am
+index caf388f..72e4a4c 100644
+--- a/src/bindings/Makefile.am
++++ b/src/bindings/Makefile.am
+@@ -5,7 +5,7 @@ lib_LTLIBRARIES = _libcgroup.la
+ _libcgroup_la_SOURCES = libcgroup.c
+ _libcgroup_la_LDFLAGS = $(shell python-config --ldflags) -module -avoid-version
+ _libcgroup_la_CFLAGS = $(shell python-config --cflags)
+-_libcgroup_la_LIBADD = $(top_builddir)/src/.libs/libcgroup.la
++_libcgroup_la_LIBADD = $(top_builddir)/src/libcgroup.la
+ SWIG=swig
+ 
+ 
+diff --git a/src/daemon/Makefile.am b/src/daemon/Makefile.am
+index abbbe30..3e0647e 100644
+--- a/src/daemon/Makefile.am
++++ b/src/daemon/Makefile.am
+@@ -4,7 +4,7 @@ if WITH_DAEMON
+ 
+ sbin_PROGRAMS = cgrulesengd
+ cgrulesengd_SOURCES = cgrulesengd.c cgrulesengd.h ../tools/tools-common.h ../tools/tools-common.c
+-cgrulesengd_LDADD = $(top_builddir)/src/.libs/libcgroup.la -lrt
++cgrulesengd_LDADD = $(top_builddir)/src/libcgroup.la -lrt
+ cgrulesengd_LDFLAGS = -L$(top_builddir)/src/.libs
+ 
+ endif
+diff --git a/src/pam/Makefile.am b/src/pam/Makefile.am
+index 5566cd7..bd5a91d 100644
+--- a/src/pam/Makefile.am
++++ b/src/pam/Makefile.am
+@@ -5,6 +5,6 @@ if WITH_PAM
+ pamlib_LTLIBRARIES = pam_cgroup.la
+ pam_cgroup_la_SOURCES = pam_cgroup.c
+ pam_cgroup_la_LDFLAGS = -module
+-pam_cgroup_la_LIBADD = $(top_builddir)/src/.libs/libcgroup.la -lpam
++pam_cgroup_la_LIBADD = $(top_builddir)/src/libcgroup.la -lpam
+ 
+ endif
+diff --git a/src/tools/Makefile.am b/src/tools/Makefile.am
+index 2f3534c..e4478d7 100644
+--- a/src/tools/Makefile.am
++++ b/src/tools/Makefile.am
+@@ -1,7 +1,7 @@
+ @CODE_COVERAGE_RULES@
+ 
+ INCLUDES = -I$(top_srcdir)/src -I$(top_srcdir)/include
+-LDADD = $(top_builddir)/src/.libs/libcgroup.la
++LDADD = $(top_builddir)/src/libcgroup.la
+ 
+ if WITH_TOOLS
+ 
+diff --git a/tests/Makefile.am b/tests/Makefile.am
+index 1528af2..74f49cd 100644
+--- a/tests/Makefile.am
++++ b/tests/Makefile.am
+@@ -1,7 +1,7 @@
+ SUBDIRS = ftests gunit tools
+ 
+ INCLUDES = -I$(top_srcdir)/include
+-LDADD = $(top_builddir)/src/.libs/libcgroup.la
++LDADD = $(top_builddir)/src/libcgroup.la
+ 
+ # compile the tests, but do not install them
+ noinst_PROGRAMS = libcgrouptest01 libcg_ba setuid walk_test read_stats walk_task get_controller get_mount_point proctest get_all_controller get_variable_names test_named_hierarchy get_procs wrapper_test logger
+-- 
+2.25.1
+
