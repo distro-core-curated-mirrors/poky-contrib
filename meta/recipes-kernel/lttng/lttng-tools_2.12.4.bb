@@ -175,3 +175,9 @@ do_install_ptest () {
         esac
     done
 }
+
+# /yocto/ross/build/tmp/work/neoversen1-poky-linux/lttng-tools/2.12.3-r0/recipe-sysroot-native/usr/bin/aarch64-poky-linux/../../libexec/aarch64-poky-linux/gcc/aarch64-poky-linux/10.2.0/ld: final link failed: bad value
+# collect2: error: ld returned 1 exit status
+# rlibtool: exec error upon slbt_exec_link_create_executable(), line 1742: (see child process error messages).
+# rlibtool: < returned to > slbt_exec_link(), line 2062.
+SLIBTOOL = ""
