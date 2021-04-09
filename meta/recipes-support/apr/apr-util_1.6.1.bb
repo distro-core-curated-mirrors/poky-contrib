@@ -96,3 +96,7 @@ do_install_ptest() {
 	  cp -r ${B}/test/$i $t; \
 	done
 }
+
+#| rlibtool: error logged in slbt_lconf_open(), line 597: flow error: unexpected condition or other.
+#| rlibtool: < returned to > slbt_get_lconf_flags(), line 640.
+SLIBTOOL = ""
