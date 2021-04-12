@@ -13,14 +13,17 @@ usage() {
         echo "Usage: $0 <count>"
 }
 
+TIMEOUT=0.5
+
 if [ $# -ne 1 ]; then
         usage
         exit 1
 fi
 
 uptime
-timeout 0.5 dd if=/dev/zero of=oe-time-dd-test.dat bs=1024 count=$1 conv=fsync
+timeout ${TIMEOUT} dd if=/dev/zero of=oe-time-dd-test.dat bs=1024 count=$1 conv=fsync
 if [ $? -ne 0 ]; then
+	echo "Timeout used: ${TIMEOUT}"
 	top -b -n1
 fi
 
