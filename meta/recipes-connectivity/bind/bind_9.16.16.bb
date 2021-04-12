@@ -129,3 +129,7 @@ FILES_python3-bind = "${sbindir}/dnssec-coverage ${sbindir}/dnssec-checkds \
 
 RDEPENDS_${PN}-dev = ""
 RDEPENDS_python3-bind = "python3-core python3-ply"
+
+# Fixed in https://gitlab.isc.org/isc-projects/bind9/-/commit/37b9511ce1dd9ba66a6620c5ff617016eb81188f
+# 9.17.7 onwards
+SLIBTOOL = ""
