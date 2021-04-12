@@ -13,7 +13,7 @@ usage() {
         echo "Usage: $0 <count>"
 }
 
-TIMEOUT=0.1
+TIMEOUT=0.01
 
 if [ $# -ne 1 ]; then
         usage
