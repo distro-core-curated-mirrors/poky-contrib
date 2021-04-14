@@ -1,0 +1,36 @@
+Add an option to install the unit tests.
+
+Upstream-Status: Pending
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+
+diff --git a/Makefile.am b/Makefile.am
+index f98243f72..7e5826d11 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -563,6 +563,11 @@ endif
+ TESTS = $(unit_tests)
+ AM_TESTS_ENVIRONMENT = MALLOC_CHECK_=3 MALLOC_PERTURB_=69
+ 
++if INSTALL_UNIT_TESTS
++unittestdir = $(pkglibdir)/unit-tests
++unittest_PROGRAMS = $(unit_tests)
++endif
++
+ if DBUS_RUN_SESSION
+ AM_TESTS_ENVIRONMENT += dbus-run-session --
+ endif
+diff --git a/configure.ac b/configure.ac
+index dbd98c9ad..518c49545 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -156,6 +156,10 @@ AC_ARG_ENABLE(test, AC_HELP_STRING([--enable-test],
+ 		[enable test/example scripts]), [enable_test=${enableval}])
+ AM_CONDITIONAL(TEST, test "${enable_test}" = "yes")
+ 
++AC_ARG_ENABLE(install-unit-tests, AC_HELP_STRING([--enable-install-unit-tests],
++		[install unit tests]), [enable_install_unit_tests=${enableval}])
++AM_CONDITIONAL(INSTALL_UNIT_TESTS, test "${enable_install_unit_tests}" = "yes")
++
+ AC_ARG_ENABLE(nfc, AC_HELP_STRING([--enable-nfc],
+ 		[enable NFC paring]), [enable_nfc=${enableval}])
+ AM_CONDITIONAL(NFC, test "${enable_nfc}" = "yes")
