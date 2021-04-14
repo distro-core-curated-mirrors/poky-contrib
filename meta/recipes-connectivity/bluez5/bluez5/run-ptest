@@ -1,6 +1,6 @@
 #! /bin/sh
 
-cd unit
+cd /usr/lib/bluez/unit-tests
 
 failed=0
 all=0
@@ -28,4 +28,3 @@ if [ "$failed" -eq 0 ] ; then
 else
   echo "$failed of $all tests failed"
 fi
-

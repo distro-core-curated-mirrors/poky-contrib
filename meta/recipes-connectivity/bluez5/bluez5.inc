@@ -23,6 +23,7 @@ PACKAGECONFIG ??= "obex-profiles \
     tools \
     deprecated \
     udev \
+    ${@bb.utils.contains('PTEST_ENABLED', '1', 'unittests', '', d)} \
 "
 PACKAGECONFIG[obex-profiles] = "--enable-obex,--disable-obex,libical"
 PACKAGECONFIG[readline] = "--enable-client,--disable-client,readline,"
@@ -45,12 +46,13 @@ PACKAGECONFIG[deprecated] = "--enable-deprecated,--disable-deprecated"
 PACKAGECONFIG[mesh] = "--enable-mesh --enable-external-ell,--disable-mesh, json-c ell"
 PACKAGECONFIG[btpclient] = "--enable-btpclient --enable-external-ell,--disable-btpclient, ell"
 PACKAGECONFIG[udev] = "--enable-udev,--disable-udev,udev"
+PACKAGECONFIG[unittests] = "--enable-install-unit-tests,--disable-install-unit-tests"
 
 SRC_URI = "${KERNELORG_MIRROR}/linux/bluetooth/bluez-${PV}.tar.xz \
            file://init \
            file://run-ptest \
            ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', '', 'file://0001-Allow-using-obexd-without-systemd-in-the-user-sessio.patch', d)} \
-           file://0001-tests-add-a-target-for-building-tests-without-runnin.patch \
+           file://install-tests.patch \
            file://0001-test-gatt-Fix-hung-issue.patch \
            file://0001-audio-Rename-pause-funciton-to-avoid-shadowing-glibc.patch \
            file://0001-Makefile.am-add-missing-mkdir-for-ell-shared.patch \
@@ -144,13 +146,5 @@ SYSTEMD_SERVICE_${PN} = "${@bb.utils.contains('PACKAGECONFIG', 'systemd', 'bluet
 INITSCRIPT_PACKAGES = "${PN}"
 INITSCRIPT_NAME_${PN} = "bluetooth"
 
-do_compile_ptest() {
-	oe_runmake buildtests
-}
-
-do_install_ptest() {
-	cp -r ${B}/unit/ ${D}${PTEST_PATH}
-	rm -f ${D}${PTEST_PATH}/unit/*.o
-}
-
+FILES_${PN}-ptest += "${libdir}/bluez/unit-tests"
 RDEPENDS_${PN}-ptest_append_libc-glibc = " glibc-gconv-utf-16"
