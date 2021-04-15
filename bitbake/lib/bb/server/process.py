@@ -66,7 +66,7 @@ class ProcessServer():
         self.sockname = sockname
 
         self.server_timeout = server_timeout
-        self.timeout = self.server_timeout
+        self.timeout = float(self.server_timeout or "0")
         self.xmlrpcinterface = xmlrpcinterface
 
     def register_idle_function(self, function, data):
