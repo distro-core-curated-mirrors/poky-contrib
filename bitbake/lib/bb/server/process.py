@@ -191,7 +191,7 @@ class ProcessServer():
                 except (EOFError, OSError):
                     disconnect_client(self, fds)
 
-            if not self.timeout == -1.0 and not self.haveui and self.timeout and \
+            if not self.timeout < 0 and not self.haveui and self.timeout and \
                     (self.lastui + self.timeout) < time.time():
                 serverlog("Server timeout, exiting.")
                 self.quit = True
