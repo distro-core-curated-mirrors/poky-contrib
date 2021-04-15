@@ -243,7 +243,7 @@ def create_bitbake_parser():
                       help="The name/address for the bitbake xmlrpc server to bind to.")
 
     parser.add_option("-T", "--idle-timeout", type=float, dest="server_timeout",
-                      default=os.getenv("BB_SERVER_TIMEOUT", "0"),
+                      default=os.getenv("BB_SERVER_TIMEOUT"),
                       help="Set timeout to unload bitbake server due to inactivity, "
                            "set to -1 means no unload, "
                            "default: Environment variable BB_SERVER_TIMEOUT.")
