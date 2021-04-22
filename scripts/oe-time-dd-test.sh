@@ -13,7 +13,7 @@ usage() {
         echo "Usage: $0 <count>"
 }
 
-TIMEOUT=0.01
+TIMEOUT=15
 
 if [ $# -ne 1 ]; then
         usage
@@ -26,7 +26,3 @@ if [ $? -ne 0 ]; then
 	echo "Timeout used: ${TIMEOUT}"
 	top -c -b -n1 -w 512
 fi
-
-
-#/usr/bin/time -f "%e" dd if=/dev/zero of=foo bs=1024 count=$1 conv=fsync
-#top -b -n 1 | grep -v "0      0      0" | grep -E ' [RSD] ' | cut -c 46-47 | sort | uniq -c
