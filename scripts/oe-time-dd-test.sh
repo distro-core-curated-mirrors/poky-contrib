@@ -27,4 +27,3 @@ if [ $? -ne 0 ]; then
 	top -c -b -n1 -w 512
 	tail -30 tmp/log/cooker/*/console-latest.log
 fi
-tail -30 tmp/log/cooker/*/console-latest.log
