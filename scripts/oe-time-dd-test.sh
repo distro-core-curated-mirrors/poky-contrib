@@ -13,7 +13,7 @@ usage() {
         echo "Usage: $0 <count>"
 }
 
-TIMEOUT=15
+TIMEOUT=0.1
 
 if [ $# -ne 1 ]; then
         usage
@@ -28,3 +28,5 @@ if [ $? -ne 0 ]; then
 	pwd
 	ls
 fi
+pwd
+ls
