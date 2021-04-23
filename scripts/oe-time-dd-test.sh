@@ -24,6 +24,7 @@ uptime
 tmpdir=${TMPDIR}
 echo -n "TMPDIR: "
 echo $tmpdir
+env | grep TMPDIR
 
 timeout ${TIMEOUT} dd if=/dev/zero of=oe-time-dd-test.dat bs=1024 count=$1 conv=fsync
 if [ $? -ne 0 ]; then
