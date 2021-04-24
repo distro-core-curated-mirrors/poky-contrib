@@ -15,10 +15,14 @@ usage() {
 
 TIMEOUT=0.01
 
-if [ $# -ne 1 ]; then
-        usage
-        exit 1
-fi
+#if [ $# -ne 1 ]; then
+#        usage
+#        exit 1
+#fi
+
+echo "Second param"
+echo $2
+
 
 uptime
 tmpdir=${TMPDIR}
