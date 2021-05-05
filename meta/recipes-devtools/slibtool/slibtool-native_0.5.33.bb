@@ -1,12 +1,13 @@
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://COPYING.SLIBTOOL;md5=1293820cb7ae16ca38db503f4b1d7693 \
-                    file://COPYING.SOFORT;md5=5405af46e9363fdc2f02d40b639033a1"
+                    file://COPYING.SOFORT;md5=10ec882898f4f7acad2c38c2570e560c"
 
-SRC_URI = "git://dev.midipix.org/cross/slibtool.git;protocol=https;branch=main \
-           file://soname.patch"
+SRC_URI = "git://dev.midipix.org/cross/slibtool.git;protocol=https;branch=main"
 
-SRCREV = "9c5a301fe8f9f29010a625ac5e7f32d789af1a34"
+SRCREV = "d55a465814bb3d7ec429f85b36c26d5862ba7e48"
 PV .= "+git${SRCPV}"
+
+DEPENDS = "m4-native"
 
 inherit native
 
