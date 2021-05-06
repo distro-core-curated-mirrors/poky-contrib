@@ -1,4 +1,4 @@
-SLIBTOOL = "rlibtool"
+SLIBTOOL = "rlibtool --heuristics=${HOST_SYS}-libtool"
 
 def autotools_dep_prepend(d):
     if d.getVar('INHIBIT_AUTOTOOLS_DEPS'):
@@ -89,7 +89,7 @@ CONFIGURE_SCRIPT ?= "${AUTOTOOLS_SCRIPT_PATH}/configure"
 
 AUTOTOOLS_AUXDIR ?= "${AUTOTOOLS_SCRIPT_PATH}"
 
-EXTRA_OEMAKE_append = "${@d.getVar('SLIBTOOL') and ' LIBTOOL="${SLIBTOOL} --heuristics=${HOST_SYS}-libtool"' or ''}"
+EXTRA_OEMAKE_append = "${@d.getVar('SLIBTOOL') and ' LIBTOOL="${SLIBTOOL}"' or ''}"
 
 oe_runconf () {
 	# Use relative path to avoid buildpaths in files
