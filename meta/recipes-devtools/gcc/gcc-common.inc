@@ -111,3 +111,5 @@ target_prefix ?= "${prefix}"
 # The real WORKDIR location isn't a dependency for the shared workdir.
 src_patches[vardepsexclude] = "WORKDIR"
 should_apply[vardepsexclude] += "PN"
+
+SLIBTOOL = "rlibtool"
