@@ -4,8 +4,8 @@ LIC_FILES_CHKSUM = "file://COPYING.SLIBTOOL;md5=1293820cb7ae16ca38db503f4b1d7693
 
 SRC_URI = "git://dev.midipix.org/cross/slibtool.git;protocol=https;branch=main"
 
-SRCREV = "adb290e13315a7f5bd8f939ed471a07727e23e19"
-PV .= "+git${SRCPV}"
+SRCREV = "dea897bf4775c9de9b7b64655734dd33dc42fbd5"
+#PV .= "+git${SRCPV}"
 
 DEPENDS = "m4-native"
 
