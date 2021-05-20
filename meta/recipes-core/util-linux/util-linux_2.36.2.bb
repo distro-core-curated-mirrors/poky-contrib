@@ -2,6 +2,7 @@ require util-linux.inc
 
 #gtk-doc is not enabled as it requires xmlto which requires util-linux
 inherit autotools gettext manpages pkgconfig systemd update-alternatives python3-dir bash-completion ptest
+PTEST_ENABLED = "1"
 DEPENDS = "libcap-ng ncurses virtual/crypt zlib util-linux-libuuid"
 
 PACKAGES =+ "${PN}-swaponoff"
@@ -11,6 +12,7 @@ python util_linux_binpackages () {
     def pkg_hook(f, pkg, file_regex, output_pattern, modulename):
         pn = d.getVar('PN')
         d.appendVar('RRECOMMENDS_%s' % pn, ' %s' % pkg)
+        d.appendVar('RRECOMMENDS_%s-ptest' % pn, ' %s' % pkg)
 
         if d.getVar('ALTERNATIVE_' + pkg):
             return
