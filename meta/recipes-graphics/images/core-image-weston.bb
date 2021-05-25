@@ -7,6 +7,7 @@ LICENSE = "MIT"
 inherit core-image
 
 CORE_IMAGE_BASE_INSTALL += "gtk+3-demo"
+CORE_IMAGE_BASE_INSTALL += "maynard"
 CORE_IMAGE_BASE_INSTALL += "${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'weston-xwayland matchbox-terminal', '', d)}"
 
 QB_MEM = "-m 512"
