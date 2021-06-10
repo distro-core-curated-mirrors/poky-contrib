@@ -1,0 +1,45 @@
+#! /bin/sh
+#
+# Run python from bitbake's virtual environment, preparing the environment if
+# it is missing or has changed
+#
+# Copyright (C) 2021 Joshua Watt <JPEWhacker@gmail.com>
+#
+# SPDX-License-Identifier: GPL-2.0-only
+
+BITBAKEDIR="$(dirname "$0")/../"
+
+if [ -z "$BITBAKE_VENV" ]; then
+    BITBAKE_VENV="$BITBAKEDIR/venv"
+fi
+
+error() {
+    echo "Unable to create bitbake virtual environment"
+    exit 1
+}
+
+CHECKSUM_FILES="\
+    requirements.txt \
+    bin/bbpython \
+    "
+
+if [ -z "$VIRTUAL_ENV" ]; then
+    REV="$(cd $BITBAKEDIR; sha1sum $CHECKSUM_FILES)"
+
+    if [ ! -e $BITBAKE_VENV/rev.txt ] || [ "$(cat $BITBAKE_VENV/rev.txt)" != "$REV" ]; then
+        (
+        cd $BITBAKEDIR
+
+        /usr/bin/env python3 -m venv $BITBAKE_VENV || error
+        . $BITBAKE_VENV/bin/activate
+        pip install --quiet pip==21.1.2 || error
+        pip install --quiet -r requirements.txt || error
+
+        sha1sum $CHECKSUM_FILES > $BITBAKE_VENV/rev.txt
+        ) || exit $?
+    fi
+
+    . $BITBAKE_VENV/bin/activate
+fi
+
+exec python "$@"

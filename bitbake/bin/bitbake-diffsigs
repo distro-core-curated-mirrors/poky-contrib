@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env bbpython
 
 # bitbake-diffsigs / bitbake-dumpsig
 # BitBake task signature data dump and comparison utility
