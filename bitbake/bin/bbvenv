@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+#
+# Copyright (C) 2021 Joshua Watt <JPEWhacker@gmail.com>
+#
+# SPDX-License-Identifier: GPL-2.0-only
+#
+
+import argparse
+import contextlib
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import textwrap
+
+CHECKSUM_FILES = [
+    "bin/bbpython",
+    "bin/bbvenv",
+    "requirements.txt",
+]
+
+BITBAKEDIR = os.path.dirname(os.path.dirname(__file__))
+
+
+@contextlib.contextmanager
+def chdir(d):
+    cwd = os.getcwd()
+    os.chdir(d)
+    yield
+    os.chdir(cwd)
+
+
+def get_hashes():
+    hashes = {c: hashlib.sha1() for c in CHECKSUM_FILES}
+    for fname, h in hashes.items():
+        with chdir(BITBAKEDIR), open(fname, "rb") as f:
+            while True:
+                chunk = f.read(4096)
+                if not chunk:
+                    break
+                h.update(chunk)
+
+    return {c: h.hexdigest() for c, h in hashes.items()}
+
+
+@contextlib.contextmanager
+def chdir(d):
+    cwd = os.getcwd()
+    os.chdir(d)
+    yield
+    os.chdir(cwd)
+
+
+def main():
+    def update(args):
+        hashes = get_hashes()
+
+        bitbake_venv_dir = args.venv or os.environ.get("BITBAKE_VENV", None)
+        if not bitbake_venv_dir:
+            print("No virtual environment directory specified")
+            return 1
+
+        hashes_file_name = os.path.join(bitbake_venv_dir, "hashes.json")
+        if not args.force:
+            try:
+                with open(hashes_file_name, "r") as f:
+                    venv_hashes = json.load(f)
+
+                if venv_hashes == hashes:
+                    if args.verbose >= 1:
+                        print("Virtual environment already up to date. Nothing to do")
+                    return 0
+
+            except (FileNotFoundError, json.JSONDecodeError) as e:
+                pass
+
+        try:
+            cmd = ["/usr/bin/env", "python3", "-m", "venv", bitbake_venv_dir]
+            if args.force:
+                cmd.append("--clear")
+            subprocess.run(cmd, check=True)
+            subprocess.run(
+                textwrap.dedent(
+                    """\
+                    . {bitbake_venv_dir}/bin/activate
+                    set -e
+                    pip install {quiet} pip==21.1.2
+                    pip install {quiet} -r {bitbakedir}/requirements.txt
+                    """
+                ).format(
+                    bitbake_venv_dir=bitbake_venv_dir,
+                    bitbakedir=BITBAKEDIR,
+                    quiet="--quiet" if args.verbose < 1 else "",
+                ),
+                shell=True,
+                check=True,
+            )
+        except subprocess.CalledProcessError:
+            return 1
+
+        with open(hashes_file_name, "w") as f:
+            json.dump(hashes, f, sort_keys=True)
+
+    def pack(args):
+        cmd = ["bbpython", "-m", "venv_pack", "--output", args.output]
+        os.execvp(cmd[0], cmd)
+        return 1
+
+    parser = argparse.ArgumentParser(description="Bitbake Virtual Environment Control")
+
+    subparsers = parser.add_subparsers()
+
+    update_parser = subparsers.add_parser("update", help="Update virtual environment")
+    update_parser.add_argument(
+        "--force",
+        "-f",
+        action="store_true",
+        help="Force environment to be cleaned and re-built",
+    )
+    update_parser.add_argument(
+        "--verbose",
+        "-v",
+        action="count",
+        default=0,
+        help="Increase verbosity",
+    )
+    update_parser.add_argument(
+        "--venv",
+        help="Path to virtual environment. If unspecified, the environment variable $BITBAKE_VENV will be used",
+    )
+    update_parser.set_defaults(func=update)
+
+    pack_parser = subparsers.add_parser(
+        "pack", help="Pack virtual environment for offline builds"
+    )
+    pack_parser.add_argument("output", help="Output file path")
+    pack_parser.set_defaults(func=pack)
+
+    args = parser.parse_args()
+
+    if not getattr(args, "func", None):
+        print("Error: A subcommand is required")
+        parser.print_help()
+        return 1
+
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
