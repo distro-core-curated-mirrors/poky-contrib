@@ -82,6 +82,10 @@ BUILDDIR=$(readlink -f "$BUILDDIR")
 BBPATH=$BUILDDIR
 
 export BBPATH
+if [ -z "$BITBAKE_VENV" ]; then
+    BITBAKE_VENV="$BUILDDIR/venv"
+fi
+export BITBAKE_VENV
 
 if [ ! -d "$BITBAKEDIR" ]; then
     echo >&2 "Error: The bitbake directory ($BITBAKEDIR) does not exist!  Please ensure a copy of bitbake exists at this location or specify an alternative path on the command line"
@@ -105,6 +109,9 @@ unset BITBAKEDIR newpath
 # Used by the runqemu script
 export BUILDDIR
 export PATH
+
+# Create/update the bitbake virtual environment now
+bbvenv update || return 1
 
 BB_ENV_EXTRAWHITE_OE="MACHINE DISTRO TCMODE TCLIBC HTTP_PROXY http_proxy \
 HTTPS_PROXY https_proxy FTP_PROXY ftp_proxy FTPS_PROXY ftps_proxy ALL_PROXY \
