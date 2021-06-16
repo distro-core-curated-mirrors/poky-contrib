@@ -142,6 +142,16 @@ PN = "bc"
         d.setVar("OVERRIDES", "bc-dev")
         self.assertEqual(d.getVar("DESCRIPTION"), "C D")
 
+    overrideimmediate = """
+OVERRIDES = "machine"
+DESCRIPTION_machine = "B"
+DESCRIPTION := "A"
+"""
+
+    def test_parse_overrideimmediate(self):
+        f = self.parsehelper(self.overrideimmediate)
+        d = bb.parse.handle(f.name, self.d)['']
+        self.assertEqual(d.getVar("DESCRIPTION"), "B")
 
     classextend = """
 VAR_var:override1 = "B"
