@@ -13,28 +13,19 @@ usage() {
         echo "Usage: $0 <count>"
 }
 
-TIMEOUT=0.01
+TIMEOUT=1
 
-#if [ $# -ne 1 ]; then
-#        usage
-#        exit 1
-#fi
-
-echo "Second param"
-echo $2
-
+if [ $# -ne 1 ]; then
+        usage
+        exit 1
+fi
 
 uptime
-tmpdir=${TMPDIR}
-echo "TMPDIR: "
-echo ${tmpdir}
-env | grep TMPDIR
-var=`bitbake -e | grep "^TMPDIR"`
-echo "var:"
-echo ${var}
-#timeout ${TIMEOUT} dd if=/dev/zero of=oe-time-dd-test.dat bs=1024 count=$1 conv=fsync
-#if [ $? -ne 0 ]; then
-#	echo "Timeout used: ${TIMEOUT}"
-#	top -c -b -n1 -w 512
-#	tail -30 tmp/log/cooker/*/console-latest.log
-#fi
+timeout ${TIMEOUT} dd if=/dev/zero of=oe-time-dd-test.dat bs=1024 count=$1 conv=fsync
+if [ $? -ne 0 ]; then
+	echo "Timeout used: ${TIMEOUT}"
+	echo "start: top output"
+	top -c -b -n1 -w 512
+	echo "end: top output"
+	tail -30 tmp*/log/cooker/*/console-latest.log
+fi
