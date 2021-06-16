@@ -13,7 +13,7 @@ usage() {
         echo "Usage: $0 <count>"
 }
 
-TIMEOUT=15
+TIMEOUT=0.1
 
 if [ $# -ne 1 ]; then
         usage
@@ -24,6 +24,8 @@ uptime
 timeout ${TIMEOUT} dd if=/dev/zero of=oe-time-dd-test.dat bs=1024 count=$1 conv=fsync
 if [ $? -ne 0 ]; then
 	echo "Timeout used: ${TIMEOUT}"
+	echo "start: top output"
 	top -c -b -n1 -w 512
+	echo "end: top output"
 	tail -30 tmp*/log/cooker/*/console-latest.log
 fi
