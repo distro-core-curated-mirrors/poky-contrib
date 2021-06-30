@@ -899,3 +899,9 @@ def should_apply(parm, d):
 
     return True, None
 
+def list_submodules(directory):
+    import subprocess
+    # Output is lines like this:
+    # 160000 666c3280cc11dc433c303d79a83d4ffbdd12cc8d 0[\t]BaseTools/Source/C/BrotliCompress/brotli
+    lines = subprocess.check_output(["git", "submodule--helper", "list"], cwd=directory, universal_newlines=True).splitlines()
+    return [line.split("\t")[1] for line in lines]
