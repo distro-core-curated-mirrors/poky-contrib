@@ -59,6 +59,7 @@ PTESTS_FAST = "\
     slang-ptest \
     wayland-ptest \
     zlib-ptest \
+    util-linux-ptest \
 "
 PTESTS_FAST_remove_mips64 = "qemu-ptest"
 PTESTS_PROBLEMS_append_mips64 = "qemu-ptest"
