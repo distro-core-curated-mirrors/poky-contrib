@@ -34,6 +34,7 @@ RDEPENDS:packagegroup-core-full-cmdline-utils = "\
     bc \
     coreutils \
     cpio \
+    curl \
     e2fsprogs \
     ed \
     file \
