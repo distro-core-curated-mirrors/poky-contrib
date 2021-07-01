@@ -79,7 +79,18 @@ python patch_task_postfunc() {
         if stdout:
             useroptions = []
             oe.patch.GitApplyTree.gitCommandUserOptions(useroptions, d=d)
-            bb.process.run('git add .; git %s commit -a -m "Committing changes from %s\n\n%s"' % (' '.join(useroptions), func, oe.patch.GitApplyTree.ignore_commit_prefix + ' - from %s' % func), cwd=srcsubdir)
+            modules = oe.patch.list_submodules(srcsubdir)
+            # Look though the status output for modified sbumodules and commit those separately
+            if modules:
+                for line in stdout.splitlines():
+                    status, path = line[0:2], line[3:]
+                    if path in modules:
+                        bb.process.run('git add .; git %s commit -a -m "Committing changes from %s\n\n%s"' % (' '.join(useroptions), func, oe.patch.GitApplyTree.ignore_commit_prefix + ' - from %s' % func), cwd=os.path.join(srcsubdir, path))
+
+            # As we might have committed changes, re-run this
+            stdout, _ = bb.process.run('git status --porcelain .', cwd=srcsubdir)
+            if stdout:
+                bb.process.run('git add .; git %s commit -a -m "Committing changes from %s\n\n%s"' % (' '.join(useroptions), func, oe.patch.GitApplyTree.ignore_commit_prefix + ' - from %s' % func), cwd=srcsubdir)
 }
 
 def src_patches(d, all=False, expand=True):
