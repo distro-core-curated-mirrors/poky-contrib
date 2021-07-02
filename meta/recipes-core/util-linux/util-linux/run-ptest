@@ -12,6 +12,7 @@ fi
 current_path=$(readlink -f $0)
 export bindir=$(dirname $current_path)
 export PATH=$bindir/bin:$PATH
+echo $PATH
 
 ./tests/run.sh --use-system-commands --parsable --show-diff | sed -u '{
       s/^\(.*\):\(.*\) \.\.\. OK$/PASS: \1:\2/                              
