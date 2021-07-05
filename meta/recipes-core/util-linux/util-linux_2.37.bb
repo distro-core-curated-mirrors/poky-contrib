@@ -280,5 +280,10 @@ do_install_ptest() {
     cp -pR ${S}/tests/ts ${D}${PTEST_PATH}/tests/
     cp ${WORKDIR}/build/config.h ${D}${PTEST_PATH}
 
-    sed -i 's|@base_sbindir@|${base_sbindir}|g'       ${D}${PTEST_PATH}/run-ptest
+    sed -i 's|@base_sbindir@|${base_sbindir}|g' ${D}${PTEST_PATH}/run-ptest
+
+    # chfn needs PAM
+    if ! ${@bb.utils.contains('PACKAGECONFIG', 'pam', 'true', 'false', d)}; then
+        rm -rf ${D}${PTEST_PATH}/tests/ts/chfn
+    fi
 }
