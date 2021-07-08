@@ -9,6 +9,7 @@
 # the build system puts stress on the filesystem io and
 # log all the processes.
 
+# useless cooment 
 usage() {
         echo "Usage: $0 <count>"
 }
