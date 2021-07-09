@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # oe-time-dd-test records how much time it takes to 
 # write <count> number of kilobytes to the filesystem.
