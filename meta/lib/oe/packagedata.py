@@ -57,6 +57,15 @@ def read_subpkgdata_dict(pkg, d):
         ret[newvar] = subd[var]
     return ret
 
+def read_subpkgdata_extended(pkg, d):
+    import json
+    fn = d.expand("${PKGDATA_DIR}/runtime/%s.json" % pkg)
+    try:
+        with open(fn, "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return None
+
 def _pkgmap(d):
     """Return a dictionary mapping package to recipe name."""
 
