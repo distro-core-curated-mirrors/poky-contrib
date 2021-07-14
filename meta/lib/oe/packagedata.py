@@ -59,9 +59,12 @@ def read_subpkgdata_dict(pkg, d):
 
 def read_subpkgdata_extended(pkg, d):
     import json
-    fn = d.expand("${PKGDATA_DIR}/runtime/%s.json" % pkg)
+    import bb.compress.zstd
+
+    fn = d.expand("${PKGDATA_DIR}/runtime/%s.json.zstd" % pkg)
     try:
-        with open(fn, "r") as f:
+        num_threads = int(d.getVar("BB_NUMBER_THREADS"))
+        with bb.compress.zstd.open(fn, "rt", encoding="utf-8", num_threads=num_threads) as f:
             return json.load(f)
     except FileNotFoundError:
         return None
