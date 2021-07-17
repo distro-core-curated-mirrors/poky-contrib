@@ -38,7 +38,7 @@ img_monitor_files = ['installed-package-names.txt', 'files-in-image.txt']
 colours = {
     'colour_default': '',
     'colour_add':     '',
-    'colour_remove':  '',
+    'colour:remove':  '',
 }
 
 def init_colours(use_colours):
@@ -47,13 +47,13 @@ def init_colours(use_colours):
         colours = {
             'colour_default': '\033[0m',
             'colour_add':     '\033[1;32m',
-            'colour_remove':  '\033[1;31m',
+            'colour:remove':  '\033[1;31m',
         }
     else:
         colours = {
             'colour_default': '',
             'colour_add':     '',
-            'colour_remove':  '',
+            'colour:remove':  '',
         }
 
 class ChangeRecord:
@@ -140,13 +140,13 @@ class ChangeRecord:
             lines = []
             if renamed_dirs:
                 for dfrom, dto in renamed_dirs:
-                    lines.append('directory renamed {colour_remove}{}{colour_default} -> {colour_add}{}{colour_default}'.format(dfrom, dto, **colours))
+                    lines.append('directory renamed {colour:remove}{}{colour_default} -> {colour_add}{}{colour_default}'.format(dfrom, dto, **colours))
             if removed or added:
                 if removed and not bitems:
-                    lines.append('removed all items "{colour_remove}{}{colour_default}"'.format(' '.join(removed), **colours))
+                    lines.append('removed all items "{colour:remove}{}{colour_default}"'.format(' '.join(removed), **colours))
                 else:
                     if removed:
-                        lines.append('removed "{colour_remove}{value}{colour_default}"'.format(value=' '.join(removed), **colours))
+                        lines.append('removed "{colour:remove}{value}{colour_default}"'.format(value=' '.join(removed), **colours))
                     if added:
                         lines.append('added "{colour_add}{value}{colour_default}"'.format(value=' '.join(added), **colours))
             else:
@@ -164,9 +164,9 @@ class ChangeRecord:
                 percentchg = ((bval - aval) / float(aval)) * 100
             else:
                 percentchg = 100
-            out = '{} changed from {colour_remove}{}{colour_default} to {colour_add}{}{colour_default} ({}{:.0f}%)'.format(self.fieldname, self.oldvalue or "''", self.newvalue or "''", '+' if percentchg > 0 else '', percentchg, **colours)
+            out = '{} changed from {colour:remove}{}{colour_default} to {colour_add}{}{colour_default} ({}{:.0f}%)'.format(self.fieldname, self.oldvalue or "''", self.newvalue or "''", '+' if percentchg > 0 else '', percentchg, **colours)
         elif self.fieldname in defaultval_map:
-            out = '{} changed from {colour_remove}{}{colour_default} to {colour_add}{}{colour_default}'.format(self.fieldname, self.oldvalue, self.newvalue, **colours)
+            out = '{} changed from {colour:remove}{}{colour_default} to {colour_add}{}{colour_default}'.format(self.fieldname, self.oldvalue, self.newvalue, **colours)
             if self.fieldname == 'PKG' and '[default]' in self.newvalue:
                 out += ' - may indicate debian renaming failure'
         elif self.fieldname in ['pkg_preinst', 'pkg_postinst', 'pkg_prerm', 'pkg_postrm']:
@@ -202,13 +202,13 @@ class ChangeRecord:
             else:
                 out = ''
         else:
-            out = '{} changed from "{colour_remove}{}{colour_default}" to "{colour_add}{}{colour_default}"'.format(self.fieldname, self.oldvalue, self.newvalue, **colours)
+            out = '{} changed from "{colour:remove}{}{colour_default}" to "{colour_add}{}{colour_default}"'.format(self.fieldname, self.oldvalue, self.newvalue, **colours)
 
         return '%s%s' % (prefix, out) if out else ''
 
 class FileChange:
     changetype_add = 'A'
-    changetype_remove = 'R'
+    changetype:remove = 'R'
     changetype_type = 'T'
     changetype_perms = 'P'
     changetype_ownergroup = 'O'
@@ -331,12 +331,12 @@ def compare_file_lists(alines, blines, compare_ownership=True):
 
     # Rather than print additions and removals, its nicer to print file 'moves'
     # where names or paths are similar.
-    revmap_remove = {}
+    revmap:remove = {}
     for removal in removals:
         translated = removal.translate(numeric_removal)
-        if translated not in revmap_remove:
-            revmap_remove[translated] = []
-        revmap_remove[translated].append(removal)
+        if translated not in revmap:remove:
+            revmap:remove[translated] = []
+        revmap:remove[translated].append(removal)
 
     #
     # We want to detect renames of large trees of files like
@@ -347,10 +347,10 @@ def compare_file_lists(alines, blines, compare_ownership=True):
         if addition not in additions:
             continue
         translated = addition.translate(numeric_removal)
-        if translated in revmap_remove:
+        if translated in revmap:remove:
             if len(revmap_remove[translated]) != 1:
                 continue
-            removal = revmap_remove[translated][0]
+            removal = revmap:remove[translated][0]
             commondir = addition.split("/")
             commondir2 = removal.split("/")
             idx = None

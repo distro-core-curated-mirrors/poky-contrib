@@ -198,12 +198,12 @@
   <object pk="4" model="orm.customimagepackage">
     <field to="orm.customimagerecipe" name="recipe_includes" rel="ManyToManyRel"></field>
     <field to="orm.customimagerecipe" name="recipe_excludes" rel="ManyToManyRel"></field>
-    <field to="orm.customimagerecipe" name="recipe_appends" rel="ManyToManyRel"><object pk="3"></object></field>
+    <field to="orm.customimagerecipe" name="recipe:appends" rel="ManyToManyRel"><object pk="3"></object></field>
   </object>
   <object pk="5" model="orm.customimagepackage">
     <field to="orm.customimagerecipe" name="recipe_includes" rel="ManyToManyRel"></field>
     <field to="orm.customimagerecipe" name="recipe_excludes" rel="ManyToManyRel"></field>
-    <field to="orm.customimagerecipe" name="recipe_appends" rel="ManyToManyRel"><object pk="3"></object></field>
+    <field to="orm.customimagerecipe" name="recipe:appends" rel="ManyToManyRel"><object pk="3"></object></field>
   </object>
   <object pk="1" model="orm.recipe">
     <field type="DateTimeField" name="up_date"><None></None></field>

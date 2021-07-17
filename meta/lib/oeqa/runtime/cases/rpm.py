@@ -101,7 +101,7 @@ class RpmInstallRemoveTest(OERuntimeTestCase):
         self.tc.target.run('rm -f %s' % self.dst)
 
     @OETestDepends(['rpm.RpmInstallRemoveTest.test_rpm_install'])
-    def test_rpm_remove(self):
+    def test_rpm:remove(self):
         status,output = self.target.run('rpm -e base-passwd-doc')
         msg = 'Failed to remove base-passwd-doc package: %s' % output
         self.assertEqual(status, 0, msg=msg)

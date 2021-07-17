@@ -202,7 +202,7 @@ def string_slice(strvar,slicevar):
         return strvar[int(first):int(last)]
 
 @register.filter
-def string_remove_regex(value,ex):
+def string:remove_regex(value,ex):
     """ remove sub-string of string that matches regex
     """
     return re.sub(ex, '', value)

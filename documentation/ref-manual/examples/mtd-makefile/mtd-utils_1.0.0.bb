@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=0636e73ff0215e8d672dc4c32c317bb3 \
 
 SRC_URI = "ftp://ftp.infradead.org/pub/mtd-utils/mtd-utils-${PV}.tar.gz"
 
-CFLAGS_prepend = "-I ${S}/include "
+CFLAGS:prepend = "-I ${S}/include "
 
 do_install() {
 	oe_runmake install DESTDIR=${D}

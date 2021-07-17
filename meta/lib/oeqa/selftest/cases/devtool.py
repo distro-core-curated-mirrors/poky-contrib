@@ -937,7 +937,7 @@ class DevtoolUpdateTests(DevtoolBase):
                            ('??', '%s/0002-Add-a-new-file.patch' % relpatchpath)]
         self._check_repo_status(os.path.dirname(recipefile), expected_status)
 
-    def test_devtool_update_recipe_append(self):
+    def test_devtool_update_recipe:append(self):
         # Check preconditions
         testrecipe = 'mdadm'
         bb_vars = get_bb_vars(['FILE', 'SRC_URI'], testrecipe)
@@ -975,7 +975,7 @@ class DevtoolUpdateTests(DevtoolBase):
         self.assertExists(patchfile, 'Patch file not created')
 
         # Check bbappend contents
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n',
                          'SRC_URI += "file://0001-Add-our-custom-version.patch"\n',
                          '\n']
@@ -990,7 +990,7 @@ class DevtoolUpdateTests(DevtoolBase):
         result = runCmd('git reset HEAD^', cwd=tempsrcdir)
         result = runCmd('devtool update-recipe %s -a %s' % (testrecipe, templayerdir))
         self.assertNotExists(patchfile, 'Patch file not deleted')
-        expectedlines2 = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines2 = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n']
         with open(bbappendfile, 'r') as f:
             self.assertEqual(expectedlines2, f.readlines())
@@ -1005,7 +1005,7 @@ class DevtoolUpdateTests(DevtoolBase):
             self.assertEqual(expectedlines, f.readlines())
         # Deleting isn't expected to work under these circumstances
 
-    def test_devtool_update_recipe_append_git(self):
+    def test_devtool_update_recipe:append_git(self):
         # Check preconditions
         testrecipe = 'mtd-utils'
         bb_vars = get_bb_vars(['FILE', 'SRC_URI'], testrecipe)

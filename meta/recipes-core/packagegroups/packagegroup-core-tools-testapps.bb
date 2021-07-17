@@ -14,12 +14,12 @@ inherit packagegroup
 KEXECTOOLS ?= "kexec"
 KEXECTOOLS_e5500-64b ?= ""
 KEXECTOOLS_microblaze ?= ""
-KEXECTOOLS_nios2 ?= ""
-KEXECTOOLS_riscv64 ?= ""
-KEXECTOOLS_riscv32 ?= ""
+KEXECTOOLS:nios2 ?= ""
+KEXECTOOLS:riscv64 ?= ""
+KEXECTOOLS:riscv32 ?= ""
 
 GSTEXAMPLES ?= "gst-examples"
-GSTEXAMPLES_riscv64 = ""
+GSTEXAMPLES:riscv64 = ""
 
 X11GLTOOLS = "\
     mesa-demos \
@@ -37,7 +37,7 @@ X11TOOLS = "\
     xprop \
     "
 
-RDEPENDS_${PN} = "\
+RDEPENDS:${PN} = "\
     blktool \
     ${KEXECTOOLS} \
     alsa-utils-amixer \

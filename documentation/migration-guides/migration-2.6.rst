@@ -392,7 +392,7 @@ the value of :term:`MACHINE_FEATURES`, then ensure that
 does not contain "pgo". You could accomplish the latter using the
 following at the configuration level::
 
-   PACKAGECONFIG_remove_pn-python3 = "pgo"
+   PACKAGECONFIG:remove:pn-python3 = "pgo"
 
 Alternatively, you can set :term:`PACKAGECONFIG` using an append file
 for the ``python3`` recipe.

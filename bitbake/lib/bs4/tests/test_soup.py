@@ -390,7 +390,7 @@ class TestUnicodeDammit(unittest.TestCase):
             logging.disable(logging.NOTSET)
             bs4.dammit.chardet_dammit = chardet
 
-    def test_byte_order_mark_removed(self):
+    def test_byte_order_mark:removed(self):
         # A document written in UTF-16LE will have its byte order marker stripped.
         data = b'\xff\xfe<\x00a\x00>\x00\xe1\x00\xe9\x00<\x00/\x00a\x00>\x00'
         dammit = UnicodeDammit(data)

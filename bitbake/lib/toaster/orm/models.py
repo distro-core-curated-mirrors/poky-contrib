@@ -1186,7 +1186,7 @@ class CustomImagePackage(Package):
                                              related_name='includes_set')
     recipe_excludes = models.ManyToManyField('CustomImageRecipe',
                                              related_name='excludes_set')
-    recipe_appends = models.ManyToManyField('CustomImageRecipe',
+    recipe:appends = models.ManyToManyField('CustomImageRecipe',
                                             related_name='appends_set')
 
 
@@ -1719,7 +1719,7 @@ class CustomImageRecipe(Recipe):
         """Generate the contents for the recipe file."""
         # If we have no excluded packages we only need to _append
         if self.excludes_set.count() == 0:
-            packages_conf = "IMAGE_INSTALL_append = \" "
+            packages_conf = "IMAGE_INSTALL:append = \" "
 
             for pkg in self.appends_set.all():
                 packages_conf += pkg.name+' '
