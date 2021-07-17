@@ -325,7 +325,7 @@ Lists recipes with the bbappends that apply to them as subitems.
         else:
             return False
 
-    def get_appends_for_files(self, filenames):
+    def get:appends_for_files(self, filenames):
         appended, notappended = [], []
         for filename in filenames:
             _, cls, mc = bb.cache.virtualfn2realfn(filename)

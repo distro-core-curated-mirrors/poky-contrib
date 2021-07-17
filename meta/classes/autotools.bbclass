@@ -19,7 +19,7 @@ def autotools_dep_prepend(d):
 
     return deps
 
-DEPENDS_prepend = "${@autotools_dep_prepend(d)} "
+DEPENDS:prepend = "${@autotools_dep_prepend(d)} "
 
 inherit siteinfo
 
@@ -131,7 +131,7 @@ autotools_postconfigure(){
 
 EXTRACONFFUNCS ??= ""
 
-EXTRA_OECONF_append = " ${PACKAGECONFIG_CONFARGS}"
+EXTRA_OECONF:append = " ${PACKAGECONFIG_CONFARGS}"
 
 do_configure[prefuncs] += "autotools_preconfigure autotools_aclocals ${EXTRACONFFUNCS}"
 do_compile[prefuncs] += "autotools_aclocals"
@@ -140,8 +140,8 @@ do_configure[postfuncs] += "autotools_postconfigure"
 
 ACLOCALDIR = "${STAGING_DATADIR}/aclocal"
 ACLOCALEXTRAPATH = ""
-ACLOCALEXTRAPATH_class-target = " -I ${STAGING_DATADIR_NATIVE}/aclocal/"
-ACLOCALEXTRAPATH_class-nativesdk = " -I ${STAGING_DATADIR_NATIVE}/aclocal/"
+ACLOCALEXTRAPATH:class-target = " -I ${STAGING_DATADIR_NATIVE}/aclocal/"
+ACLOCALEXTRAPATH:class-nativesdk = " -I ${STAGING_DATADIR_NATIVE}/aclocal/"
 
 python autotools_aclocals () {
     d.setVar("CONFIG_SITE", siteinfo_get_files(d, sysrootcache=True))

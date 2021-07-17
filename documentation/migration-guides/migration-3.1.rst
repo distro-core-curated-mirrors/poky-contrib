@@ -73,7 +73,7 @@ that you remove "ptest" from
 :term:`DISTRO_FEATURES` to save a significant
 amount of build time e.g. by adding the following in your configuration::
 
-   DISTRO_FEATURES_remove = "ptest"
+   DISTRO_FEATURES:remove = "ptest"
 
 .. _migration-3.1-removed-recipes:
 

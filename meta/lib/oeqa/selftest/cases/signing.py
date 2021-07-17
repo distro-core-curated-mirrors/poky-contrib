@@ -204,9 +204,9 @@ class LockedSignatures(OESelftestTestCase):
 
         # Make a change that should cause the locked task signature to change
         # Use uuid so hash equivalance server isn't triggered
-        recipe_append_file = test_recipe + '_' + get_bb_var('PV', test_recipe) + '.bbappend'
-        recipe_append_path = os.path.join(templayerdir, 'recipes-test', test_recipe, recipe_append_file)
-        feature = 'SUMMARY_${PN} = "test locked signature%s"\n' % uuid.uuid4()
+        recipe:append_file = test_recipe + '_' + get_bb_var('PV', test_recipe) + '.bbappend'
+        recipe:append_path = os.path.join(templayerdir, 'recipes-test', test_recipe, recipe:append_file)
+        feature = 'SUMMARY:${PN} = "test locked signature%s"\n' % uuid.uuid4()
 
         os.mkdir(os.path.join(templayerdir, 'recipes-test'))
         os.mkdir(os.path.join(templayerdir, 'recipes-test', test_recipe))

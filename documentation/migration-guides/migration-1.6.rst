@@ -249,7 +249,7 @@ the ``autotools`` or ``autotools_stage``\ classes.
 default. The following additional lines are needed in your
 ``local.conf`` to enable it::
 
-   PACKAGECONFIG_pn-qemu-native = "sdl"
+   PACKAGECONFIG:pn-qemu-native = "sdl"
    ASSUME_PROVIDED += "libsdl-native"
 
 .. note::

@@ -13,7 +13,7 @@ SRC_URI = "git://github.com/seccomp/libseccomp.git;branch=release-2.5 \
            file://run-ptest \
            "
 
-COMPATIBLE_HOST_riscv32 = "null"
+COMPATIBLE_HOST:riscv32 = "null"
 
 S = "${WORKDIR}/git"
 
@@ -48,7 +48,7 @@ do_install_ptest() {
     done
 }
 
-FILES_${PN} = "${bindir} ${libdir}/${BPN}.so*"
-FILES_${PN}-dbg += "${libdir}/${PN}/tests/.debug/* ${libdir}/${PN}/tools/.debug"
+FILES:${PN} = "${bindir} ${libdir}/${BPN}.so*"
+FILES:${PN}-dbg += "${libdir}/${PN}/tests/.debug/* ${libdir}/${PN}/tools/.debug"
 
-RDEPENDS_${PN}-ptest = "coreutils bash"
+RDEPENDS:${PN}-ptest = "coreutils bash"

@@ -1,6 +1,6 @@
 inherit ptest
 
-FILESEXTRAPATHS_prepend := "${COREBASE}/meta/files:"
+FILESEXTRAPATHS:prepend := "${COREBASE}/meta/files:"
 
 SRC_URI += "file://ptest-perl/run-ptest"
 

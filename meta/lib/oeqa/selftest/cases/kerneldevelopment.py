@@ -55,10 +55,10 @@ class KernelDev(OESelftestTestCase):
         runCmd('rm %s ' % readme)
         self.assertFalse(os.path.exists(readme))
 
-        recipe_append = os.path.join(self.recipeskernel_dir, 'linux-yocto_%.bbappend')
+        recipe:append = os.path.join(self.recipeskernel_dir, 'linux-yocto_%.bbappend')
         with open(recipe_append, 'w+') as fh:
             fh.write('SRC_URI += "file://%s"\n' % patch_name)
-            fh.write('FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"')
+            fh.write('FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"')
 
         runCmd('bitbake virtual/kernel -c clean')
         runCmd('bitbake virtual/kernel -c patch')

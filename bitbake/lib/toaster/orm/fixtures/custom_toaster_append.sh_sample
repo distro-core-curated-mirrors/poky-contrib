@@ -15,12 +15,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-# This is sample software. Rename it to 'custom_toaster_append.sh' and
+# This is sample software. Rename it to 'custom_toaster:append.sh' and
 # enable the respective custom sections.
 
 verbose=0
 if [ $verbose -ne 0 ] ; then
-    echo "custom_toaster_append.sh:$*"
+    echo "custom_toaster:append.sh:$*"
 fi
 
 if [ "toaster_prepend" = "$1" ] ; then

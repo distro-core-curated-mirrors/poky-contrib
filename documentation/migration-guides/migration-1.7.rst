@@ -17,8 +17,8 @@ append to ``PACKAGECONFIG`` for ``qemu-native`` and ``nativesdk-qemu``
 instead of setting it. In other words, to enable graphical output for
 QEMU, you should now have these lines in ``local.conf``::
 
-   PACKAGECONFIG_append_pn-qemu-native = " sdl"
-   PACKAGECONFIG_append_pn-nativesdk-qemu = " sdl"
+   PACKAGECONFIG:append:pn-qemu-native = " sdl"
+   PACKAGECONFIG:append:pn-nativesdk-qemu = " sdl"
 
 .. _migration-1.7-minimum-git-version:
 

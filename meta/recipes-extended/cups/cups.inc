@@ -35,9 +35,9 @@ CLEANBROKEN = "1"
 inherit autotools-brokensep binconfig useradd systemd pkgconfig multilib_script
 
 USERADD_PACKAGES = "${PN}"
-GROUPADD_PARAM_${PN} = "--system lpadmin"
+GROUPADD_PARAM:${PN} = "--system lpadmin"
 
-SYSTEMD_SERVICE_${PN} = "org.cups.cupsd.socket org.cups.cupsd.path org.cups.cupsd.service org.cups.cups-lpd.socket"
+SYSTEMD_SERVICE:${PN} = "org.cups.cupsd.socket org.cups.cupsd.path org.cups.cupsd.service org.cups.cups-lpd.socket"
 
 PACKAGECONFIG ??= "${@bb.utils.contains('DISTRO_FEATURES', 'zeroconf', 'avahi', '', d)} \
                    ${@bb.utils.filter('DISTRO_FEATURES', 'pam systemd', d)}"
@@ -104,22 +104,22 @@ do_install () {
 
 PACKAGES =+ "${PN}-lib ${PN}-libimage"
 
-RDEPENDS_${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'procps', '', d)}"
-FILES_${PN} += "${libexecdir}/cups/ \
+RDEPENDS:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'procps', '', d)}"
+FILES:${PN} += "${libexecdir}/cups/ \
 	       "
 
-FILES_${PN}-lib = "${libdir}/libcups.so.*"
+FILES:${PN}-lib = "${libdir}/libcups.so.*"
 
-FILES_${PN}-libimage = "${libdir}/libcupsimage.so.*"
+FILES:${PN}-libimage = "${libdir}/libcupsimage.so.*"
 
 #package the html for the webgui inside the main packages (~1MB uncompressed)
 
-FILES_${PN} += "${datadir}/doc/cups/images \
+FILES:${PN} += "${datadir}/doc/cups/images \
                 ${datadir}/doc/cups/*html \
                 ${datadir}/doc/cups/*.css \
                 ${datadir}/icons/ \
                "
-CONFFILES_${PN} += "${sysconfdir}/cups/cupsd.conf"
+CONFFILES:${PN} += "${sysconfdir}/cups/cupsd.conf"
 
 MULTILIB_SCRIPTS = "${PN}-dev:${bindir}/cups-config"
 

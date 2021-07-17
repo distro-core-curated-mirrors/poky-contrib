@@ -25,4 +25,4 @@ GIR_MESON_OPTION = 'skip_introspection'
 GIR_MESON_ENABLE_FLAG = 'false'
 GIR_MESON_DISABLE_FLAG = 'true'
 
-FILES_${PN} += "${libdir}/${PYTHON_DIR}/*"
+FILES:${PN} += "${libdir}/${PYTHON_DIR}/*"

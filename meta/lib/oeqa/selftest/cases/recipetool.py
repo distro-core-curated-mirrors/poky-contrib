@@ -40,7 +40,7 @@ class RecipetoolBase(devtool.DevtoolBase):
         runCmd('rm -rf %s/recipes-*' % self.templayerdir)
         super(RecipetoolBase, self).tearDownLocal()
 
-    def _try_recipetool_appendcmd(self, cmd, testrecipe, expectedfiles, expectedlines=None):
+    def _try_recipetool:appendcmd(self, cmd, testrecipe, expectedfiles, expectedlines=None):
         result = runCmd(cmd)
         self.assertNotIn('Traceback', result.output)
 
@@ -80,11 +80,11 @@ class RecipetoolTests(RecipetoolBase):
         cls.corebase = bb_vars['COREBASE']
         cls.bbpath = bb_vars['BBPATH']
 
-    def _try_recipetool_appendfile(self, testrecipe, destfile, newfile, options, expectedlines, expectedfiles):
+    def _try_recipetool:appendfile(self, testrecipe, destfile, newfile, options, expectedlines, expectedfiles):
         cmd = 'recipetool appendfile %s %s %s %s' % (self.templayerdir, destfile, newfile, options)
         return self._try_recipetool_appendcmd(cmd, testrecipe, expectedfiles, expectedlines)
 
-    def _try_recipetool_appendfile_fail(self, destfile, newfile, checkerror):
+    def _try_recipetool:appendfile_fail(self, destfile, newfile, checkerror):
         cmd = 'recipetool appendfile %s %s %s' % (self.templayerdir, destfile, newfile)
         result = runCmd(cmd, ignore_status=True)
         self.assertNotEqual(result.status, 0, 'Command "%s" should have failed but didn\'t' % cmd)
@@ -92,31 +92,31 @@ class RecipetoolTests(RecipetoolBase):
         for errorstr in checkerror:
             self.assertIn(errorstr, result.output)
 
-    def test_recipetool_appendfile_basic(self):
+    def test_recipetool:appendfile_basic(self):
         # Basic test
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                         '\n']
         _, output = self._try_recipetool_appendfile('base-files', '/etc/motd', self.testfile, '', expectedlines, ['motd'])
         self.assertNotIn('WARNING: ', output)
 
-    def test_recipetool_appendfile_invalid(self):
+    def test_recipetool:appendfile_invalid(self):
         # Test some commands that should error
         self._try_recipetool_appendfile_fail('/etc/passwd', self.testfile, ['ERROR: /etc/passwd cannot be handled by this tool', 'useradd', 'extrausers'])
         self._try_recipetool_appendfile_fail('/etc/timestamp', self.testfile, ['ERROR: /etc/timestamp cannot be handled by this tool'])
         self._try_recipetool_appendfile_fail('/dev/console', self.testfile, ['ERROR: /dev/console cannot be handled by this tool'])
 
-    def test_recipetool_appendfile_alternatives(self):
+    def test_recipetool:appendfile_alternatives(self):
         # Now try with a file we know should be an alternative
         # (this is very much a fake example, but one we know is reliably an alternative)
         self._try_recipetool_appendfile_fail('/bin/ls', self.testfile, ['ERROR: File /bin/ls is an alternative possibly provided by the following recipes:', 'coreutils', 'busybox'])
         # Need a test file - should be executable
         testfile2 = os.path.join(self.corebase, 'oe-init-build-env')
         testfile2name = os.path.basename(testfile2)
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n',
                          'SRC_URI += "file://%s"\n' % testfile2name,
                          '\n',
-                         'do_install_append() {\n',
+                         'do_install:append() {\n',
                          '    install -d ${D}${base_bindir}\n',
                          '    install -m 0755 ${WORKDIR}/%s ${D}${base_bindir}/ls\n' % testfile2name,
                          '}\n']
@@ -128,7 +128,7 @@ class RecipetoolTests(RecipetoolBase):
         result = runCmd('diff -q %s %s' % (testfile2, copiedfile), ignore_status=True)
         self.assertNotEqual(result.status, 0, 'New file should have been copied but was not %s' % result.output)
 
-    def test_recipetool_appendfile_binary(self):
+    def test_recipetool:appendfile_binary(self):
         # Try appending a binary file
         # /bin/ls can be a symlink to /usr/bin/ls
         ls = os.path.realpath("/bin/ls")
@@ -136,13 +136,13 @@ class RecipetoolTests(RecipetoolBase):
         self.assertIn('WARNING: ', result.output)
         self.assertIn('is a binary', result.output)
 
-    def test_recipetool_appendfile_add(self):
+    def test_recipetool:appendfile_add(self):
         # Try arbitrary file add to a recipe
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n',
                          'SRC_URI += "file://testfile"\n',
                          '\n',
-                         'do_install_append() {\n',
+                         'do_install:append() {\n',
                          '    install -d ${D}${datadir}\n',
                          '    install -m 0644 ${WORKDIR}/testfile ${D}${datadir}/something\n',
                          '}\n']
@@ -151,102 +151,102 @@ class RecipetoolTests(RecipetoolBase):
         # (so we're testing that, plus modifying an existing bbappend)
         testfile2 = os.path.join(self.corebase, 'oe-init-build-env')
         testfile2name = os.path.basename(testfile2)
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n',
                          'SRC_URI += "file://testfile \\\n',
                          '            file://%s \\\n' % testfile2name,
                          '            "\n',
                          '\n',
-                         'do_install_append() {\n',
+                         'do_install:append() {\n',
                          '    install -d ${D}${datadir}\n',
                          '    install -m 0644 ${WORKDIR}/testfile ${D}${datadir}/something\n',
                          '    install -m 0755 ${WORKDIR}/%s ${D}${datadir}/scriptname\n' % testfile2name,
                          '}\n']
         self._try_recipetool_appendfile('netbase', '/usr/share/scriptname', testfile2, '-r netbase', expectedlines, ['testfile', testfile2name])
 
-    def test_recipetool_appendfile_add_bindir(self):
+    def test_recipetool:appendfile_add_bindir(self):
         # Try arbitrary file add to a recipe, this time to a location such that should be installed as executable
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n',
                          'SRC_URI += "file://testfile"\n',
                          '\n',
-                         'do_install_append() {\n',
+                         'do_install:append() {\n',
                          '    install -d ${D}${bindir}\n',
                          '    install -m 0755 ${WORKDIR}/testfile ${D}${bindir}/selftest-recipetool-testbin\n',
                          '}\n']
         _, output = self._try_recipetool_appendfile('netbase', '/usr/bin/selftest-recipetool-testbin', self.testfile, '-r netbase', expectedlines, ['testfile'])
         self.assertNotIn('WARNING: ', output)
 
-    def test_recipetool_appendfile_add_machine(self):
+    def test_recipetool:appendfile_add_machine(self):
         # Try arbitrary file add to a recipe, this time to a location such that should be installed as executable
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n',
                          'PACKAGE_ARCH = "${MACHINE_ARCH}"\n',
                          '\n',
-                         'SRC_URI_append_mymachine = " file://testfile"\n',
+                         'SRC_URI:append_mymachine = " file://testfile"\n',
                          '\n',
-                         'do_install_append_mymachine() {\n',
+                         'do_install:append_mymachine() {\n',
                          '    install -d ${D}${datadir}\n',
                          '    install -m 0644 ${WORKDIR}/testfile ${D}${datadir}/something\n',
                          '}\n']
         _, output = self._try_recipetool_appendfile('netbase', '/usr/share/something', self.testfile, '-r netbase -m mymachine', expectedlines, ['mymachine/testfile'])
         self.assertNotIn('WARNING: ', output)
 
-    def test_recipetool_appendfile_orig(self):
+    def test_recipetool:appendfile_orig(self):
         # A file that's in SRC_URI and in do_install with the same name
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n']
         _, output = self._try_recipetool_appendfile('selftest-recipetool-appendfile', '/usr/share/selftest-replaceme-orig', self.testfile, '', expectedlines, ['selftest-replaceme-orig'])
         self.assertNotIn('WARNING: ', output)
 
-    def test_recipetool_appendfile_todir(self):
+    def test_recipetool:appendfile_todir(self):
         # A file that's in SRC_URI and in do_install with destination directory rather than file
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n']
         _, output = self._try_recipetool_appendfile('selftest-recipetool-appendfile', '/usr/share/selftest-replaceme-todir', self.testfile, '', expectedlines, ['selftest-replaceme-todir'])
         self.assertNotIn('WARNING: ', output)
 
-    def test_recipetool_appendfile_renamed(self):
+    def test_recipetool:appendfile_renamed(self):
         # A file that's in SRC_URI with a different name to the destination file
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n']
         _, output = self._try_recipetool_appendfile('selftest-recipetool-appendfile', '/usr/share/selftest-replaceme-renamed', self.testfile, '', expectedlines, ['file1'])
         self.assertNotIn('WARNING: ', output)
 
-    def test_recipetool_appendfile_subdir(self):
+    def test_recipetool:appendfile_subdir(self):
         # A file that's in SRC_URI in a subdir
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n',
                          'SRC_URI += "file://testfile"\n',
                          '\n',
-                         'do_install_append() {\n',
+                         'do_install:append() {\n',
                          '    install -d ${D}${datadir}\n',
                          '    install -m 0644 ${WORKDIR}/testfile ${D}${datadir}/selftest-replaceme-subdir\n',
                          '}\n']
         _, output = self._try_recipetool_appendfile('selftest-recipetool-appendfile', '/usr/share/selftest-replaceme-subdir', self.testfile, '', expectedlines, ['testfile'])
         self.assertNotIn('WARNING: ', output)
 
-    def test_recipetool_appendfile_inst_glob(self):
+    def test_recipetool:appendfile_inst_glob(self):
         # A file that's in do_install as a glob
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n']
         _, output = self._try_recipetool_appendfile('selftest-recipetool-appendfile', '/usr/share/selftest-replaceme-inst-globfile', self.testfile, '', expectedlines, ['selftest-replaceme-inst-globfile'])
         self.assertNotIn('WARNING: ', output)
 
-    def test_recipetool_appendfile_inst_todir_glob(self):
+    def test_recipetool:appendfile_inst_todir_glob(self):
         # A file that's in do_install as a glob with destination as a directory
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n']
         _, output = self._try_recipetool_appendfile('selftest-recipetool-appendfile', '/usr/share/selftest-replaceme-inst-todir-globfile', self.testfile, '', expectedlines, ['selftest-replaceme-inst-todir-globfile'])
         self.assertNotIn('WARNING: ', output)
 
-    def test_recipetool_appendfile_patch(self):
+    def test_recipetool:appendfile_patch(self):
         # A file that's added by a patch in SRC_URI
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n',
                          'SRC_URI += "file://testfile"\n',
                          '\n',
-                         'do_install_append() {\n',
+                         'do_install:append() {\n',
                          '    install -d ${D}${sysconfdir}\n',
                          '    install -m 0644 ${WORKDIR}/testfile ${D}${sysconfdir}/selftest-replaceme-patched\n',
                          '}\n']
@@ -258,42 +258,42 @@ class RecipetoolTests(RecipetoolBase):
         else:
             self.fail('Patch warning not found in output:\n%s' % output)
 
-    def test_recipetool_appendfile_script(self):
+    def test_recipetool:appendfile_script(self):
         # Now, a file that's in SRC_URI but installed by a script (so no mention in do_install)
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n',
                          'SRC_URI += "file://testfile"\n',
                          '\n',
-                         'do_install_append() {\n',
+                         'do_install:append() {\n',
                          '    install -d ${D}${datadir}\n',
                          '    install -m 0644 ${WORKDIR}/testfile ${D}${datadir}/selftest-replaceme-scripted\n',
                          '}\n']
         _, output = self._try_recipetool_appendfile('selftest-recipetool-appendfile', '/usr/share/selftest-replaceme-scripted', self.testfile, '', expectedlines, ['testfile'])
         self.assertNotIn('WARNING: ', output)
 
-    def test_recipetool_appendfile_inst_func(self):
+    def test_recipetool:appendfile_inst_func(self):
         # A file that's installed from a function called by do_install
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n']
         _, output = self._try_recipetool_appendfile('selftest-recipetool-appendfile', '/usr/share/selftest-replaceme-inst-func', self.testfile, '', expectedlines, ['selftest-replaceme-inst-func'])
         self.assertNotIn('WARNING: ', output)
 
-    def test_recipetool_appendfile_postinstall(self):
+    def test_recipetool:appendfile_postinstall(self):
         # A file that's created by a postinstall script (and explicitly mentioned in it)
         # First try without specifying recipe
         self._try_recipetool_appendfile_fail('/usr/share/selftest-replaceme-postinst', self.testfile, ['File /usr/share/selftest-replaceme-postinst may be written out in a pre/postinstall script of the following recipes:', 'selftest-recipetool-appendfile'])
         # Now specify recipe
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n',
                          'SRC_URI += "file://testfile"\n',
                          '\n',
-                         'do_install_append() {\n',
+                         'do_install:append() {\n',
                          '    install -d ${D}${datadir}\n',
                          '    install -m 0644 ${WORKDIR}/testfile ${D}${datadir}/selftest-replaceme-postinst\n',
                          '}\n']
         _, output = self._try_recipetool_appendfile('selftest-recipetool-appendfile', '/usr/share/selftest-replaceme-postinst', self.testfile, '-r selftest-recipetool-appendfile', expectedlines, ['testfile'])
 
-    def test_recipetool_appendfile_extlayer(self):
+    def test_recipetool:appendfile_extlayer(self):
         # Try creating a bbappend in a layer that's not in bblayers.conf and has a different structure
         exttemplayerdir = os.path.join(self.tempdir, 'extlayer')
         self._create_temp_layer(exttemplayerdir, False, 'oeselftestextlayer', recipepathspec='metadata/recipes/recipes-*/*')
@@ -308,9 +308,9 @@ class RecipetoolTests(RecipetoolBase):
                          'metadata/recipes/recipes-test/selftest-recipetool-appendfile/selftest-recipetool-appendfile/selftest-replaceme-orig']
         self.assertEqual(sorted(createdfiles), sorted(expectedfiles))
 
-    def test_recipetool_appendfile_wildcard(self):
+    def test_recipetool:appendfile_wildcard(self):
 
-        def try_appendfile_wc(options):
+        def try:appendfile_wc(options):
             result = runCmd('recipetool appendfile %s /etc/profile %s %s' % (self.templayerdir, self.testfile, options))
             self.assertNotIn('Traceback', result.output)
             bbappendfile = None
@@ -326,10 +326,10 @@ class RecipetoolTests(RecipetoolBase):
 
         # Check without wildcard option
         recipefn = os.path.basename(get_bb_var('FILE', 'base-files'))
-        filename = try_appendfile_wc('')
+        filename = try:appendfile_wc('')
         self.assertEqual(filename, recipefn.replace('.bb', '.bbappend'))
         # Now check with wildcard option
-        filename = try_appendfile_wc('-w')
+        filename = try:appendfile_wc('-w')
         self.assertEqual(filename, recipefn.split('_')[0] + '_%.bbappend')
 
     def test_recipetool_create(self):
@@ -430,10 +430,10 @@ class RecipetoolTests(RecipetoolBase):
         urls.append('npmsw://${THISDIR}/${BPN}/npm-shrinkwrap.json')
         checkvars['SRC_URI'] = set(urls)
         checkvars['S'] = '${WORKDIR}/npm'
-        checkvars['LICENSE_${PN}'] = 'MIT'
-        checkvars['LICENSE_${PN}-base64'] = 'Unknown'
-        checkvars['LICENSE_${PN}-accepts'] = 'MIT'
-        checkvars['LICENSE_${PN}-inherits'] = 'ISC'
+        checkvars['LICENSE:${PN}'] = 'MIT'
+        checkvars['LICENSE:${PN}-base64'] = 'Unknown'
+        checkvars['LICENSE:${PN}-accepts'] = 'MIT'
+        checkvars['LICENSE:${PN}-inherits'] = 'ISC'
         inherits = ['npm']
         self._test_recipe_contents(recipefile, checkvars, inherits)
 
@@ -563,11 +563,11 @@ class RecipetoolTests(RecipetoolBase):
 
 
 class RecipetoolAppendsrcBase(RecipetoolBase):
-    def _try_recipetool_appendsrcfile(self, testrecipe, newfile, destfile, options, expectedlines, expectedfiles):
+    def _try_recipetool:appendsrcfile(self, testrecipe, newfile, destfile, options, expectedlines, expectedfiles):
         cmd = 'recipetool appendsrcfile %s %s %s %s %s' % (options, self.templayerdir, testrecipe, newfile, destfile)
         return self._try_recipetool_appendcmd(cmd, testrecipe, expectedfiles, expectedlines)
 
-    def _try_recipetool_appendsrcfiles(self, testrecipe, newfiles, expectedlines=None, expectedfiles=None, destdir=None, options=''):
+    def _try_recipetool:appendsrcfiles(self, testrecipe, newfiles, expectedlines=None, expectedfiles=None, destdir=None, options=''):
 
         if destdir:
             options += ' -D %s' % destdir
@@ -578,7 +578,7 @@ class RecipetoolAppendsrcBase(RecipetoolBase):
         cmd = 'recipetool appendsrcfiles %s %s %s %s' % (options, self.templayerdir, testrecipe, ' '.join(newfiles))
         return self._try_recipetool_appendcmd(cmd, testrecipe, expectedfiles, expectedlines)
 
-    def _try_recipetool_appendsrcfile_fail(self, testrecipe, newfile, destfile, checkerror):
+    def _try_recipetool:appendsrcfile_fail(self, testrecipe, newfile, destfile, checkerror):
         cmd = 'recipetool appendsrcfile %s %s %s %s' % (self.templayerdir, testrecipe, newfile, destfile or '')
         result = runCmd(cmd, ignore_status=True)
         self.assertNotEqual(result.status, 0, 'Command "%s" should have failed but didn\'t' % cmd)
@@ -620,7 +620,7 @@ class RecipetoolAppendsrcBase(RecipetoolBase):
             else:
                 destpath = '.' + os.sep
 
-        expectedlines = ['FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"\n',
+        expectedlines = ['FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
                          '\n']
         if has_src_uri:
             uri = 'file://%s' % filename
@@ -656,23 +656,23 @@ class RecipetoolAppendsrcBase(RecipetoolBase):
 
 class RecipetoolAppendsrcTests(RecipetoolAppendsrcBase):
 
-    def test_recipetool_appendsrcfile_basic(self):
+    def test_recipetool:appendsrcfile_basic(self):
         self._test_appendsrcfile('base-files', 'a-file')
 
-    def test_recipetool_appendsrcfile_basic_wildcard(self):
+    def test_recipetool:appendsrcfile_basic_wildcard(self):
         testrecipe = 'base-files'
         self._test_appendsrcfile(testrecipe, 'a-file', options='-w')
         recipefile = get_bb_var('FILE', testrecipe)
         bbappendfile = self._check_bbappend(testrecipe, recipefile, self.templayerdir)
         self.assertEqual(os.path.basename(bbappendfile), '%s_%%.bbappend' % testrecipe)
 
-    def test_recipetool_appendsrcfile_subdir_basic(self):
+    def test_recipetool:appendsrcfile_subdir_basic(self):
         self._test_appendsrcfile('base-files', 'a-file', 'tmp')
 
-    def test_recipetool_appendsrcfile_subdir_basic_dirdest(self):
+    def test_recipetool:appendsrcfile_subdir_basic_dirdest(self):
         self._test_appendsrcfile('base-files', destdir='tmp')
 
-    def test_recipetool_appendsrcfile_srcdir_basic(self):
+    def test_recipetool:appendsrcfile_srcdir_basic(self):
         testrecipe = 'bash'
         bb_vars = get_bb_vars(['S', 'WORKDIR'], testrecipe)
         srcdir = bb_vars['S']
@@ -680,13 +680,13 @@ class RecipetoolAppendsrcTests(RecipetoolAppendsrcBase):
         subdir = os.path.relpath(srcdir, workdir)
         self._test_appendsrcfile(testrecipe, 'a-file', srcdir=subdir)
 
-    def test_recipetool_appendsrcfile_existing_in_src_uri(self):
+    def test_recipetool:appendsrcfile_existing_in_src_uri(self):
         testrecipe = 'base-files'
         filepath = self._get_first_file_uri(testrecipe)
         self.assertTrue(filepath, 'Unable to test, no file:// uri found in SRC_URI for %s' % testrecipe)
         self._test_appendsrcfile(testrecipe, filepath, has_src_uri=False)
 
-    def test_recipetool_appendsrcfile_existing_in_src_uri_diff_params(self):
+    def test_recipetool:appendsrcfile_existing_in_src_uri_diff_params(self):
         testrecipe = 'base-files'
         subdir = 'tmp'
         filepath = self._get_first_file_uri(testrecipe)
@@ -695,7 +695,7 @@ class RecipetoolAppendsrcTests(RecipetoolAppendsrcBase):
         output = self._test_appendsrcfile(testrecipe, filepath, subdir, has_src_uri=False)
         self.assertTrue(any('with different parameters' in l for l in output))
 
-    def test_recipetool_appendsrcfile_replace_file_srcdir(self):
+    def test_recipetool:appendsrcfile_replace_file_srcdir(self):
         testrecipe = 'bash'
         filepath = 'Makefile.in'
         bb_vars = get_bb_vars(['S', 'WORKDIR'], testrecipe)
@@ -709,7 +709,7 @@ class RecipetoolAppendsrcTests(RecipetoolAppendsrcBase):
             with open(os.path.join(srcdir, filepath), 'r') as makefilein:
                 self.assertEqual(testfile.read(), makefilein.read())
 
-    def test_recipetool_appendsrcfiles_basic(self, destdir=None):
+    def test_recipetool:appendsrcfiles_basic(self, destdir=None):
         newfiles = [self.testfile]
         for i in range(1, 5):
             testfile = os.path.join(self.tempdir, 'testfile%d' % i)
@@ -718,5 +718,5 @@ class RecipetoolAppendsrcTests(RecipetoolAppendsrcBase):
             newfiles.append(testfile)
         self._test_appendsrcfiles('gcc', newfiles, destdir=destdir, options='-W')
 
-    def test_recipetool_appendsrcfiles_basic_subdir(self):
+    def test_recipetool:appendsrcfiles_basic_subdir(self):
         self.test_recipetool_appendsrcfiles_basic(destdir='testdir')

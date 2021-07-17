@@ -810,7 +810,7 @@ class SelectPackagesTable(PackagesTable):
     def setup_columns(self, *args, **kwargs):
         super(SelectPackagesTable, self).setup_columns(*args, **kwargs)
 
-        add_remove_template = '{% include "pkg_add_rm_btn.html" %}'
+        add:remove_template = '{% include "pkg_add_rm_btn.html" %}'
 
         self.add_column(title="Add | Remove",
                         hideable=False,
