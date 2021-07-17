@@ -1,0 +1,46 @@
+#! /usr/bin/env python3
+#
+# Copyright (C) 2021 Richard Purdie
+#
+# SPDX-License-Identifier: GPL-2.0-only
+#
+
+import argparse
+import io
+import os
+import sys
+
+bindir = os.path.dirname(__file__)
+topdir = os.path.dirname(bindir)
+sys.path[0:0] = [os.path.join(topdir, 'lib')]
+
+import bb.tinfoil
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Bitbake Query Variable")
+    parser.add_argument("recipe", help="Path to recipe to parse")
+    parser.add_argument("outputdir", help="Directory to write output to")
+    #parser.add_argument("-o", "--output-dir", help="", required=True)
+    args = parser.parse_args()
+
+    outdir = os.path.abspath(args.outputdir)
+    fn = os.path.abspath(args.recipe)
+    print("Writing data to %s" % outdir)
+
+    with bb.tinfoil.Tinfoil(tracking=True) as tinfoil:
+        tinfoil.prepare()
+        tinfoil.parse_recipes()            
+
+        print("Trying %s" % fn)
+        try:
+            d = tinfoil.parse_recipe_file(fn, config_data=tinfoil.config_data)
+        except bb.providers.NoProvider:
+            sys.exit(1)
+
+        outfile = outdir + fn
+
+        os.makedirs(os.path.dirname(outfile), exist_ok=True)
+
+        with open(outfile, "w") as outf:
+            bb.data.emit_env(o=outf, d=d, all=True)
+
