@@ -39,7 +39,7 @@ python license_create_manifest() {
 
         pkg_dic[pkg_name] = oe.packagedata.read_pkgdatafile(pkg_info)
         if not "LICENSE" in pkg_dic[pkg_name].keys():
-            pkg_lic_name = "LICENSE:" + pkg_name
+            pkg_lic_name = "LICENSE_" + pkg_name
             pkg_dic[pkg_name]["LICENSE"] = pkg_dic[pkg_name][pkg_lic_name]
 
     rootfs_license_manifest = os.path.join(d.getVar('LICENSE_DIRECTORY'),

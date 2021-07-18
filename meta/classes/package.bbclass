@@ -1552,7 +1552,7 @@ python emit_pkgdata() {
     import json
 
     def process_postinst_on_target(pkg, mlprefix):
-        pkgval = d.getVar('PKG:%s' % pkg)
+        pkgval = d.getVar('PKG_%s' % pkg)
         if pkgval is None:
             pkgval = pkg
 
@@ -1572,7 +1572,7 @@ fi
                 postinst = '#!/bin/sh\n'
             postinst += defer_fragment
             postinst += postinst_ontarget
-            d.setVar('pkg_postinst:%s' % pkg, postinst)
+            d.setVar('pkg_postinst_%s' % pkg, postinst)
 
     def add_set_e_to_scriptlets(pkg):
         for scriptlet_name in ('pkg_preinst', 'pkg_postinst', 'pkg_prerm', 'pkg_postrm'):
@@ -1593,7 +1593,7 @@ fi
 
         val = d.getVar('%s:%s' % (var, pkg))
         if val:
-            f.write('%s:%s: %s\n' % (var, pkg, encode(val)))
+            f.write('%s_%s: %s\n' % (var, pkg, encode(val)))
             return val
         val = d.getVar('%s' % (var))
         if val:
@@ -1612,7 +1612,7 @@ fi
                 ml_pkg = "%s-%s" % (variant, pkg)
                 subdata_file = "%s/runtime/%s" % (pkgdatadir, ml_pkg)
                 with open(subdata_file, 'w') as fd:
-                    fd.write("PKG:%s: %s" % (ml_pkg, pkg))
+                    fd.write("PKG_%s: %s" % (ml_pkg, pkg))
 
     packages = d.getVar('PACKAGES')
     pkgdest = d.getVar('PKGDEST')
