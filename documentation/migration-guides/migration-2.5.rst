@@ -169,11 +169,11 @@ one of the packages provided by the Python recipe. You can no longer run
 but doing either of the following causes the package to work as
 expected::
 
-   IMAGE_INSTALL_append = " python-foo"
+   IMAGE_INSTALL:append = " python-foo"
 
 or ::
 
-   RDEPENDS_${PN} = "python-foo"
+   RDEPENDS:${PN} = "python-foo"
 
 The earlier build-time provides behavior was a quirk of the
 way the Python manifest file was created. For more information on this

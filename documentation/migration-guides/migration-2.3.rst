@@ -457,7 +457,7 @@ The following miscellaneous changes have occurred:
 
    should now instead use the following::
 
-      DISTRO_FEATURES_BACKFILL_CONSIDERED_append = " ldconfig"
+      DISTRO_FEATURES_BACKFILL_CONSIDERED:append = " ldconfig"
 
 -  The default value of
    :term:`COPYLEFT_LICENSE_INCLUDE` now

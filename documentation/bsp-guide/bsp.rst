@@ -1042,7 +1042,7 @@ also supports several other machines:
 #. Edit the ``init-ifupdown_1.0.bbappend`` file so that it contains the
    following::
 
-      FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+      FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
    The append file needs to be in the ``meta-xyz/recipes-core/init-ifupdown``
    directory.
@@ -1269,9 +1269,9 @@ located in the layer ``poky/meta-yocto-bsp/conf/machine`` and is named
    include conf/machine/include/tune-cortexa8.inc
 
    IMAGE_FSTYPES += "tar.bz2 jffs2 wic wic.bmap"
-   EXTRA_IMAGECMD_jffs2 = "-lnp "
+   EXTRA_IMAGECMD:jffs2 = "-lnp "
    WKS_FILE ?= "beaglebone-yocto.wks"
-   IMAGE_INSTALL_append = " kernel-devicetree kernel-image-zimage"
+   IMAGE_INSTALL:append = " kernel-devicetree kernel-image-zimage"
    do_image_wic[depends] += "mtools-native:do_populate_sysroot dosfstools-native:do_populate_sysroot"
 
    SERIAL_CONSOLES ?= "115200;ttyS0 115200;ttyO0"

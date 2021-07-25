@@ -416,11 +416,11 @@ home directory:
    kernel. Thus, the name of the append file is
    ``linux-yocto_4.12.bbappend``::
 
-      FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+      FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-      SRC_URI_append = " file://patch-file-one.patch"
-      SRC_URI_append = " file://patch-file-two.patch"
-      SRC_URI_append = " file://patch-file-three.patch"
+      SRC_URI:append = " file://patch-file-one.patch"
+      SRC_URI:append = " file://patch-file-two.patch"
+      SRC_URI:append = " file://patch-file-three.patch"
 
    The :term:`FILESEXTRAPATHS` and :term:`SRC_URI` statements
    enable the OpenEmbedded build system to find patch files. For more
@@ -469,7 +469,7 @@ prepending the directory that contains your files to the
 :term:`FILESEXTRAPATHS`
 variable as follows::
 
-   FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+   FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 The path ``${``\ :term:`THISDIR`\ ``}/${``\ :term:`PN`\ ``}``
 expands to "linux-yocto" in the current directory for this example. If
@@ -640,7 +640,7 @@ appropriate ``${PN}`` directory in your layer's ``recipes-kernel/linux``
 directory, and rename the copied file to "defconfig". Then, add the
 following lines to the linux-yocto ``.bbappend`` file in your layer::
 
-   FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+   FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
    SRC_URI += "file://defconfig"
 
 The :term:`SRC_URI` tells the build system how to search
@@ -687,7 +687,7 @@ Next, include this
 configuration fragment and extend the :term:`FILESPATH` variable in your
 ``.bbappend`` file::
 
-   FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+   FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
    SRC_URI += "file://8250.cfg"
 
 The next time you run BitBake to build the
@@ -988,10 +988,10 @@ Section.
 
    Add the following to the ``local.conf``::
 
-      SRC_URI_pn-linux-yocto = "git:///path-to/linux-yocto-4.12;protocol=file;name=machine;branch=standard/base; \
+      SRC_URI:pn-linux-yocto = "git:///path-to/linux-yocto-4.12;protocol=file;name=machine;branch=standard/base; \
                                 git:///path-to/yocto-kernel-cache;protocol=file;type=kmeta;name=meta;branch=yocto-4.12;destsuffix=${KMETA}"
-      SRCREV_meta_qemux86 = "${AUTOREV}"
-      SRCREV_machine_qemux86 = "${AUTOREV}"
+      SRCREV_meta:qemux86 = "${AUTOREV}"
+      SRCREV_machine:qemux86 = "${AUTOREV}"
 
    .. note::
 
@@ -1061,8 +1061,8 @@ Section.
    must be named ``linux-yocto_4.12.bbappend`` and have the following
    contents::
 
-      FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
-      SRC_URI_append = "file://0001-calibrate.c-Added-some-printk-statements.patch"
+      FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+      SRC_URI:append = "file://0001-calibrate.c-Added-some-printk-statements.patch"
 
    The :term:`FILESEXTRAPATHS` and :term:`SRC_URI` statements
    enable the OpenEmbedded build system to find the patch file.
@@ -1237,7 +1237,7 @@ file to "defconfig" (e.g.
 add the following lines to the linux-yocto ``.bbappend`` file in your
 layer::
 
-   FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+   FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
    SRC_URI += "file://defconfig"
 
 The :term:`SRC_URI` tells the build system how to search for the file, while the
@@ -1345,7 +1345,7 @@ the kernel's append file within your layer and then add the following
 statements to the kernel's append file, those configuration options will
 be picked up and applied when the kernel is built::
 
-   FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+   FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
    SRC_URI += "file://myconfig.cfg"
 
 As mentioned earlier, you can group related configurations into multiple
@@ -1939,7 +1939,7 @@ build.
 2. *Add the Feature File to SRC_URI:* Add the ``.scc`` file to the
    recipe's :term:`SRC_URI` statement::
 
-      SRC_URI_append = " file://test.scc"
+      SRC_URI:append = " file://test.scc"
 
    The leading space before the path is important as the path is
    appended to the existing path.
@@ -1948,7 +1948,7 @@ build.
    :term:`KERNEL_FEATURES` statement to specify the feature as a kernel
    feature::
 
-      KERNEL_FEATURES_append = " test.scc"
+      KERNEL_FEATURES:append = " test.scc"
 
    The OpenEmbedded build
    system processes the kernel feature when it builds the kernel.
