@@ -34,7 +34,7 @@ SRC_URI = "git://github.com/linux-test-project/ltp.git;branch=master;protocol=ht
 
 S = "${WORKDIR}/git"
 
-inherit autotools-brokensep pkgconfig
+inherit autotools pkgconfig
 
 TARGET_CC_ARCH += "${LDFLAGS}"
 
@@ -47,7 +47,10 @@ EXTRA_OECONF = " --with-realtime-testsuite --with-open-posix-testsuite "
 # ltp network/rpc test cases ftbfs when libtirpc is found
 EXTRA_OECONF += " --without-tirpc "
 
-do_install(){
+# This is autoconf but no automake, so arrange out-of-tree builds manually
+EXTRA_OEMAKE = "-f ${S}/Makefile top_srcdir=${S} top_builddir=${B}"
+
+do_install() {
     install -d ${D}${prefix}/
     oe_runmake DESTDIR=${D} SKIP_IDCHECK=1 install include-install
 
