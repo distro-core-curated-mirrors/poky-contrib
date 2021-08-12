@@ -38,8 +38,12 @@ inherit autotools-brokensep pkgconfig
 
 TARGET_CC_ARCH += "${LDFLAGS}"
 
-export prefix = "/opt/${PN}"
-export exec_prefix = "/opt/${PN}"
+# LTP wants to be installed into /opt/ltp but if we just set prefix directly
+# other things which expect that to be the system prefix fail. Luckily we can
+# just set prefix in the configure task to control where LTP installs but
+# nothing else.
+ltpprefix = "/opt/ltp"
+prefix:task-configure = "${ltpprefix}"
 
 PACKAGECONFIG[numa] = "--with-numa, --without-numa, numactl,"
 EXTRA_AUTORECONF += "-I ${S}/testcases/realtime/m4"
@@ -48,7 +52,6 @@ EXTRA_OECONF = " --with-realtime-testsuite --with-open-posix-testsuite "
 EXTRA_OECONF += " --without-tirpc "
 
 do_install(){
-    install -d ${D}${prefix}/
     oe_runmake DESTDIR=${D} SKIP_IDCHECK=1 install include-install
 
     # fixup not deploy STPfailure_report.pl to avoid confusing about it fails to run
@@ -57,13 +60,13 @@ do_install(){
     # runs on the OSDL's Scaleable Test Platform (STP) and it mainly accesses
     # http://khack.osdl.org to retrieve ltp test results run on
     # OSDL's Scaleable Test Platform, but now http://khack.osdl.org unaccessible
-    rm -rf ${D}${prefix}/bin/STPfailure_report.pl
+    rm -rf ${D}${ltpprefix}/bin/STPfailure_report.pl
 
-    # Copy POSIX test suite into ${D}${prefix}/testcases by manual
-    cp -r testcases/open_posix_testsuite ${D}${prefix}/testcases
+    # Copy POSIX test suite into ${D}${prltpprefixefix}/testcases by manual
+    cp -r testcases/open_posix_testsuite ${D}${ltpprefix}/testcases
 
     # Makefile were configured in the build system
-    find ${D}${prefix} -name Makefile | xargs -n 1 sed -i \
+    find ${D}${ltpprefix} -name Makefile | xargs -n 1 sed -i \
          -e 's@[^ ]*-fdebug-prefix-map=[^ "]*@@g' \
          -e 's@[^ ]*-fmacro-prefix-map=[^ "]*@@g' \
          -e 's@[^ ]*-ffile-prefix-map=[^ "]*@@g' \
@@ -71,7 +74,7 @@ do_install(){
 
     # The controllers memcg_stree test seems to cause us hangs and takes 900s
     # (maybe we expect more regular output?), anyhow, skip it
-    sed -e '/^memcg_stress/d' -i ${D}${prefix}/runtest/controllers
+    sed -e '/^memcg_stress/d' -i ${D}${ltpprefix}/runtest/controllers
 }
 
 RDEPENDS:${PN} = "\
@@ -104,10 +107,12 @@ RDEPENDS:${PN} = "\
     tar \
 "
 
-FILES:${PN} += "${prefix}/* ${prefix}/runtest/* ${prefix}/scenario_groups/* ${prefix}/testcases/bin/* ${prefix}/testcases/bin/*/bin/* ${prefix}/testscripts/* ${prefix}/testcases/open_posix_testsuite/* ${prefix}/testcases/open_posix_testsuite/conformance/* ${prefix}/testcases/open_posix_testsuite/Documentation/* ${prefix}/testcases/open_posix_testsuite/functional/* ${prefix}/testcases/open_posix_testsuite/include/* ${prefix}/testcases/open_posix_testsuite/scripts/* ${prefix}/testcases/open_posix_testsuite/stress/* ${prefix}/testcases/open_posix_testsuite/tools/* ${prefix}/testcases/data/nm01/lib.a ${prefix}/lib/libmem.a"
+FILES:${PN} = "${ltpprefix}"
+FILES:${PN}-dev = "${ltpprefix}/include"
+FILES:${PN}-doc = "${ltpprefix}/share/man"
 
 # Avoid stripping some generated binaries otherwise some of the ltp tests such as ldd01 & nm01 fail
-INHIBIT_PACKAGE_STRIP_FILES = "${prefix}/testcases/bin/nm01 ${prefix}/testcases/bin/ldd01"
+INHIBIT_PACKAGE_STRIP_FILES = "${ltpprefix}/testcases/bin/nm01 ${ltpprefix}/testcases/bin/ldd01"
 INSANE_SKIP:${PN} += "already-stripped staticdev"
 
 remove_broken_musl_sources() {
