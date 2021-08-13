@@ -20,12 +20,8 @@ import os
 import re
 import errno
 
-if sys.version < '3':
-    def b(x):
-        return x
-else:
-    def b(x):
-        return x.encode(sys.getfilesystemencoding())
+def b(x):
+    return x.encode(sys.getfilesystemencoding())
 
 old_prefix = re.compile(b("##DEFAULT_INSTALL_DIR##"))
 
@@ -214,12 +210,8 @@ if len(sys.argv) < 4:
 
 # In python > 3, strings may also contain Unicode characters. So, convert
 # them to bytes
-if sys.version_info < (3,):
-    new_prefix = sys.argv[1]
-    new_dl_path = sys.argv[2]
-else:
-    new_prefix = sys.argv[1].encode()
-    new_dl_path = sys.argv[2].encode()
+new_prefix = sys.argv[1].encode()
+new_dl_path = sys.argv[2].encode()
 
 executables_list = sys.argv[3:]
 
