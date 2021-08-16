@@ -101,6 +101,7 @@ def change_interpreter(elf_file_name):
             dl_path = new_dl_path + b("\0") * (p_filesz - len(new_dl_path))
             f.seek(p_offset)
             f.write(dl_path)
+            print("Wrote new interpreter")
             break
 
 def change_dl_sysdirs(elf_file_name):
@@ -157,6 +158,7 @@ def change_dl_sysdirs(elf_file_name):
                 # write it back
                 f.seek(sh_offset)
                 f.write(new_ldsocache_path)
+                print("Wrote new ld.so cache path")
             elif name == b(".gccrelocprefix"):
                 offset = 0
                 while (offset + 4096) <= sh_size:
@@ -173,6 +175,7 @@ def change_dl_sysdirs(elf_file_name):
                     # write it back
                     f.seek(sh_offset + offset)
                     f.write(new_path)
+                    print("Wrote new relocation prefix")
                     offset = offset + 4096
     if sysdirs != "" and sysdirslen != "":
         paths = sysdirs.split(b("\0"))
@@ -199,6 +202,7 @@ def change_dl_sysdirs(elf_file_name):
         f.write(sysdirs)
         f.seek(sysdirslen_off)
         f.write(sysdirslen)
+        print("Wrote new system dirs")
 
 # MAIN
 if len(sys.argv) < 4:
@@ -216,6 +220,7 @@ else:
 executables_list = sys.argv[3:]
 
 for e in executables_list:
+    print("Processing %s" % e)
     perms = os.stat(e)[stat.ST_MODE]
     if os.access(e, os.W_OK|os.R_OK):
         perms = None
