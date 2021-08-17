@@ -13,7 +13,7 @@ from oeqa.utils.subprocesstweak import errors_have_output
 errors_have_output()
 
 class GccCompileTest(OESDKTestCase):
-    td_vars = ['MACHINE']
+    td_vars = ['MACHINE', 'SDKPATH']
 
     @classmethod
     def setUpClass(self):
@@ -40,6 +40,18 @@ class GccCompileTest(OESDKTestCase):
 
     def test_make(self):
         self._run('cd %s; make -f testsdkmakefile' % self.tc.sdk_dir)
+
+    def test_verify_specs(self):
+        """
+        Verify that the compiler has been relocated successfully and isn't
+        looking in the hard-coded prefix.
+        """
+        sdkpath = self.td.get("SDKPATH")
+        self.assertTrue(sdkpath)
+
+        specs = self._run('$CC -dumpspecs')
+        for line in specs.splitlines():
+            self.assertNotIn(sdkpath, line, "Non-relocated path found")
 
     @classmethod
     def tearDownClass(self):
