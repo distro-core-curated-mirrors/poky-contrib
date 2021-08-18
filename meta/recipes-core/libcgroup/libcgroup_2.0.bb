@@ -13,13 +13,13 @@ DEPENDS = "bison-native flex-native"
 
 SRC_URI = "https://github.com/${BPN}/${BPN}/releases/download/v${PV}/${BP}.tar.bz2 \
            file://musl-decls-compat.patch \
-           file://module.patch"
+           file://module.patch \
+           file://fts.patch"
 
 SRC_URI[sha256sum] = "11a2fbf0e42f46089f406b8b0dca7fef04aec2f21600b70e402c5db3661305d7"
 UPSTREAM_CHECK_URI = "https://github.com/libcgroup/libcgroup/releases/"
 
 DEPENDS:append:libc-musl = " fts "
-EXTRA_OEMAKE:append:libc-musl = " LIBS=-lfts"
 
 PACKAGECONFIG = "${@bb.utils.filter('DISTRO_FEATURES', 'pam', d)}"
 PACKAGECONFIG[pam] = "--enable-pam-module-dir=${base_libdir}/security --enable-pam=yes,--enable-pam=no,libpam"
