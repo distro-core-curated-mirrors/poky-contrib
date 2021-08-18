@@ -35,11 +35,36 @@ if [ ! -p "$INITCTL" ] && [ "${INIT_SYSTEM}" = "sysvinit" ]; then
 		[ -n "$PID" ] && kill -s USR1 "$PID"
 fi
 
+# If the user wants to use zram tmpfs
+# create and mount those now
+if [ "$USE_ZRAM_TMPFS"z = "yes"z ]; then
+	ZDEVICE=$(zramctl -f -s ${ZRAM_TMP_SIZE}MiB -a ${ZRAM_ALGORITHM})
+	if [ $? -eq 0 ]; then
+		mkfs.ext2 $ZDEVICE
+		mount $ZDEVICE /var/volatile
+	fi
+	ZDEVICE=$(zramctl -f -s ${ZRAM_RUN_SIZE}MiB -a ${ZRAM_ALGORITHM})
+	if [ $? -eq 0 ]; then
+		mkfs.ext2 $ZDEVICE
+		mount $ZDEVICE /run
+	fi
+fi
+
 #
 # Execute swapon command again, in case we want to swap to
 # a file on a now mounted filesystem.
 #
-[ -x /sbin/swapon ] && swapon -a
+if [ "$USE_ZRAM_SWAP"z = "yes"z ]; then
+	MEMTOTAL=$(grep MemTotal /proc/meminfo | awk ' { print $2 } ')
+	MEMZRAM=$((${MEMTOTAL}*${ZRAM_SWAP_PERCENT}/100))
+	ZDEVICE=$(zramctl -f -s ${MEMZRAM}KiB -a ${ZRAM_ALGORITHM})
+	if [ $? -eq 0 ]; then
+		mkswap -L "zram-swap" $ZDEVICE
+		swapon -p 100 $ZDEVICE
+	fi
+else
+	[ -x /sbin/swapon ] && swapon -a
+fi
 
 : exit 0
 

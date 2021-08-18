@@ -39,6 +39,8 @@
 # - read-only-rootfs    - tweaks an image to support read-only rootfs
 # - stateless-rootfs    - systemctl-native not run, image populated by systemd at runtime
 # - splash              - bootup splash screen
+# - zram-tmpfs          - use a zram disk for temporary filesystems instead of tmpfs
+# - zram-swap           - use a zram-backed swap
 #
 FEATURE_PACKAGES_weston = "packagegroup-core-weston"
 FEATURE_PACKAGES_x11 = "packagegroup-core-x11"
@@ -53,6 +55,8 @@ FEATURE_PACKAGES_nfs-server = "packagegroup-core-nfs-server"
 FEATURE_PACKAGES_nfs-client = "packagegroup-core-nfs-client"
 FEATURE_PACKAGES_ssh-server-dropbear = "packagegroup-core-ssh-dropbear"
 FEATURE_PACKAGES_ssh-server-openssh = "packagegroup-core-ssh-openssh"
+FEATURE_PACKAGES_zram-tmpfs = "packagegroup-core-zram-tmpfs"
+FEATURE_PACKAGES_zram-swap = "packagegroup-core-zram-swap"
 FEATURE_PACKAGES_hwcodecs = "${MACHINE_HWCODECS}"
 
 

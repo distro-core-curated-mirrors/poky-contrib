@@ -17,6 +17,12 @@ ROOTFS_POSTPROCESS_COMMAND += "rootfs_update_timestamp; "
 # Tweak the mount options for rootfs in /etc/fstab if read-only-rootfs is enabled
 ROOTFS_POSTPROCESS_COMMAND += '${@bb.utils.contains("IMAGE_FEATURES", "read-only-rootfs", "read_only_rootfs_hook; ", "",d)}'
 
+# Use zram for temporary filesystems instead of tmpfs
+ROOTFS_POSTPROCESS_COMMAND += '${@bb.utils.contains("IMAGE_FEATURES", "zram-tmpfs", "zram_tmpfs_hook; ", "",d)}'
+
+# Use a zram-backed swap
+ROOTFS_POSTPROCESS_COMMAND += '${@bb.utils.contains("IMAGE_FEATURES", "zram-swap", "zram_swap_hook; ", "",d)}'
+
 # We also need to do the same for the kernel boot parameters,
 # otherwise kernel or initramfs end up mounting the rootfs read/write
 # (the default) if supported by the underlying storage.
@@ -140,6 +146,35 @@ read_only_rootfs_hook () {
 	# Create machine-id
 	# 20:12 < mezcalero> koen: you have three options: a) run systemd-machine-id-setup at install time, b) have / read-only and an empty file there (for stateless) and c) boot with / writable
 		touch ${IMAGE_ROOTFS}${sysconfdir}/machine-id
+	fi
+}
+
+#
+# A hook function to support zram-tmpfs IMAGE_FEATURES
+#
+zram_tmpfs_hook () {
+	# Remove tmpfs entries from fstab
+	if [ -f ${IMAGE_ROOTFS}/etc/fstab ]; then
+		sed -n -i -e '/tmpfs/!p' ${IMAGE_ROOTFS}/etc/fstab
+	fi
+
+	# Enable zram when sysvinit is used
+	if ${@bb.utils.contains("DISTRO_FEATURES", "sysvinit", "true", "false", d)}; then
+		if [ -e ${IMAGE_ROOTFS}/etc/default/rcS ]; then
+			sed -i 's/USE_ZRAM_TMPFS=no/USE_ZRAM_TMPFS=yes/' ${IMAGE_ROOTFS}/etc/default/rcS
+		fi
+	fi
+}
+
+#
+# A hook function to support using a zram-backed swap
+#
+zram_swap_hook () {
+	# Enable zram when sysvinit is used
+	if ${@bb.utils.contains("DISTRO_FEATURES", "sysvinit", "true", "false", d)}; then
+		if [ -e ${IMAGE_ROOTFS}/etc/default/rcS ]; then
+			sed -i 's/USE_ZRAM_SWAP=no/USE_ZRAM_SWAP=yes/' ${IMAGE_ROOTFS}/etc/default/rcS
+		fi
 	fi
 }
 

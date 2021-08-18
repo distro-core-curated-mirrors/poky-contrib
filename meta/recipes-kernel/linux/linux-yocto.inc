@@ -35,6 +35,8 @@ KERNEL_FEATURES:append:qemuall=" features/debug/printk.scc"
 
 KERNEL_FEATURES:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'numa', 'features/numa/numa.scc', '', d)}"
 KERNEL_FEATURES:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'vfat', 'cfg/fs/vfat.scc', '', d)}"
+KERNEL_FEATURES:append = " ${@bb.utils.contains('IMAGE_FEATURES', 'zram-tmpfs', 'features/zram/zram.scc', '', d)}"
+KERNEL_FEATURES:append = " ${@bb.utils.contains('IMAGE_FEATURES', 'zram-swap', 'features/zram/zram.scc', '', d)}"
 
 # A KMACHINE is the mapping of a yocto $MACHINE to what is built
 # by the kernel. This is typically the branch that should be built,

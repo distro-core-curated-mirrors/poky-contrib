@@ -83,6 +83,40 @@ EXTRA_OEMAKE += "'base_bindir=${base_bindir}' \
 		 'mandir=${mandir}' \
                  MNTPOINT=yes"
 
+# zram defaults (if enabled in IMAGE_FEATURES)
+# choose one of: lzo lzo-rle lz4 lz4hc 842 zstd (depending on your kernel config)
+ZRAM_ALGORITHM ?= "lzo-rle"
+# swap size as a percentage of total RAM
+ZRAM_SWAP_PERCENT ?= "100"
+# size of /tmp in MiB
+ZRAM_TMP_SIZE ?= "30"
+# size of /run in MiB
+ZRAM_RUN_SIZE ?= "10"
+python __anonymous() {
+    imagefeatures = (d.getVar("IMAGE_FEATURES") or "")
+    valid_algorithms = ['lzo', 'lzo-rle', 'lz4', 'lz4hc', '842', 'zstd']
+    algorithm = (d.getVar("ZRAM_ALGORITHM") or "")
+    if algorithm not in valid_algorithms:
+        bb.error("ZRAM_ALGORITHM must be one of: %s" % valid_algorithms)
+
+    d.setVar("USE_ZRAM_SWAP", "no")
+    if 'zram-swap' in imagefeatures:
+        swappercent = (d.getVar("ZRAM_SWAP_PERCENT") or "")
+        if int(swappercent) <= 0:
+            bb.error("ZRAM_SWAP_PERCENT must be greater than 0")
+        d.setVar("USE_ZRAM_SWAP", "yes")
+
+    d.setVar("USE_ZRAM_TMPFS", "no")
+    if 'zram-tmpfs' in imagefeatures:
+        d.setVar("USE_ZRAM_TMPFS", "yes")
+        tmpsize = (d.getVar("ZRAM_TMP_SIZE") or "")
+        if int(tmpsize) <= 0:
+            bb.error("ZRAM_TMP_SIZE must be greater than 0")
+        tmpsize = (d.getVar("ZRAM_RUN_SIZE") or "")
+        if int(tmpsize) <= 0:
+            bb.error("ZRAM_RUN_SIZE must be greater than 0")
+}
+
 do_install () {
 	oe_runmake 'ROOT=${D}' install
 
@@ -93,8 +127,14 @@ do_install () {
 		install -d ${D}${sysconfdir}/rc$level.d
 	done
 
-	sed -e \
-		's:#PSPLASH_TEXT#:${@bb.utils.contains("PACKAGECONFIG","psplash-text-updates","yes","no", d)}:g' \
+	sed \
+		-e 's:#PSPLASH_TEXT#:${@bb.utils.contains("PACKAGECONFIG","psplash-text-updates","yes","no", d)}:g' \
+		-e 's:#ZRAM_ALGORITHM#:${ZRAM_ALGORITHM}:g' \
+		-e 's:#USE_ZRAM_SWAP#:${USE_ZRAM_SWAP}:g' \
+		-e 's:#ZRAM_SWAP_PERCENT#:${ZRAM_SWAP_PERCENT}:g' \
+		-e 's:#USE_ZRAM_TMPFS#:${USE_ZRAM_TMPFS}:g' \
+		-e 's:#ZRAM_TMP_SIZE#:${ZRAM_TMP_SIZE}:g' \
+		-e 's:#ZRAM_RUN_SIZE#:${ZRAM_RUN_SIZE}:g' \
 		${WORKDIR}/rcS-default > ${D}${sysconfdir}/default/rcS
 	chmod 0644 ${D}${sysconfdir}/default/rcS
 	install -m 0755    ${WORKDIR}/rc		${D}${sysconfdir}/init.d
