@@ -611,6 +611,7 @@ RECIPE_MAINTAINER:pn-python3-numpy = "Oleksandr Kravchuk <open.source@oleksandr-
 RECIPE_MAINTAINER:pn-python3-packaging = "Tim Orling <timothy.t.orling@intel.com>"
 RECIPE_MAINTAINER:pn-python3-pathlib2 = "Tim Orling <timothy.t.orling@intel.com>"
 RECIPE_MAINTAINER:pn-python3-pbr = "Zang Ruochen <zangrc.fnst@fujitsu.com>"
+RECIPE_MAINTAINER:pn-python3-pexpect = "Tim Orling <timothy.t.orling@intel.com>"
 RECIPE_MAINTAINER:pn-python3-pip = "Zang Ruochen <zangrc.fnst@fujitsu.com>"
 RECIPE_MAINTAINER:pn-python3-pluggy = "Tim Orling <timothy.t.orling@intel.com>"
 RECIPE_MAINTAINER:pn-python3-py = "Tim Orling <timothy.t.orling@intel.com>"
