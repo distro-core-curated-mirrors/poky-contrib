@@ -109,6 +109,8 @@ RECIPE_MAINTAINER:pn-core-image-tiny-initramfs = "Richard Purdie <richard.purdie
 RECIPE_MAINTAINER:pn-core-image-full-cmdline = "Richard Purdie <richard.purdie@linuxfoundation.org>"
 RECIPE_MAINTAINER:pn-core-image-kernel-dev = "Richard Purdie <richard.purdie@linuxfoundation.org>"
 RECIPE_MAINTAINER:pn-core-image-ptest-all = "Richard Purdie <richard.purdie@linuxfoundation.org>"
+RECIPE_MAINTAINER:pn-core-image-ptest-lttng = "Richard Purdie <richard.purdie@linuxfoundation.org>"
+
 RECIPE_MAINTAINER:pn-core-image-ptest-fast = "Richard Purdie <richard.purdie@linuxfoundation.org>"
 RECIPE_MAINTAINER:pn-core-image-sato = "Richard Purdie <richard.purdie@linuxfoundation.org>"
 RECIPE_MAINTAINER:pn-core-image-sato-sdk = "Richard Purdie <richard.purdie@linuxfoundation.org>"

@@ -439,6 +439,7 @@ def list_pkg_files(args):
             found = False
             for line in f:
                 if line.startswith('FILES_INFO:'):
+                    print("C\n")
                     found = True
                     val = line.split(': ', 1)[1].strip()
                     dictval = json.loads(val)
@@ -492,9 +493,15 @@ def list_pkg_files(args):
                     if f != pkg:
                         print("%s is in the RPROVIDES of %s:" % (pkg, f))
                     pkgdatafile = os.path.join(args.pkgdata_dir, "runtime", f)
+                    print("A\n")
                     parse_pkgdatafile(pkgdatafile, args.long)
-                continue
+                #continue
+            print("B\n")
+
             pkgdatafile = os.path.join(args.pkgdata_dir, "runtime", pkg)
+            print("B %s\n" % pkgdatafile)
+
+
             if not os.path.exists(pkgdatafile):
                 logger.error("Unable to find any built recipe-space package named %s" % pkg)
                 sys.exit(1)
