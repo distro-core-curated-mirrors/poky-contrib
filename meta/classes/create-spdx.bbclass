@@ -19,6 +19,7 @@ SPDX_INCLUDE_SOURCES ??= "0"
 SPDX_INCLUDE_PACKAGED ??= "0"
 SPDX_ARCHIVE_SOURCES ??= "0"
 SPDX_ARCHIVE_PACKAGED ??= "0"
+SPDX_IMAGE_SBOM ??= "0"
 
 SPDX_UUID_NAMESPACE ??= "sbom.openembedded.org"
 SPDX_NAMESPACE_PREFIX ??= "http://spdx.org/spdxdoc"
@@ -754,6 +755,40 @@ def spdx_get_src(d):
     finally:
         d.setVar("WORKDIR", workdir)
 
+
+def merge_recipe_data(image, doc, pkg_doc, p, spdxids, deploy_dir_spdx):
+    import os
+    import oe.spdx
+    import oe.sbom
+    doc.add_relationship(image, "CONTAINS", "%s" % (p.SPDXID))
+    # extend image with package info
+    doc.packages.append(p)
+    for f in pkg_doc.files:
+        doc.files.append(f)
+    for r in pkg_doc.relationships:
+        if "DocumentRef-recipe" in r.relatedSpdxElement:
+            spdxid = r.relatedSpdxElement.split(":")[1]
+            doc.add_relationship(p.SPDXID, "GENERATED_FROM", "%s" % (spdxid))
+            if spdxid in spdxids:
+                 continue
+            else:
+                 spdxids.append(spdxid)
+
+            docref = r.relatedSpdxElement.split(":")[0]
+            filename = '-'.join(docref.split("-")[1:])
+            recipe_path = deploy_dir_spdx / "recipes" / (filename + ".spdx.json")
+            if os.path.isfile(recipe_path):
+                recipe_doc, recipe_doc_sha1 = oe.sbom.read_doc(recipe_path)
+                for rp in recipe_doc.packages:
+                    doc.packages.append(rp)
+                for rf in recipe_doc.files:
+                    doc.files.append(rf)
+                for rr in recipe_doc.relationships:
+                    if not rr.relationshipType == "BUILD_DEPENDENCY_OF":
+                        doc.relationships.append(rr)
+#                    else:
+#                        doc.add_relationship((rr.spdxElementId.split(":")[1]), "BUILD_DEPENCY_OF", f"{rr.relatedSpdxElement}")
+
 do_rootfs[recrdeptask] += "do_create_spdx do_create_runtime_spdx"
 
 ROOTFS_POSTUNINSTALL_COMMAND =+ "image_combine_spdx ; "
@@ -769,6 +804,7 @@ python image_combine_spdx() {
     import tarfile
     import bb.compress.zstd
 
+    spdx_image_sbom = d.getVar("SPDX_IMAGE_SBOM") == "1"
     creation_time = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     image_name = d.getVar("IMAGE_NAME")
     image_link_name = d.getVar("IMAGE_LINK_NAME")
@@ -797,6 +833,7 @@ python image_combine_spdx() {
     spdx_package = oe.spdx.SPDXPackage()
 
     packages = image_list_installed_packages(d)
+    spdxids = []
 
     for name in sorted(packages.keys()):
         pkg_spdx_path = deploy_dir_spdx / "packages" / (name + ".spdx.json")
@@ -810,8 +847,14 @@ python image_combine_spdx() {
                 pkg_ref.checksum.algorithm = "SHA1"
                 pkg_ref.checksum.checksumValue = pkg_doc_sha1
 
-                doc.externalDocumentRefs.append(pkg_ref)
-                doc.add_relationship(image, "CONTAINS", "%s:%s" % (pkg_ref.externalDocumentId, p.SPDXID))
+                bb.warn(f"MONO: {spdx_image_sbom}")
+                if spdx_image_sbom:
+                    bb.warn(f"Inside: {name}")
+                    merge_recipe_data(image, doc, pkg_doc, p, spdxids, deploy_dir_spdx)
+                else:
+                    bb.warn(f"{name}")
+                    doc.externalDocumentRefs.append(pkg_ref)
+                    doc.add_relationship(image, "CONTAINS", "%s:%s" % (pkg_ref.externalDocumentId, p.SPDXID))
                 break
         else:
             bb.fatal("Unable to find package with name '%s' in SPDX file %s" % (name, pkg_spdx_path))
@@ -826,11 +869,15 @@ python image_combine_spdx() {
         runtime_ref.checksum.checksumValue = runtime_doc_sha1
 
         # "OTHER" isn't ideal here, but I can't find a relationship that makes sense
-        doc.externalDocumentRefs.append(runtime_ref)
+        if spdx_image_sbom:
+            relatedElementId = f"{runtime_doc.SPDXID}"
+        else:
+            relatedElementId = f"{runtime_ref.externalDocumentId}:{runtime_doc.SPDXID}"
+            doc.externalDocumentRefs.append(runtime_ref)
         doc.add_relationship(
             image,
             "OTHER",
-            "%s:%s" % (runtime_ref.externalDocumentId, runtime_doc.SPDXID),
+            relatedElementId,
             comment="Runtime dependencies for %s" % name
         )
 
