@@ -9,27 +9,24 @@ BUGTRACKER = "https://gitlab.gnome.org/GNOME/librsvg/issues"
 RECIPE_NO_UPDATE_REASON = "Versions from 2.41.0 requires Rust compiler to build it"
 
 LICENSE = "LGPLv2+"
-LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f \
-                    file://rsvg.h;beginline=3;endline=24;md5=20b4113c4909bbf0d67e006778302bc6"
+LIC_FILES_CHKSUM = "file://COPYING.LIB;md5=4fbd65380cdd255951079008b364516c"
 
 SECTION = "x11/utils"
 DEPENDS = "cairo gdk-pixbuf glib-2.0 libcroco libxml2 pango"
 BBCLASSEXTEND = "native nativesdk"
 
-inherit gnomebase gtk-doc pixbufcache upstream-version-is-even gobject-introspection
+inherit autotools gettext gnomebase gobject-introspection gtk-doc pixbufcache upstream-version-is-even cargo
+CARGO_DISABLE_BITBAKE_VENDORING = "1"
 
-SRC_URI += "file://gtk-option.patch \
-            file://0001-Auto-detect-Bsymbolic-fixes-configure-on-macOS.patch \
-            file://0001-Remove-non-reproducible-SRCDIR.patch \
-"
-
-SRC_URI[archive.sha256sum] = "f7628905f1cada84e87e2b14883ed57d8094dca3281d5bcb24ece4279e9a92ba"
+SRC_URI[archive.sha256sum] = "fffb61b08cd5282aaae147a02b305166a7426fad22a8b9427708f0f2fc426ebc"
 
 # Issue only on windows
 CVE_CHECK_WHITELIST += "CVE-2018-1000041"
 
 CACHED_CONFIGUREVARS = "ac_cv_path_GDK_PIXBUF_QUERYLOADERS=${STAGING_LIBDIR_NATIVE}/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders"
 
+# to test:
+PACKAGECONFIG ??= ""
 PACKAGECONFIG ??= "gdkpixbuf"
 # The gdk-pixbuf loader
 PACKAGECONFIG[gdkpixbuf] = "--enable-pixbuf-loader,--disable-pixbuf-loader,gdk-pixbuf-native"
