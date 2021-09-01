@@ -4,7 +4,7 @@
 
 import json
 import argparse
-import urllib.request
+import urllib3
 import sys
 from pathlib import Path
 
@@ -20,30 +20,27 @@ def main():
 
     args = parser.parse_args()
 
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json"
-    ) as f:
-        data = f.read().decode("utf-8")
+    http = urllib3.PoolManager()
+    r = http.request("GET", "https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json")
 
-    licenses = json.loads(data)
+    license_str = r.data.decode("utf-8")
+    lic_json = args.corebase / "meta" / "files" / "spdx-licenses.json"
+    with lic_json.open("w") as f:
+        f.write(license_str)
 
+    licenses = json.loads(license_str)
     for lic in licenses["licenses"]:
         print(f"Processing {lic['licenseId']}")
         details_url = lic["detailsUrl"]
 
-        with urllib.request.urlopen(details_url) as f:
-            details = json.load(f)
+        r = http.request("GET", details_url)
+        details = json.loads(r.data.decode("utf-8"))
 
         lic_text_file = (
             args.corebase / "meta" / "files" / "common-licenses" / lic["licenseId"]
         )
         with lic_text_file.open("w") as f:
             f.write(details["licenseText"])
-
-    lic_json = args.corebase / "meta" / "files" / "spdx-licenses.json"
-    with lic_json.open("w") as f:
-        f.write(data)
-
 
 if __name__ == "__main__":
     sys.exit(main())
