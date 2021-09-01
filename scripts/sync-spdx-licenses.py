@@ -42,5 +42,13 @@ def main():
         with lic_text_file.open("w") as f:
             f.write(details["licenseText"])
 
+    # Find licences in OE which are not SPDX
+    oe_licenses = set(p.name for p in (args.corebase / "meta" / "files" / "common-licenses").iterdir())
+    spdx_licenses = set(l["licenseId"] for l in licenses["licenses"])
+    unknown = oe_licenses - spdx_licenses
+    if unknown:
+        print("Local licenses that are not SPDX:")
+        print(", ".join(unknown))
+
 if __name__ == "__main__":
     sys.exit(main())
