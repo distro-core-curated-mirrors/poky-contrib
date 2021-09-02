@@ -30,6 +30,10 @@ def main():
 
     licenses = json.loads(license_str)
     for lic in licenses["licenses"]:
+        if lic["isDeprecatedLicenseId"]:
+            print(f"Skipping deprecated {lic['licenseId']}")
+            continue
+
         print(f"Processing {lic['licenseId']}")
         details_url = lic["detailsUrl"]
 
