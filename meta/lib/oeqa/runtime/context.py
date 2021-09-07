@@ -8,8 +8,7 @@ import os
 import sys
 
 from oeqa.core.context import OETestContext, OETestContextExecutor
-from oeqa.core.target.ssh import OESSHTarget
-from oeqa.core.target.qemu import OEQemuTarget
+import oeqa.core.target
 from oeqa.utils.dump import HostDumper
 
 from oeqa.runtime.loader import OERuntimeTestLoader
@@ -101,79 +100,19 @@ class OERuntimeTestContextExecutor(OETestContextExecutor):
                 kwargs['port'] = target_ip_port[1]
 
         if target_type == 'simpleremote':
-            target = OESSHTarget(logger, target_ip, server_ip, **kwargs)
+            logger.info("Using obsolete simpleremote target, use oeqa.core.target.ssh.OESSHTarget")
+            return oeqa.core.target.ssh.OESSHTarget(logger, target_ip, server_ip, **kwargs)
         elif target_type == 'qemu':
-            target = OEQemuTarget(logger, None, server_ip, **kwargs)
+            logger.info("Using obsolete qemu target, use oeqa.core.target.qemu.OEQemuTarget")
+            return oeqa.core.target.qemu.OEQemuTarget(logger, None, server_ip, **kwargs)
         else:
-            # XXX: This code uses the old naming convention for controllers and
-            # targets, the idea it is to leave just targets as the controller
-            # most of the time was just a wrapper.
-            # XXX: This code tries to import modules from lib/oeqa/controllers
-            # directory and treat them as controllers, it will less error prone
-            # to use introspection to load such modules.
-            # XXX: Don't base your targets on this code it will be refactored
-            # in the near future.
-            # Custom target module loading
-            controller = OERuntimeTestContextExecutor.getControllerModule(target_type)
-            target = controller(logger, target_ip, server_ip, **kwargs)
-
-        return target
-
-    # Search oeqa.controllers module directory for and return a controller
-    # corresponding to the given target name.
-    # AttributeError raised if not found.
-    # ImportError raised if a provided module can not be imported.
-    @staticmethod
-    def getControllerModule(target):
-        controllerslist = OERuntimeTestContextExecutor._getControllerModulenames()
-        controller = OERuntimeTestContextExecutor._loadControllerFromName(target, controllerslist)
-        return controller
-
-    # Return a list of all python modules in lib/oeqa/controllers for each
-    # layer in bbpath
-    @staticmethod
-    def _getControllerModulenames():
-
-        controllerslist = []
-
-        def add_controller_list(path):
-            if not os.path.exists(os.path.join(path, '__init__.py')):
-                raise OSError('Controllers directory %s exists but is missing __init__.py' % path)
-            files = sorted([f for f in os.listdir(path) if f.endswith('.py') and not f.startswith('_') and not f.startswith('.#')])
-            for f in files:
-                module = 'oeqa.controllers.' + f[:-3]
-                if module not in controllerslist:
-                    controllerslist.append(module)
-                else:
-                    raise RuntimeError("Duplicate controller module found for %s. Layers should create unique controller module names" % module)
-
-        for p in sys.path:
-            controllerpath = os.path.join(p, 'oeqa', 'controllers')
-            if os.path.exists(controllerpath):
-                add_controller_list(controllerpath)
-        return controllerslist
-
-    # Search for and return a controller from given target name and
-    # set of module names.
-    # Raise AttributeError if not found.
-    # Raise ImportError if a provided module can not be imported
-    @staticmethod
-    def _loadControllerFromName(target, modulenames):
-        for name in modulenames:
-            obj = OERuntimeTestContextExecutor._loadControllerFromModule(target, name)
-            if obj:
-                return obj
-        raise AttributeError("Unable to load {0} from available modules: {1}".format(target, str(modulenames)))
-
-    # Search for and return a controller or None from given module name
-    @staticmethod
-    def _loadControllerFromModule(target, modulename):
-        try:
             import importlib
-            module = importlib.import_module(modulename)
-            return getattr(module, target)
-        except AttributeError:
-            return None
+            packagename, classname = target_type.rsplit(".", 1)
+            module = importlib.import_module(packagename)
+            target_class = getattr(module, classname)
+            if not issubclass(target_class, oeqa.core.target.OETarget):
+                raise TypeError(f"Class {target_type} is not an instance of oeqa.target.OETarget")
+            return target_class(logger, target_ip, server_ip, **kwargs)
 
     @staticmethod
     def readPackagesManifest(manifest):
