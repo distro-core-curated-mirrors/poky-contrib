@@ -144,11 +144,8 @@ do_testimage[depends] += "${TESTIMAGEDEPENDS}"
 do_testimage[lockfiles] += "${TESTIMAGELOCK}"
 
 def testimage_sanity(d):
-    if (d.getVar('TEST_TARGET') == 'simpleremote'
-        and (not d.getVar('TEST_TARGET_IP')
-             or not d.getVar('TEST_SERVER_IP'))):
-        bb.fatal('When TEST_TARGET is set to "simpleremote" '
-                 'TEST_TARGET_IP and TEST_SERVER_IP are needed too.')
+    if d.getVar('TEST_TARGET') == 'simpleremote' and not d.getVar('TEST_TARGET_IP'):
+        bb.fatal('When TEST_TARGET is set to "simpleremote" TEST_TARGET_IP must be set.')
 
 def get_testimage_configuration(d, test_type, machine):
     import platform
