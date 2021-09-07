@@ -27,9 +27,8 @@ class OESSHTarget(OETarget):
             fileHandler.setFormatter(formatter)
             logger.addHandler(fileHandler)
 
-        super(OESSHTarget, self).__init__(logger)
+        super().__init__(logger, server_ip)
         self.ip = ip
-        self.server_ip = server_ip
         self.server_port = server_port
         self.timeout = timeout
         self.user = user

@@ -7,7 +7,8 @@
 
 class OETarget:
 
-    def __init__(self, logger, *args, **kwargs):
+    def __init__(self, logger, server_ip):
+        self.server_ip = server_ip
         self.logger = logger
 
     def start(self):
