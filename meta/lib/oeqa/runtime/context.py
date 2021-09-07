@@ -100,7 +100,7 @@ class OERuntimeTestContextExecutor(OETestContextExecutor):
                 kwargs['port'] = target_ip_port[1]
 
         if target_type == 'simpleremote':
-            target = OESSHTarget(logger, target_ip, server_ip, **kwargs)
+            target = OESSHTarget(logger, server_ip, target_ip, **kwargs)
         elif target_type == 'qemu':
             target = OEQemuTarget(logger, server_ip, **kwargs)
         else:
