@@ -1050,7 +1050,7 @@ def try_mirror_url(fetch, origud, ud, ld, check = False):
         return ud.localpath
 
     except bb.fetch2.NetworkAccess:
-        raise
+        return False
 
     except IOError as e:
         if e.errno in [errno.ESTALE]:

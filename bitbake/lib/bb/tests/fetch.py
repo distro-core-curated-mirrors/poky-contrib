@@ -844,6 +844,26 @@ class FetcherNoNetworkTest(FetcherTest):
         self.assertFalse(os.path.exists(os.path.join(self.dldir, "test-file.tar.gz")))
         self.assertFalse(os.path.exists(os.path.join(self.dldir, "test-file.tar.gz.done")))
 
+    def test_fetch_premirror(self):
+        mirrordir = os.path.join(self.tempdir, 'mirror')
+        os.mkdir(mirrordir)
+        # create the file in a mirror directory with correct hash
+        string = "this is a test file\n".encode("utf-8")
+        with open(os.path.join(mirrordir, "test-file.tar.gz"), "wb") as f:
+            f.write(string)
+        self.d.setVarFlag("SRC_URI", "sha256sum", "b6668cf8c46c7075e18215d922e7812ca082fa6cc34668d00a6c20aee4551fb6")
+        self.d.setVar("PREMIRRORS", "http://.*/.* file://%s/test-file.tar.gz" % mirrordir)
+        fetcher = bb.fetch.Fetch(["http://invalid.yoctoproject.org/release/test-file.tar.gz"], self.d)
+        fetcher.download()
+        self.assertEqual(os.path.getsize(self.dldir + "/test-file.tar.gz"), 20)
+        bb.utils.remove(self.dldir, recurse=True)
+
+        self.d.setVar("BB_NO_NETWORK", "1")
+        self.d.setVar("PREMIRRORS", "http://.*/.* http://downloads.yoctoproject.org/releases/bitbake \nhttp://.*/.* file://%s/test-file.tar.gz" % mirrordir)
+        fetcher = bb.fetch.Fetch(["http://invalid.yoctoproject.org/release/test-file.tar.gz"], self.d)
+        fetcher.download()
+        self.assertEqual(os.path.getsize(self.dldir + "/test-file.tar.gz"), 20)
+
 class FetcherNetworkTest(FetcherTest):
     @skipIfNoNetwork()
     def test_fetch(self):
