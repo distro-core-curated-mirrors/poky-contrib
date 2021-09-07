@@ -28,7 +28,6 @@ class OEQemuTarget(OESSHTarget):
 
         super().__init__(logger, target_ip, server_ip, timeout, user, port)
 
-        self.server_port = 0
         self.machine = machine
         self.rootfs = rootfs
         self.kernel = kernel

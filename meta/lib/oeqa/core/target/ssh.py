@@ -15,7 +15,7 @@ from . import OETarget
 
 class OESSHTarget(OETarget):
     def __init__(self, logger, target_ip, server_ip, timeout=300, user='root',
-                 port=None, server_port=0, **kwargs):
+                 port=None, **kwargs):
         if not logger:
             logger = logging.getLogger('target')
             logger.setLevel(logging.INFO)
@@ -28,7 +28,6 @@ class OESSHTarget(OETarget):
             logger.addHandler(fileHandler)
 
         super().__init__(logger, target_ip, server_ip)
-        self.server_port = server_port
         self.timeout = timeout
         self.user = user
         ssh_options = [
