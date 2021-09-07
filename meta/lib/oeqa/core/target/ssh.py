@@ -14,7 +14,7 @@ import codecs
 from . import OETarget
 
 class OESSHTarget(OETarget):
-    def __init__(self, logger, ip, server_ip, timeout=300, user='root',
+    def __init__(self, logger, target_ip, server_ip, timeout=300, user='root',
                  port=None, **kwargs):
         if not logger:
             logger = logging.getLogger('target')
@@ -27,8 +27,7 @@ class OESSHTarget(OETarget):
             fileHandler.setFormatter(formatter)
             logger.addHandler(fileHandler)
 
-        super().__init__(logger, server_ip)
-        self.ip = ip
+        super().__init__(logger, target_ip, server_ip)
         self.timeout = timeout
         self.user = user
         ssh_options = [
