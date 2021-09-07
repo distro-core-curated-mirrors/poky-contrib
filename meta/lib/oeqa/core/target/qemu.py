@@ -26,10 +26,8 @@ class OEQemuTarget(OESSHTarget):
             tmpdir='', dir_image='', boottime=60, serial_ports=2,
             boot_patterns = defaultdict(str), ovmf=False, tmpfsdir=None, **kwargs):
 
-        super(OEQemuTarget, self).__init__(logger, None, server_ip, timeout,
-                user, port)
+        super().__init__(logger, None, server_ip, timeout, user, port)
 
-        self.server_ip = server_ip
         self.server_port = 0
         self.machine = machine
         self.rootfs = rootfs
