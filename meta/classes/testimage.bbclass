@@ -312,6 +312,7 @@ def testimage_main(d):
                       'serial_ports': len(d.getVar("SERIAL_CONSOLES").split()),
                       'ovmf'        : ovmf,
                       'tmpfsdir'    : d.getVar("RUNQEMU_TMPFS_DIR"),
+                      'image_name'  : image_name
                     }
 
     if d.getVar("TESTIMAGE_BOOT_PATTERNS"):
