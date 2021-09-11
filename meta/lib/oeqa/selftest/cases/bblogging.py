@@ -102,3 +102,19 @@ class BitBakeLogging(OESelftestTestCase):
         #self.assertCount(result.output, "This is python fatal test stdout", 1)
         self.assertCount(result.output, "This is a fatal error", 1)
 
+class TestLogging(OESelftestTestCase):
+
+    def atest_logoutput_success(self):
+        self.logger.debug("Test debug message")
+        self.logger.info("Test info message")
+        self.logger.warn("Test warn message")
+        print("Stdout message")
+
+    def test_logoutput_fail(self):
+        self.logger.debug("Test debug message")
+        self.logger.info("Test info message")
+        self.logger.warn("Test warn message")
+        print("Stdout message")
+        self.assertTrue(False)
+
+

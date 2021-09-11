@@ -339,3 +339,9 @@ IMAGE_TYPES_MASKED ?= ""
 
 # bmap requires python3 to be in the PATH
 EXTRANATIVEPATH += "${@'python3-native' if d.getVar('IMAGE_FSTYPES').find('.bmap') else ''}"
+
+do_packageswu () {
+	:
+}
+
+#addtask do_packageswu after do_image_complete before do_image_qa
