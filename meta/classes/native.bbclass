@@ -195,4 +195,3 @@ USE_NLS = "no"
 
 RECIPERDEPTASK = "do_populate_sysroot"
 do_populate_sysroot[rdeptask] = "${RECIPERDEPTASK}"
-addtask build after do_populate_sysroot

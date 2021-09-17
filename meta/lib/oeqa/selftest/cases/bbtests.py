@@ -116,7 +116,7 @@ class BitbakeTests(OESelftestTestCase):
         self.add_command_to_tearDown('bitbake -c clean %s' % test_recipe)
 
         result = bitbake('-C compile %s' % test_recipe)
-        look_for_tasks = ['do_compile:', 'do_install:', 'do_package:']
+        look_for_tasks = ['do_compile:', 'do_install:', 'do_populate_sysroot:', 'do_package:']
         for task in look_for_tasks:
             self.assertIn(task, result.output, msg="Couldn't find %s task.")
 
