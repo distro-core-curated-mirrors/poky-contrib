@@ -1155,6 +1155,7 @@ def setscene_depvalid(task, taskdependees, notneeded, d, log=None):
 
         # Safe fallthrough default
         logit(" Default setscene dependency fall through due to dependency: %s" % (str(taskdependees[dep])), log)
+        bb.warn("Fall %s:%s,%s:%s" % (taskdependees[task][0],taskdependees[task][1], taskdependees[dep][0], taskdependees[dep][1]))
         return False
     return True
 

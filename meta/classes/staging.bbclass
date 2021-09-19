@@ -252,6 +252,8 @@ def staging_populate_sysroot_dir(targetsysroot, nativesysroot, native, d):
 # dependencies should get cleaned up correctly.
 #
 
+extend_recipe_sysroot[vardepsexclude] += "setscene_depvalid"
+
 python extend_recipe_sysroot() {
     import copy
     import subprocess
