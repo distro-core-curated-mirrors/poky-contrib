@@ -1,25 +1,4 @@
 # general
-ac_cv_sizeof_char=${ac_cv_sizeof_char=1}
-ac_cv_sizeof_unsigned_char=${ac_cv_sizeof_unsigned_char=1}
-ac_cv_sizeof_char_p=${ac_cv_sizeof_char_p=4}
-ac_cv_sizeof_unsigned_char_p=${ac_cv_sizeof_unsigned_char_p=4}
-ac_cv_sizeof_int=${ac_cv_sizeof_int=4}
-ac_cv_sizeof_unsigned_int=${ac_cv_sizeof_unsigned_int=4}
-ac_cv_sizeof_int_p=${ac_cv_sizeof_int_p=4}
-ac_cv_sizeof_long=${ac_cv_sizeof_long=4}
-ac_cv_sizeof_unsigned_long=${ac_cv_sizeof_unsigned_long=4}
-ac_cv_sizeof_long_long=${ac_cv_sizeof_long_long=8}
-ac_cv_sizeof_unsigned_long_long=${ac_cv_sizeof_unsigned_long_long=8}
-ac_cv_sizeof_short=${ac_cv_sizeof_short=2}
-ac_cv_sizeof_unsigned_short=${ac_cv_sizeof_unsigned_short=2}
-ac_cv_sizeof_size_t=${ac_cv_sizeof_size_t=4}
-ac_cv_sizeof_ssize_t=${ac_cv_sizeof_ssize_t=4}
-ac_cv_sizeof_void_p=${ac_cv_sizeof_void_p=4}
-ac_cv_sizeof_long_p=${ac_cv_sizeof_long_p=4}
-ac_cv_sizeof_float=${ac_cv_sizeof_float=4}
-ac_cv_sizeof_uid_t=${ac_cv_sizeof_uid_t=4}
-ac_cv_sizeof_gid_t=${ac_cv_sizeof_gid_t=4}
-ac_cv_sizeof_dev_t=${ac_cv_sizeof_dev_t=8}
 ac_cv_func_lstat_dereferences_slashed_symlink=${ac_cv_func_lstat_dereferences_slashed_symlink=yes}
 ac_cv_func_lstat_empty_string_bug=${ac_cv_func_lstat_empty_string_bug=no}
 ac_cv_func_setvbuf_reversed=${ac_cv_func_setvbuf_reversed=no}
@@ -87,9 +66,6 @@ glib_cv_rtldglobal_broken=${glib_cv_rtldglobal_broken=yes}
 glib_cv_stack_grows=${glib_cv_stack_grows=no}
 utils_cv_sys_open_max=${utils_cv_sys_open_max=1015}
 glib_cv_use_pid_surrogate=${glib_cv_use_pid_surrogate=yes}
-ac_cv_alignof_guint32=4
-ac_cv_alignof_guint64=4
-ac_cv_alignof_unsigned_long=4
 
 # guile
 ac_cv_uchar=${ac_cv_uchar=no}
@@ -99,9 +75,6 @@ ac_cv_ushort=${ac_cv_ushort=yes}
 
 # intercom
 ac_cv_func_fnmatch_works=${ac_cv_func_fnmatch_works=yes}
-
-# jikes-native
-ac_cv_sizeof_wchar_t=4
 
 # lftp
 ac_cv_need_trio=${ac_cv_need_trio=no}
@@ -120,20 +93,6 @@ with_broken_putenv=${with_broken_putenv=no}
 # mysql
 mysql_cv_func_atomic_sub=${mysql_cv_func_atomic_sub=yes}
 mysql_cv_func_atomic_add=${mysql_cv_func_atomic_add=yes}
-
-# ORBit2
-ac_cv_alignof_CORBA_boolean=1
-ac_cv_alignof_CORBA_char=1
-ac_cv_alignof_CORBA_double=4
-ac_cv_alignof_CORBA_float=4
-ac_cv_alignof_CORBA_long=4
-ac_cv_alignof_CORBA_long_double=4
-ac_cv_alignof_CORBA_long_long=4
-ac_cv_alignof_CORBA_octet=1
-ac_cv_alignof_CORBA_pointer=4
-ac_cv_alignof_CORBA_short=2
-ac_cv_alignof_CORBA_struct=4
-ac_cv_alignof_CORBA_wchar=2
 
 # php
 ac_cv_pread=${ac_cv_pread=no}
@@ -209,13 +168,3 @@ ac_cv_lib_c_signalfd=${ac_cv_lib_c_signalfd=yes}
 nfsd_cv_broken_setfsuid=${nfsd_cv_broken_setfsuid=0}
 nfsd_cv_func_statfs=${nfsd_cv_func_statfs=statfs2_bsize}
 nfsd_cv_bsd_signals=${nfsd_cv_bsd_signals=yes}
-
-# at-spi2-core
-ac_cv_alignof_char=1
-ac_cv_alignof_dbind_pointer=4
-ac_cv_alignof_dbind_struct=1
-ac_cv_alignof_dbus_bool_t=4
-ac_cv_alignof_dbus_int16_t=2
-ac_cv_alignof_dbus_int32_t=4
-ac_cv_alignof_dbus_int64_t=4
-ac_cv_alignof_double=4
