@@ -321,7 +321,7 @@ class OESelftestTestContextExecutor(OETestContextExecutor):
         _add_layer_libs()
 
         self.tc.logger.info("Running bitbake -e to test the configuration is valid/parsable")
-        runCmd("bitbake -e")
+#        runCmd("bitbake -e")
 
     def get_json_result_dir(self, args):
         json_result_dir = os.path.join(self.tc.td["LOG_DIR"], 'oeqa')
