@@ -1299,7 +1299,7 @@ python () {
         oe.qa.handle_error("pkgvarcheck", "recipe uses DEPENDS:${PN}, should use DEPENDS", d)
 
     issues = []
-    if not bb.data.inherits_class("native", d) and (d.getVar('PACKAGES') or "").split():
+    if (d.getVar('PACKAGES') or "").split():
         for dep in (d.getVar('QADEPENDS') or "").split():
             d.appendVarFlag('do_package_qa', 'depends', " %s:do_populate_sysroot" % dep)
         for var in 'RDEPENDS', 'RRECOMMENDS', 'RSUGGESTS', 'RCONFLICTS', 'RPROVIDES', 'RREPLACES', 'FILES', 'pkg_preinst', 'pkg_postinst', 'pkg_prerm', 'pkg_postrm', 'ALLOW_EMPTY':

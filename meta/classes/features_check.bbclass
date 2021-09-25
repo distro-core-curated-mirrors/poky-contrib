@@ -20,8 +20,11 @@ python () {
 
     for kind in ['DISTRO', 'MACHINE', 'COMBINED', 'IMAGE']:
         if d.getVar('ANY_OF_' + kind + '_FEATURES') is None and \
+           d.overridedata.get('ANY_OF_' + kind + '_FEATURES') is None and \
            d.getVar('REQUIRED_' + kind + '_FEATURES') is None and \
-           d.getVar('CONFLICT_' + kind + '_FEATURES') is None:
+           d.overridedata.get('REQUIRED_' + kind + '_FEATURES') is None and \
+           d.getVar('CONFLICT_' + kind + '_FEATURES') is None and \
+           d.overridedata.get('CONFLICT_' + kind + '_FEATURES') is None:
             continue
 
         unused = False

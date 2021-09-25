@@ -84,13 +84,6 @@ def expandKeys(alterdata, readdata = None):
 
     todolist = {}
     for key in alterdata:
-        local_var = alterdata._findVar(key)
-        if local_var and ":overrides" in local_var:
-            for o in local_var[":overrides"].copy():
-                if '${' in o:
-                    expo = expand(o, readdata)
-                    local_var[":overrides"][expo] = local_var[":overrides"][o]
-                    del local_var[":overrides"][o]
         if not '${' in key:
             continue
 
