@@ -48,7 +48,6 @@ def find_meson_cross_files(d):
     d.appendVar("EXTRA_OEMESON", " " + " ".join(items))
     items = ["%s:%s" % (k, "True" if v else "False") for k,v in files.items()]
     d.appendVarFlag("do_configure", "file-checksums", " " + " ".join(items))
-    bb.warn(str(" " + " ".join(items)))
 
 python () {
     find_meson_cross_files(d)
