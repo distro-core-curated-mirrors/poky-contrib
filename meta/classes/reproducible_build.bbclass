@@ -121,7 +121,7 @@ def get_source_date_epoch_value(d):
         return cached
 
     if cached and epochfile != efile:
-        bb.warn("Epoch file changed from %s to %s (task %s)" % (efile, epochfile, d.getVar('BB_CURRENTTASK')))
+        bb.debug(1, "Epoch file changed from %s to %s" % (efile, epochfile))
 
     source_date_epoch = int(d.getVar('SOURCE_DATE_EPOCH_FALLBACK'))
     try:
@@ -138,17 +138,10 @@ def get_source_date_epoch_value(d):
                 source_date_epoch = int(d.getVar('SOURCE_DATE_EPOCH_FALLBACK'))
         bb.debug(1, "SOURCE_DATE_EPOCH: %d" % source_date_epoch)
     except FileNotFoundError:
-        # tasks that can run before the code in do_unpack (or setscene tasks)
-        if d.getVar('BB_WORKERCONTEXT') != '1' or d.getVar('BB_CURRENTTASK') in ['fetch', 'unpack', 'prepare_recipe_sysroot', 'addto_recipe_sysroot'] or d.getVar('BB_CURRENTTASK').endswith("_setscene"):
-            bb.debug(1, "Cannot find %s. SOURCE_DATE_EPOCH will default to %d" % (epochfile, source_date_epoch))
-        else:
-            pn = d.getVar("PN")
-            if "gcc" not in pn and "glibc-locale" not in pn:
-                bb.warn("Cannot find %s. SOURCE_DATE_EPOCH will default to %d" % (epochfile, source_date_epoch))
+        bb.debug(1, "Cannot find %s. SOURCE_DATE_EPOCH will default to %d" % (epochfile, source_date_epoch))
 
     d.setVar('__CACHED_SOURCE_DATE_EPOCH', (str(source_date_epoch), epochfile))
     return str(source_date_epoch)
 
 export SOURCE_DATE_EPOCH ?= "${@get_source_date_epoch_value(d)}"
-SOURCE_DATE_EPOCH[vardepsexclude] += "BB_CURRENTASK"
 BB_HASHBASE_WHITELIST += "SOURCE_DATE_EPOCH"
