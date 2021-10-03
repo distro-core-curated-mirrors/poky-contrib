@@ -197,6 +197,7 @@ def sstate_state_fromvars(d, task = None):
     ss['interceptfuncs'] = interceptfuncs
     ss['fixmedir'] = fixmedir
     return ss
+sstate_state_fromvars[vardepsexclude] = "BB_CURRENTTASK"
 
 def sstate_add(ss, source, dest, d):
     if not source.endswith("/"):
