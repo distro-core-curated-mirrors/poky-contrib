@@ -591,6 +591,9 @@ class SignatureGeneratorUniHashMixIn(object):
             else:
                 outhash = bb.utils.better_eval(self.method + '(path, sigfile, task, d)', locs)
 
+            if outhash == "afd11c366050bcd75ad763e898e4430e2a60659b26f83fbb22201a60672019fa":
+                bb.warn("Found the problematic outhash")
+
             try:
                 extra_data = {}
 
