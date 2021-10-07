@@ -100,9 +100,10 @@ do_populate_sysroot[sstate-outputdirs] = "${COMPONENTS_DIR}/${PACKAGE_ARCH}/${PN
 # Since we actually install these into situ there is no staging prefix
 STAGING_DIR_HOST = ""
 STAGING_DIR_TARGET = ""
-PKG_CONFIG_DIR = "${libdir}/pkgconfig"
+#PKG_CONFIG_DIR = "${libdir}/pkgconfig"
 
 EXTRA_NATIVE_PKGCONFIG_PATH ?= ""
+# TODO native paths
 PKG_CONFIG_PATH .= "${EXTRA_NATIVE_PKGCONFIG_PATH}"
 PKG_CONFIG_SYSROOT_DIR = ""
 PKG_CONFIG_SYSTEM_LIBRARY_PATH[unexport] = "1"
