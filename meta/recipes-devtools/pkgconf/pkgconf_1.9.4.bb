@@ -24,6 +24,11 @@ inherit autotools
 
 EXTRA_OECONF += "--with-pkg-config-dir='${libdir}/pkgconfig:${datadir}/pkgconfig'"
 
+do_install:append () {
+    # do we need this?
+    ln -s pkgconf ${D}${bindir}/pkg-config
+}
+
 do_install:append:class-native () {
     # Install a pkg-config-native wrapper that will use the native sysroot instead
     # of the MACHINE sysroot, for using pkg-config when building native tools.
