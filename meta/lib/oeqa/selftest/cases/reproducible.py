@@ -27,8 +27,6 @@ import datetime
 
 # ruby-ri-docs, meson:
 #https://autobuilder.yocto.io/pub/repro-fail/oe-reproducible-20210215-0_td9la2/packages/diff-html/
-# rust-llvm:
-#https://autobuilder.yocto.io/pub/repro-fail/oe-reproducible-20210825-kaihham6/
 exclude_packages = [
 	'glide',
 	'go-helloworld',
@@ -36,8 +34,6 @@ exclude_packages = [
 	'go_',
 	'go-',
 	'ruby-ri-docs',
-	'rust-llvm-liblto',
-	'rust-llvm-staticdev'
 	]
 
 def is_excluded(package):
