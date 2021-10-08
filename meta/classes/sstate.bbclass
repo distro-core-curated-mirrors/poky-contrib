@@ -932,13 +932,13 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
         sstatefile = d.expand("${SSTATE_DIR}/" + extrapath + generate_sstatefn(spec, gethash(tid), tname, siginfo, d))
 
         if os.path.exists(sstatefile):
-            bb.debug(2, "SState: Found valid sstate file %s" % sstatefile)
+            bb.warn("SState: Found valid sstate file %s" % sstatefile)
             found.add(tid)
             foundLocal.add(tid)
             continue
         else:
             missed.add(tid)
-            bb.debug(2, "SState: Looked for but didn't find file %s" % sstatefile)
+            bb.warn("SState: Looked for but didn't find file %s" % sstatefile)
 
     mirrors = d.getVar("SSTATE_MIRRORS")
     if mirrors:
@@ -972,13 +972,13 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
             localdata2 = bb.data.createCopy(localdata)
             srcuri = "file://" + sstatefile
             localdata.setVar('SRC_URI', srcuri)
-            bb.debug(2, "SState: Attempting to fetch %s" % srcuri)
+            bb.warn("SState: Attempting to fetch %s" % srcuri)
 
             try:
                 fetcher = bb.fetch2.Fetch(srcuri.split(), localdata2,
                             connection_cache=thread_worker.connection_cache)
                 fetcher.checkstatus()
-                bb.debug(2, "SState: Successful fetch test for %s" % srcuri)
+                bb.warn("SState: Successful fetch test for %s" % srcuri)
                 found.add(tid)
                 foundNet.add(tid)
                 if tid in missed:

@@ -1205,6 +1205,7 @@ class RunQueueData:
         bb.parse.siggen.prep_taskhash(tid, self.runtaskentries[tid].depends, dc)
         self.runtaskentries[tid].hash = bb.parse.siggen.get_taskhash(tid, self.runtaskentries[tid].depends, dc)
         self.runtaskentries[tid].unihash = bb.parse.siggen.get_unihash(tid)
+        bb.warn("%s: %s %s" % (tid, self.runtaskentries[tid].hash, self.runtaskentries[tid].unihash))
 
     def dump_data(self):
         """
