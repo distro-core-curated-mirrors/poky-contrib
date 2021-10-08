@@ -612,13 +612,7 @@ class SignatureGeneratorUniHashMixIn(object):
                     method = method + self.extramethod[tid]
 
                 data = self.client().report_unihash(taskhash, method, outhash, unihash, extra_data)
-
                 new_unihash = data['unihash']
-
-                # Check we get the correct unihash back and fixup if not
-                data = self.client().get_unihash(method, taskhash)
-                if data:
-                    new_unihash = data
 
                 if new_unihash != unihash:
                     hashequiv_logger.debug('Task %s unihash changed %s -> %s by server %s' % (taskhash, unihash, new_unihash, self.server))
