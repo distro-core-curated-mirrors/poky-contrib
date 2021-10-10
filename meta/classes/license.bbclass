@@ -12,6 +12,23 @@ LICENSE_CREATE_PACKAGE ??= "0"
 LICENSE_PACKAGE_SUFFIX ??= "-lic"
 LICENSE_FILES_DIRECTORY ??= "${datadir}/licenses/"
 
+# Elect whether a given type of error is a warning or error, they may
+# have been set by other files.
+WARN_LICENSE ?= "no-license"
+ERROR_LICENSE ?= ""
+WARN_LICENSE[doc] = "Space-separated list of license problems that should be reported only as warnings"
+ERROR_LICENSE[doc] = "Space-separated list of license problems that should be reported as errors"
+
+def package_license_handle_error(error_class, error_msg, d):
+    if error_class in (d.getVar("ERROR_LICENSE") or "").split():
+        package_qa_write_error(error_class, error_msg, d)
+        bb.fatal("License Issue: %s [%s]" % (error_msg, error_class))
+    elif error_class in (d.getVar("WARN_LICENSE") or "").split():
+        package_qa_write_error(error_class, error_msg, d)
+        bb.warn("License Issue: %s [%s]" % (error_msg, error_class))
+    else:
+        bb.note("License Issue: %s [%s]" % (error_msg, error_class))
+
 addtask populate_lic after do_patch before do_build
 do_populate_lic[dirs] = "${LICSSTATEDIR}/${PN}"
 do_populate_lic[cleandirs] = "${LICSSTATEDIR}"
@@ -190,7 +207,7 @@ def find_license_files(d):
             # Add explicity avoid of CLOSED license because this isn't generic
             if license_type != 'CLOSED':
                 # And here is where we warn people that their licenses are lousy
-                bb.warn("%s: No generic license file exists for: %s in any provider" % (pn, license_type))
+                package_license_handle_error("no-license", "%s: No generic license file exists for: %s in any provider" % (pn, license_type), d)
             pass
 
     if not generic_directory:
