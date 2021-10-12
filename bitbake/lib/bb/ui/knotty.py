@@ -472,13 +472,13 @@ def main(server, eventHandler, params, tf = TerminalFilter):
             # terminal
             "BitBake.consoleFormatter" : {
                 "()": "bb.msg.BBLogFormatter",
-                "format": "%(levelname)s: %(message)s"
+                "format": "[%(threadName)s] %(levelname)s: %(message)s"
             },
             # The file log requires a separate instance so that it doesn't get
             # color enabled
             "BitBake.logfileFormatter": {
                 "()": "bb.msg.BBLogFormatter",
-                "format": "%(levelname)s: %(message)s"
+                "format": "[%(threadName)s] %(levelname)s: %(message)s"
             }
         },
         "filters": {
