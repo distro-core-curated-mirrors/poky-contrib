@@ -136,21 +136,29 @@ class Wget(FetchMethod):
         return True
 
     def checkstatus(self, fetch, ud, d, try_again=True):
+        bb.warn("checkstatus: %s" % ud.url)
+
         class HTTPConnectionCache(http.client.HTTPConnection):
-            if fetch.connection_cache:
-                def connect(self):
+            def connect(self):
+                if fetch.connection_cache:
                     """Connect to the host and port specified in __init__."""
 
                     sock = fetch.connection_cache.get_connection(self.host, self.port)
                     if sock:
+                        bb.warn("%s reusing socket for %s" % (fetch.connection_cache, self.host))
                         self.sock = sock
                     else:
+                        bb.warn("%s creating new socket for %s" % (fetch.connection_cache, self.host))
                         self.sock = socket.create_connection((self.host, self.port),
                                     self.timeout, self.source_address)
                         fetch.connection_cache.add_connection(self.host, self.port, self.sock)
 
-                    if self._tunnel_host:
-                        self._tunnel()
+                else:
+                    bb.warn("%s creating fresh socket for %s" % (fetch.connection_cache, self.host))
+                    self.sock = socket.create_connection((self.host, self.port), self.timeout, self.source_address)
+
+                if self._tunnel_host:
+                    self._tunnel()
 
         class CacheHTTPHandler(urllib.request.HTTPHandler):
             def http_open(self, req):
@@ -206,6 +214,8 @@ class Wget(FetchMethod):
                 try:
                     h.request(req.get_method(), req.selector, req.data, headers)
                 except socket.error as err: # XXX what error?
+                    import traceback
+                    bb.warn("socket error: %s\n%s" % (err, "".join(traceback.format_tb(err.__traceback__))))
                     # Don't close connection when cache is enabled.
                     # Instead, try to detect connections that are no longer
                     # usable (for example, closed unexpectedly) and remove
@@ -360,20 +370,23 @@ class Wget(FetchMethod):
                 with opener.open(r) as response:
                     pass
             except urllib.error.URLError as e:
+                import traceback
+                logger.warn("checkstatus urlopen(%s) failed: %s\n%s" % (ud.url, e, "".join(traceback.format_tb(e.__traceback__))))
                 if try_again:
-                    logger.debug2("checkstatus: trying again")
+                    logger.warn("checkstatus: trying again")
                     return self.checkstatus(fetch, ud, d, False)
                 else:
                     # debug for now to avoid spamming the logs in e.g. remote sstate searches
-                    logger.debug2("checkstatus() urlopen failed: %s" % e)
+                    logger.warn("checkstatus() urlopen failed: %s" % e)
                     return False
             except ConnectionResetError as e:
+                logger.warn("checkstatus urlopen(%s) connection reset: %s" % (ud.url, e))
                 if try_again:
-                    logger.debug2("checkstatus: trying again")
+                    logger.warn("checkstatus: trying again")
                     return self.checkstatus(fetch, ud, d, False)
                 else:
                     # debug for now to avoid spamming the logs in e.g. remote sstate searches
-                    logger.debug2("checkstatus() urlopen failed: %s" % e)
+                    logger.warn("checkstatus() urlopen failed: %s" % e)
                     return False
 
         return True

@@ -962,9 +962,12 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
         from bb.fetch2 import FetchConnectionCache
         def checkstatus_init(thread_worker):
             thread_worker.connection_cache = FetchConnectionCache()
+            bb.warn("checkstatus_init: created connection cache %s" % thread_worker.connection_cache)
 
         def checkstatus_end(thread_worker):
+            bb.warn("checkstatus_init: killing cache %s" % thread_worker.connection_cache)
             thread_worker.connection_cache.close_connections()
+            thread_worker.connection_cache = None
 
         def checkstatus(thread_worker, arg):
             (tid, sstatefile) = arg
@@ -983,10 +986,10 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
                 foundNet.add(tid)
                 if tid in missed:
                     missed.remove(tid)
-            except:
+            except Exception as e:
                 missed.add(tid)
-                bb.debug(2, "SState: Unsuccessful fetch test for %s" % srcuri)
-                pass
+                bb.warn("SState: Unsuccessful fetch test for %s (%s)" % (srcuri, e))
+
             if len(tasklist) >= min_tasks:
                 bb.event.fire(bb.event.ProcessProgress(msg, len(tasklist) - thread_worker.tasks.qsize()), d)
 
