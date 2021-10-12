@@ -21,6 +21,7 @@ import bb
 import bb.progress
 import socket
 import http.client
+import netrc
 import urllib.request, urllib.parse, urllib.error
 from   bb.fetch2 import FetchMethod
 from   bb.fetch2 import FetchError
@@ -359,11 +360,11 @@ class Wget(FetchMethod):
                     add_basic_auth(ud.user + ':' + ud.pswd, r)
 
                 try:
-                    import netrc
-                    n = netrc.netrc()
-                    login, unused, password = n.authenticators(urllib.parse.urlparse(uri).hostname)
-                    add_basic_auth("%s:%s" % (login, password), r)
-                except (TypeError, ImportError, IOError, netrc.NetrcParseError):
+                    auth_data = netrc.netrc().authenticators(urllib.parse.urlparse(uri).hostname)
+                    if auth_data:
+                        login, account, password = auth_data
+                        add_basic_auth("%s:%s" % (login, password), r)
+                except (FileNotFoundError, netrc.NetrcParseError):
                     pass
 
                 with opener.open(r, timeout=30) as response:
