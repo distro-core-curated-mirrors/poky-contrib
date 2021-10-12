@@ -131,7 +131,7 @@ do_install () {
     export PKGLIBDIR="${base_libdir}/bootchart"
     export SYSTEMD_UNIT_DIR="${systemd_system_unitdir}"
 
-    oe_runmake install
+    oe_runmake install NO_PYTHON_COMPILE=1
     install -d ${D}${sysconfdir}/init.d
     install -m 0755 ${WORKDIR}/bootchartd_stop.sh ${D}${sysconfdir}/init.d
 
