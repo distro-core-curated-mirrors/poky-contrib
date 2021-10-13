@@ -171,6 +171,32 @@ def elf_machine_to_string(machine):
     except:
         return "Unknown (%s)" % repr(machine)
 
+def write_error(type, error, d):
+    logfile = d.getVar('QA_LOGFILE')
+    if logfile:
+        p = d.getVar('P')
+        with open(logfile, "a+") as f:
+            f.write("%s: %s [%s]\n" % (p, error, type))
+
+def handle_error(error_class, error_msg, d):
+    if error_class in (d.getVar("ERROR_QA") or "").split():
+        write_error(error_class, error_msg, d)
+        bb.error("QA Issue: %s [%s]" % (error_msg, error_class))
+        d.setVar("QA_SANE", False)
+        return False
+    elif error_class in (d.getVar("WARN_QA") or "").split():
+        write_error(error_class, error_msg, d)
+        bb.warn("QA Issue: %s [%s]" % (error_msg, error_class))
+    else:
+        bb.note("QA Issue: %s [%s]" % (error_msg, error_class))
+    return True
+
+def add_message(messages, section, new_msg):
+    if section not in messages:
+        messages[section] = new_msg
+    else:
+        messages[section] = messages[section] + "\n" + new_msg
+
 if __name__ == "__main__":
     import sys
 

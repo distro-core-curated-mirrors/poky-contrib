@@ -152,6 +152,7 @@ def find_license_files(d):
 
     def find_license(license_type):
         import oe.qa
+        nonlocal sane
         try:
             bb.utils.mkdirhier(gen_lic_dest)
         except:

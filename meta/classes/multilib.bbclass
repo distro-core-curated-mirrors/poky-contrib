@@ -210,7 +210,7 @@ python do_package_qa_multilib() {
         if len(candidates) > 0:
             msg = "%s package %s - suspicious values '%s' in %s" \
                    % (d.getVar('PN'), pkg, ' '.join(candidates), var)
-            package_qa_handle_error("multilib", msg, d)
+            oe.qa.handle_error("multilib", msg, d)
 
     ml = d.getVar('MLPREFIX')
     if not ml:
