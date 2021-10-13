@@ -112,6 +112,7 @@ def find_license_files(d):
     import oe.license
     from collections import defaultdict, OrderedDict
 
+    sane = True
     # All the license files for the package
     lic_files = d.getVar('LIC_FILES_CHKSUM') or ""
     pn = d.getVar('PN')
@@ -150,6 +151,7 @@ def find_license_files(d):
             self.generic_visit(node)
 
     def find_license(license_type):
+        import oe.qa
         try:
             bb.utils.mkdirhier(gen_lic_dest)
         except:
@@ -182,7 +184,8 @@ def find_license_files(d):
             # The user may attempt to use NO_GENERIC_LICENSE for a generic license which doesn't make sense
             # and should not be allowed, warn the user in this case.
             if d.getVarFlag('NO_GENERIC_LICENSE', license_type):
-                bb.warn("%s: %s is a generic license, please don't use NO_GENERIC_LICENSE for it." % (pn, license_type))
+                sane &= oe.qa.handle_error("license-no-generic",
+                    "%s: %s is a generic license, please don't use NO_GENERIC_LICENSE for it." % (pn, license_type), d)
 
         elif non_generic_lic and non_generic_lic in lic_chksums:
             # if NO_GENERIC_LICENSE is set, we copy the license files from the fetched source
@@ -194,7 +197,8 @@ def find_license_files(d):
             # Add explicity avoid of CLOSED license because this isn't generic
             if license_type != 'CLOSED':
                 # And here is where we warn people that their licenses are lousy
-                bb.warn("%s: No generic license file exists for: %s in any provider" % (pn, license_type))
+                sane &= oe.qa.handle_error("license-exists",
+                    "%s: No generic license file exists for: %s in any provider" % (pn, license_type), d)
             pass
 
     if not generic_directory:
@@ -219,7 +223,8 @@ def find_license_files(d):
     except oe.license.InvalidLicense as exc:
         bb.fatal('%s: %s' % (d.getVar('PF'), exc))
     except SyntaxError:
-        bb.warn("%s: Failed to parse it's LICENSE field." % (d.getVar('PF')))
+        sane &= oe.qa.handle_error("license-syntax",
+            "%s: Failed to parse it's LICENSE field." % (d.getVar('PF')), d)
     # Add files from LIC_FILES_CHKSUM to list of license files
     lic_chksum_paths = defaultdict(OrderedDict)
     for path, data in sorted(lic_chksums.items()):
@@ -237,6 +242,8 @@ def find_license_files(d):
             for i, data in enumerate(files.values()):
                 lic_files_paths.append(tuple(["%s.%d" % (basename, i)] + list(data)))
 
+    if not sane:
+        bb.fatal("Fatal QA errors found, failing task.")
     return lic_files_paths
 
 def return_spdx(d, license):
@@ -402,6 +409,8 @@ def check_license_format(d):
         Validate operators in LICENSES.
         No spaces are allowed between LICENSES.
     """
+    import oe.qa
+    sane = True
     pn = d.getVar('PN')
     licenses = d.getVar('LICENSE')
     from oe.license import license_operator, license_operator_chars, license_pattern
@@ -410,14 +419,18 @@ def check_license_format(d):
     for pos, element in enumerate(elements):
         if license_pattern.match(element):
             if pos > 0 and license_pattern.match(elements[pos - 1]):
-                bb.warn('%s: LICENSE value "%s" has an invalid format - license names ' \
+                sane &= oe.qa.handle_error('license-format',
+                        '%s: LICENSE value "%s" has an invalid format - license names ' \
                         'must be separated by the following characters to indicate ' \
                         'the license selection: %s' %
-                        (pn, licenses, license_operator_chars))
+                        (pn, licenses, license_operator_chars), d)
         elif not license_operator.match(element):
-            bb.warn('%s: LICENSE value "%s" has an invalid separator "%s" that is not ' \
+            sane &= oe.qa.handle_error('license-format',
+                    '%s: LICENSE value "%s" has an invalid separator "%s" that is not ' \
                     'in the valid list of separators (%s)' %
-                    (pn, licenses, element, license_operator_chars))
+                    (pn, licenses, element, license_operator_chars), d)
+    if not sane:
+        bb.fatal("Fatal QA errors found, failing task.")
 
 SSTATETASKS += "do_populate_lic"
 do_populate_lic[sstate-inputdirs] = "${LICSSTATEDIR}"
