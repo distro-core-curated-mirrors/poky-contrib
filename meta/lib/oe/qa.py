@@ -182,7 +182,7 @@ def handle_error(error_class, error_msg, d):
     if error_class in (d.getVar("ERROR_QA") or "").split():
         write_error(error_class, error_msg, d)
         bb.error("QA Issue: %s [%s]" % (error_msg, error_class))
-        d.setVar("QA_SANE", False)
+        d.setVar("QA_FATAL_ERRORS", True)
         return False
     elif error_class in (d.getVar("WARN_QA") or "").split():
         write_error(error_class, error_msg, d)
@@ -190,6 +190,10 @@ def handle_error(error_class, error_msg, d):
     else:
         bb.note("QA Issue: %s [%s]" % (error_msg, error_class))
     return True
+
+def exit_if_errors(d):
+    if d.getVar("QA_FATAL_ERRORS"):
+        bb.fatal("QA run found fatal errors. Please consider fixing them.")
 
 def add_message(messages, section, new_msg):
     if section not in messages:

@@ -18,8 +18,6 @@
 #   files under exec_prefix
 #  -Check if the package name is upper case
 
-QA_SANE = "True"
-
 # Elect whether a given type of error is a warning or error, they may
 # have been set by other files.
 WARN_QA ?= " libdir xorg-driver-abi \
@@ -492,7 +490,6 @@ python populate_lic_qa_checksum() {
     """
     Check for changes in the license files.
     """
-    sane = True
 
     lic_files = d.getVar('LIC_FILES_CHKSUM') or ''
     lic = d.getVar('LICENSE')
@@ -502,7 +499,7 @@ python populate_lic_qa_checksum() {
         return
 
     if not lic_files and d.getVar('SRC_URI'):
-        sane &= oe.qa.handle_error("license-checksum", pn + ": Recipe file fetches files and does not have license file information (LIC_FILES_CHKSUM)", d)
+        oe.qa.handle_error("license-checksum", pn + ": Recipe file fetches files and does not have license file information (LIC_FILES_CHKSUM)", d)
 
     srcdir = d.getVar('S')
     corebase_licensefile = d.getVar('COREBASE') + "/LICENSE"
@@ -510,11 +507,11 @@ python populate_lic_qa_checksum() {
         try:
             (type, host, path, user, pswd, parm) = bb.fetch.decodeurl(url)
         except bb.fetch.MalformedUrl:
-            sane &= oe.qa.handle_error("license-checksum", pn + ": LIC_FILES_CHKSUM contains an invalid URL: " + url, d)
+            oe.qa.handle_error("license-checksum", pn + ": LIC_FILES_CHKSUM contains an invalid URL: " + url, d)
             continue
         srclicfile = os.path.join(srcdir, path)
         if not os.path.isfile(srclicfile):
-            sane &= oe.qa.handle_error("license-checksum", pn + ": LIC_FILES_CHKSUM points to an invalid file: " + srclicfile, d)
+            oe.qa.handle_error("license-checksum", pn + ": LIC_FILES_CHKSUM points to an invalid file: " + srclicfile, d)
             continue
 
         if (srclicfile == corebase_licensefile):
@@ -582,10 +579,9 @@ python populate_lic_qa_checksum() {
             else:
                 msg = pn + ": LIC_FILES_CHKSUM is not specified for " +  url
                 msg = msg + "\n" + pn + ": The md5 checksum is " + md5chksum
-            sane &= oe.qa.handle_error("license-checksum", msg, d)
+            oe.qa.handle_error("license-checksum", msg, d)
 
-    if not sane:
-        bb.fatal("Fatal QA errors found, failing task.")
+    oe.qa.exit_if_errors(d)
 }
 
 def qa_check_staged(path,d):
@@ -1067,9 +1063,7 @@ python do_package_qa () {
     if 'libdir' in d.getVar("ALL_QA").split():
         package_qa_check_libdir(d)
 
-    qa_sane = d.getVar("QA_SANE")
-    if not qa_sane:
-        bb.fatal("QA run found fatal errors. Please consider fixing them.")
+    oe.qa.exit_if_errors(d)
     bb.note("DONE with PACKAGE QA")
 }
 
@@ -1241,9 +1235,7 @@ Rerun configure task after fixing this."""
                 error_msg = "%s: invalid PACKAGECONFIG: %s" % (pn, pconfig)
                 oe.qa.handle_error("invalid-packageconfig", error_msg, d)
 
-    qa_sane = d.getVar("QA_SANE")
-    if not qa_sane:
-        bb.fatal("Fatal QA errors found, failing task.")
+    oe.qa.exit_if_errors(d)
 }
 
 python do_qa_unpack() {
@@ -1352,8 +1344,5 @@ python () {
                     oe.qa.handle_error("native-last", "%s: native/nativesdk class is not inherited last, this can result in unexpected behaviour. "
                                              "Classes inherited after native/nativesdk: %s" % (pn, " ".join(broken_order)), d)
 
-
-    qa_sane = d.getVar("QA_SANE")
-    if not qa_sane:
-        bb.fatal("Fatal QA errors found, failing task.")
+    oe.qa.exit_if_errors(d)
 }
