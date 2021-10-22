@@ -6,7 +6,7 @@ import stat
 import mmap
 import subprocess
 
-def runstrip(arg):
+def runstrip(arg, dict_arg):
     # Function to strip a single file, called from split_and_strip_files below
     # A working 'file' (one which works on the target architecture)
     #
@@ -17,6 +17,7 @@ def runstrip(arg):
     # 16 - kernel module
 
     (file, elftype, strip) = arg
+    strip_args = dict_arg
 
     newmode = None
     if not os.access(file, os.W_OK) or os.access(file, os.R_OK):
@@ -32,14 +33,23 @@ def runstrip(arg):
             bb.debug(1, "Skip strip on signed module %s" % file)
             skip_strip = True
         else:
-            stripcmd.extend(["--strip-debug", "--remove-section=.comment",
-                "--remove-section=.note", "--preserve-dates"])
+            if strip_args.get("STRIP_KERNEL_MODULE"):
+                stripcmd.extend(strip_args["STRIP_KERNEL_MODULE"].split())
+            else:
+                stripcmd.extend(["--strip-debug", "--remove-section=.comment",
+                    "--remove-section=.note", "--preserve-dates"])
     # .so and shared library
     elif ".so" in file and elftype & 8:
-        stripcmd.extend(["--remove-section=.comment", "--remove-section=.note", "--strip-unneeded"])
+        if strip_args.get("STRIP_SHARED_SO_LIBRARY"):
+            stripcmd.extend(strip_args["STRIP_SHARED_SO_LIBRARY"].split())
+        else:
+            stripcmd.extend(["--remove-section=.comment", "--remove-section=.note", "--strip-unneeded"])
     # shared or executable:
     elif elftype & 8 or elftype & 4:
-        stripcmd.extend(["--remove-section=.comment", "--remove-section=.note"])
+        if strip_args.get("STRIP_SHARED_OR_EXECUTABLE"):
+            stripcmd.extend(strip_args["STRIP_SHARED_OR_EXECUTABLE"].split())
+        else:
+            stripcmd.extend(["--remove-section=.comment", "--remove-section=.note"])
 
     stripcmd.append(file)
     bb.debug(1, "runstrip: %s" % stripcmd)
@@ -170,11 +180,16 @@ def strip_execs(pn, dstdir, strip_cmd, libdir, base_libdir, d, qa_already_stripp
     # Now strip them (in parallel)
     #
     sfiles = []
+    strip_args = {
+        "STRIP_KERNEL_MODULE": d.getVar("STRIP_KERNEL_MODULE"),
+        "STRIP_SHARED_SO_LIBRARY": d.getVar("STRIP_SHARED_SO_LIBRARY"),
+        "STRIP_SHARED_OR_EXECUTABLE": d.getVar("STRIP_SHARED_OR_EXECUTABLE")
+    }
     for file in elffiles:
         elf_file = int(elffiles[file])
         sfiles.append((file, elf_file, strip_cmd))
 
-    oe.utils.multiprocess_launch(runstrip, sfiles, d)
+    oe.utils.multiprocess_launch(runstrip, sfiles, d, extraargs=(strip_args,))
 
 
 def file_translate(file):

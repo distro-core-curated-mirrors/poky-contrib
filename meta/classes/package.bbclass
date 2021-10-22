@@ -1213,6 +1213,11 @@ python split_and_strip_files () {
     #
     if (d.getVar('INHIBIT_PACKAGE_STRIP') != '1'):
         strip = d.getVar("STRIP")
+        strip_args = {
+            "STRIP_KERNEL_MODULE": d.getVar("STRIP_KERNEL_MODULE"),
+            "STRIP_SHARED_SO_LIBRARY": d.getVar("STRIP_SHARED_SO_LIBRARY"),
+            "STRIP_SHARED_OR_EXECUTABLE": d.getVar("STRIP_SHARED_OR_EXECUTABLE")
+        }
         sfiles = []
         for file in elffiles:
             elf_file = int(elffiles[file])
@@ -1224,7 +1229,7 @@ python split_and_strip_files () {
             for f in staticlibs:
                 sfiles.append((f, 16, strip))
 
-        oe.utils.multiprocess_launch(oe.package.runstrip, sfiles, d)
+        oe.utils.multiprocess_launch(oe.package.runstrip, sfiles, d, extraargs=(strip_args,))
 
     #
     # End of strip
