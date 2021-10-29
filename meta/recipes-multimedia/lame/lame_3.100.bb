@@ -24,3 +24,5 @@ FILES:${PN} = "${bindir}/lame"
 FILES:libmp3lame = "${libdir}/libmp3lame.so.*"
 FILES:libmp3lame-dev = "${includedir} ${libdir}/*"
 FILES:${PN}-dev = ""
+
+BBCLASSEXTEND = "nativesdk"
