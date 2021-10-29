@@ -22,7 +22,7 @@ EXTRA_OEMESON += "-Dlibpython-dir=${libdir}"
 # gobject-introspection is mandatory and cannot be configured
 REQUIRED_DISTRO_FEATURES = "gobject-introspection-data"
 
-inherit meson pkgconfig distutils3-base upstream-version-is-even features_check
+inherit meson pkgconfig setuptools3-base upstream-version-is-even features_check
 
 # Generating introspection data depends on a combination of native and target
 # introspection tools, and qemu to run the target tools.
