@@ -6,7 +6,7 @@ LICENSE = "LGPLv2.1"
 LIC_FILES_CHKSUM = "file://COPYING;md5=a916467b91076e631dd8edb7424769c7"
 
 GNOMEBASEBUILDCLASS = "meson"
-inherit gnomebase distutils3-base upstream-version-is-even
+inherit gnomebase setuptools3-base upstream-version-is-even
 
 DEPENDS += "python3 glib-2.0"
 
