@@ -18,7 +18,7 @@ import re
 import subprocess
 
 from collections import defaultdict
-from distutils import spawn
+from shutil import which
 
 from wic import WicError
 
@@ -122,7 +122,7 @@ def find_executable(cmd, paths):
     if provided and "%s-native" % recipe in provided:
         return True
 
-    return spawn.find_executable(cmd, paths)
+    return which(cmd, paths)
 
 def exec_native_cmd(cmd_and_args, native_sysroot, pseudo=""):
     """

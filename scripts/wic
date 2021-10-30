@@ -24,7 +24,7 @@ import logging
 import subprocess
 
 from collections import namedtuple
-from distutils import spawn
+from shutil import which
 
 # External modules
 scripts_path = os.path.dirname(os.path.realpath(__file__))
@@ -47,7 +47,7 @@ if os.environ.get('SDKTARGETSYSROOT'):
             break
         sdkroot = os.path.dirname(sdkroot)
 
-bitbake_exe = spawn.find_executable('bitbake')
+bitbake_exe = which('bitbake')
 if bitbake_exe:
     bitbake_path = scriptpath.add_bitbake_lib_path()
     import bb
