@@ -157,7 +157,7 @@ python patch_do_patch() {
             resolver.Resolve()
         except bb.BBHandledException as e:
             bb.utils.remove(process_tmpdir, True)
-            bb.fatal("Applying patch '%s' on target directory '%s'\n%s" % (parm['patchname'], patchdir, repr(e).replace("\\n", "\n")))
+            bb.fatal("Applying patch '%s' on target directory '%s'\n%s" % (parm['patchname'], patchdir, str(e).replace("\\n", "\n")))
 
     bb.utils.remove(process_tmpdir, True)
     del os.environ['TMPDIR']
