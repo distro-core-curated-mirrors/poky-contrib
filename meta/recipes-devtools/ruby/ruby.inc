@@ -42,3 +42,7 @@ do_configure:prepend() {
 do_configure:prepend() {
     rm -rf ${S}/ext/openssl/extconf.rb
 }
+# Remove this test temporarily until it compatible with openssl 3
+do_install_ptest:append() {
+    rm -rf ${D}${PTEST_PATH}/test/net/smtp/test_smtp.rb
+}
