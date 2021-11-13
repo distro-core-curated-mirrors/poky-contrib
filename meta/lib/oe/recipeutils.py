@@ -807,7 +807,7 @@ def bbappend_recipe(rd, destlayerdir, srcfiles, install=None, wildcardver=False,
             if varname == 'FILESEXTRAPATHS:prepend':
                 if origvalue.startswith('${THISDIR}/'):
                     popline('FILESEXTRAPATHS:prepend')
-                    extvars['destsubdir'] = rd.expand(origvalue.split('${THISDIR}/', 1)[1].rstrip(':'))
+                    extvars['destsubdir'] = rd.expand(origvalue.split(':', 1)[0].split('${THISDIR}/', 1)[1])
             elif varname == 'PACKAGE_ARCH':
                 if machine:
                     popline('PACKAGE_ARCH')
