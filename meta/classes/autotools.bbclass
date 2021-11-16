@@ -153,18 +153,7 @@ do_configure[file-checksums] += "${@' '.join(siteinfo_get_files(d, sysrootcache=
 
 CONFIGURE_FILES = "${S}/configure.in ${S}/configure.ac ${S}/config.h.in ${S}/acinclude.m4 Makefile.am"
 
-autotools_do_configure() {
-	# WARNING: gross hack follows:
-	# An autotools built package generally needs these scripts, however only
-	# automake or libtoolize actually install the current versions of them.
-	# This is a problem in builds that do not use libtool or automake, in the case
-	# where we -need- the latest version of these scripts.  e.g. running a build
-	# for a package whose autotools are old, on an x86_64 machine, which the old
-	# config.sub does not support.  Work around this by installing them manually
-	# regardless.
-
-	PRUNE_M4=""
-
+autotools_regenerate_configure() {
 	for ac in `find ${S} -ignore_readdir_race -name configure.in -o -name configure.ac`; do
 		rm -f `dirname $ac`/configure
 	done
@@ -193,6 +182,7 @@ autotools_do_configure() {
 		# like it was auto-generated.  Work around this by blowing it away
 		# by hand, unless the package specifically asked not to run aclocal.
 		if ! echo ${EXTRA_AUTORECONF} | grep -q "aclocal"; then
+			bbnote "Removing aclocal.m4"
 			rm -f aclocal.m4
 		fi
 		if [ -e configure.in ]; then
@@ -200,6 +190,8 @@ autotools_do_configure() {
 		else
 			CONFIGURE_AC=configure.ac
 		fi
+
+		PRUNE_M4=""
 		if grep -q "^[[:space:]]*AM_GLIB_GNU_GETTEXT" $CONFIGURE_AC; then
 			if grep -q "sed.*POTFILES" $CONFIGURE_AC; then
 				: do nothing -- we still have an old unmodified configure.ac
@@ -227,7 +219,14 @@ autotools_do_configure() {
 		bbnote Executing ACLOCAL=\"$ACLOCAL\" autoreconf -Wcross --verbose --install --force ${EXTRA_AUTORECONF} $acpaths
 		ACLOCAL="$ACLOCAL" autoreconf -Wcross -Wno-obsolete --verbose --install --force ${EXTRA_AUTORECONF} $acpaths || die "autoreconf execution failed."
 		cd $olddir
+	else
+		bberror "No configure.(ac,in) found"
 	fi
+}
+
+autotools_do_configure() {
+	autotools_regenerate_configure
+
 	if [ -e ${CONFIGURE_SCRIPT} ]; then
 		oe_runconf
 	else
