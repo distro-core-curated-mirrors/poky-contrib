@@ -85,7 +85,6 @@ ncurses_configure() {
 	        --with-termlib=${EX_TERMLIB} \
 	        --enable-sigwinch \
 	        --enable-pc-files \
-	        --with-pkg-config-libdir=${libdir}/pkgconfig \
 	        --disable-rpath-hack \
 		${EXCONFIG_ARGS} \
 	        --with-manpage-format=normal \
@@ -156,7 +155,10 @@ do_test() {
 
 _install_opts = " install.libs install.man "
 
-_install_cfgs = "DESTDIR='${D}'"
+_install_cfgs = "\
+  DESTDIR='${D}' \
+  PKG_CONFIG_LIBDIR='${libdir}/pkgconfig' \
+"
 
 do_install() {
         # Order of installation is important; widec installs a 'curses.h'
