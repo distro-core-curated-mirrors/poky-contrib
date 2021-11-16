@@ -12,7 +12,8 @@ BINCONFIG = "${bindir}/ncurses5-config ${bindir}/ncursesw5-config \
 
 inherit autotools binconfig-disabled multilib_header pkgconfig
 
-SRC_URI = "git://github.com/mirror/ncurses.git;protocol=https;branch=master"
+SRC_URI = "git://github.com/mirror/ncurses.git;protocol=https;branch=master \
+           file://codeset.patch"
 
 EXTRA_AUTORECONF = "-I m4"
 
@@ -83,6 +84,9 @@ EXTRA_OECONF:append:class-nativesdk = " \
 		--with-chtype='long' \
 		--with-mmask-t='long'"
 
+# Need to keep the aclocal.m4
+EXTRA_AUTORECONF += "--exclude=aclocal"
+
 # Helper function for do_configure to allow multiple configurations
 # $1 the directory to run configure in
 # $@ the arguments to pass to configure
@@ -98,16 +102,16 @@ ncurses_configure() {
 # patched autoconf213 to generate the configure script. This autoconf
 # is not available so that the shipped script will be used.
 do_configure() {
+	autotools_regenerate_configure
+
 	#Remove ${includedir} from CPPFLAGS, need for cross compile
-	sed -i 's#-I${cf_includedir}##g' ${S}/configure || die "sed CPPFLAGS"
+	#sed -i 's#-I${cf_includedir}##g' ${S}/configure || die "sed CPPFLAGS"
 
 	# The --enable-pc-files requires PKG_CONFIG_LIBDIR existed
 	mkdir -p ${PKG_CONFIG_LIBDIR}
-	( cd ${S}; gnu-configize --force )
-	ncurses_configure "narrowc" || \
-		return 1
-	! ${ENABLE_WIDEC} || \
-		ncurses_configure "widec" "--enable-widec" "--without-progs"
+
+	ncurses_configure "narrowc" || return 1
+	! ${ENABLE_WIDEC} || ncurses_configure "widec" "--enable-widec" "--without-progs"
 
 }
 
