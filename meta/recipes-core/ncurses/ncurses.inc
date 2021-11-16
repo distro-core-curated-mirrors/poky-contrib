@@ -49,7 +49,8 @@ EX_TERMINFO:class-native = ":/etc/terminfo:/usr/share/terminfo:/usr/share/misc/t
 EX_TERMINFO:class-nativesdk = ":/etc/terminfo:/usr/share/terminfo:/usr/share/misc/terminfo:/lib/terminfo"
 EX_TERMLIB ?= "tinfo"
 
-EXTRA_OECONF = "--without-debug \
+EXTRA_OECONF = "--with-abi-version=5 \
+                --without-debug \
                 --without-ada \
                 --without-gpm \
                 --enable-hard-tabs \

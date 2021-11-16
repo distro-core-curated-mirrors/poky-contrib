@@ -6,7 +6,6 @@ SRC_URI += "file://0001-tic-hang.patch \
            "
 SRCREV = "deb0d07e8eb4803b9e9653359eab17a30d04369d"
 S = "${WORKDIR}/git"
-EXTRA_OECONF += "--with-abi-version=5"
 UPSTREAM_CHECK_GITTAGREGEX = "(?P<pver>\d+(\.\d+)+)$"
 
 # This is needed when using patchlevel versions like 6.1+20181013
