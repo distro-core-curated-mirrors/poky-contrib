@@ -25,6 +25,7 @@ EXTRA_OECMAKE:append:pn-libical = " -DSHARED_ONLY=True"
 EXTRA_OECMAKE:append:pn-libjpeg-turbo = " -DENABLE_STATIC=False"
 EXTRA_OECMAKE:append:pn-libjpeg-turbo-native = " -DENABLE_STATIC=False"
 
-EXCONFIG_ARGS:append:pn-ncurses = " --without-normal"
-EXCONFIG_ARGS:append:pn-ncurses-native = " --without-normal"
-EXCONFIG_ARGS:append:pn-nativesdk-ncurses = " --without-normal"
+# 'normal' is ncurses for 'static'
+EXTRA_OECMAKE:append:pn-ncurses = " --without-normal"
+EXTRA_OECMAKE:append:pn-ncurses-native = " --without-normal"
+EXTRA_OECMAKE:append:pn-nativesdk-ncurses = " --without-normal"

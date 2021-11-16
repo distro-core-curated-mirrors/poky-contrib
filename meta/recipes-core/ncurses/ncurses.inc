@@ -34,19 +34,6 @@ BUILD_CPPFLAGS += "-D_GNU_SOURCE"
 # natives don't generally look in base_libdir
 base_libdir:class-native = "${libdir}"
 
-# Display corruption occurs on 64 bit hosts without these settings
-# This was derrived from the upstream debian ncurses which uses
-# these settings for 32 and 64 bit hosts.
-EXCONFIG_ARGS = ""
-EXCONFIG_ARGS:class-native = " \
-		--disable-lp64 \
-		--with-chtype='long' \
-		--with-mmask-t='long'"
-EXCONFIG_ARGS:class-nativesdk = " \
-		--disable-lp64 \
-		--with-chtype='long' \
-		--with-mmask-t='long'"
-
 PACKAGES_DYNAMIC = "^${PN}-lib.*"
 
 # Fall back to the host termcap / terminfo for -nativesdk and -native
@@ -62,6 +49,39 @@ EX_TERMINFO:class-native = ":/etc/terminfo:/usr/share/terminfo:/usr/share/misc/t
 EX_TERMINFO:class-nativesdk = ":/etc/terminfo:/usr/share/terminfo:/usr/share/misc/terminfo:/lib/terminfo"
 EX_TERMLIB ?= "tinfo"
 
+EXTRA_OECONF = "--without-debug \
+                --without-ada \
+                --without-gpm \
+                --enable-hard-tabs \
+                --enable-xmc-glitch \
+                --enable-colorfgbg \
+                --with-termpath='${sysconfdir}/termcap:${datadir}/misc/termcap${EX_TERMCAP}' \
+                --with-terminfo-dirs='${sysconfdir}/terminfo:${datadir}/terminfo${EX_TERMINFO}' \
+                --with-shared \
+                --disable-big-core \
+                --program-prefix= \
+                --with-ticlib \
+                --with-termlib=${EX_TERMLIB} \
+                --enable-sigwinch \
+                --enable-pc-files \
+                --disable-rpath-hack \
+                --with-manpage-format=normal \
+                --without-manpage-renames \
+                --disable-stripping \
+                "
+
+# Display corruption occurs on 64 bit hosts without these settings
+# This was derrived from the upstream debian ncurses which uses
+# these settings for 32 and 64 bit hosts.
+EXTRA_OECONF:append:class-native = " \
+		--disable-lp64 \
+		--with-chtype='long' \
+		--with-mmask-t='long'"
+EXTRA_OECONF:append:class-nativesdk = " \
+		--disable-lp64 \
+		--with-chtype='long' \
+		--with-mmask-t='long'"
+
 # Helper function for do_configure to allow multiple configurations
 # $1 the directory to run configure in
 # $@ the arguments to pass to configure
@@ -69,28 +89,7 @@ ncurses_configure() {
 	mkdir -p $1
 	cd $1
 	shift
-	oe_runconf \
-	        --without-debug \
-	        --without-ada \
-	        --without-gpm \
-	        --enable-hard-tabs \
-	        --enable-xmc-glitch \
-	        --enable-colorfgbg \
-	        --with-termpath='${sysconfdir}/termcap:${datadir}/misc/termcap${EX_TERMCAP}' \
-	        --with-terminfo-dirs='${sysconfdir}/terminfo:${datadir}/terminfo${EX_TERMINFO}' \
-	        --with-shared \
-	        --disable-big-core \
-	        --program-prefix= \
-	        --with-ticlib \
-	        --with-termlib=${EX_TERMLIB} \
-	        --enable-sigwinch \
-	        --enable-pc-files \
-	        --disable-rpath-hack \
-		${EXCONFIG_ARGS} \
-	        --with-manpage-format=normal \
-	        --without-manpage-renames \
-	        --disable-stripping \
-	        "$@" || return 1
+	oe_runconf "$@" || return 1
 	cd ..
 }
 
