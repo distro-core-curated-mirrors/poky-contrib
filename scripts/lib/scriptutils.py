@@ -82,7 +82,9 @@ def load_plugins(logger, plugins, pluginpath):
         logger.debug('Loading plugin %s' % name)
         spec = importlib.machinery.PathFinder.find_spec(name, path=[pluginpath] )
         if spec:
-            return spec.loader.load_module()
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
 
     def plugin_name(filename):
         return os.path.splitext(os.path.basename(filename))[0]
