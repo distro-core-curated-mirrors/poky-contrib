@@ -25,6 +25,7 @@ SRC_URI += "file://touchscreen.rules \
            file://0003-implment-systemd-sysv-install-for-OE.patch \
            file://0001-systemd.pc.in-use-ROOTPREFIX-without-suffixed-slash.patch \
            file://0001-test-parse-argument-Include-signal.h.patch \
+           file://fixnative.patch \
            "
 
 # patches needed by musl
@@ -109,6 +110,22 @@ PACKAGECONFIG:remove:libc-musl = " \
     userdb \
     utmp \
 "
+
+PACKAGECONFIG:remove:class-native = "vconsole xkbcommon sysvinit"
+PACKAGECONFIG:append:class-native = " serial-getty-generator"
+PACKAGECONFIG:remove:class-nativesdk = "vconsole xkbcommon sysvinit"
+PACKAGECONFIG:append:class-nativesdk = " serial-getty-generator"
+RDEPENDS:${PN}:remove:class-native = "volatile-binds"
+RDEPENDS:${PN}:remove:class-nativesdk = "volatile-binds"
+RRECOMMENDS:${PN}:remove:class-native = "os-release systemd-conf"
+RRECOMMENDS:${PN}:remove:class-nativesdk = "os-release systemd-conf"
+RRECOMMENDS:${PN}-vconsole-setup:class-nativesdk = ""
+RRECOMMENDS:${PN}-vconsole-setup:class-native = ""
+
+# Nothing picks up /var in the nativesdk case
+do_install:append:class-nativesdk () {
+	rm -rf ${D}/var
+}
 
 # https://github.com/seccomp/libseccomp/issues/347
 PACKAGECONFIG:remove:mipsarch = "seccomp"
@@ -789,3 +806,5 @@ pkg_postinst:udev-hwdb () {
 pkg_prerm:udev-hwdb () {
 	rm -f $D${sysconfdir}/udev/hwdb.bin
 }
+
+BBCLASSEXTEND = "native nativesdk"
