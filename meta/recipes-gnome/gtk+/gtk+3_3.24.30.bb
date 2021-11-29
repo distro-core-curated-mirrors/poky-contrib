@@ -3,10 +3,9 @@ require gtk+3.inc
 MAJ_VER = "${@oe.utils.trim_version("${PV}", 2)}"
 
 SRC_URI = "http://ftp.gnome.org/pub/gnome/sources/gtk+/${MAJ_VER}/gtk+-${PV}.tar.xz \
-           file://0001-Hardcoded-libtool.patch \
-           file://0002-Do-not-try-to-initialize-GL-without-libGL.patch \
-           file://0003-Add-disable-opengl-configure-option.patch \
-           file://link_fribidi.patch \
+           file://0002-Do-not-try-to-initialize-GL-without-libGL.patch;apply=0 \
+           file://0003-Add-disable-opengl-configure-option.patch;apply=0 \
+           file://0001-Merge-branch-wip-kalev-gcc-11-into-master.patch \
            "
 SRC_URI[sha256sum] = "ba75bfff320ad1f4cfbee92ba813ec336322cc3c660d406aad014b07087a3ba9"
 
