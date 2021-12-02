@@ -4,7 +4,7 @@ DEPENDS += "openssl"
 PROVIDES = "${MLPREFIX}u-boot-mkimage ${MLPREFIX}u-boot-mkenvimage"
 PROVIDES:class-native = "u-boot-mkimage-native u-boot-mkenvimage-native"
 
-PACKAGES += "${PN}-mkimage ${PN}-mkenvimage"
+PACKAGES += "${PN}-binman ${PN}-mkimage ${PN}-mkenvimage"
 
 # Required for backward compatibility with "u-boot-mkimage-xxx.bb"
 RPROVIDES:${PN}-mkimage = "u-boot-mkimage"
@@ -23,7 +23,7 @@ SED_CONFIG_EFI:armeb = ''
 SED_CONFIG_EFI:aarch64 = ''
 
 inherit distutils3
-DISTUTILS_SETUP_PATH = "${S}/tools/binman"
+unset DISTUTILS_SETUP_PATH
 
 do_compile () {
 	# Yes, this is crazy. If you build on a system with git < 2.14 from scratch, the tree will
@@ -50,7 +50,10 @@ do_compile () {
 
 	oe_runmake -C ${S} cross_tools NO_SDL=1 O=${B}
 
-	distutils3_do_compile
+	for T in binman patman dtoc; do
+		DISTUTILS_SETUP_PATH="${S}/tools/$T"
+		distutils3_do_compile
+	done
 }
 
 do_install () {
@@ -72,16 +75,22 @@ do_install () {
 	install -m 0755 tools/fit_check_sign ${D}${bindir}/uboot-fit_check_sign
 	ln -sf uboot-fit_check_sign ${D}${bindir}/fit_check_sign
 
-	distutils3_do_install
+	for T in binman patman dtoc; do
+		DISTUTILS_SETUP_PATH="${S}/tools/$T"
+		distutils3_do_install
+	done
 }
 
 ALLOW_EMPTY:${PN} = "1"
 FILES:${PN} = ""
+FILES:${PN}-binman = "${bindir}/binman ${bindir}/dtoc ${bindir}/patman ${PYTHON_SITEPACKAGES_DIR}"
 FILES:${PN}-mkimage = "${bindir}/uboot-mkimage ${bindir}/mkimage ${bindir}/uboot-dumpimage ${bindir}/dumpimage ${bindir}/uboot-fit_check_sign ${bindir}/fit_check_sign"
 FILES:${PN}-mkenvimage = "${bindir}/uboot-mkenvimage ${bindir}/mkenvimage"
 
+# TODO needs to depend on python-dtc from meta-virt.
+RDEPENDS:${PN} += "${PN}-binman ${PN}-mkenvimage ${PN}-mkimage"
+RDEPENDS:${PN}-binman += "python3"
 RDEPENDS:${PN}-mkimage += "dtc"
-RDEPENDS:${PN} += "${PN}-mkimage ${PN}-mkenvimage"
 RDEPENDS:${PN}:class-native = ""
 
 BBCLASSEXTEND = "native nativesdk"
