@@ -47,11 +47,9 @@ distutils3_do_install() {
         find ${D} -name "*.py" -exec grep -q ${D} {} \; \
                                -exec sed -i -e s:${D}::g {} \;
 
-        for i in ${D}${bindir}/* ${D}${sbindir}/*; do
-            if [ -f "$i" ]; then
-                sed -i -e s:${PYTHON}:${USRBINPATH}/env\ ${DISTUTILS_PYTHON}:g $i
-                sed -i -e s:${STAGING_BINDIR_NATIVE}:${bindir}:g $i
-            fi
+        for bin in $(find ${D}${bindir} ${D}${sbindir} -type f -maxdepth 1); do
+            sed -i -e s:${PYTHON}:${USRBINPATH}/env\ ${DISTUTILS_PYTHON}:g $bin
+            sed -i -e s:${STAGING_BINDIR_NATIVE}:${bindir}:g $bin
         done
 
         rm -f ${D}${PYTHON_SITEPACKAGES_DIR}/easy-install.pth
