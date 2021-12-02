@@ -22,6 +22,9 @@ SED_CONFIG_EFI:arm = ''
 SED_CONFIG_EFI:armeb = ''
 SED_CONFIG_EFI:aarch64 = ''
 
+inherit distutils3
+DISTUTILS_SETUP_PATH = "${S}/tools/binman"
+
 do_compile () {
 	# Yes, this is crazy. If you build on a system with git < 2.14 from scratch, the tree will
 	# be marked as "dirty" and the version will include "-dirty", leading to a reproducibility problem.
@@ -46,6 +49,8 @@ do_compile () {
 	sed -i -e "s/CONFIG_CMD_LICENSE=.*/# CONFIG_CMD_LICENSE is not set/" ${SED_CONFIG_EFI} ${B}/.config
 
 	oe_runmake -C ${S} cross_tools NO_SDL=1 O=${B}
+
+	distutils3_do_compile
 }
 
 do_install () {
@@ -66,6 +71,8 @@ do_install () {
 	# fit_check_sign
 	install -m 0755 tools/fit_check_sign ${D}${bindir}/uboot-fit_check_sign
 	ln -sf uboot-fit_check_sign ${D}${bindir}/fit_check_sign
+
+	distutils3_do_install
 }
 
 ALLOW_EMPTY:${PN} = "1"
