@@ -56,6 +56,5 @@ RDEPENDS:${PN} = "\
     util-linux \
     ${VIRTUAL-RUNTIME_vim} \
     wget \
-    which \
     xz \
     "
