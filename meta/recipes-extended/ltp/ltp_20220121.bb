@@ -83,6 +83,7 @@ RDEPENDS:${PN} = "\
     cpio \
     cronie \
     curl \
+    debianutils \
     e2fsprogs \
     e2fsprogs-mke2fs \
     expect \
@@ -101,7 +102,6 @@ RDEPENDS:${PN} = "\
     quota \
     unzip \
     util-linux \
-    which \
     tar \
 "
 
