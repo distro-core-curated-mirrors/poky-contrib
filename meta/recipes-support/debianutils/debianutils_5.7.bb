@@ -7,6 +7,7 @@ BUGTRACKER = "https://bugs.debian.org/cgi-bin/pkgreport.cgi?pkg=debianutils;dist
 SECTION = "base"
 LICENSE = "GPLv2 & SMAIL_GPL"
 LIC_FILES_CHKSUM = "file://debian/copyright;md5=9b912cd0cc654134c0ef3424a0705b94"
+PROVIDES += "which"
 
 SRC_URI = "git://salsa.debian.org/debian/debianutils.git;protocol=https;branch=master \
            "
@@ -40,6 +41,7 @@ FILES:${PN}-run-parts = "${base_bindir}/run-parts.debianutils"
 
 RDEPENDS:${PN} += "${PN}-run-parts"
 RDEPENDS:${PN}:class-native = ""
+RPROVIDES:${PN} += "which"
 
 ALTERNATIVE_PRIORITY = "30"
 ALTERNATIVE:${PN} = "add-shell installkernel remove-shell savelog which"
