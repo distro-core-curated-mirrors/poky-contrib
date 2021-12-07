@@ -2,7 +2,7 @@ require libtool-${PV}.inc
 
 DEPENDS = ""
 
-SRC_URI += "file://prefix.patch"
+#SRC_URI += "file://prefix.patch"
 
 inherit native
 
@@ -18,5 +18,5 @@ do_configure:prepend () {
 do_install () {
 	autotools_do_install
 	install -d ${D}${bindir}/
-	install -m 0755 ${HOST_SYS}-libtool ${D}${bindir}/${HOST_SYS}-libtool
+	install -m 0755 libtool ${D}${bindir}/libtool
 }
