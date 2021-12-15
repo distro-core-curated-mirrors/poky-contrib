@@ -43,14 +43,6 @@ if [ $? = 0 ]; then
 	exit 1
 fi
 
-if [ "$INST_ARCH" != "$SDK_ARCH" ]; then
-	# Allow for installation of ix86 SDK on x86_64 host
-	if [ "$INST_ARCH" != x86_64 -o "$SDK_ARCH" != ix86 ]; then
-		echo "Error: Incompatible SDK installer! Your host is $INST_ARCH and this SDK was built for $SDK_ARCH hosts."
-		exit 1
-	fi
-fi
-
 if ! xz -V > /dev/null 2>&1; then
 	echo "Error: xz is required for installation of this SDK, please install it first"
 	exit 1
@@ -67,7 +59,8 @@ savescripts=0
 verbose=0
 publish=0
 listcontents=0
-while getopts ":yd:npDRSl" OPT; do
+forceinstall=0
+while getopts ":yd:npDRSlf" OPT; do
 	case $OPT in
 	y)
 		answer="Y"
@@ -95,6 +88,9 @@ while getopts ":yd:npDRSl" OPT; do
 	l)
 		listcontents=1
 		;;
+	f)
+		forceinstall=1
+		;;
 	*)
 		echo "Usage: $(basename "$0") [-y] [-d <dir>]"
 		echo "  -y         Automatic yes to all prompts"
@@ -107,10 +103,21 @@ while getopts ":yd:npDRSl" OPT; do
 		echo "  -R         Do not relocate executables"
 		echo "  -D         use set -x to see what is going on"
 		echo "  -l         list files that will be extracted"
+		echo "  -f         force installation even if sanity checks fail"
 		exit 1
 		;;
 	esac
 done
+
+if [ "$INST_ARCH" != "$SDK_ARCH" ]; then
+	# Allow for installation of ix86 SDK on x86_64 host
+	if [ "$INST_ARCH" != x86_64 -o "$SDK_ARCH" != ix86 ]; then
+		echo "Error: Incompatible SDK installer! Your host is $INST_ARCH and this SDK was built for $SDK_ARCH hosts."
+                if [ "$forceinstall" = "0" ] ; then
+			exit 1
+		fi
+	fi
+fi
 
 payload_offset=$(($(grep -na -m1 "^MARKER:$" "$0"|cut -d':' -f1) + 1))
 if [ "$listcontents" = "1" ] ; then
