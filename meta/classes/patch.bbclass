@@ -164,6 +164,7 @@ patch_do_patch[vardepsexclude] = "PATCHRESOLVE"
 
 addtask patch after do_unpack
 do_patch[dirs] = "${WORKDIR}"
+do_patch[nonetwork] = "1"
 do_patch[depends] = "${PATCHDEPENDENCY}"
 
 EXPORT_FUNCTIONS do_patch

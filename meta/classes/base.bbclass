@@ -214,6 +214,7 @@ python create_source_date_epoch_stamp() {
     oe.reproducible.epochfile_write(source_date_epoch, d.getVar('SDE_FILE'), d)
 }
 do_unpack[postfuncs] += "create_source_date_epoch_stamp"
+do_unpack[nonetwork] = "1"
 
 def get_source_date_epoch_value(d):
     return oe.reproducible.epochfile_read(d.getVar('SDE_FILE'), d)
@@ -358,6 +359,7 @@ base_do_configure() {
 		echo ${BB_TASKHASH} > ${CONFIGURESTAMPFILE}
 	fi
 }
+do_configure[nonetwork] = "1"
 
 addtask compile after do_configure
 do_compile[dirs] = "${B}"
@@ -368,11 +370,13 @@ base_do_compile() {
 		bbnote "nothing to compile"
 	fi
 }
+do_compile[nonetwork] = "1"
 
 addtask install after do_compile
 do_install[dirs] = "${B}"
 # Remove and re-create ${D} so that is it guaranteed to be empty
 do_install[cleandirs] = "${D}"
+do_install[nonetwork] = "1"
 
 base_do_install() {
 	:
