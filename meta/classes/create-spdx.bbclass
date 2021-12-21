@@ -30,6 +30,9 @@ SPDX_LICENSES ??= "${COREBASE}/meta/files/spdx-licenses.json"
 
 SPDX_ORG ??= "OpenEmbedded ()"
 
+# Don't strip the kernel for create-spdx, it will get stripped later
+KERNEL_IMAGE_STRIP_EXTRA_SECTIONS:remove = ".comment"
+
 do_image_complete[depends] = "virtual/kernel:do_create_spdx"
 
 def get_doc_namespace(d, doc):
