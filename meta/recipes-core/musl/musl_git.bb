@@ -23,13 +23,16 @@ PROVIDES += "virtual/libc virtual/libiconv virtual/libintl virtual/crypt"
 
 DEPENDS = "virtual/${TARGET_PREFIX}binutils \
            virtual/${TARGET_PREFIX}gcc \
-           libgcc-initial \
+           ${DEPENDS_COMPILER_RT} \
            linux-libc-headers \
            bsd-headers \
            libssp-nonshared \
           "
 GLIBC_LDSO = "${@get_glibc_loader(d)}"
 MUSL_LDSO_ARCH = "${@get_musl_loader_arch(d)}"
+
+DEPENDS_COMPILER_RT = "libgcc-initial"
+DEPENDS_COMPILER_RT:toolchain-clang = "${@bb.utils.contains('COMPILER_RT', 'libgcc', 'libgcc-initial', 'compiler-rt', d)}"
 
 export CROSS_COMPILE="${TARGET_PREFIX}"
 
