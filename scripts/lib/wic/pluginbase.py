@@ -9,6 +9,7 @@ __all__ = ['ImagerPlugin', 'SourcePlugin']
 
 import os
 import logging
+import types
 
 from collections import defaultdict
 from importlib.machinery import SourceFileLoader
@@ -54,7 +55,9 @@ class PluginMgr:
                             mname = fname[:-3]
                             mpath = os.path.join(ppath, fname)
                             logger.debug("loading plugin module %s", mpath)
-                            SourceFileLoader(mname, mpath).load_module()
+                            loader = SourceFileLoader(mname, mpath)
+                            mod = types.ModuleType(loader.name)
+                            loader.exec_module(mod)
 
         return PLUGINS.get(ptype)
 
