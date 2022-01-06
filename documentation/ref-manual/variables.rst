@@ -6847,6 +6847,25 @@ system and gives an overview of their function and contents.
 
          EXTRA_IMAGE_FEATURES += "read-only-rootfs"
 
+   :term:`SETUPTOOLS_BUILD_ARGS`
+      When used by recipes that inherit the
+      :ref:`setuptools3 <ref-classes-setuptools3>` class, this variable can
+      be used to specify additional arguments to be passed to ``setup.py build``
+      in the ``setuptools3_do_compile()`` task. By default, this variable is unset::
+      
+         SETUPTOOLS_BUILD_ARGS ?= ""
+
+   :term:`SETUPTOOLS_INSTALL_ARGS`
+      When used by recipes that inherit the
+      :ref:`setuptools3 <ref-classes-setuptools3>` class, this variable can
+      be used to specify additional arguments to be passed to ``setup.py install``
+      in the ``setuptools3_do_install()`` task. By default, this variable is::
+
+         SETUPTOOLS_INSTALL_ARGS ?= "--root=${D} \
+             --prefix=${prefix} \
+             --install-lib=${PYTHON_SITEPACKAGES_DIR} \
+             --install-data=${datadir}"
+
    :term:`SETUPTOOLS_SETUP_PATH`
       When used by recipes that inherit the
       :ref:`setuptools3 <ref-classes-setuptools3>` class, this variable should
