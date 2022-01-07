@@ -9,10 +9,10 @@ python () {
         d.setVar("EXTRADEPENDS", "linux-libc-headers")
 }
 
-PN = "gcc-cross-${TARGET_ARCH}"
+PN = "gcc-cross-${TARGET_SYS}"
 
-# Ignore how TARGET_ARCH is computed.
-TARGET_ARCH[vardepvalue] = "${TARGET_ARCH}"
+# Ignore how TARGET_SYS is computed.
+TARGET_SYS[vardepvalue] = "${TARGET_SYS}"
 
 require gcc-configure-common.inc
 

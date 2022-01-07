@@ -36,3 +36,5 @@ SRC_URI = "\
      file://0001-CVE-2021-42574.patch \
 "
 S  = "${WORKDIR}/git"
+
+FILESEXTRAPATHS .= "${FILE_DIRNAME}/binutils"

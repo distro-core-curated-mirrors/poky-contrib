@@ -163,7 +163,9 @@ do_install () {
 	oe_runmake 'DESTDIR=${D}' install-host
 
 	# Add unwind.h, it comes from libgcc which we don't want to build again
-	install ${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/gcc/${TARGET_SYS}/${BINV}/include/unwind.h ${D}${libdir}/gcc/${TARGET_SYS}/${BINV}/include/
+        if [ ${TARGET_SYS} == ${HOST_SYS} ]; then
+                install ${STAGING_LIBDIR_NATIVE}/${HOST_SYS}/gcc/${HOST_SYS}/${BINV}/include/unwind.h ${D}${libdir}/gcc/${TARGET_SYS}/${BINV}/include/
+        fi
 
 	# Info dir listing isn't interesting at this point so remove it if it exists.
 	if [ -e "${D}${infodir}/dir" ]; then
