@@ -1,6 +1,6 @@
 require newlib.inc
 
-DEPENDS += "newlib"
+DEPENDS:append:libc-newlib = " newlib"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/libgloss:"
 
@@ -16,7 +16,7 @@ do_install:prepend() {
 	install -d ${D}${prefix}/${TARGET_SYS}/lib
 }
 
-do_install:append() {
+do_install:append:libc-newlib() {
 	# Move libs to default directories so they can be picked up later
 	install -d ${D}${libdir}
 	mv -v ${D}${prefix}/${TARGET_SYS}/lib/* ${D}${libdir}
@@ -31,3 +31,10 @@ FILES:${PN}-dev += "${libdir}/cpu-init/*"
 
 INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
+
+DEPENDS:append:virtclass-mcextend-arm-none-eabi = " newlib-arm-none-eabi"
+CFLAGS:append:virtclass-mcextend-arm-none-eabi = "-I ${S}/newlib/libc/include"
+
+FILES:${PN}-dev:virtclass-mcextend-arm-none-eabi = "${prefix}/arm-none-eabi/lib/*.o ${prefix}/arm-none-eabi/lib/cpu-init/*" 
+FILES:${PN}-staticdev:virtclass-mcextend-arm-none-eabi = "${prefix}/arm-none-eabi/lib/*.a" 
+FILES:${PN}:virtclass-mcextend-arm-none-eabi = "${prefix}/arm-none-eabi/lib/*.specs ${prefix}/arm-none-eabi/lib/*.ld" 

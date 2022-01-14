@@ -7,7 +7,7 @@ do_configure() {
     ${S}/configure ${EXTRA_OECONF}
 }
 
-do_install:append() {
+do_install:append:libc-newlib() {
 	# Move include files and libs to default directories so they can be picked up later
 	mv -v ${D}${prefix}/${TARGET_SYS}/lib ${D}${libdir}
 	mv -v ${D}${prefix}/${TARGET_SYS}/include ${D}${includedir}
@@ -18,3 +18,7 @@ do_install:append() {
 
 # No rpm package is actually created but -dev depends on it, avoid dnf error
 RDEPENDS:${PN}-dev:libc-newlib = ""
+
+FILES:${PN}-dev:virtclass-mcextend-arm-none-eabi = "${prefix}/arm-none-eabi/include" 
+FILES:${PN}-staticdev:virtclass-mcextend-arm-none-eabi = "${prefix}/arm-none-eabi/lib/*.a"
+RDEPENDS:${PN}-dev:virtclass-mcextend-arm-none-eabi = ""

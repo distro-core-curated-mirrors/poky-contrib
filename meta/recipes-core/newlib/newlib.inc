@@ -52,3 +52,18 @@ do_install() {
 
 COMPATIBLE_HOST:libc-musl:class-target = "null"
 COMPATIBLE_HOST:libc-glibc:class-target = "null"
+
+BBCLASSEXTEND += "mcextend:arm-none-eabi"
+
+TARGET_ARCH:virtclass-mcextend-arm-none-eabi = "arm"
+TARGET_VENDOR:virtclass-mcextend-arm-none-eabi = "-none"
+TARGET_OS:virtclass-mcextend-arm-none-eabi = "eabi"
+
+# Need to figure out how to produce for all arm architectures like debian packages/arm toolchain do
+TUNE_CCARGS:virtclass-mcextend-arm-none-eabi = " -mthumb -mfpu=neon -mfloat-abi=hard -mcpu=cortex-a15"
+
+COMPATIBLE_HOST:virtclass-mcextend-arm-none-eabi = "arm-none-eabi"
+PROVIDES:virtclass-mcextend-arm-none-eabi = ""
+
+SECURITY_CFLAGS:virtclass-mcextend-arm-none-eabi = "${SECURITY_NOPIE_CFLAGS}"
+SECURITY_LDFLAGS:virtclass-mcextend-arm-none-eabi = ""
