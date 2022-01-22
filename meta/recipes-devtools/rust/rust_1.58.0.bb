@@ -15,7 +15,7 @@ rust_do_install() {
 python () {
     pn = d.getVar('PN')
 
-    if not pn.endswith("-native"):
+    if not pn.endswith("-native") and not pn.startswith('nativesdk-'):
         raise bb.parse.SkipRecipe("Rust recipe doesn't work for target builds at this time. Fixes welcome.")
 }
 
