@@ -5,9 +5,9 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=faadaedca9251a90b205c9167578ce91"
 
 SRC_URI[sha256sum] = "dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"
 
-inherit pypi setuptools3
+inherit pypi setuptools_build_meta
+
+DEPENDS += "python3-setuptools-native"
+RDEPENDS:${PN} += "python3-pyparsing python3-wheel"
 
 BBCLASSEXTEND = "native nativesdk"
-
-DEPENDS += "${PYTHON_PN}-setuptools-native"
-RDEPENDS:${PN} += "${PYTHON_PN}-pyparsing"
