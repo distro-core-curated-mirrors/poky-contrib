@@ -7,14 +7,13 @@ LIC_FILES_CHKSUM = "file://playback/player/gtk/gtk-play.c;beginline=1;endline=20
 
 DEPENDS = "glib-2.0 gstreamer1.0 gstreamer1.0-plugins-base gstreamer1.0-plugins-bad gtk+3 libsoup-2.4 json-glib glib-2.0-native"
 
-SRC_URI = "git://gitlab.freedesktop.org/gstreamer/gst-examples.git;protocol=https;branch=1.18 \
-           file://0001-Make-player-examples-installable.patch \
-           file://gst-player.desktop \
-           "
+require gstreamer1.0-source.inc
 
-SRCREV = "fe9a365dc0f1ff632abcfe3322ac5527a2cf30a0"
+S = "${SRC_BASE}/subprojects/gst-examples"
 
-S = "${WORKDIR}/git"
+SRC_URI += "file://0001-Make-player-examples-installable.patch;patchdir=${SRC_BASE} \
+            file://gst-player.desktop \
+            "
 
 inherit meson pkgconfig features_check
 
