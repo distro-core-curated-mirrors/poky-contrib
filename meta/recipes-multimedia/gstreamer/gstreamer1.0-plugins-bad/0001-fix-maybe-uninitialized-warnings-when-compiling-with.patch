@@ -7,13 +7,13 @@ Upstream-Status: Pending
 
 Signed-off-by: Andre McCurdy <armccurdy@gmail.com>
 ---
- gst-libs/gst/codecparsers/gstvc1parser.c | 2 +-
+ subprojects/gst-plugins-bad/gst-libs/gst/codecparsers/gstvc1parser.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/gst-libs/gst/codecparsers/gstvc1parser.c b/gst-libs/gst/codecparsers/gstvc1parser.c
+diff --git a/subprojects/gst-plugins-bad/gst-libs/gst/codecparsers/gstvc1parser.c b/subprojects/gst-plugins-bad/gst-libs/gst/codecparsers/gstvc1parser.c
 index 2c60ced..e8226d8 100644
---- a/gst-libs/gst/codecparsers/gstvc1parser.c
-+++ b/gst-libs/gst/codecparsers/gstvc1parser.c
+--- a/subprojects/gst-plugins-bad/gst-libs/gst/codecparsers/gstvc1parser.c
++++ b/subprojects/gst-plugins-bad/gst-libs/gst/codecparsers/gstvc1parser.c
 @@ -1730,7 +1730,7 @@ gst_vc1_parse_sequence_layer (const guint8 * data, gsize size,
      GstVC1SeqLayer * seqlayer)
  {

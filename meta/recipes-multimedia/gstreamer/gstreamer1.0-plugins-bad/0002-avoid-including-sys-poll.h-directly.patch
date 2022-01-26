@@ -9,13 +9,13 @@ Upstream-Status: Pending
 
 Signed-off-by: Andre McCurdy <armccurdy@gmail.com>
 ---
- sys/dvb/gstdvbsrc.c | 2 +-
+ subprojects/gst-plugins-bad/sys/dvb/gstdvbsrc.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/sys/dvb/gstdvbsrc.c b/sys/dvb/gstdvbsrc.c
+diff --git a/subprojects/gst-plugins-bad/sys/dvb/gstdvbsrc.c b/subprojects/gst-plugins-bad/sys/dvb/gstdvbsrc.c
 index ca6b92a..b2772db 100644
---- a/sys/dvb/gstdvbsrc.c
-+++ b/sys/dvb/gstdvbsrc.c
+--- a/subprojects/gst-plugins-bad/sys/dvb/gstdvbsrc.c
++++ b/subprojects/gst-plugins-bad/sys/dvb/gstdvbsrc.c
 @@ -97,7 +97,7 @@
  #include <gst/gst.h>
  #include <gst/glib-compat-private.h>

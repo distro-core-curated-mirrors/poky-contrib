@@ -9,23 +9,23 @@ Upstream-Status: Inappropriate [OE-specific]
 
 Signed-off-by: Naveen Saini <naveen.kumar.saini@intel.com>
 ---
- sys/msdk/meson.build | 2 ++
+ subprojects/gst-plugins-bad/sys/msdk/meson.build | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/sys/msdk/meson.build b/sys/msdk/meson.build
+diff --git a/subprojects/gst-plugins-bad/sys/msdk/meson.build b/subprojects/gst-plugins-bad/sys/msdk/meson.build
 index 6346c9451..068f38548 100644
---- a/sys/msdk/meson.build
-+++ b/sys/msdk/meson.build
-@@ -40,7 +40,9 @@ endif
+--- a/subprojects/gst-plugins-bad/sys/msdk/meson.build
++++ b/subprojects/gst-plugins-bad/sys/msdk/meson.build
+@@ -46,7 +46,9 @@ if mfx_api != 'oneVPL'
+   mfx_dep = dependency('libmfx', version: ['>= 1.0', '<= 1.99'], required: false)
  
- mfx_dep = dependency('libmfx', required: false)
- if mfx_dep.found()
-+  pkgconf_sysroot = run_command(python3, '-c', 'import os; print(os.environ.get("PKG_CONFIG_SYSROOT_DIR"))').stdout().strip()
-   mfx_incdir = mfx_dep.get_pkgconfig_variable('includedir')
-+  mfx_incdir = pkgconf_sysroot +  mfx_incdir
-   mfx_inc = []
- else
-   # Old versions of MediaSDK don't provide a pkg-config file
+   if mfx_dep.found()
++    pkgconf_sysroot = run_command(python3, '-c', 'import os; print(os.environ.get("PKG_CONFIG_SYSROOT_DIR"))').stdout().strip()
+     mfx_incdir = mfx_dep.get_variable('includedir')
++    mfx_incdir = pkgconf_sysroot +  mfx_incdir
+     mfx_inc = []
+     use_msdk = true
+   else
 -- 
 2.17.1
 

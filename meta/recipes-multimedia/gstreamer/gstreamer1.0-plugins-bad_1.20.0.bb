@@ -4,16 +4,16 @@ DESCRIPTION = "'Bad' GStreamer plugins and helper libraries "
 HOMEPAGE = "https://gstreamer.freedesktop.org/"
 BUGTRACKER = "https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/issues"
 
-SRC_URI = "https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-${PV}.tar.xz \
-           file://0001-fix-maybe-uninitialized-warnings-when-compiling-with.patch \
-           file://0002-avoid-including-sys-poll.h-directly.patch \
-           file://0003-ensure-valid-sentinals-for-gst_structure_get-etc.patch \
-           file://0004-opencv-resolve-missing-opencv-data-dir-in-yocto-buil.patch \
-           file://0005-msdk-fix-includedir-path.patch \
-           "
-SRC_URI[sha256sum] = "a164923b94f0d08578a6fcaeaac6e0c05da788a46903a1086870e9ca45ad678e"
+require gstreamer1.0-source.inc
 
-S = "${WORKDIR}/gst-plugins-bad-${PV}"
+S = "${SRC_BASE}/subprojects/gst-plugins-bad"
+
+SRC_URI += "file://0001-fix-maybe-uninitialized-warnings-when-compiling-with.patch;patchdir=${SRC_BASE} \
+            file://0002-avoid-including-sys-poll.h-directly.patch;patchdir=${SRC_BASE} \
+            file://0003-ensure-valid-sentinals-for-gst_structure_get-etc.patch;patchdir=${SRC_BASE} \
+            file://0004-opencv-resolve-missing-opencv-data-dir-in-yocto-buil.patch;patchdir=${SRC_BASE} \
+            file://0005-msdk-fix-includedir-path.patch;patchdir=${SRC_BASE} \
+            "
 
 LICENSE = "GPLv2+ & LGPLv2+ & LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=4fbd65380cdd255951079008b364516c"
@@ -61,7 +61,6 @@ PACKAGECONFIG[gcrypt]          = "-Dhls-crypto=libgcrypt,,libgcrypt"
 PACKAGECONFIG[gl]              = "-Dgl=enabled,-Dgl=disabled,"
 PACKAGECONFIG[kms]             = "-Dkms=enabled,-Dkms=disabled,libdrm"
 PACKAGECONFIG[libde265]        = "-Dlibde265=enabled,-Dlibde265=disabled,libde265"
-PACKAGECONFIG[libmms]          = "-Dlibmms=enabled,-Dlibmms=disabled,libmms"
 PACKAGECONFIG[libssh2]         = "-Dcurl-ssh2=enabled,-Dcurl-ssh2=disabled,libssh2"
 PACKAGECONFIG[lcms2]           = "-Dcolormanagement=enabled,-Dcolormanagement=disabled,lcms"
 PACKAGECONFIG[modplug]         = "-Dmodplug=enabled,-Dmodplug=disabled,libmodplug"
@@ -132,7 +131,6 @@ EXTRA_OEMESON += " \
     -Dmplex=disabled \
     -Dmusepack=disabled \
     -Dnvcodec=disabled \
-    -Dofa=disabled \
     -Dopenexr=disabled \
     -Dopenni2=disabled \
     -Dopensles=disabled \
