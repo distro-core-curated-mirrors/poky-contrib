@@ -25,10 +25,10 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  ext/qt/qtwindow.cc      | 2 +-
  2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/ext/qt/gstqsgtexture.cc b/ext/qt/gstqsgtexture.cc
+diff --git a/subprojects/gst-plugins-good/ext/qt/gstqsgtexture.cc b/subprojects/gst-plugins-good/ext/qt/gstqsgtexture.cc
 index a05d26e..4cc9fc6 100644
---- a/ext/qt/gstqsgtexture.cc
-+++ b/ext/qt/gstqsgtexture.cc
+--- a/subprojects/gst-plugins-good/ext/qt/gstqsgtexture.cc
++++ b/subprojects/gst-plugins-good/ext/qt/gstqsgtexture.cc
 @@ -27,7 +27,7 @@
  
  #include <gst/video/video.h>
@@ -38,10 +38,10 @@ index a05d26e..4cc9fc6 100644
  #include "gstqsgtexture.h"
  
  #define GST_CAT_DEFAULT gst_qsg_texture_debug
-diff --git a/ext/qt/qtwindow.cc b/ext/qt/qtwindow.cc
+diff --git a/subprojects/gst-plugins-good/ext/qt/qtwindow.cc b/subprojects/gst-plugins-good/ext/qt/qtwindow.cc
 index 9360c33..0dfd3f1 100644
---- a/ext/qt/qtwindow.cc
-+++ b/ext/qt/qtwindow.cc
+--- a/subprojects/gst-plugins-good/ext/qt/qtwindow.cc
++++ b/subprojects/gst-plugins-good/ext/qt/qtwindow.cc
 @@ -25,7 +25,7 @@
  #include <stdio.h>
  
