@@ -9,16 +9,16 @@ Upstream-Status: Pending
 
 Signed-off-by: zhouming <b42586@freescale.com>
 ---
- gst-libs/gst/tag/gsttagdemux.c | 13 +++++++++++++
+ subprojects/gst-plugins-base/gst-libs/gst/tag/gsttagdemux.c | 13 +++++++++++++
  1 file changed, 13 insertions(+)
- mode change 100644 => 100755 gst-libs/gst/tag/gsttagdemux.c
+ mode change 100644 => 100755 subprojects/gst-plugins-base/gst-libs/gst/tag/gsttagdemux.c
 
-diff --git a/gst-libs/gst/tag/gsttagdemux.c b/gst-libs/gst/tag/gsttagdemux.c
+diff --git a/subprojects/gst-plugins-base/gst-libs/gst/tag/gsttagdemux.c b/subprojects/gst-plugins-base/gst-libs/gst/tag/gsttagdemux.c
 old mode 100644
 new mode 100755
 index f545857..62d10ef
---- a/gst-libs/gst/tag/gsttagdemux.c
-+++ b/gst-libs/gst/tag/gsttagdemux.c
+--- a/subprojects/gst-plugins-base/gst-libs/gst/tag/gsttagdemux.c
++++ b/subprojects/gst-plugins-base/gst-libs/gst/tag/gsttagdemux.c
 @@ -1777,6 +1777,19 @@ gst_tag_demux_pad_query (GstPad * pad, GstObject * parent, GstQuery * query)
        }
        break;

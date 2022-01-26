@@ -9,13 +9,13 @@ Upstream-Status: Pending
 
 Signed-off-by: Carlos Rafael Giani <crg7475@mailbox.org>
 ---
- gst-libs/gst/gl/gl-prelude.h | 4 ++++
+ subprojects/gst-plugins-base/gst-libs/gst/gl/gl-prelude.h | 4 ++++
  1 file changed, 4 insertions(+)
 
-diff --git a/gst-libs/gst/gl/gl-prelude.h b/gst-libs/gst/gl/gl-prelude.h
+diff --git a/subprojects/gst-plugins-base/gst-libs/gst/gl/gl-prelude.h b/subprojects/gst-plugins-base/gst-libs/gst/gl/gl-prelude.h
 index 05e1f62..96ce5e6 100644
---- a/gst-libs/gst/gl/gl-prelude.h
-+++ b/gst-libs/gst/gl/gl-prelude.h
+--- a/subprojects/gst-plugins-base/gst-libs/gst/gl/gl-prelude.h
++++ b/subprojects/gst-plugins-base/gst-libs/gst/gl/gl-prelude.h
 @@ -22,6 +22,10 @@
  #ifndef __GST_GL_PRELUDE_H__
  #define __GST_GL_PRELUDE_H__

@@ -10,16 +10,16 @@ Upstream-Status: Submitted [https://bugzilla.gnome.org/show_bug.cgi?id=747496]
 
 Signed-off-by: Mingke Wang <mingke.wang@freescale.com>
 ---
- gst/subparse/gstssaparse.c | 150 +++++++++++++++++++++++++++++++++----
+ subprojects/gst-plugins-base/gst/subparse/gstssaparse.c | 150 +++++++++++++++++++++++++++++++++----
  1 file changed, 134 insertions(+), 16 deletions(-)
- mode change 100644 => 100755 gst/subparse/gstssaparse.c
+ mode change 100644 => 100755 subprojects/gst-plugins-base/gst/subparse/gstssaparse.c
 
-diff --git a/gst/subparse/gstssaparse.c b/gst/subparse/gstssaparse.c
+diff --git a/subprojects/gst-plugins-base/gst/subparse/gstssaparse.c b/subprojects/gst-plugins-base/gst/subparse/gstssaparse.c
 old mode 100644
 new mode 100755
 index c849c08..4b9636c
---- a/gst/subparse/gstssaparse.c
-+++ b/gst/subparse/gstssaparse.c
+--- a/subprojects/gst-plugins-base/gst/subparse/gstssaparse.c
++++ b/subprojects/gst-plugins-base/gst/subparse/gstssaparse.c
 @@ -262,6 +262,7 @@ gst_ssa_parse_remove_override_codes (GstSsaParse * parse, gchar * txt)
   * gst_ssa_parse_push_line:
   * @parse: caller element

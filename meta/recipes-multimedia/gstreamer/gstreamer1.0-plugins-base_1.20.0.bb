@@ -4,17 +4,16 @@ DESCRIPTION = "'Base' GStreamer plugins and helper libraries"
 HOMEPAGE = "https://gstreamer.freedesktop.org/"
 BUGTRACKER = "https://gitlab.freedesktop.org/gstreamer/gst-plugins-base/-/issues"
 LICENSE = "GPLv2+ & LGPLv2+"
-LIC_FILES_CHKSUM = "file://COPYING;md5=6762ed442b3822387a51c92d928ead0d"
+LIC_FILES_CHKSUM = "file://COPYING;md5=69333daa044cb77e486cc36129f7a770"
 
-SRC_URI = "https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-${PV}.tar.xz \
-           file://0001-ENGR00312515-get-caps-from-src-pad-when-query-caps.patch \
-           file://0003-viv-fb-Make-sure-config.h-is-included.patch \
-           file://0002-ssaparse-enhance-SSA-text-lines-parsing.patch \
-           file://0004-glimagesink-Downrank-to-marginal.patch \
-           "
-SRC_URI[sha256sum] = "960b7af4585700db0fdd5b843554e11e2564fed9e061f591fae88a7be6446fa3"
+require gstreamer1.0-source.inc
 
-S = "${WORKDIR}/gst-plugins-base-${PV}"
+S = "${SRC_BASE}/subprojects/gst-plugins-base"
+
+SRC_URI += "file://0001-ENGR00312515-get-caps-from-src-pad-when-query-caps.patch;patchdir=${SRC_BASE} \
+            file://0003-viv-fb-Make-sure-config.h-is-included.patch;patchdir=${SRC_BASE} \
+            file://0002-ssaparse-enhance-SSA-text-lines-parsing.patch;patchdir=${SRC_BASE} \
+            "
 
 DEPENDS += "iso-codes util-linux zlib"
 
