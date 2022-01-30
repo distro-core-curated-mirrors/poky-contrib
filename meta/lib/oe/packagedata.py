@@ -448,9 +448,9 @@ def find_path(targetpath, pkgdata_dir, d):
         raise PathNotFoundError('Unable to find any package producing path %s' % targetpath)
         return None
 
-# Additional helpers for dependency checking
-
 def find_file_rprovides(file_rprovides, pkgdata_dir, d):
+    import re
+
     found = False
     matching_pkgs = {}
     for root, dirs, files in os.walk(os.path.join(pkgdata_dir, 'runtime')):
@@ -461,14 +461,94 @@ def find_file_rprovides(file_rprovides, pkgdata_dir, d):
                         val = line.split(': ', 1)[1].strip()
                         listval = val.split(' ')
                         for filerprovide in listval:
-                            for frp in file_rprovides.split():
-                                regex = re.compile(r"(?P<frp>%s)" % re.escape(frp))
-                                m = re.match(regex, filerprovide)
-                                if m:
+                            for frp in file_rprovides.split(','):
+                                if frp.startswith("perl >="):
                                     found = True
-                                    matching_pkgs.update({'%s' % fn: '%s' % frp})
+                                    matching_pkgs.update({'perl': '%s' % frp})
+                                elif frp.startswith("perl(-") or frp.startswith("perl(."):
+                                    bb.debug(2, "Skipping dependency we don't know how to handle: %s" % frp)
+                                    found = True
+                                else:
+                                    # ignore versioned dependencies for now
+                                    # perl(DBI) >= 1.57
+                                    # TODO: compare required version to PKGV
+                                    safe_frp = frp.split(' ')[0]
+                                    bb.debug(4, "(?P<frp>%s)" % re.escape(frp))
+                                    regex = re.compile(r"(?P<frp>%s)" % re.escape(safe_frp))
+                                    m = re.search(regex, filerprovide)
+                                    if m:
+                                        found = True
+                                        matching_pkgs.update({'%s' % fn: '%s' % safe_frp})
     if found:
         return matching_pkgs
     else:
-        raise PathNotFoundError('Unable to find any package which FILERPROVIDES %s' % file_rprovides)
-        return None
+        bb.debug(2, "Unable to find any package which FILERPROVIDES %s" % file_rprovides)
+        #raise PathNotFoundError('Unable to find any package which FILERPROVIDES %s' % file_rprovides)
+        return dict()
+
+def package_info(pkg, d):
+    import re
+
+    pkgdatafile = get_subpkgedata_fn(pkg, d)
+
+    def parse_pkgdatafile(pkgdatafile):
+        vars = ['PKGV', 'PKGE', 'PKGR', 'PN', 'PV', 'PE', 'PR', 'PKGSIZE']
+#       if args.extra:
+#           vars += args.extra
+        with open(pkgdatafile, 'r') as f:
+            vals = dict()
+            extra = ''
+            for line in f:
+                for var in vars:
+                    m = re.match(var + '(?:_\S+)?:\s*(.+?)\s*$', line)
+                    if m:
+                        vals[var] = m.group(1)
+            pkg_version = vals['PKGV'] or ''
+            recipe = vals['PN'] or ''
+            recipe_version = vals['PV'] or ''
+            pkg_size = vals['PKGSIZE'] or ''
+            if 'PKGE' in vals:
+                pkg_version = vals['PKGE'] + ":" + pkg_version
+            if 'PKGR' in vals:
+                pkg_version = pkg_version + "-" + vals['PKGR']
+            if 'PE' in vals:
+                recipe_version = vals['PE'] + ":" + recipe_version
+            if 'PR' in vals:
+                recipe_version = recipe_version + "-" + vals['PR']
+#           if args.extra:
+#               for var in args.extra:
+#                   if var in vals:
+#                       val = re.sub(r'\s+', ' ', vals[var])
+#                       extra += ' "%s"' % val
+            return pkg, pkg_version, recipe, recipe_version, pkg_size, extra
+
+    parse_pkgdatafile(pkgdatafile)
+    # Handle both multiple arguments and multiple values within an arg (old syntax)
+#   packages = []
+#   if args.file:
+#       with open(args.file, 'r') as f:
+#           for line in f:
+#               splitline = line.split()
+#               if splitline:
+#                   packages.append(splitline[0])
+#   else:
+#       for pkgitem in args.pkg:
+#           packages.extend(pkgitem.split())
+#       if not packages:
+#           logger.error("No packages specified")
+#           sys.exit(1)
+#
+#   for pkg in packages:
+#       providepkgpath = os.path.join(args.pkgdata_dir, "runtime-rprovides", pkg)
+#       if os.path.exists(providepkgpath):
+#           for f in os.listdir(providepkgpath):
+#               if f != pkg:
+#                   print("%s is in the RPROVIDES of %s:" % (pkg, f))
+#               pkgdatafile = os.path.join(args.pkgdata_dir, "runtime", f)
+#               parse_pkgdatafile(pkgdatafile)
+#           continue
+#       pkgdatafile = os.path.join(args.pkgdata_dir, "runtime-reverse", pkg)
+#       if not os.path.exists(pkgdatafile):
+#           logger.error("Unable to find any built runtime package named %s" % pkg)
+#           sys.exit(1)
+#       parse_pkgdatafile(pkgdatafile)
