@@ -292,8 +292,8 @@ PACKAGES += "${PN}-pod"
 FILES:${PN}-pod = "${libdir}/perl5/${PV}/pod \
                    ${libdir}/perl5/${PV}/*.pod \
                    ${libdir}/perl5/${PV}/*/*.pod \
-                   ${libdir}/perl5/${PV}/*/*/*.pod \ 
-                   ${libdir}/perl5/${PV}/*/*/*/*.pod \ 
+                   ${libdir}/perl5/${PV}/*/*/*.pod \
+                   ${libdir}/perl5/${PV}/*/*/*/*.pod \
                   "
 
 PACKAGES += "${PN}-module-cpan ${PN}-module-unicore"
@@ -368,13 +368,16 @@ do_create_rdepends_inc() {
 
 # Some additional dependencies that the above doesn't manage to figure out
 RDEPENDS:${PN}-module-file-spec += "${PN}-module-file-spec-unix"
-RDEPENDS:${PN}-module-scalar-util += "${PN}-module-list-util"
-RDEPENDS:${PN}-module-file-temp += "${PN}-module-scalar-util"
 RDEPENDS:${PN}-module-file-temp += "${PN}-module-file-spec"
-RDEPENDS:${PN}-module-io-file += "${PN}-module-symbol"
+RDEPENDS:${PN}-module-file-temp += "${PN}-module-scalar-util"
 RDEPENDS:${PN}-module-io-file += "${PN}-module-carp"
+RDEPENDS:${PN}-module-io-file += "${PN}-module-symbol"
 RDEPENDS:${PN}-module-math-bigint += "${PN}-module-math-bigint-calc"
+RDEPENDS:${PN}-module-overload += "${PN}-module-overloading"
+RDEPENDS:${PN}-module-scalar-util += "${PN}-module-list-util"
+RDEPENDS:${PN}-module-scalar-util += "${PN}-module-list-util"
 RDEPENDS:${PN}-module-test-builder += "${PN}-module-list-util"
+RDEPENDS:${PN}-module-test-builder += "${PN}-module-scalar-util"
 RDEPENDS:${PN}-module-test-builder += "${PN}-module-scalar-util"
 RDEPENDS:${PN}-module-test-builder-formatter += "${PN}-module-test2-formatter-tap"
 RDEPENDS:${PN}-module-test2-api += "${PN}-module-test2-event-fail"
@@ -382,7 +385,7 @@ RDEPENDS:${PN}-module-test2-api += "${PN}-module-test2-event-pass"
 RDEPENDS:${PN}-module-test2-api += "${PN}-module-test2-event-v2"
 RDEPENDS:${PN}-module-test2-formatter-tap += "${PN}-module-test2-formatter"
 RDEPENDS:${PN}-module-thread-queue += "${PN}-module-attributes"
-RDEPENDS:${PN}-module-overload += "${PN}-module-overloading"
+RDEPENDS:${PN}-module-thread-queue += "${PN}-module-attributes"
 
 # Generated depends list beyond this line
 EOPREAMBLE
