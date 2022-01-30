@@ -457,7 +457,7 @@ def find_file_rprovides(file_rprovides, pkgdata_dir, d):
         for fn in files:
             with open(os.path.join(root, fn)) as f:
                 for line in f:
-                    if line.startswith('FILERPROVIDES_'):
+                    if line.startswith('FILERPROVIDES:'):
                         val = line.split(': ', 1)[1].strip()
                         listval = val.split(' ')
                         for filerprovide in listval:
