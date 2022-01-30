@@ -129,6 +129,34 @@ def guess_perl_provider(raw_dep, d):
             bb.debug(2, "Didn't know how to handle %s" % raw_dep)
     return None
 
+def is_dep_in_rdeps_of_rdeps(pkg, rdep, d):
+    try:
+        pkgdata_dict = oe.packagedata.read_subpkgdata_dict(pkg, d)
+        rdeps = bb.utils.explode_deps(pkgdata_dict['RDEPENDS'])
+    except AttributeError:
+        bb.debug(2, "RDEPENDS:%s is empty" % pkg)
+        return None
+    except KeyError:
+        bb.debug(2, "RDEPENDS:%s is not defined in pkgdata" % pkg)
+        return None
+    if 'perl' in rdeps:
+        rdeps.remove('perl')
+    if 'perl-modules' in rdeps:
+        rdeps.remove('perl-modules')
+    for child_rdep in rdeps:
+        bb.debug(2, "\t[%s] Scanning %s for %s" % (pkg, child_rdep, rdep))
+        try:
+            child_pkgdata_dict = oe.packagedata.read_subpkgdata_dict(child_rdep, d)
+            child_rdeps = bb.utils.explode_deps(child_pkgdata_dict['RDEPENDS'])
+            if rdep in child_rdeps:
+                bb.debug(2, "\t[%s] Runtime dependency %s is met as a dependency of %s" % (pkg, rdep, child_rdep))
+                return True
+        except AttributeError:
+            bb.debug(2, "RDEPENDS:%s is empty" % child_rdep)
+        except KeyError:
+            bb.debug(2, "RDEPENDS:%s is not defined in pkgdata" % child_rdep)
+    return False
+
 def is_dep_in_rdeps(pkg, rdep, d):
     # TODO: check first if rdep is provided by perl itself
     if pkg == rdep:
@@ -155,6 +183,8 @@ def is_dep_in_rdeps(pkg, rdep, d):
     elif rdep.startswith("perl-module-") and ("perl-modules" in rdeps):
         bb.debug(2, "[%s] Runtime dependency %s met by perl-modules" % (pkg, rdep))
         return True
+    elif is_dep_in_rdeps_of_rdeps(pkg, rdep, d):
+        return True
     else:
         bb.debug(2, "[%s] Runtime dependency %s NOT met" % (pkg, rdep))
         missing.append(rdep)
@@ -174,6 +204,8 @@ python do_perldeps() {
     import subprocess
 
     pkgs = packages(d)
+    filerprovides_map = oe.packagedata.filerprovidesmap(d)
+    bb.debug(3, "filerprovides_map: %s" % filerprovides_map)
     # FIXME:
     # needs to be split up for packages-split
     # missing_rdeps[pkg] = set()
@@ -240,20 +272,35 @@ python do_perldeps() {
             bb.debug(2, '\t%s' % dep)
         for dep in raw_deps:
             bb.debug(2, 'processing raw_dep: %s' % dep)
-            pkgdata_dir = d.getVar('PKGDATA_DIR')
-            providers_dict = oe.packagedata.find_file_rprovides(dep, pkgdata_dir, d)
-            bb.debug(2, "providers_dict: %s" % providers_dict)
-            for key, value in providers_dict.items():
-                if dep in value:
-                    if is_dep_in_rdeps(pkg, key, d):
-                        bb.debug(2, "Dependency %s met by %s" % (dep, key))
-                        continue
-                    else:
-                        bb.debug(2, "%s has a runtime dependency on %s, but it is not in RDEPENDS" % (pkg, key))
-                        missing_rdeps[pkg].add(key)
+            try:
+                provider = filerprovides_map.get(dep)
+                if is_dep_in_rdeps(pkg, provider, d):
+                    bb.debug(2, "Dependency %s met by %s" % (dep, provider))
+                    continue
+                elif is_dep_in_rdeps_of_rdeps(pkg, provider, d):
+                    bb.debug(2, "Dependency %s met by %s which is in child RDEPENDS" % (dep, provider))
+                    continue
                 else:
-                    bb.debug(2, "Dependency %s not resolved in FILERPROVIDES from pkgdata" % dep)
-                    unresolved_rdeps[pkg].add(dep)
+                    candidate = guess_perl_provider(dep, d)
+                    if candidate and is_dep_in_rdeps(pkg, candidate, d):
+                        bb.debug(2, "Dependency %s might be met by %s" % (dep, candidate))
+                    else:
+                        bb.debug(2, "%s has a runtime dependency on %s, but it is not in RDEPENDS" % (pkg, dep))
+                        missing_rdeps[pkg].add(dep)
+            except AttributeError:
+                bb.debug(2, "Dependency %s not resolved in FILERPROVIDES from pkgdata" % dep)
+                unresolved_rdeps[pkg].add(dep)
+            #for key, value in filerdepends_map:
+                #if dep in key:
+                #    if is_dep_in_rdeps(pkg, value, d):
+                #        bb.debug(2, "Dependency %s met by %s" % (dep, value))
+                #        continue
+                #    else:
+                #        bb.debug(2, "%s has a runtime dependency on %s, but it is not in RDEPENDS" % (pkg, key))
+                #        missing_rdeps[pkg].add(key)
+                #else:
+                #    bb.debug(2, "Dependency %s not resolved in FILERPROVIDES from pkgdata" % dep)
+                #    unresolved_rdeps[pkg].add(dep)
 #           candidate = guess_perl_provider(dep, d)
 #           bb.debug(2, "candidate: %s" % candidate)
 #           if candidate:
@@ -278,6 +325,7 @@ python do_perldeps() {
             bb.warn('[%s] Possible missing runtime dependencies detected, but they could not be resolved "%s"' % (pkg, ' '.join(unresolved_rdeps[pkg])))
         else:
             bb.warn('[%s] Possible missing runtime dependency detected, but it could not be resolved "%s"' % (pkg, unresolved_rdeps[pkg]))
+            bb.debug(3, "'%s'.split(' ') = %s" % (unresolved_rdeps[pkg], next(iter(unresolved_rdeps[pkg])).split(' ')))
         bb.debug(3, 'len(missing_rdeps[%s]) = %s' % (pkg, len(missing_rdeps[pkg])))
         if len(missing_rdeps[pkg]) == 0:
             bb.debug(2, "%s seems to have all runtime dependencies met" % pkg)
