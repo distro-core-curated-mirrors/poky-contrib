@@ -520,6 +520,27 @@ def find_path(args):
         logger.error("Unable to find any package producing path %s" % args.targetpath)
         sys.exit(1)
 
+def find_file_rprovides(args):
+    import json
+
+    found = False
+    for root, dirs, files in os.walk(os.path.join(args.pkgdata_dir, 'runtime')):
+        for fn in files:
+            with open(os.path.join(root,fn)) as f:
+                for line in f:
+                    if line.startswith('FILERPROVIDES_'):
+                        val = line.split(': ', 1)[1].strip()
+                        listval = val.split(' ')
+                        for filerprovide in listval:
+                            for frp in args.filerprovides.split():
+                                regex = re.compile(r"(?P<frp>%s)" % re.escape(frp))
+                                m = re.match(regex, filerprovide)
+                                if m:
+                                    found = True
+                                    print("%s: %s" % (frp, fn))
+    if not found:
+        logger.error("Unable to find any package file providing %s" % args.filerprovides)
+        sys.exit(1)
 
 def main():
     parser = argparse_oe.ArgumentParser(description="OpenEmbedded pkgdata tool - queries the pkgdata files written out during do_package",
@@ -575,6 +596,12 @@ def main():
                                           description='Finds the recipe-space package providing the specified target path')
     parser_find_path.add_argument('targetpath', help='Path to find (wildcards * ? allowed, use quotes to avoid shell expansion)')
     parser_find_path.set_defaults(func=find_path)
+
+    parser_find_file_rprovides = subparsers.add_parser('find-file-rprovides',
+                                          help='Find package providing a FILERPROVIDES',
+                                          description='Finds the recipe-space package providing the specified target file rprovides')
+    parser_find_file_rprovides.add_argument('filerprovides', help='FILERPROVIDES to find (wildcards * ? allowed, use quotes to avoid shell expansion)')
+    parser_find_file_rprovides.set_defaults(func=find_file_rprovides)
 
     parser_read_value = subparsers.add_parser('read-value',
                                           help='Read any pkgdata value for one or more packages',
