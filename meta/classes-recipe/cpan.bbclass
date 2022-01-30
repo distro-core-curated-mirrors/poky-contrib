@@ -7,7 +7,7 @@
 #
 # This is for perl modules that use the old Makefile.PL build system
 #
-inherit cpan-base perlnative
+inherit cpan-base perlnative perldeps
 
 EXTRA_CPANFLAGS ?= ""
 EXTRA_PERLFLAGS ?= ""
