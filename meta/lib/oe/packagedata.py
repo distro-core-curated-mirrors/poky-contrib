@@ -379,6 +379,51 @@ def mapping_rename_hook(d):
     oe.packagedata.runtime_mapping_rename("RRECOMMENDS", pkg, d)
     oe.packagedata.runtime_mapping_rename("RSUGGESTS", pkg, d)
 
+def _filerprovidesmap(d):
+    """Return a dictionary mapping FILERPROVIDES to (sub)package name."""
+
+    pkgdatadir = d.getVar("PKGDATA_DIR")
+
+    filerprovidesmap = {}
+    try:
+        files = os.listdir(os.path.join(pkgdatadir, 'runtime'))
+    except OSError:
+        bb.warn("No files in %s?" % pkgdatadir)
+        files = []
+
+    for pkg in [f for f in files if not os.path.isdir(os.path.join(pkgdatadir, 'runtime', f))]:
+        try:
+            if pkg.endswith('.packaged'):
+                continue
+            subpkgdata = read_subpkgdata(pkg, d)
+            #pkgdata = read_pkgdatafile(os.path.join(pkgdatadir, pkg))
+        except OSError:
+            continue
+
+        #filerprovides = pkgdata.get("FILERPROVDES") or ""
+        bb.debug(1, "subpkgdata: %s" % subpkgdata)
+        #filerprovideslist = subpkgdata.get("FILERPROVIDESLIST") or ""
+        filerprovideslist = list_pkg_filerprovides(pkg, d)
+        bb.debug(1, "fileprovideslist: %s" % filerprovideslist)
+        #filerprovides = subpkgdata.get("FILERPROVIDES") or ""
+        #bb.debug(1, "fileprovides: %s" % filerprovides)
+        for filerprovide in filerprovideslist:
+            bb.debug(1, "filerprovide[%s]: %s" % (filerprovide, pkg))
+            filerprovidesmap.update({filerprovide: pkg})
+
+    return filerprovidesmap
+
+def filerprovidesmap(d):
+    """Return a dictionary mapping FILERPROVIDES to package name.
+    Cache the mapping in the metadata"""
+
+    filerprovidesmap_data = d.getVar("__filerprovidesmap_data", False)
+    if filerprovidesmap_data is None:
+        filerprovidesmap_data = _filerprovidesmap(d)
+        d.setVar("__filerprovidesmap_data", filerprovidesmap_data)
+
+    return filerprovidesmap_data
+
 #
 # packagedata utility functions based on scripts/oe-pkgdata-util
 #
@@ -403,6 +448,36 @@ def lookup_pkglist(pkgs, pkgdata_dir, reverse):
                             mappings[pkg].append(fields[1])
                             break
     return mappings
+
+def list_pkg_filerprovides(pkg, d):
+    import json
+    import oe.package
+
+    filerprovides = []
+    subpkgdata = read_subpkgdata(pkg, d)
+    found = False
+    try:
+        files_info = json.loads(subpkgdata['FILES_INFO']) or dict()
+    except (KeyError, AttributeError):
+        files_info = dict()
+    bb.debug(3, "[%s] FILES_INFO: %s" % (pkg, files_info))
+    for _file in files_info:
+        bb.debug(3, "_file: %s" % _file)
+        try:
+            _filerprovides = subpkgdata.get('FILERPROVIDES:%s:%s' % (oe.package.file_translate(_file), pkg)).split() or list()
+        except AttributeError:
+            _filerprovides = list()
+        except KeyError:
+            _filerprovides = list()
+        finally:
+            bb.debug(3, "FILERPROVIDES:%s:%s: %s" % (pkg, _file, _filerprovides))
+        if _filerprovides != list():
+            found = True
+            filerprovides.extend(_filerprovides)
+    if not found:
+        bb.debug(2, 'Unable to find FILERPROVIDES entry in %s' % subpkgdata)
+    return filerprovides
+
 
 def list_pkg_files(pkg, d):
     import json
@@ -453,6 +528,12 @@ def find_file_rprovides(file_rprovides, pkgdata_dir, d):
 
     found = False
     matching_pkgs = {}
+    filerprovides_map = filerprovidesmap(d)
+    bb.debug(1, "filerprovidesmap(d): %s" % filerprovides_map)
+    #pkg_map = pkgmap(d)
+    #bb.debug(1, "pkgmap(d): %s" % pkg_map)
+    exit(1)
+
     for root, dirs, files in os.walk(os.path.join(pkgdata_dir, 'runtime')):
         for fn in files:
             with open(os.path.join(root, fn)) as f:
@@ -486,18 +567,18 @@ def find_file_rprovides(file_rprovides, pkgdata_dir, d):
         #raise PathNotFoundError('Unable to find any package which FILERPROVIDES %s' % file_rprovides)
         return dict()
 
-def package_info(pkg, d):
+def package_info(pkg, d, extra=None):
     import re
 
     pkgdatafile = get_subpkgedata_fn(pkg, d)
 
     def parse_pkgdatafile(pkgdatafile):
         vars = ['PKGV', 'PKGE', 'PKGR', 'PN', 'PV', 'PE', 'PR', 'PKGSIZE']
-#       if args.extra:
-#           vars += args.extra
+        if extra:
+            vars += extra
         with open(pkgdatafile, 'r') as f:
             vals = dict()
-            extra = ''
+            _extra = ''
             for line in f:
                 for var in vars:
                     m = re.match(var + '(?:_\S+)?:\s*(.+?)\s*$', line)
@@ -515,12 +596,12 @@ def package_info(pkg, d):
                 recipe_version = vals['PE'] + ":" + recipe_version
             if 'PR' in vals:
                 recipe_version = recipe_version + "-" + vals['PR']
-#           if args.extra:
-#               for var in args.extra:
-#                   if var in vals:
-#                       val = re.sub(r'\s+', ' ', vals[var])
-#                       extra += ' "%s"' % val
-            return pkg, pkg_version, recipe, recipe_version, pkg_size, extra
+            if extra:
+                for var in extra:
+                    if var in vals:
+                        val = re.sub(r'\s+', ' ', vals[var])
+                        _extra += ' "%s"' % val
+            return pkg, pkg_version, recipe, recipe_version, pkg_size, _extra
 
     parse_pkgdatafile(pkgdatafile)
     # Handle both multiple arguments and multiple values within an arg (old syntax)
