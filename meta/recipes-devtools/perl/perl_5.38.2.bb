@@ -424,3 +424,4 @@ SSTATE_HASHEQUIV_FILEMAP = " \
     populate_sysroot:*/lib*/perl5/config.sh:${TMPDIR} \
     populate_sysroot:*/lib*/perl5/config.sh:${COREBASE} \
     "
+inherit perldeps
