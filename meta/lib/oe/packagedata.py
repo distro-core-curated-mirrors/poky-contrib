@@ -3,6 +3,12 @@
 #
 # SPDX-License-Identifier: GPL-2.0-only
 #
+# Additional packagedata utilities
+#
+# Borrowing largely from oe-pkgdata-util
+#
+# Copyright 2012-2020 Intel Corporation
+#
 
 import codecs
 import os
@@ -11,6 +17,14 @@ import bb.compress.zstd
 import oe.path
 
 from glob import glob
+
+
+class PathNotFoundError(bb.BBHandledException):
+    def __init__(self, path):
+        self.path = path
+
+    def __str__(self):
+        return "Error: %s not found." % self.path
 
 def packaged(pkg, d):
     return os.access(get_subpkgedata_fn(pkg, d) + '.packaged', os.R_OK)
@@ -364,3 +378,72 @@ def mapping_rename_hook(d):
     oe.packagedata.runtime_mapping_rename("RDEPENDS", pkg, d)
     oe.packagedata.runtime_mapping_rename("RRECOMMENDS", pkg, d)
     oe.packagedata.runtime_mapping_rename("RSUGGESTS", pkg, d)
+
+#
+# packagedata utility functions based on scripts/oe-pkgdata-util
+#
+
+def lookup_pkglist(pkgs, pkgdata_dir, reverse):
+    if reverse:
+        mappings = OrderedDict()
+        for pkg in pkgs:
+            revlink = os.path.join(pkgdata_dir, "runtime-reverse", pkg)
+            bb.debug(2, revlink)
+            if os.path.exists(revlink):
+                mappings[pkg] = os.path.basename(os.readlink(revlink))
+    else:
+        mappings = defaultdict(list)
+        for pkg in pkgs:
+            pkgfile = os.path.join(pkgdata_dir, 'runtime', pkg)
+            if os.path.exists(pkgfile):
+                with open(pkgfile, 'r') as f:
+                    for line in f:
+                        fields = line.rstip().split(': ')
+                        if fields[0] == 'PKG_%s' % pkg:
+                            mappings[pkg].append(fields[1])
+                            break
+    return mappings
+
+def list_pkg_files(pkg, d):
+    import json
+
+    files = []
+    subpkgdata = read_subpkgdata(pkg, d)
+    found = False
+    for key in subpkgdata:
+        bb.debug(4, 'subpkgdata: %s' % key)
+        if key.startswith('FILES_INFO'):
+            found = True
+            val = subpkgdata[key]
+            bb.debug(4, 'val: %s' % val)
+            dictval = json.loads(subpkgdata[key])
+            #bb.debug(2, 'dictval: %s' % dictval)
+            for fullpath in sorted(dictval):
+                bb.debug(4, '[%s] file: %s' % (pkg, fullpath))
+                files.append(fullpath)
+    if not found:
+        bb.error('Unable to find FILES_INFO entry in %s' % subpkgdata)
+    return files
+
+def find_path(targetpath, pkgdata_dir, d):
+    import json
+    import fnmatch
+
+    found = False
+    matching_paths = {}
+    for root, dirs, files in os.walk(os.path.join(pkgdata_dir, 'runtime')):
+        for fn in files:
+            with open(os.path.join(root, fn)) as f:
+                for line in f:
+                    if line.startswith('FILES_INFO:'):
+                        val = line.split(':', 1)[1].strip()
+                        dictval = json.loads(val)
+                        for fullpath in dictval.keys():
+                            if fnmatch.fnmatchcase(fullpath, targetpath):
+                                found = True
+                                matching_paths.update({'%s' % fn: '%s' % fullpath})
+    if found:
+        return matching_paths
+    else:
+        raise PathNotFoundError('Unable to find any package producing path %s' % targetpath)
+        return None
