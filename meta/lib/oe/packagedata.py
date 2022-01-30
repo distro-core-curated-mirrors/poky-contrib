@@ -447,3 +447,28 @@ def find_path(targetpath, pkgdata_dir, d):
     else:
         raise PathNotFoundError('Unable to find any package producing path %s' % targetpath)
         return None
+
+# Additional helpers for dependency checking
+
+def find_file_rprovides(file_rprovides, pkgdata_dir, d):
+    found = False
+    matching_pkgs = {}
+    for root, dirs, files in os.walk(os.path.join(pkgdata_dir, 'runtime')):
+        for fn in files:
+            with open(os.path.join(root, fn)) as f:
+                for line in f:
+                    if line.startswith('FILERPROVIDES_'):
+                        val = line.split(': ', 1)[1].strip()
+                        listval = val.split(' ')
+                        for filerprovide in listval:
+                            for frp in file_rprovides.split():
+                                regex = re.compile(r"(?P<frp>%s)" % re.escape(frp))
+                                m = re.match(regex, filerprovide)
+                                if m:
+                                    found = True
+                                    matching_pkgs.update({'%s' % fn: '%s' % frp})
+    if found:
+        return matching_pkgs
+    else:
+        raise PathNotFoundError('Unable to find any package which FILERPROVIDES %s' % file_rprovides)
+        return None
