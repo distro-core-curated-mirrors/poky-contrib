@@ -137,16 +137,16 @@ def is_dep_in_rdeps(pkg, rdep, d):
     try:
         pkgdata_dict = oe.packagedata.read_subpkgdata_dict(pkg, d)
         #bb.debug(2, "%s" % pkgdata_dict.keys())
-        #rdeps = [ item.strip() for item in (d.getVar('RDEPENDS_' + pkg)).split() ]
+        #rdeps = [ item.strip() for item in (d.getVar('RDEPENDS:' + pkg)).split() ]
         #rdeps = [ item.strip() for item in (pkgdata_dict['RDEPENDS']).split() ]
         rdeps = bb.utils.explode_deps(pkgdata_dict['RDEPENDS'])
         bb.debug(3, "len(rdeps) = %s" % len(rdeps))
-        bb.debug(2, "RDEPENDS_%s: %s" % (pkg, ' '.join(rdeps)))
+        bb.debug(2, "RDEPENDS:%s: %s" % (pkg, ' '.join(rdeps)))
     except AttributeError:
-        bb.debug(2, "RDEPENDS_%s is empty" % pkg)
+        bb.debug(2, "RDEPENDS:%s is empty" % pkg)
         return None
     except KeyError:
-        bb.debug(2, "RDEPENDS_%s is not defined in pkgdata" % pkg)
+        bb.debug(2, "RDEPENDS:%s is not defined in pkgdata" % pkg)
         return None
     missing = []
     if rdep in rdeps:
@@ -162,9 +162,9 @@ def is_dep_in_rdeps(pkg, rdep, d):
         bb.warn("We should not have gotten here: len(missing) == 0")
         return True
     elif len(missing) > 1:
-        bb.debug(2, 'Possible missing runtime dependency detected, but multiple candidates were found\nRDEPENDS_%s += "%s"' % (pkg, ' '.join(missing)))
+        bb.debug(2, 'Possible missing runtime dependency detected, but multiple candidates were found\nRDEPENDS:%s += "%s"' % (pkg, ' '.join(missing)))
     else:
-        bb.debug(2, 'Possible missing runtime dependency detected:\nRDEPENDS_%s += "%s"' % (pkg, missing[0]))
+        bb.debug(2, 'Possible missing runtime dependency detected:\nRDEPENDS:%s += "%s"' % (pkg, missing[0]))
     return False
 
 python do_perldeps() {
@@ -282,9 +282,9 @@ python do_perldeps() {
         if len(missing_rdeps[pkg]) == 0:
             bb.debug(2, "%s seems to have all runtime dependencies met" % pkg)
         elif len(missing_rdeps[pkg]) > 1:
-            bb.warn('Possible missing runtime dependencies detected\nRDEPENDS_%s += "%s"' % (pkg, ' '.join(missing_rdeps[pkg])))
+            bb.warn('Possible missing runtime dependencies detected\nRDEPENDS:%s += "%s"' % (pkg, ' '.join(missing_rdeps[pkg])))
         else:
-            bb.warn('Possible missing runtime dependency detected:\nRDEPENDS_%s += "%s"' % (pkg, missing_rdeps[pkg]))
+            bb.warn('Possible missing runtime dependency detected:\nRDEPENDS:%s += "%s"' % (pkg, missing_rdeps[pkg]))
 }
 
 do_perldeps[depends] += "rpm-native:do_populate_sysroot perl-native:do_populate_sysroot ${BPN}:do_packagedata"
