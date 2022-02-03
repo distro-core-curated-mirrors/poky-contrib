@@ -24,7 +24,7 @@ SRC_URI = "http://ftp.porcupine.org/pub/security/tcp_wrappers_${PV}.tar.gz \
            file://05_wildcard_matching.patch \
            file://06_fix_gethostbyname.patch \
            file://10_usagi-ipv6.patch \
-           file://11_tcpd_blacklist.patch \
+           file://11_tcpd_blocklist.patch \
            file://11_usagi_fix.patch \
            file://12_makefile_config.patch \
            file://13_shlib_weaksym.patch \
