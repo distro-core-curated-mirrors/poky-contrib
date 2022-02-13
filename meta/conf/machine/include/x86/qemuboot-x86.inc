@@ -4,8 +4,8 @@ QB_SMP = "-smp 4"
 QB_CPU:x86 = "-cpu IvyBridge -machine q35"
 QB_CPU_KVM:x86 = "-cpu IvyBridge -machine q35"
 
-QB_CPU:x86-64 = "-cpu IvyBridge -machine q35"
-QB_CPU_KVM:x86-64 = "-cpu IvyBridge -machine q35"
+QB_CPU:x86-64 = "-cpu Skylake-Client"
+QB_CPU_KVM:x86-64 = "-cpu Skylake-Client"
 
 QB_AUDIO_DRV = "alsa"
 QB_AUDIO_OPT = "-soundhw ac97,es1370"
