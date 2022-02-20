@@ -129,3 +129,13 @@ RDEPENDS:${PN}-loadable += "${PN}"
 FILES:${PN}-loadable += "${libdir}/bash/*"
 
 RPROVIDES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', '/bin/sh /bin/bash', '', d)}"
+
+do_foobar () {
+	echo 1
+}
+
+do_foobar:qemux86-64 () {
+	echo 2
+}
+
+do_compile[noexec] = "0"
