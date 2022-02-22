@@ -1,6 +1,4 @@
-#from oeqa.selftest.base import oeSelfTest
 from oeqa.selftest.case import OESelftestTestCase
-#from oeqa.utils.decorators import testcase
 
 
 class ImportedTests(OESelftestTestCase):
