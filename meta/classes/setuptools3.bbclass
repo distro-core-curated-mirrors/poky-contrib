@@ -18,6 +18,30 @@ setuptools3_do_configure() {
     :
 }
 
+def check_for_pyprojecttoml_build_backend():
+    import os
+    import tomli
+    from pathlib import Path
+    
+    pyprojecttoml_file = Path( 'pyproject.toml')
+    bb.plain("pyproject.toml found")
+    if pyprojecttoml_file:
+        pyprojecttoml_dict = tomli.loads(pyprojecttoml_file) 
+        build_system = pyprojecttoml_dict["build-system"] 
+        if build_system: 
+            bb.plain("[build-system] found in pyproject.toml")
+            backend = build_system.key('build_backend')
+            if backend == "flit_core.buildapi":
+                bb.warn("The source has a pyproject.toml which declares 'flit_core.buildapi' as a build backend, please consider 'inherit flit_core' instead of inheriting setuptools3.")
+            elif backend == "setuptools.build_meta":
+                bb.warn("The source has a pyproject.toml which declares 'setuptools.build_meta' as a build backend, please consider 'inherit setuptools_build_meta' instead of inheriting setuptools3.")
+            else:
+                bb.warn("The source has a pyproject.toml which declares '{backend}' as a build backend, but this is not currently supported in oe-core.".format(backend))
+
+python () {
+    check_for_pyprojecttoml_build_backend
+}
+
 setuptools3_do_compile() {
         cd ${SETUPTOOLS_SETUP_PATH}
         NO_FETCH_BUILD=1 \
