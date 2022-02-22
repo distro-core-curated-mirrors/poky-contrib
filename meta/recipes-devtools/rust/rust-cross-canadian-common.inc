@@ -12,7 +12,7 @@ DEPENDS += "  \
             virtual/nativesdk-libc rust-llvm-native \
             virtual/${TARGET_PREFIX}compilerlibs \
             virtual/nativesdk-${HOST_PREFIX}compilerlibs \
-            gcc-cross-${TARGET_ARCH} \
+            gcc-cross-${TARGET_SYS} \
            "
 
 # The host tools are likely not to be able to do the necessary operation on
