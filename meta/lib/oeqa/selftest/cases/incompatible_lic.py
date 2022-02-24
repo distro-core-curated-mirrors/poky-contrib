@@ -86,7 +86,7 @@ class IncompatibleLicensePerImageTests(OESelftestTestCase):
     def default_config(self):
         return """
 IMAGE_INSTALL:append = " bash"
-INCOMPATIBLE_LICENSE:pn-core-image-minimal = "GPL-3.0 LGPL-3.0"
+INCOMPATIBLE_LICENSE:pn-core-image-minimal = "GPL-3.0-or-later LGPL-3.0"
 """
 
     def test_bash_default(self):
@@ -110,8 +110,8 @@ INCOMPATIBLE_LICENSE:pn-core-image-minimal = "GPL-3.0 LGPL-3.0"
 
         bitbake('core-image-minimal')
 
-    def test_bash_whitelist(self):
-        self.write_config(self.default_config() + '\nWHITELIST_GPL-3.0:pn-core-image-minimal = "bash"')
+    def test_bash_license_exceptions(self):
+        self.write_config(self.default_config() + '\nINCOMPATIBLE_LICENSE_EXCEPTIONS:pn-core-image-minimal = "bash:GPL-3.0-or-later"')
 
         bitbake('core-image-minimal')
 
@@ -125,8 +125,8 @@ INCOMPATIBLE_LICENSE:pn-core-image-minimal = "GPL-3.0 LGPL-3.0"
     def test_core_image_full_cmdline_weston(self):
         self.write_config("""
 INHERIT += "testimage"
-INCOMPATIBLE_LICENSE:pn-core-image-full-cmdline = "GPL-3.0 LGPL-3.0"
-INCOMPATIBLE_LICENSE:pn-core-image-weston = "GPL-3.0 LGPL-3.0"
+INCOMPATIBLE_LICENSE:pn-core-image-full-cmdline = "GPL-3.0-or-later LGPL-3.0"
+INCOMPATIBLE_LICENSE:pn-core-image-weston = "GPL-3.0-or-later LGPL-3.0"
 # Settings for full-cmdline
 RDEPENDS:packagegroup-core-full-cmdline-utils:remove = "bash bc coreutils cpio ed findutils gawk grep mc mc-fish mc-helpers mc-helpers-perl sed tar time"
 RDEPENDS:packagegroup-core-full-cmdline-dev-utils:remove = "diffutils m4 make patch"

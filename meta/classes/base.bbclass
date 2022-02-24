@@ -593,21 +593,23 @@ python () {
         if check_license and bad_licenses:
             bad_licenses = expand_wildcard_licenses(d, bad_licenses)
 
-            whitelist = []
-            for lic in bad_licenses:
-                spdx_license = return_spdx(d, lic)
-                whitelist.extend((d.getVar("WHITELIST_" + lic) or "").split())
-                if spdx_license:
-                    whitelist.extend((d.getVar("WHITELIST_" + spdx_license) or "").split())
+            exceptions = (d.getVar("INCOMPATIBLE_LICENSE_EXCEPTIONS") or "").split()
 
-            if pn in whitelist:
+            pkg_exceptions = {}
+            for exception in exceptions:
+                pkg_lic = exception.split(':')
+                pkg_exceptions[pkg_lic[0]] = pkg_lic[1]
+
+#            if any((pn in execption and incompatible_lic in exception) for execption in exceptions):
+            if any(execption.startswith(pn + ':') for execption in exceptions):
                 '''
-                We need to track what we are whitelisting and why. If pn is
-                incompatible we need to be able to note that the image that
-                is created may infact contain incompatible licenses despite
+                We need to track which recipes are in the exception
+                list and why. If pn is incompatible we need to be
+                able to note that the image that is created may
+                infact contain incompatible licenses despite
                 INCOMPATIBLE_LICENSE being set.
                 '''
-                bb.note("Including %s as buildable despite it having an incompatible license because it has been whitelisted" % pn)
+                bb.note("Including %s as a buildable recipe despite it having an incompatible license because it was found in the exception list" % pn)
             else:
                 pkgs = d.getVar('PACKAGES').split()
                 skipped_pkgs = {}
