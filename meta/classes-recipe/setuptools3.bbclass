@@ -16,6 +16,47 @@ setuptools3_do_configure() {
     :
 }
 
+SETUPTOOLS_SKIP_BUILD_BACKEND_CHECK ?= "0"
+
+python check_for_pyprojecttoml_build_backend() {
+    import os
+    import tomli
+    from pathlib import Path
+
+    if d.getVar('SETUPTOOLS_SKIP_BUILD_BACKEND_CHECK') == "1":
+        bb.debug(3, "Skipping check for build-backend in pyproject.toml")
+        return 0
+    warn_string = "The source has a pyproject.toml which declares '%s' as a build backend, please consider 'inherit %s' instead of inheriting setuptools3."
+    warn_layer_string = "The source has a pyproject.toml which declares '%s' as a build backend, please consider 'inherit %s' from %s instead of inheriting setuptools3."
+    pyprojecttoml_file = Path(d.getVar('S'), 'pyproject.toml')
+    if pyprojecttoml_file.exists():
+        bb.debug(3, "pyproject.toml found: %s" % pyprojecttoml_file)
+        with open(pyprojecttoml_file, "rb") as f:
+            pyprojecttoml_dict = tomli.load(f)
+            try:
+                build_system = pyprojecttoml_dict["build-system"]
+                if build_system:
+                    bb.debug(3, "[build-system] found in pyproject.toml")
+                    backend = build_system.get('build-backend')
+                    if backend:
+                        bb.debug(3, "build-backend found: %s" % backend)
+                    if backend == "flit_core.buildapi":
+                        bb.warn(warn_string % ('flit_core.buildapi',
+                                               'flit_core'))
+                    elif backend == "setuptools.build_meta":
+                        bb.warn(warn_string % ('setuptools.build_meta',
+                                              'setuptools_build_meta'))
+                    elif backend == "poetry.core.masonry.api":
+                        bb.warn(warn_layer_string % ('poetry.core.masonry.api',
+                                                     'poetry_core', 'meta-python'))
+                    else:
+                        bb.warn("The source has a pyproject.toml which declares '%s' as a build backend, but this is not currently supported in oe-core." % backend)
+            except KeyError:
+                bb.warn("The source has a pyproject.toml, but either no [build-system] or it is malformed. If the recipe is still buildable with setuptools3, you can skip this check with:\nSETUPTOOLS_SKIP_BUILD_BACKEND_CHECK= \"1\"")
+                pass
+}
+do_configure[prefuncs] += "check_for_pyprojecttoml_build_backend"
+
 setuptools3_do_compile() {
         cd ${SETUPTOOLS_SETUP_PATH}
         NO_FETCH_BUILD=1 \
