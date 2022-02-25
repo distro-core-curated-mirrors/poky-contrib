@@ -242,3 +242,13 @@ def list_licenses(licensestr):
     except SyntaxError as exc:
         raise LicenseSyntaxError(licensestr, exc)
     return visitor.licenses
+
+def has_pkg_license_exception(pkg, dont_want_licenses, exceptions):
+    """Check the exception list for the package and return a boolean"""
+
+    pkg_exception = False
+    for bad_lic in dont_want_licenses:
+        if (pkg + ':' + bad_lic) in exceptions:
+            pkg_exception = True
+    return pkg_exception
+

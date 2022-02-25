@@ -595,46 +595,34 @@ python () {
 
             exceptions = (d.getVar("INCOMPATIBLE_LICENSE_EXCEPTIONS") or "").split()
 
-            pkg_exceptions = {}
-            for exception in exceptions:
-                pkg_lic = exception.split(':')
-                pkg_exceptions[pkg_lic[0]] = pkg_lic[1]
+            pkgs = d.getVar('PACKAGES').split()
+            skipped_pkgs = {}
+            unskipped_pkgs = []
+            for pkg in pkgs:
+                pkg_exception = oe.license.has_pkg_license_exception(pkg, bad_licenses, exceptions)
 
-#            if any((pn in execption and incompatible_lic in exception) for execption in exceptions):
-            if any(execption.startswith(pn + ':') for execption in exceptions):
-                '''
-                We need to track which recipes are in the exception
-                list and why. If pn is incompatible we need to be
-                able to note that the image that is created may
-                infact contain incompatible licenses despite
-                INCOMPATIBLE_LICENSE being set.
-                '''
-                bb.note("Including %s as a buildable recipe despite it having an incompatible license because it was found in the exception list" % pn)
-            else:
-                pkgs = d.getVar('PACKAGES').split()
-                skipped_pkgs = {}
-                unskipped_pkgs = []
-                for pkg in pkgs:
-                    incompatible_lic = incompatible_license(d, bad_licenses, pkg)
-                    if incompatible_lic:
-                        skipped_pkgs[pkg] = incompatible_lic
-                    else:
-                        unskipped_pkgs.append(pkg)
-                if unskipped_pkgs:
-                    for pkg in skipped_pkgs:
-                        bb.debug(1, "Skipping the package %s at do_rootfs because of incompatible license(s): %s" % (pkg, ' '.join(skipped_pkgs[pkg])))
-                        d.setVar('_exclude_incompatible-' + pkg, ' '.join(skipped_pkgs[pkg]))
-                    for pkg in unskipped_pkgs:
-                        bb.debug(1, "Including the package %s" % pkg)
+                incompatible_lic = incompatible_license(d, bad_licenses, pkg)
+                if incompatible_lic and not pkg_exception:
+                    skipped_pkgs[pkg] = incompatible_lic
                 else:
-                    incompatible_lic = incompatible_license(d, bad_licenses)
-                    for pkg in skipped_pkgs:
-                        incompatible_lic += skipped_pkgs[pkg]
-                    incompatible_lic = sorted(list(set(incompatible_lic)))
+                    unskipped_pkgs.append(pkg)
 
-                    if incompatible_lic:
-                        bb.debug(1, "Skipping recipe %s because of incompatible license(s): %s" % (pn, ' '.join(incompatible_lic)))
-                        raise bb.parse.SkipRecipe("it has incompatible license(s): %s" % ' '.join(incompatible_lic))
+            if unskipped_pkgs:
+                for pkg in skipped_pkgs:
+                    bb.warn( "Skipping the package %s at do_rootfs because of incompatible license(s): %s" % (pkg, ' '.join(skipped_pkgs[pkg])))
+                    bb.debug(1, "Skipping the package %s at do_rootfs because of incompatible license(s): %s" % (pkg, ' '.join(skipped_pkgs[pkg])))
+                    d.setVar('_exclude_incompatible-' + pkg, ' '.join(skipped_pkgs[pkg]))
+                for pkg in unskipped_pkgs:
+                    bb.debug(1, "Including the package %s" % pkg)
+            else:
+                incompatible_lic = incompatible_license(d, bad_licenses)
+                for pkg in skipped_pkgs:
+                    incompatible_lic += skipped_pkgs[pkg]
+                incompatible_lic = sorted(list(set(incompatible_lic)))
+
+                if incompatible_lic:
+                    bb.warn( "Skipping recipe %s because of incompatible license(s): %s" % (pn, ' '.join(incompatible_lic)))
+                    raise bb.parse.SkipRecipe("it has incompatible license(s): %s" % ' '.join(incompatible_lic))
 
     needsrcrev = False
     srcuri = d.getVar('SRC_URI')

@@ -57,11 +57,12 @@ def write_license_files(d, license_manifest, pkg_dic, rootfs=True):
     exceptions = (d.getVar("INCOMPATIBLE_LICENSE_EXCEPTIONS") or "").split()
     with open(license_manifest, "w") as license_file:
         for pkg in sorted(pkg_dic):
-            if bad_licenses and not any((pkg + ":") in execption for execption in exceptions):
+            pkg_exception = oe.license.has_pkg_license_exception(pkg, bad_licenses, exceptions)
+            if bad_licenses and not pkg_exception:
                     licenses = incompatible_pkg_license(d, bad_licenses, pkg_dic[pkg]["LICENSE"])
                     if licenses:
                         bb.fatal("Package %s cannot be installed into the image because it has incompatible license(s): %s" %(pkg, ' '.join(licenses)))
-            elif any((pkg + ":") in execption for execption in exceptions):
+            elif pkg_exception:
                 oe.qa.handle_error('license-incompatible', "Including %s with an incompatible license %s into the image, because it has been allowed by exception list." %(pkg, pkg_dic[pkg]["LICENSE"]), d)
             try:
                 (pkg_dic[pkg]["LICENSE"], pkg_dic[pkg]["LICENSES"]) = \
