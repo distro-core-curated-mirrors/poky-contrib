@@ -583,14 +583,12 @@ python () {
 
         bad_licenses = (d.getVar('INCOMPATIBLE_LICENSE') or "").split()
 
-        check_license = False if pn.startswith("nativesdk-") else True
+        check_license = not pn.startswith("nativesdk-") and not pn.startswith("gcc-source-")
         for t in ["-native", "-cross-${TARGET_ARCH}", "-cross-initial-${TARGET_ARCH}",
               "-crosssdk-${SDK_SYS}", "-crosssdk-initial-${SDK_SYS}",
               "-cross-canadian-${TRANSLATED_TARGET_ARCH}"]:
             if pn.endswith(d.expand(t)):
                 check_license = False
-        if pn.startswith("gcc-source-"):
-            check_license = False
 
         if check_license and bad_licenses:
             bad_licenses = expand_wildcard_licenses(d, bad_licenses)
