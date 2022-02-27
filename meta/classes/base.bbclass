@@ -609,7 +609,6 @@ python () {
 
             if unskipped_pkgs:
                 for pkg in skipped_pkgs:
-                    bb.warn( "Skipping the package %s at do_rootfs because of incompatible license(s): %s" % (pkg, ' '.join(skipped_pkgs[pkg])))
                     bb.debug(1, "Skipping the package %s at do_rootfs because of incompatible license(s): %s" % (pkg, ' '.join(skipped_pkgs[pkg])))
                     d.setVar('_exclude_incompatible-' + pkg, ' '.join(skipped_pkgs[pkg]))
                 for pkg in unskipped_pkgs:
@@ -621,7 +620,7 @@ python () {
                 incompatible_lic = sorted(list(set(incompatible_lic)))
 
                 if incompatible_lic:
-                    bb.warn( "Skipping recipe %s because of incompatible license(s): %s" % (pn, ' '.join(incompatible_lic)))
+                    bb.debug(1, "Skipping recipe %s because of incompatible license(s): %s" % (pn, ' '.join(incompatible_lic)))
                     raise bb.parse.SkipRecipe("it has incompatible license(s): %s" % ' '.join(incompatible_lic))
 
     needsrcrev = False
