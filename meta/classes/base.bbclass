@@ -599,10 +599,10 @@ python () {
             skipped_pkgs = {}
             unskipped_pkgs = []
             for pkg in pkgs:
-                pkg_exception = oe.license.has_pkg_license_exception(pkg, bad_licenses, exceptions)
+                remaining_bad_licenses = oe.license.apply_pkg_license_exception(pkg, bad_licenses, exceptions)
 
-                incompatible_lic = incompatible_license(d, bad_licenses, pkg)
-                if incompatible_lic and not pkg_exception:
+                incompatible_lic = incompatible_license(d, remaining_bad_licenses, pkg)
+                if incompatible_lic:
                     skipped_pkgs[pkg] = incompatible_lic
                 else:
                     unskipped_pkgs.append(pkg)

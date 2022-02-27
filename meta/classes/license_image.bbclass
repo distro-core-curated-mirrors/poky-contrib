@@ -57,17 +57,18 @@ def write_license_files(d, license_manifest, pkg_dic, rootfs=True):
     exceptions = (d.getVar("INCOMPATIBLE_LICENSE_EXCEPTIONS") or "").split()
     with open(license_manifest, "w") as license_file:
         for pkg in sorted(pkg_dic):
-            pkg_exception = oe.license.has_pkg_license_exception(pkg, bad_licenses, exceptions)
-            if bad_licenses and not pkg_exception:
-                    licenses = incompatible_pkg_license(d, bad_licenses, pkg_dic[pkg]["LICENSE"])
-                    if licenses:
-                        bb.fatal("Package %s cannot be installed into the image because it has incompatible license(s): %s" %(pkg, ' '.join(licenses)))
-            elif pkg_exception:
-                oe.qa.handle_error('license-incompatible', "Including %s with an incompatible license %s into the image, because it has been allowed by exception list." %(pkg, pkg_dic[pkg]["LICENSE"]), d)
+            remaining_bad_licenses = oe.license.apply_pkg_license_exception(pkg, bad_licenses, exceptions)
+            incompatible_licenses = incompatible_pkg_license(d, remaining_bad_licenses, pkg_dic[pkg]["LICENSE"])
+            if incompatible_licenses:
+                bb.fatal("Package %s cannot be installed into the image because it has incompatible license(s): %s" %(pkg, ' '.join(incompatible_licenses)))
+            else:
+                incompatible_licenses = incompatible_pkg_license(d, bad_licenses, pkg_dic[pkg]["LICENSE"])
+                if incompatible_licenses:
+                    oe.qa.handle_error('license-incompatible', "Including %s with incompatible license(s) %s into the image, because it has been allowed by exception list." %(pkg, ' '.join(incompatible_licenses)), d)
             try:
                 (pkg_dic[pkg]["LICENSE"], pkg_dic[pkg]["LICENSES"]) = \
                     oe.license.manifest_licenses(pkg_dic[pkg]["LICENSE"],
-                    bad_licenses, canonical_license, d)
+                    remaining_bad_licenses, canonical_license, d)
             except oe.license.LicenseError as exc:
                 bb.fatal('%s: %s' % (d.getVar('P'), exc))
 
