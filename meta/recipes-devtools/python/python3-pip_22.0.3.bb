@@ -18,8 +18,6 @@ SRC_URI += "file://reproducible.patch"
 
 SRC_URI[sha256sum] = "f29d589df8c8ab99c060e68ad294c4a9ed896624f6368c5349d70aa581b333d0"
 
-PIP_INSTALL_PACKAGE = "pip"
-
 do_install:class-native() {
     # Bootstrap to prevent dependency loop in python3-pip-native
     install -d ${D}${PYTHON_SITEPACKAGES_DIR}

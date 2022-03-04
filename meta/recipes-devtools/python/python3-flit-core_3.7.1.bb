@@ -18,9 +18,6 @@ DEPENDS:append:class-native = " unzip-native"
 # We need the full flit tarball
 PYPI_PACKAGE = "flit"
 
-PIP_INSTALL_PACKAGE = "flit_core"
-
-# 
 WHEEL_DIST_DIR = "${S}/flit_core/dist"
 
 # TODO need this only for native?
