@@ -6,7 +6,7 @@ setuptools_build_meta_do_configure () {
     mkdir -p ${S}/dist
     cat > ${S}/build-it.py << EOF
 from setuptools import build_meta
-wheel = build_meta.build_wheel('${WHEEL_DIST_DIR}')
+wheel = build_meta.build_wheel('${PIP_INSTALL_DIST_PATH}')
 print(wheel)
 EOF
 }
@@ -14,6 +14,6 @@ EOF
 setuptools_build_meta_do_compile () {
     nativepython3 ${S}/build-it.py
 }
-do_compile[cleandirs] += "${WHEEL_DIST_DIR}"
+do_compile[cleandirs] += "${PIP_INSTALL_DIST_PATH}"
 
 EXPORT_FUNCTIONS do_configure do_compile
