@@ -2007,14 +2007,9 @@ binary archive format (See `PEP-427 <https://www.python.org/dev/peps/pep-0427/>`
 The Python ``wheel`` can be built with several classes, including :ref:`flit_core <ref-classes-flit_core>`,
 :ref:`setuptools_build_meta <ref-classes-setuptools_build_meta>`, and :ref:`setuptools3 <ref-classes-setuptools3>`.
 
-The absolute path to the built ``wheel`` to be installed is defined by :term:`PYPA_WHEEL` which can be
-overriden for recipes where the filename or version number of the wheel are not easily
-determined by the defaults. Other variables which can be used to customize the behavior
-of the ``pip_install_wheel`` class include:
-
-- :term:`PIP_INSTALL_ARGS`
-- :term:`PIP_INSTALL_PACKAGE`
-- :term:`PIP_INSTALL_DIST_PATH`
+The path to the wheels to be installed is defined by
+:term:`PIP_INSTALL_DIST_PATH`.  Extra arguments can be passed to ``pip instal``
+by extending :term:`PIP_INSTALL_ARGS`.
 
 .. _ref-classes-pixbufcache:
 

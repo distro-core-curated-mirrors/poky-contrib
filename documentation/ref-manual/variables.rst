@@ -5585,14 +5585,7 @@ system and gives an overview of their function and contents.
       When used by recipes that inherit the
       :ref:`pip_install_wheel <ref-classes-pip_install_wheel>` class,
       denotes the path to ``dist/`` (short for distribution) where the
-      binary archive ``wheel`` is built. This is used in part to create
-      the :term:`PYPA_WHEEL` variable.
-
-   :term:`PIP_INSTALL_PACKAGE`
-      When used by recipes that inherit the
-      :ref:`pip_install_wheel <ref-classes-pip_install_wheel>` class,
-      denotes the name of the package portion of the ``wheel`` filename.
-      This is used in part to create the :term:`PYPA_WHEEL` variable.
+      binary archive ``wheel`` is built.
 
    :term:`PIXBUF_PACKAGES`
       When inheriting the :ref:`pixbufcache <ref-classes-pixbufcache>`
@@ -6020,13 +6013,6 @@ system and gives an overview of their function and contents.
       repository (e.g. Git or Subversion).
 
       :term:`PV` is the default value of the :term:`PKGV` variable.
-
-   :term:`PYPA_WHEEL`
-      When used by recipes that inherit the
-      :ref:`pip_install_wheel <ref-classes-pip_install_wheel>` class, denotes
-      the absolute path to the built ``wheel`` to be installed. Normally the
-      defaults which use :term:`PIP_INSTALL_PACKAGE` and :term:`PIP_INSTALL_DIST_PATH`
-      to build the path to the ``wheel`` should be sufficient.
 
    :term:`PYTHON_ABI`
       When used by recipes that inherit the
