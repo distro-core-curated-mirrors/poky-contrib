@@ -19,8 +19,11 @@ DEPENDS:append:class-native = " unzip-native"
 PYPI_PACKAGE = "flit"
 
 PIP_INSTALL_PACKAGE = "flit_core"
-PIP_INSTALL_DIST_PATH = "${S}/flit_core/dist"
 
+# 
+WHEEL_DIST_DIR = "${S}/flit_core/dist"
+
+# TODO need this only for native?
 do_compile () {
     nativepython3 flit_core/build_dists.py
 }
@@ -42,4 +45,3 @@ FILES:${PN}-tests += "\
 "
 
 BBCLASSEXTEND = "native nativesdk"
-

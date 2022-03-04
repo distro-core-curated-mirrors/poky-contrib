@@ -21,7 +21,7 @@ DEPENDS += "${PYTHON_PN}"
 DEPENDS:remove:class-native = "python3-pip-native python3-setuptools-native"
 DEPENDS:append:class-native = " unzip-native"
 
-PYPA_WHEEL ?= "${B}/dist/${PYPI_PACKAGE}-${PV}-*.whl"
+PYPA_WHEEL ?= "${PIP_INSTALL_DIST_PATH}/${PYPI_PACKAGE}-*-*.whl"
 
 do_install:class-native() {
     # Bootstrap to prevent dependency loop in python3-pip-native

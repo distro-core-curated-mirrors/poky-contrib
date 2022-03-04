@@ -7,8 +7,10 @@ def guess_pip_install_package_name(d):
     return name.replace('-', '_')
 
 PIP_INSTALL_PACKAGE ?= "${@guess_pip_install_package_name(d)}"
-PIP_INSTALL_DIST_PATH ?= "${@d.getVar('SETUPTOOLS_SETUP_PATH') or d.getVar('B')}/dist"
+# The directory where wheels should be written too
+PIP_INSTALL_DIST_PATH ?= "${WORKDIR}/dist"
 PYPA_WHEEL ??= "${PIP_INSTALL_DIST_PATH}/${PIP_INSTALL_PACKAGE}-*-*.whl"
+
 
 PIP_INSTALL_ARGS ?= "\
     -vvvv \
@@ -24,6 +26,8 @@ PIP_INSTALL_PYTHON = "python3"
 PIP_INSTALL_PYTHON:class-native = "nativepython3"
 
 pip_install_wheel_do_install () {
+    test -f ${PIP_INSTALL_DIST_PATH}/*.whl || bbfatal No wheels generated in ${PIP_INSTALL_DIST_PATH}
+
     nativepython3 -m pip install ${PIP_INSTALL_ARGS} ${PYPA_WHEEL} ||
       bbfatal_log "Failed to pip install wheel. Check the logs."
 
