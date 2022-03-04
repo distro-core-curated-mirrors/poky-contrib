@@ -15,9 +15,7 @@ DEPENDS:remove:class-native = "python3-pip-native"
 do_install:class-native () {
     # We need to bootstrap python3-wheel-native
     install -d ${D}${PYTHON_SITEPACKAGES_DIR}
-    PYPA_WHEEL="${B}/dist/${PYPI_PACKAGE}-${PV}-*.whl"
-    unzip -d ${D}${PYTHON_SITEPACKAGES_DIR} ${PYPA_WHEEL} || \
-    bbfatal_log "Failed to install"
+    unzip -d ${D}${PYTHON_SITEPACKAGES_DIR} ${WHEEL_DIST_DIR}/*.whl
 
     # pip install would normally generate [project.scripts] in ${bindir}
     install -d ${D}/${bindir}
