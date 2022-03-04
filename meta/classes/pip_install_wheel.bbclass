@@ -1,16 +1,7 @@
 DEPENDS:append = " python3-pip-native"
 
-def guess_pip_install_package_name(d):
-    import re
-    '''https://www.python.org/dev/peps/pep-0491/#escaping-and-unicode'''
-    name = d.getVar('PYPI_PACKAGE') or re.sub(r"^python3-", "", d.getVar('BPN'))
-    return name.replace('-', '_')
-
-PIP_INSTALL_PACKAGE ?= "${@guess_pip_install_package_name(d)}"
 # The directory where wheels should be written too
 PIP_INSTALL_DIST_PATH ?= "${WORKDIR}/dist"
-PYPA_WHEEL ??= "${PIP_INSTALL_DIST_PATH}/${PIP_INSTALL_PACKAGE}-*-*.whl"
-
 
 PIP_INSTALL_ARGS ?= "\
     -vvvv \
@@ -28,7 +19,7 @@ PIP_INSTALL_PYTHON:class-native = "nativepython3"
 pip_install_wheel_do_install () {
     test -f ${PIP_INSTALL_DIST_PATH}/*.whl || bbfatal No wheels generated in ${PIP_INSTALL_DIST_PATH}
 
-    nativepython3 -m pip install ${PIP_INSTALL_ARGS} ${PYPA_WHEEL} ||
+    nativepython3 -m pip install ${PIP_INSTALL_ARGS} ${WHEEL_DIST_DIR}/*.whl ||
       bbfatal_log "Failed to pip install wheel. Check the logs."
 
     cd ${D}
