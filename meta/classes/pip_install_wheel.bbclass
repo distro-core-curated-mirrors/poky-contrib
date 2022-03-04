@@ -3,7 +3,7 @@ DEPENDS:append = " python3-pip-native"
 # The directory where wheels should be written too
 PIP_INSTALL_DIST_PATH ?= "${WORKDIR}/dist"
 
-PIP_INSTALL_ARGS ?= "\
+PIP_INSTALL_ARGS = "\
     -vvvv \
     --ignore-installed \
     --no-cache \
