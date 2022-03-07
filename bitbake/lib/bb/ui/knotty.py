@@ -287,12 +287,11 @@ class TerminalFilter(object):
                 content += msg + "\n"
                 print(msg)
 
+            msg = "%2s running tasks" % (len(activetasks) or "No")
             if self.quiet:
-                msg = "Running tasks (%s, %s)" % (scene_tasks, cur_tasks)
-            elif not len(activetasks):
-                msg = "No currently running tasks (%s)" % cur_tasks
+                msg += " (%s, %s)" % (scene_tasks, cur_tasks)
             else:
-                msg = "Currently %2s running tasks (%s)" % (len(activetasks), cur_tasks)
+                msg += " (%s)" % cur_tasks
             maxtask = self.helper.tasknumber_total
             if not self.main_progress or self.main_progress.maxval != maxtask:
                 widgets = [' ', progressbar.Percentage(), ' ', progressbar.Bar()]
