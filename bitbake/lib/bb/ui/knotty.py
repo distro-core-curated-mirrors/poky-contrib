@@ -204,6 +204,7 @@ class TerminalFilter(object):
         for h in handlers:
             h.addFilter(InteractConsoleLogFilter(self))
 
+        self.setscene_progress = None
         self.main_progress = None
 
     def clearFooter(self):
@@ -283,9 +284,15 @@ class TerminalFilter(object):
 
             content = ''
             if not self.quiet:
-                msg = "Setscene tasks: %s" % scene_tasks
-                content += msg + "\n"
-                print(msg)
+                msg = "Setscene tasks (%s)" % scene_tasks
+                maxtask = self.helper.setscene_total
+                if not self.setscene_progress or self.setscene_progress.maxval != maxtask:
+                    widgets = [' ', progressbar.Percentage(), ' ', progressbar.Bar()]
+                    self.setscene_progress = BBProgress("Setscene tasks", maxtask, widgets=widgets, resize_handler=self.sigwinch_handle)
+                    self.setscene_progress.start(False)
+                self.setscene_progress.setmessage(msg)
+                content += self.setscene_progress.update(self.helper.setscene_current) + "\n"
+                print('')
 
             msg = "%2s running tasks" % (len(activetasks) or "No")
             if self.quiet:
