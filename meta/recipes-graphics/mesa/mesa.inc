@@ -227,7 +227,7 @@ python __anonymous() {
     if "-native" in d.getVar("PN"):
         suffix = "-native"
     for p in (("egl", "libegl", "libegl1"),
-              ("dri", "libgl", "libgl1"),
+              ("opengl", "libgl", "libgl1"),
               ("gles", "libgles1", "libglesv1-cm1"),
               ("gles", "libgles2", "libglesv2-2"),
               ("gles", "libgles3",)):
