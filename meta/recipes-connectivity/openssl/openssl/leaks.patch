@@ -1,0 +1,287 @@
+Backport some leak fixes from upstream.
+
+Upstream-Status: Backport
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+
+From 7fa5ea4196a9513b920d3bacc41cb3f2716475de Mon Sep 17 00:00:00 2001
+From: Matt Caswell <matt@openssl.org>
+Date: Fri, 10 Dec 2021 16:53:02 +0000
+Subject: [PATCH 1/4] Ensure that MDs created via EVP_MD_meth_new() go down the
+ legacy route
+
+MDs created via EVP_MD_meth_new() are inherently legacy and therefore
+need to go down the legacy route when they are used.
+
+Reviewed-by: Dmitry Belyavskiy <beldmit@gmail.com>
+(Merged from https://github.com/openssl/openssl/pull/17255)
+
+(cherry picked from commit d9ad5b16b32172df6f7d02cfb1c339cc85d0db01)
+---
+ crypto/evp/digest.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/crypto/evp/digest.c b/crypto/evp/digest.c
+index d3a28fa351..9b0a7b9e35 100644
+--- a/crypto/evp/digest.c
++++ b/crypto/evp/digest.c
+@@ -207,7 +207,8 @@ static int evp_md_init_internal(EVP_MD_CTX *ctx, const EVP_MD *type,
+ #if !defined(OPENSSL_NO_ENGINE) && !defined(FIPS_MODULE)
+             || tmpimpl != NULL
+ #endif
+-            || (ctx->flags & EVP_MD_CTX_FLAG_NO_INIT) != 0) {
++            || (ctx->flags & EVP_MD_CTX_FLAG_NO_INIT) != 0
++            || type->origin == EVP_ORIG_METH) {
+         if (ctx->digest == ctx->fetched_digest)
+             ctx->digest = NULL;
+         EVP_MD_free(ctx->fetched_digest);
+-- 
+2.25.1
+
+
+From 74d0484b1638b497d9e0e113ebeb20535e5f1655 Mon Sep 17 00:00:00 2001
+From: Matt Caswell <matt@openssl.org>
+Date: Fri, 10 Dec 2021 17:17:27 +0000
+Subject: [PATCH 2/4] Fix a leak in EVP_DigestInit_ex()
+
+If an EVP_MD_CTX is reused then memory allocated and stored in md_data
+can be leaked unless the EVP_MD's cleanup function is called.
+
+Fixes #17149
+
+Reviewed-by: Dmitry Belyavskiy <beldmit@gmail.com>
+(Merged from https://github.com/openssl/openssl/pull/17255)
+
+(cherry picked from commit 357bccc8ba64ec8a5f587b04b5d6b6ca9e8dcbdc)
+---
+ crypto/evp/digest.c | 31 +++++++++++++++++--------------
+ 1 file changed, 17 insertions(+), 14 deletions(-)
+
+diff --git a/crypto/evp/digest.c b/crypto/evp/digest.c
+index 9b0a7b9e35..e7a7e48269 100644
+--- a/crypto/evp/digest.c
++++ b/crypto/evp/digest.c
+@@ -25,6 +25,19 @@
+ #include "crypto/evp.h"
+ #include "evp_local.h"
+ 
++static void cleanup_old_md_data(EVP_MD_CTX *ctx, int force)
++{
++    if (ctx->digest != NULL) {
++        if (ctx->digest->cleanup != NULL
++                && !EVP_MD_CTX_test_flags(ctx, EVP_MD_CTX_FLAG_CLEANED))
++            ctx->digest->cleanup(ctx);
++        if (ctx->md_data != NULL && ctx->digest->ctx_size > 0
++                && (!EVP_MD_CTX_test_flags(ctx, EVP_MD_CTX_FLAG_REUSE)
++                    || force))
++            OPENSSL_clear_free(ctx->md_data, ctx->digest->ctx_size);
++        ctx->md_data = NULL;
++    }
++}
+ 
+ void evp_md_ctx_clear_digest(EVP_MD_CTX *ctx, int force)
+ {
+@@ -41,12 +54,7 @@ void evp_md_ctx_clear_digest(EVP_MD_CTX *ctx, int force)
+      * Don't assume ctx->md_data was cleaned in EVP_Digest_Final, because
+      * sometimes only copies of the context are ever finalised.
+      */
+-    if (ctx->digest && ctx->digest->cleanup
+-        && !EVP_MD_CTX_test_flags(ctx, EVP_MD_CTX_FLAG_CLEANED))
+-        ctx->digest->cleanup(ctx);
+-    if (ctx->digest && ctx->digest->ctx_size && ctx->md_data
+-            && (!EVP_MD_CTX_test_flags(ctx, EVP_MD_CTX_FLAG_REUSE) || force))
+-        OPENSSL_clear_free(ctx->md_data, ctx->digest->ctx_size);
++    cleanup_old_md_data(ctx, force);
+     if (force)
+         ctx->digest = NULL;
+ 
+@@ -216,10 +224,7 @@ static int evp_md_init_internal(EVP_MD_CTX *ctx, const EVP_MD *type,
+         goto legacy;
+     }
+ 
+-    if (ctx->digest != NULL && ctx->digest->ctx_size > 0) {
+-        OPENSSL_clear_free(ctx->md_data, ctx->digest->ctx_size);
+-        ctx->md_data = NULL;
+-    }
++    cleanup_old_md_data(ctx, 1);
+ 
+     /* Start of non-legacy code below */
+ 
+@@ -308,10 +313,8 @@ static int evp_md_init_internal(EVP_MD_CTX *ctx, const EVP_MD *type,
+     }
+ #endif
+     if (ctx->digest != type) {
+-        if (ctx->digest && ctx->digest->ctx_size) {
+-            OPENSSL_clear_free(ctx->md_data, ctx->digest->ctx_size);
+-            ctx->md_data = NULL;
+-        }
++        cleanup_old_md_data(ctx, 1);
++
+         ctx->digest = type;
+         if (!(ctx->flags & EVP_MD_CTX_FLAG_NO_INIT) && type->ctx_size) {
+             ctx->update = type->update;
+-- 
+2.25.1
+
+
+From 6f071d777ee06e406e549d987c214da7a0dd340a Mon Sep 17 00:00:00 2001
+From: Matt Caswell <matt@openssl.org>
+Date: Wed, 29 Dec 2021 16:39:11 +0000
+Subject: [PATCH 3/4] Add a test for a custom digest created via
+ EVP_MD_meth_new()
+
+We check that the init and cleanup functions for the custom method are
+called as expected.
+
+Based on an original reproducer by Dmitry Belyavsky from issue #17149.
+
+Reviewed-by: Dmitry Belyavskiy <beldmit@gmail.com>
+(Merged from https://github.com/openssl/openssl/pull/17255)
+
+(cherry picked from commit fbbe7202eba9fba243c18513f4f0316dafb3496d)
+---
+ test/evp_extra_test.c | 85 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 85 insertions(+)
+
+diff --git a/test/evp_extra_test.c b/test/evp_extra_test.c
+index 47ef35ca67..21bc2eb4df 100644
+--- a/test/evp_extra_test.c
++++ b/test/evp_extra_test.c
+@@ -4179,6 +4179,90 @@ static int test_evp_md_cipher_meth(void)
+     return testresult;
+ }
+ 
++typedef struct {
++        int data;
++} custom_dgst_ctx;
++
++static int custom_md_init_called = 0;
++static int custom_md_cleanup_called = 0;
++
++static int custom_md_init(EVP_MD_CTX *ctx)
++{
++    custom_dgst_ctx *p = EVP_MD_CTX_md_data(ctx);
++
++    if (p == NULL)
++        return 0;
++
++    custom_md_init_called++;
++    return 1;
++}
++
++static int custom_md_cleanup(EVP_MD_CTX *ctx)
++{
++    custom_dgst_ctx *p = EVP_MD_CTX_md_data(ctx);
++
++    if (p == NULL)
++        /* Nothing to do */
++        return 1;
++
++    custom_md_cleanup_called++;
++    return 1;
++}
++
++static int test_custom_md_meth(void)
++{
++    EVP_MD_CTX *mdctx = NULL;
++    EVP_MD *tmp = NULL;
++    char mess[] = "Test Message\n";
++    unsigned char md_value[EVP_MAX_MD_SIZE];
++    unsigned int md_len;
++    int testresult = 0;
++    int nid;
++
++    /*
++     * We are testing deprecated functions. We don't support a non-default
++     * library context in this test.
++     */
++    if (testctx != NULL)
++        return 1;
++
++    custom_md_init_called = custom_md_cleanup_called = 0;
++
++    nid = OBJ_create("1.3.6.1.4.1.16604.998866.1", "custom-md", "custom-md");
++    if (!TEST_int_ne(nid, NID_undef))
++        goto err;
++    tmp = EVP_MD_meth_new(nid, NID_undef);
++    if (!TEST_ptr(tmp))
++        goto err;
++
++    if (!TEST_true(EVP_MD_meth_set_init(tmp, custom_md_init))
++            || !TEST_true(EVP_MD_meth_set_cleanup(tmp, custom_md_cleanup))
++            || !TEST_true(EVP_MD_meth_set_app_datasize(tmp,
++                                                       sizeof(custom_dgst_ctx))))
++        goto err;
++
++    mdctx = EVP_MD_CTX_new();
++    if (!TEST_ptr(mdctx)
++               /*
++                * Initing our custom md and then initing another md should
++                * result in the init and cleanup functions of the custom md
++                * from being called.
++                */
++            || !TEST_true(EVP_DigestInit_ex(mdctx, tmp, NULL))
++            || !TEST_true(EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL))
++            || !TEST_true(EVP_DigestUpdate(mdctx, mess, strlen(mess)))
++            || !TEST_true(EVP_DigestFinal_ex(mdctx, md_value, &md_len))
++            || !TEST_int_eq(custom_md_init_called, 1)
++            || !TEST_int_eq(custom_md_cleanup_called, 1))
++        goto err;
++
++    testresult = 1;
++ err:
++    EVP_MD_CTX_free(mdctx);
++    EVP_MD_meth_free(tmp);
++    return testresult;
++}
++
+ # ifndef OPENSSL_NO_DYNAMIC_ENGINE
+ /* Test we can create a signature keys with an associated ENGINE */
+ static int test_signatures_with_engine(int tst)
+@@ -4473,6 +4557,7 @@ int setup_tests(void)
+ #ifndef OPENSSL_NO_DEPRECATED_3_0
+     ADD_ALL_TESTS(test_custom_pmeth, 12);
+     ADD_TEST(test_evp_md_cipher_meth);
++    ADD_TEST(test_custom_md_meth);
+ 
+ # ifndef OPENSSL_NO_DYNAMIC_ENGINE
+     /* Tests only support the default libctx */
+-- 
+2.25.1
+
+
+From 91254715c8a59b3f91a8367d204b462e6c610ca3 Mon Sep 17 00:00:00 2001
+From: Dmitry Belyavskiy <beldmit@gmail.com>
+Date: Mon, 7 Mar 2022 17:05:57 +0100
+Subject: [PATCH 4/4] Avoid potential memory leak
+
+Resolves #17827
+
+Reviewed-by: Tomas Mraz <tomas@openssl.org>
+Reviewed-by: Paul Dale <pauli@openssl.org>
+(Merged from https://github.com/openssl/openssl/pull/17828)
+
+(cherry picked from commit 175355923046921a689b500f7a72455f7095708f)
+---
+ crypto/x509/v3_utl.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/crypto/x509/v3_utl.c b/crypto/x509/v3_utl.c
+index a70917a39b..16a56c1c1a 100644
+--- a/crypto/x509/v3_utl.c
++++ b/crypto/x509/v3_utl.c
+@@ -539,8 +539,11 @@ static int append_ia5(STACK_OF(OPENSSL_STRING) **sk,
+         return 0;
+ 
+     emtmp = OPENSSL_strndup((char *)email->data, email->length);
+-    if (emtmp == NULL)
++    if (emtmp == NULL) {
++        X509_email_free(*sk);
++        *sk = NULL;
+         return 0;
++    }
+ 
+     /* Don't add duplicates */
+     if (sk_OPENSSL_STRING_find(*sk, emtmp) != -1) {
+-- 
+2.25.1
+
