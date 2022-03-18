@@ -10,6 +10,7 @@ import sys
 import bb
 import re
 import os
+import json
 
 import django
 from django.utils import timezone
@@ -620,23 +621,39 @@ class ORMWrapper(object):
                     packagedict[p]['object'].version = pkgpnmap[p]['PV']
                     packagedict[p]['object'].installed_name = p
                     packagedict[p]['object'].revision = pkgpnmap[p]['PR']
-                    packagedict[p]['object'].license = pkgpnmap[p]['LICENSE']
-                    packagedict[p]['object'].section = pkgpnmap[p]['SECTION']
-                    packagedict[p]['object'].summary = pkgpnmap[p]['SUMMARY']
-                    packagedict[p]['object'].description = pkgpnmap[p]['DESCRIPTION']
-                    packagedict[p]['object'].size = int(pkgpnmap[p]['PKGSIZE'])
+                    packagedict[p]['object'].license = pkgpnmap[p]['LICENSE'] if 'LICENSE' in pkgpnmap[p] else ''
+                    packagedict[p]['object'].section = pkgpnmap[p]['SECTION'] if 'SECTION' in pkgpnmap[p] else ''
+                    packagedict[p]['object'].summary = pkgpnmap[p]['SUMMARY'] if 'SUMMARY' in pkgpnmap[p] else ''
+                    packagedict[p]['object'].description = pkgpnmap[p]['DESCRIPTION'] if 'DESCRIPTION' in pkgpnmap[p] else ''
 
-                # no files recorded for this package, so save files info
+                    ### The name key for 'PKGSIZE' is currently a blank string
+                    if not 'PKGSIZE' in pkgpnmap[p]:
+                        if ('' in pkgpnmap[p]) and (pkgpnmap[p][''].isnumeric()):
+                            packagedict[p]['object'].size = int(pkgpnmap[p][''])
+                    else:
+                        packagedict[p]['object'].size = int(pkgpnmap[p]['PKGSIZE'])
+
+                    # no files recorded for this package, so save files info
                     packagefile_objects = []
-                    for targetpath in pkgpnmap[p]['FILES_INFO']:
-                        targetfilesize = pkgpnmap[p]['FILES_INFO'][targetpath]
+
+                    ### Event change workaround: name change plus string instead of dict
+                    if 'FILES_INFO' in pkgpnmap[p]:
+                        key = 'FILES_INFO'
+                    else:
+                        key = 'FILES'
+                    pkg_dict = pkgpnmap[p][key]
+                    if isinstance(pkg_dict, str):
+                        pkg_dict = json.loads(pkgpnmap[p][key])
+
+                    for targetpath in pkg_dict:
+                        targetfilesize = pkg_dict[targetpath]
                         packagefile_objects.append(Package_File( package = packagedict[p]['object'],
                             path = targetpath,
                             size = targetfilesize))
                     if packagefile_objects:
                         Package_File.objects.bulk_create(packagefile_objects)
                 except KeyError as e:
-                    errormsg.append("  stpi: Key error, package %s key %s \n" % (p, e))
+                    errormsg.append("  stpi: Key error, package %s key %s map '%s'\n" % (p, e,pkgpnmap[p]))
 
             # save disk installed size
             packagedict[p]['object'].installed_size = packagedict[p]['size']
@@ -726,10 +743,13 @@ class ORMWrapper(object):
             return None
 
         # create and save the object
-        pname = package_info['PKG']
-        built_recipe = recipes[package_info['PN']]
         if 'OPKGN' in package_info.keys():
             pname = package_info['OPKGN']
+        elif 'PKG' in package_info.keys():
+            pname = package_info['PKG']
+        else:
+            pname = package_info['PN']
+        built_recipe = recipes[package_info['PN']]
 
         if built_package:
             bp_object, _ = Package.objects.get_or_create( build = build_obj,
@@ -750,23 +770,36 @@ class ORMWrapper(object):
                              "data package %s" % pname)
                 return
 
-        bp_object.installed_name = package_info['PKG']
+        bp_object.installed_name = pname # package_info['PKG']
         bp_object.recipe = recipe
         bp_object.version = package_info['PKGV']
         bp_object.revision = package_info['PKGR']
-        bp_object.summary = package_info['SUMMARY']
-        bp_object.description = package_info['DESCRIPTION']
-        bp_object.size = int(package_info['PKGSIZE'])
-        bp_object.section = package_info['SECTION']
-        bp_object.license = package_info['LICENSE']
+        bp_object.summary = package_info['SUMMARY'] if 'SUMMARY' in package_info else ''
+        bp_object.description = package_info['DESCRIPTION'] if 'DESCRIPTION' in package_info else ''
+        bp_object.size = int(package_info['PKGSIZE']) if 'PKGSIZE' in package_info else ''
+        bp_object.section = package_info['SECTION'] if 'SECTION' in package_info else ''
+        bp_object.license = package_info['LICENSE'] if 'LICENSE' in package_info else ''
+        # Workround...
+        if (not 'PKGSIZE' in package_info) and ('' in package_info):
+            bp_object.size = int(package_info[''])
         bp_object.save()
 
         # save any attached file information
         packagefile_objects = []
-        for path in package_info['FILES_INFO']:
+
+        ### Event change workaround
+        if 'FILES_INFO' in package_info:
+            key = 'FILES_INFO'
+        else:
+            key = 'FILES'
+        pkg_dict = package_info[key]
+        if isinstance(pkg_dict, str):
+            pkg_dict = json.loads(package_info[key])
+
+        for path in pkg_dict:
             packagefile_objects.append(Package_File( package = bp_object,
                                         path = path,
-                                        size = package_info['FILES_INFO'][path] ))
+                                        size = pkg_dict[path] ))
         if packagefile_objects:
             Package_File.objects.bulk_create(packagefile_objects)
 
