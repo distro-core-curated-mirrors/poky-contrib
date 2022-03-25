@@ -19,7 +19,7 @@ TEST_EXPORT_DIR ?= "${TMPDIR}/testexport/${PN}"
 TEST_EXPORT_PACKAGED_DIR ?= "packages/packaged"
 TEST_EXPORT_EXTRACTED_DIR ?= "packages/extracted"
 
-TEST_TARGET ?= "simpleremote"
+TEST_TARGET ?= "oeqa.core.target.ssh.OESSHTarget"
 TEST_TARGET_IP ?= ""
 TEST_SERVER_IP ?= ""
 

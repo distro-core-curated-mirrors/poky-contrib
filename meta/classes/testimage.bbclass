@@ -79,7 +79,7 @@ TEST_SUITES ?= "${DEFAULT_TEST_SUITES}"
 QEMU_USE_KVM ?= "1"
 TEST_QEMUBOOT_TIMEOUT ?= "1000"
 TEST_OVERALL_TIMEOUT ?= ""
-TEST_TARGET ?= "qemu"
+TEST_TARGET ?= "oeqa.core.target.qemu.OEQemuTarget"
 TEST_QEMUPARAMS ?= ""
 TEST_RUNQEMUPARAMS ?= ""
 
@@ -144,8 +144,8 @@ do_testimage[depends] += "${TESTIMAGEDEPENDS}"
 do_testimage[lockfiles] += "${TESTIMAGELOCK}"
 
 def testimage_sanity(d):
-    if d.getVar('TEST_TARGET') == 'simpleremote' and not d.getVar('TEST_TARGET_IP'):
-        bb.fatal('When TEST_TARGET is set to "simpleremote" TEST_TARGET_IP must be set.')
+    if d.getVar('TEST_TARGET') == 'oeqa.core.target.ssh.OESSHTarget' and not d.getVar('TEST_TARGET_IP'):
+        bb.fatal('When TEST_TARGET is set to SSH, TEST_TARGET_IP must be set.')
 
 def get_testimage_configuration(d, test_type, machine):
     import platform
@@ -254,7 +254,7 @@ def testimage_main(d):
 
     # Get rootfs
     fstypes = d.getVar('IMAGE_FSTYPES').split()
-    if d.getVar("TEST_TARGET") == "qemu":
+    if d.getVar("TEST_TARGET") == "oeqa.core.target.qemu.OEQemuTarget":
         fstypes = [fs for fs in fstypes if fs in supported_fstypes]
         if not fstypes:
             bb.fatal('Unsupported image type built. Add a compatible image to '
