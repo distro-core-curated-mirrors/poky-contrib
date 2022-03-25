@@ -20,13 +20,13 @@ from oeqa.utils.dump import TargetDumper
 supported_fstypes = ['ext3', 'ext4', 'cpio.gz', 'wic']
 
 class OEQemuTarget(OESSHTarget):
-    def __init__(self, logger, server_ip, timeout=300, user='root',
+    def __init__(self, logger, target_ip, server_ip, timeout=300, user='root',
             port=None, machine='', rootfs='', kernel='', kvm=False, slirp=False,
             dump_dir='', dump_host_cmds='', display='', bootlog='',
             tmpdir='', dir_image='', boottime=60, serial_ports=2,
             boot_patterns = defaultdict(str), ovmf=False, tmpfsdir=None, **kwargs):
 
-        super().__init__(logger, None, server_ip, timeout, user, port)
+        super().__init__(logger, target_ip, server_ip, timeout, user, port)
 
         self.server_port = 0
         self.machine = machine
