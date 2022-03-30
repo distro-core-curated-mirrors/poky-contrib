@@ -15,7 +15,6 @@ cml1_do_configure() {
 }
 
 EXPORT_FUNCTIONS do_configure
-addtask configure after do_unpack do_patch before do_compile
 
 inherit terminal
 
