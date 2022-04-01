@@ -1907,8 +1907,10 @@ python package_do_shlibs() {
                 if not prov in sonames:
                     # if library is private (only used by package) then do not build shlib for it
                     import fnmatch
-                    if not private_libs or len([i for i in private_libs if fnmatch.fnmatch(this_soname, i)]) == 0:
+                    if "/lib/" in file and not private_libs or len([i for i in private_libs if fnmatch.fnmatch(this_soname, i)]) == 0:
                         sonames.add(prov)
+                    else:
+                        bb.warn(f"skipping {file}")
                 if libdir_re.match(os.path.dirname(file)):
                     needs_ldconfig = True
                 if needs_ldconfig and snap_symlinks and (os.path.basename(file) != this_soname):
@@ -2012,7 +2014,7 @@ python package_do_shlibs() {
         renames = []
         linuxlist = []
         for file in pkgfiles[pkg]:
-                soname = None
+                soname = None 
                 if cpath.islink(file):
                     continue
                 if hostos == "darwin" or hostos == "darwin8":
