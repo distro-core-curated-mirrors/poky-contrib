@@ -8,6 +8,7 @@ import os
 from oeqa.utils.httpserver import HTTPService
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.data import skipIfNotDataVar, skipIfNotFeature
+from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.decorator.package import OEHasPackage
 
 class AptTest(OERuntimeTestCase):
@@ -61,6 +62,7 @@ class AptRepoTest(AptTest):
     @skipIfNotDataVar('IMAGE_PKGTYPE', 'deb',
                       'DEB is not the primary package manager')
     @OEHasPackage(['apt'])
+    @OETestDepends(['ssh.SSHTest.test_ssh'])
     def test_apt_install_from_repo(self):
         if not self.tc.td.get('PACKAGE_FEED_GPG_NAME'):
             self.setup_source_config_for_package_install()
