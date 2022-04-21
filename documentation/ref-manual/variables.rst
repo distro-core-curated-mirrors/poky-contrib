@@ -8737,4 +8737,15 @@ system and gives an overview of their function and contents.
 
       The default value of :term:`XSERVER`, if not specified in the machine
       configuration, is "xserver-xorg xf86-video-fbdev xf86-input-evdev".
-   
+
+   :term:`XZ_THREADS`
+      Specifies the number of parallel threads that should be used when
+      using xz compression. By default this scales with core count, but
+      is never set less than 2 to ensure that multi-threaded mode is
+      always used (so that the output file contents are deterministic).
+
+   :term:`ZSTD_THREADS`
+      Specifies the number of parallel threads that should be used when
+      using ZStandard compression. By default this scales with core count,
+      but is never set less than 2 to ensure that multi-threaded mode is
+      always used (so that the output file contents are deterministic).
