@@ -115,6 +115,9 @@ def setup_hosttools_dir(dest, toolsvar, d, fatal=True):
     tools = d.getVar(toolsvar).split()
     origbbenv = d.getVar("BB_ORIGENV", False)
     path = origbbenv.getVar("PATH")
+    # Need to ignore our own scripts directory to avoid circular links
+    ourscripts = d.expand("${COREBASE}/scripts")
+    path = path.replace(ourscripts, "/ignoreme")
     bb.utils.mkdirhier(dest)
     notfound = []
     for tool in tools:
