@@ -22,18 +22,22 @@ def base_get_metadata_svn_revision(path, d):
 
 def base_get_metadata_git_branch(path, d):
     import bb.process
+    import os
+    stat_info = os.stat(path)
 
     try:
-        rev, _ = bb.process.run('git rev-parse --abbrev-ref HEAD', cwd=path)
+        rev, _ = bb.process.run('git rev-parse --abbrev-ref HEAD', cwd=path, preexec_fn=lambda : os.setuid(stat_info.st_uid))
     except bb.process.ExecutionError:
         rev = '<unknown>'
     return rev.strip()
 
 def base_get_metadata_git_revision(path, d):
     import bb.process
+    import os
+    stat_info = os.stat(path)
 
     try:
-        rev, _ = bb.process.run('git rev-parse HEAD', cwd=path)
+        rev, _ = bb.process.run('git rev-parse HEAD', cwd=path, preexec_fn=lambda : os.setuid(stat_info.st_uid))
     except bb.process.ExecutionError:
         rev = '<unknown>'
     return rev.strip()
