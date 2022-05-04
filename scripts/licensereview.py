@@ -86,9 +86,9 @@ if __name__ == "__main__":
                 # Thanks to join()s special behaviour with / in components, we can
                 # just do this to handle relative and absolute paths.
                 filename = os.path.join(sourcedir, path)
-                # Line numbers are 1-based
-                beginline = int(params.get("beginline", 1)) - 1
-                endline = int(params.get("endline", 1)) - 1
+                # Line numbers are 1-indexed
+                beginline = int(params.get("beginline", 1))
+                endline = int(params.get("endline", 0))
 
                 hasher = hashlib.md5()
                 with open(filename, "rb") as f:
@@ -96,8 +96,8 @@ if __name__ == "__main__":
                         lines = f.readlines()
                         if not endline:
                             endline = len(lines)
-                        lines = lines[beginline:endline]
-
+                        # Line offsets are 1-indexed
+                        lines = lines[beginline-1:endline]
                         licensetext = []
                         for l in lines:
                             licensetext.append(l.decode("utf-8", errors="replace").rstrip())
@@ -110,7 +110,7 @@ if __name__ == "__main__":
                 real_md5 = hasher.hexdigest()
 
                 if real_md5 != params["md5"]:
-                    print(f"MD5 mismatch for {filename}", file=sys.stderr)
+                    print(f"MD5 mismatch for {filename} (got {real_md5}, expected {params['md5']})", file=sys.stderr)
                     continue
                 recipe_context["texts"][path] = licensetext
 

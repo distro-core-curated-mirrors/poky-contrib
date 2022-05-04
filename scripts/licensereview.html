@@ -4,7 +4,7 @@
         <!-- TODO format layer nicely -->
         <title>License Review for {{layers|join(", ")}}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
     </head>
     <body>
         <section class="section">
@@ -22,12 +22,20 @@
 
         {% for recipe, data in recipes|dictsort %}
         <section class="section">
-            <h2 class="title" id="recipe-{{recipe}}">{{recipe}}</h2>
-            <p>This recipe claims to be covered by <q>{{data.license}}</q>.</p>
-            {% for path,text in data.texts|dictsort %}
-                <p id="license-{{recipe}}-{{path}}"><code>{{path}}</code></p>
-                <pre>{{text}}</pre>
-            {% endfor %}
+            <div class="content">
+                <h2 class="title" id="recipe-{{recipe}}">{{recipe}}</h2>
+                <p>This recipe claims to be covered by <q>{{data.license}}</q>.</p>
+                <ul>
+                    {% for path,text in data.texts|dictsort %}
+                        <li><a href="#license-{{recipe}}-{{path}}">{{path}}</a></li>
+                    {% endfor %}
+                </ul>
+
+                {% for path,text in data.texts|dictsort %}
+                    <p id="license-{{recipe}}-{{path}}"><code>{{path}}</code></p>
+                    <pre>{{text}}</pre>
+                {% endfor %}
+            </div>
         </section>
         {% endfor %}
     </body>
