@@ -338,11 +338,7 @@ class Git(FetchMethod):
     def try_premirror(self, ud, d):
         # If we don't do this, updating an existing checkout with only premirrors
         # is not possible
-        if bb.utils.to_boolean(d.getVar("BB_FETCH_PREMIRRORONLY")):
-            return True
-        if os.path.exists(ud.clonedir):
-            return False
-        return True
+        return bb.utils.to_boolean(d.getVar("BB_FETCH_PREMIRRORONLY")) or not os.path.exists(ud.clonedir)
 
     def download(self, ud, d):
         """Fetch url"""
