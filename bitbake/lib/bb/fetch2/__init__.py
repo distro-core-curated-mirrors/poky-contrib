@@ -1745,6 +1745,8 @@ class Fetch(object):
                             done = False
 
                 if premirroronly:
+                    if not done:
+                        raise FetchError("Failed to download premirror {} and BB_FETCH_PREMIRRORONLY has been set to 1.".format(self.d.getVar("PREMIRRORS")))
                     self.d.setVar("BB_NO_NETWORK", "1")
 
                 firsterr = None

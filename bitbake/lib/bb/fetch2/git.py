@@ -353,10 +353,12 @@ class Git(FetchMethod):
         if ud.shallow and os.path.exists(ud.fullshallow) and self.need_update(ud, d):
             ud.localpath = ud.fullshallow
             return
-        elif os.path.exists(ud.fullmirror) and not os.path.exists(ud.clonedir):
+        if os.path.exists(ud.fullmirror) and self.try_premirror(ud, d) and self.need_update(ud, d):
             bb.utils.mkdirhier(ud.clonedir)
             runfetchcmd("tar -xzf %s" % ud.fullmirror, d, workdir=ud.clonedir)
-
+            if self.need_update(ud, d) and bb.utils.to_boolean(d.getVar("BB_FETCH_PREMIRRORONLY")):
+                    raise bb.fetch2.FetchError("Premirror doesn't contain revisions {} and "\
+                            "upstream cannot be used due to BB_FETCH_PREMIRRORONLY setting".format(ud.revisions))
         repourl = self._get_repo_url(ud)
 
         # If the repo still doesn't exist, fallback to cloning it
