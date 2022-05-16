@@ -61,20 +61,19 @@ do_install:prepend:class-target () {
 INITSCRIPT_NAME = "udev"
 INITSCRIPT_PARAMS = "start 04 S ."
 
-PACKAGES =+ "libudev"
-PACKAGES =+ "eudev-hwdb"
+PACKAGE_BEFORE_PN = "libudev ${PN}-hwdb"
 
 FILES:${PN} += "${nonarch_base_libdir}/udev"
 FILES:libudev = "${base_libdir}/libudev.so.*"
-FILES:eudev-hwdb = "${sysconfdir}/udev/hwdb.d"
+FILES:${PN}-hwdb = "${sysconfdir}/udev/hwdb.d"
 
-RDEPENDS:eudev-hwdb += "eudev"
+RDEPENDS:${PN}-hwdb += "${PN}"
 
 RPROVIDES:${PN} = "hotplug udev"
-RPROVIDES:eudev-hwdb += "udev-hwdb"
+RPROVIDES:${PN}-hwdb += "udev-hwdb"
 
 PACKAGE_WRITE_DEPS += "qemu-native"
-pkg_postinst:eudev-hwdb () {
+pkg_postinst:${PN}-hwdb () {
     if test -n "$D"; then
         $INTERCEPT_DIR/postinst_intercept update_udev_hwdb ${PKG} mlprefix=${MLPREFIX} binprefix=${MLPREFIX}
     else
@@ -82,6 +81,6 @@ pkg_postinst:eudev-hwdb () {
     fi
 }
 
-pkg_prerm:eudev-hwdb () {
+pkg_prerm:${PN}-hwdb () {
         rm -f $D${sysconfdir}/udev/hwdb.bin
 }
