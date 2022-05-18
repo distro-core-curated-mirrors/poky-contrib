@@ -37,7 +37,7 @@ do_install:append () {
 [Desktop Entry]
 Name=$title
 Exec=${bindir}/$prog
-Icon=applications-games
+Icon=applications-games-symbolic
 Terminal=false
 Type=Application
 Categories=Game;

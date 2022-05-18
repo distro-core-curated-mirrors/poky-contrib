@@ -1,0 +1,25 @@
+From ab2c716bb0679a67dc6b0878ef750d3fdd29edb7 Mon Sep 17 00:00:00 2001
+From: Alexander Kanavin <alex@linutronix.de>
+Date: Wed, 13 Apr 2022 22:19:11 +0200
+Subject: [PATCH] mb-appearance.desktop: update icon to one available in
+ adwaita 42.0
+
+Upstream-Status: Inappropriate [apps need their own icons as of 42.0]
+Signed-off-by: Alexander Kanavin <alex@linutronix.de>
+---
+ appearance/mb-appearance.desktop | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/appearance/mb-appearance.desktop b/appearance/mb-appearance.desktop
+index 4db2bbc..cfa5142 100644
+--- a/appearance/mb-appearance.desktop
++++ b/appearance/mb-appearance.desktop
+@@ -2,7 +2,7 @@
+ Name=Appearance
+ Comment=Change the appearance
+ Exec=matchbox-appearance
+-Icon=preferences-desktop-theme
++Icon=preferences-desktop-appearance-symbolic
+ Terminal=false
+ Type=Application
+ Categories=GTK;Settings;DesktopSettings;

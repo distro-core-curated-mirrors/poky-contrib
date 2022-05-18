@@ -1,0 +1,25 @@
+From ec16ba4a1cb0e4217910a1b36783f00828bb5dfc Mon Sep 17 00:00:00 2001
+From: Alexander Kanavin <alex@linutronix.de>
+Date: Wed, 13 Apr 2022 22:24:50 +0200
+Subject: [PATCH] matchbox-terminal.desktop: use an icon available in adwaita
+ 42.0
+
+Upstream-Status: Inappropriate [apps need their own icons as of 42.0]
+Signed-off-by: Alexander Kanavin <alex@linutronix.de>
+---
+ matchbox-terminal.desktop | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/matchbox-terminal.desktop b/matchbox-terminal.desktop
+index c84a24c..fedaf10 100644
+--- a/matchbox-terminal.desktop
++++ b/matchbox-terminal.desktop
+@@ -3,7 +3,7 @@ Type=Application
+ Name=Terminal
+ Comment=When all else fails.
+ Exec=matchbox-terminal
+-Icon=utilities-terminal
++Icon=utilities-terminal-symbolic
+ Terminal=false
+ Categories=GTK;Utility;
+ StartupNotify=true

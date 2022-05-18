@@ -1,0 +1,26 @@
+From 764201dff04a7ca1c3862357ea485a6fc624dd00 Mon Sep 17 00:00:00 2001
+From: Alexander Kanavin <alex@linutronix.de>
+Date: Wed, 13 Apr 2022 22:01:30 +0200
+Subject: [PATCH] taku-launcher-tile.c: use view-refresh-symbolic icon
+
+Plain view-refresh is no longer provided in latest adwaita icon theme.
+
+Upstream-Status: Inappropriate [apps need their own icons as of 42.0]
+Signed-off-by: Alexander Kanavin <alex@linutronix.de>
+---
+ libtaku/taku-launcher-tile.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libtaku/taku-launcher-tile.c b/libtaku/taku-launcher-tile.c
+index e7f58f3..8bbf2f7 100644
+--- a/libtaku/taku-launcher-tile.c
++++ b/libtaku/taku-launcher-tile.c
+@@ -185,7 +185,7 @@ taku_launcher_tile_new_from_item (TakuMenuItem *item)
+   taku_icon_tile_set_secondary (TAKU_ICON_TILE (tile),
+                                 taku_menu_item_get_description (item));
+   taku_icon_tile_set_pixbuf (TAKU_ICON_TILE (tile),
+-                             get_icon ("view-refresh", size));
++                             get_icon ("view-refresh-symbolic", size));
+ 
+   /* Don't need to update the icon here, because we'll get a style-set signal
+      when the widget is realised which will update the icon. */
