@@ -10,7 +10,15 @@ SRC_URI[sha256sum] = "1a07724e891cbd898923145eb7752ee7653674c511378eb9c7691aab16
 
 inherit pypi python_flit_core
 
-DEPENDS += "python3-packaging-native python3-pyproject-hooks-native"
+DEPENDS += "python3-pyproject-hooks-native"
+
+DEPENDS:remove:class-native = "python3-build-native"
+
+PEP517_BUILD_OPTS:class-native = "--skip-dependency-check"
+
+do_compile:prepend:class-native() {
+    export PYTHONPATH="${S}/src"
+}
 
 RDEPENDS:${PN} += "python3-packaging python3-pyproject-hooks"
 
