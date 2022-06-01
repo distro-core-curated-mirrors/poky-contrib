@@ -132,7 +132,7 @@ class ReproducibleTests(OESelftestTestCase):
     max_report_size = 250 * 1024 * 1024
 
     # targets are the things we want to test the reproducibility of
-    targets = ['core-image-minimal', 'core-image-sato', 'core-image-full-cmdline', 'core-image-weston', 'world']
+    targets = ['zlib-native']
     # sstate targets are things to pull from sstate to potentially cut build/debugging time
     sstate_targets = []
     save_results = False
