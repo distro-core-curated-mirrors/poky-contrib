@@ -132,7 +132,7 @@ class BitbakeTests(OESelftestTestCase):
         bitbake('core-image-minimal')
         bb_vars = get_bb_vars(["DEPLOY_DIR_IMAGE", "IMAGE_LINK_NAME"], "core-image-minimal")
         deploydir = bb_vars["DEPLOY_DIR_IMAGE"]
-        imagename = bb_vars["IMAGE_LINK_NAME"]
+        imagename = bb_vars["IMAGE_NAME"]
         manifest = os.path.join(deploydir, imagename + ".manifest")
         self.assertTrue(os.path.islink(manifest), msg="No manifest file created for image. It should have been created in %s" % manifest)
 
