@@ -25,6 +25,10 @@ UPSTREAM_CHECK_URI = "${DEBIAN_MIRROR}/main/r/resolvconf/"
 
 inherit allarch
 
+# The normalize-resolvconf sed script uses /bin/sed on the shebang line.
+# Ignore the file-rdeps test to avoid having to add a runtime dependency on sed.
+INSANE_SKIP:${PN} += "file-rdeps"
+
 do_compile () {
 	:
 }
@@ -46,6 +50,7 @@ do_install () {
 	chown -R root:root ${D}${sysconfdir}/
 	install -m 0755 bin/resolvconf ${D}${base_sbindir}/
 	install -m 0755 bin/list-records ${D}${base_libdir}/${BPN}
+	install -m 0755 bin/normalize-resolvconf ${D}${base_libdir}/${BPN}
 	install -d ${D}/${sysconfdir}/network/if-up.d
 	install -m 0755 debian/resolvconf.000resolvconf.if-up ${D}/${sysconfdir}/network/if-up.d/000resolvconf
 	install -d ${D}/${sysconfdir}/network/if-down.d
