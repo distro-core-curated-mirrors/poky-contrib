@@ -15,6 +15,7 @@ SECTION = "x11/wm"
 SRCREV = "6bc67d09da4147e5552fe30011a05a2c59d2f777"
 SRC_URI = "git://git.yoctoproject.org/${BPN}-2;branch=master \
            file://vfolders/ \
+           file://0001-taku-launcher-tile.c-use-view-refresh-symbolic-icon.patch \
            "
 
 EXTRA_OECONF = "--enable-startup-notification --with-dbus"
