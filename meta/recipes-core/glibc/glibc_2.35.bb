@@ -119,5 +119,6 @@ do_compile () {
 }
 
 require glibc-package.inc
+do_install:append = " "
 
 BBCLASSEXTEND = "nativesdk"

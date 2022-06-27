@@ -24,6 +24,7 @@ do_install() {
 
     install -m 755 ${WORKDIR}/qemu-oe-bridge-helper ${D}${bindir}/
 }
+do_install:append = " "
 
 DEPENDS += "qemu-system-native"
 addtask addto_recipe_sysroot after do_populate_sysroot before do_build
