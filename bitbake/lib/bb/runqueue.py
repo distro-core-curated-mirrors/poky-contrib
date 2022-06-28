@@ -160,23 +160,27 @@ class RunQueueScheduler(object):
 
         self.rev_prio_map = None
 
-    def exceeds_max_pressure(self):
         try:
-            curr_pressure_sample = subprocess.check_output(["cat", "/proc/pressure/cpu", "/proc/pressure/io"], universal_newlines=True, stderr=subprocess.DEVNULL)
+            subprocess.check_output(["cat", "/proc/pressure/cpu", "/proc/pressure/io"], \
+                                    universal_newlines=True, stderr=subprocess.DEVNULL)
+            self.readable_pressure_files = True
         except:
-            return False
+            if self.rq.max_cpu_pressure!=0 or self.rq.max_io_pressure!=0:
+                bb.warn("The /proc/pressure files can't be read. Continuing build without monitoring pressure")
+            self.readable_pressure_files = False
 
-        if curr_pressure_sample:
+    def exceeds_max_pressure(self):
+        if self.readable_pressure_files:
             # extract avg10 from /proc/pressure/{cpu|io}
+            curr_pressure_sample = subprocess.check_output(["cat", "/proc/pressure/cpu", "/proc/pressure/io"], \
+                                   universal_newlines=True, stderr=subprocess.DEVNULL)
             curr_cpu_pressure = curr_pressure_sample.split('\n')[0].split()[1].split("=")[1]
             curr_io_pressure = curr_pressure_sample.split('\n')[2].split()[1].split("=")[1]
-            
+
             retval = float(curr_cpu_pressure) > self.rq.max_cpu_pressure or float(curr_io_pressure) > self.rq.max_io_pressure
             return retval
 
         return False
-
-
 
     def next_buildable_task(self):
         """
@@ -1718,8 +1722,8 @@ class RunQueueExecute:
 
         self.number_tasks = int(self.cfgData.getVar("BB_NUMBER_THREADS") or 1)
         self.scheduler = self.cfgData.getVar("BB_SCHEDULER") or "speed"
-        self.max_cpu_pressure = int(self.cfgData.getVar("BB_MAX_CPU_PRESSURE") or 100)
-        self.max_io_pressure = int(self.cfgData.getVar("BB_MAX_IO_PRESSURE") or 100)
+        self.max_cpu_pressure = int(self.cfgData.getVar("BB_MAX_CPU_SOME_PRESSURE") or 100)
+        self.max_io_pressure = int(self.cfgData.getVar("BB_MAX_IO_SOME_PRESSURE") or 100)
 
         self.sq_buildable = set()
         self.sq_running = set()
