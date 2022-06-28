@@ -162,7 +162,7 @@ class RunQueueScheduler(object):
 
     def exceeds_max_pressure(self):
         try:
-            curr_pressure_sample = subprocess.check_output(["cat", "/proc/pressure/cpu", "/proc/pressure/io"], universal_newlines=True)
+            curr_pressure_sample = subprocess.check_output(["cat", "/proc/pressure/cpu", "/proc/pressure/io"], universal_newlines=True, stderr=subprocess.DEVNULL)
         except:
             return False
 
