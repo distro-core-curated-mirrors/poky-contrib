@@ -160,6 +160,24 @@ class RunQueueScheduler(object):
 
         self.rev_prio_map = None
 
+    def exceeds_max_pressure(self):
+        try:
+            curr_pressure_sample = subprocess.check_output(["cat", "/proc/pressure/cpu", "/proc/pressure/io"], universal_newlines=True)
+        except:
+            return False
+
+        if curr_pressure_sample:
+            # extract avg10 from /proc/pressure/{cpu|io}
+            curr_cpu_pressure = curr_pressure_sample.split('\n')[0].split()[1].split("=")[1]
+            curr_io_pressure = curr_pressure_sample.split('\n')[2].split()[1].split("=")[1]
+            
+            retval = float(curr_cpu_pressure) > self.rq.max_cpu_pressure or float(curr_io_pressure) > self.rq.max_io_pressure
+            return retval
+
+        return False
+
+
+
     def next_buildable_task(self):
         """
         Return the id of the first task we find that is buildable
@@ -171,7 +189,8 @@ class RunQueueScheduler(object):
         buildable.intersection_update(self.rq.tasks_covered | self.rq.tasks_notcovered)
         if not buildable:
             return None
-
+        if self.exceeds_max_pressure():
+            return None
         # Filter out tasks that have a max number of threads that have been exceeded
         skip_buildable = {}
         for running in self.rq.runq_running.difference(self.rq.runq_complete):
@@ -1699,6 +1718,8 @@ class RunQueueExecute:
 
         self.number_tasks = int(self.cfgData.getVar("BB_NUMBER_THREADS") or 1)
         self.scheduler = self.cfgData.getVar("BB_SCHEDULER") or "speed"
+        self.max_cpu_pressure = int(self.cfgData.getVar("BB_MAX_CPU_PRESSURE") or 100)
+        self.max_io_pressure = int(self.cfgData.getVar("BB_MAX_IO_PRESSURE") or 100)
 
         self.sq_buildable = set()
         self.sq_running = set()
