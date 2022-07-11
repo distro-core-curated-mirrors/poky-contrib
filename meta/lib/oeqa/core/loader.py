@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: MIT
 #
 
-import os
 import re
 import sys
 import unittest
 import inspect
+import traceback
 
 from oeqa.core.utils.path import findFile
 from oeqa.core.utils.test import getSuiteModules, getCaseID
@@ -23,12 +23,8 @@ from oeqa.core.decorator import decoratorClasses, OETestDecorator, \
 #
 # For our purposes, it is better to raise the exceptions in the loading
 # step rather than waiting to run the test suite.
-#
-# Generate the function definition because this differ across python versions
-# Python >= 3.4.4 uses tree parameters instead four but for example Python 3.5.3
-# ueses four parameters so isn't incremental.
-_failed_test_args = inspect.getfullargspec(unittest.loader._make_failed_test).args
-exec("""def _make_failed_test(%s): raise exception""" % ', '.join(_failed_test_args))
+def _make_failed_test(methodname, exception, suiteClass, message):
+    raise exception
 unittest.loader._make_failed_test = _make_failed_test
 
 def _find_duplicated_modules(suite, directory):
@@ -38,6 +34,7 @@ def _find_duplicated_modules(suite, directory):
             raise ImportError("Duplicated %s module found in %s" % (module, path))
 
 def _built_modules_dict(modules):
+    bb.warn(f"_build_modules_dict {modules=}")
     modules_dict = {}
 
     if modules == None:
@@ -58,7 +55,7 @@ def _built_modules_dict(modules):
             modules_dict[module_name][class_name] = []
         if test_name and test_name not in modules_dict[module_name][class_name]:
             modules_dict[module_name][class_name].append(test_name)
-
+    bb.warn("returning {modules_dict=} from _built_modules_dict")
     return modules_dict
 
 class OETestLoader(unittest.TestLoader):
@@ -100,6 +97,8 @@ class OETestLoader(unittest.TestLoader):
 
     def _registerTestCase(self, case):
         case_id = case.id()
+        bb.warn(f"registerTestCase {case=}")
+        #bb.warn("".join(traceback.format_stack()))
         self.tc._registry['cases'][case_id] = case
 
     def _handleTestCaseDecorators(self, case):
@@ -266,6 +265,7 @@ class OETestLoader(unittest.TestLoader):
                         module)
 
     def discover(self):
+        bb.warn("in discover()")
         big_suite = self.suiteClass()
         for path in self.module_paths:
             _find_duplicated_modules(big_suite, path)
@@ -273,18 +273,22 @@ class OETestLoader(unittest.TestLoader):
                     pattern='*.py', top_level_dir=path)
             big_suite.addTests(suite)
 
+        bb.warn(f"{big_suite=}")
         cases = None
         discover_classes = [clss for clss in decoratorClasses
                             if issubclass(clss, OETestDiscover)]
+        bb.warn(f"{discover_classes=}")
         for clss in discover_classes:
+            bb.warn(f"discovering on {clss=} with {self.tc._registry=}")
             cases = clss.discover(self.tc._registry)
-
+            bb.warn(f"got {cases=}")
         if self.modules_required:
             self._required_modules_validation()
 
         return self.suiteClass(cases) if cases else big_suite
 
     def _filterModule(self, module):
+        bb.warn(f"filterModule {module=}")
         if module.__name__ in sys.builtin_module_names:
             msg = 'Tried to import %s test module but is a built-in'
             raise ImportError(msg % module.__name__)
@@ -314,29 +318,16 @@ class OETestLoader(unittest.TestLoader):
         return (load_module, load_underscore)
 
 
-    # XXX After Python 3.5, remove backward compatibility hacks for
-    # use_load_tests deprecation via *args and **kws.  See issue 16662.
-    if sys.version_info >= (3,5):
-        def loadTestsFromModule(self, module, *args, pattern=None, **kws):
-            """
-                Returns a suite of all tests cases contained in module.
-            """
-            load_module, load_underscore = self._filterModule(module)
-
-            if load_module or load_underscore:
-                return super(OETestLoader, self).loadTestsFromModule(
-                        module, *args, pattern=pattern, **kws)
-            else:
-                return self.suiteClass()
-    else:
-        def loadTestsFromModule(self, module, use_load_tests=True):
-            """
-                Returns a suite of all tests cases contained in module.
-            """
-            load_module, load_underscore = self._filterModule(module)
-
-            if load_module or load_underscore:
-                return super(OETestLoader, self).loadTestsFromModule(
-                        module, use_load_tests)
-            else:
-                return self.suiteClass()
+    def loadTestsFromModule(self, module, *args, pattern=None, **kws):
+        """
+        Returns a suite of all tests cases contained in module.
+        """
+        bb.warn(f"loadTestsFromModule {module=}")
+        bb.warn(f"{self.modules=}")
+        load_module, load_underscore = self._filterModule(module)
+        bb.warn(f"{load_module=} {load_underscore=}")
+        if load_module or load_underscore:
+            return super(OETestLoader, self).loadTestsFromModule(
+                    module, *args, pattern=pattern, **kws)
+        else:
+            return self.suiteClass()

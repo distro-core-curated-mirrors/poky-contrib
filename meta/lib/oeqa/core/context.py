@@ -68,9 +68,11 @@ class OETestContext(object):
 
     def loadTests(self, module_paths, modules=[], tests=[],
             modules_manifest="", modules_required=[], **kwargs):
+        self.logger.warn(f"in loadTests {modules=} {tests=} {modules_manifest=}")
         if modules_manifest:
             modules = self._read_modules_from_manifest(modules_manifest)
 
+        self.logger.warn(f"Creating loader {self.loaderClass=} {modules=} {tests=}")
         self.loader = self.loaderClass(self, module_paths, modules, tests,
                 modules_required, **kwargs)
         self.suites = self.loader.discover()

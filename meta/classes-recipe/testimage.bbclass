@@ -360,8 +360,10 @@ def testimage_main(d):
         bb.fatal('Empty test suite, please verify TEST_SUITES variable')
 
     tc.loadTests(test_paths, modules=test_modules)
-
+    bb.warn(f"got {tc.suites=}")
     suitecases = getSuiteCases(tc.suites)
+    bb.warn(f"got  {suitecases=}")
+    bb.fatal("aborting")
     if not suitecases:
         bb.fatal('Empty test suite, please verify TEST_SUITES variable')
     else:
