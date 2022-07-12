@@ -718,6 +718,7 @@ class DevtoolModifyTests(DevtoolBase):
 
         self.assertTrue(bbclassextended, 'None of these recipes are BBCLASSEXTENDed to native - need to adjust testrecipes list: %s' % ', '.join(testrecipes))
         self.assertTrue(inheritnative, 'None of these recipes do "inherit native" - need to adjust testrecipes list: %s' % ', '.join(testrecipes))
+
     def test_devtool_modify_localfiles_only(self):
         # Check preconditions
         testrecipe = 'base-files'
@@ -1315,6 +1316,56 @@ class DevtoolUpdateTests(DevtoolBase):
         result = runCmd('devtool update-recipe %s' % testrecipe)
         expected_status = []
         self._check_repo_status(os.path.dirname(recipefile), expected_status)
+
+    def test_devtool_finish_modify_git_subdir(self):
+        # Check preconditions
+        testrecipe = 'dos2unix'
+        bb_vars = get_bb_vars(['SRC_URI', 'S', 'WORKDIR', 'FILE'], testrecipe)
+        self.assertIn('git://', bb_vars['SRC_URI'], 'This test expects the %s recipe to be a git recipe' % testrecipe)
+        workdir_git = '%s/git/' % bb_vars['WORKDIR']
+        if not bb_vars['S'].startswith(workdir_git):
+            self.fail('This test expects the %s recipe to be building from a subdirectory of the git repo' % testrecipe)
+        subdir = bb_vars['S'].split(workdir_git, 1)[1]
+        # Clean up anything in the workdir/sysroot/sstate cache
+        bitbake('%s -c cleansstate' % testrecipe)
+        # Try modifying a recipe
+        tempdir = tempfile.mkdtemp(prefix='devtoolqa')
+        self.track_for_cleanup(tempdir)
+        self.track_for_cleanup(self.workspacedir)
+        self.add_command_to_tearDown('bitbake -c clean %s' % testrecipe)
+        self.add_command_to_tearDown('bitbake-layers remove-layer */workspace')
+        result = runCmd('devtool modify %s -x %s' % (testrecipe, tempdir))
+        testsrcfile = os.path.join(tempdir, subdir, 'dos2unix.c')
+        self.assertExists(testsrcfile, 'Extracted source could not be found')
+        self.assertExists(os.path.join(self.workspacedir, 'conf', 'layer.conf'), 'Workspace directory not created. devtool output: %s' % result.output)
+        self.assertNotExists(os.path.join(tempdir, subdir, '.git'), 'Subdirectory has been initialised as a git repo')
+        # Check git repo
+        self._check_src_repo(tempdir)
+        # Modify file
+        runCmd("sed -i '1s:^:/* Add a comment */\\n:' %s" % testsrcfile)
+        result = runCmd('git commit -a -m "Add a comment"', cwd=tempdir)
+        # Run devtool finish
+        recipefile = bb_vars['FILE']
+        recipedir = os.path.dirname(recipefile)
+        res = re.search('recipes-.*', recipedir)
+        self.assertTrue(res, 'Unable to find recipe subdirectory')
+        recipesubdir = res[0]
+        self.add_command_to_tearDown('rm -rf %s' % os.path.join(self.testlayer_path, recipesubdir))
+        result = runCmd('devtool finish %s meta-selftest' % testrecipe)
+        # Check bbappend file contents
+        appendfn = os.path.join(self.testlayer_path, recipesubdir, '%s_%%.bbappend' % testrecipe)
+        with open(appendfn, 'r') as f:
+            appendlines = f.readlines()
+        expected_appendlines = [
+            'FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"\n',
+            '\n',
+            'SRC_URI += "file://0001-Add-a-comment.patch;patchdir=.."\n',
+            '\n'
+        ]
+        self.assertEqual(appendlines, expected_appendlines)
+        self.assertExists(os.path.join(os.path.dirname(appendfn), testrecipe, '0001-Add-a-comment.patch'))
+        # Try building
+        bitbake('%s -c patch' % testrecipe)
 
 class DevtoolExtractTests(DevtoolBase):
 
