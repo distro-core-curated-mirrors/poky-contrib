@@ -326,21 +326,23 @@ class BootimgEFIPlugin(SourcePlugin):
                 exec_cmd(install_cmd)
 
                 staging_dir_host = get_bitbake_var("STAGING_DIR_HOST")
+                target_sys = get_bitbake_var("TARGET_SYS")
 
                 # https://www.freedesktop.org/software/systemd/man/systemd-stub.html
-                objcopy_cmd = "objcopy \
+                objcopy_cmd = "%s-objcopy \
                     --add-section .osrel=%s --change-section-vma .osrel=0x20000 \
                     --add-section .cmdline=%s --change-section-vma .cmdline=0x30000 \
                     --add-section .linux=%s --change-section-vma .linux=0x2000000 \
                     --add-section .initrd=%s --change-section-vma .initrd=0x3000000 \
                     %s %s" % \
-                    ("%s/usr/lib/os-release" % staging_dir_host,
+                    (target_sys,
+                    "%s/usr/lib/os-release" % staging_dir_host,
                     cmdline.name,
                     "%s/%s" % (staging_kernel_dir, kernel),
                     initrd.name,
                     efi_stub,
                     "%s/EFI/Linux/linux.efi" % hdddir)
-                exec_cmd(objcopy_cmd)
+                exec_native_cmd(objcopy_cmd, native_sysroot)
         else:
             install_cmd = "install -m 0644 %s/%s %s/%s" % \
                 (staging_kernel_dir, kernel, hdddir, kernel)
