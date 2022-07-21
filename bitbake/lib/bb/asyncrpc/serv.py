@@ -176,7 +176,7 @@ class AsyncServer(object):
                 # Work around path length limits in AF_UNIX
                 os.chdir(os.path.dirname(path))
                 self.server = self.loop.run_until_complete(
-                    asyncio.start_unix_server(self.handle_client, os.path.basename(path))
+                    asyncio.start_unix_server(self.handle_client, os.path.basename(path), backlog=5)
                 )
             finally:
                 os.chdir(cwd)
