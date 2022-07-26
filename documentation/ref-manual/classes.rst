@@ -474,14 +474,6 @@ Any development-specific adjustments can be done by using the
        touch ${S}/README
    }
 
-The class
-currently only supports creating a development variant of the target
-recipe, not ``native`` or ``nativesdk`` variants.
-
-The :term:`BBCLASSEXTEND` syntax (i.e. ``devupstream:target``) provides
-support for ``native`` and ``nativesdk`` variants. Consequently, this
-functionality can be added in a future release.
-
 Support for other version control systems such as Subversion is limited
 due to BitBake's automatic fetch dependencies (e.g.
 ``subversion-native``).
