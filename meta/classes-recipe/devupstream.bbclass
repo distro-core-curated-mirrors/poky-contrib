@@ -17,8 +17,6 @@
 # WORKDIR/git.
 #
 # There are a few caveats that remain to be solved:
-# - You can't build native or nativesdk recipes using for example
-#   devupstream:native, you can only build target recipes.
 # - If the fetcher requires native tools (such as subversion-native) then
 #   bitbake won't be able to add them automatically.
 
