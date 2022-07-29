@@ -1,0 +1,21 @@
+icu-config embeds the build path in a comment, which is a source of
+non-reproducibility and information leakage.
+
+Instead of using platform_make_fragment, use platform_make_fragment_name.
+
+Upstream-Status: Pending
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+
+diff --git a/icu4c/source/Makefile.in b/icu4c/source/Makefile.in
+index ddc70e13fa..8366f013bc 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -337,7 +337,7 @@ $(top_builddir)/config/icu-config: $(top_builddir)/Makefile $(top_srcdir)/config
+ 	chmod u+w $@
+ 	@echo "# Following from icu/icu4c/source/config/Makefile.inc" >> $@
+ 	LC_ALL=C $(SED) -f $(top_srcdir)/config/make2sh.sed < $(top_builddir)/config/Makefile.inc | grep -v '#M#' | uniq >> $@
+-	@echo "# Following from @platform_make_fragment@" >> $@
++	@echo "# Following from @platform_make_fragment_name@" >> $@
+ 	LC_ALL=C $(SED) -f $(top_srcdir)/config/make2sh.sed < @platform_make_fragment@ | grep -v '#M#' | uniq >> $@
+ 	cat $(top_srcdir)/config/icu-config-bottom >> $@
+ 	chmod u-w $@
