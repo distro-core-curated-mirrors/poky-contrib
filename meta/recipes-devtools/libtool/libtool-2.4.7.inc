@@ -24,6 +24,7 @@ SRC_URI = "${GNU_MIRROR}/libtool/libtool-${PV}.tar.gz \
            file://0011-ltmain.in-Handle-prefix-map-compiler-options-correct.patch \
            file://0012-libtool.m4-For-reproducibility-stop-encoding-hostnam.patch \
            file://0001-ltmain.in-Parse-additional-clang-options.patch \
+           file://inline-basename.patch \
           "
 
 SRC_URI[sha256sum] = "04e96c2404ea70c590c546eba4202a4e12722c640016c12b9b2f1ce3d481e9a8"

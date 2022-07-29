@@ -1,0 +1,18 @@
+Don't write absolute build paths into generated files, the basename is sufficient.
+
+Upstream-Status: Pending
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+
+diff --git a/build-aux/inline-source b/build-aux/inline-source
+index 9ce50c6..b4b9757 100755
+--- a/build-aux/inline-source
++++ b/build-aux/inline-source
+@@ -123,7 +123,7 @@ func_include ()
+ 
+         /^#!/ && magic == 0 {
+             print $0;
+-            print "## DO NOT EDIT - This file generated from '$1'";
++            print "## DO NOT EDIT - This file generated from '$(basename $1)'";
+             print "##               by '$progname' v'$scriptversion'";
+             magic++;
+             next;
