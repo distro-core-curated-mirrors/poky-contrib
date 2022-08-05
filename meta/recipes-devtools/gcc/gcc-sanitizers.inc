@@ -6,6 +6,8 @@ LIC_FILES_CHKSUM = "\
     file://libsanitizer/LICENSE.TXT;md5=0249c37748936faf5b1efd5789587909 \
 "
 
+EXTRA_OECONF_append = " --enable-static"
+
 EXTRA_OECONF_PATHS = "\
     --with-sysroot=/not/exist \
     --with-build-sysroot=${STAGING_DIR_TARGET} \
@@ -23,6 +25,8 @@ do_configure () {
     sed -i -e 's/hardcode_into_libs=yes/hardcode_into_libs=no/' ${B}/${TARGET_SYS}/libsanitizer/libtool
     # Link to the sysroot's libstdc++ instead of one gcc thinks it just built
     sed -i -e '/LIBSTDCXX_RAW_CXX_\(CXXFLAGS\|LDFLAGS\)\s*=/d' ${B}/${TARGET_SYS}/libsanitizer/*/Makefile
+    # Enable static build
+    sed -i -e 's/build_old_libs=no/build_old_libs=yes/' ${B}/${TARGET_SYS}/libsanitizer/libtool
 }
 EXTRACONFFUNCS += "extract_stashed_builddir"
 do_configure[depends] += "${COMPILERDEP}"
@@ -53,16 +57,25 @@ BBCLASSEXTEND = "nativesdk"
 PACKAGES = "${PN} ${PN}-dbg"
 PACKAGES += "libasan libubsan liblsan libtsan"
 PACKAGES += "libasan-dev libubsan-dev liblsan-dev libtsan-dev"
+PACKAGES += "libasan-obj libubsan-obj liblsan-obj libtsan-obj"
 PACKAGES += "libasan-staticdev libubsan-staticdev liblsan-staticdev libtsan-staticdev"
 
 RDEPENDS_libasan += "libstdc++"
 RDEPENDS_libubsan += "libstdc++"
 RDEPENDS_liblsan += "libstdc++"
 RDEPENDS_libtsan += "libstdc++"
-RDEPENDS_libasan-dev += "${PN}"
-RDEPENDS_libubsan-dev += "${PN}"
-RDEPENDS_liblsan-dev += "${PN}"
-RDEPENDS_libtsan-dev += "${PN}"
+RDEPENDS_libasan-dev += "${PN} libasan-obj"
+RDEPENDS_libubsan-dev += "${PN} libubsan-obj"
+RDEPENDS_liblsan-dev += "${PN} liblsan-obj"
+RDEPENDS_libtsan-dev += "${PN} libtsan-obj"
+RDEPENDS_libasan-staticdev += "${PN} libasan-obj"
+RDEPENDS_libubsan-staticdev += "${PN} libubsan-obj"
+RDEPENDS_liblsan-staticdev += "${PN} liblsan-obj"
+RDEPENDS_libtsan-staticdev += "${PN} libtsan-obj"
+ALLOW_EMPTY_libasan-obj = "1"
+ALLOW_EMPTY_libubsan-obj = "1"
+ALLOW_EMPTY_liblsan-obj = "1"
+ALLOW_EMPTY_libtsan-obj = "1"
 RRECOMMENDS_${PN} += "libasan libubsan"
 RRECOMMENDS_${PN}_append_x86 = " liblsan"
 RRECOMMENDS_${PN}_append_x86-64 = " liblsan libtsan"
@@ -79,33 +92,41 @@ COMPATIBLE_HOST = '(x86_64|i.86|powerpc|sparc|s390|arm|aarch64).*-linux'
 COMPATIBLE_HOST_libc-musl = 'null'
 
 FILES_libasan += "${libdir}/libasan.so.*"
-FILES_libasan-dev += "\
+FILES_libasan-obj += "\
     ${libdir}/libasan_preinit.o \
-    ${libdir}/libasan.so \
     ${libdir}/libasan.la \
+"
+FILES_libasan-dev += "\
+    ${libdir}/libasan.so \
 "
 FILES_libasan-staticdev += "${libdir}/libasan.a"
 
 FILES_libubsan += "${libdir}/libubsan.so.*"
+FILES_libubsan-obj += "\
+    ${libdir}/libubsan.la \
+"
 FILES_libubsan-dev += "\
     ${libdir}/libubsan.so \
-    ${libdir}/libubsan.la \
 "
 FILES_libubsan-staticdev += "${libdir}/libubsan.a"
 
 FILES_liblsan += "${libdir}/liblsan.so.*"
-FILES_liblsan-dev += "\
-    ${libdir}/liblsan.so \
+FILES_liblsan-obj += "\
     ${libdir}/liblsan.la \
     ${libdir}/liblsan_preinit.o \
+"
+FILES_liblsan-dev += "\
+    ${libdir}/liblsan.so \
 "
 FILES_liblsan-staticdev += "${libdir}/liblsan.a"
 
 FILES_libtsan += "${libdir}/libtsan.so.*"
-FILES_libtsan-dev += "\
-    ${libdir}/libtsan.so \
+FILES_libtsan-obj += "\
     ${libdir}/libtsan.la \
     ${libdir}/libtsan_*.o \
+"
+FILES_libtsan-dev += "\
+    ${libdir}/libtsan.so \
 "
 FILES_libtsan-staticdev += "${libdir}/libtsan.a"
 
