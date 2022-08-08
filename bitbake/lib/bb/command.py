@@ -21,6 +21,7 @@ Commands are queued in a CommandQueue
 from collections import OrderedDict, defaultdict
 
 import io
+import marshal
 import bb.event
 import bb.cooker
 import bb.remotedata
@@ -340,7 +341,7 @@ class CommandsSync:
             mc = params[0]
         except IndexError:
             mc = ''
-        return command.cooker.recipecaches[mc].packages
+        return CommandsSync.enable_marshel(command.cooker.recipecaches[mc].packages)
     getRecipePackages.readonly = True
 
     def getRecipePackagesDynamic(self, command, params):
@@ -348,7 +349,7 @@ class CommandsSync:
             mc = params[0]
         except IndexError:
             mc = ''
-        return command.cooker.recipecaches[mc].packages_dynamic
+        return CommandsSync.enable_marshel(command.cooker.recipecaches[mc].packages_dynamic)
     getRecipePackagesDynamic.readonly = True
 
     def getRProviders(self, command, params):
@@ -356,7 +357,7 @@ class CommandsSync:
             mc = params[0]
         except IndexError:
             mc = ''
-        return command.cooker.recipecaches[mc].rproviders
+        return CommandsSync.enable_marshel(command.cooker.recipecaches[mc].rproviders)
     getRProviders.readonly = True
 
     def getRuntimeDepends(self, command, params):
@@ -498,7 +499,7 @@ class CommandsSync:
             idx = command.remotedatastores.store(ret)
             return DataStoreConnectionHandle(idx)
 
-        return ret
+        return CommandsSync.enable_marshel(ret)
 
     def dataStoreConnectorVarHistCmd(self, command, params):
         dsindex = params[0]
@@ -572,6 +573,31 @@ class CommandsSync:
         idx = command.remotedatastores.store(envdata)
         return DataStoreConnectionHandle(idx)
     parseRecipeFile.readonly = True
+
+    @staticmethod
+    def enable_marshel(obj):
+        """
+        This function converts the data to be able to marshal as much as possible
+        because XML RPC can hands off only the data that can be marshalled.
+        """
+        try:
+            marshal.dumps(obj)
+            return obj
+        except Exception:
+            pass
+
+        try:
+            return dict(obj)
+        except Exception:
+            pass
+
+        try:
+            return list(obj)
+        except Exception:
+            pass
+
+        return None
+
 
 class CommandsAsync:
     """
