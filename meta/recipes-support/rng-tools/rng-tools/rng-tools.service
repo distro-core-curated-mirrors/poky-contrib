@@ -1,10 +1,7 @@
 [Unit]
 Description=Hardware RNG Entropy Gatherer Daemon
-DefaultDependencies=no
-After=systemd-udev-settle.service
+ConditionVirtualization=!container
 Before=sysinit.target shutdown.target
-Requires=dev-hwrng.device
-After=dev-hwrng.device
 Conflicts=shutdown.target
 
 [Service]
