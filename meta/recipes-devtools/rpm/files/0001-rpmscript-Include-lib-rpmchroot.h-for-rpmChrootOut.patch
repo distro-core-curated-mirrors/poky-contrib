@@ -1,0 +1,26 @@
+From fee6dd39e7223700cc4f7e073924b18409b645b6 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Mon, 15 Aug 2022 22:45:23 -0700
+Subject: [PATCH] rpmscript: Include lib/rpmchroot.h for rpmChrootOut()
+
+This fixes implicit function declarations warning
+
+Upstream-Status: Submitted [https://github.com/rpm-software-management/rpm/pull/2152]
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ lib/rpmscript.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/rpmscript.c b/lib/rpmscript.c
+index 3e3a0027a..6d6d4c507 100644
+--- a/lib/rpmscript.c
++++ b/lib/rpmscript.c
+@@ -17,7 +17,7 @@
+ #include "rpmio/rpmio_internal.h"
+ 
+ #include "lib/rpmplugins.h"     /* rpm plugins hooks */
+-
++#include "lib/rpmchroot.h" /* rpmChrootOut */
+ #include "debug.h"
+ 
+ struct scriptNextFileFunc_s {
