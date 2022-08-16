@@ -17,7 +17,7 @@
 #
 # The class is meant to be used in a layer.conf or distro
 # .inc file with:
-# INHERIT += "distrooverrides"
+# IMAGE_CLASSES += "distrooverrides"
 # DISTRO_FEATURES_OVERRIDES += "my-feature"
 #
 # Beware that this part of OVERRIDES changes during parsing, so usage
