@@ -10,7 +10,6 @@ SRCREV = "6fa6a0e07644f20abf2596f78a60112713e11cbe"
 UPSTREAM_CHECK_COMMITS = "1"
 SRC_URI = "git://pagure.io/xmlto.git;protocol=https;branch=master \
            file://configure.in-drop-the-test-of-xmllint-and-xsltproc.patch \
-           file://0001-Skip-validating-xmlto-output.patch \
 "
 S = "${WORKDIR}/git"
 
@@ -42,10 +41,6 @@ EXTRA_OECONF:append = " BASH=/bin/bash GCP=/bin/cp XMLLINT=xmllint XSLTPROC=xslt
 
 do_configure:prepend() {
     (cd ${S} && flex -o xmlif/xmlif.c xmlif/xmlif.l)
-}
-
-do_install:append:class-native() {
-    create_wrapper ${D}${bindir}/xmlto XML_CATALOG_FILES=${sysconfdir}/xml/catalog
 }
 
 do_populate_sysroot[rdeptask] = "do_populate_sysroot"
