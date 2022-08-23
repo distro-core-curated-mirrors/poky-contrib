@@ -104,10 +104,14 @@ class PtestRunnerTest(OERuntimeTestCase):
         failmsg = ""
         status, output = self.target.run('dmesg | grep "Killed process"', 0)
         if output:
-            failmsg = "ERROR: Processes were killed by the OOM Killer:\n%s\n" % output
+            failmsg += "ERROR: Processes were killed by the OOM Killer:\n%s\n" % output
 
         if failed_tests:
-            failmsg = failmsg + "Failed ptests:\n%s" % pprint.pformat(failed_tests)
+            failmsg += "Failed ptests:\n%s" % pprint.pformat(failed_tests)
+
+            status, output = self.target.run("coredumpctl list; coredumpctl info")
+            if status == 0 and output:
+                failmsg += "Core Dumps Captured:\n" + output + "\n"
 
         if failmsg:
             self.logger.warning("There were failing ptests.")
