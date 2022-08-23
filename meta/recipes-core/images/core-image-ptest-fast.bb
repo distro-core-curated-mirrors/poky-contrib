@@ -6,6 +6,7 @@ require conf/distro/include/ptest-packagelists.inc
 
 # Include only fast (< 30 sec) ptests
 IMAGE_INSTALL += "${PTESTS_FAST}"
+IMAGE_FEATURES:append = " dbg-pkgs"
 
 DESCRIPTION += "Also includes ptest packages with fast execution times to allow for more automated QA."
 HOMEPAGE = "https://www.yoctoproject.org/"
