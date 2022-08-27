@@ -137,6 +137,17 @@ do_install:append () {
 		${D}${sysconfdir}/init.d/sshd
 
 	install -D -m 0755 ${WORKDIR}/sshd_check_keys ${D}${libexecdir}/${BPN}/sshd_check_keys
+
+	if ${@bb.utils.contains('DISTRO_FEATURES', 'opensshinternals', 'true', 'false', d)}; then
+		install -d ${D}${includedir}/ssh
+		install -d ${D}${includedir}/ssh/openbsd-compat
+		install -m0644 ${S}/*.h ${D}${includedir}/ssh
+		install -m0644 ${S}/openbsd-compat/*.h ${D}${includedir}/ssh/openbsd-compat
+
+		install -d ${D}${libdir}
+		install -m0644 ${S}/libssh.a ${D}${libdir}
+		install -m0644 ${S}/openbsd-compat/libopenbsd-compat.a ${D}${libdir}
+	fi
 }
 
 do_install_ptest () {
