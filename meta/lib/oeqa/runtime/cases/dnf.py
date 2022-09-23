@@ -12,12 +12,52 @@ from oeqa.core.decorator.depends import OETestDepends
 from oeqa.core.decorator.data import skipIfNotDataVar, skipIfNotFeature
 from oeqa.runtime.decorator.package import OEHasPackage
 
+from oeqa.utils.subprocesstweak import errors_have_output
+errors_have_output()
+
 class DnfTest(OERuntimeTestCase):
     @classmethod
+    def create_rpm_index(cls):
+        import glob
+        import subprocess
+        import oe
+
+        archs = (cls.tc.td['ALL_MULTILIB_PACKAGE_ARCHS'] or '').replace('-', '_')
+        for arch in archs.split():
+            rpm_dir = os.path.join(cls.tc.td['DEPLOY_DIR_RPM'], arch)
+            idx_path = os.path.join(cls.tc.td['WORKDIR'], 'oe-testimage-repo', arch)
+
+            if not os.path.isdir(rpm_dir):
+                continue
+
+            lockfilename = os.path.join(cls.tc.td['DEPLOY_DIR_RPM'], 'rpm.lock')
+            lf = bb.utils.lockfile(lockfilename, False)
+            oe.path.copyhardlinktree(rpm_dir, idx_path)
+            # Full indexes overload a 256MB image so reduce the number of rpms
+            # in the feed by filtering to specific packages needed by the tests.
+            package_list = glob.glob(os.path.jon(idx_path, "*", "*.rpm"))
+
+            for pkg in package_list:
+                basename = os.path.basename(pkg)
+                if basename.startswith("curl-ptest") or not basename.startswith("curl"):
+                    bb.utils.remove(pkg)
+
+            bb.utils.unlockfile(lf)
+
+            # Create repodata
+            try:
+                cmd = 'createrepo_c --update -q %s' % (idx_path)
+                bb.note("Executing '%s'" % cmd)
+                subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+            except subprocess.CalledProcessError as e:
+                bb.fatal("Index creation failed with return code %d: %s" % (e.returncode, e.output))
+
+    @classmethod
     def setUpClass(cls):
-        cls.repo_server = HTTPService(os.path.join(cls.tc.td['WORKDIR'], 'oe-testimage-repo'),
-                                      '0.0.0.0', port=cls.tc.target.server_port,
-                                      logger=cls.tc.logger)
+        cls.create_rpm_index()
+        #repo_dir = cls.tc.td['DEPLOY_DIR_RPM']
+        repo_dir = os.path.join(cls.tc.td['WORKDIR'], 'oe-testimage-repo')
+        cls.repo_server = HTTPService(repo_dir, '0.0.0.0', port=cls.tc.target.server_port, logger=cls.tc.logger)
         cls.repo_server.start()
 
     @classmethod

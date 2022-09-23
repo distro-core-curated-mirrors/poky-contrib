@@ -219,10 +219,6 @@ def testimage_main(d):
 
     testimage_sanity(d)
 
-    if (d.getVar('IMAGE_PKGTYPE') == 'rpm'
-       and ('dnf' in d.getVar('TEST_SUITES') or 'auto' in d.getVar('TEST_SUITES'))):
-        create_rpm_index(d)
-
     logger = make_logger_bitbake_compatible(logging.getLogger("BitBake"))
     pn = d.getVar("PN")
 
@@ -428,57 +424,6 @@ def get_runtime_paths(d):
         if os.path.isdir(path):
             paths.append(path)
     return paths
-
-def create_index(arg):
-    import subprocess
-
-    index_cmd = arg
-    try:
-        bb.note("Executing '%s' ..." % index_cmd)
-        result = subprocess.check_output(index_cmd,
-                                        stderr=subprocess.STDOUT,
-                                        shell=True)
-        result = result.decode('utf-8')
-    except subprocess.CalledProcessError as e:
-        return("Index creation command '%s' failed with return code "
-               '%d:\n%s' % (e.cmd, e.returncode, e.output.decode("utf-8")))
-    if result:
-        bb.note(result)
-    return None
-
-def create_rpm_index(d):
-    import glob
-    # Index RPMs
-    rpm_createrepo = bb.utils.which(os.getenv('PATH'), "createrepo_c")
-    index_cmds = []
-    archs = (d.getVar('ALL_MULTILIB_PACKAGE_ARCHS') or '').replace('-', '_')
-
-    for arch in archs.split():
-        rpm_dir = os.path.join(d.getVar('DEPLOY_DIR_RPM'), arch)
-        idx_path = os.path.join(d.getVar('WORKDIR'), 'oe-testimage-repo', arch)
-
-        if not os.path.isdir(rpm_dir):
-            continue
-
-        lockfilename = os.path.join(d.getVar('DEPLOY_DIR_RPM'), 'rpm.lock')
-        lf = bb.utils.lockfile(lockfilename, False)
-        oe.path.copyhardlinktree(rpm_dir, idx_path)
-        # Full indexes overload a 256MB image so reduce the number of rpms
-        # in the feed by filtering to specific packages needed by the tests.
-        package_list = glob.glob(idx_path + "*/*.rpm")
-
-        for pkg in package_list:
-            basename = os.path.basename(pkg)
-            if basename.startswith("curl-ptest") or not basename.startswith("curl"):
-                bb.utils.remove(pkg)
-
-        bb.utils.unlockfile(lf)
-        cmd = '%s --update -q %s' % (rpm_createrepo, idx_path)
-
-        # Create repodata
-        result = create_index(cmd)
-        if result:
-            bb.fatal('%s' % ('\n'.join(result)))
 
 def package_extraction(d, test_suites):
     from oeqa.utils.package_manager import find_packages_to_extract
