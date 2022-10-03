@@ -21,8 +21,24 @@ def stripped(elf):
             return False
     return True
 
-def dynamic(elf):
+def is_dynamic(elf):
     return find_program_segment(elf, Elf.PhType.interp) is not None
+
+def dynamic_by_tag(tag):
+    dynamic = find_section_header(elf, Elf.ShType.dynamic)
+    if not dynamic:
+        return None
+    
+    for entry in dynamic.body.entries:
+        if entry.tag_enum == tag:
+            yield entry.value_str
+
+def dynamic_by_tag_first(tag):
+    values = dynamic_by_tag(tag)
+    try:
+        return next(values)
+    except StopIteration:
+        return None
 
 def linkage(elf):
     dynamic = find_section_header(elf, Elf.ShType.dynsym)
@@ -41,10 +57,14 @@ def linkage(elf):
         name = elf._io.read_bytes_term(0, False, True, True).decode(u"ASCII")
         print(name)
 
+
 elf = Elf.from_file(sys.argv[1])
 print("ELF binary, {} {}, for {}".format({Elf.Bits.b32: "32-bit", Elf.Bits.b64: "64-bit"}[elf.bits],
                                          {Elf.Endian.le: "little-endian", Elf.Endian.be: "big-endian"}[elf.endian],
                                          elf.header.machine.name))
 print("Stripped" if stripped(elf) else "Not stripped")
-print("Dynamically linked" if dynamic(elf) else "Statically linked")
-print(linkage(elf))
+print("Dynamically linked" if is_dynamic(elf) else "Statically linked")
+print(f"SONAME {dynamic_by_tag_first(Elf.DynamicArrayTags.soname)}")
+print(f"RPATH {dynamic_by_tag_first(Elf.DynamicArrayTags.rpath)}")
+print(f"RUNPATH {dynamic_by_tag_first(Elf.DynamicArrayTags.runpath)}")
+print(f"NEEDED {', '.join(dynamic_by_tag(Elf.DynamicArrayTags.needed))}")
