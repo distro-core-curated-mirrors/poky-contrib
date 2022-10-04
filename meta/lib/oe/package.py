@@ -1550,40 +1550,66 @@ def process_shlibs(pkgfiles, d):
 
     shlibswork_dir = d.getVar('SHLIBSWORKDIR')
 
-    def linux_so(file, pkg, pkgver, d):
+    def linux_so(filename, pkg, pkgver, d):
+        def find_section_header(elf, sh_type):
+            for h in elf.header.section_headers:
+                if h.type == sh_type:
+                    return h
+            return None
+        def dynamic_by_tag(tag):
+            dynamic = find_section_header(elf, Elf.ShType.dynamic)
+            if not dynamic:
+                return None
+            
+            for entry in dynamic.body.entries:
+                if entry.tag_enum == tag:
+                    yield entry.value_str
+
+        def dynamic_by_tag_first(tag):
+            values = dynamic_by_tag(tag)
+            try:
+                return next(values)
+            except StopIteration:
+                return None
+
+
         needs_ldconfig = False
         needed = set()
-        sonames = set()
+        soname = set()
         renames = []
-        ldir = os.path.dirname(file).replace(pkgdest + "/" + pkg, '')
-        cmd = d.getVar('OBJDUMP') + " -p " + pipes.quote(file) + " 2>/dev/null"
-        fd = os.popen(cmd)
-        lines = fd.readlines()
-        fd.close()
-        rpath = tuple()
-        for l in lines:
-            m = re.match(r"\s+RPATH\s+([^\s]*)", l)
-            if m:
-                rpaths = m.group(1).replace("$ORIGIN", ldir).split(":")
-                rpath = tuple(map(os.path.normpath, rpaths))
-        for l in lines:
-            m = re.match(r"\s+NEEDED\s+([^\s]*)", l)
-            if m:
-                dep = m.group(1)
-                if dep not in needed:
-                    needed.add((dep, file, rpath))
-            m = re.match(r"\s+SONAME\s+([^\s]*)", l)
-            if m:
-                this_soname = m.group(1)
-                prov = (this_soname, ldir, pkgver)
-                if not prov in sonames:
-                    # if library is private (only used by package) then do not build shlib for it
-                    if not private_libs or len([i for i in private_libs if fnmatch.fnmatch(this_soname, i)]) == 0:
-                        sonames.add(prov)
-                if libdir_re.match(os.path.dirname(file)):
-                    needs_ldconfig = True
-                if needs_ldconfig and snap_symlinks and (os.path.basename(file) != this_soname):
-                    renames.append((file, os.path.join(os.path.dirname(file), this_soname)))
+
+        from oe.parsers.elf import Elf
+        try:
+            elf = Elf.from_file(filename)
+        except: #kaitaistruct.ValidationNotEqualError
+            return (needs_ldconfig, needed, sonames, renames)
+
+        ldir = os.path.dirname(filename).replace(os.path.join(pkgdest, pkg), "")
+        rpath = ()
+
+        # Parse RUNPATH and RPATH
+        value = dynamic_by_tag_first(Elf.DynamicArrayTags.rpath) or dynamic_by_tag_first(Elf.DynamicArrayTags.runpath)
+        if value:
+            value = value.replace("$ORIGIN", ldir).split(":")
+            rpath = tuple(map(os.path.normpath, value))
+
+        # Parse NEEDED
+        for value in dynamic_by_tag(Elf.DynamicArrayTags.needed):
+            needed.add((value, filename, rpath))
+
+        # Parse SONAME
+        for value in dynamic_by_tag(Elf.DynamicArrayTags.soname):
+            prov = (value, ldir, pkgver)
+            if not prov in sonames:
+                # if library is private (only used by package) then do not build shlib for it
+                import fnmatch
+                if not private_libs or len([i for i in private_libs if fnmatch.fnmatch(value, i)]) == 0:
+                    sonames.add(prov)
+            if libdir_re.match(os.path.dirname(filename)):
+                needs_ldconfig = True
+            if needs_ldconfig and snap_symlinks and (os.path.basename(filename) != value):
+                renames.append((filename, os.path.join(os.path.dirname(filename), value)))
+
         return (needs_ldconfig, needed, sonames, renames)
 
     def darwin_so(file, needed, sonames, renames, pkgver):
