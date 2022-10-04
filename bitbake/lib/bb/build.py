@@ -274,6 +274,8 @@ _functionfmt = """
 logformatter = bb.msg.BBLogFormatter("%(levelname)s: %(message)s")
 def exec_func_python(func, d, runfile, cwd=None):
     """Execute a python BB 'function'"""
+    import time
+    start = time.time()
 
     code = _functionfmt.format(function=func)
     bb.utils.mkdirhier(os.path.dirname(runfile))
@@ -301,9 +303,10 @@ def exec_func_python(func, d, runfile, cwd=None):
     finally:
         # We want any stdout/stderr to be printed before any other log messages to make debugging
         # more accurate. In some cases we seem to lose stdout/stderr entirely in logging tests without this.
+        end = time.time()
         sys.stdout.flush()
         sys.stderr.flush()
-        bb.debug(2, "Python function %s finished" % func)
+        bb.debug(2, "Python function %s finished (took %.1fs)" % (func, end-start))
 
         if cwd and olddir:
             try:
