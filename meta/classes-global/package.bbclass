@@ -1872,42 +1872,63 @@ python package_do_shlibs() {
 
     shlibswork_dir = d.getVar('SHLIBSWORKDIR')
 
-    def linux_so(file, pkg, pkgver, d):
+    def linux_so(filename, pkg, pkgver, d):
+        import elftools.elf.elffile
+
+        def first_tag(dynamic, type):
+            try:
+                return next(dynamic.iter_tags(type))
+            except StopIteration:
+                return None
+
         needs_ldconfig = False
         needed = set()
-        sonames = set()
+        soname = set()
         renames = []
-        ldir = os.path.dirname(file).replace(pkgdest + "/" + pkg, '')
-        cmd = d.getVar('OBJDUMP') + " -p " + pipes.quote(file) + " 2>/dev/null"
-        fd = os.popen(cmd)
-        lines = fd.readlines()
-        fd.close()
-        rpath = tuple()
-        for l in lines:
-            m = re.match(r"\s+RPATH\s+([^\s]*)", l)
-            if m:
-                rpaths = m.group(1).replace("$ORIGIN", ldir).split(":")
-                rpath = tuple(map(os.path.normpath, rpaths))
-        for l in lines:
-            m = re.match(r"\s+NEEDED\s+([^\s]*)", l)
-            if m:
-                dep = m.group(1)
-                if dep not in needed:
-                    needed.add((dep, file, rpath))
-            m = re.match(r"\s+SONAME\s+([^\s]*)", l)
-            if m:
-                this_soname = m.group(1)
-                prov = (this_soname, ldir, pkgver)
-                if not prov in sonames:
-                    # if library is private (only used by package) then do not build shlib for it
-                    import fnmatch
-                    if not private_libs or len([i for i in private_libs if fnmatch.fnmatch(this_soname, i)]) == 0:
-                        sonames.add(prov)
-                if libdir_re.match(os.path.dirname(file)):
-                    needs_ldconfig = True
-                if needs_ldconfig and snap_symlinks and (os.path.basename(file) != this_soname):
-                    renames.append((file, os.path.join(os.path.dirname(file), this_soname)))
-        return (needs_ldconfig, needed, sonames, renames)
+
+        try:
+            with open(filename, 'rb') as f:
+                print(filename)
+                elf = elftools.elf.elffile.ELFFile(f)
+                dynamic = elf.get_section_by_name(".dynamic")
+                if dynamic['sh_type'] == "SHT_NOBITS":
+                    return (False, set(), set(), [])
+
+                ldir = os.path.dirname(filename).replace(os.path.join(pkgdest, pkg), "")
+                rpath = ()
+
+                # Parse RUNPATH and RPATH
+                value = first_tag(dynamic, "DT_RPATH")
+                if value:
+                    value = value.rpath.replace("$ORIGIN", ldir).split(":")
+                    rpath = tuple(map(os.path.normpath, value))
+                else:
+                    value = first_tag(dynamic, "DT_RUNPATH")
+                    if value:
+                        value = value.runpath.replace("$ORIGIN", ldir).split(":")
+                        rpath = tuple(map(os.path.normpath, value))
+
+                # Parse NEEDED
+                for value in dynamic.iter_tags("DT_NEEDED"):
+                    needed.add((value.needed, filename, rpath))
+
+                # Parse SONAME
+                for value in dynamic.iter_tags("DT_SONAME"):
+                    value = value.soname
+                    prov = (value, ldir, pkgver)
+                    if not prov in sonames:
+                        # if library is private (only used by package) then do not build shlib for it
+                        import fnmatch
+                        if not private_libs or len([i for i in private_libs if fnmatch.fnmatch(value, i)]) == 0:
+                            sonames.add(prov)
+                    if libdir_re.match(os.path.dirname(filename)):
+                        needs_ldconfig = True
+                    if needs_ldconfig and snap_symlinks and (os.path.basename(filename) != value):
+                        renames.append((filename, os.path.join(os.path.dirname(filename), value)))
+
+                return (needs_ldconfig, needed, sonames, renames)
+        except elftools.elf.elffile.ELFError:
+            return (False, set(), set(), [])
 
     def darwin_so(file, needed, sonames, renames, pkgver):
         if not os.path.exists(file):
