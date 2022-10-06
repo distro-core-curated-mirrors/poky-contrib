@@ -530,6 +530,48 @@ system and gives an overview of their function and contents.
       ":ref:`dev-manual/common-tasks:speeding up a build`"
       section in the Yocto Project Development Tasks Manual.
 
+   :term:`BB_PRESSURE_MAX_CPU`
+      Specifies a maximum CPU pressure threshold, above which BitBake's
+      scheduler will not start new tasks (providing there is at least
+      one active task). If no value is set, CPU pressure is not
+      monitored when starting tasks.
+
+      The pressure data is calculated based upon what (recent) Linux
+      kernels expose under ``/proc/pressure``. The threshold represents
+      the difference in "total" pressure from the previous second. The
+      minimum value is 1.0 (extremely slow builds) and the maximum is
+      1000000 (a pressure value unlikely to ever be reached).
+
+   :term:`BB_PRESSURE_MAX_IO`
+      Specifies a maximum I/O pressure threshold, above which BitBake's
+      scheduler will not start new tasks (providing there is at least
+      one active task). If no value is set, I/O pressure is not
+      monitored when starting tasks.
+
+      The pressure data is calculated based upon what (recent) Linux
+      kernels expose under ``/proc/pressure``. The threshold represents
+      the difference in "total" pressure from the previous second. The
+      minimum value is 1.0 (extremely slow builds) and the maximum is
+      1000000 (a pressure value unlikely to ever be reached).
+
+   :term:`BB_PRESSURE_MAX_MEMORY`
+      Specifies a maximum memory pressure threshold, above which BitBake's
+      scheduler will not start new tasks (providing there is at least
+      one active task). If no value is set, memory pressure is not
+      monitored when starting tasks.
+
+      The pressure data is calculated based upon what (recent) Linux
+      kernels expose under ``/proc/pressure``. The threshold represents
+      the difference in "total" pressure from the previous second. The
+      minimum value is 1.0 (extremely slow builds) and the maximum is
+      1000000 (a pressure value unlikely to ever be reached).
+
+      Memory pressure is experienced when time is spent swapping,
+      refaulting pages from the page cache or performing direct reclaim.
+      This is why memory pressure is rarely seen, but setting this variable
+      might be useful as a last resort to prevent OOM errors if they are
+      occurring during builds.
+
    :term:`BB_SERVER_TIMEOUT`
       Specifies the time (in seconds) after which to unload the BitBake
       server due to inactivity. Set :term:`BB_SERVER_TIMEOUT` to determine how
