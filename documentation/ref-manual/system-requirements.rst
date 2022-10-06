@@ -41,6 +41,8 @@ distributions:
 
 -  Ubuntu 20.04 (LTS)
 
+-  Ubuntu 21.10
+
 -  Ubuntu 22.04 (LTS)
 
 -  Fedora 34
