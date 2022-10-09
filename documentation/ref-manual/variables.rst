@@ -815,7 +815,7 @@ system and gives an overview of their function and contents.
          and `glob <https://docs.python.org/3/library/glob.html>`__.
 
       For more information on how this variable works, see
-      ``meta/classes/binconfig.bbclass`` in the :term:`Source Directory`.
+      ``meta/classes-recipe/binconfig.bbclass`` in the :term:`Source Directory`.
       You can also find general
       information on the class in the
       ":ref:`ref-classes-binconfig`" section.
@@ -2104,7 +2104,7 @@ system and gives an overview of their function and contents.
       available are xz and bz2.
 
       For information on policies and on how to use this variable, see the
-      comments in the ``meta/classes/compress_doc.bbclass`` file.
+      comments in the ``meta/classes-recipe/compress_doc.bbclass`` file.
 
    :term:`EFI_PROVIDER`
       When building bootable images (i.e. where ``hddimg``, ``iso``, or
@@ -2272,7 +2272,7 @@ system and gives an overview of their function and contents.
       variable tells the OpenEmbedded build system to prefer the installed
       external tools. See the
       :ref:`kernel-yocto <ref-classes-kernel-yocto>` class in
-      ``meta/classes`` to see how the variable is used.
+      ``meta/classes-recipe`` to see how the variable is used.
 
    :term:`EXTERNALSRC`
       When inheriting the :ref:`externalsrc <ref-classes-externalsrc>`
@@ -2649,7 +2649,7 @@ system and gives an overview of their function and contents.
       :term:`SRC_URI` statements.
 
       The default value for the :term:`FILESPATH` variable is defined in the
-      :ref:`ref-classes-base` class found in ``meta/classes`` in the
+      :ref:`ref-classes-base` class found in ``meta/classes-global`` in the
       :term:`Source Directory`::
 
          FILESPATH = "${@base_set_filespath(["${FILE_DIRNAME}/${BP}", \
@@ -3139,16 +3139,11 @@ system and gives an overview of their function and contents.
       ":term:`DISTRO` :term:`DISTRO_VERSION`".
 
    :term:`IMAGE_CLASSES`
-      A list of classes that all images should inherit. You typically use
-      this variable to specify the list of classes that register the
-      different types of images the OpenEmbedded build system creates.
+      A list of classes that all images should inherit. This is typically used
+      to enable functionality across all image recipes.
 
-      The default value for :term:`IMAGE_CLASSES` is ``image_types``. You can
-      set this variable in your ``local.conf`` or in a distribution
-      configuration file.
-
-      For more information, see ``meta/classes/image_types.bbclass`` in the
-      :term:`Source Directory`.
+      Classes specified in :term:`IMAGE_CLASSES` must be located in the
+      ``classes-recipe/`` or ``classes/`` subdirectories.
 
    :term:`IMAGE_CMD`
       Specifies the command to create the image file for a specific image
@@ -3164,7 +3159,7 @@ system and gives an overview of their function and contents.
       You typically do not need to set this variable unless you are adding
       support for a new image type. For more examples on how to set this
       variable, see the :ref:`image_types <ref-classes-image_types>`
-      class file, which is ``meta/classes/image_types.bbclass``.
+      class file, which is ``meta/classes-recipe/image_types.bbclass``.
 
    :term:`IMAGE_DEVICE_TABLES`
       Specifies one or more files that contain custom device tables that
@@ -3560,7 +3555,7 @@ system and gives an overview of their function and contents.
       - wic.lzma
 
       For more information about these types of images, see
-      ``meta/classes/image_types*.bbclass`` in the :term:`Source Directory`.
+      ``meta/classes-recipe/image_types*.bbclass`` in the :term:`Source Directory`.
 
    :term:`IMAGE_VERSION_SUFFIX`
       Version suffix that is part of the default :term:`IMAGE_NAME` and
@@ -3659,6 +3654,8 @@ system and gives an overview of their function and contents.
       functions in the class or classes are not executed for the base
       configuration and in each individual recipe. The OpenEmbedded build
       system ignores changes to :term:`INHERIT` in individual recipes.
+      Classes inherited using :term:`INHERIT` must be located in the
+      ``classes-global/`` or ``classes/`` subdirectories.
 
       For more information on :term:`INHERIT`, see the
       :ref:`bitbake:bitbake-user-manual/bitbake-user-manual-metadata:\`\`inherit\`\` configuration directive`"
@@ -3667,6 +3664,9 @@ system and gives an overview of their function and contents.
    :term:`INHERIT_DISTRO`
       Lists classes that will be inherited at the distribution level. It is
       unlikely that you want to edit this variable.
+
+      Classes specified in :term:`INHERIT_DISTRO` must be located in the
+      ``classes-global/`` or ``classes/`` subdirectories.
 
       The default value of the variable is set as follows in the
       ``meta/conf/distro/defaultsetup.conf`` file::
@@ -3883,7 +3883,7 @@ system and gives an overview of their function and contents.
 
    :term:`INITRAMFS_LINK_NAME`
       The link name of the initial RAM filesystem image. This variable is
-      set in the ``meta/classes/kernel-artifact-names.bbclass`` file as
+      set in the ``meta/classes-recipe/kernel-artifact-names.bbclass`` file as
       follows::
 
          INITRAMFS_LINK_NAME ?= "initramfs-${KERNEL_ARTIFACT_LINK_NAME}"
@@ -3909,7 +3909,7 @@ system and gives an overview of their function and contents.
 
    :term:`INITRAMFS_NAME`
       The base name of the initial RAM filesystem image. This variable is
-      set in the ``meta/classes/kernel-artifact-names.bbclass`` file as
+      set in the ``meta/classes-recipe/kernel-artifact-names.bbclass`` file as
       follows::
 
          INITRAMFS_NAME ?= "initramfs-${KERNEL_ARTIFACT_NAME}"
@@ -4119,7 +4119,7 @@ system and gives an overview of their function and contents.
       variable.
 
       The value of :term:`KERNEL_ARTIFACT_NAME`, which is set in the
-      ``meta/classes/kernel-artifact-names.bbclass`` file, has the
+      ``meta/classes-recipe/kernel-artifact-names.bbclass`` file, has the
       following default value::
 
          KERNEL_ARTIFACT_NAME ?= "${PKGE}-${PKGV}-${PKGR}-${MACHINE}${IMAGE_VERSION_SUFFIX}"
@@ -4132,7 +4132,7 @@ system and gives an overview of their function and contents.
       :ref:`kernel <ref-classes-kernel>` class should inherit. You
       typically append this variable to enable extended image types. An
       example is the "kernel-fitimage", which enables fitImage support and
-      resides in ``meta/classes/kernel-fitimage.bbclass``. You can register
+      resides in ``meta/classes-recipe/kernel-fitimage.bbclass``. You can register
       custom kernel image types with the :ref:`kernel <ref-classes-kernel>` class using this
       variable.
 
@@ -4162,7 +4162,7 @@ system and gives an overview of their function and contents.
 
    :term:`KERNEL_DTB_LINK_NAME`
       The link name of the kernel device tree binary (DTB). This variable
-      is set in the ``meta/classes/kernel-artifact-names.bbclass`` file as
+      is set in the ``meta/classes-recipe/kernel-artifact-names.bbclass`` file as
       follows::
 
          KERNEL_DTB_LINK_NAME ?= "${KERNEL_ARTIFACT_LINK_NAME}"
@@ -4178,7 +4178,7 @@ system and gives an overview of their function and contents.
 
    :term:`KERNEL_DTB_NAME`
       The base name of the kernel device tree binary (DTB). This variable
-      is set in the ``meta/classes/kernel-artifact-names.bbclass`` file as
+      is set in the ``meta/classes-recipe/kernel-artifact-names.bbclass`` file as
       follows::
 
          KERNEL_DTB_NAME ?= "${KERNEL_ARTIFACT_NAME}"
@@ -4229,7 +4229,7 @@ system and gives an overview of their function and contents.
 
    :term:`KERNEL_FIT_LINK_NAME`
       The link name of the kernel flattened image tree (FIT) image. This
-      variable is set in the ``meta/classes/kernel-artifact-names.bbclass``
+      variable is set in the ``meta/classes-recipe/kernel-artifact-names.bbclass``
       file as follows::
 
          KERNEL_FIT_LINK_NAME ?= "${KERNEL_ARTIFACT_LINK_NAME}"
@@ -4245,7 +4245,7 @@ system and gives an overview of their function and contents.
 
    :term:`KERNEL_FIT_NAME`
       The base name of the kernel flattened image tree (FIT) image. This
-      variable is set in the ``meta/classes/kernel-artifact-names.bbclass``
+      variable is set in the ``meta/classes-recipe/kernel-artifact-names.bbclass``
       file as follows::
 
          KERNEL_FIT_NAME ?= "${KERNEL_ARTIFACT_NAME}"
@@ -4257,7 +4257,7 @@ system and gives an overview of their function and contents.
 
    :term:`KERNEL_IMAGE_LINK_NAME`
       The link name for the kernel image. This variable is set in the
-      ``meta/classes/kernel-artifact-names.bbclass`` file as follows::
+      ``meta/classes-recipe/kernel-artifact-names.bbclass`` file as follows::
 
          KERNEL_IMAGE_LINK_NAME ?= "${KERNEL_ARTIFACT_LINK_NAME}"
 
@@ -4285,7 +4285,7 @@ system and gives an overview of their function and contents.
 
    :term:`KERNEL_IMAGE_NAME`
       The base name of the kernel image. This variable is set in the
-      ``meta/classes/kernel-artifact-names.bbclass`` file as follows::
+      ``meta/classes-recipe/kernel-artifact-names.bbclass`` file as follows::
 
          KERNEL_IMAGE_NAME ?= "${KERNEL_ARTIFACT_NAME}"
 
@@ -5020,7 +5020,7 @@ system and gives an overview of their function and contents.
 
    :term:`MODULE_TARBALL_LINK_NAME`
       The link name of the kernel module tarball. This variable is set in
-      the ``meta/classes/kernel-artifact-names.bbclass`` file as follows::
+      the ``meta/classes-recipe/kernel-artifact-names.bbclass`` file as follows::
 
          MODULE_TARBALL_LINK_NAME ?= "${KERNEL_ARTIFACT_LINK_NAME}"
 
@@ -5034,7 +5034,7 @@ system and gives an overview of their function and contents.
 
    :term:`MODULE_TARBALL_NAME`
       The base name of the kernel module tarball. This variable is set in
-      the ``meta/classes/kernel-artifact-names.bbclass`` file as follows::
+      the ``meta/classes-recipe/kernel-artifact-names.bbclass`` file as follows::
 
          MODULE_TARBALL_NAME ?= "${KERNEL_ARTIFACT_NAME}"
 
@@ -5169,7 +5169,7 @@ system and gives an overview of their function and contents.
       ``sysroots/`` directory so that all builds that use the script will
       use the correct directories for the cross compiling layout.
 
-      See the ``meta/classes/binconfig.bbclass`` in the
+      See the ``meta/classes-recipe/binconfig.bbclass`` in the
       :term:`Source Directory` for details on how this class
       applies these additional sed command arguments.
 
@@ -8824,6 +8824,9 @@ system and gives an overview of their function and contents.
    :term:`USER_CLASSES`
       A list of classes to globally inherit. These classes are used by the
       OpenEmbedded build system to enable extra features.
+
+      Classes inherited using :term:`USER_CLASSES` must be located in the
+      ``classes-global/`` or ``classes/`` subdirectories.
 
       The default list is set in your ``local.conf`` file::
 
