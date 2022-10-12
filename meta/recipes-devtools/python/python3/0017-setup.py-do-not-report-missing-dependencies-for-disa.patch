@@ -1,4 +1,4 @@
-From 311cf9abc213fcd76795cc3a25814a15fb552065 Mon Sep 17 00:00:00 2001
+From 246c5ffe75a2d494e415d8a7522df9fe22056d41 Mon Sep 17 00:00:00 2001
 From: Alexander Kanavin <alex.kanavin@gmail.com>
 Date: Mon, 7 Oct 2019 13:22:14 +0200
 Subject: [PATCH] setup.py: do not report missing dependencies for disabled
@@ -12,16 +12,18 @@ Upstream-Status: Inappropriate [oe-core specific]
 Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
 Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
 Signed-off-by: Alejandro Hernandez Samaniego <alejandro@enedino.org>
+Refresh for 3.10.7:
+Signed-off-by: Tim Orling <tim.orling@konsulko.com>
 
 ---
  setup.py | 8 ++++++++
  1 file changed, 8 insertions(+)
 
 diff --git a/setup.py b/setup.py
-index 934cf2e..ccf83b4 100644
+index 85a2b26357..7605347bf5 100644
 --- a/setup.py
 +++ b/setup.py
-@@ -517,6 +517,14 @@ class PyBuildExt(build_ext):
+@@ -517,6 +517,14 @@ def print_three_column(lst):
                  print("%-*s   %-*s   %-*s" % (longest, e, longest, f,
                                                longest, g))
  
