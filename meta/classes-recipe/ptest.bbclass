@@ -26,7 +26,7 @@ PTEST_ENABLED:class-cross-canadian = ""
 RDEPENDS:${PN}-ptest += "${PN}"
 RDEPENDS:${PN}-ptest:class-native = ""
 RDEPENDS:${PN}-ptest:class-nativesdk = ""
-RRECOMMENDS:${PN}-ptest += "ptest-runner"
+RDEPENDS:${PN}-ptest:append = " ptest-runner"
 
 PACKAGES =+ "${@bb.utils.contains('PTEST_ENABLED', '1', '${PN}-ptest', '', d)}"
 
