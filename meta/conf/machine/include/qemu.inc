@@ -11,6 +11,8 @@ XSERVER ?= "xserver-xorg \
             xf86-video-modesetting \
             "
 
+MACHINE_EXTRA_RDEPENDS += "kernel-module-virtio-input"
+
 MACHINE_FEATURES = "alsa bluetooth usbgadget screen vfat"
 
 MACHINEOVERRIDES =. "qemuall:"
