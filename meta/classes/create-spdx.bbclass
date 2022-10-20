@@ -534,7 +534,7 @@ python do_create_spdx() {
     recipe_ref.checksum.checksumValue = doc_sha1
 
     sources = collect_dep_sources(d, dep_recipes)
-    found_licenses = {license.name: license.licenseId for license in doc.hasExtractedLicensingInfos}
+    found_licenses = {license.name:recipe_ref.externalDocumentId + ":" + license.licenseId for license in doc.hasExtractedLicensingInfos}
 
     if not recipe_spdx_is_native(d, recipe):
         bb.build.exec_func("read_subpackage_metadata", d)
