@@ -9,6 +9,7 @@ FILES:${PN}-dev = ""
 
 # Used by crossbeam_atomic.patch
 export TARGET_VENDOR
+RUST_DEBUG_REMAP:append:riscv32 = " --cfg crossbeam_no_atomic_64"
 
 do_compile () {
     rust_runx build --stage 2
