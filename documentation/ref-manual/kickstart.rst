@@ -227,3 +227,9 @@ supports the following options:
    the bootloader. You can provide a full pathname for the file or a
    file located in the ``canned-wks`` folder. This option overrides
    all other bootloader options.
+
+-  ``--ptable``: Specifies the partition table format. Valid values are:
+
+   -  ``msdos``
+
+   -  ``gpt``
