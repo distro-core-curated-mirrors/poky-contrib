@@ -291,9 +291,6 @@ class Partition():
         if self.updated_fstab_path and self.has_fstab and not self.no_fstab_update:
             debugfs_script_path = os.path.join(cr_workdir, "debugfs_script")
             with open(debugfs_script_path, "w") as f:
-                if os.getenv('SOURCE_DATE_EPOCH'):
-                    fstab_time = int(os.getenv('SOURCE_DATE_EPOCH'))
-                    f.write("set_current_time %s\n" % (fstab_time))
                 f.write("cd etc\n")
                 f.write("rm fstab\n")
                 f.write("write %s fstab\n" % (self.updated_fstab_path))
@@ -356,7 +353,7 @@ class Partition():
         exec_native_cmd(mcopy_cmd, native_sysroot)
 
         if self.updated_fstab_path and self.has_fstab and not self.no_fstab_update:
-            mcopy_cmd = "mcopy -m -i %s %s ::/etc/fstab" % (rootfs, self.updated_fstab_path)
+            mcopy_cmd = "mcopy -i %s %s ::/etc/fstab" % (rootfs, self.updated_fstab_path)
             exec_native_cmd(mcopy_cmd, native_sysroot)
 
         chmod_cmd = "chmod 644 %s" % rootfs
