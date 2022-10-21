@@ -1868,6 +1868,8 @@ class GitShallowTest(FetcherTest):
         self.add_empty_file('asub', cwd=smdir)
         self.add_empty_file('bsub', cwd=smdir)
 
+        self.d.appendVar('FETCHCMD_git', " -c protocol.file.allow=always")
+
         self.git('submodule init', cwd=self.srcdir)
         self.git('submodule add file://%s' % smdir, cwd=self.srcdir)
         self.git('submodule update', cwd=self.srcdir)
@@ -1897,6 +1899,8 @@ class GitShallowTest(FetcherTest):
         self.git('config --add remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"', cwd=smdir)
         self.add_empty_file('asub', cwd=smdir)
         self.add_empty_file('bsub', cwd=smdir)
+
+        self.d.appendVar('FETCHCMD_git', " -c protocol.file.allow=always")
 
         self.git('submodule init', cwd=self.srcdir)
         self.git('submodule add file://%s' % smdir, cwd=self.srcdir)
