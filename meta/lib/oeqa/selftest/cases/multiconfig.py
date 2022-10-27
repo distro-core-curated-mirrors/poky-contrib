@@ -25,7 +25,7 @@ BBMULTICONFIG = "tiny musl"
         self.write_config(config)
 
         muslconfig = """
-MACHINE = "qemux86-64"
+#MACHINE = "qemux86-64"
 DISTRO = "poky"
 TCLIBC = "musl"
 TMPDIR = "${TOPDIR}/tmp-mc-musl"
@@ -33,7 +33,7 @@ TMPDIR = "${TOPDIR}/tmp-mc-musl"
         self.write_config(muslconfig, 'musl')
 
         tinyconfig = """
-MACHINE = "qemux86"
+#MACHINE = "qemux86"
 DISTRO = "poky-tiny"
 TMPDIR = "${TOPDIR}/tmp-mc-tiny"
 """
