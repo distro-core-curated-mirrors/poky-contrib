@@ -66,7 +66,7 @@ class OESSHTarget(OETarget):
         self._monitor_dumper = dumper
         self.monitor_dumper.dump_monitor()
 
-    def _run(self, command, timeout=None, ignore_status=True):
+    def _run(self, command, timeout=None, ignore_status=False):
         """
             Runs command in target using SSHProcess.
         """
@@ -83,7 +83,7 @@ class OESSHTarget(OETarget):
 
         return (status, output)
 
-    def run(self, command, timeout=None, ignore_status=True):
+    def run(self, command, timeout=None, ignore_status=False):
         """
             Runs command in target.
 
