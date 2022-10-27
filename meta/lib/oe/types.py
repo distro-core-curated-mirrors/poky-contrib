@@ -177,7 +177,8 @@ def qemu_use_kvm(kvm, target_arch):
     """
     Enable kvm if target_arch == build_arch or both of them are x86 archs.
     """
-
+    # TODO rewrite
+    return True
     use_kvm = False
     if kvm and boolean(kvm):
         build_arch = os.uname()[4]

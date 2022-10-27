@@ -22,11 +22,12 @@ class RunqemuTests(OESelftestTestCase):
     def setUpLocal(self):
         super(RunqemuTests, self).setUpLocal()
         self.recipe = 'core-image-minimal'
-        self.machine =  'qemux86-64'
+        #self.machine =  'qemux86-64'
         self.fstypes = "ext4 iso hddimg wic.vmdk wic.qcow2 wic.vdi"
         self.cmd_common = "runqemu nographic"
 
-        kvm = oe.types.qemu_use_kvm(get_bb_var('QEMU_USE_KVM'), 'x86_64')
+        #kvm = oe.types.qemu_use_kvm(get_bb_var('QEMU_USE_KVM'), 'x86_64')
+        kvm = True
         if kvm:
             self.cmd_common += " kvm"
 
