@@ -227,7 +227,7 @@ class ParseLogsTest(OERuntimeTestCase):
         cls.ignore_errors = ignore_errors
         cls.log_locations = log_locations
         cls.msg = ''
-        is_lsb, _ = cls.tc.target.run("which LSB_Test.sh")
+        is_lsb, _ = cls.tc.target.run("which LSB_Test.sh", ignore_status=True)
         if is_lsb == 0:
             for machine in cls.ignore_errors:
                 cls.ignore_errors[machine] = cls.ignore_errors[machine] \
@@ -273,14 +273,14 @@ class ParseLogsTest(OERuntimeTestCase):
     def getLogList(self, log_locations):
         logs = []
         for location in log_locations:
-            status, _ = self.target.run('test -f ' + str(location))
+            status, _ = self.target.run('test -f ' + str(location), ignore_status=True)
             if status == 0:
                 logs.append(str(location))
             else:
-                status, _ = self.target.run('test -d ' + str(location))
+                status, _ = self.target.run('test -d ' + str(location), ignore_status=True)
                 if status == 0:
                     cmd = 'find ' + str(location) + '/*.log -maxdepth 1 -type f'
-                    status, output = self.target.run(cmd)
+                    status, output = self.target.run(cmd, ignore_status=True)
                     if status == 0:
                         output = output.splitlines()
                         for logfile in output:
@@ -371,7 +371,7 @@ class ParseLogsTest(OERuntimeTestCase):
     # Get the output of dmesg and write it in a file.
     # This file is added to log_locations.
     def write_dmesg(self):
-        (status, dmesg) = self.target.run('dmesg > /tmp/dmesg_output.log')
+        self.target.run('dmesg > /tmp/dmesg_output.log')
 
     @OETestDepends(['ssh.SSHTest.test_ssh'])
     def test_parselogs(self):

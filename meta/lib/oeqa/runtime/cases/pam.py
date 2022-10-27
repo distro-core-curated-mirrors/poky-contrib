@@ -19,22 +19,13 @@ class PamBasicTest(OERuntimeTestCase):
     @OEHasPackage(['shadow'])
     @OEHasPackage(['shadow-base'])
     def test_pam(self):
-        status, output = self.target.run('login --help')
+        status, output = self.target.run('login --help', ignore_status=True)
         msg = ('login command does not work as expected. '
                'Status and output:%s and %s' % (status, output))
         self.assertEqual(status, 1, msg = msg)
 
-        status, output = self.target.run('passwd --help')
-        msg = ('passwd command does not work as expected. '
-               'Status and output:%s and %s' % (status, output))
-        self.assertEqual(status, 0, msg = msg)
+        self.target.run('passwd --help')
 
-        status, output = self.target.run('su --help')
-        msg = ('su command does not work as expected. '
-               'Status and output:%s and %s' % (status, output))
-        self.assertEqual(status, 0, msg = msg)
+        self.target.run('su --help')
 
-        status, output = self.target.run('useradd --help')
-        msg = ('useradd command does not work as expected. '
-               'Status and output:%s and %s' % (status, output))
-        self.assertEqual(status, 0, msg = msg)
+        self.target.run('useradd --help')

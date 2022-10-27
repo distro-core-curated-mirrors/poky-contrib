@@ -135,10 +135,8 @@ class DnfRepoTest(DnfTest):
         self.target.run('cp /bin/sh %s/bin' % rootpath, 1500)
         self.target.run('mount -o bind /dev %s/dev/' % rootpath, 1500)
         self.dnf_with_repo('install --installroot=%s -v -y --rpmverbosity=debug busybox' % rootpath)
-        status, output = self.target.run('test -e %s/var/cache/dnf' % rootpath, 1500)
-        self.assertEqual(0, status, output)
-        status, output = self.target.run('test -e %s/bin/busybox' % rootpath, 1500)
-        self.assertEqual(0, status, output)
+        self.target.run('test -e %s/var/cache/dnf' % rootpath, 1500)
+        self.target.run('test -e %s/bin/busybox' % rootpath, 1500)
 
     @OETestDepends(['dnf.DnfRepoTest.test_dnf_makecache'])
     @skipIfNotInDataVar('DISTRO_FEATURES', 'usrmerge', 'Test run when enable usrmerge')
@@ -159,10 +157,8 @@ class DnfRepoTest(DnfTest):
         self.target.run('cp /bin/busybox %s/bin/sh' % rootpath)
         self.target.run('mount -o bind /dev %s/dev/' % rootpath)
         self.dnf_with_repo('install --installroot=%s -v -y --rpmverbosity=debug busybox' % rootpath)
-        status, output = self.target.run('test -e %s/var/cache/dnf' % rootpath)
-        self.assertEqual(0, status, output)
-        status, output = self.target.run('test -e %s/bin/busybox' % rootpath)
-        self.assertEqual(0, status, output)
+        self.target.run('test -e %s/var/cache/dnf' % rootpath)
+        self.target.run('test -e %s/bin/busybox' % rootpath)
 
     @OETestDepends(['dnf.DnfRepoTest.test_dnf_makecache'])
     def test_dnf_exclude(self):

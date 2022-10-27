@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 #
 
+from codecs import ignore_errors
 import re
 import time
 
@@ -17,7 +18,7 @@ class SystemdTest(OERuntimeTestCase):
 
     def systemctl(self, action='', target='', expected=0, verbose=False):
         command = 'SYSTEMD_BUS_TIMEOUT=240s systemctl %s %s' % (action, target)
-        status, output = self.target.run(command)
+        status, output = self.target.run(command, ignore_status=True)
         message = '\n'.join([command, output])
         if status != expected and verbose:
             cmd = 'SYSTEMD_BUS_TIMEOUT=240s systemctl status --full %s' % target
