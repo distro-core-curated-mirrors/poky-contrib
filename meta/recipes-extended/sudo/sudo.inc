@@ -28,6 +28,10 @@ EXTRA_OECONF = "--with-editor=${base_bindir}/vi --with-env-editor"
 
 EXTRA_OECONF:append:libc-musl = " --disable-hardening "
 
+# Given the choice between stack protection and thumb, for sudo we pick thumb.
+# https://github.com/sudo-project/sudo/issues/191
+ARM_INSTRUCTION_SET:armv5 = "arm"
+
 do_compile:prepend () {
        # Remove build host references from sudo_usage.h
        sed -i  \
