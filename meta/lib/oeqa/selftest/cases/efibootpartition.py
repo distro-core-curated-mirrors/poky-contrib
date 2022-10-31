@@ -16,7 +16,7 @@ class GenericEFITest(OESelftestTestCase):
     cmd_common = "runqemu nographic serial wic ovmf"
     efi_provider = "systemd-boot"
     image = "core-image-minimal"
-    #machine = "qemux86-64"
+    machine = "qemux86-64"
     recipes_built = False
 
     @classmethod
