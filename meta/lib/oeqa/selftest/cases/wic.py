@@ -23,15 +23,15 @@ from oeqa.core.decorator import OETestTag
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars, runqemu
 
 
-@lru_cache()
-def get_host_arch():
-    return get_bb_var('HOST_ARCH')
-
-
 def only_for_arch(archs):
     """Decorator for wrapping test cases that can be run only for specific target
     architectures. A list of compatible architectures is passed in `archs`.
     """
+
+    @lru_cache()
+    def get_host_arch():
+        return get_bb_var('HOST_ARCH')
+
     def wrapper(func):
         @wraps(func)
         def wrapped_f(*args, **kwargs):
