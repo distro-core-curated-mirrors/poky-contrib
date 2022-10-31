@@ -5,13 +5,34 @@
 # SPDX-License-Identifier: MIT
 #
 
-import re
+from functools import wraps, lru_cache
+import unittest
 
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import bitbake, runqemu
+from oeqa.utils.commands import bitbake, get_bb_var, runqemu
+
+def only_for_arch(archs):
+    """Decorator for wrapping test cases that can be run only for specific target
+    architectures. A list of compatible architectures is passed in `archs`.
+    """
+
+    @lru_cache()
+    def get_host_arch():
+        return get_bb_var('HOST_ARCH')
+
+    def wrapper(func):
+        @wraps(func)
+        def wrapped_f(*args, **kwargs):
+            arch = get_host_arch()
+            if archs and arch not in archs:
+                raise unittest.SkipTest("Testcase arch dependency not met: %s" % arch)
+            return func(*args, **kwargs)
+        return wrapped_f
+    return wrapper
 
 class GenericEFITest(OESelftestTestCase):
     """EFI booting test class"""
+    @only_for_arch(['i586', 'i686', 'x86_64'])
     def test_boot_efi(self):
         cmd_common = "runqemu nographic serial wic ovmf"
         efi_provider = "systemd-boot"
