@@ -9,7 +9,7 @@ from oeqa.utils.commands import bitbake, runqemu
 from oeqa.core.decorator import OETestTag
 
 def getline_qemu(out, line):
-    for l in out.splitlines():
+    for l in out.split('\n'):
         if line in l:
             return l
 
@@ -56,9 +56,8 @@ inherit overlayfs
         """
 
         config = """
-INIT_MANAGER = "systemd"
 IMAGE_INSTALL:append = " overlayfs-user"
-DISTRO_FEATURES:append = " overlayfs"
+DISTRO_FEATURES:append = " systemd overlayfs"
 """
 
         self.write_config(config)
@@ -78,9 +77,8 @@ DISTRO_FEATURES:append = " overlayfs"
         """
 
         config = """
-INIT_MANAGER = "systemd"
 IMAGE_INSTALL:append = " overlayfs-user"
-DISTRO_FEATURES:append = " overlayfs"
+DISTRO_FEATURES += "systemd overlayfs"
 OVERLAYFS_QA_SKIP[mnt-overlay] = "mount-configured"
 """
 
@@ -97,9 +95,8 @@ OVERLAYFS_QA_SKIP[mnt-overlay] = "mount-configured"
         """
 
         config = """
-INIT_MANAGER = "systemd"
 IMAGE_INSTALL:append = " overlayfs-user"
-DISTRO_FEATURES:append = " overlayfs"
+DISTRO_FEATURES:append = " systemd overlayfs"
 """
 
         self.write_config(config)
@@ -116,9 +113,8 @@ DISTRO_FEATURES:append = " overlayfs"
         """
 
         config = """
-INIT_MANAGER = "systemd"
 IMAGE_INSTALL:append = " overlayfs-user"
-DISTRO_FEATURES:append = " overlayfs"
+DISTRO_FEATURES:append = " systemd overlayfs"
 """
 
         wrong_machine_config = """
@@ -142,10 +138,10 @@ OVERLAYFS_MOUNT_POINT[usr-share-overlay] = "/usr/share/overlay"
 
         config = """
 IMAGE_INSTALL:append = " overlayfs-user systemd-machine-units"
-DISTRO_FEATURES:append = " overlayfs"
+DISTRO_FEATURES:append = " systemd overlayfs"
 
 # Use systemd as init manager
-INIT_MANAGER = "systemd"
+VIRTUAL-RUNTIME_init_manager = "systemd"
 
 # enable overlayfs in the kernel
 KERNEL_EXTRA_FEATURES:append = " features/overlayfs/overlayfs.scc"
@@ -277,7 +273,10 @@ class OverlayFSEtcRunTimeTests(OESelftestTestCase):
         """
 
         configBase = """
-INIT_MANAGER = "systemd"
+DISTRO_FEATURES:append = " systemd"
+
+# Use systemd as init manager
+VIRTUAL-RUNTIME_init_manager = "systemd"
 
 # enable overlayfs in the kernel
 KERNEL_EXTRA_FEATURES:append = " features/overlayfs/overlayfs.scc"
@@ -316,7 +315,10 @@ OVERLAYFS_ETC_DEVICE = "/dev/mmcblk0p1"
         """
 
         config = """
-INIT_MANAGER = "systemd"
+DISTRO_FEATURES:append = " systemd"
+
+# Use systemd as init manager
+VIRTUAL-RUNTIME_init_manager = "systemd"
 
 # enable overlayfs in the kernel
 KERNEL_EXTRA_FEATURES:append = " features/overlayfs/overlayfs.scc"
@@ -339,7 +341,10 @@ EXTRA_IMAGE_FEATURES += "package-management"
         """
 
         config = """
-INIT_MANAGER = "systemd"
+DISTRO_FEATURES:append = " systemd"
+
+# Use systemd as init manager
+VIRTUAL-RUNTIME_init_manager = "systemd"
 
 # enable overlayfs in the kernel
 KERNEL_EXTRA_FEATURES:append = " features/overlayfs/overlayfs.scc"
@@ -454,7 +459,10 @@ IMAGE_INSTALL:append = " overlayfs-user"
 
     def get_working_config(self):
         return """
-INIT_MANAGER = "systemd"
+DISTRO_FEATURES:append = " systemd"
+
+# Use systemd as init manager
+VIRTUAL-RUNTIME_init_manager = "systemd"
 
 # enable overlayfs in the kernel
 KERNEL_EXTRA_FEATURES:append = " features/overlayfs/overlayfs.scc"
