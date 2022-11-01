@@ -157,21 +157,21 @@ class PackageTests(OESelftestTestCase):
         self.write_config(features)
         bitbake("core-image-minimal")
 
-        sysconfdir = get_bb_var('sysconfdir', 'selftest-chown')
         def check_ownership(qemu, expected_gid, expected_uid, path):
             self.logger.info("Check ownership of %s", path)
-            status, output = qemu.run_serial('/bin/stat -c "%U %G" ' + path)
+            status, output = qemu.run_serial('stat -c "%U %G" ' + path)
             self.assertEqual(status, 1, "stat failed: " + output)
-            uid, gid = output.split()
-            if uid != expected_uid or gid != expected_gid :
-                self.logger.error("Incorrect ownership %s [%s]" % (path, output))
-                return False
-            return True
+            try:
+                uid, gid = output.split()
+                self.assertEqual(uid, expected_uid)
+                self.assertEqual(gid, expected_gid)
+            except ValueError:
+                self.fail("Cannot parse output: " + output)
 
+        sysconfdir = get_bb_var('sysconfdir', 'selftest-chown')
         with runqemu('core-image-minimal') as qemu:
             for path in [ sysconfdir + "/selftest-chown/file",
                           sysconfdir + "/selftest-chown/dir",
                           sysconfdir + "/selftest-chown/symlink",
                           sysconfdir + "/selftest-chown/fifotest/fifo"]:
-                if not check_ownership(qemu, "test", "test", path):
-                    self.fail('Test ownership %s failed' % path)
+                check_ownership(qemu, "test", "test", path)
