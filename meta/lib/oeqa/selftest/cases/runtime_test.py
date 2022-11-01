@@ -202,7 +202,7 @@ class TestImage(OESelftestTestCase):
         bitbake('core-image-full-cmdline socat')
         bitbake('-c testimage core-image-full-cmdline')
 
-    @skipIfNotMachine("qemux86-64")
+    @skipIfNotMachine("qemux86-64", "test needs qemux86-64")
     def test_testimage_virgl_gtk_sdl(self):
         """
         Summary: Check host-assisted accelerate OpenGL functionality in qemu with gtk and SDL frontends
@@ -244,7 +244,7 @@ class TestImage(OESelftestTestCase):
         bitbake('core-image-minimal')
         bitbake('-c testimage core-image-minimal')
 
-    @skipIfNotMachine("qemux86-64")
+    @skipIfNotMachine("qemux86-64", "test needs qemux86-64")
     def test_testimage_virgl_headless(self):
         """
         Summary: Check host-assisted accelerate OpenGL functionality in qemu with egl-headless frontend
