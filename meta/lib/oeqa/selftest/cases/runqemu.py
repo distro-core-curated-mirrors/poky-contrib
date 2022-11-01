@@ -22,7 +22,8 @@ class RunqemuTests(OESelftestTestCase):
     def setUpLocal(self):
         super(RunqemuTests, self).setUpLocal()
         self.recipe = 'core-image-minimal'
-        #self.machine =  'qemux86-64'
+        # TODO remove
+        self.machine =  'qemuarm64'
         self.fstypes = "ext4 iso hddimg wic.vmdk wic.qcow2 wic.vdi"
         self.cmd_common = "runqemu nographic"
 
