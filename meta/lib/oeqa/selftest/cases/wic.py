@@ -22,7 +22,7 @@ from oeqa.selftest.case import OESelftestTestCase
 from oeqa.core.decorator import OETestTag
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars, runqemu
 
-
+# TODO move to core/decorator/data.py
 def only_for_arch(archs):
     """Decorator for wrapping test cases that can be run only for specific target
     architectures. A list of compatible architectures is passed in `archs`.
