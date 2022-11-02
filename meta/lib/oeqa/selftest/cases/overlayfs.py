@@ -9,13 +9,13 @@ from oeqa.utils.commands import bitbake, runqemu
 from oeqa.core.decorator import OETestTag
 from oeqa.core.decorator.data import skipIfNotMachine
 
-def getline_qemu(out, line):
-    for l in out.split('\n'):
-        if line in l:
-            return l
+def getline_qemu(out, token):
+    for line in out.splitlines():
+        if token in line:
+            return line
 
-def getline(res, line):
-    return getline_qemu(res.output, line)
+def getline(res, token):
+    return getline_qemu(res.output, token)
 
 class OverlayFSTests(OESelftestTestCase):
     """Overlayfs class usage tests"""
@@ -297,16 +297,19 @@ OVERLAYFS_ETC_DEVICE = "/dev/mmcblk0p1"
         res = bitbake('core-image-minimal', ignore_status=True)
         line = getline(res, "OVERLAYFS_ETC_MOUNT_POINT must be set in your MACHINE configuration")
         self.assertTrue(line, msg=res.output)
+        self.assertNotEqual(res.status, 0)
 
         self.append_config(configMountPoint)
         res = bitbake('core-image-minimal', ignore_status=True)
         line = getline(res, "OVERLAYFS_ETC_DEVICE must be set in your MACHINE configuration")
         self.assertTrue(line, msg=res.output)
+        self.assertNotEqual(res.status, 0)
 
         self.append_config(configDevice)
         res = bitbake('core-image-minimal', ignore_status=True)
         line = getline(res, "OVERLAYFS_ETC_FSTYPE should contain a valid file system type on /dev/mmcblk0p1")
         self.assertTrue(line, msg=res.output)
+        self.assertNotEqual(res.status, 0)
 
     def test_image_feature_conflict(self):
         """
@@ -333,6 +336,7 @@ EXTRA_IMAGE_FEATURES += "package-management"
         line = getline(res, "contains conflicting IMAGE_FEATURES")
         self.assertTrue("overlayfs-etc" in res.output, msg=res.output)
         self.assertTrue("package-management" in res.output, msg=res.output)
+        self.assertNotEqual(res.status, 0)
 
     # https://bugzilla.yoctoproject.org/show_bug.cgi?id=14963
     @skipIfNotMachine("qemux86-64", "tests are qemux86-64 specific currently")
