@@ -7,8 +7,8 @@
 import re
 import tempfile
 import time
-import oe.types
 from oeqa.core.decorator import OETestTag
+from oeqa.core.decorator.data import skipIfNotMachine
 from oeqa.selftest.case import OESelftestTestCase
 from oeqa.utils.commands import bitbake, runqemu, get_bb_var, runCmd
 
@@ -34,7 +34,10 @@ class RunqemuTests(OESelftestTestCase):
         self.write_config(
 """
 MACHINE = "%s"
-IMAGE_FSTYPES = "ext4 wic.vmdk wic.qcow2 wic.vdi"
+IMAGE_FSTYPES = "ext4"
+# These should work on all architectures when qemuarm64 has a wic
+IMAGE_FSTYPES:append:x86-64 = "wic.vmdk wic.qcow2 wic.vdi"
+# These are x86-specific
 IMAGE_FSTYPES:append:x86-64 = "iso hddimg"
 # 10 means 1 second
 SYSLINUX_TIMEOUT = "10"
@@ -61,6 +64,7 @@ SYSLINUX_TIMEOUT = "10"
             with open(qemu.qemurunnerlog) as f:
                 self.assertIn('rootfs.ext4', f.read(), "Failed: %s" % cmd)
 
+    @skipIfNotMachine("qemux86-64", "tests are qemux86-64 specific currently")
     def test_boot_machine_iso(self):
         """Test runqemu machine iso"""
         cmd = "%s %s iso" % (self.cmd_common, self.machine)
@@ -76,6 +80,7 @@ SYSLINUX_TIMEOUT = "10"
                 self.assertTrue(qemu.runner.logged, "Failed: %s, %s" % (cmd, f.read()))
 
 
+    @skipIfNotMachine("qemux86-64", "tests are qemux86-64 specific currently")
     def test_boot_recipe_image_vmdk(self):
         """Test runqemu recipe-image vmdk"""
         cmd = "%s %s wic.vmdk" % (self.cmd_common, self.recipe)
@@ -83,6 +88,7 @@ SYSLINUX_TIMEOUT = "10"
             with open(qemu.qemurunnerlog) as f:
                 self.assertIn('format=vmdk', f.read(), "Failed: %s" % cmd)
 
+    @skipIfNotMachine("qemux86-64", "tests are qemux86-64 specific currently")
     def test_boot_recipe_image_vdi(self):
         """Test runqemu recipe-image vdi"""
         cmd = "%s %s wic.vdi" % (self.cmd_common, self.recipe)
@@ -98,6 +104,7 @@ SYSLINUX_TIMEOUT = "10"
                 self.assertTrue(qemu.runner.logged, "Failed: %s, %s" % (cmd, f.read()))
 
 
+    @skipIfNotMachine("qemux86-64", "tests are qemux86-64 specific currently")
     def test_boot_deploy_hddimg(self):
         """Test runqemu deploy_dir_image hddimg"""
         cmd = "%s %s hddimg" % (self.cmd_common, self.deploy_dir_image)
@@ -112,6 +119,7 @@ SYSLINUX_TIMEOUT = "10"
             with open(qemu.qemurunnerlog) as f:
                 self.assertIn(' -netdev user', f.read(), "Failed: %s" % cmd)
 
+    @skipIfNotMachine("qemux86-64", "tests are qemux86-64 specific currently")
     def test_boot_machine_slirp_qcow2(self):
         """Test runqemu machine slirp qcow2"""
         cmd = "%s slirp wic.qcow2 %s" % (self.cmd_common, self.machine)
