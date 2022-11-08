@@ -24,20 +24,24 @@ class RunqemuTests(OESelftestTestCase):
         super(RunqemuTests, self).setUpLocal()
         self.recipe = 'core-image-minimal'
         self.machine =  self.td['MACHINE']
-        self.cmd_common = "runqemu nographic"
 
+        self.fstypes = "ext4"
+        if self.td["HOST_ARCH"] in ('i586', 'i686', 'x86_64'):
+            self.fstypes += " iso hddimg"
+        if self.machine == "qemux86-64":
+            self.fstypes += " wic.vmdk wic.qcow2 wic.vdi"
+
+        self.cmd_common = "runqemu nographic"
         kvm = oe.types.qemu_use_kvm(get_bb_var('QEMU_USE_KVM'), self.td["TARGET_ARCH"])
         if kvm:
             self.cmd_common += " kvm"
 
         self.write_config(
 """
-IMAGE_FSTYPES = "ext4"
-IMAGE_FSTYPES:append:qemux86-64 = " wic.vmdk wic.qcow2 wic.vdi"
-IMAGE_FSTYPES:append:x86-64 = " iso hddimg"
+IMAGE_FSTYPES = "%s"
 # 10 means 1 second
 SYSLINUX_TIMEOUT = "10"
-""")
+""" % self.fstypes)
 
         if not RunqemuTests.image_is_ready:
             RunqemuTests.deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
