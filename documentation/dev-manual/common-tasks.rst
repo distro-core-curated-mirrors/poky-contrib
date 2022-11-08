@@ -8967,7 +8967,7 @@ defined in :term:`TEST_SUITES`.
 If your image is already built, make sure the following are set in your
 ``local.conf`` file::
 
-   INHERIT += "testexport"
+   IMAGE_CLASSES += "testexport"
    TEST_TARGET_IP = "IP-address-for-the-test-target"
    TEST_SERVER_IP = "IP-address-for-the-test-server"
 
@@ -8989,7 +8989,7 @@ You can now run the tests outside of the build environment::
 Here is a complete example that shows IP addresses and uses the
 ``core-image-sato`` image::
 
-   INHERIT += "testexport"
+   IMAGE_CLASSES += "testexport"
    TEST_TARGET_IP = "192.168.7.2"
    TEST_SERVER_IP = "192.168.7.1"
 
