@@ -34,7 +34,7 @@ class RunqemuTests(OESelftestTestCase):
 """
 IMAGE_FSTYPES = "ext4"
 IMAGE_FSTYPES:append:qemux86-64 = " wic.vmdk wic.qcow2 wic.vdi"
-IMAGE_FSTYPES:append:x86-64 = "iso hddimg"
+IMAGE_FSTYPES:append:x86-64 = " iso hddimg"
 # 10 means 1 second
 SYSLINUX_TIMEOUT = "10"
 """)
