@@ -124,6 +124,18 @@ class BitbakeLayers(OESelftestTestCase):
             fullpath = os.path.join(layerpath, "conf", "templates", "buildconf-1", f)
             self.assertTrue(os.path.exists(fullpath), "Template configuration file {} not found".format(fullpath))
 
+        cmd = 'oe-setup-build list-config-templates --topdir {}'.format(layerpath)
+        result = runCmd(cmd)
+        cond = "scripts/oe-setup-build setup-build-env -c " in result.output and "test-bitbakelayer-layercreate/conf/templates/buildconf-1" in result.output
+        self.assertTrue(cond, "Incorrect output from {}: {}".format(cmd, result.output))
+
+        # rather than hardcode the build setup cmdline here, let's actually run what the tool suggests to the user
+        cmd = None
+        for l in result.output.splitlines():
+            if "scripts/oe-setup-build setup-build-env -c " in l:
+                cmd = l + " --no-shell"
+        result = runCmd(cmd)
+
     def get_recipe_basename(self, recipe):
         recipe_file = ""
         result = runCmd("bitbake-layers show-recipes -f %s" % recipe)

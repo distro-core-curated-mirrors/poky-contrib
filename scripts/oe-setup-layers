@@ -17,6 +17,7 @@ import os
 import subprocess
 
 def _do_checkout(args, json):
+    oesetupbuild = None
     layers = json['sources']
     for l_name in layers:
         l_data = layers[l_name]
@@ -52,6 +53,12 @@ def _do_checkout(args, json):
         cmd = 'git checkout -q {}'.format(rev)
         print("Running '{}' in {}".format(cmd, layerdir))
         subprocess.check_output(cmd, shell=True, cwd=layerdir)
+
+        if os.path.exists(os.path.join(layerdir, 'scripts/oe-setup-build')):
+            oesetupbuild = os.path.join(layerdir, 'scripts/oe-setup-build')
+
+    if oesetupbuild:
+        print("\nRun '{} list-config-templates' to list available build configuration templates and set up a build from one of them.".format(oesetupbuild))
 
 parser = argparse.ArgumentParser(description="A self contained python script that fetches all the needed layers and sets them to correct revisions using data in a json format from a separate file. The json data can be created from an active build directory with 'bitbake-layers create-layers-setup destdir' and there's a sample file and a schema in meta/files/")
 
