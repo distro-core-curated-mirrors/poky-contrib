@@ -25,6 +25,9 @@ ROOTFS_POSTPROCESS_COMMAND += "rootfs_update_timestamp; "
 # Tweak files in /etc if read-only-rootfs is enabled
 ROOTFS_POSTPROCESS_COMMAND += '${@bb.utils.contains("IMAGE_FEATURES", "read-only-rootfs", "read_only_rootfs_hook; ", "",d)}'
 
+# Leave only pyc if pyc-only is enabled
+ROOTFS_POSTPROCESS_COMMAND += '${@bb.utils.contains("IMAGE_FEATURES", "pyc-only", "pyc_only_hook; ", "",d)}'
+
 # We also need to do the same for the kernel boot parameters,
 # otherwise kernel or initramfs end up mounting the rootfs read/write
 # (the default) if supported by the underlying storage.
@@ -149,6 +152,27 @@ read_only_rootfs_hook () {
 	# 20:12 < mezcalero> koen: you have three options: a) run systemd-machine-id-setup at install time, b) have / read-only and an empty file there (for stateless) and c) boot with / writable
 		touch ${IMAGE_ROOTFS}${sysconfdir}/machine-id
 	fi
+}
+
+
+inherit python3native
+pyc_only_hook () {
+	# Create pyc files
+	nativepython3 \
+		${COREBASE}/scripts/contrib/pycompile.py \
+		--verbose \
+		--strip-root ${IMAGE_ROOTFS} \
+		${IMAGE_ROOTFS}${libdir}/${PYTHON_DIR}
+
+	# Remove py files
+	find ${IMAGE_ROOTFS}${libdir}/${PYTHON_DIR} -name '*.py' \
+		-print0 | \
+		xargs -0 --no-run-if-empty rm -f
+
+	# Remove pycache files
+	find ${IMAGE_ROOTFS}${libdir}/${PYTHON_DIR} -name '__pycache__' \
+		-print0 | \
+		xargs -0 --no-run-if-empty rm -rf
 }
 
 #
