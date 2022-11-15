@@ -10,15 +10,11 @@ LIC_FILES_CHKSUM = "file://Source/JavaScriptCore/COPYING.LIB;md5=d0c6d6397a5d842
                     "
 
 SRC_URI = "https://www.webkitgtk.org/releases/${BPN}-${PV}.tar.xz \
-           file://0001-FindGObjectIntrospection.cmake-prefix-variables-obta.patch \
-           file://0001-Tweak-gtkdoc-settings-so-that-gtkdoc-generation-work.patch \
            file://0001-Fix-build-without-opengl-or-es.patch \
            file://reproducibility.patch \
-           file://0001-When-building-introspection-files-do-not-quote-CFLAG.patch \
-           file://fix-gstreamer-include-paths.patch \
            file://0d3344e17d258106617b0e6d783d073b188a2548.patch \
            "
-SRC_URI[sha256sum] = "0c260cf2b32f0481d017670dfed1b61e554967cd067195606c9f9eb5fe731743"
+SRC_URI[sha256sum] = "f3eb82899651f583b4d99cacd16af784a1a7710fce9e7b6807bd6ccde909fe3e"
 
 inherit cmake pkgconfig gobject-introspection perlnative features_check upstream-version-is-even gtk-doc
 
@@ -33,7 +29,7 @@ DEPENDS = " \
           cairo \
           harfbuzz \
           jpeg \
-          atk \
+          at-spi2-core \
           libwebp \
           gtk+3 \
           libxslt \
@@ -48,6 +44,8 @@ PACKAGECONFIG ??= "${@bb.utils.filter('DISTRO_FEATURES', 'systemd wayland x11', 
                    ${@bb.utils.contains('DISTRO_FEATURES', 'x11 opengl', 'webgl opengl', '', d)} \
                    ${@bb.utils.contains('DISTRO_FEATURES', 'x11', '', 'webgl gles2', d)} \
                    ${@bb.utils.contains('DISTRO_FEATURES', 'opengl', 'opengl-or-es', '', d)} \
+                   ${@bb.utils.contains('GTKDOC_ENABLED', 'True','gtk-doc', '', d)} \
+                   ${@bb.utils.contains('GI_DATA_ENABLED', 'True', 'introspection', '', d)} \
                    enchant \
                    libsecret \
                    ${PACKAGECONFIG_SOUP} \
@@ -72,6 +70,8 @@ PACKAGECONFIG[lcms] = "-DUSE_LCMS=ON,-DUSE_LCMS=OFF,lcms"
 PACKAGECONFIG[soup2] = "-DUSE_SOUP2=ON,-DUSE_SOUP2=OFF,libsoup-2.4,,,soup3"
 PACKAGECONFIG[soup3] = ",,libsoup,,,soup2"
 PACKAGECONFIG[journald] = "-DENABLE_JOURNALD_LOG=ON,-DENABLE_JOURNALD_LOG=OFF,systemd"
+PACKAGECONFIG[gtk-doc] = "-DENABLE_GTKDOC=ON,-DENABLE_GTKDOC=OFF,gi-docgen" 
+PACKAGECONFIG[introspection] = "-DENABLE_INTROSPECTION=ON,-DENABLE_INTROSPECTION=OFF,"
 
 # webkitgtk is full of /usr/bin/env python, particular for generating docs
 do_configure[postfuncs] += "setup_python_link"
@@ -83,8 +83,6 @@ setup_python_link() {
 
 EXTRA_OECMAKE = " \
 		-DPORT=GTK \
-		${@bb.utils.contains('GI_DATA_ENABLED', 'True', '-DENABLE_INTROSPECTION=ON', '-DENABLE_INTROSPECTION=OFF', d)} \
-		${@bb.utils.contains('GTKDOC_ENABLED', 'True', '-DENABLE_GTKDOC=ON', '-DENABLE_GTKDOC=OFF', d)} \
 		-DENABLE_MINIBROWSER=ON \
                 -DPYTHON_EXECUTABLE=`which python3` \
                 -DENABLE_BUBBLEWRAP_SANDBOX=OFF \
