@@ -195,6 +195,7 @@ class KickStart():
                                 default='msdos')
         bootloader.add_argument('--timeout', type=int)
         bootloader.add_argument('--source')
+        bootloader.add_argument('--password')
 
         include = subparsers.add_parser('include')
         include.add_argument('path', type=cannedpathtype)
