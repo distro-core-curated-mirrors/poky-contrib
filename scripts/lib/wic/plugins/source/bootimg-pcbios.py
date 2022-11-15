@@ -113,8 +113,13 @@ class BootimgPcbiosPlugin(SourcePlugin):
             syslinux_conf = ""
             syslinux_conf += "PROMPT 0\n"
             syslinux_conf += "TIMEOUT " + str(bootloader.timeout) + "\n"
+            if bootloader.password:
+                syslinux_conf += "MENU MASTER PASSWD " + str(bootloader.password) + "\n"
+                syslinux_conf += "ALLOWOPTIONS 0\n"
+                syslinux_conf += "NOESCAPE 1\n"
+            else:
+                syslinux_conf += "ALLOWOPTIONS 1\n"
             syslinux_conf += "\n"
-            syslinux_conf += "ALLOWOPTIONS 1\n"
             syslinux_conf += "SERIAL 0 115200\n"
             syslinux_conf += "\n"
             if splashline:

@@ -63,8 +63,13 @@ class IsoImagePlugin(SourcePlugin):
         syslinux_conf = ""
         syslinux_conf += "PROMPT 0\n"
         syslinux_conf += "TIMEOUT %s \n" % (bootloader.timeout or 10)
+        if bootloader.password:
+            syslinux_conf += "MENU MASTER PASSWD " + str(bootloader.password) + "\n"
+            syslinux_conf += "ALLOWOPTIONS 0\n"
+            syslinux_conf += "NOESCAPE 1\n"
+        else:
+            syslinux_conf += "ALLOWOPTIONS 1\n"
         syslinux_conf += "\n"
-        syslinux_conf += "ALLOWOPTIONS 1\n"
         syslinux_conf += "SERIAL 0 115200\n"
         syslinux_conf += "\n"
         if splashline:
@@ -116,10 +121,14 @@ class IsoImagePlugin(SourcePlugin):
             grubefi_conf += "--parity=no --stop=1\n"
             grubefi_conf += "default=boot\n"
             grubefi_conf += "timeout=%s\n" % (bootloader.timeout or 10)
+            if bootloader.password:
+                grubefi_conf += "set superusers=\"root\"\n"
+                grubefi_conf += "export superusers\n"
+                grubefi_conf += "password root %s\n" % (bootloader.password)
             grubefi_conf += "\n"
             grubefi_conf += "search --set=root --label %s " % part.label
             grubefi_conf += "\n"
-            grubefi_conf += "menuentry 'boot'{\n"
+            grubefi_conf += "menuentry 'boot' %s {\n" % ("--unrestricted" if bootloader.password else "")
 
             kernel = get_bitbake_var("KERNEL_IMAGETYPE")
             if get_bitbake_var("INITRAMFS_IMAGE_BUNDLE") == "1":
