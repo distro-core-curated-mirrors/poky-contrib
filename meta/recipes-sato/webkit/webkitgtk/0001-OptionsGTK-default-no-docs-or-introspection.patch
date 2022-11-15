@@ -1,0 +1,31 @@
+From 5aa87eba2c706ca3553f96e2a434de338a84d503 Mon Sep 17 00:00:00 2001
+From: Tim Orling <tim.orling@konsulko.com>
+Date: Tue, 15 Nov 2022 14:05:21 -0800
+Subject: [PATCH] OptionsGTK: default no docs or introspection
+
+For OpenEmbedded, we want the GTK switches to control whether or not
+gtk-doc or gobject-introspection is ON.
+
+Upstream-Status: Inappropriate [oe configuration specific]
+
+Signed-off-by: Tim Orling <tim.orling@konsulko.com>
+---
+ Source/cmake/OptionsGTK.cmake | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Source/cmake/OptionsGTK.cmake b/Source/cmake/OptionsGTK.cmake
+index 40984269..b47ce2cb 100644
+--- a/Source/cmake/OptionsGTK.cmake
++++ b/Source/cmake/OptionsGTK.cmake
+@@ -57,9 +57,9 @@ endif ()
+ # Public options specific to the GTK port. Do not add any options here unless
+ # there is a strong reason we should support changing the value of the option,
+ # and the option is not relevant to other WebKit ports.
+-WEBKIT_OPTION_DEFINE(ENABLE_DOCUMENTATION "Whether to generate documentation." PUBLIC ON)
++WEBKIT_OPTION_DEFINE(ENABLE_DOCUMENTATION "Whether to generate documentation." PUBLIC OFF)
+ WEBKIT_OPTION_DEFINE(ENABLE_GLES2 "Whether to enable OpenGL ES 2.0." PUBLIC ${ENABLE_GLES2_DEFAULT})
+-WEBKIT_OPTION_DEFINE(ENABLE_INTROSPECTION "Whether to enable GObject introspection." PUBLIC ON)
++WEBKIT_OPTION_DEFINE(ENABLE_INTROSPECTION "Whether to enable GObject introspection." PUBLIC OFF)
+ WEBKIT_OPTION_DEFINE(ENABLE_JOURNALD_LOG "Whether to enable journald logging" PUBLIC ON)
+ WEBKIT_OPTION_DEFINE(ENABLE_QUARTZ_TARGET "Whether to enable support for the Quartz windowing target." PUBLIC ON)
+ WEBKIT_OPTION_DEFINE(ENABLE_WAYLAND_TARGET "Whether to enable support for the Wayland windowing target." PUBLIC ON)
