@@ -17,7 +17,7 @@ SRC_URI = "https://www.webkitgtk.org/releases/${BPN}-${PV}.tar.xz \
            "
 SRC_URI[sha256sum] = "f3eb82899651f583b4d99cacd16af784a1a7710fce9e7b6807bd6ccde909fe3e"
 
-inherit cmake pkgconfig gobject-introspection perlnative features_check upstream-version-is-even gtk-doc
+inherit cmake pkgconfig gobject-introspection perlnative features_check upstream-version-is-even gtk-doc gi-docgen
 
 ANY_OF_DISTRO_FEATURES = "${GTK3DISTROFEATURES}"
 REQUIRED_DISTRO_FEATURES = "${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'opengl', '', d)}"
@@ -25,19 +25,20 @@ REQUIRED_DISTRO_FEATURES = "${@bb.utils.contains('DISTRO_FEATURES', 'wayland', '
 CVE_PRODUCT = "webkitgtk webkitgtk\+"
 
 DEPENDS = " \
-          ruby-native \
-          gperf-native \
-          cairo \
-          harfbuzz \
-          jpeg \
           at-spi2-core \
-          libwebp \
-          gtk+3 \
-          libxslt \
-          libtasn1 \
-          libnotify \
+          cairo \
+          gperf-native \
           gstreamer1.0 \
           gstreamer1.0-plugins-base \
+          gtk+3 \
+          harfbuzz \
+          jpeg \
+          libnotify \
+          libtasn1 \
+          libwebp \
+          libxslt \
+          linux-libc-headers \
+          ruby-native \
           "
 
 PACKAGECONFIG_SOUP ?= "soup3"
