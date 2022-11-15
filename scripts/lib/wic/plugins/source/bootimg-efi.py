@@ -86,7 +86,11 @@ class BootimgEFIPlugin(SourcePlugin):
             grubefi_conf += "serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1\n"
             grubefi_conf += "default=boot\n"
             grubefi_conf += "timeout=%s\n" % bootloader.timeout
-            grubefi_conf += "menuentry '%s'{\n" % (title if title else "boot")
+            if bootloader.password:
+                grubefi_conf += "set superusers=\"root\"\n"
+                grubefi_conf += "export superusers\n"
+                grubefi_conf += "password root %s\n" % (bootloader.password)
+            grubefi_conf += "menuentry '%s' %s {\n" % (title if title else "boot", "--unrestricted" if bootloader.password else "")
 
             kernel = get_bitbake_var("KERNEL_IMAGETYPE")
             if get_bitbake_var("INITRAMFS_IMAGE_BUNDLE") == "1":
