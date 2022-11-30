@@ -247,10 +247,22 @@ class SiggenRecipeInfo(RecipeInfoCommon):
     # we don't want to show this information in graph files so don't set cachefields
     #cachefields = []
 
+    worker_parser_cache = {}
+
+    init_parser_cache = {}
+
+    server_object_cache = {}
+    server_parser_cache = {}
+
+    collect_metrics = False
+    new_dedup_metrics = {}
+    dedup_hits_metrics = {}
+
     def __init__(self, filename, metadata):
         self.siggen_gendeps = metadata.getVar("__siggen_gendeps", False)
         self.siggen_varvals = metadata.getVar("__siggen_varvals", False)
         self.siggen_taskdeps = metadata.getVar("__siggen_taskdeps", False)
+        self.stream_optimize  = False
 
     @classmethod
     def init_cacheData(cls, cachedata):
@@ -262,6 +274,93 @@ class SiggenRecipeInfo(RecipeInfoCommon):
         cachedata.siggen_gendeps[fn] = self.siggen_gendeps
         cachedata.siggen_varvals[fn] = self.siggen_varvals
         cachedata.siggen_taskdeps[fn] = self.siggen_taskdeps
+
+    @classmethod
+    def prepopulate_dedup(cls, value):
+        idx = cls.add_to_parser_cache(value, [])
+        cls.server_object_cache[value] = value
+        cls.init_parser_cache[idx] = value
+
+
+    @classmethod
+    def add_to_parser_cache(cls, v, new_dedup):
+        if v not in cls.worker_parser_cache:
+            idx = len(cls.worker_parser_cache)
+            new_dedup.append((idx, v))
+            cls.worker_parser_cache[v] = idx
+        return cls.worker_parser_cache[v]
+
+    def __getstate__(self):
+        if not self.stream_optimize:
+            return self.__dict__
+
+        data = {}
+        dedup_data = {}
+        new_dedup = []
+
+        for var, value in self.__dict__.items():
+            if var == "stream_optimize":
+                continue
+            if value:
+                dedup_data[var] = [
+                    (k, self.add_to_parser_cache(v, new_dedup)) for k, v in value.items()
+                ]
+            else:
+                data[var] = value
+
+        return (new_dedup, os.getpid(), data, dedup_data)
+
+    def add_new_dedup(self, subcache, new_dedup):
+        object_cache = self.server_object_cache
+        try:
+            parser_cache = self.server_parser_cache[subcache]
+        except KeyError:
+            self.server_parser_cache[subcache] = self.init_parser_cache.copy()
+            parser_cache = self.server_parser_cache[subcache]
+
+        for key, value in new_dedup:
+            # Deduplicate value across all workers
+            try:
+                value = object_cache[value]
+            except KeyError:
+                object_cache[value] = value
+
+            parser_cache[key] = value
+
+            if self.collect_metrics:
+                if not value in self.new_dedup_metrics:
+                    self.new_dedup_metrics[value] = 0
+                self.new_dedup_metrics[value] += 1
+
+    def add_dedup_data(self, subcache, data, dedup_data):
+        parser_cache = self.server_parser_cache[subcache]
+
+        for name, value in dedup_data.items():
+            # Dictionary comprehension is the fastest way to construct a
+            # dictionary
+            data[name] = {k: parser_cache[v] for k, v in value}
+
+        if self.collect_metrics:
+            for _, value in dedup_data.items():
+                for k, v in value:
+                    v = parser_cache[v]
+                    if not v in self.dedup_hits_metrics:
+                        self.dedup_hits_metrics[v] = 0
+                    self.dedup_hits_metrics[v] += 1
+
+    def __setstate__(self, data):
+        if isinstance(data, dict):
+            self.__dict__ = data
+            return
+
+        (new_dedup, subcache, data, dedup_data) = data
+
+        self.add_new_dedup(subcache, new_dedup)
+        self.add_dedup_data(subcache, data, dedup_data)
+
+        self.__dict__ = data
+        self.stream_optimize = False
+
 
 def virtualfn2realfn(virtualfn):
     """
@@ -460,6 +559,7 @@ class Cache(object):
             info_array = []
             for cache_class in self.caches_array:
                 info = cache_class(filename, data)
+                info.stream_optimize = True
                 info_array.append(info)
             infos.append((virtualfn, info_array))
 

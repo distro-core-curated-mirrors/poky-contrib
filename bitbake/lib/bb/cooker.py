@@ -2273,6 +2273,40 @@ class CookerParser(object):
             bb.utils.process_profilelog(profiles, pout = pout)
             print("Processed parsing statistics saved to %s" % (pout))
 
+        if bb.cache.SiggenRecipeInfo.collect_metrics:
+            with open("dedup-metrics.log", "w") as f:
+                items = list((count, obj) for obj, count in bb.cache.SiggenRecipeInfo.new_dedup_metrics.items())
+                items.sort(key=lambda x: x[0], reverse=True)
+                total = sum(x[0] for x in items)
+                uniq = len(items)
+                f.write(f"Total: {total}\n")
+                f.write(f"Unique: {uniq} ({uniq * 100 // total}%)\n")
+                for count, name in items:
+                    f.write(f"{count} ({count * 100 // total}%): {name!r}\n")
+
+            with open("hit-metrics.log", "w") as f:
+                items = list((count, obj) for obj, count in bb.cache.SiggenRecipeInfo.dedup_hits_metrics.items())
+                items.sort(key=lambda x: x[0], reverse=True)
+                total = sum(x[0] for x in items)
+                uniq = len(items)
+                f.write(f"Total: {total}\n")
+                f.write(f"Unique: {uniq} ({uniq * 100 // total}%)\n")
+                for count, name in items:
+                    f.write(f"{count} ({count * 100 // total}%): {name!r}\n")
+
+            with open("bandwidth-metrics.log", "w") as f:
+                items = list((len(pickle.dumps(obj)) * count, count, obj) for obj, count in bb.cache.SiggenRecipeInfo.new_dedup_metrics.items())
+                items.sort(key=lambda x: (x[0], x[1]), reverse=True)
+                total_xfer = sum(x[0] for x in items)
+                total_count = sum(x[1] for x in items)
+                uniq = len(items)
+                f.write(f"Total Bytes: {total_xfer}\n")
+                f.write(f"Total Number Transfered: {total_count}\n")
+                f.write(f"Unique: {uniq} ({uniq * 100 // total_count}%)\n")
+                for xfer, count, name in items:
+                    f.write(f"{xfer} ({xfer * 100 // total_xfer}%), {count} ({count * 100 // total_count}%): {name!r}\n")
+
+
     def final_cleanup(self):
         if self.syncthread:
             self.syncthread.join()
