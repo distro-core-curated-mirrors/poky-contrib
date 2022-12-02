@@ -25,7 +25,7 @@ from itertools import groupby
 
 from bb.ui import uihelper
 
-featureSet = [bb.cooker.CookerFeatures.SEND_SANITYEVENTS, bb.cooker.CookerFeatures.BASEDATASTORE_TRACKING]
+featureSet = [bb.cooker.CookerFeatures.SEND_SANITYEVENTS, bb.cooker.CookerFeatures.BASEDATASTORE_TRACKING, bb.cooker.CookerFeatures.RECIPE_SIGGEN_INFO]
 
 logger = logging.getLogger("BitBake")
 interactive = sys.stdout.isatty()
