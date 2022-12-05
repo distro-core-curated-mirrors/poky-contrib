@@ -9,7 +9,7 @@ require qemu-native.inc
 # and avoid file clashes
 DEPENDS = "glib-2.0-native zlib-native pixman-native qemu-native bison-native meson-native ninja-native"
 
-EXTRA_OECONF:append = " --target-list=${@get_qemu_system_target_list(d)}"
+EXTRA_OECONF:append = " --target-list=${@get_qemu_system_target_list(d)} --disable-tools"
 
 PACKAGECONFIG ??= "fdt alsa kvm pie slirp \
     ${@bb.utils.contains('DISTRO_FEATURES', 'opengl', 'virglrenderer epoxy', '', d)} \
