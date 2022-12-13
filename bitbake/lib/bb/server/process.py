@@ -314,32 +314,32 @@ class ProcessServer():
         lock.close()
         lock = None
 
-        while not lock:
-            i = 0
-            lock = None
-            while not lock and i < 30:
-                lock = bb.utils.lockfile(lockfile, shared=False, retry=False, block=False)
-                if not lock:
-                    newlockcontents = get_lock_contents(lockfile)
-                    if newlockcontents != lockcontents:
-                        # A new server was started, the lockfile contents changed, we can exit
-                        serverlog("Lockfile now contains different contents, exiting: " + str(newlockcontents))
-                        return
-                    time.sleep(0.1)
-                i += 1
-            if lock:
-                # We hold the lock so we can remove the file (hide stale pid data)
-                # via unlockfile.
-                bb.utils.unlockfile(lock)
-                serverlog("Exiting as we could obtain the lock")
-                return
+        #while not lock:
+        #    i = 0
+        #    lock = None
+        #    while not lock and i < 30:
+        #        lock = bb.utils.lockfile(lockfile, shared=False, retry=False, block=False)
+        #        if not lock:
+        #            newlockcontents = get_lock_contents(lockfile)
+        #            if newlockcontents != lockcontents:
+        #                # A new server was started, the lockfile contents changed, we can exit
+        #                serverlog("Lockfile now contains different contents, exiting: " + str(newlockcontents))
+        #                return
+        #            time.sleep(0.1)
+        #        i += 1
+        #    if lock:
+        #        # We hold the lock so we can remove the file (hide stale pid data)
+        #        # via unlockfile.
+        #        bb.utils.unlockfile(lock)
+        #        serverlog("Exiting as we could obtain the lock")
+        #        return
 
-            if not lock:
-                procs = get_lockfile_process_msg(lockfile)
-                msg = ["Delaying shutdown due to active processes which appear to be holding bitbake.lock"]
-                if procs:
-                    msg.append(":\n%s" % procs)
-                serverlog("".join(msg))
+        #    if not lock:
+        #        procs = get_lockfile_process_msg(lockfile)
+        #        msg = ["Delaying shutdown due to active processes which appear to be holding bitbake.lock"]
+        #        if procs:
+        #            msg.append(":\n%s" % procs)
+        #        serverlog("".join(msg))
 
     def idle_commands(self, delay, fds=None):
         nextsleep = delay
