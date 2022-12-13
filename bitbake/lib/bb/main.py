@@ -18,6 +18,7 @@ import fcntl
 import time
 import traceback
 import datetime
+import shlex
 
 import bb
 from bb import event
@@ -279,6 +280,9 @@ def create_bitbake_parser():
     parser.add_argument("--runonly", action="append",
                         help="Run only the specified task within the taskgraph of the specified targets (and any task dependencies those tasks may have).")
 
+    parser.add_argument("--server-wrapper", metavar="COMMAND", default="",
+                        help="Prefix bitbake-server with COMMAND (useful for debugging)")
+
     parser.add_argument("targets", nargs="*", metavar="recipename/target",
                         help="Execute the specified task (default is 'build') for these target recipes (.bb files).")
 
@@ -437,7 +441,8 @@ def setup_bitbake(configParams, extrafeatures=None):
                     logger.info("Starting bitbake server...")
                     # Clear the event queue since we already displayed messages
                     bb.event.ui_queue = []
-                    server = bb.server.process.BitBakeServer(lock, sockname, featureset, configParams.server_timeout, configParams.xmlrpcinterface, configParams.profile)
+                    server = bb.server.process.BitBakeServer(lock, sockname, featureset, configParams.server_timeout, configParams.xmlrpcinterface, configParams.profile,
+                                                             wrapper_command=shlex.split(configParams.server_wrapper))
 
                 else:
                     logger.info("Reconnecting to bitbake server...")

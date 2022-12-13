@@ -457,7 +457,7 @@ start_log_datetime_format = '%Y-%m-%d %H:%M:%S.%f'
 
 class BitBakeServer(object):
 
-    def __init__(self, lock, sockname, featureset, server_timeout, xmlrpcinterface, profile):
+    def __init__(self, lock, sockname, featureset, server_timeout, xmlrpcinterface, profile, wrapper_command=[]):
 
         self.server_timeout = server_timeout
         self.xmlrpcinterface = xmlrpcinterface
@@ -466,6 +466,7 @@ class BitBakeServer(object):
         self.bitbake_lock = lock
         self.profile = profile
         self.readypipe, self.readypipein = os.pipe()
+        self.wrapper_command = wrapper_command
 
         # Place the log in the builddirectory alongside the lock file
         logfile = os.path.join(os.path.dirname(self.bitbake_lock.name), "bitbake-cookerdaemon.log")
@@ -528,7 +529,24 @@ class BitBakeServer(object):
         os.set_inheritable(self.bitbake_lock.fileno(), True)
         os.set_inheritable(self.readypipein, True)
         serverscript = os.path.realpath(os.path.dirname(__file__) + "/../../../bin/bitbake-server")
-        os.execl(sys.executable, "bitbake-server", serverscript, "decafbad", str(self.bitbake_lock.fileno()), str(self.readypipein), self.logfile, self.bitbake_lock.name, self.sockname,  str(self.server_timeout or 0), str(int(self.profile)), str(self.xmlrpcinterface[0]), str(self.xmlrpcinterface[1]))
+
+        command = self.wrapper_command + [
+            sys.executable,
+            serverscript,
+            "decafbad",
+            str(self.bitbake_lock.fileno()),
+            str(self.readypipein),
+            self.logfile,
+            self.bitbake_lock.name,
+            self.sockname,
+            str(self.server_timeout or 0),
+            str(int(self.profile)),
+            str(self.xmlrpcinterface[0]),
+            str(self.xmlrpcinterface[1])
+        ]
+
+        # Run the specified command, but make sure argv[0] (the program name) is always "bitbake-server"
+        os.execv(command[0], ["bitbake-server"] + command[1:])
 
 def execServer(lockfd, readypipeinfd, lockname, sockname, server_timeout, xmlrpcinterface, profile):
 
