@@ -8,6 +8,8 @@ play games with hashbangs: for now assume that even hashbangs with spaces
 are simple (assume the spaces are only used to separate arguments) and
 we don't have long hashbangs.
 
+https://github.com/pypa/installer/issues/107#issuecomment-1193129977
+
 Upstream-Status: Inappropriate
 Signed-off-by: Ross Burton <ross.burton@arm.com>
 
