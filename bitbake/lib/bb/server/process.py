@@ -94,6 +94,7 @@ class ProcessServer():
 
         self.idle = None
         self._idlefuns = {}
+        self.is_idle = threading.Event()
 
         self.bitbake_lock = lock
         self.bitbake_lock_name = lockname
@@ -173,6 +174,13 @@ class ProcessServer():
                 self.controllersock.close()
                 self.controllersock = False
             if self.haveui:
+                # Wait for the idle loop to have cleared (30s max)
+                self.is_idle.clear()
+                self.is_idle.wait(timeout=30)
+                if self.cooker.command.currentAsyncCommand is not None:
+                    serverlog("Idle loop didn't finish queued commands after 30s, exiting.")
+                    self.quit = True
+
                 fds.remove(self.command_channel)
                 bb.event.unregister_UIHhandler(self.event_handle, True)
                 self.command_channel_reply.writer.close()
@@ -184,7 +192,7 @@ class ProcessServer():
                 self.cooker.clientComplete()
                 self.haveui = False
             ready = select.select(fds,[],[],0)[0]
-            if newconnections:
+            if newconnections and not self.quit:
                 serverlog("Starting new client")
                 conn = newconnections.pop(-1)
                 fds.append(conn)
@@ -391,6 +399,10 @@ class ProcessServer():
                         logger.exception('Running idle function')
                     del self._idlefuns[function]
                     self.quit = True
+
+            # FIXME - the 1 is the inotify processing in cooker which always runs
+            if len(self._idlefuns) <= 1:
+                self.is_idle.set()
 
             if nextsleep is not None:
                 select.select(fds,[],[],nextsleep)[0]
