@@ -397,6 +397,7 @@ class ProcessServer():
                     if not isinstance(exc, bb.BBHandledException):
                         logger.exception('Running idle function')
                     del self._idlefuns[function]
+                    serverlog("Exception %s broke the idle_thread, exiting" % traceback.format_exc())
                     self.quit = True
 
             # FIXME - the 1 is the inotify processing in cooker which always runs
@@ -430,6 +431,7 @@ class ProcessServer():
                 except Exception as exc:
                     if not isinstance(exc, bb.BBHandledException):
                         logger.exception('Running heartbeat function')
+                    serverlog("Exception %s broke in idle_commands, exiting" % traceback.format_exc())
                     self.quit = True
         if nextsleep and bb.event._heartbeat_enabled and now + nextsleep > self.next_heartbeat:
             # Shorten timeout so that we we wake up in time for
