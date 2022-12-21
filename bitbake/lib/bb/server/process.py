@@ -154,7 +154,6 @@ class ProcessServer():
         self.cooker.pre_serve()
 
         bb.utils.set_process_name("Cooker")
-        bb.event.enable_threadlock()
 
         ready = []
         newconnections = []
