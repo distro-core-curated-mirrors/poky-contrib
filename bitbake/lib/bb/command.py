@@ -60,7 +60,7 @@ class Command:
         # FIXME Add lock for this
         self.currentAsyncCommand = None
 
-    def runCommand(self, commandline, ro_only = False):
+    def runCommand(self, commandline, process_server, ro_only = False):
         command = commandline.pop(0)
 
         # Ensure cooker is ready for commands
@@ -100,7 +100,11 @@ class Command:
             else:
                 return result, None
         if self.currentAsyncCommand is not None:
-            return None, "Busy (%s in progress)" % self.currentAsyncCommand[0]
+            # Wait for the idle loop to have cleared (30s max)
+            process_server.is_idle.clear()
+            process_server.is_idle.wait(timeout=30)
+            if self.currentAsyncCommand is not None:
+                return None, "Busy (%s in progress)" % self.currentAsyncCommand[0]
         if command not in CommandsAsync.__dict__:
             return None, "No such command"
         self.currentAsyncCommand = (command, commandline)

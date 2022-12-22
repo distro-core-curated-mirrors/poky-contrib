@@ -264,7 +264,7 @@ class ProcessServer():
                     continue
                 try:
                     serverlog("Running command %s" % command)
-                    self.command_channel_reply.send(self.cooker.command.runCommand(command))
+                    self.command_channel_reply.send(self.cooker.command.runCommand(command, self))
                     serverlog("Command Completed (socket: %s)" % os.path.exists(self.sockname))
                 except Exception as e:
                    stack = traceback.format_exc()
