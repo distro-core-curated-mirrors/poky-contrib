@@ -149,7 +149,7 @@ class BBCooker:
     Manages one bitbake build run
     """
 
-    def __init__(self, featureSet=None, idleCallBackRegister=None):
+    def __init__(self, featureSet=None, idleCallBackRegister=None, waitIdle=None):
         self.recipecaches = None
         self.eventlog = None
         self.skiplist = {}
@@ -164,6 +164,7 @@ class BBCooker:
         self.configuration = bb.cookerdata.CookerConfiguration()
 
         self.idleCallBackRegister = idleCallBackRegister
+        self.waitIdle = waitIdle
 
         bb.debug(1, "BBCooker starting %s" % time.time())
         sys.stdout.flush()
@@ -1753,7 +1754,7 @@ class BBCooker:
         return
 
     def post_serve(self):
-        self.shutdown(force=True)
+        self.shutdown(force=True, idle=False)
         prserv.serv.auto_shutdown()
         if hasattr(bb.parse, "siggen"):
             bb.parse.siggen.exit()
@@ -1763,11 +1764,14 @@ class BBCooker:
         if hasattr(self, "data"):
             bb.event.fire(CookerExit(), self.data)
 
-    def shutdown(self, force = False):
+    def shutdown(self, force=False, idle=True):
         if force:
             self.state = state.forceshutdown
         else:
             self.state = state.shutdown
+
+        if idle:
+            self.waitIdle(30)
 
         if self.parser:
             self.parser.shutdown(clean=not force)

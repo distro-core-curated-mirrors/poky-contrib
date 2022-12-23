@@ -150,6 +150,11 @@ class ProcessServer():
 
         return ret
 
+    def wait_for_idle(self, timeout=30):
+        # Wait for the idle loop to have cleared (30s max)
+        self.is_idle.clear()
+        self.is_idle.wait(timeout=timeout)
+
     def main(self):
         self.cooker.pre_serve()
 
@@ -174,8 +179,7 @@ class ProcessServer():
                 self.controllersock = False
             if self.haveui:
                 # Wait for the idle loop to have cleared (30s max)
-                self.is_idle.clear()
-                self.is_idle.wait(timeout=30)
+                self.wait_for_idle(30)
                 if self.cooker.command.currentAsyncCommand is not None:
                     serverlog("Idle loop didn't finish queued commands after 30s, exiting.")
                     self.quit = True
@@ -309,7 +313,7 @@ class ProcessServer():
         self.sock.close()
 
         try:
-            self.cooker.shutdown(True)
+            self.cooker.shutdown(True, idle=False)
             self.cooker.notifier.stop()
             self.cooker.confignotifier.stop()
         except:
@@ -607,7 +611,7 @@ def execServer(lockfd, readypipeinfd, lockname, sockname, server_timeout, xmlrpc
         writer = ConnectionWriter(readypipeinfd)
         try:
             featureset = []
-            cooker = bb.cooker.BBCooker(featureset, server.register_idle_function)
+            cooker = bb.cooker.BBCooker(featureset, server.register_idle_function, server.wait_for_idle)
             cooker.configuration.profile = profile
         except bb.BBHandledException:
             return None
