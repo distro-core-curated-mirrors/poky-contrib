@@ -112,6 +112,7 @@ class ProcessServer():
         """Register a function to be called while the server is idle"""
         assert hasattr(function, '__call__')
         self._idlefuns[function] = data
+        serverlog("Registering idle function %s" % str(function))
 
     def run(self):
 
@@ -380,10 +381,12 @@ class ProcessServer():
                 try:
                     retval = function(self, data, False)
                     if isinstance(retval, idleFinish):
+                        serverlog("Removing idle function %s at idleFinish" % str(function))
                         del self._idlefuns[function]
                         self.cooker.command.finishAsyncCommand(retval.msg)
                         nextsleep = None
                     elif retval is False:
+                        serverlog("Removing idle function %s" % str(function))
                         del self._idlefuns[function]
                         nextsleep = None
                     elif retval is True:
