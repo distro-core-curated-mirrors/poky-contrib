@@ -374,6 +374,7 @@ class ProcessServer():
                 serverlog("".join(msg))
 
     def idle_thread(self):
+        lastdebug = time.time()
         while not self.quit:
             nextsleep = 0.1
             fds = []
@@ -406,6 +407,10 @@ class ProcessServer():
                     del self._idlefuns[function]
                     serverlog("Exception %s broke the idle_thread, exiting" % traceback.format_exc())
                     self.quit = True
+
+            if time.time() > (lastdebug + 60):
+                lastdebug = time.time()
+                serverlog("Current command %s, idle functions %s, last exit event %s" % (self.cooker.command.currentAsyncCommand, len(self._idlefuns), self.cooker.command.lastEvent))
 
             # FIXME - the 1 is the inotify processing in cooker which always runs
             if len(self._idlefuns) <= 1:
