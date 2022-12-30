@@ -96,7 +96,7 @@ class ProcessServer():
         # Need a lock for _idlefuns changes
         self._idlefuns = {}
         self._idlefuncsLock = threading.Lock()
-        self.is_idle = threading.Event()
+        self.idle_cond = threading.Condition(self._idlefuncsLock)
 
         self.bitbake_lock = lock
         self.bitbake_lock_name = lockname
@@ -155,9 +155,10 @@ class ProcessServer():
         return ret
 
     def wait_for_idle(self, timeout=30):
-        # Wait for the idle loop to have cleared (30s max)
-        self.is_idle.clear()
-        self.is_idle.wait(timeout=timeout)
+        # Wait for the idle loop to have cleared
+        with self.idle_cond:
+            # FIXME - the 1 is the inotify processing in cooker which always runs
+            self.idle_cond.wait_for(lambda: len(self._idlefuns) <= 1, timeout)
 
     def main(self):
         self.cooker.pre_serve()
@@ -377,26 +378,30 @@ class ProcessServer():
                 serverlog("".join(msg))
 
     def idle_thread(self):
+        def remove_idle_func(function):
+            with self._idlefuncsLock:
+                del self._idlefuns[function]
+                self.idle_cond.notify_all()
+
         lastdebug = time.time()
         while not self.quit:
             nextsleep = 0.1
             fds = []
+
             with self._idlefuncsLock:
-                items = list(self._idlefuns.keys())
-            for function in items:
+                items = list(self._idlefuns.items())
+
+            for function, data in items:
                 try:
-                    data = self._idlefuns[function]
                     retval = function(self, data, False)
                     if isinstance(retval, idleFinish):
                         serverlog("Removing idle function %s at idleFinish" % str(function))
-                        with self._idlefuncsLock:
-                            del self._idlefuns[function]
+                        remove_idle_func(function)
                         self.cooker.command.finishAsyncCommand(retval.msg)
                         nextsleep = None
                     elif retval is False:
                         serverlog("Removing idle function %s" % str(function))
-                        with self._idlefuncsLock:
-                            del self._idlefuns[function]
+                        remove_idle_func(function)
                         nextsleep = None
                     elif retval is True:
                         nextsleep = None
@@ -412,18 +417,15 @@ class ProcessServer():
                 except Exception as exc:
                     if not isinstance(exc, bb.BBHandledException):
                         logger.exception('Running idle function')
-                    with self._idlefuncsLock:
-                        del self._idlefuns[function]
+                    remove_idle_func(function)
                     serverlog("Exception %s broke the idle_thread, exiting" % traceback.format_exc())
                     self.quit = True
 
             if time.time() > (lastdebug + 60):
                 lastdebug = time.time()
-                serverlog("Current command %s, idle functions %s, last exit event %s" % (self.cooker.command.currentAsyncCommand, len(self._idlefuns), self.cooker.command.lastEvent))
-
-            # FIXME - the 1 is the inotify processing in cooker which always runs
-            if len(self._idlefuns) <= 1:
-                self.is_idle.set()
+                with self._idlefuncsLock:
+                    num_funcs = len(self._idle_funs)
+                serverlog("Current command %s, idle functions %s, last exit event %s" % (self.cooker.command.currentAsyncCommand, num_funcs, self.cooker.command.lastEvent))
 
             if nextsleep is not None:
                 select.select(fds,[],[],nextsleep)[0]
