@@ -533,12 +533,16 @@ class QemuRunner:
         return True
 
     def stop(self):
+        self.logger.debug("Stopping QemuRunner")
         if hasattr(self, "origchldhandler"):
             signal.signal(signal.SIGCHLD, self.origchldhandler)
+        self.logger.debug("Stopping thread")
         self.stop_thread()
+        self.logger.debug("Stopping qemu system")
         self.stop_qemu_system()
         if self.runqemu:
             if hasattr(self, "monitorpid"):
+                self.logger.debug("Sending SIGKILL to monitorpid")
                 os.kill(self.monitorpid, signal.SIGKILL)
                 self.logger.debug("Sending SIGTERM to runqemu")
                 try:
@@ -559,12 +563,15 @@ class QemuRunner:
             self.runqemu_exited = True
 
         if hasattr(self, 'qmp') and self.qmp:
+            self.logger.debug("Closing QMP")
             self.qmp.close()
             self.qmp = None
         if hasattr(self, 'server_socket') and self.server_socket:
+            self.logger.debug("Closing server socket")
             self.server_socket.close()
             self.server_socket = None
         if hasattr(self, 'threadsock') and self.threadsock:
+            self.logger.debug("Closing threadsock")
             self.threadsock.close()
             self.threadsock = None
         self.qemupid = None
@@ -576,6 +583,7 @@ class QemuRunner:
                 # We raced, ignore
                 pass
         if self.monitorpipe:
+            self.logger.debug("Closing monitorpipe")
             self.monitorpipe.close()
 
     def stop_qemu_system(self):
