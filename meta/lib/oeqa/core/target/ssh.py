@@ -65,7 +65,7 @@ class OESSHTarget(OETarget):
         """
             Runs command in target using SSHProcess.
         """
-        self.logger.debug("[Running]$ %s" % " ".join(command))
+        self.logger.debug("[Running]$ '%s', timeout=%s, ignore_status=%s" % (" ".join(command), timeout, ignore_status))
 
         starttime = time.time()
         status, output = SSHCall(command, self.logger, timeout)
@@ -83,9 +83,10 @@ class OESSHTarget(OETarget):
             Runs command in target.
 
             command:    Command to run on target.
-            timeout:    <value>:    Kill command after <val> seconds.
-                        None:       Kill command default value seconds.
-                        0:          No timeout, runs until return.
+            timeout:    <value>:    Kill command after <val> seconds when there is no output.
+                        None:       Kill command with default value seconds when there is no output.
+                        0:          No activity timeout, runs until return. Can still fail with timeout
+                                    if ssh client returns failures or TCP socket times out.
         """
         targetCmd = 'export PATH=/usr/sbin:/sbin:/usr/bin:/bin; %s' % command
         sshCmd = self.ssh + [self.ip, targetCmd]
@@ -98,15 +99,19 @@ class OESSHTarget(OETarget):
             processTimeout = self.timeout
 
         status, output = self._run(sshCmd, processTimeout, ignore_status)
-        self.logger.debug('Command: %s\nStatus: %d Output:  %s\n' % (command, status, output))
+        # ssh reports errors with return value 255 but also commands can return that value
         if (status == 255) and (('No route to host') in output):
             if self.monitor_dumper:
+                self.logger.debug('Command failed, capturing QMP data: dump_monitor()')
                 self.monitor_dumper.dump_monitor()
         if status == 255:
             if self.target_dumper:
+                self.logger.debug('Command failed, capturing data from serial console: dump_target()')
                 self.target_dumper.dump_target()
             if self.monitor_dumper:
+                self.logger.debug('Command failed, capturing QMP data: dump_monitor()')
                 self.monitor_dumper.dump_monitor()
+        self.logger.debug('returning from run()')
         return (status, output)
 
     def copyTo(self, localSrc, remoteDst):
