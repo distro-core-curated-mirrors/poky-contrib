@@ -657,6 +657,7 @@ class QemuRunner:
         # Returns (status, output) where status is 1 on success and 0 on error
 
         # We assume target system have echo to get command status
+        self.logger.debug("run_serial() called: command = %s, raw = %s, timeout = %d" % (command, raw, timeout))
         if not raw:
             command = "%s; echo $?\n" % command
 
