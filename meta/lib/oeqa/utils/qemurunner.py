@@ -670,12 +670,15 @@ class QemuRunner:
             now = time.time()
             if now >= end:
                 data += "<<< run_serial(): command timed out after %d seconds without output >>>\r\n\r\n" % timeout
+                self.logger.debug("run_serial(): command timed out after %d seconds without output" % timeout)
                 break
             try:
                 sread, _, _ = select.select([self.server_socket],[],[], end - now)
             except InterruptedError:
                 continue
             if sread:
+                # try to avoid reading single character at a time, makes logs readable
+                time.sleep(0.1)
                 answer = self.server_socket.recv(1024)
                 if answer:
                     data += answer.decode('utf-8')
