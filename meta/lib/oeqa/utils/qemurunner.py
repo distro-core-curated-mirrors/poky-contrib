@@ -590,12 +590,21 @@ class QemuRunner:
             self.monitorpipe.close()
 
     def stop_qemu_system(self):
+        self.logger.debug('stop_qemu_system: self.qemupid = %s' % (self.qemupid))
         if self.qemupid:
             try:
                 # qemu-system behaves well and a SIGTERM is enough
+                self.logger.debug('sending SIGTERM to %s' % (self.qemupid))
                 os.kill(self.qemupid, signal.SIGTERM)
             except ProcessLookupError as e:
                 self.logger.warning('qemu-system ended unexpectedly')
+            time.sleep(5)
+            try:
+                # qemu-system did not behave well
+                self.logger.debug('sending SIGKILL to %s' % (self.qemupid))
+                os.kill(self.qemupid, signal.SIGKILL)
+            except ProcessLookupError as e:
+                self.logger.debug('qemu-system already dead')
 
     def stop_thread(self):
         if self.thread and self.thread.is_alive():
