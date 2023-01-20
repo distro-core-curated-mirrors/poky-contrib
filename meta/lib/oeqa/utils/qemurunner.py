@@ -350,6 +350,9 @@ class QemuRunner:
                     return False
 
             try:
+                # set timeout value for all QMP calls
+                self.logger.info("QMP setting timeout to %d" % (self.runqemutime))
+                self.qmp.settimeout(self.runqemutime)
                 self.qmp.connect()
                 connect_time = time.time()
                 self.logger.info("QMP connected to QEMU at %s and took %s seconds" %
@@ -633,7 +636,9 @@ class QemuRunner:
         return False
 
     def run_monitor(self, command, args=None, timeout=60):
+        self.logger.debug("run_monitor() called: command = %s, args = %s, timeout = %d" % (command, args, timeout))
         if hasattr(self, 'qmp') and self.qmp:
+            self.qmp.settimeout(timeout)
             if args is not None:
                 return self.qmp.cmd(command, args)
             else:
