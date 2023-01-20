@@ -500,11 +500,11 @@ class QemuRunner:
             if time.time() >= endtime:
                 self.logger.warning("Target didn't reach login banner in %d seconds (%s)" %
                                   (self.boottime, time.strftime("%D %H:%M:%S")))
-            tail = lambda l: "\n".join(l.splitlines()[-25:])
+            tail = lambda l: "\n".join(l.splitlines()[-100:])
             bootlog = self.decode_qemulog(bootlog)
             # in case bootlog is empty, use tail qemu log store at self.msg
             lines = tail(bootlog if bootlog else self.msg)
-            self.logger.warning("Last 25 lines of text (%d):\n%s" % (len(bootlog), lines))
+            self.logger.warning("Last 100 lines of text (%d):\n%s" % (len(bootlog), lines))
             self.logger.warning("Check full boot log: %s" % self.logfile)
             self._dump_host()
             self.stop()
