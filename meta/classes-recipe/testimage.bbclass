@@ -211,6 +211,7 @@ def testimage_main(d):
         """
         Catch SIGTERM from worker in order to stop qemu.
         """
+        bb.note('SIGTERM received, killing qemu with SIGINT')
         os.kill(os.getpid(), signal.SIGINT)
 
     def handle_test_timeout(timeout):
@@ -373,14 +374,18 @@ def testimage_main(d):
     complete = False
     orig_sigterm_handler = signal.signal(signal.SIGTERM, sigterm_exception)
     try:
+        bb.debug(1, 'Starting qemu')
         # We need to check if runqemu ends unexpectedly
         # or if the worker send us a SIGTERM
         tc.target.start(params=d.getVar("TEST_QEMUPARAMS"), runqemuparams=d.getVar("TEST_RUNQEMUPARAMS"))
         import threading
         try:
+            bb.debug(1, 'Setting timer for TEST_OVERALL_TIMEOUT')
             threading.Timer(int(d.getVar("TEST_OVERALL_TIMEOUT")), handle_test_timeout, (int(d.getVar("TEST_OVERALL_TIMEOUT")),)).start()
         except ValueError:
+            bb.debug(1, 'Timer exception: ValueError')
             pass
+        bb.debug(1, 'Running tests')
         results = tc.runTests()
         complete = True
     except (KeyboardInterrupt, BlockingIOError) as err:
@@ -389,10 +394,13 @@ def testimage_main(d):
         else:
             bb.error('runqemu failed, shutting down...')
         if results:
+            bb.debug(1, 'Stopping')
             results.stop()
         results = tc.results
     finally:
+        bb.debug(1, 'Resetting SIGTERM handler')
         signal.signal(signal.SIGTERM, orig_sigterm_handler)
+        bb.debug(1, 'Stopping qemu target')
         tc.target.stop()
 
     # Show results (if we have them)
