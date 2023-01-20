@@ -123,12 +123,12 @@ class QemuRunner:
                 f.write("%s" % msg)
 
     def getOutput(self, o):
-        import fcntl
-        fl = fcntl.fcntl(o, fcntl.F_GETFL)
-        fcntl.fcntl(o, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+        os.set_blocking(o.fileno(), False)
         try:
+            self.logger.debug('Calling read()')
             return os.read(o.fileno(), 1000000).decode("utf-8")
         except BlockingIOError:
+            self.logger.debug('BlockingIOError but should not have happened!')
             return ""
 
 
