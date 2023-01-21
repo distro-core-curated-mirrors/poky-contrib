@@ -87,6 +87,24 @@ class BitBakeXMLRPCServer(SimpleXMLRPCServer):
     def handle_requests(self):
         self._handle_request_noblock()
 
+    def set_async_cmd(self, cmd):
+        with bb.utils.lock_timeout(self._idlefuncsLock):
+            ret = self.idle_cond.wait_for(self._idle_check, 30)
+            if ret is False:
+                return False
+            self.cooker.command.currentAsyncCommand = cmd
+            return True
+
+    def clear_async_cmd(self):
+        with bb.utils.lock_timeout(self._idlefuncsLock):
+            self.cooker.command.currentAsyncCommand = None
+            self.idle_cond.notify_all()
+
+    def get_async_cmd(self):
+        with bb.utils.lock_timeout(self._idlefuncsLock):
+            return self.cooker.command.currentAsyncCommand
+
+
 class BitBakeXMLRPCServerCommands():
 
     def __init__(self, server):
