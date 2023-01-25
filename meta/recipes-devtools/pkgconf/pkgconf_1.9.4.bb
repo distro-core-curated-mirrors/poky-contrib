@@ -22,7 +22,9 @@ SRC_URI[sha256sum] = "daccf1bbe5a30d149b556c7d2ffffeafd76d7b514e249271abdd501533
 
 inherit autotools
 
-EXTRA_OECONF += "--with-pkg-config-dir='${libdir}/pkgconfig:${datadir}/pkgconfig'"
+EXTRA_OECONF += "--with-pkg-config-dir='${libdir}/pkgconfig:${datadir}/pkgconfig' \
+                 --with-system-includedir=${includedir} \
+                 --with-system-libdir=${libdir}"
 
 do_install:append () {
     # do we need this?
