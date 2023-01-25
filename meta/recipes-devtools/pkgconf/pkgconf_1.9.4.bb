@@ -14,7 +14,6 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=2214222ec1a820bd6cc75167a56925e0"
 
 SRC_URI = "\
     https://distfiles.dereferenced.org/pkgconf/pkgconf-${PV}.tar.xz \
-    file://pkg-config-wrapper \
     file://pkg-config-native.in \
     file://pkg-config-esdk.in \
 "
