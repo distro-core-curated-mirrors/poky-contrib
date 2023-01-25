@@ -6,8 +6,6 @@ compatibility."
 HOMEPAGE = "http://pkgconf.org"
 BUGTRACKER = "https://github.com/pkgconf/pkgconf/issues"
 SECTION = "devel"
-PROVIDES += "pkgconfig"
-RPROVIDES:${PN} += "pkgconfig"
 
 # The pkgconf license seems to be functionally equivalent to BSD-2-Clause or
 # ISC, but has different wording, so needs its own name.
