@@ -456,7 +456,6 @@ class BaseConfig(object):
         env = os.environ.copy()
         try:
             del env['PKG_CONFIG_PATH']
-            del env['PKG_CONFIG_DIR']
             del env['PKG_CONFIG_LIBDIR']
             del env['PKG_CONFIG_SYSROOT_DIR']
         except KeyError:

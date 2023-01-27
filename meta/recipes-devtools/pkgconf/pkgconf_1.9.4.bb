@@ -36,6 +36,7 @@ do_install:append:class-native () {
     # Install a pkg-config-native wrapper that will use the native sysroot instead
     # of the MACHINE sysroot, for using pkg-config when building native tools.
     sed -e "s|@PATH_NATIVE@|${PKG_CONFIG_PATH}|" \
+        -e "s|@LIBDIR_NATIVE@|${PKG_CONFIG_LIBDIR}|" \
         < ${WORKDIR}/pkg-config-native.in > ${B}/pkg-config-native
     install -m755 ${B}/pkg-config-native ${D}${bindir}/pkg-config-native
     sed -e "s|@PATH_NATIVE@|${PKG_CONFIG_PATH}|" \

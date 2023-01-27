@@ -75,7 +75,7 @@ exec_prefix = "${SDKPATHNATIVE}${prefix_nativesdk}"
 baselib = "lib"
 sbindir = "${bindir}"
 
-export PKG_CONFIG_DIR = "${STAGING_DIR_HOST}${libdir}/pkgconfig"
+export PKG_CONFIG_LIBDIR = "${STAGING_DIR_HOST}${libdir}/pkgconfig:${STAGING_DIR_HOST}${datadir}/pkgconfig"
 export PKG_CONFIG_SYSROOT_DIR = "${STAGING_DIR_HOST}"
 
 python nativesdk_virtclass_handler () {
