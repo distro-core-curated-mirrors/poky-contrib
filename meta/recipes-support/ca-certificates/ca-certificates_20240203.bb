@@ -21,6 +21,7 @@ SRC_URI = "${DEBIAN_MIRROR}/main/c/ca-certificates/${BPN}_${PV}.tar.xz \
            file://default-sysroot.patch \
            file://0003-update-ca-certificates-use-relative-symlinks-from-ET.patch \
            file://0001-Revert-mozilla-certdata2pem.py-print-a-warning-for-e.patch \
+           file://environment.sh \
            "
 S = "${WORKDIR}/ca-certificates"
 inherit allarch
@@ -60,6 +61,13 @@ do_install:append:class-target () {
         ${D}${sbindir}/update-ca-certificates \
         ${D}${mandir}/man8/update-ca-certificates.8
 }
+
+do_install:append:class-nativesdk () {
+    mkdir -p ${D}${SDKPATHNATIVE}/environment-setup.d
+    install -m 644 ${WORKDIR}/environment.sh ${D}${SDKPATHNATIVE}/environment-setup.d/ca-certificates.sh
+    sed -e 's|@SYSCONFDIR@|${sysconfdir}|g' -i ${D}${SDKPATHNATIVE}/environment-setup.d/ca-certificates.sh
+}
+FILES:${PN}:append:class-nativesdk = " ${SDKPATHNATIVE}/environment-setup.d/"
 
 pkg_postinst:${PN}:class-target () {
     SYSROOT="$D" $D${sbindir}/update-ca-certificates
