@@ -25,6 +25,7 @@ SPDXRUNTIMEDEPLOY = "${SPDXDIR}/runtime-deploy"
 SPDX_INCLUDE_SOURCES ??= "0"
 SPDX_ARCHIVE_SOURCES ??= "0"
 SPDX_ARCHIVE_PACKAGED ??= "0"
+SPDX_INCLUDE_LOCAL_FILES ??= "0"
 
 SPDX_UUID_NAMESPACE ??= "sbom.openembedded.org"
 SPDX_NAMESPACE_PREFIX ??= "http://spdx.org/spdxdoc"
@@ -412,47 +413,116 @@ def add_download_packages(d, doc, recipe):
     import bb.process
     import oe.spdx
     import oe.sbom
+    import bb.utils
+
+    uri_cache = {}
+    path_cache = {}
+
+    def add_package(package):
+        nonlocal doc
+        doc.packages.append(package)
+        doc.add_relationship(doc, "DESCRIBES", package)
+        # In the future, we might be able to do more fancy dependencies,
+        # but this should be sufficient for now
+        doc.add_relationship(package, "BUILD_DEPENDENCY_OF", recipe)
+
+    def add_local_file(localpath, idx):
+        nonlocal uri_cache
+        nonlocal path_cache
+
+        parent = os.path.dirname(localpath)
+
+        if parent not in uri_cache:
+            try:
+                stdout, _ = bb.process.run(["git", "branch", "-qr", "--format=%(refname)", "--contains", "HEAD"], cwd=parent)
+                branches = stdout.splitlines()
+                branches.sort()
+                for b in branches:
+                    if b.startswith("refs/remotes"):
+                        remote = b.split("/")[2]
+                        break
+                else:
+                    # No valid remote found
+                    uri_cache[parent] = None
+                    return
+
+                stdout, _ = bb.process.run(["git", "remote", "get-url", remote], cwd=parent)
+                uri_prefix = "git+" + stdout.strip()
+
+                stdout, _ = bb.process.run(["git", "rev-parse", "HEAD"], cwd=parent)
+                uri_prefix = uri_prefix + "@" + stdout.strip()
+
+                stdout, _ = bb.process.run(["git", "rev-parse", "--show-prefix"], cwd=parent)
+
+                path_cache[parent] = os.path.join(stdout.strip().rstrip("/"))
+                uri_cache[parent] = uri_prefix
+            except bb.process.ExecutionError:
+                uri_cache[parent] = None
+
+        package = oe.spdx.SPDXPackage()
+        package.SPDXID = oe.sbom.get_download_spdxid(d, idx)
+        if uri_cache[parent] is not None:
+            package.name = path_cache[parent] + "/" + os.path.basename(localpath)
+            package.downloadLocation = uri_cache[parent] + "#" + package.name
+        else:
+            package.name = localpath
+
+        c = oe.spdx.SPDXChecksum()
+        c.algorithm = "SHA256"
+        c.checksumValue = bb.utils.sha256_file(localpath)
+        package.checksums.append(c)
+
+        add_package(package)
+
 
     for download_idx, src_uri in enumerate(d.getVar('SRC_URI').split()):
         f = bb.fetch2.FetchData(src_uri, d)
 
         for name in f.names:
-            package = oe.spdx.SPDXPackage()
-            package.name = "%s-source-%d" % (d.getVar("PN"), download_idx + 1)
-            package.SPDXID = oe.sbom.get_download_spdxid(d, download_idx + 1)
-
             if f.type == "file":
-                continue
+                if d.getVar("SPDX_INCLUDE_LOCAL_FILES") == "0":
+                    continue
 
-            uri = f.type
-            proto = getattr(f, "proto", None)
-            if proto is not None:
-                uri = uri + "+" + proto
-            uri = uri + "://" + f.host + f.path
+                localpath = f.method.localpath(f, d)
+                if os.path.isdir(localpath):
+                    file_idx = 1
+                    for (root, dirs, files) in os.walk(localpath):
+                        files.sort()
+                        for fn in files:
+                            add_local_file(os.path.join(root, fn), "%d.%d" % (download_idx + 1, file_idx))
+                            file_idx += 1
+                else:
+                    add_local_file(localpath, download_idx + 1)
+            else:
+                package = oe.spdx.SPDXPackage()
+                package.name = "%s-source-%d" % (d.getVar("PN"), download_idx + 1)
+                package.SPDXID = oe.sbom.get_download_spdxid(d, download_idx + 1)
 
-            if f.method.supports_srcrev():
-                uri = uri + "@" + f.revisions[name]
+                uri = f.type
+                proto = getattr(f, "proto", None)
+                if proto is not None:
+                    uri = uri + "+" + proto
+                uri = uri + "://" + f.host + f.path
 
-            if f.method.supports_checksum(f):
-                for checksum_id in CHECKSUM_LIST:
-                    if checksum_id.upper() not in oe.spdx.SPDXPackage.ALLOWED_CHECKSUMS:
-                        continue
+                if f.method.supports_srcrev():
+                    uri = uri + "@" + f.revisions[name]
 
-                    expected_checksum = getattr(f, "%s_expected" % checksum_id)
-                    if expected_checksum is None:
-                        continue
+                if f.method.supports_checksum(f):
+                    for checksum_id in CHECKSUM_LIST:
+                        if checksum_id.upper() not in oe.spdx.SPDXPackage.ALLOWED_CHECKSUMS:
+                            continue
 
-                    c = oe.spdx.SPDXChecksum()
-                    c.algorithm = checksum_id.upper()
-                    c.checksumValue = expected_checksum
-                    package.checksums.append(c)
+                        expected_checksum = getattr(f, "%s_expected" % checksum_id)
+                        if expected_checksum is None:
+                            continue
 
-            package.downloadLocation = uri
-            doc.packages.append(package)
-            doc.add_relationship(doc, "DESCRIBES", package)
-            # In the future, we might be able to do more fancy dependencies,
-            # but this should be sufficient for now
-            doc.add_relationship(package, "BUILD_DEPENDENCY_OF", recipe)
+                        c = oe.spdx.SPDXChecksum()
+                        c.algorithm = checksum_id.upper()
+                        c.checksumValue = expected_checksum
+                        package.checksums.append(c)
+
+                package.downloadLocation = uri
+                add_package(package)
 
 python do_create_spdx() {
     from datetime import datetime, timezone
