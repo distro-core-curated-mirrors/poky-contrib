@@ -931,6 +931,7 @@ DESCRIPTION
              btrfs
              squashfs
              erofs
+             f2fs
              swap
 
          --fsoptions: Specifies a free-form string of options to be

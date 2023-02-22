@@ -208,7 +208,7 @@ class Partition():
         Prepare content for a rootfs partition i.e. create a partition
         and fill it from a /rootfs dir.
 
-        Currently handles ext2/3/4, btrfs, vfat and squashfs.
+        Currently handles ext2/3/4, btrfs, vfat, squashfs and f2fs.
         """
 
         rootfs = "%s/rootfs_%s.%s.%s" % (cr_workdir, self.label,
@@ -350,6 +350,36 @@ class Partition():
             (self.fstype, rootfs_size * 1024, rootfs_dir, label_str,
              self.mkfs_extraopts, self.fsuuid, rootfs)
         exec_native_cmd(mkfs_cmd, native_sysroot, pseudo=pseudo)
+
+    def prepare_rootfs_f2fs(self, rootfs, cr_workdir, oe_builddir, rootfs_dir,
+                            native_sysroot, pseudo):
+        """
+        Prepare content for a f2fs rootfs partition.
+        """
+        du_cmd = "du -ks %s" % rootfs_dir
+        out = exec_cmd(du_cmd)
+        actual_rootfs_size = int(out.split()[0])
+
+        min_f2fs_size = 524288
+        rootfs_size = self.get_rootfs_size(actual_rootfs_size)
+        if rootfs_size < min_f2fs_size:
+            rootfs_size = min_f2fs_size
+
+        with open(rootfs, 'w') as sparse:
+            os.ftruncate(sparse.fileno(), rootfs_size * 1024)
+
+        extraopts = self.mkfs_extraopts or "-O extra_attr,compression"
+
+        label_str = ""
+        if self.label:
+            label_str = "-l %s" % self.label
+
+        mkfs_f2fs_cmd = "mkfs.f2fs %s %s %s" % \
+                        (label_str, extraopts, rootfs)
+        exec_native_cmd(mkfs_f2fs_cmd, native_sysroot, pseudo=pseudo)
+
+        sload_f2fs_cmd = "sload.f2fs -f %s %s" % (rootfs_dir, rootfs)
+        exec_native_cmd(sload_f2fs_cmd, native_sysroot, pseudo=pseudo)
 
     def prepare_rootfs_msdos(self, rootfs, cr_workdir, oe_builddir, rootfs_dir,
                              native_sysroot, pseudo):
