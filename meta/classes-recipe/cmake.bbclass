@@ -13,6 +13,7 @@ B = "${WORKDIR}/build"
 # What CMake generator to use.
 # The supported options are "Unix Makefiles" or "Ninja".
 OECMAKE_GENERATOR ?= "Ninja"
+OECMAKE_BUILD_TYPE ?= "RelWithDebInfo"
 
 python() {
     generator = d.getVar("OECMAKE_GENERATOR")
@@ -177,6 +178,7 @@ cmake_do_configure() {
 
 	cmake \
 	  ${OECMAKE_GENERATOR_ARGS} \
+	  -DCMAKE_BUILD_TYPE=${OECMAKE_BUILD_TYPE} \
 	  $oecmake_sitefile \
 	  ${OECMAKE_SOURCEPATH} \
 	  -DCMAKE_INSTALL_PREFIX:PATH=${prefix} \
