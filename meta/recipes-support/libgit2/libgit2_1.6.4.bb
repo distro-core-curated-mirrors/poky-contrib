@@ -14,7 +14,6 @@ inherit cmake
 
 EXTRA_OECMAKE = "\
     -DBUILD_TESTS=OFF \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DREGEX_BACKEND='pcre2' \
 "
 

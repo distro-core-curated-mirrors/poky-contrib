@@ -20,7 +20,6 @@ inherit cmake python3native pkgconfig
 DEPENDS = "spirv-headers spirv-tools glslang"
 
 EXTRA_OECMAKE = " \
-    -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_EXTERNAL=OFF \
     -DSHADERC_SKIP_TESTS=ON \
     -DSHADERC_SKIP_EXAMPLES=ON \
