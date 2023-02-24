@@ -67,6 +67,7 @@ LLVM_TARGETS ?= "AMDGPU;${@get_llvm_host_arch(bb, d)}"
 ARM_INSTRUCTION_SET:armv5 = "arm"
 ARM_INSTRUCTION_SET:armv4t = "arm"
 
+# LLVM restricts the build type
 OECMAKE_BUILD_TYPE = "Release"
 
 EXTRA_OECMAKE += "-DLLVM_ENABLE_ASSERTIONS=OFF \

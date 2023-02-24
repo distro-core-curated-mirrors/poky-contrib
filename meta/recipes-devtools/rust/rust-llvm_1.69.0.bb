@@ -31,6 +31,7 @@ CXXFLAGS:remove = "-g"
 
 LLVM_DIR = "llvm${LLVM_RELEASE}"
 
+# LLVM restricts the build type
 OECMAKE_BUILD_TYPE = "Release"
 
 EXTRA_OECMAKE = " \
