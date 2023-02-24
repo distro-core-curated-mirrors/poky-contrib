@@ -13,7 +13,10 @@ B = "${WORKDIR}/build"
 # What CMake generator to use.
 # The supported options are "Unix Makefiles" or "Ninja".
 OECMAKE_GENERATOR ?= "Ninja"
+
+# need this??
 OECMAKE_BUILD_TYPE ?= "RelWithDebInfo"
+OECMAKE_BUILD_TYPE:class-native = "Release"
 
 python() {
     generator = d.getVar("OECMAKE_GENERATOR")
