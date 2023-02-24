@@ -14,9 +14,7 @@ B = "${WORKDIR}/build"
 # The supported options are "Unix Makefiles" or "Ninja".
 OECMAKE_GENERATOR ?= "Ninja"
 
-# need this??
-OECMAKE_BUILD_TYPE ?= "RelWithDebInfo"
-OECMAKE_BUILD_TYPE:class-native = "Release"
+OECMAKE_BUILD_TYPE ?= "Plain"
 
 python() {
     generator = d.getVar("OECMAKE_GENERATOR")
