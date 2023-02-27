@@ -16,14 +16,14 @@ if [ -z "${SSHAGENT}" -o -z "${GDB}" ]; then
        exit
 fi
 
-useradd openssh-test
+useradd ptest
 
-eval `su -c "${SSHAGENT} -s" openssh-test` > /dev/null
+eval `su -c "${SSHAGENT} -s" ptest` > /dev/null
 r=$?
 if [ $r -ne 0 ]; then
 	echo "FAIL: could not start ssh-agent: exit code $r"
 else
-	su -c "gdb -p ${SSH_AGENT_PID}" openssh-test > /tmp/gdb.out 2>&1 << EOF
+	su -c "gdb -p ${SSH_AGENT_PID}" ptest > /tmp/gdb.out 2>&1 << EOF
 		quit
 EOF
 	r=$?
@@ -41,5 +41,5 @@ EOF
 
 	${SSHAGENT} -k > /dev/null
 fi
-userdel openssh-test
+userdel ptest
 
