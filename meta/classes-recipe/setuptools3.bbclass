@@ -33,6 +33,16 @@ setuptools3_do_install() {
         python_pep517_do_install
 }
 
+python do_sanity_check() {
+    # Python modules shouldn't be installing Eggs, as distro-managed modules should be "bare"
+    pkgName = d.getVar('BPN')
+    rdeps = d.getVar('RDEPENDS_' + pkgName) or ""
+    if ('python-eggs' in rdeps) or ('python3-eggs' in rdeps):
+        bb.warn(pkgName + ' is installing Eggs.')
+}
+
+addtask sanity_check before do_fetch
+
 EXPORT_FUNCTIONS do_configure do_compile do_install
 
 export LDSHARED="${CCLD} -shared"
