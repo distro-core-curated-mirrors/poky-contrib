@@ -591,8 +591,12 @@ class Git(FetchMethod):
 
     def clean(self, ud, d):
         """ clean the git directory """
+        to_remove = [ud.localpath]
+        for mirrortarball in ud.mirrortarballs:
+            fullmirrortarball = os.path.join(d.getVar("DL_DIR"), mirrortarball)
+            to_remove.append(fullmirrortarball)
+            to_remove.append(fullmirrortarball + ".done")
 
-        to_remove = [ud.localpath, ud.fullmirror, ud.fullmirror + ".done"]
         # The localpath is a symlink to clonedir when it is cloned from a
         # mirror, so remove both of them.
         if os.path.islink(ud.localpath):
