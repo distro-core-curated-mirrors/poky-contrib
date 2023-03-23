@@ -182,6 +182,25 @@ class GitSM(Git):
         else:
             self.process_submodules(ud, ud.clonedir, download_submodule, d)
 
+    def clean(self, ud, d):
+        def clean_submodule(ud, url, module, modpath, workdir, d):
+            url += ";bareclone=1;nobranch=1"
+            try:
+                newclean = Fetch([url], d, cache=False)
+                newclean.clean()
+            except Exception as e:
+                logger.error('gitsm: submodule clean failed: %s %s' % (type(e).__name__, str(e)))
+        
+        if ud.shallow and os.path.exists(ud.fullshallow):
+            tmpdir = tempfile.mkdtemp(dir=d.getVar("DL_DIR"))
+            runfetchcmd("tar -xzf %s" % ud.fullshallow, d, workdir=tmpdir)
+            self.process_submodules(ud, tmpdir, clean_submodule, d)
+            shutil.rmtree(tmpdir)
+        else:
+            self.process_submodules(ud, ud.clonedir, clean_submodule, d)        
+
+        Git.clean(self, ud, d)
+
     def unpack(self, ud, destdir, d):
         def unpack_submodules(ud, url, module, modpath, workdir, d):
             url += ";bareclone=1;nobranch=1"
