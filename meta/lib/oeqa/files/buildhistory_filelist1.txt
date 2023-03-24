@@ -9210,5 +9210,4 @@ lrwxrwxrwx root       root               12 ./var/log -> volatile/log
 lrwxrwxrwx root       root                6 ./var/run -> ../run
 drwxr-xr-x root       root             4096 ./var/spool
 drwxrwxr-x root       mail             4096 ./var/spool/mail
-lrwxrwxrwx root       root               12 ./var/tmp -> volatile/tmp
 drwxr-xr-x root       root             4096 ./var/volatile

@@ -2,7 +2,7 @@
 
 cd ./test
 SKIP_SLOW_TESTS=yes ./test_script | sed -u -e '/:[[:space:]]ok/s/^/PASS: /' -e '/:[[:space:]]failed/s/^/FAIL: /' -e '/:[[:space:]]skipped/s/^/SKIP: /'
-rm -rf /var/volatile/tmp/*e2fsprogs*
+rm -rf /tmp/*e2fsprogs*
 rm -f tmp-*
 rm -f *.tmp
 rm -f *.ok
