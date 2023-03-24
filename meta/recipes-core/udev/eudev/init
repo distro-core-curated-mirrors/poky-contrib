@@ -79,10 +79,6 @@ case "$1" in
     }
     [ -e /dev/pts ] || mkdir -m 0755 /dev/pts
     [ -e /dev/shm ] || mkdir -m 1777 /dev/shm
-    # the automount rule for udev needs /tmp directory available, as /tmp is a symlink
-    # to /var/tmp which in turn is a symlink to /var/volatile/tmp, we need to make sure
-    # /var/volatile/tmp directory to be available.
-    mkdir -m 1777 -p /var/volatile/tmp
 
     # make_extra_nodes
     kill_udevd > "/dev/null" 2>&1
