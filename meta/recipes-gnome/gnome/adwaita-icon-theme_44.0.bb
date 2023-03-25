@@ -14,7 +14,7 @@ inherit allarch autotools pkgconfig gettext gtk-icon-cache gnomebase
 
 SRC_URI += " file://0001-Don-t-use-AC_CANONICAL_HOST.patch"
 
-SRC_URI[archive.sha256sum] = "2e3ac77d32a6aa5554155df37e8f0a0dd54fc5a65fd721e88d505f970da32ec6"
+SRC_URI[archive.sha256sum] = "4889c5601bbfecd25d80ba342209d0a936dcf691ee56bd6eca4cde361f1a664c"
 
 DEPENDS += "librsvg-native"
 
