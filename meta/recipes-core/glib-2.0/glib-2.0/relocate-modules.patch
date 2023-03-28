@@ -14,6 +14,9 @@ Signed-off-by: Ross Burton <ross.burton@intel.com>
 Port patch to 2.48
 Signed-off-by: Jussi Kukkonen <jussi.kukkonen@intel.com>
 
+Port patch to 2.75
+Signed-off-by: Markus Volk <f_l_k@t-online.de>
+
 ---
  gio/giomodule.c | 12 +++++++++++-
  1 file changed, 11 insertions(+), 1 deletion(-)
@@ -31,7 +34,7 @@ index f5dbb45..c926e77 100644
  #endif
  #include <glib/gstdio.h>
  
-@@ -1261,7 +1263,15 @@ get_gio_module_dir (void)
+@@ -1270,7 +1272,15 @@
                                       NULL);
        g_free (install_dir);
  #else
@@ -45,6 +48,6 @@ index f5dbb45..c926e77 100644
 +      } else {
 +        module_dir = g_strdup (GIO_MODULE_DIR);
 +      }
- #endif
-     }
- 
+ #ifdef __APPLE__
+ #include "TargetConditionals.h"
+ #if TARGET_OS_OSX
