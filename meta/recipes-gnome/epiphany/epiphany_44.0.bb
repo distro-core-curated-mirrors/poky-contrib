@@ -7,20 +7,26 @@ LICENSE = "GPL-3.0-or-later"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504"
 
 DEPENDS = " \
-          webkitgtk \
-          gcr3 \
-          gsettings-desktop-schemas \
-          nettle \
-          json-glib \
-          libarchive \
-          libdazzle \
-          libhandy \
-          libportal \
-          libsoup \
-          glib-2.0-native \
-          coreutils-native \
-          desktop-file-utils-native \
-          "
+	coreutils-native \
+	desktop-file-utils-native \
+	gcr \
+	glib-2.0-native \
+	gsettings-desktop-schemas \
+	gstreamer1.0 \
+	iso-codes \
+	json-glib \
+	libadwaita \
+	libarchive \
+	libdazzle \
+	libhandy \
+	libportal \
+	libsecret \
+	libsoup \
+	libxml2 \
+	nettle \
+	sqlite3 \
+	webkitgtk \
+"
 
 GNOMEBASEBUILDCLASS = "meson"
 inherit gnomebase gsettings features_check gettext mime-xdg gtk-icon-cache
@@ -31,7 +37,7 @@ SRC_URI = "${GNOME_MIRROR}/${GNOMEBN}/${@oe.utils.trim_version("${PV}", 1)}/${GN
            file://migrator.patch \
            file://distributor.patch \
            "
-SRC_URI[archive.sha256sum] = "e86ead27cb9982815150664de3bf20faf375f77b8065b02b31180c65b6bbebb4"
+SRC_URI[archive.sha256sum] = "aabdc9de80c409073676e00e15ba97187715e4b84bc776fe86db86d0f8140bb1"
 
 # Developer mode enables debugging
 PACKAGECONFIG[developer-mode] = "-Ddeveloper_mode=true,-Ddeveloper_mode=false"
