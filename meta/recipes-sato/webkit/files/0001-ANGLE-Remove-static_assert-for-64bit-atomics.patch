@@ -1,0 +1,33 @@
+From 03d5f84e7bb292f5cf7120af91e979fc87b36e04 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Tue, 28 Mar 2023 14:38:17 -0700
+Subject: [PATCH] ANGLE: Remove static_assert for 64bit atomics
+
+This will make sure that it can be built on 32bit platforms e.g.
+mips32/ppc32
+
+This partially reverts https://chromium-review.googlesource.com/c/angle/angle/+/4205892
+the suggestion to remove the assertion is from the author of the patch
+itself
+
+Upstream-Status: Inappropriate [32-bit specific]
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ Source/ThirdParty/ANGLE/src/libANGLE/renderer/serial_utils.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/Source/ThirdParty/ANGLE/src/libANGLE/renderer/serial_utils.h b/Source/ThirdParty/ANGLE/src/libANGLE/renderer/serial_utils.h
+index 51ad1af9..9412c805 100644
+--- a/Source/ThirdParty/ANGLE/src/libANGLE/renderer/serial_utils.h
++++ b/Source/ThirdParty/ANGLE/src/libANGLE/renderer/serial_utils.h
+@@ -129,7 +129,6 @@ class AtomicQueueSerial final
+   private:
+     static constexpr uint64_t kInvalid = 0;
+     std::atomic<uint64_t> mValue       = kInvalid;
+-    static_assert(decltype(mValue)::is_always_lock_free, "Must always be lock free");
+ };
+ 
+ // Used as default/initial serial
+-- 
+2.40.0
+
