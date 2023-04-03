@@ -9,7 +9,7 @@ DEPENDS = "e2fsprogs-native"
 
 PACKAGECONFIG ?= "zlib bz2 xz zstd"
 
-PACKAGECONFIG:append:class-target = "\
+PACKAGECONFIG:append = "\
 	${@bb.utils.filter('DISTRO_FEATURES', 'acl xattr', d)} \
 "
 
