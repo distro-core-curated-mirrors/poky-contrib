@@ -166,6 +166,8 @@ EXTRA_OEMESON += " \
     -Dd3d12=disabled \
 "
 
+EXTRA_OEMESON += "--auto-features=auto"
+
 export OPENCV_PREFIX = "${STAGING_DIR_TARGET}${prefix}"
 
 ARM_INSTRUCTION_SET:armv4 = "arm"
