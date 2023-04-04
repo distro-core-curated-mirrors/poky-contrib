@@ -1,0 +1,34 @@
+Upstream-Status: Submitted [https://github.com/WebKit/WebKit/pull/11913]
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+
+From de30f1a1caf81902d254e046e382f9cf9cd62c58 Mon Sep 17 00:00:00 2001
+From: Kai Kang <kai.kang@windriver.com>
+Date: Fri, 24 Mar 2023 17:58:29 +0800
+Subject: [PATCH] FindLibGcrypt.cmake: check PC_GCRYPT_FOUND
+
+After `pkg_check_modules(PC_GCRYPT QUIET libgcrypt)` in
+FindLibGcrypt.cmake, PC_GCRYPT_FOUND will be set but PC_GCRYPT is kept
+empty. So check PC_GCRYPT_FOUND instead.
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+---
+ Source/cmake/FindLibGcrypt.cmake | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Source/cmake/FindLibGcrypt.cmake b/Source/cmake/FindLibGcrypt.cmake
+index 8bee72963902..2e84cfc4e9b1 100644
+--- a/Source/cmake/FindLibGcrypt.cmake
++++ b/Source/cmake/FindLibGcrypt.cmake
+@@ -49,7 +49,7 @@ if (PkgConfig_FOUND)
+     set(LibGcrypt_VERSION ${PC_GCRYPT_VERSION})
+ endif ()
+ 
+-if (LIBGCRYPTCONFIG_SCRIPT AND NOT PC_GCRYPT)
++if (LIBGCRYPTCONFIG_SCRIPT AND NOT PC_GCRYPT_FOUND)
+     execute_process(
+         COMMAND "${LIBGCRYPTCONFIG_SCRIPT}" --prefix
+         RESULT_VARIABLE CONFIGSCRIPT_RESULT
+-- 
+2.34.1
+
