@@ -13,7 +13,7 @@ are already present in libc_nonshared library therefore
 we do not need any library helper on glibc based systems
 but musl needs the libssp_noshared from gcc
 
-Upstream-Status: Pending
+Upstream-Status: Submitted [https://gcc.gnu.org/pipermail/gcc-patches/2023-April/615317.html]
 
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---

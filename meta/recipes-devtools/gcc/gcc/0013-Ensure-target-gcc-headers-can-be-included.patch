@@ -13,7 +13,7 @@ command line in order to resolve this.
 
 Extend target gcc headers search to musl too
 
-Upstream-Status: Pending
+Upstream-Status: Inappropriate [embedded specific]
 
 Signed-off-by: Paul Eggleton <paul.eggleton@linux.intel.com>
 Signed-off-by: Khem Raj <raj.khem@gmail.com>

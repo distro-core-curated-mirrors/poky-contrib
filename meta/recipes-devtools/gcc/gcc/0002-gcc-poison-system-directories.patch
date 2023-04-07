@@ -11,7 +11,8 @@ aborted.
 Instead, we add the two missing items to the current scan.  If the user
 wants this to be a failure, they can add "-Werror=poison-system-directories".
 
-Upstream-Status: Pending
+Upstream-Status: Inappropriate [OE configuration]
+
 Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---

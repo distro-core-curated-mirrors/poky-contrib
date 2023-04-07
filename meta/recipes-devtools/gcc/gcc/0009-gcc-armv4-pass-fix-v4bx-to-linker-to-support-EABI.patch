@@ -13,7 +13,7 @@ We might want to send it upstream.
 
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
-Upstream-Status: Pending
+Upstream-Status: Submitted [https://gcc.gnu.org/pipermail/gcc-patches/2023-April/615319.html]
 ---
  gcc/config/arm/linux-eabi.h | 6 +++++-
  1 file changed, 5 insertions(+), 1 deletion(-)

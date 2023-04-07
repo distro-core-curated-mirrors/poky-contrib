@@ -13,7 +13,7 @@ ChangeLog:
     * Makefile.in: Regenerate.
     * Makefile.tpl: Add missing CXXFLAGS_FOR_BUILD overrides
 
-Upstream-Status: Pending [should be submittable]
+Upstream-Status: Submitted [https://gcc.gnu.org/pipermail/gcc-patches/2023-February/612560.html]
 
 Signed-off-by: Richard Purdie <richard.purdie@linuxfoundation.org>
 Signed-off-by: Khem Raj <raj.khem@gmail.com>

@@ -9,7 +9,7 @@ gcc-cross-intermediate, gcc-cross, gcc-runtime, and also the sdk build.
 
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
-Upstream-Status: Pending
+Upstream-Status: Inappropriate [embedded specific]
 
 While compiling gcc-crosssdk-initial-x86_64 on some host, there is
 occasionally failure that test the existance of default.h doesn't
