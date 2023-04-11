@@ -206,6 +206,9 @@ class QemuTarget(BaseTarget):
     def run_serial(self, command, timeout=60):
         return self.runner.run_serial(command, timeout=timeout)
 
+    def run_serial_socket(self, command, timeout=60):
+        return self.runner.run_serial_socket(command, timeout=timeout)
+
 
 class SimpleRemoteTarget(BaseTarget):
 

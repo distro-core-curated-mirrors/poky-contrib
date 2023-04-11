@@ -637,6 +637,7 @@ class QemuRunner:
                 return self.qmp.cmd(command)
 
     def run_serial(self, command, raw=False, timeout=60):
+        # Deprecated
         # Returns (status, output) where status is 1 on success and 0 on error
 
         # We assume target system have echo to get command status
@@ -686,6 +687,62 @@ class QemuRunner:
                     data = data[:index]
                 if (status_cmd == "0"):
                     status = 1
+        return (status, str(data))
+
+    def run_serial_socket(self, command, raw=False, timeout=60):
+        # Returns (status, output) where status is 0 on success and a negative value on error.
+
+        # We assume target system have echo to get command status
+        if not raw:
+            command = "%s; echo $?\n" % command
+
+        data = ''
+        status = 0
+        self.server_socket.sendall(command.encode('utf-8'))
+        start = time.time()
+        end = start + timeout
+        while True:
+            now = time.time()
+            if now >= end:
+                data += "<<< run_serial_socket(): command timed out after %d seconds without output >>>\r\n\r\n" % timeout
+                break
+            try:
+                sread, _, _ = select.select([self.server_socket],[],[], end - now)
+            except InterruptedError:
+                continue
+            if sread:
+                # try to avoid reading single character at a time
+                time.sleep(0.1)
+                answer = self.server_socket.recv(1024)
+                if answer:
+                    data += answer.decode('utf-8')
+                    # Search the prompt to stop
+                    if re.search(self.boot_patterns['search_cmd_finished'], data):
+                        break
+                else:
+                    if self.canexit:
+                        return (1, "")
+                    raise Exception("No data on serial console socket, connection closed?")
+
+        if not data:
+            raise Exception('serial run failed: no data')
+
+        if raw:
+            status = 0
+        else:
+            # Remove first line (command line) and last line (prompt)
+            data = data[data.find('$?\r\n')+4:data.rfind('\r\n')]
+            index = data.rfind('\r\n')
+            if index == -1:
+                data = ""
+                raise Exception('serial run failed: no result')
+            else:
+                status_cmd = data[index+2:]
+                data = data[:index]
+                try:
+                    status = int(status_cmd)
+                except ValueError as e:
+                    raise Exception('Could not convert to integer: {}'.format(str(e)))
         return (status, str(data))
 
 
