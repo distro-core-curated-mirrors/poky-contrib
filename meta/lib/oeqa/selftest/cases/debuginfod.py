@@ -99,7 +99,8 @@ CORE_IMAGE_EXTRA_INSTALL += "elfutils"
                     % (qemu.server_ip, port)
                 )
                 self.logger.info(f"Starting client {cmd}")
-                status, output = qemu.run_serial(cmd)
+                status, output = qemu.run_serial_socket(cmd)
+                self.assertEqual(0, status)
                 # This should be more comprehensive
                 self.assertIn("/.cache/debuginfod_client/", output)
         finally:
