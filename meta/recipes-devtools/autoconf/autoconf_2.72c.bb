@@ -19,6 +19,15 @@ SRC_URI = " \
            file://preferbash.patch \
            file://autotest-automake-result-format.patch \
            file://man-host-perl.patch \
+           file://0004-Cater-to-programs-misusing-AC_EGREP_HEADER.patch \
+           file://0007-Support-underquoted-callers-better.patch \
+           file://0001-AC_XENIX_DIR-Rewrite-using-AC_CANONICAL_HOST.patch \
+           file://0002-AC_TYPE_UID_T-Rewrite-using-AC_CHECK_TYPE.patch \
+           file://0003-Make-AC_PROG_GCC_TRADITIONAL-a-compatibility-alias-f.patch \
+           file://0004-Overhaul-AC_TYPE_GETGROUPS-and-AC_FUNC_GETGROUPS.patch \
+           file://0005-Fold-AC_C_STRINGIZE-into-AC_PROG_CC.patch \
+           file://0006-Remove-the-last-few-internal-uses-of-AC_EGREP_CPP.patch \
+           file://0007-Support-circa-early-2022-Gnulib.patch \
            "
 SRC_URI:append:class-native = " file://no-man.patch"
 
