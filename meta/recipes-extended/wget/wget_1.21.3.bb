@@ -1,4 +1,5 @@
 SRC_URI = "${GNU_MIRROR}/wget/wget-${PV}.tar.gz \
+           file://autoconf-2.73.patch \
            file://0002-improve-reproducibility.patch \
           "
 

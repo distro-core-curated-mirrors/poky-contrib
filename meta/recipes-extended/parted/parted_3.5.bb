@@ -8,6 +8,7 @@ DEPENDS = "ncurses util-linux virtual/libiconv"
 
 SRC_URI = "${GNU_MIRROR}/parted/parted-${PV}.tar.xz \
            file://fix-doc-mandir.patch \
+           file://autoconf-2.73.patch \
            file://run-ptest \
            "
 
