@@ -923,7 +923,7 @@ sstate_unpack_package () {
 	[ ! -e ${SSTATE_PKG}.siginfo ] || touch --no-dereference ${SSTATE_PKG}.siginfo 2>/dev/null || true
 }
 
-BB_HASHCHECK_FUNCTION = "sstate_checkhashes"
+BB_HASHCHECK_FUNCTION ?= "sstate_checkhashes"
 
 def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, **kwargs):
     import itertools
