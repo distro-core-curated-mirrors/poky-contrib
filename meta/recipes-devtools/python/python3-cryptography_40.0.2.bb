@@ -9,7 +9,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=bf405a8056a6647e7d077b0e7bc36aba \
                    "
 LDSHARED += "-pthread"
 
-SRC_URI[sha256sum] = "bc5b871e977c8ee5a1bbc42fa8d19bcc08baf0c51cbf1586b0e87a2694dde42f"
+SRC_URI[sha256sum] = "c33c0d32b8594fa647d2e01dbccc303478e16fdd7cf98652d5b3ed11aa5e5c99"
 
 SRC_URI += "\
     file://0002-Cargo.toml-edition-2018-2021.patch \
@@ -20,7 +20,7 @@ SRC_URI += "\
 
 require ${BPN}-crates.inc
 
-inherit pypi python_setuptools3_rust cargo-update-recipe-crates
+inherit pypi python_setuptools3_rust cargo-update-recipe-crates pkgconfig
 
 DEPENDS += " \
     ${PYTHON_PN}-cffi-native \

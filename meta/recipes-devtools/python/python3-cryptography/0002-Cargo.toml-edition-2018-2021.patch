@@ -1,28 +1,32 @@
-From 4b73298b214a5b69ea6edf3c2e21dd82b2b29708 Mon Sep 17 00:00:00 2001
+From 20bc041ee2c0c7ff28aab3b8a0e486f24ac409ed Mon Sep 17 00:00:00 2001
 From: Tim Orling <tim.orling@konsulko.com>
-Date: Fri, 14 Jan 2022 22:34:59 -0800
+Date: Sat, 22 Apr 2023 11:22:32 -0700
 Subject: [PATCH 2/2] Cargo.toml: edition 2018 -> 2021
 
 Upstream-Status: Pending
 
 Signed-off-by: Tim Orling <tim.orling@konsulko.com>
 ---
- src/rust/Cargo.toml | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ src/rust/Cargo.toml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/rust/Cargo.toml b/src/rust/Cargo.toml
-index 174eaa80..7ad053d9 100644
+index 072f07bd4..5e47539b0 100644
 --- a/src/rust/Cargo.toml
 +++ b/src/rust/Cargo.toml
-@@ -2,7 +2,7 @@
+@@ -2,10 +2,10 @@
  name = "cryptography-rust"
  version = "0.1.0"
  authors = ["The cryptography developers <cryptography-dev@python.org>"]
 -edition = "2018"
 +edition = "2021"
  publish = false
+ # This specifies the MSRV
+-rust-version = "1.48.0"
++rust-version = "1.56.0"
  
  [dependencies]
+ once_cell = "1"
 -- 
-2.30.2
+2.34.1
 

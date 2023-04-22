@@ -30,11 +30,11 @@ index 4d58129..b011fca 100644
  target-version = ["py36"]
  
  [tool.pytest.ini_options]
--addopts = "-r s --capture=no --strict-markers --benchmark-disable"
-+addopts = "-r s --capture=no --strict-markers"
+-addopts = "-r s --capture=no --strict-markers --benchmark-disable --no-subtests-shortletter"
++addopts = "-r s --capture=no --strict-markers --no-subtests-shortletter"
+ console_output_style = "progress-even-when-capture-no"
  markers = [
      "skip_fips: this test is not executed in FIPS mode",
-     "supported: parametrized test requiring only_if and skip_message",
 -- 
 2.25.1
 
