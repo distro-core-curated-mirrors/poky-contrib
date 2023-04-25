@@ -24,9 +24,15 @@ inherit pypi python_setuptools3_rust cargo-update-recipe-crates pkgconfig
 
 DEPENDS += " \
     ${PYTHON_PN}-cffi-native \
+    openssl-native \
 "
 
+export OPENSSL_NO_VENDOR = "1"
+export OPENSSL_DIR = "${STAGING_DIR_HOST}"
+export X86_64_POKY_LINUX_GNU_OPENSSL_DIR = "${STAGING_DIR_TARGET}/usr"
+
 RDEPENDS:${PN} += " \
+    openssl \
     ${PYTHON_PN}-cffi \
 "
 
