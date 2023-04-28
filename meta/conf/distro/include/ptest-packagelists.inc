@@ -117,6 +117,10 @@ PTESTS_SLOW:append:libc-musl = " libc-test"
 PTESTS_SLOW:remove:x86 = "valgrind"
 PTESTS_PROBLEMS:append:x86 = " valgrind"
 
+# https://github.com/strace/strace/issues/250
+PTESTS_SLOW:remove:x86 = "strace"
+PTESTS_PROBLEMS:append:x86 = " strace"
+
 #    ruby \ # Timeout
 #    rt-tests \ # Needs to be checked whether it runs at all
 #    bash \ # Test outcomes are non-deterministic by design
