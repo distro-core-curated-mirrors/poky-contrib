@@ -121,6 +121,12 @@ PTESTS_PROBLEMS:append:x86 = " valgrind"
 PTESTS_SLOW:remove:x86 = "strace"
 PTESTS_PROBLEMS:append:x86 = " strace"
 
+# Needs support for 64 bit syscall versions
+# which was added in http://git.lttng.org/?p=lttng-modules.git;a=commitdiff;h=86040c9e2ff8a79633db34220e32bdda536b00e6
+# and should show up in lttng-modules 2.14.x
+PTESTS_SLOW:remove:x86 = "lttng-tools"
+PTESTS_PROBLEMS:append:x86 = " lttng-tools"
+
 #    ruby \ # Timeout
 #    rt-tests \ # Needs to be checked whether it runs at all
 #    bash \ # Test outcomes are non-deterministic by design
