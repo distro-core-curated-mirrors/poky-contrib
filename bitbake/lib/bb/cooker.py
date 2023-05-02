@@ -407,7 +407,6 @@ You can also remove the BB_HASHSERVE_UPSTREAM setting, but this may result in si
             self.collections[mc] = CookerCollectFiles(self.bbfile_config_priorities, mc)
 
         self._parsecache_set(False)
-        bb.warn("Parsing complete")
 
     def setupEventLog(self, eventlog):
         if self.eventlog and self.eventlog[0] != eventlog:
