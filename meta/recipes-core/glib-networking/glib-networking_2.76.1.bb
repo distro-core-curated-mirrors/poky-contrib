@@ -16,7 +16,7 @@ DEPENDS = "glib-2.0-native glib-2.0"
 
 SRC_URI[archive.sha256sum] = "5c698a9994dde51efdfb1026a56698a221d6250e89dc50ebcddda7b81480a42b"
 
-PACKAGECONFIG ??= "openssl environment ${@bb.utils.contains('PTEST_ENABLED', '1', 'tests', '', d)}"
+PACKAGECONFIG ??= "gnutls environment ${@bb.utils.contains('PTEST_ENABLED', '1', 'tests', '', d)}"
 
 PACKAGECONFIG[gnutls] = "-Dgnutls=enabled,-Dgnutls=disabled,gnutls"
 PACKAGECONFIG[openssl] = "-Dopenssl=enabled,-Dopenssl=disabled,openssl"
