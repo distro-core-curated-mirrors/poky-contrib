@@ -151,12 +151,12 @@ class BitbakeLayers(OESelftestTestCase):
         self.validate_layersjson(jsonfile)
 
         # The revision-under-test may not necessarily be available on the remote server,
-        # so replace it with a revision that has a yocto-4.0 tag.
+        # so replace it with a revision that has a yocto-4.1 tag.
         import json
         with open(jsonfile) as f:
             data = json.load(f)
         for s in data['sources']:
-            data['sources'][s]['git-remote']['rev'] = '00cfdde791a0176c134f31e5a09eff725e75b905'
+            data['sources'][s]['git-remote']['rev'] = '5200799866b92259e855051112520006e1aaaac0'
         with open(jsonfile, 'w') as f:
             json.dump(data, f)
 
@@ -164,3 +164,22 @@ class BitbakeLayers(OESelftestTestCase):
         result = runCmd('{}/setup-layers --destdir {}'.format(self.testlayer_path, testcheckoutdir))
         layers_json = os.path.join(testcheckoutdir, ".oe-layers.json")
         self.assertTrue(os.path.exists(layers_json), "File {} not found in test layer checkout".format(layers_json))
+
+        # As setup-layers checkout out an old revision of poky, there is no setup-build symlink,
+        # and we need to run oe-setup-build directly from the current poky tree under test
+        oe_setup_build = os.path.join(get_bb_var('COREBASE'), 'scripts/oe-setup-build')
+        oe_setup_build_l = os.path.join(testcheckoutdir, 'setup-build')
+        os.symlink(oe_setup_build,oe_setup_build_l)
+
+        cmd = '{} list-config-templates --layerlist {}'.format(oe_setup_build_l, layers_json)
+        result = runCmd(cmd)
+        cond = "setup-build setup-build-env -c " in result.output and "conf/templates/default" in result.output
+        self.assertTrue(cond, "Incorrect output from {}: {}".format(cmd, result.output))
+
+        # rather than hardcode the build setup cmdline here, let's actually run what the tool suggests to the user
+        cmd = None
+        for l in result.output.splitlines():
+            if "setup-build setup-build-env -c " in l:
+                cmd = l + " --no-shell"
+        self.assertIsNotNone(cmd, "Could not find the command to set up a build in the output: {}".format(result.output))
+        result = runCmd(cmd)
