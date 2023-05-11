@@ -134,6 +134,15 @@ do_prepare_config () {
 	fi
 }
 
+do_argh () {
+	for F in ${@" ".join(find_cfgs(d))}; do
+		bbwarn $F
+		test -f $F || bberror "Cannot find $F"
+	done
+}
+do_argh[nostamp] = "1"
+addtask argh after do_patch
+
 do_configure () {
 	set -x
 	do_prepare_config
