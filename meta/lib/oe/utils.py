@@ -528,3 +528,16 @@ def directory_size(root, blocksize=4096):
         total += sum(roundup(getsize(os.path.join(root, name))) for name in files)
         total += roundup(getsize(root))
     return total
+
+def src_uri_matches(d, pattern):
+    """
+    List all of the entries in SRC_URI whose basename matches a simple glob.
+    Will respect downloadfilename in http: URLs.
+
+    Note that this currently returns paths to the source layer (file:) or DL_DIR
+    (other schemes), but will be fixed in the future to return paths to WORKDIR.
+    """
+    import fnmatch, os.path
+
+    src_uris = bb.fetch2.Fetch([], d)
+    return [n for n in src_uris.localpaths() if fnmatch.fnmatch(os.path.basename(n), pattern)]
