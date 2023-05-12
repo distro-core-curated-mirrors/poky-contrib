@@ -12,12 +12,21 @@ python () {
             d.appendVar("PACKAGES", " ${KERNEL_PACKAGE_NAME}-image-zimage-bundle")
 }
 
-FILES:${KERNEL_PACKAGE_NAME}-devicetree = " \
-    /${KERNEL_DTBDEST}/*.dtb \
-    /${KERNEL_DTBDEST}/*.dtbo \
-    /${KERNEL_DTBDEST}/*/*.dtb \
-    /${KERNEL_DTBDEST}/*/*.dtbo \
-"
+# recursivly search for devicetree files
+def find_device_trees(d):
+    import glob
+    import os
+
+    file_paths = []
+    dest_dir = d.getVar('D')
+    full_dtb_dir = dest_dir + '/' + d.getVar('KERNEL_DTBDEST')
+
+    for file in glob.glob(full_dtb_dir + '/**/*.dtb*', recursive=True):
+        file_paths.append('/' + os.path.relpath(file, dest_dir))
+
+    return ' '.join(file_paths)
+
+FILES:${KERNEL_PACKAGE_NAME}-devicetree = "${@find_device_trees(d)}"
 FILES:${KERNEL_PACKAGE_NAME}-image-zimage-bundle = "/${KERNEL_IMAGEDEST}/zImage-*.dtb.bin"
 
 # Generate kernel+devicetree bundle
