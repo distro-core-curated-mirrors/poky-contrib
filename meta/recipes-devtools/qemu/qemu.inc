@@ -164,6 +164,10 @@ do_install:append() {
 PACKAGECONFIG:remove:darwin = "kvm virglrenderer epoxy gtk+"
 PACKAGECONFIG:remove:mingw32 = "kvm virglrenderer epoxy gtk+"
 
+PACKAGECONFIG[all-targets] = "--target-list=${@get_qemu_target_list(d)},,pixman"
+PACKAGECONFIG[system-targets] = "--target-list=${@get_qemu_system_target_list(d)},,pixman"
+PACKAGECONFIG[user-targets] = "--target-list=${@get_qemu_usermode_target_list(d)}"
+
 PACKAGECONFIG[sdl] = "--enable-sdl,--disable-sdl,libsdl2"
 PACKAGECONFIG[png] = "--enable-png,--disable-png,libpng"
 PACKAGECONFIG[virtfs] = "--enable-virtfs --enable-attr --enable-cap-ng,--disable-virtfs,libcap-ng attr,"

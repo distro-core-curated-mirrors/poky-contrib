@@ -6,6 +6,6 @@ require qemu.inc
 
 inherit native
 
-EXTRA_OECONF:append = " --target-list=${@get_qemu_usermode_target_list(d)} --disable-tools --disable-install-blobs --disable-guest-agent"
+EXTRA_OECONF:append = " --disable-tools --disable-install-blobs --disable-guest-agent"
 
-PACKAGECONFIG ??= "pie"
+PACKAGECONFIG ??= "user-targets pie"
