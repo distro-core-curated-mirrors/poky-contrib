@@ -6,8 +6,6 @@ CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'x11', '', '-DEGL_NO_X11=1', 
 
 RDEPENDS:${PN}-common:class-target += "bash"
 
-EXTRA_OECONF:append:class-target:mipsarcho32 = "${@bb.utils.contains('BBEXTENDCURR', 'multilib', ' --disable-capstone', '', d)}"
-
 PACKAGECONFIG ??= " \
     all-targets \
     fdt sdl kvm pie slirp tpm keyring tools guest-agent \
