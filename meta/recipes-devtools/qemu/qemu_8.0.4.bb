@@ -10,7 +10,7 @@ EXTRA_OECONF:append:class-target:mipsarcho32 = "${@bb.utils.contains('BBEXTENDCU
 
 PACKAGECONFIG ??= " \
     all-targets \
-    fdt sdl kvm pie slirp tpm keyring \
+    fdt sdl kvm pie slirp tpm keyring tools guest-agent \
     ${@bb.utils.filter('DISTRO_FEATURES', 'alsa xen', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'opengl', 'virglrenderer epoxy', '', d)} \
     ${@bb.utils.filter('DISTRO_FEATURES', 'seccomp', d)} \

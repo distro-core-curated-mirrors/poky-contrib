@@ -230,6 +230,8 @@ PACKAGECONFIG[jack] = "--enable-jack,--disable-jack,jack,"
 PACKAGECONFIG[debuginfo] = "--enable-libdw,--disable-libdw,elfutils"
 PACKAGECONFIG[tpm] = "--enable-tpm,--disable-tpm"
 PACKAGECONFIG[keyring] = "--enable-keyring,--disable-keyring"
+PACKAGECONFIG[tools] = "--enable-tools,--disable-tools,pixman"
+PACKAGECONFIG[guest-agent] = "--enable-guest-agent,--disable-guest-agent"
 
 INSANE_SKIP:${PN}-common = "arch"
 
@@ -275,4 +277,5 @@ INITSCRIPT_NAME:${PN}-guest-agent = "qemu-guest-agent"
 INITSCRIPT_PARAMS:${PN}-guest-agent = "defaults"
 
 SYSTEMD_PACKAGES = "${PN}-guest-agent"
+# TODO respect PACKAGECONFIG
 SYSTEMD_SERVICE:${PN}-guest-agent = "qemu-guest-agent.service"
