@@ -11,7 +11,7 @@ inherit native
 # and avoid file clashes
 DEPENDS += "qemu-native"
 
-PACKAGECONFIG ??= "system-targets fdt alsa kvm pie slirp \
+PACKAGECONFIG ??= "system-targets fdt alsa kvm pie slirp keyring tpm \
     ${@bb.utils.contains('DISTRO_FEATURES', 'opengl', 'virglrenderer epoxy', '', d)} \
 "
 
