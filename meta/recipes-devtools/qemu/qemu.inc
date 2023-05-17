@@ -110,6 +110,7 @@ EXTRA_OECONF = " \
     --with-git=/bin/false \
     --with-git-submodules=ignore \
     --meson=meson \
+    --without-default-features \
     ${PACKAGECONFIG_CONFARGS} \
     "
 
