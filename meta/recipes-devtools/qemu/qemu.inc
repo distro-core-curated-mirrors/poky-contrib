@@ -51,6 +51,7 @@ CVE_STATUS[CVE-2023-0664] = "not-applicable-platform: Issue only applies on Wind
 
 COMPATIBLE_HOST:mipsarchn32 = "null"
 COMPATIBLE_HOST:mipsarchn64 = "null"
+COMPATIBLE_HOST:powerpc = "null"
 COMPATIBLE_HOST:riscv32 = "null"
 
 DEPENDS = "meson-native ninja-native"

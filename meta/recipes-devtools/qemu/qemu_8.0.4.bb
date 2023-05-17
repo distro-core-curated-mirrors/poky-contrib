@@ -15,6 +15,3 @@ PACKAGECONFIG ??= " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'opengl', 'virglrenderer epoxy', '', d)} \
     ${@bb.utils.filter('DISTRO_FEATURES', 'seccomp', d)} \
 "
-
-# ppc32 hosts are no longer supported in qemu
-COMPATIBLE_HOST:powerpc = "null"
