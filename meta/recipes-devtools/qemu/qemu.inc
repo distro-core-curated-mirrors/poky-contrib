@@ -234,6 +234,7 @@ PACKAGECONFIG[tpm] = "--enable-tpm,--disable-tpm"
 PACKAGECONFIG[keyring] = "--enable-keyring,--disable-keyring"
 PACKAGECONFIG[tools] = "--enable-tools,--disable-tools,pixman"
 PACKAGECONFIG[guest-agent] = "--enable-guest-agent,--disable-guest-agent"
+PACKAGECONFIG[firmware] = "--enable-install-blobs,--disable-install-blobs"
 
 INSANE_SKIP:${PN}-common = "arch"
 
