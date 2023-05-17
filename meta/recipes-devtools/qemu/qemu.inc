@@ -6,6 +6,8 @@ a variety of guest operating systems"
 HOMEPAGE = "http://qemu.org"
 LICENSE = "GPL-2.0-only & LGPL-2.1-only"
 
+DEPENDS = "zlib-native ninja-native meson-native"
+
 RDEPENDS:${PN}-ptest = "bash"
 
 require qemu-targets.inc
@@ -222,6 +224,8 @@ PACKAGECONFIG[jack] = "--enable-jack,--disable-jack,jack,"
 PACKAGECONFIG[debuginfo] = "--enable-libdw,--disable-libdw,elfutils"
 PACKAGECONFIG[tpm] = "--enable-tpm,--disable-tpm"
 PACKAGECONFIG[keyring] = "--enable-keyring,--disable-keyring"
+PACKAGECONFIG[guest-agent] = "--enable-guest-agent,--disable-guest-agent"
+PACKAGECONFIG[tools] = "--enable-tools,--disable-tools,pixman"
 
 INSANE_SKIP:${PN}-common = "arch"
 
