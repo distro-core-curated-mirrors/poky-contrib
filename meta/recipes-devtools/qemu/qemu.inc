@@ -236,6 +236,7 @@ PACKAGECONFIG[keyring] = "--enable-keyring,--disable-keyring"
 PACKAGECONFIG[tools] = "--enable-tools,--disable-tools,pixman"
 PACKAGECONFIG[guest-agent] = "--enable-guest-agent,--disable-guest-agent"
 PACKAGECONFIG[firmware] = "--enable-install-blobs,--disable-install-blobs"
+PACKAGECONFIG[pam] = "--enable-auth-pam,--disable-auth-pam,libpam"
 
 INSANE_SKIP:${PN}-common = "arch"
 
