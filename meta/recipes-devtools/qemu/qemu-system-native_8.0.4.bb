@@ -2,7 +2,9 @@ BPN = "qemu"
 
 inherit python3-dir
 
-require qemu-native.inc
+require qemu.inc
+
+inherit native
 
 # As some of the files installed by qemu-native and qemu-system-native
 # are the same, we depend on qemu-native to get the full installation set
