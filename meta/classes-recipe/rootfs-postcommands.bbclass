@@ -386,7 +386,8 @@ python write_image_test_data() {
                 os.remove(testdata_link)
             os.symlink(os.path.basename(testdata_name), testdata_link)
 }
-write_image_test_data[vardepsexclude] += "TOPDIR"
+write_image_test_data[vardeps] += "${@' '.join(oe.data.exportkeys(d))}"
+write_image_test_data[vardepsexclude] += "TOPDIR DATETIME BUILDNAME ${BB_HASHCONFIG_IGNORE_VARS}"
 
 # Check for unsatisfied recommendations (RRECOMMENDS)
 python rootfs_log_check_recommends() {

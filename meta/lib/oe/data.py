@@ -23,8 +23,7 @@ def typed_value(key, d):
     except (TypeError, ValueError) as exc:
         bb.msg.fatal("Data", "%s: %s" % (key, str(exc)))
 
-def export2json(d, json_file, expand=True, searchString="",replaceString=""):
-    data2export = {}
+def exportkeys(d):
     keys2export = []
 
     for key in d.keys():
@@ -40,6 +39,12 @@ def export2json(d, json_file, expand=True, searchString="",replaceString=""):
             continue
 
         keys2export.append(key)
+
+    return keys2export
+
+def export2json(d, json_file, expand=True, searchString="",replaceString=""):
+    data2export = {}
+    keys2export = exportkeys(d)
 
     for key in keys2export:
         try:

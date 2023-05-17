@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+import json
 import os
 import oe
 import unittest
@@ -95,3 +96,21 @@ class ShadowUtilsTidyFiles(OESelftestTestCase):
                 unsorted.append(file)
         if (unsorted):
             raise Exception("The following files were not sorted by ID as expected: %s" % unsorted)
+
+
+class TestDataTests(OESelftestTestCase):
+    def test_vardeps(self):
+        """
+        Test that variables changes are reflected in testdata.json
+        """
+        test_image = "core-image-minimal"
+        self.write_config('TEST_VARIABLE = "VALUE1"')
+        bitbake(test_image)
+        self.write_config('TEST_VARIABLE = "VALUE2"')
+        bitbake(test_image)
+
+        vars = get_bb_vars(('DEPLOY_DIR_IMAGE', 'IMAGE_LINK_NAME'), test_image)
+        testdata_json = "%s/%s.testdata.json" % (vars['DEPLOY_DIR_IMAGE'], vars['IMAGE_LINK_NAME'])
+        with open(testdata_json, 'r') as tf:
+            testdata_vars = json.load(tf)
+        self.assertEqual(testdata_vars['TEST_VARIABLE'], 'VALUE2')
