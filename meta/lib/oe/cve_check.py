@@ -130,6 +130,12 @@ def get_patched_cves(d):
         if not fname_match and not text_match:
             bb.debug(2, "Patch %s doesn't solve CVEs" % patch_file)
 
+    # Search for additional patched CVEs
+    for cve, status in (d.getVarFlags("CVE_STATUS") or {}).items():
+        if status == "Patched":
+            bb.debug(2, "CVE %s is additionally patched" % cve)
+            patched_cves.add(cve)
+
     return patched_cves
 
 
