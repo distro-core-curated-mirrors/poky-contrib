@@ -53,6 +53,9 @@ COMPATIBLE_HOST:mipsarchn32 = "null"
 COMPATIBLE_HOST:mipsarchn64 = "null"
 COMPATIBLE_HOST:riscv32 = "null"
 
+DEPENDS = "meson-native ninja-native"
+DEPENDS:append:libc-musl = " libucontext"
+
 # Per https://lists.nongnu.org/archive/html/qemu-devel/2020-09/msg03873.html
 # upstream states qemu doesn't work without optimization
 DEBUG_BUILD = "0"
