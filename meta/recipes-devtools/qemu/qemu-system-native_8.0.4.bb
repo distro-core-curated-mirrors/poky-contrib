@@ -16,9 +16,6 @@ PACKAGECONFIG ??= "system-targets fdt alsa kvm pie slirp \
     ${@bb.utils.contains('DISTRO_FEATURES', 'opengl', 'virglrenderer epoxy', '', d)} \
 "
 
-# Handle distros such as CentOS 5 32-bit that do not have kvm support
-PACKAGECONFIG:remove = "${@'kvm' if not os.path.exists('/usr/include/linux/kvm.h') else ''}"
-
 do_install:append() {
     install -Dm 0755 ${WORKDIR}/powerpc_rom.bin ${D}${datadir}/qemu
 

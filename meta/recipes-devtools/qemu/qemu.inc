@@ -163,6 +163,8 @@ do_install:append() {
 # Disable kvm/virgl/mesa on targets that do not support it
 PACKAGECONFIG:remove:darwin = "kvm virglrenderer epoxy gtk+"
 PACKAGECONFIG:remove:mingw32 = "kvm virglrenderer epoxy gtk+"
+# Handle distros such as CentOS 5 32-bit that do not have kvm support
+PACKAGECONFIG:remove:class-native = "${@'kvm' if not os.path.exists('/usr/include/linux/kvm.h') else ''}"
 
 PACKAGECONFIG[all-targets] = "--target-list=${@get_qemu_target_list(d)},,pixman"
 PACKAGECONFIG[system-targets] = "--target-list=${@get_qemu_system_target_list(d)},,pixman"
