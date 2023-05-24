@@ -61,7 +61,7 @@ class Local(FetchMethod):
         return searched
 
     def need_update(self, ud, d):
-        if os.path.exists(ud.localpath):
+        if ud.localpath and os.path.exists(ud.localpath):
             return False
         return True
 
