@@ -149,7 +149,6 @@ PTESTS_PROBLEMS = "\
     libinput \
     libpam \
     mdadm \
-    numactl \
     python3-license-expression \
     python3-numpy \
 "
