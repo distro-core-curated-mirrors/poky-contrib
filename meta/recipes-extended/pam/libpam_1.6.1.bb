@@ -163,7 +163,9 @@ do_install() {
 
 do_install_ptest() {
     mkdir -p ${D}${PTEST_PATH}/tests
-    install -m 0755 ${B}/tests/.libs/* ${D}${PTEST_PATH}/tests
+    for file in ${S}/tests/*.c ; do
+        ${B}/libtool --mode=install install ${B}/tests/$(basename $file .c) ${D}${PTEST_PATH}/tests
+    done
     install -m 0644 ${S}/tests/confdir ${D}${PTEST_PATH}/tests
 }
 
