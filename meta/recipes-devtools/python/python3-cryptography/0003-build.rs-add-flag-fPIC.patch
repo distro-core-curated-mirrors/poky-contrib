@@ -1,0 +1,28 @@
+From 119b47ebdc66ee5027aecac1df34a4c13665213c Mon Sep 17 00:00:00 2001
+From: Tim Orling <tim.orling@konsulko.com>
+Date: Wed, 21 Jun 2023 04:08:48 -0700
+Subject: [PATCH] build.rs: add flag fPIC
+
+From Peter Bergin and Alex Kanavin
+https://github.com/pyca/cryptography/issues/8867#issuecomment-1599226112
+https://github.com/pyca/cryptography/issues/8867#issuecomment-1600610936
+
+Upstream-Status: Pending
+
+Signed-off-by: Tim Orling <tim.orling@konsulko.com>
+---
+ src/rust/cryptography-cffi/build.rs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/rust/cryptography-cffi/build.rs b/src/rust/cryptography-cffi/build.rs
+index 08abb95..dd9437f 100644
+--- a/src/rust/cryptography-cffi/build.rs
++++ b/src/rust/cryptography-cffi/build.rs
+@@ -60,6 +60,7 @@ fn main() {
+         .file(openssl_c)
+         .include(python_include)
+         .include(openssl_include)
++        .flag("-fPIC")
+         .flag_if_supported("-Wconversion")
+         .flag_if_supported("-Wno-error=sign-conversion")
+         .flag_if_supported("-Wno-unused-parameter");
