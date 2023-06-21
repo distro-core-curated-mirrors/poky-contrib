@@ -1,0 +1,28 @@
+From 5fb571ca013964cebfea07a1baffe8be537f6152 Mon Sep 17 00:00:00 2001
+From: Tim Orling <tim.orling@konsulko.com>
+Date: Wed, 21 Jun 2023 03:18:24 -0700
+Subject: [PATCH] build.rs: sysconfig.get_config_var('INCLUDEPY')
+
+From Alex Kanavin
+https://github.com/pyca/cryptography/issues/8867#issuecomment-1598822467
+
+Upstream-Status: Pending
+
+Signed-off-by: Tim Orling <tim.orling@konsulko.com>
+---
+ src/rust/cryptography-cffi/build.rs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/rust/cryptography-cffi/build.rs b/src/rust/cryptography-cffi/build.rs
+index 4a40990..08abb95 100644
+--- a/src/rust/cryptography-cffi/build.rs
++++ b/src/rust/cryptography-cffi/build.rs
+@@ -48,7 +48,7 @@ fn main() {
+     println!("cargo:rustc-cfg=python_implementation=\"{}\"", python_impl);
+     let python_include = run_python_script(
+         &python,
+-        "import sysconfig; print(sysconfig.get_path('include'), end='')",
++        "import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'), end='')",
+     )
+     .unwrap();
+     let openssl_include =

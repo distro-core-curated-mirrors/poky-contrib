@@ -12,9 +12,10 @@ SRC_URI[sha256sum] = "d34579085401d3f49762d2f7d6634d6b6c2ae1242202e860f4d26b046e
 
 SRC_URI += "\
     file://0001-pyproject.toml-remove-benchmark-disable-option.patch \
+    file://0002-build.rs-sysconfig.get_config_var-INCLUDEPY.patch \
     file://check-memfree.py \
     file://run-ptest \
-"
+    "
 
 require ${BPN}-crates.inc
 
