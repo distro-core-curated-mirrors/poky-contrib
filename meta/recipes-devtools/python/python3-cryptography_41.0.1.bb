@@ -23,6 +23,7 @@ inherit pypi python_setuptools3_rust cargo-update-recipe-crates
 
 DEPENDS += " \
     ${PYTHON_PN}-cffi-native \
+    openssl \
 "
 
 RDEPENDS:${PN} += " \
