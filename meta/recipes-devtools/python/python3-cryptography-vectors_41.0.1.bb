@@ -13,7 +13,7 @@ SRC_URI[sha256sum] = "23b08c39777ec7b2774a11f945d1746301b1e88ecff2e5326d7f50ea0f
 
 PYPI_PACKAGE = "cryptography_vectors"
 
-inherit pypi setuptools3
+inherit pypi python_setuptools_build_meta
 
 DEPENDS += " \
     ${PYTHON_PN}-cryptography \
