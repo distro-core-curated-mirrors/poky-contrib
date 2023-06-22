@@ -20,7 +20,7 @@ SRC_URI += "\
 
 require ${BPN}-crates.inc
 
-inherit pypi python_setuptools3_rust cargo-update-recipe-crates
+inherit pypi python_setuptools3_rust cargo-update-recipe-crates pkgconfig
 
 DEPENDS += " \
     ${PYTHON_PN}-cffi-native \
