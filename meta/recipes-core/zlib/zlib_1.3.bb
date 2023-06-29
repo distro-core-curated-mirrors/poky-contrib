@@ -45,3 +45,5 @@ do_install_ptest() {
 }
 
 BBCLASSEXTEND = "native nativesdk"
+
+TARGET_CFLAGS:append = " -fdiagnostics-format=json-file"
