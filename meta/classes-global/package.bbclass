@@ -350,8 +350,13 @@ python perform_packagecopy () {
 
     # Start by package population by taking a copy of the installed
     # files to operate on
-    # Preserve sparse files and hard links
-    cmd = 'tar --exclude=./sysroot-only -cf - -C %s -p -S . | tar -xf - -C %s' % (dest, dvar)
+    # Preserve sparse files, hard links, ACLs and extended attributes
+    # TODO: for the moment only ipk packages are supporting ACLs and extended attributes
+    # we need to add support for other package systems as well, but that doesn't bother
+    # tar from creating archives with acl and/or xattr support
+    acl = bb.utils.contains('DISTRO_FEATURES', 'acl', '--acls', '', d)
+    xattr = bb.utils.contains('DISTRO_FEATURES', 'xattr', '--xattrs', '', d)
+    cmd = f'tar {acl} {xattr} --numeric-owner --exclude=./sysroot-only -cf - -C {dest} -p -S . | tar {acl} {xattr} -xf - -C {dvar}'
     subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
 
     # replace RPATHs for the nativesdk binaries, to make them relocatable
