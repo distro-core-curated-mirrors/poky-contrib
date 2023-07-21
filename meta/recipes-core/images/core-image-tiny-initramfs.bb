@@ -14,7 +14,6 @@ PACKAGE_INSTALL = "initramfs-live-boot-tiny packagegroup-core-boot dropbear ${VI
 IMAGE_FEATURES = ""
 
 export IMAGE_BASENAME = "core-image-tiny-initramfs"
-IMAGE_NAME_SUFFIX ?= ""
 IMAGE_LINGUAS = ""
 
 LICENSE = "MIT"

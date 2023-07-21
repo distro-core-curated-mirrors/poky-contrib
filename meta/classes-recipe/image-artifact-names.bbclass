@@ -15,8 +15,7 @@ IMAGE_NAME ?= "${IMAGE_LINK_NAME}${IMAGE_VERSION_SUFFIX}"
 IMAGE_LINK_NAME ?= "${IMAGE_BASENAME}${IMAGE_MACHINE_SUFFIX}${IMAGE_NAME_SUFFIX}"
 
 # This needs to stay in sync with IMAGE_LINK_NAME, but with INITRAMFS_IMAGE instead of IMAGE_BASENAME
-# and without ${IMAGE_NAME_SUFFIX} which all initramfs images should set to empty
-INITRAMFS_IMAGE_NAME ?= "${@['${INITRAMFS_IMAGE}${IMAGE_MACHINE_SUFFIX}', ''][d.getVar('INITRAMFS_IMAGE') == '']}"
+INITRAMFS_IMAGE_NAME ?= "${@['${INITRAMFS_IMAGE}${IMAGE_MACHINE_SUFFIX}${IMAGE_NAME_SUFFIX}', ''][d.getVar('INITRAMFS_IMAGE') == '']}"
 
 # The default DEPLOY_DIR_IMAGE is ${MACHINE} directory:
 # meta/conf/bitbake.conf:DEPLOY_DIR_IMAGE ?= "${DEPLOY_DIR}/images/${MACHINE}"

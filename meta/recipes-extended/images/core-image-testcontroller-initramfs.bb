@@ -8,7 +8,6 @@ PACKAGE_INSTALL = "initramfs-live-boot initramfs-live-install-testfs initramfs-l
 IMAGE_FEATURES = ""
 
 export IMAGE_BASENAME = "core-image-testcontroller-initramfs"
-IMAGE_NAME_SUFFIX ?= ""
 IMAGE_LINGUAS = ""
 
 LICENSE = "MIT"
