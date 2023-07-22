@@ -91,7 +91,7 @@ populate_kernel() {
 			if [ -s "$fs" ]; then
 				cat $fs >> $dest/initrd
 			else
-				bbfatal "$fs is invalid. initrd image creation failed."
+				bbfatal "$fs not found. initrd image creation failed."
 			fi
 		done
 		chmod 0644 $dest/initrd

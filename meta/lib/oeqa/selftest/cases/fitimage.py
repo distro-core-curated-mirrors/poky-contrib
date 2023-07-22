@@ -753,7 +753,7 @@ FIT_HASH_ALG = "sha256"
         # fitImage is created as part of linux recipe
         bitbake("virtual/kernel")
 
-        image_type = get_bb_var('INITRAMFS_IMAGE')
+        image_type = get_bb_var('INITRAMFS_IMAGE_NAME')
         deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
         machine = get_bb_var('MACHINE')
         fitimage_its_path = os.path.join(deploy_dir_image,
