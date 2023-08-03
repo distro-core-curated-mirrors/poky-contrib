@@ -1,0 +1,66 @@
+From 9a273a3660649c6a9a0385f46c950e25a875d4bc Mon Sep 17 00:00:00 2001
+From: Petr Viktorin <encukou@gmail.com>
+Date: Mon, 7 Oct 2024 17:37:52 +0200
+Subject: [PATCH 3/5] gh-120762: make_ssl_certs: Don't set extensions for the
+ temporary CSR (GH-125045)
+
+gh-120762: make_ssl_certs: Don't set extensions for the CSR
+
+`openssl req` fails with openssl 3.2.2 because the config line
+
+    authorityKeyIdentifier = keyid:always,issuer:always
+
+is not supported for certificate signing requests (since the issuing
+certificate authority is not known).
+
+David von Oheimb, the OpenSSL dev that made the change, commented in:
+https://github.com/openssl/openssl/issues/22966#issuecomment-1858396738 :
+
+> This problem did not show up in older OpenSSL versions because of a bug:
+> the `req` app ignored the `-extensions` option unless `-x505` is given,
+> which I fixed in https://github.com/openssl/openssl/pull/16865.
+
+(I assume `-x505` is a typo for `-x509`.)
+
+In our `make_cert_key` function:
+
+If `sign` is true:
+- We don't pass `-x509` to `req`, so in this case it should be safe to
+  omit the `-extensions` argument. (Old OpenSSL ignores it, new OpenSSL
+  fails on it.)
+- The extensions are passed to the `ca` call later in the function.
+  There they take effect, and `authorityKeyIdentifier` is valid.
+
+If `sign` is false, this commit has no effect except rearranging the
+CLI arguments.
+
+Upstream-Status: Backport
+Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
+---
+ Lib/test/certdata/make_ssl_certs.py | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/Lib/test/certdata/make_ssl_certs.py b/Lib/test/certdata/make_ssl_certs.py
+index 48f980124e1..198c64035c5 100644
+--- a/Lib/test/certdata/make_ssl_certs.py
++++ b/Lib/test/certdata/make_ssl_certs.py
+@@ -139,7 +139,6 @@ def make_cert_key(cmdlineargs, hostname, sign=False, extra_san='',
+             f.write(req)
+         args = ['req', '-new', '-nodes', '-days', cmdlineargs.days,
+                 '-newkey', key, '-keyout', key_file,
+-                '-extensions', ext,
+                 '-config', req_file]
+         if sign:
+             with tempfile.NamedTemporaryFile(delete=False) as f:
+@@ -148,7 +147,7 @@ def make_cert_key(cmdlineargs, hostname, sign=False, extra_san='',
+             args += ['-out', reqfile ]
+ 
+         else:
+-            args += ['-x509', '-out', cert_file ]
++            args += ['-extensions', ext, '-x509', '-out', cert_file ]
+         check_call(['openssl'] + args)
+ 
+         if sign:
+-- 
+2.39.5
+

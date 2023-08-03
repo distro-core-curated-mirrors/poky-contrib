@@ -1,0 +1,344 @@
+From 8cae89bd2d496ad44fae8c0a40ca508461806d95 Mon Sep 17 00:00:00 2001
+From: Alexander Kanavin <alex.kanavin@gmail.com>
+Date: Wed, 25 Sep 2024 23:23:47 +0200
+Subject: [PATCH] gh-119400: make_ssl_certs: update reference test data
+ automatically, pass in expiration dates as parameters #119400 (GH-119401)
+
+* Lib/test/certdata: do not hardcode reference cert data into tests
+
+The script was simply printing the reference data and asking
+users to update it by hand into the test suites. This can
+be easily improved by writing the data into files and
+having the test cases load the files.
+
+* make_ssl_certs: make it possible to pass in expiration dates from command line
+
+Note that in this commit, the defaults are same as they were,
+so if nothing is specified the script works as before.
+
+---------
+Upstream-Status: Backport
+Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
+---
+ Lib/test/certdata/keycert.pem.reference       | 13 +++++
+ Lib/test/certdata/keycert3.pem.reference      | 15 +++++
+ Lib/test/certdata/make_ssl_certs.py           | 56 +++++++++++--------
+ Lib/test/test_asyncio/utils.py                | 21 +------
+ Lib/test/test_ssl.py                          | 36 ++----------
+ ...-05-22-13-18-02.gh-issue-119400.WEt83v.rst |  2 +
+ 6 files changed, 71 insertions(+), 72 deletions(-)
+ create mode 100644 Lib/test/certdata/keycert.pem.reference
+ create mode 100644 Lib/test/certdata/keycert3.pem.reference
+ create mode 100644 Misc/NEWS.d/next/Build/2024-05-22-13-18-02.gh-issue-119400.WEt83v.rst
+
+diff --git a/Lib/test/certdata/keycert.pem.reference b/Lib/test/certdata/keycert.pem.reference
+new file mode 100644
+index 00000000000..f9a82f35f34
+--- /dev/null
++++ b/Lib/test/certdata/keycert.pem.reference
+@@ -0,0 +1,13 @@
++{'issuer': ((('countryName', 'XY'),),
++            (('localityName', 'Castle Anthrax'),),
++            (('organizationName', 'Python Software Foundation'),),
++            (('commonName', 'localhost'),)),
++ 'notAfter': 'Jan 24 04:21:36 2043 GMT',
++ 'notBefore': 'Nov 25 04:21:36 2023 GMT',
++ 'serialNumber': '53E14833F7546C29256DD0F034F776C5E983004C',
++ 'subject': ((('countryName', 'XY'),),
++             (('localityName', 'Castle Anthrax'),),
++             (('organizationName', 'Python Software Foundation'),),
++             (('commonName', 'localhost'),)),
++ 'subjectAltName': (('DNS', 'localhost'),),
++ 'version': 3}
+diff --git a/Lib/test/certdata/keycert3.pem.reference b/Lib/test/certdata/keycert3.pem.reference
+new file mode 100644
+index 00000000000..04a749c920b
+--- /dev/null
++++ b/Lib/test/certdata/keycert3.pem.reference
+@@ -0,0 +1,15 @@
++{'OCSP': ('http://testca.pythontest.net/testca/ocsp/',),
++ 'caIssuers': ('http://testca.pythontest.net/testca/pycacert.cer',),
++ 'crlDistributionPoints': ('http://testca.pythontest.net/testca/revocation.crl',),
++ 'issuer': ((('countryName', 'XY'),),
++            (('organizationName', 'Python Software Foundation CA'),),
++            (('commonName', 'our-ca-server'),)),
++ 'notAfter': 'Oct 28 14:23:16 2037 GMT',
++ 'notBefore': 'Aug 29 14:23:16 2018 GMT',
++ 'serialNumber': 'CB2D80995A69525C',
++ 'subject': ((('countryName', 'XY'),),
++             (('localityName', 'Castle Anthrax'),),
++             (('organizationName', 'Python Software Foundation'),),
++             (('commonName', 'localhost'),)),
++ 'subjectAltName': (('DNS', 'localhost'),),
++ 'version': 3}
+\ No newline at end of file
+diff --git a/Lib/test/certdata/make_ssl_certs.py b/Lib/test/certdata/make_ssl_certs.py
+index ed2037c1fdf..48f980124e1 100644
+--- a/Lib/test/certdata/make_ssl_certs.py
++++ b/Lib/test/certdata/make_ssl_certs.py
+@@ -1,6 +1,7 @@
+ """Make the custom certificate and private key files used by test_ssl
+ and friends."""
+ 
++import argparse
+ import os
+ import pprint
+ import shutil
+@@ -8,7 +9,8 @@
+ from subprocess import *
+ 
+ startdate = "20180829142316Z"
+-enddate = "20371028142316Z"
++enddate_default = "20371028142316Z"
++days_default = "7000"
+ 
+ req_template = """
+     [ default ]
+@@ -79,8 +81,8 @@
+     default_startdate = {startdate}
+     enddate = {enddate}
+     default_enddate = {enddate}
+-    default_days = 7000
+-    default_crl_days = 7000
++    default_days = {days}
++    default_crl_days = {days}
+     certificate = pycacert.pem
+     private_key = pycakey.pem
+     serial    = $dir/serial
+@@ -117,7 +119,7 @@
+ here = os.path.abspath(os.path.dirname(__file__))
+ 
+ 
+-def make_cert_key(hostname, sign=False, extra_san='',
++def make_cert_key(cmdlineargs, hostname, sign=False, extra_san='',
+                   ext='req_x509_extensions_full', key='rsa:3072'):
+     print("creating cert for " + hostname)
+     tempnames = []
+@@ -130,11 +132,12 @@ def make_cert_key(hostname, sign=False, extra_san='',
+             hostname=hostname,
+             extra_san=extra_san,
+             startdate=startdate,
+-            enddate=enddate
++            enddate=cmdlineargs.enddate,
++            days=cmdlineargs.days
+         )
+         with open(req_file, 'w') as f:
+             f.write(req)
+-        args = ['req', '-new', '-nodes', '-days', '7000',
++        args = ['req', '-new', '-nodes', '-days', cmdlineargs.days,
+                 '-newkey', key, '-keyout', key_file,
+                 '-extensions', ext,
+                 '-config', req_file]
+@@ -175,7 +178,7 @@ def make_cert_key(hostname, sign=False, extra_san='',
+ def unmake_ca():
+     shutil.rmtree(TMP_CADIR)
+ 
+-def make_ca():
++def make_ca(cmdlineargs):
+     os.mkdir(TMP_CADIR)
+     with open(os.path.join('cadir','index.txt'),'a+') as f:
+         pass # empty file
+@@ -192,7 +195,8 @@ def make_ca():
+             hostname='our-ca-server',
+             extra_san='',
+             startdate=startdate,
+-            enddate=enddate
++            enddate=cmdlineargs.enddate,
++            days=cmdlineargs.days
+         )
+         t.write(req)
+         t.flush()
+@@ -219,14 +223,22 @@ def make_ca():
+     shutil.copy('capath/ceff1710.0', 'capath/b1930218.0')
+ 
+ 
+-def print_cert(path):
++def write_cert_reference(path):
+     import _ssl
+-    pprint.pprint(_ssl._test_decode_cert(path))
++    refdata = pprint.pformat(_ssl._test_decode_cert(path))
++    print(refdata)
++    with open(path + '.reference', 'w') as f:
++        print(refdata, file=f)
+ 
+ 
+ if __name__ == '__main__':
++    parser = argparse.ArgumentParser(description='Make the custom certificate and private key files used by test_ssl and friends.')
++    parser.add_argument('--days', default=days_default)
++    parser.add_argument('--enddate', default=enddate_default)
++    cmdlineargs = parser.parse_args()
++
+     os.chdir(here)
+-    cert, key = make_cert_key('localhost', ext='req_x509_extensions_simple')
++    cert, key = make_cert_key(cmdlineargs, 'localhost', ext='req_x509_extensions_simple')
+     with open('ssl_cert.pem', 'w') as f:
+         f.write(cert)
+     with open('ssl_key.pem', 'w') as f:
+@@ -243,26 +255,26 @@ def print_cert(path):
+         f.write(cert)
+ 
+     # For certificate matching tests
+-    make_ca()
+-    cert, key = make_cert_key('fakehostname', ext='req_x509_extensions_simple')
++    make_ca(cmdlineargs)
++    cert, key = make_cert_key(cmdlineargs, 'fakehostname', ext='req_x509_extensions_simple')
+     with open('keycert2.pem', 'w') as f:
+         f.write(key)
+         f.write(cert)
+ 
+-    cert, key = make_cert_key('localhost', sign=True)
++    cert, key = make_cert_key(cmdlineargs, 'localhost', sign=True)
+     with open('keycert3.pem', 'w') as f:
+         f.write(key)
+         f.write(cert)
+ 
+     check_call(['openssl', 'x509', '-outform', 'pem', '-in', 'keycert3.pem', '-out', 'cert3.pem'])
+ 
+-    cert, key = make_cert_key('fakehostname', sign=True)
++    cert, key = make_cert_key(cmdlineargs, 'fakehostname', sign=True)
+     with open('keycert4.pem', 'w') as f:
+         f.write(key)
+         f.write(cert)
+ 
+     cert, key = make_cert_key(
+-        'localhost-ecc', sign=True, key='param:secp384r1.pem'
++        cmdlineargs, 'localhost-ecc', sign=True, key='param:secp384r1.pem'
+     )
+     with open('keycertecc.pem', 'w') as f:
+         f.write(key)
+@@ -282,7 +294,7 @@ def print_cert(path):
+         'RID.1 = 1.2.3.4.5',
+     ]
+ 
+-    cert, key = make_cert_key('allsans', sign=True, extra_san='\n'.join(extra_san))
++    cert, key = make_cert_key(cmdlineargs, 'allsans', sign=True, extra_san='\n'.join(extra_san))
+     with open('allsans.pem', 'w') as f:
+         f.write(key)
+         f.write(cert)
+@@ -299,17 +311,17 @@ def print_cert(path):
+     ]
+ 
+     # IDN SANS, signed
+-    cert, key = make_cert_key('idnsans', sign=True, extra_san='\n'.join(extra_san))
++    cert, key = make_cert_key(cmdlineargs, 'idnsans', sign=True, extra_san='\n'.join(extra_san))
+     with open('idnsans.pem', 'w') as f:
+         f.write(key)
+         f.write(cert)
+ 
+-    cert, key = make_cert_key('nosan', sign=True, ext='req_x509_extensions_nosan')
++    cert, key = make_cert_key(cmdlineargs, 'nosan', sign=True, ext='req_x509_extensions_nosan')
+     with open('nosan.pem', 'w') as f:
+         f.write(key)
+         f.write(cert)
+ 
+     unmake_ca()
+-    print("update Lib/test/test_ssl.py and Lib/test/test_asyncio/utils.py")
+-    print_cert('keycert.pem')
+-    print_cert('keycert3.pem')
++    print("Writing out reference data for Lib/test/test_ssl.py and Lib/test/test_asyncio/utils.py")
++    write_cert_reference('keycert.pem')
++    write_cert_reference('keycert3.pem')
+diff --git a/Lib/test/test_asyncio/utils.py b/Lib/test/test_asyncio/utils.py
+index ce2408fc1aa..cfb5de58902 100644
+--- a/Lib/test/test_asyncio/utils.py
++++ b/Lib/test/test_asyncio/utils.py
+@@ -15,6 +15,7 @@
+ import unittest
+ import weakref
+ import warnings
++from ast import literal_eval
+ from unittest import mock
+ 
+ from http.server import HTTPServer
+@@ -56,24 +57,8 @@ def data_file(*filename):
+ ONLYKEY = data_file('certdata', 'ssl_key.pem')
+ SIGNED_CERTFILE = data_file('certdata', 'keycert3.pem')
+ SIGNING_CA = data_file('certdata', 'pycacert.pem')
+-PEERCERT = {
+-    'OCSP': ('http://testca.pythontest.net/testca/ocsp/',),
+-    'caIssuers': ('http://testca.pythontest.net/testca/pycacert.cer',),
+-    'crlDistributionPoints': ('http://testca.pythontest.net/testca/revocation.crl',),
+-    'issuer': ((('countryName', 'XY'),),
+-            (('organizationName', 'Python Software Foundation CA'),),
+-            (('commonName', 'our-ca-server'),)),
+-    'notAfter': 'Oct 28 14:23:16 2037 GMT',
+-    'notBefore': 'Aug 29 14:23:16 2018 GMT',
+-    'serialNumber': 'CB2D80995A69525C',
+-    'subject': ((('countryName', 'XY'),),
+-             (('localityName', 'Castle Anthrax'),),
+-             (('organizationName', 'Python Software Foundation'),),
+-             (('commonName', 'localhost'),)),
+-    'subjectAltName': (('DNS', 'localhost'),),
+-    'version': 3
+-}
+-
++with open(data_file('certdata', 'keycert3.pem.reference')) as file:
++    PEERCERT = literal_eval(file.read())
+ 
+ def simple_server_sslcontext():
+     server_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+diff --git a/Lib/test/test_ssl.py b/Lib/test/test_ssl.py
+index 7fdd2be78d5..fb86383d78e 100644
+--- a/Lib/test/test_ssl.py
++++ b/Lib/test/test_ssl.py
+@@ -84,21 +84,8 @@ def data_file(*name):
+ CAFILE_NEURONIO = data_file("capath", "4e1295a3.0")
+ CAFILE_CACERT = data_file("capath", "5ed36f99.0")
+ 
+-CERTFILE_INFO = {
+-    'issuer': ((('countryName', 'XY'),),
+-               (('localityName', 'Castle Anthrax'),),
+-               (('organizationName', 'Python Software Foundation'),),
+-               (('commonName', 'localhost'),)),
+-    'notAfter': 'Jan 24 04:21:36 2043 GMT',
+-    'notBefore': 'Nov 25 04:21:36 2023 GMT',
+-    'serialNumber': '53E14833F7546C29256DD0F034F776C5E983004C',
+-    'subject': ((('countryName', 'XY'),),
+-             (('localityName', 'Castle Anthrax'),),
+-             (('organizationName', 'Python Software Foundation'),),
+-             (('commonName', 'localhost'),)),
+-    'subjectAltName': (('DNS', 'localhost'),),
+-    'version': 3
+-}
++with open(data_file('keycert.pem.reference')) as file:
++    CERTFILE_INFO = literal_eval(file.read())
+ 
+ # empty CRL
+ CRLFILE = data_file("revocation.crl")
+@@ -108,23 +95,8 @@ def data_file(*name):
+ SINGED_CERTFILE_ONLY = data_file("cert3.pem")
+ SIGNED_CERTFILE_HOSTNAME = 'localhost'
+ 
+-SIGNED_CERTFILE_INFO = {
+-    'OCSP': ('http://testca.pythontest.net/testca/ocsp/',),
+-    'caIssuers': ('http://testca.pythontest.net/testca/pycacert.cer',),
+-    'crlDistributionPoints': ('http://testca.pythontest.net/testca/revocation.crl',),
+-    'issuer': ((('countryName', 'XY'),),
+-            (('organizationName', 'Python Software Foundation CA'),),
+-            (('commonName', 'our-ca-server'),)),
+-    'notAfter': 'Oct 28 14:23:16 2037 GMT',
+-    'notBefore': 'Aug 29 14:23:16 2018 GMT',
+-    'serialNumber': 'CB2D80995A69525C',
+-    'subject': ((('countryName', 'XY'),),
+-             (('localityName', 'Castle Anthrax'),),
+-             (('organizationName', 'Python Software Foundation'),),
+-             (('commonName', 'localhost'),)),
+-    'subjectAltName': (('DNS', 'localhost'),),
+-    'version': 3
+-}
++with open(data_file('keycert3.pem.reference')) as file:
++    SIGNED_CERTFILE_INFO = literal_eval(file.read())
+ 
+ SIGNED_CERTFILE2 = data_file("keycert4.pem")
+ SIGNED_CERTFILE2_HOSTNAME = 'fakehostname'
+diff --git a/Misc/NEWS.d/next/Build/2024-05-22-13-18-02.gh-issue-119400.WEt83v.rst b/Misc/NEWS.d/next/Build/2024-05-22-13-18-02.gh-issue-119400.WEt83v.rst
+new file mode 100644
+index 00000000000..b4029f20579
+--- /dev/null
++++ b/Misc/NEWS.d/next/Build/2024-05-22-13-18-02.gh-issue-119400.WEt83v.rst
+@@ -0,0 +1,2 @@
++``make_ssl_certs``, the script that prepares certificate data for the
++test suite, now allows specifying expiration dates.
+-- 
+2.39.5
+

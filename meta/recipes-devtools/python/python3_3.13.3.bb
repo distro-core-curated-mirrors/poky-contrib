@@ -30,6 +30,10 @@ SRC_URI = "http://www.python.org/ftp/python/${PV}/Python-${PV}.tar.xz \
            file://0001-test_active_children-skip-problematic-test.patch \
            file://0001-test_readline-skip-limited-history-test.patch \
            file://0001-Generate-data-for-OpenSSL-3.4-and-add-it-to-multissl.patch \
+           file://0001-gh-119400-make_ssl_certs-update-reference-test-data-.patch \
+           file://0003-gh-120762-make_ssl_certs-Don-t-set-extensions-for-th.patch \
+           file://0004-gh-107562-make_ssl_certs.py-produce-test-certificate.patch \
+           file://0005-gh-107562-Update-test-certificates-to-expire-far-in-.patch \
            "
 
 SRC_URI:append:class-native = " \
