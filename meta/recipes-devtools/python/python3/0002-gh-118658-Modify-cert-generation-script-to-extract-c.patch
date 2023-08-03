@@ -1,0 +1,40 @@
+From 3fcf9020bb81801502acf3e4ef4cd590f8dbac4b Mon Sep 17 00:00:00 2001
+From: Felix Fontein <felix@fontein.de>
+Date: Fri, 4 Oct 2024 13:15:08 +0200
+Subject: [PATCH 2/5] gh-118658: Modify cert generation script to extract
+ cert3.pem (GH-124598)
+
+Upstream-Status: Backport
+Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
+---
+ Lib/test/certdata/cert3.pem         | 2 +-
+ Lib/test/certdata/make_ssl_certs.py | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/Lib/test/certdata/cert3.pem b/Lib/test/certdata/cert3.pem
+index 034bc43ff19..4ab0f5ff133 100644
+--- a/Lib/test/certdata/cert3.pem
++++ b/Lib/test/certdata/cert3.pem
+@@ -31,4 +31,4 @@ zqmtEM65ceSP8lo8Zbrcy+AEkCulFaZ92tyjtbe8oN4wTmTLFw06oFLSZzuiOgDV
+ OaphdVKf/pvA6KBpr6izox0KQFIE5z3AAJZfKzMGDDD20xhy7jjQZNMAhjfsT+k4
+ SeYB/6KafNxq08uoulj7w4Z4R/EGpkXnU96ZHYHmvGN0RnxwI1cpYHCazG8AjsK/
+ anN9brBi5twTGrn+D8LRBqF5Yn+2MKkD0EdXJdtIENHP+32sPQ==
+------END CERTIFICATE-----
+\ No newline at end of file
++-----END CERTIFICATE-----
+diff --git a/Lib/test/certdata/make_ssl_certs.py b/Lib/test/certdata/make_ssl_certs.py
+index 5e626baf550..48f980124e1 100644
+--- a/Lib/test/certdata/make_ssl_certs.py
++++ b/Lib/test/certdata/make_ssl_certs.py
+@@ -266,6 +266,8 @@ def write_cert_reference(path):
+         f.write(key)
+         f.write(cert)
+ 
++    check_call(['openssl', 'x509', '-outform', 'pem', '-in', 'keycert3.pem', '-out', 'cert3.pem'])
++
+     cert, key = make_cert_key(cmdlineargs, 'fakehostname', sign=True)
+     with open('keycert4.pem', 'w') as f:
+         f.write(key)
+-- 
+2.39.5
+
