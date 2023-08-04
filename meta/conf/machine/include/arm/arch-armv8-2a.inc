@@ -6,14 +6,19 @@ TUNE_CCARGS_MARCH .= "${@bb.utils.contains('TUNE_FEATURES', 'armv8-2a', ' -march
 MACHINEOVERRIDES =. "${@bb.utils.contains('TUNE_FEATURES', 'armv8-2a', 'armv8-2a:', '', d)}"
 
 require conf/machine/include/arm/arch-armv8a.inc
+require conf/machine/include/arm/feature-arm-sve.inc
 
 # Little Endian base configs
-AVAILTUNES += "armv8-2a armv8-2a-crypto"
+AVAILTUNES += "armv8-2a armv8-2a-crypto armv8-2a-crypto-sve"
 ARMPKGARCH:tune-armv8-2a                    ?= "armv8-2a"
 ARMPKGARCH:tune-armv8-2a-crypto             ?= "armv8-2a"
+ARMPKGARCH:tune-armv8-2a-crypto-sve         ?= "armv8-2a"
 TUNE_FEATURES:tune-armv8-2a                  = "aarch64 armv8-2a"
 TUNE_FEATURES:tune-armv8-2a-crypto           = "${TUNE_FEATURES:tune-armv8-2a} crypto"
+TUNE_FEATURES:tune-armv8-2a-crypto-sve       = "${TUNE_FEATURES:tune-armv8-2a-crypto} sve"
 PACKAGE_EXTRA_ARCHS:tune-armv8-2a            = "${PACKAGE_EXTRA_ARCHS:tune-armv8a} armv8-2a"
 PACKAGE_EXTRA_ARCHS:tune-armv8-2a-crypto     = "${PACKAGE_EXTRA_ARCHS:tune-armv8-2a} armv8-2a-crypto"
+PACKAGE_EXTRA_ARCHS:tune-armv8-2a-crypto-sve = "${PACKAGE_EXTRA_ARCHS:tune-armv8-2a-crypto} armv8-2a-crypto-sve"
 BASE_LIB:tune-armv8-2a                       = "lib64"
 BASE_LIB:tune-armv8-2a-crypto                = "lib64"
+BASE_LIB:tune-armv8-2a-crypto-sve            = "lib64"
