@@ -1,0 +1,16 @@
+Upstream-Status: Pending
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+
+diff --git a/gcc/config/aarch64/aarch64.h b/gcc/config/aarch64/aarch64.h
+index 2b0fc97bb71..585d9e994ec 100644
+--- a/gcc/config/aarch64/aarch64.h
++++ b/gcc/config/aarch64/aarch64.h
+@@ -1223,7 +1223,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
+   CONFIG_TUNE_SPEC
+ 
+ #define MCPU_TO_MARCH_SPEC \
+-   " %{mcpu=*:-march=%:rewrite_mcpu(%{mcpu=*:%*})}"
++   " %{!march=*:%{mcpu=*:-march=%:rewrite_mcpu(%{mcpu=*:%*})}}"
+ 
+ extern const char *aarch64_rewrite_mcpu (int argc, const char **argv);
+ #define MCPU_TO_MARCH_SPEC_FUNCTIONS \
