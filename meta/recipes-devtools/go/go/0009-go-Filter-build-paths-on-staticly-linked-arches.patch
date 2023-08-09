@@ -15,13 +15,11 @@ Signed-off-by: Richard Purdie <richard.purdie@linuxfoundation.org>
  src/cmd/go/internal/load/pkg.go | 15 +++++++++++++--
  1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/src/cmd/go/internal/load/pkg.go b/src/cmd/go/internal/load/pkg.go
-index 56a4e5e..22edbdb 100644
 --- a/src/cmd/go/internal/load/pkg.go
 +++ b/src/cmd/go/internal/load/pkg.go
-@@ -2266,6 +2266,17 @@ func (p *Package) collectDeps() {
- // to their VCS information (vcsStatusError).
- var vcsStatusCache par.Cache
+@@ -2264,6 +2264,17 @@ func isBadEmbedName(name string) bool {
+ // to their VCS information.
+ var vcsStatusCache par.ErrCache[string, vcs.Status]
  
 +func filterCompilerFlags(flags string) string {
 +	var newflags []string
@@ -34,10 +32,10 @@ index 56a4e5e..22edbdb 100644
 +	return strings.Join(newflags, " ")
 +}
 +
- // setBuildInfo gathers build information, formats it as a string to be
- // embedded in the binary, then sets p.Internal.BuildInfo to that string.
- // setBuildInfo should only be called on a main package with no errors.
-@@ -2372,7 +2383,7 @@ func (p *Package) setBuildInfo(autoVCS bool) {
+ func appendBuildSetting(info *debug.BuildInfo, key, value string) {
+ 	value = strings.ReplaceAll(value, "\n", " ") // make value safe
+ 	info.Settings = append(info.Settings, debug.BuildSetting{Key: key, Value: value})
+@@ -2376,7 +2387,7 @@ func (p *Package) setBuildInfo(ctx conte
  	if gcflags := BuildGcflags.String(); gcflags != "" && cfg.BuildContext.Compiler == "gc" {
  		appendSetting("-gcflags", gcflags)
  	}
@@ -46,7 +44,7 @@ index 56a4e5e..22edbdb 100644
  		// https://go.dev/issue/52372: only include ldflags if -trimpath is not set,
  		// since it can include system paths through various linker flags (notably
  		// -extar, -extld, and -extldflags).
-@@ -2418,7 +2429,7 @@ func (p *Package) setBuildInfo(autoVCS bool) {
+@@ -2419,7 +2430,7 @@ func (p *Package) setBuildInfo(ctx conte
  	// subset of flags that are known not to be paths?
  	if cfg.BuildContext.CgoEnabled && !cfg.BuildTrimpath {
  		for _, name := range []string{"CGO_CFLAGS", "CGO_CPPFLAGS", "CGO_CXXFLAGS", "CGO_LDFLAGS"} {
@@ -55,6 +53,3 @@ index 56a4e5e..22edbdb 100644
  		}
  	}
  	appendSetting("GOARCH", cfg.BuildContext.GOARCH)
--- 
-2.30.2
-

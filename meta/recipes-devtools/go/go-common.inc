@@ -9,12 +9,11 @@ DESCRIPTION = " The Go programming language is an open source project to make \
  fast, statically typed, compiled language that feels like a\
  dynamically typed, interpreted language."
 
-HOMEPAGE = " http://golang.org/"
+HOMEPAGE = "https://go.dev/"
 LICENSE = "BSD-3-Clause"
 
 inherit goarch
-
-SRC_URI = "https://golang.org/dl/go${PV}.src.tar.gz;name=main"
+SRC_URI = "https://go.dev/dl/go${PV}.src.tar.gz;name=main"
 S = "${WORKDIR}/go"
 B = "${S}"
 UPSTREAM_CHECK_REGEX = "(?P<pver>\d+(\.\d+)+)\.src\.tar"
