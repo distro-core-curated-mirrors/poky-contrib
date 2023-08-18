@@ -23,6 +23,7 @@ SRC_URI = "${BASE_SRC_URI} \
            file://alter-includedir.patch \
            file://interp.patch \
            file://run-ptest \
+           file://0001-generic-tcl.h-use-Tcl_WideInt-for-seconds-in-Tcl_Tim.patch \
            "
 SRC_URI[sha256sum] = "844775491e435e34d83d6ccfbadd1342f1855f1705253233a86152df0765e78d"
 
