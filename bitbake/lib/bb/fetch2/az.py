@@ -78,7 +78,7 @@ class Az(Wget):
             fetchcmd += " -P %s '%s'" % (dldir, azuri)
 
         try:
-            self._runwget(ud, d, fetchcmd, False)
+            self._runwget(ud, d, fetchcmd, progresshandler=WgetProgressHandler(d))
         except FetchError as e:
             # Azure fails on handshake sometimes when using wget after some stress, producing a
             # FetchError from the fetcher, if the artifact exists retyring should succeed
