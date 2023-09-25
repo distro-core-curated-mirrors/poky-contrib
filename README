@@ -2,18 +2,17 @@ This README file contains information on the contents of the meta-lxc-dpdk layer
 
 Please see the corresponding sections below for details.
 
+THIS IS A DEMO, DO NOT USE FOR PRODUCTION!
+
 Dependencies
 ============
 
-  URI: <first dependency>
-  branch: <branch name>
-
-  URI: <second dependency>
-  branch: <branch name>
-
-  .
-  .
-  .
+  URI: meta-openembedded/meta-oe
+  URI: meta-openembedded/meta-filesystems
+  URI: meta-openembedded/meta-python
+  URI: meta-openembedded/meta-networking
+  URI: meta-virtualization
+  URI: meta-dpdk
 
 Patches
 =======
