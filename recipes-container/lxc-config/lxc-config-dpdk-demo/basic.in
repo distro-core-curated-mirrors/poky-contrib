@@ -1,0 +1,17 @@
+# lxc basic setting
+lxc.rootfs.path = dir:/var/lib/machines/dpdk-demo
+lxc.signal.halt = SIGUSR1
+lxc.signal.reboot = SIGTERM
+lxc.uts.name = dpdk-demo
+lxc.tty.max = 1
+lxc.pty.max = 1
+lxc.cap.drop = sys_module mac_admin mac_override sys_time
+
+lxc.mount.auto = cgroup:mixed proc:mixed sys:mixed
+lxc.mount.entry = shm /dev/shm tmpfs defaults 0 0
+
+# Network configuration
+#  no configuration... We are going to use DPDK!
+
+#lxc.cgroup.cpuset.cpus = 16-23
+
