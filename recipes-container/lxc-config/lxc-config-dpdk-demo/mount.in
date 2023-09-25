@@ -4,5 +4,5 @@ lxc.mount.entry = /var/lib/lxc/dpdk-demo/system.conf etc/systemd/system.conf.d/1
 lxc.mount.auto = cgroup:mixed proc:mixed sys:mixed
 lxc.mount.entry = shm /dev/shm tmpfs defaults 0 0
 
-lxc.mount.entry = /dev/hugepages dev/hugepages none bind,create=dir 0 0
-lxc.mount.entry = /tmp/dpdk /tmp/dpdk none bind,,create=dir 0 0
+lxc.mount.entry = /mnt/hugepages var/dpdk/hugepages none bind,create=dir 0 0
+lxc.mount.entry = /var/run/dpdk0 mnt/dpdk0 none bind,create=file 0 0

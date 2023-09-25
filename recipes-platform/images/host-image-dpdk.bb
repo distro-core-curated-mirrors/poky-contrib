@@ -33,6 +33,8 @@ VIRTUAL-RUNTIME_base-utils-syslog = ""
 VIRTUAL-RUNTIME_net_manager = "systemd"
 
 QB_MEM = "-m 12288"
+QB_KERNEL_CMDLINE_APPEND += " "
 DISTRO_FEATURES:append = ' systemd usrmerge '
 VIRTUAL-RUNTIME_init_manager = "systemd"
 VIRTUAL-RUNTIME_initscript = "systemd-compat-units"
+
