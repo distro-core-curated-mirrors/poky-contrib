@@ -64,6 +64,16 @@ def main():
         action="store_true",
         help="Disallow write operations from clients ($HASHSERVER_READ_ONLY)",
     )
+    parser.add_argument(
+        "--db-username",
+        default=os.environ.get("HASHSERVER_DB_USERNAME", None),
+        help="Database username ($HASHSERVER_DB_USERNAME)",
+    )
+    parser.add_argument(
+        "--db-password",
+        default=os.environ.get("HASHSERVER_DB_PASSWORD", None),
+        help="Database password ($HASHSERVER_DB_PASSWORD)",
+    )
 
     args = parser.parse_args()
 
@@ -85,6 +95,8 @@ def main():
         args.database,
         upstream=args.upstream,
         read_only=read_only,
+        db_username=args.db_username,
+        db_password=args.db_password,
     )
     server.serve_forever()
     return 0
