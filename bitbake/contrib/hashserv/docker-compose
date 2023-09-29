@@ -1,0 +1,11 @@
+#! /bin/sh
+# Copyright (C) 2023 Garmin Ltd.
+#
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Wrapper script to correctly run docker-compose with the correct argument for
+# the hash equivalence server
+
+cd "$(dirname "$0")/../../"
+
+exec docker-compose -f contrib/hashserv/docker-compose.yaml --project-directory . "$@"
