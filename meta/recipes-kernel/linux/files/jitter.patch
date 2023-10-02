@@ -1,0 +1,23 @@
+Upstream-Status: Inappropriate
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+
+diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
+index fe9c233ec7693..2c371f39f4722 100644
+--- a/crypto/jitterentropy.c
++++ b/crypto/jitterentropy.c
+@@ -192,6 +192,7 @@ static int jent_apt_permanent_failure(struct rand_data *ec)
+ 
+ static int jent_apt_failure(struct rand_data *ec)
+ {
++	pr_info("apt_count=%d\n", ec->apt_count);
+ 	return (ec->apt_count >= JENT_APT_CUTOFF) ? 1 : 0;
+ }
+ 
+@@ -283,6 +284,7 @@ static int jent_rct_permanent_failure(struct rand_data *ec)
+ 
+ static int jent_rct_failure(struct rand_data *ec)
+ {
++	pr_info("rct_count=%d\n", ec->rct_count);
+ 	return (ec->rct_count >= JENT_RCT_CUTOFF) ? 1 : 0;
+ }
+ 
