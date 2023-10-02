@@ -24,8 +24,6 @@ inherit ptest setuptools3 github-releases
 
 S = "${WORKDIR}/numpy-${PV}"
 
-CLEANBROKEN = "1"
-
 do_compile:prepend() {
     export NPY_DISABLE_SVML=1
 }
