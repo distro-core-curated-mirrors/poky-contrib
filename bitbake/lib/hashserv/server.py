@@ -131,13 +131,15 @@ class ServerClient(bb.asyncrpc.AsyncServerConnection):
                 "get-outhash": self.handle_get_outhash,
                 "get-stream": self.handle_get_stream,
                 "get-stats": self.handle_get_stats,
+                "report": (
+                    self.handle_report_get_unihash if read_only else self.handle_report
+                ),
             }
         )
 
         if not read_only:
             self.handlers.update(
                 {
-                    "report": self.handle_report,
                     "report-equiv": self.handle_equivreport,
                     "reset-stats": self.handle_reset_stats,
                     "backfill-wait": self.handle_backfill_wait,
@@ -322,6 +324,9 @@ class ServerClient(bb.asyncrpc.AsyncServerConnection):
 
             await self.db.insert_unihash(data["method"], data["taskhash"], unihash)
 
+        return await self.handle_report_get_unihash(data)
+
+    async def handle_report_get_unihash(self, data):
         unihash_data = await self.get_unihash(data["method"], data["taskhash"])
         if unihash_data is not None:
             unihash = unihash_data["unihash"]
