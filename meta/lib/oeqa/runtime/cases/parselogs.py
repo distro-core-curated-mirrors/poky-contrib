@@ -65,6 +65,7 @@ common_errors = [
     "Failed to read LoaderConfigTimeoutOneShot variable, ignoring: Operation not supported",
     "Failed to read LoaderEntryOneShot variable, ignoring: Operation not supported",
     "invalid BAR (can't size)",
+    "jitterentropy: Initialization failed with host not compliant with requirements: 9"
     ]
 
 x86_common = [
