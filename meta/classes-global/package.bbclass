@@ -296,14 +296,14 @@ python package_get_auto_pr() {
     try:
         conn = oe.prservice.prserv_make_conn(d)
         if conn is not None:
-            if "AUTOINC" in pkgv:
-                srcpv = bb.fetch2.get_srcrev(d)
-                base_ver = "AUTOINC-%s" % version[:version.find(srcpv)]
-                value = conn.getPR(base_ver, pkgarch, srcpv)
-                d.setVar("PRSERV_PV_AUTOINC", str(value))
+            with conn:
+                if "AUTOINC" in pkgv:
+                    srcpv = bb.fetch2.get_srcrev(d)
+                    base_ver = "AUTOINC-%s" % version[:version.find(srcpv)]
+                    value = conn.getPR(base_ver, pkgarch, srcpv)
+                    d.setVar("PRSERV_PV_AUTOINC", str(value))
 
-            auto_pr = conn.getPR(version, pkgarch, checksum)
-            conn.close()
+                auto_pr = conn.getPR(version, pkgarch, checksum)
     except Exception as e:
         bb.fatal("Can NOT get PRAUTO, exception %s" %  str(e))
     if auto_pr is None:

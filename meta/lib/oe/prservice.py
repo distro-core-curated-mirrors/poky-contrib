@@ -7,14 +7,16 @@
 def prserv_make_conn(d, check = False):
     import prserv.serv
     host_params = list([_f for _f in (d.getVar("PRSERV_HOST") or '').split(':') if _f])
+    conn = None
     try:
-        conn = None
         conn = prserv.serv.connect(host_params[0], int(host_params[1]))
         if check:
             if not conn.ping():
                 raise Exception('service not available')
     except Exception as exc:
         bb.fatal("Connecting to PR service %s:%s failed: %s" % (host_params[0], host_params[1], str(exc)))
+        if conn:
+            conn.close()
 
     return conn
 
@@ -28,13 +30,14 @@ def prserv_dump_db(d):
         bb.error("Making connection failed to remote PR service")
         return None
 
-    #dump db
-    opt_version = d.getVar('PRSERV_DUMPOPT_VERSION')
-    opt_pkgarch = d.getVar('PRSERV_DUMPOPT_PKGARCH')
-    opt_checksum = d.getVar('PRSERV_DUMPOPT_CHECKSUM')
-    opt_col = ("1" == d.getVar('PRSERV_DUMPOPT_COL'))
-    d = conn.export(opt_version, opt_pkgarch, opt_checksum, opt_col)
-    conn.close()
+    with conn:
+        #dump db
+        opt_version = d.getVar('PRSERV_DUMPOPT_VERSION')
+        opt_pkgarch = d.getVar('PRSERV_DUMPOPT_PKGARCH')
+        opt_checksum = d.getVar('PRSERV_DUMPOPT_CHECKSUM')
+        opt_col = ("1" == d.getVar('PRSERV_DUMPOPT_COL'))
+        d = conn.export(opt_version, opt_pkgarch, opt_checksum, opt_col)
+
     return d
 
 def prserv_import_db(d, filter_version=None, filter_pkgarch=None, filter_checksum=None):
@@ -46,30 +49,30 @@ def prserv_import_db(d, filter_version=None, filter_pkgarch=None, filter_checksu
     if conn is None:
         bb.error("Making connection failed to remote PR service")
         return None
-    #get the entry values
-    imported = []
-    prefix = "PRAUTO$"
-    for v in d.keys():
-        if v.startswith(prefix):
-            (remain, sep, checksum) = v.rpartition('$')
-            (remain, sep, pkgarch) = remain.rpartition('$')
-            (remain, sep, version) = remain.rpartition('$')
-            if (remain + '$' != prefix) or \
-               (filter_version and filter_version != version) or \
-               (filter_pkgarch and filter_pkgarch != pkgarch) or \
-               (filter_checksum and filter_checksum != checksum):
-               continue
-            try:
-                value = int(d.getVar(remain + '$' + version + '$' + pkgarch + '$' + checksum))
-            except BaseException as exc:
-                bb.debug("Not valid value of %s:%s" % (v,str(exc)))
-                continue
-            ret = conn.importone(version,pkgarch,checksum,value)
-            if ret != value:
-                bb.error("importing(%s,%s,%s,%d) failed. DB may have larger value %d" % (version,pkgarch,checksum,value,ret))
-            else:
-               imported.append((version,pkgarch,checksum,value))
-    conn.close()
+    with conn:
+        #get the entry values
+        imported = []
+        prefix = "PRAUTO$"
+        for v in d.keys():
+            if v.startswith(prefix):
+                (remain, sep, checksum) = v.rpartition('$')
+                (remain, sep, pkgarch) = remain.rpartition('$')
+                (remain, sep, version) = remain.rpartition('$')
+                if (remain + '$' != prefix) or \
+                   (filter_version and filter_version != version) or \
+                   (filter_pkgarch and filter_pkgarch != pkgarch) or \
+                   (filter_checksum and filter_checksum != checksum):
+                   continue
+                try:
+                    value = int(d.getVar(remain + '$' + version + '$' + pkgarch + '$' + checksum))
+                except BaseException as exc:
+                    bb.debug("Not valid value of %s:%s" % (v,str(exc)))
+                    continue
+                ret = conn.importone(version,pkgarch,checksum,value)
+                if ret != value:
+                    bb.error("importing(%s,%s,%s,%d) failed. DB may have larger value %d" % (version,pkgarch,checksum,value,ret))
+                else:
+                   imported.append((version,pkgarch,checksum,value))
     return imported
 
 def prserv_export_tofile(d, metainfo, datainfo, lockdown, nomax=False):
