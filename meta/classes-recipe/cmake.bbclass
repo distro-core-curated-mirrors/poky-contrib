@@ -177,7 +177,7 @@ cmake_do_generate_toolchain_file:append:class-target() {
 }
 
 
-CONFIGURE_FILES = "CMakeLists.txt"
+CONFIGURE_FILES = "CMakeLists.txt *.cmake"
 
 do_configure[cleandirs] = "${@d.getVar('B') if d.getVar('S') != d.getVar('B') else ''}"
 
