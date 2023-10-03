@@ -109,15 +109,16 @@ class QemuRunner:
 
     def decode_qemulog(self, todecode):
         # Sanitize the data received from qemu as it may contain control characters
-        msg = todecode.decode("utf-8", errors='surrogateescape')
+        msg = todecode.decode("utf-8", errors='ignore')
         msg = re_control_char.sub('', msg)
         return msg
 
     def log(self, msg):
         if self.logfile:
-            self.msg += self.decode_qemulog(msg)
-            with codecs.open(self.logfile, "ab") as f:
-                f.write(msg)
+            msg = self.decode_qemulog(msg)
+            self.msg += msg
+            with codecs.open(self.logfile, "a", encoding="utf-8") as f:
+                f.write("%s" % msg)
 
     def getOutput(self, o):
         import fcntl
@@ -473,7 +474,7 @@ class QemuRunner:
                         self.logger.error('Invalid file type: %s\n%s' % (file))
                         read = b''
 
-                    self.logger.debug('Partial boot log:\n%s' % (read.decode('utf-8', errors='surrogateescape')))
+                    self.logger.debug2('Partial boot log:\n%s' % (read.decode('utf-8', errors='ignore')))
                     data = data + read
                     if data:
                         bootlog += data
@@ -484,7 +485,6 @@ class QemuRunner:
                         data = b''
 
                         decodedlog = self.decode_qemulog(bootlog)
-                        self.logger.debug('Searching in %s chars' % len(decodedlog))
                         if self.boot_patterns['search_reached_prompt'] in decodedlog:
                             self.server_socket.close()
                             self.server_socket = qemusock
@@ -506,11 +506,10 @@ class QemuRunner:
                 self.logger.warning("Target didn't reach login banner in %d seconds (%s)" %
                                   (self.boottime, time.strftime("%D %H:%M:%S")))
             tail = lambda l: "\n".join(l.splitlines()[-25:])
-            self.logger.warning("Last 25 lines of bootlog (%d):\n%s" % (len(bootlog.decode("utf-8", errors='surrogateescape')), tail(bootlog.decode("utf-8", errors='surrogateescape') or "")))
             bootlog = self.decode_qemulog(bootlog)
-            self.logger.warning("Last 25 lines of processed bootlog (%d):\n%s" % (len(bootlog), tail(bootlog or "")))
-            self.logger.warning("bootlog (%d):\n%s" % (len(bootlog), bootlog))
-            self.logger.warning("Last 25 lines of msg (%d):\n%s" % (len(self.msg), tail(self.msg or "")))
+            # in case bootlog is empty, use tail qemu log store at self.msg
+            lines = tail(bootlog if bootlog else self.msg)
+            self.logger.warning("Last 25 lines of text (%d):\n%s" % (len(bootlog), lines))
             self.logger.warning("Check full boot log: %s" % self.logfile)
             self.stop()
             return False
