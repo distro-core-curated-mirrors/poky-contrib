@@ -1359,6 +1359,18 @@ python do_qa_patch() {
         if msg:
             oe.qa.handle_error("patch-status", msg, d)
 
+    ###########################################################################
+    # Check for missing ptests
+    ###########################################################################
+    srcdir = d.getVar('S')
+    if not bb.utils.contains('DISTRO_FEATURES', 'ptest', True, False, d):
+        pass
+    elif any(override in ["class-native", "class-nativesdk", "class-cross-canadian"] for override in d.getVar('OVERRIDES').split(':')):
+        # These cases are forcibly disabled in ptest.bbclass, so don't report missing ptest for them
+        bb.note("Package %s QA: skipping unimplemented-ptest: ptests disabled for this recipe class" % d.getVar('PN'))
+    elif bb.data.inherits_class('ptest', d):
+        bb.note("Package %s QA: skipping unimplemented-ptest: ptest implementation detected" % d.getVar('PN'))
+
     oe.qa.exit_if_errors(d)
 }
 
