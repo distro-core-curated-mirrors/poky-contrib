@@ -7625,22 +7625,9 @@ system and gives an overview of their function and contents.
 
          SERIAL_CONSOLES = "115200;ttyS0 115200;ttyS1"
 
-   :term:`SERIAL_CONSOLES_CHECK`
-      Specifies serial consoles, which must be listed in
-      :term:`SERIAL_CONSOLES`, to check against
-      ``/proc/console`` before enabling them using getty. This variable
-      allows aliasing in the format: <device>:<alias>. If a device was
-      listed as "sclp_line0" in ``/dev/`` and "ttyS0" was listed in
-      ``/proc/console``, you would do the following::
-
-         SERIAL_CONSOLES_CHECK = "slcp_line0:ttyS0"
-
-      This variable is currently only supported with SysVinit (i.e. not
-      with systemd). Note that :term:`SERIAL_CONSOLES_CHECK` also requires
-      ``/etc/inittab`` to be writable when used with SysVinit. This makes it
-      incompatible with customizations such as the following::
-
-         EXTRA_IMAGE_FEATURES += "read-only-rootfs"
+      Devices which don't exist will not cause "getty respawning too fast"
+      errors as the device node is checked to exist first, so
+      :term:`SERIAL_CONSOLES_CHECK` is no longer needed.
 
    :term:`SETUPTOOLS_BUILD_ARGS`
       When used by recipes that inherit the :ref:`ref-classes-setuptools3`

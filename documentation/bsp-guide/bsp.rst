@@ -1260,7 +1260,6 @@ located in the layer ``poky/meta-yocto-bsp/conf/machine`` and is named
    do_image_wic[depends] += "mtools-native:do_populate_sysroot dosfstools-native:do_populate_sysroot"
 
    SERIAL_CONSOLES ?= "115200;ttyS0 115200;ttyO0"
-   SERIAL_CONSOLES_CHECK = "${SERIAL_CONSOLES}"
 
    PREFERRED_PROVIDER_virtual/kernel ?= "linux-yocto"
    PREFERRED_VERSION_linux-yocto ?= "5.0%"
