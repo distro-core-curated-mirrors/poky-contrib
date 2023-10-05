@@ -1260,12 +1260,13 @@ class RunQueueData:
         dealtwith = set()
         todeal = set(self.runtaskentries)
         while todeal:
-            for tid in todeal.copy():
-                if not (self.runtaskentries[tid].depends - dealtwith):
-                    dealtwith.add(tid)
-                    todeal.remove(tid)
-                    self.prepare_task_hash(tid)
-                bb.event.check_for_interrupts(self.cooker.data)
+            ready = set(tid for tid in todeal if not (self.runtaskentries[tid].depends - dealtwith))
+
+            self.prepare_task_hashes(ready)
+            for tid in ready:
+                dealtwith.add(tid)
+                todeal.remove(tid)
+            bb.event.check_for_interrupts(self.cooker.data)
 
         bb.parse.siggen.writeout_file_checksum_cache()
 
@@ -1276,6 +1277,14 @@ class RunQueueData:
         bb.parse.siggen.prep_taskhash(tid, self.runtaskentries[tid].depends, self.dataCaches)
         self.runtaskentries[tid].hash = bb.parse.siggen.get_taskhash(tid, self.runtaskentries[tid].depends, self.dataCaches)
         self.runtaskentries[tid].unihash = bb.parse.siggen.get_unihash(tid)
+
+    def prepare_task_hashes(self, tids):
+        for tid in tids:
+            bb.parse.siggen.prep_taskhash(tid, self.runtaskentries[tid].depends, self.dataCaches)
+            self.runtaskentries[tid].hash = bb.parse.siggen.get_taskhash(tid, self.runtaskentries[tid].depends, self.dataCaches)
+
+        for tid, unihash in bb.parse.siggen.get_unihashes(tids).items():
+            self.runtaskentries[tid].unihash = unihash
 
     def dump_data(self):
         """
