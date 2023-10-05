@@ -146,6 +146,8 @@ class BBLock(OESelftestTestCase):
         # unlock all recipes and ensure no bblock.conf file exist
         self.unlock_recipes()
 
+        self.write_config('BB_SIGNATURE_HANDLER = "OEBasicHash"')
+
         # lock tasks for recipes
         result = self.lock_recipes(recipes, tasks)
 
