@@ -426,6 +426,20 @@ overview of their function and contents.
 
          BB_HASHSERVE_UPSTREAM = "hashserv.yocto.io:8687"
 
+   :term:`BB_HASHSERVE_MAX_PARALLEL`
+      Specifies the maximum number of queries to the hash equivalence server
+      that can be performed simultaneously. This can be useful to speed up the
+      initial queries to the server when bitbake is preparing to execute tasks,
+      especially if the I/O delay communicating with the server is the
+      bottleneck. Note that this setting is not helpful if :term:`BB_HASHSERVE`
+      is ``auto`` and :term:`BB_HASHSERVE_UPSTREAM` is not set as the I/O delay
+      in communicating with the local hash equivalence server is not typically
+      the limiting factor
+
+      Example usage::
+
+         BB_HASHSERVE_MAX_PARALLEL = "10"
+
    :term:`BB_INVALIDCONF`
       Used in combination with the ``ConfigParsed`` event to trigger
       re-parsing the base metadata (i.e. all the recipes). The
