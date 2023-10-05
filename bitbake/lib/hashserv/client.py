@@ -134,3 +134,41 @@ class Client(bb.asyncrpc.Client):
 
     def _get_async_client(self):
         return AsyncClient()
+
+
+class ClientPool(bb.asyncrpc.ClientPool):
+    def __init__(self, address, max_clients):
+        super().__init__(max_clients)
+        self.address = address
+
+    async def _new_client(self):
+        return await create_async_client(self.address)
+
+    def get_unihashes(self, queries):
+        """
+        Query multiple unihashes in parallel.
+
+        The queries argument is a dictionary with arbitrary key. The values
+        must be a tuple of (method, taskhash).
+
+        Returns a dictionary with a corresponding key for each input key, and
+        the value is the queried unihash (which might be none if the query
+        failed)
+        """
+        results = {key: None for key in queries.keys()}
+
+        def make_task(key, method, taskhash):
+            async def task(client):
+                nonlocal results
+                unihash = await client.get_unihash(method, taskhash)
+                results[key] = unihash
+
+            return task
+
+        def gen_tasks():
+            for key, args in queries.items():
+                method, taskhash = args
+                yield make_task(key, method, taskhash)
+
+        self.run_tasks(gen_tasks())
+        return results
