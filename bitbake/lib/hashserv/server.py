@@ -187,7 +187,7 @@ class ServerClient(bb.asyncrpc.AsyncServerConnection):
                 'reset-stats': self.handle_reset_stats,
                 'backfill-wait': self.handle_backfill_wait,
                 'remove': self.handle_remove,
-                'clean_unused': self.handle_clean_unused,
+                'clean-unused': self.handle_clean_unused,
             })
 
     def validate_proto_version(self):

@@ -107,7 +107,7 @@ class AsyncClient(bb.asyncrpc.AsyncClient):
 
     async def clean_unused(self, max_age):
         await self._set_mode(self.MODE_NORMAL)
-        return await self.send_message({"clean_unused": {"max_age_seconds": max_age}})
+        return await self.send_message({"clean-unused": {"max_age_seconds": max_age}})
 
 
 class Client(bb.asyncrpc.Client):
