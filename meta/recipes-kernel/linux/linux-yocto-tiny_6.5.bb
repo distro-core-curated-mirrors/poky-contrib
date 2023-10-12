@@ -31,3 +31,5 @@ COMPATIBLE_MACHINE = "^(qemux86|qemux86-64|qemuarm64|qemuarm|qemuarmv5)$"
 KERNEL_FEATURES = ""
 
 KERNEL_DEVICETREE:qemuarmv5 = "versatile-pb.dtb"
+
+SRC_URI += "file://virt.cfg"
