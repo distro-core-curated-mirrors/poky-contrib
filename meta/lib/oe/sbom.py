@@ -68,7 +68,9 @@ def doc_path(spdx_deploy, doc_name, arch, subdir):
     return spdx_deploy / arch / subdir / (doc_name + ".spdx.json")
 
 
-def write_doc(d, spdx_doc, arch, subdir, spdx_deploy=None, indent=None):
+# WARNING: This is for SPDX3. As long as we don't know which is the root
+# element, this suggest a virtual graph as top of the tree
+def write_doc(d, spdx_graph, spdx_doc, arch, subdir, spdx_deploy=None, indent=None):
     from pathlib import Path
 
     if spdx_deploy is None:
@@ -77,7 +79,7 @@ def write_doc(d, spdx_doc, arch, subdir, spdx_deploy=None, indent=None):
     dest = doc_path(spdx_deploy, spdx_doc.name, arch, subdir)
     dest.parent.mkdir(exist_ok=True, parents=True)
     with dest.open("wb") as f:
-        doc_sha1 = spdx_doc.to_json(f, sort_keys=False, indent=indent)
+        doc_sha1 = spdx_graph.to_json(f, sort_keys=False, indent=indent)
 
     l = _doc_path_by_namespace(spdx_deploy, arch, spdx_doc.documentNamespace)
     l.parent.mkdir(exist_ok=True, parents=True)
