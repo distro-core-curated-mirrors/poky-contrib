@@ -68,6 +68,7 @@ class SPDX3Hash(SPDX3IntegrityMethod):
 #
 class SPDX3CreationInfo(SPDXObject):
     specVersion = _String(default="3.0.0")
+    comment = _String(default="")
     created = _String()
     createdBy = _ObjectList(SPDX3Agent)
     profile = _StringList(default=["core", "software"])  # TODO: not in creationInfo in spec
@@ -88,7 +89,8 @@ class SPDX3CreationInfo(SPDXObject):
             main["createdUsing"] = [c.spdxId for c in self._spdx["createdUsing"]]
 
         for (key, value) in self._spdx.items():
-            if not key in ["createdBy", "createdUsing"]:
+            if not key in ["createdBy", "createdUsing"] \
+               and value is not None and value is not "":
                 main.update({key: value})
         return main
 
