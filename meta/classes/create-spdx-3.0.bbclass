@@ -200,77 +200,102 @@ python() {
         d.setVar("SPDX_LICENSE_DATA", data)
 }
 
-def convert_license_to_spdx(lic, document, d, existing={}):
+def add_extracted_license(d, document, ident, name):
     from pathlib import Path
-    import oe.spdx
+    import oe.spdx3
+
+    extracted_info = oe.spdx3.SPDX3SimpleLicensingText()
+    extracted_info.name = name
+    extracted_info.licenseText = None
+
+    if name == "PD":
+        # Special-case this.
+        extracted_info.licenseText = "Software released to the public domain"
+    else:
+        # Seach for the license in COMMON_LICENSE_DIR and LICENSE_PATH
+        for directory in [d.getVar('COMMON_LICENSE_DIR')] + (d.getVar('LICENSE_PATH') or '').split():
+            try:
+                with (Path(directory) / name).open(errors="replace") as f:
+                    extracted_info.licenseText = f.read()
+                    break
+            except FileNotFoundError:
+                pass
+        if extracted_info.licenseText is None:
+            # If it's not SPDX or PD, then NO_GENERIC_LICENSE must be set
+            filename = d.getVarFlag('NO_GENERIC_LICENSE', name)
+            if filename:
+                filename = d.expand("${S}/" + filename)
+                with open(filename, errors="replace") as f:
+                    extracted_info.licenseText = f.read()
+            else:
+                bb.fatal("Cannot find any text for license %s" % name)
+
+    return extracted_info
+
+def convert(d, l, document):
+    import oe.spdx3
 
     license_data = d.getVar("SPDX_LICENSE_DATA")
-    extracted = {}
 
-    def add_extracted_license(ident, name):
-        nonlocal document
+    if l == "(" or l == ")":
+        return l
 
-        if name in extracted:
-            return
+    if l == "&":
+        return "AND"
 
-        extracted_info = oe.spdx.SPDX3ExtractedLicensingInfo()
-        extracted_info.name = name
-        extracted_info.licenseId = ident
-        extracted_info.extractedText = None
+    if l == "|":
+        return "OR"
 
-        if name == "PD":
-            # Special-case this.
-            extracted_info.extractedText = "Software released to the public domain"
-        else:
-            # Seach for the license in COMMON_LICENSE_DIR and LICENSE_PATH
-            for directory in [d.getVar('COMMON_LICENSE_DIR')] + (d.getVar('LICENSE_PATH') or '').split():
-                try:
-                    with (Path(directory) / name).open(errors="replace") as f:
-                        extracted_info.extractedText = f.read()
-                        break
-                except FileNotFoundError:
-                    pass
-            if extracted_info.extractedText is None:
-                # If it's not SPDX or PD, then NO_GENERIC_LICENSE must be set
-                filename = d.getVarFlag('NO_GENERIC_LICENSE', name)
-                if filename:
-                    filename = d.expand("${S}/" + filename)
-                    with open(filename, errors="replace") as f:
-                        extracted_info.extractedText = f.read()
-                else:
-                    bb.fatal("Cannot find any text for license %s" % name)
+    if l == "CLOSED":
+        return "NONE"
 
-        extracted[name] = extracted_info
-        document.hasExtractedLicensingInfos.append(extracted_info)
+    spdx_license = d.getVarFlag("SPDXLICENSEMAP", l) or l
 
-    def convert(l):
-        if l == "(" or l == ")":
-            return l
+    if spdx_license in license_data["licenses"]:
+        lic = oe.spdx3.SPDX3LicenseExpression()
+        lic.licenseExpression = spdx_license
+        lic.licenseListVersion = d.getVar("SPDX_LICENSE_DATA")["licenseListVersion"]
+        return lic
+    else:
+        spdx_license = "LicenseText-" + l
+        return add_extracted_license(d, document, spdx_license, l)
 
-        if l == "&":
-            return "AND"
 
-        if l == "|":
-            return "OR"
+def convert_license_to_spdx(lic, document, d, existing={}):
+    import oe.spdx3
 
-        if l == "CLOSED":
-            return "NONE"
-
-        spdx_license = d.getVarFlag("SPDXLICENSEMAP", l) or l
-        if spdx_license in license_data["licenses"]:
-            return spdx_license
-
-        try:
-            spdx_license = existing[l]
-        except KeyError:
-            spdx_license = "LicenseRef-" + l
-            add_extracted_license(spdx_license, l)
-
-        return spdx_license
-
+    licenses_found = []
+    licenses_id = []
+    
     lic_split = lic.replace("(", " ( ").replace(")", " ) ").replace("|", " | ").replace("&", " & ").split()
+    for l in lic_split:
+        licenses_found.append(convert(d, l, document))
+    
+    for element in licenses_found:
 
-    return ' '.join(convert(l) for l in lic_split)
+        existing_licenses = document.get_licenses()
+
+        if isinstance(element, oe.spdx3.SPDX3LicenseExpression):
+            lic_type = "LicenseExpression"
+        else:
+            lic_type = "SimpleLicenseText"
+
+        if isinstance(element, oe.spdx3.SPDX3AnyLicenseInfo) and not existing_licenses:
+            element.spdxId = new_spdxid(d, document, lic_type, "1")
+            licenses_id.append(element.spdxId)
+            document.element.append(element)
+        elif isinstance(element, oe.spdx3.SPDX3AnyLicenseInfo):
+            for existinglic in existing_licenses:
+                if ("licenseExpression" in element.properties() and "licenseExpression" in existinglic.properties() and element.licenseExpression == existinglic.licenseExpression) or \
+                ("licenseText" in element.properties() and "licenseText" in existinglic.properties() and element.licenseText == existinglic.licenseText):
+                    licenses_id.append(existinglic.spdxId)
+                    break
+
+            element.spdxId = new_spdxid(d, document, lic_type, str(len(existing_licenses) + 1))
+            licenses_id.append(element.spdxId)
+            document.element.append(element)
+
+    return licenses_id
 
 def process_sources(d):
     pn = d.getVar('PN')
@@ -362,11 +387,31 @@ def add_package_files(d, doc, spdx_pkg, topdir, get_spdxid, get_types, *, archiv
                 hashSha256.hashValue = bb.utils.sha256_file(filepath)
                 spdx_file.verifiedUsing.append(hashSha256)
 
-                # TODO: Rework when License Profile implemented
-                #if "SOURCE" in spdx_file.fileTypes:
-                #    extracted_lics = extract_licenses(filepath)
-                #    if extracted_lics:
-                #        spdx_file.licenseInfoInFiles = extracted_lics
+                if d.getVar("SPDX_ENABLE_LICENSING") == "1" and \
+                "source" in get_types(filepath):
+                    extracted_lics = extract_licenses(filepath)
+                    if extracted_lics:
+                        for lic in extracted_lics:
+                            current_licenses = doc.get_licenses_exp()
+                            if current_licenses:
+                                for c_lic in current_licenses:
+                                    if lic == c_lic.licenseExpression:
+                                        create_relationship(d, doc, spdx_file, "declaredLicense", c_lic)
+                                        break
+
+                                l = oe.spdx3.SPDX3LicenseExpression()
+                                l.licenseExpression = lic
+                                l.licenseListVersion = d.getVar("SPDX_LICENSE_DATA")["licenseListVersion"]
+                                l.spdxId = new_spdxid(d, doc, "LicenseExpression", str(len(current_licenses) +1))
+                                doc.element.append(l)
+                                create_relationship(d, doc, spdx_file, "declaredLicense", l)
+                            else:
+                                l = oe.spdx3.SPDX3LicenseExpression()
+                                l.licenseExpression = lic
+                                l.spdxId = new_spdxid(d, doc, "LicenseExpression", "1")
+                                l.licenseListVersion = d.getVar("SPDX_LICENSE_DATA")["licenseListVersion"]
+                                doc.element.append(l)
+                                create_relationship(d, doc, spdx_file, "declaredLicense", l)
 
                 doc.element.append(spdx_file)
 
@@ -574,10 +619,13 @@ python do_create_spdx() {
     homepage = d.getVar("HOMEPAGE")
     if homepage:
         recipe.homePage = homepage
-# TODO: Rework when License Profile implemented
-#    license = d.getVar("LICENSE")
-#    if license:
-#        recipe.licenseDeclared = convert_license_to_spdx(license, doc, d)
+
+    if d.getVar("SPDX_ENABLE_LICENSING") == "1":
+        _license = d.getVar("LICENSE")
+        if _license:
+            licenseDeclared = convert_license_to_spdx(_license, doc, d)
+            for l in licenseDeclared:
+                create_relationship(d, doc, recipe, "declaredLicense", l)
 
     summary = d.getVar("SUMMARY")
     if summary:
@@ -623,9 +671,14 @@ python do_create_spdx() {
 
     doc_sha1 = oe.sbom.write_doc(d, doc, doc, d.getVar("SSTATE_PKGARCH"), "recipes", indent=get_json_indent(d))
 
-    #TODO: references
-
-#    found_licenses = {license.name:recipe_ref.externalDocumentId + ":" + license.licenseId for license in doc.hasExtractedLicensingInfos}
+    # TODO: Recipe_ref not working with image_spdx_archive
+    #recipe_ref = oe.spdx3.SPDX3ExternalMap()
+    #recipe_ref.externalId = recipe.spdxId
+    #recipe_hash = oe.spdx3.SPDX3Hash()
+    #recipe_hash.algorithm = "sha1"
+    #recipe_hash.hashValue = doc_sha1
+    #recipe_ref.verifiedUsing.append(recipe_hash)
+    #recipe_ref.definingDocument = get_doc_namespace(d, doc)
 
     if not recipe_spdx_is_native(doc, recipe):
         bb.build.exec_func("read_subpackage_metadata", d)
@@ -643,8 +696,7 @@ python do_create_spdx() {
             generate_creationInfo(d, doc)
 
             # TODO: Rework when License Profile implemented
-            # package_doc.creationInfo.licenseListVersion = d.getVar("SPDX_LICENSE_DATA")["licenseListVersion"]
-            # package_doc.externalDocumentRefs.append(recipe_ref)
+            #doc.imports.append(recipe_ref)
 
             package_license = d.getVar("LICENSE:%s" % package) or d.getVar("LICENSE")
 
@@ -653,9 +705,12 @@ python do_create_spdx() {
             spdx_package.spdxId = new_spdxid(d, doc, "package", pkg_name)
             spdx_package.name = pkg_name
             spdx_package.packageVersion = d.getVar("PV")
-            # TODO: Rework when License Profile implemented
-            #spdx_package.licenseDeclared = convert_license_to_spdx(package_license, package_doc, d, found_licenses)
-            spdx_package.suppliedBy = [ d.getVar("SPDX_SUPPLIER") ]
+            spdx_package.suppliedBy.append(get_supplier(d, doc))
+
+            if d.getVar("SPDX_ENABLE_LICENSING") == "1":
+                licenseDeclared = convert_license_to_spdx(package_license, doc, d)
+                for l in licenseDeclared:
+                    create_relationship(d, doc, spdx_package, "declaredLicense", l)
 
             doc.element.append(spdx_package)
 

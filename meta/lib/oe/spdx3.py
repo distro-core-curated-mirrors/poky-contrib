@@ -286,6 +286,14 @@ class SPDX3SpdxDocument(SPDX3Bundle):
 
         return json.load(f, cls=Decoder)
 
+    def get_licenses(self):
+        licenses = []
+        for el in self.element:
+            if isinstance(el, SPDX3AnyLicenseInfo):
+                licenses.append(el)
+
+        return licenses
+
 #
 # Profile: Software - Datatypes
 #
@@ -322,6 +330,20 @@ class SPDX3Package(SPDX3SoftwareArtifact):
 
 class SPDX3File(SPDX3SoftwareArtifact):
     pass
+
+#
+# Profile: Simple Licensing
+#
+
+class SPDX3AnyLicenseInfo(SPDX3Element):
+    pass
+
+class SPDX3LicenseExpression(SPDX3AnyLicenseInfo):
+    licenseExpression = _String()
+    licenseListVersion = _String()
+
+class SPDX3SimpleLicensingText(SPDX3AnyLicenseInfo):
+    licenseText = _String()
 
 #
 # OpenEmbedded base class
