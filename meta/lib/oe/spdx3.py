@@ -286,17 +286,16 @@ class SPDX3SpdxDocument(SPDX3Bundle):
     @classmethod
     def from_json(cls, f, attributes=[]):
         """
-        Look into a json file for all objects of given type. Return the document
-        element and a dictionary of required objects.
+        Look into a json file. This will return a dictionnary that represents
+        the SpdxDocument, and is attributes is specified, a list of
+        representation of thos attributes.
         """
+
         class Decoder(json.JSONDecoder):
             def __init__(self, *args, **kwargs):
                 super().__init__(object_hook=self.object_hook, *args, **kwargs)
 
             def object_hook(self, d):
-                if 'type' in d.keys():
-                    if d['type'] in attributes or d['type'] == 'SpdxDocument':
-                        return d
                 if '@graph' in d.keys():
                     spdxDocument = None
                     attr = {a: [] for a in attributes}
@@ -304,9 +303,11 @@ class SPDX3SpdxDocument(SPDX3Bundle):
                         if p is not None:
                             if p['type'] == 'SpdxDocument':
                                 spdxDocument = p
-                            else:
+                            elif p['type'] in attributes:
                                 attr[p['type']].append(p)
                     return (spdxDocument, attr)
+                else:
+                    return d
 
         return json.load(f, cls=Decoder)
 
