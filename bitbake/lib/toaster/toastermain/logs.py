@@ -8,7 +8,7 @@ from pathlib import Path
 from django.http import HttpRequest
 
 #BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
-BUILDDIR = os.environ.get("BUILDDIR")
+BUILDDIR = Path(os.environ.get('BUILDDIR'))
 
 
 def log_api_request(request, response, view, logger_name='api'):
