@@ -1,0 +1,42 @@
+This repository contains the Proof-of-Concept code for SPDX3 support
+in the Yocto Project.
+
+What does the code include:
+* The SPDX3 generation with JSON-LD serialization, still using .json extension
+* Implementations of the core, and software profiles
+
+Here are the known limitations:
+* At the time of writing this code, the SPDX3 specification is still undergoing
+  changes. Especially, the root element has not been yet decided. Because of
+  that, the code might require changes when the final specification is
+  released.
+
+* Some parts of the SPDX3 require clarifications. Current issues:
+  - Software.Package.homepage is sometiemes also called homePage: need to
+    confirm spelling
+  - Core.Relationship.from needs special care in Python as it conflicts
+    with a built-in
+  - should suppliedBy be serialized by an array or as a single string?
+  - In examples, SpdxDocument has an attribute namespace. It does not in the
+    documentation
+  - what is the equivalent of the documentNamespace that was in 2.2?
+
+* SPDX3 introduces modular model, where content depends on the profile used.
+  The configuration of profiles to generate needs to be reworked. Today,
+  generation is gated by variables shared with SPDX2.2 code like
+  SPDX_INCLUDE_SOURCES. In SPDX3 it could be done by enabling specific
+  profiles and variables like SPDX3_ENABLE_LICENSING or SPDX3_ENABLE_SECURITY.
+
+* The implementation includes data similar to the YP SPDX 2.2 content. SPDX 3.0
+  has additional profiles and fields that did not exist in the earier version.
+  The project needs a discussion on what is useful to include in the YP SPDX.
+  Additional profiles and classes might be implemented to carry that data.
+
+* The security profile implementation has been prototyped. However, some part
+  of the needed data is necessary from the cve-check database (for example:
+  CVSS). Obtaining the information is possible, but will require dependency on
+  the cve-check to download the database, then refactoring of the cve-check
+  database accesses so that they can be done from other classes while keeping
+  correct locks. Also, VulnAssessmentRelationship requires classification
+  of fixes as "Fixed", "NotAffected", while YP cve-check has only one category
+  for both. At the moment of writing this, there is a patch on the ML.
