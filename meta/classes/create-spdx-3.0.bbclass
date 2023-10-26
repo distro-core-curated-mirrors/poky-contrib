@@ -335,73 +335,6 @@ def add_package_files(d, doc, spdx_pkg, topdir, get_spdxid, get_types, *, archiv
 
 
 def add_package_sources_from_debug(d, package_doc, spdx_package, package, package_files, sources):
-    from pathlib import Path
-    import oe.packagedata
-    import oe.spdx3
-
-    debug_search_paths = [
-        Path(d.getVar('PKGD')),
-        Path(d.getVar('STAGING_DIR_TARGET')),
-        Path(d.getVar('STAGING_DIR_NATIVE')),
-        Path(d.getVar('STAGING_KERNEL_DIR')),
-    ]
-
-    pkg_data = oe.packagedata.read_subpkgdata_extended(package, d)
-
-    if pkg_data is None:
-        return
-
-    for file_path, file_data in pkg_data["files_info"].items():
-        if not "debugsrc" in file_data:
-            continue
-
-        for pkg_file in package_files:
-            if file_path.lstrip("/") == pkg_file.name.lstrip("/"):
-                break
-        else:
-            bb.fatal("No package file found for %s in %s; SPDX found: %s" % (str(file_path), package,
-                " ".join(p.name for p in package_files)))
-            continue
-
-        for debugsrc in file_data["debugsrc"]:
-            ref_id = None
-            for search in debug_search_paths:
-                if debugsrc.startswith("/usr/src/kernel"):
-                    debugsrc_path = search / debugsrc.replace('/usr/src/kernel/', '')
-                else:
-                    debugsrc_path = search / debugsrc.lstrip("/")
-                if not debugsrc_path.exists():
-                    continue
-
-                file_sha256 = bb.utils.sha256_file(debugsrc_path)
-
-                if file_sha256 in sources:
-                    source_file = sources[file_sha256]
-                    doc_ref = package_doc.find_external_map(source_file.doc.documentNamespace)
-                    if doc_ref is None:
-                        doc_ref = oe.spdx3.SPDX3ExternalMap()
-                        doc_ref.externalId = "DocumentRef-dependency-" + source_file.doc.name
-                        doc_ref.verifiedUsing = oe.spdx3.SPDX3Hash()
-                        doc_ref.verifiedUsing.algorithm = "sha1"
-                        doc_ref.verifiedUsing.hashValue = source_file.doc_sha1
-                        doc_ref.definingDocument = source_file.doc.documentNamespace
-
-                        package_doc.imports.append(doc_ref)
-
-                    ref_id = "%s:%s" % (doc_ref.externalId, source_file.file.spdxId)
-                else:
-                    bb.debug(1, "Debug source %s with SHA256 %s not found in any dependency" % (str(debugsrc_path), file_sha256))
-                break
-            else:
-                bb.debug(1, "Debug source %s not found" % debugsrc)
-
-            relation_id = package_doc.add_relationship(ref_id, "generates", pkg_file)
-            comment = oe.spdx3.SPDX3Annotation()
-            comment.subject = relation_id
-            comment.annotationType = "other"
-            comment.statement = "debugsrc"
-            package_doc.element.append(comment)
-
     return
 
 add_package_sources_from_debug[vardepsexclude] += "STAGING_KERNEL_DIR"
@@ -448,43 +381,12 @@ def collect_dep_recipes(d, doc, spdx_recipe):
         doc.imports.append(dep_recipe_ref)
         doc.add_relationship("%s:%s" % (dep_recipe_ref.externalId, spdx_dep_recipe["spdxId"]), "buildDependency", spdx_recipe)
 
-    return dep_recipes
+    # return dep_recipes
 
 collect_dep_recipes[vardepsexclude] = "SSTATE_ARCHS"
 
 def collect_dep_sources(d, dep_recipes):
-    import oe.sbom
-    import oe.spdx3
-
-    sources = {}
-    for dep in dep_recipes:
-        # Don't collect sources from native recipes as they
-        # match non-native sources also.
-        if hasattr(dep.doc, "element"):
-            for element in dep.doc.element:
-                if isinstance(element, oe.spdx3.SPDX3Annotation) \
-                and element.subject == dep.recipe.spdxId \
-                and element.statement == "isNative":
-                    continue
-
-        recipe_files = []
-
-        if hasattr(dep.doc, "element"):
-            for element in dep.doc.element:
-                if isinstance(element, oe.spdx3.SPDX3Relationship) and element._from == dep.recipe.spdxId and element.relationshipType == "contains":
-                    recipe_files = element.to
-
-            for element in dep.doc.element:
-                if isinstance(element, oe.spdx3.SPDX3File) \
-                and element.spdxId not in recipe_files \
-                and (element.primaryPurpose == "source" or "source" in element.additionalPurpose):
-                    for checksum in element.verifiedUsing:
-                        if algorithm in checksum.properties() \
-                        and checksum.algorithm == "sha256":
-                            sources[checksum.hashValue] = oe.sbom.DepSource(dep.doc, dep.doc_sha1, dep.recipe, spdx_file)
-                            break
-
-    return sources
+    return {}
 
 def add_download_packages(d, doc, recipe):
     import os.path
@@ -664,14 +566,12 @@ python do_create_spdx() {
             if archive is not None:
                 recipe.packageFileName = str(recipe_archive.name)
 
-    dep_recipes = collect_dep_recipes(d, doc, recipe)
+    collect_dep_recipes(d, doc, recipe)
 
     doc_sha1 = oe.sbom.write_doc(d, doc, doc, d.getVar("SSTATE_PKGARCH"), "recipes", indent=get_json_indent(d))
-    dep_recipes.append(oe.sbom.DepRecipe(doc, doc_sha1, recipe))
 
     #TODO: references
 
-    sources = collect_dep_sources(d, dep_recipes)
 #    found_licenses = {license.name:recipe_ref.externalDocumentId + ":" + license.licenseId for license in doc.hasExtractedLicensingInfos}
 
     if not recipe_spdx_is_native(d, recipe):
@@ -724,7 +624,8 @@ python do_create_spdx() {
                 if archive is not None:
                     spdx_package.packageFileName = str(package_archive.name)
 
-            add_package_sources_from_debug(d, doc, spdx_package, package, package_files, sources)
+            # TODO: is that required ?
+            # add_package_sources_from_debug(d, doc, spdx_package, package, package_files, sources)
 
             oe.sbom.write_doc(d, doc, doc, d.getVar("SSTATE_PKGARCH"), "packages", indent=get_json_indent(d))
 }
