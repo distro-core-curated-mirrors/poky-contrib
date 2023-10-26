@@ -119,3 +119,35 @@ def read_doc(fn):
         doc = oe.spdx.SPDXDocument.from_json(f)
 
     return (doc, sha1.hexdigest())
+
+
+def search_doc(fn, attr_types=None):
+    """
+    Look for all attributes in the given dictionary. Return the document
+    element, a dictionary of the required attributes and the sha1 of the file.
+    """
+    import hashlib
+    import oe.spdx3
+    import io
+    import contextlib
+
+    @contextlib.contextmanager
+    def get_file():
+        if isinstance(fn, io.IOBase):
+            yield fn
+        else:
+            with fn.open("rb") as f:
+                yield f
+
+    with get_file() as f:
+        sha1 = hashlib.sha1()
+        while True:
+            chunk = f.read(4096)
+            if not chunk:
+                break
+            sha1.update(chunk)
+
+        f.seek(0)
+        doc, attributes = oe.spdx3.SPDX3SpdxDocument.from_json(f, attr_types or [])
+
+    return (doc, attributes, sha1.hexdigest())
