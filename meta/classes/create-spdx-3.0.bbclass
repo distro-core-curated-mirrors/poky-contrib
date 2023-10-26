@@ -129,12 +129,26 @@ def get_supplier(d, doc=None):
 
     return agent
 
-def recipe_spdx_is_native(d, recipe):
+def create_annotation(d, doc, recipe, comment):
+    import oe.spdx3
+
+    c = oe.spdx3.SPDX3Annotation()
+    c.annotationType = "other"
+    c.subject = recipe.spdxId
+    c.statement = comment
+
+    doc.element.append(c)
+
+def recipe_spdx_is_native(doc, recipe):
+    import oe.spdx3
+
+    for element in doc.element:
+        if isinstance(element, oe.spdx3.SPDX3Annotation) \
+        and element.subject == recipe.spdxId \
+        and element.statement == "isNative":
+            return True
+
     return False
-# TODO: find a better way to mark native recipes
-#    return any(a.annotationType == "OTHER" and
-#      a.annotator == "Tool: %s - %s" % (d.getVar("SPDX_TOOL_NAME"), d.getVar("SPDX_TOOL_VERSION")) and
-#      a.comment == "isNative" for a in recipe.annotations)
 
 def is_work_shared_spdx(d):
     return bb.data.inherits_class('kernel', d) or ('work-shared' in d.getVar('WORKDIR'))
@@ -435,10 +449,23 @@ def add_download_packages(d, doc, recipe):
             doc.add_relationship(doc, "describes", package)
             doc.add_relationship(package, "buildDependency", recipe)
 
-
 def collect_direct_deps(d, dep_task):
+    current_task = "do_" + d.getVar("BB_CURRENTTASK")
+    pn = d.getVar("PN")
+
+    taskdepdata = d.getVar("BB_TASKDEPDATA", False)
+
+    for this_dep in taskdepdata.values():
+        if this_dep[0] == pn and this_dep[1] == current_task:
+            break
+    else:
+        bb.fatal(f"Unable to find this {pn}:{current_task} in taskdepdata")
 
     deps = set()
+    for dep_name in this_dep[3]:
+        dep_data = taskdepdata[dep_name]
+        if dep_data[1] == dep_task and dep_data[0] != pn:
+            deps.add((dep_data[0], dep_data[7]))
 
     return sorted(deps)
 
@@ -511,12 +538,7 @@ python do_create_spdx() {
     recipe.suppliedBy.append(get_supplier(d, doc))
 
     if bb.data.inherits_class("native", d) or bb.data.inherits_class("cross", d):
-        comment = oe.spdx3.SPDX3Annotation()
-        comment.annotationType = "other"
-        comment.subject = recipe.spdxId
-        comment.statement = "isNative"
-
-        doc.element.append(comment)
+        create_annotation(d, doc, recipe, "isNative")
 
     homepage = d.getVar("HOMEPAGE")
     if homepage:
@@ -536,7 +558,7 @@ python do_create_spdx() {
 
     if d.getVar("SPDX_CUSTOM_ANNOTATION_VARS"):
         for var in d.getVar('SPDX_CUSTOM_ANNOTATION_VARS').split():
-            recipe.annotations.append(create_annotation(d, var + "=" + d.getVar(var)))
+            recipe.annotations.append(create_annotation(d, doc, recipe, var + "=" + d.getVar(var)))
 
     # TODO: CVE handling
 
@@ -574,7 +596,7 @@ python do_create_spdx() {
 
 #    found_licenses = {license.name:recipe_ref.externalDocumentId + ":" + license.licenseId for license in doc.hasExtractedLicensingInfos}
 
-    if not recipe_spdx_is_native(d, recipe):
+    if not recipe_spdx_is_native(doc, recipe):
         bb.build.exec_func("read_subpackage_metadata", d)
 
         pkgdest = Path(d.getVar("PKGDEST"))
@@ -685,11 +707,131 @@ def collect_package_providers(d):
 collect_package_providers[vardepsexclude] += "BB_TASKDEPDATA"
 
 python do_create_runtime_spdx() {
-    # TODO: implement for SPDX3
-    return
+    from datetime import datetime, timezone
+    import oe.sbom
+    import oe.spdx3
+    import oe.packagedata
+    from pathlib import Path
+
+    deploy_dir_spdx = Path(d.getVar("DEPLOY_DIR_SPDX"))
+    spdx_deploy = Path(d.getVar("SPDXRUNTIMEDEPLOY"))
+    is_native = bb.data.inherits_class("native", d) or bb.data.inherits_class("cross", d)
+
+    creation_time = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    providers = collect_package_providers(d)
+    pkg_arch = d.getVar("SSTATE_PKGARCH")
+    package_archs = d.getVar("SSTATE_ARCHS").split()
+    package_archs.reverse()
+
+    if not is_native:
+        bb.build.exec_func("read_subpackage_metadata", d)
+
+        dep_package_cache = {}
+
+        pkgdest = Path(d.getVar("PKGDEST"))
+        for package in d.getVar("PACKAGES").split():
+            localdata = bb.data.createCopy(d)
+            pkg_name = d.getVar("PKG:%s" % package) or package
+            localdata.setVar("PKG", pkg_name)
+            localdata.setVar('OVERRIDES', d.getVar("OVERRIDES", False) + ":" + package)
+
+            if not oe.packagedata.packaged(package, localdata):
+                continue
+
+            pkg_spdx_path = oe.sbom.doc_path(deploy_dir_spdx, pkg_name, pkg_arch, "packages")
+
+            j_package_doc, j_packages, package_doc_sha1 = oe.sbom.search_doc(pkg_spdx_path, ["Package"])
+
+            for p in j_packages["Package"]:
+                if p['name'] == pkg_name:
+                    j_spdx_package = p
+                    break
+            else:
+                bb.fatal("Package '%s' not found in %s" % (pkg_name, pkg_spdx_path))
+
+            runtime_doc = oe.spdx3.SPDX3SpdxDocument()
+            runtime_doc.name = "runtime-" + pkg_name
+            runtime_doc.documentNamespace = get_doc_namespace(localdata, runtime_doc)
+            runtime_doc.creationInfo.created = creation_time
+            generate_creationInfo(d, runtime_doc,
+                                  "This document was created by analyzing package runtime dependencies.")
+
+            package_ref = oe.spdx3.SPDX3ExternalMap()
+            package_ref.externalId = "DocumentRef-package-" + package
+            package_ref.definingDocument = j_package_doc['documentNamespace']
+            hashSha1 = oe.spdx3.SPDX3Hash()
+            hashSha1.algorithm = "sha1"
+            hashSha1.hashValue = package_doc_sha1
+            package_ref.verifiedUsing.append(hashSha1)
+
+            runtime_doc.imports.append(package_ref)
+
+            create_relationship(
+                d, runtime_doc,
+                runtime_doc,
+                "amends",
+                "%s:%s" % (package_ref.externalId, j_package_doc['spdxId'])
+            )
+
+            deps = bb.utils.explode_dep_versions2(localdata.getVar("RDEPENDS") or "")
+            seen_deps = set()
+            for dep, _ in deps.items():
+                if dep in seen_deps:
+                    continue
+
+                if dep not in providers:
+                    continue
+
+                (dep, dep_hashfn) = providers[dep]
+
+                if not oe.packagedata.packaged(dep, localdata):
+                    continue
+
+                dep_pkg_data = oe.packagedata.read_subpkgdata_dict(dep, d)
+                dep_pkg = dep_pkg_data["PKG"]
+
+                if dep in dep_package_cache:
+                    (j_dep_spdx_package, dep_package_ref) = dep_package_cache[dep]
+                else:
+                    dep_path = oe.sbom.doc_find_by_hashfn(deploy_dir_spdx, package_archs, dep_pkg, dep_hashfn)
+                    if not dep_path:
+                        bb.fatal("No SPDX file found for package %s, %s" % (dep_pkg, dep_hashfn))
+
+                    j_spdx_dep_doc, j_spdx_dep_packages, spdx_dep_sha1 = oe.sbom.search_doc(dep_path, ["Package"])
+
+                    for pkg in j_spdx_dep_packages["Package"]:
+                        if pkg['name'] == dep_pkg:
+                            j_dep_spdx_package = pkg
+                            break
+                    else:
+                        bb.fatal("Package '%s' not found in %s" % (dep_pkg, dep_path))
+
+
+                    dep_package_ref = oe.spdx3.SPDX3ExternalMap()
+                    dep_package_ref.externalId = "DocumentRef-runtime-dependency-" + j_spdx_dep_doc['name']
+                    dep_package_ref.definingDocument = j_spdx_dep_doc['documentNamespace']
+                    hashSha1 = oe.spdx3.SPDX3Hash()
+                    hashSha1.algorithm = "sha1"
+                    hashSha1.hashValue = spdx_dep_sha1
+                    dep_package_ref.verifiedUsing.append(hashSha1)
+
+                    dep_package_cache[dep] = (j_dep_spdx_package, dep_package_ref)
+
+                runtime_doc.imports.append(dep_package_ref)
+
+                create_relationship(
+                    d, runtime_doc,
+                    "%s:%s" % (dep_package_ref.externalId, j_dep_spdx_package['spdxId']),
+                    "runtimeDependency",
+                    "%s:%s" % (package_ref.externalId, j_spdx_package['spdxId'])
+                )
+                seen_deps.add(dep)
+
+            oe.sbom.write_doc(d, runtime_doc, runtime_doc, pkg_arch, "runtime", spdx_deploy, indent=get_json_indent(d))
 }
 
-do_create_runtime_spdx[vardepsexclude] += "OVERRIDES"
+do_create_runtime_spdx[vardepsexclude] += "OVERRIDES SSTATE_ARCHS"
 
 addtask do_create_runtime_spdx after do_create_spdx before do_build do_rm_work
 SSTATETASKS += "do_create_runtime_spdx"
@@ -770,8 +912,219 @@ POPULATE_SDK_POST_HOST_COMMAND:append:task-populate-sdk = " sdk_host_combine_spd
 POPULATE_SDK_POST_TARGET_COMMAND:append:task-populate-sdk = " sdk_target_combine_spdx"
 
 python image_combine_spdx() {
-    return
+    import os
+    import oe.sbom
+    from pathlib import Path
+    from oe.rootfs import image_list_installed_packages
+
+    image_name = d.getVar("IMAGE_NAME")
+    image_link_name = d.getVar("IMAGE_LINK_NAME")
+    imgdeploydir = Path(d.getVar("IMGDEPLOYDIR"))
+    img_spdxid = oe.sbom.get_image_spdxid(image_name)
+    packages = image_list_installed_packages(d)
+
+    combine_spdx(d, image_name, imgdeploydir, img_spdxid, packages,
+                 Path(d.getVar("SPDXIMAGEWORK")), Path(d.getVar("DEPLOY_DIR_SPDX")))
+    image_spdx_archive(d, image_name, imgdeploydir,
+                       Path(d.getVar("SPDXIMAGEWORK")), Path(d.getVar("DEPLOY_DIR_SPDX")))
+
+    def make_image_link(target_path, suffix):
+        if image_link_name:
+            link = imgdeploydir / (image_link_name + suffix)
+            if link != target_path:
+                link.symlink_to(os.path.relpath(target_path, link.parent))
+
+    spdx_tar_path = imgdeploydir / (image_name + ".spdx.tar.zst")
+    make_image_link(spdx_tar_path, ".spdx.tar.zst")
 }
+
+def combine_spdx(d, rootfs_name, rootfs_deploydir, rootfs_spdxid, packages, spdx_workdir, spdx_deploydir):
+    """
+    Combine the SPDX for the deployed image.
+
+    Create a document with the main image as package, add relations for each
+    packages and their runtime dependencies.
+    """
+    import os
+    import oe.spdx3
+    import oe.sbom
+    from datetime import timezone, datetime
+    from pathlib import Path
+    import bb.compress.zstd
+
+    providers = collect_package_providers(d)
+    package_archs = d.getVar("SSTATE_ARCHS").split()
+    package_archs.reverse()
+
+    creation_time = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    doc = oe.spdx3.SPDX3SpdxDocument()
+    doc.name = rootfs_name
+    doc.documentNamespace = get_doc_namespace(d, doc)
+    generate_creationInfo(d, doc)
+
+    image = oe.spdx3.SPDX3Package()
+    image.name = d.getVar("PN")
+    image.packageVersion = d.getVar("PV")
+    image.spdxId = rootfs_spdxid
+    image.suppliedBy.append(get_supplier(d, doc))
+
+    doc.element.append(image)
+
+    # TODO: this is done later, do we require this ?
+    # image_spdx_path = spdx_workdir / (rootfs_name + ".spdx.json")
+    # with image_spdx_path.open("wb") as f:
+    #     doc.to_json(f, sort_keys=True, indent=get_json_indent(d))
+
+    num_threads = int(d.getVar("BB_NUMBER_THREADS"))
+
+    visited_docs = set()
+
+    index = {"documents": []}
+
+    for name in sorted(packages.keys()):
+        if name not in providers:
+            bb.fatal("Unable to find SPDX provider for '%s'" % name)
+
+        pkg_name, pkg_hashfn = providers[name]
+
+        pkg_spdx_path = oe.sbom.doc_find_by_hashfn(spdx_deploydir, package_archs, pkg_name, pkg_hashfn)
+        if not pkg_spdx_path:
+            bb.fatal("No SPDX file found for package %s, %s" % (pkg_name, pkg_hashfn))
+
+        j_pkg_doc, j_pkg_pkgs, pkg_doc_sha1 = oe.sbom.search_doc(pkg_spdx_path, ['Package'])
+
+        for p in j_pkg_pkgs['Package']:
+            if p['name'] == name:
+                pkg_ref = oe.spdx3.SPDX3ExternalMap()
+                pkg_ref.externalId = "DocumentRef-%s" % j_pkg_doc['name']
+                pkg_ref.definingDocument = j_pkg_doc['documentNamespace']
+                hashSha1 = oe.spdx3.SPDX3Hash()
+                hashSha1.algorithm = "sha1"
+                hashSha1.hashValue = pkg_doc_sha1
+                pkg_ref.verifiedUsing.append(hashSha1)
+
+                doc.imports.append(pkg_ref)
+                doc.add_relationship(image, "contains", "%s:%s" % (pkg_ref.externalId, p['spdxId']))
+                break
+        else:
+            bb.fatal("Unable to find package with name '%s' in SPDX file %s" % (name, pkg_spdx_path))
+
+        runtime_spdx_path = oe.sbom.doc_find_by_hashfn(spdx_deploydir, package_archs, "runtime-" + name, pkg_hashfn)
+        if not runtime_spdx_path:
+            bb.fatal("No runtime SPDX document found for %s, %s" % (name, pkg_hashfn))
+
+        j_runtime_doc, _, runtime_doc_sha1 = oe.sbom.search_doc(runtime_spdx_path)
+
+        runtime_ref = oe.spdx3.SPDX3ExternalMap()
+        runtime_ref.externalId = "DocumentRef-%s" % j_runtime_doc['name']
+        runtime_ref.definingDocument = j_runtime_doc['documentNamespace']
+        hashSha1 = oe.spdx3.SPDX3Hash()
+        hashSha1.algorithm = "sha1"
+        hashSha1.hashValue = runtime_doc_sha1
+        runtime_ref.verifiedUsing.append(hashSha1)
+
+        doc.imports.append(runtime_ref)
+        create_relationship(
+            d,
+            doc,
+            image,
+            "runtimeDependency",
+            "%s:%s" % (runtime_ref.externalId, j_runtime_doc['spdxId'])
+        )
+
+    image_spdx_path = spdx_workdir / (rootfs_name + ".spdx.json")
+
+    with image_spdx_path.open("wb") as f:
+        doc.to_json(f, sort_keys=False, indent=get_json_indent(d))
+
+
+def image_spdx_archive(d, rootfs_name, rootfs_deploydir, spdx_workdir, spdx_deploydir):
+    import tarfile
+    import io
+    import json
+
+    source_date_epoch = d.getVar("SOURCE_DATE_EPOCH")
+
+    image_spdx_path = spdx_workdir / (rootfs_name + ".spdx.json")
+
+    num_threads = int(d.getVar("BB_NUMBER_THREADS"))
+
+    visited_docs = set()
+
+    index = {"documents": []}
+
+    spdx_tar_path = rootfs_deploydir / (rootfs_name + ".spdx.tar.zst")
+    with bb.compress.zstd.open(spdx_tar_path, "w", num_threads=num_threads) as f:
+        with tarfile.open(fileobj=f, mode="w|") as tar:
+            def collect_spdx_document(path):
+                nonlocal tar
+                nonlocal spdx_deploydir
+                nonlocal source_date_epoch
+                nonlocal index
+
+                package_archs = d.getVar("SSTATE_ARCHS").split()
+                package_archs.reverse()
+
+                if path in visited_docs:
+                    return
+
+                visited_docs.add(path)
+
+                with path.open("rb") as f:
+                    doc, _, sha1 = oe.sbom.search_doc(f, [])
+                    f.seek(0)
+
+                    if doc['documentNamespace'] in visited_docs:
+                        return
+
+                    bb.note("Adding SPDX document %s" % path)
+                    visited_docs.add(doc['documentNamespace'])
+                    info = tar.gettarinfo(fileobj=f)
+
+                    info.name = doc['name'] + ".spdx.json"
+                    info.uid = 0
+                    info.gid = 0
+                    info.uname = "root"
+                    info.gname = "root"
+
+                    if source_date_epoch is not None and info.mtime > int(source_date_epoch):
+                        info.mtime = int(source_date_epoch)
+
+                    tar.addfile(info, f)
+
+                    index["documents"].append({
+                        "filename": info.name,
+                        "documentNamespace": doc['documentNamespace'],
+                        "sha1": sha1,
+                    })
+                if 'imports' in doc:
+                    for ref in doc['imports']:
+                        ref_path = oe.sbom.doc_find_by_namespace(spdx_deploydir, package_archs, ref['definingDocument'])
+                        if not ref_path:
+                            bb.fatal("Cannot find any SPDX file for document %s" % ref['definingDocument'])
+                        collect_spdx_document(ref_path)
+
+            collect_spdx_document(image_spdx_path)
+
+            index["documents"].sort(key=lambda x: x["filename"])
+
+            index_str = io.BytesIO(json.dumps(
+                index,
+                sort_keys=True,
+                indent=get_json_indent(d),
+            ).encode("utf-8"))
+
+            info = tarfile.TarInfo()
+            info.name = "index.json"
+            info.size = len(index_str.getvalue())
+            info.uid = 0
+            info.gid = 0
+            info.uname = "root"
+            info.gname = "root"
+
+            tar.addfile(info, fileobj=index_str)
+
 
 python sdk_host_combine_spdx() {
     return

@@ -713,7 +713,6 @@ do_create_spdx[depends] += "${PATCHDEPENDENCY}"
 def collect_package_providers(d):
     from pathlib import Path
     import oe.sbom
-    import oe.spdx
     import json
 
     deploy_dir_spdx = Path(d.getVar("DEPLOY_DIR_SPDX"))
