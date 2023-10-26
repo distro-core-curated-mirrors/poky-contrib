@@ -145,9 +145,13 @@ class MetaSPDXObject(type):
     def __new__(mcls, name, bases, attrs):
         attrs["_properties"] = {}
 
-        for key in attrs.keys():
-            if isinstance(attrs[key], _Property):
-                prop = attrs[key]
+        at = {}
+        for basecls in bases:
+            at.update(basecls._properties)
+        at.update(attrs)
+        for key in at.keys():
+            if isinstance(at[key], _Property):
+                prop = at[key]
                 attrs["_properties"][key] = prop
                 prop.set_property(attrs, key)
 
@@ -166,15 +170,27 @@ class SPDXObject(metaclass=MetaSPDXObject):
             if name in d:
                 self._spdx[name] = prop.init(d[name])
 
-    def serializer(self):
-        return self._spdx
-
     def __setattr__(self, name, value):
-        if name in self._properties or name == "_spdx":
+        # All attributes must be in _properties or are hidden variables which
+        # must be prefixed with _spdx
+        if name in self._properties or name[:len("_spdx")] == "_spdx":
             super().__setattr__(name, value)
             return
         raise KeyError("%r is not a valid SPDX property" % name)
 
+    def properties(self):
+        return self._properties.keys()
+
+    def items(self):
+        return self._properties.items()
+
+    def serializer(self, rootElement):
+        main = {"type": self.__class__.__name__[len("SPDX3"):]}
+        for (key, value) in self._spdx.items():
+            if key[0] == '_':
+                key = key[1:]
+            main.update({key: value})
+        return main
 #
 # These are the SPDX objects implemented from the spec. The *only* properties
 # that can be added to these objects are ones directly specified in the SPDX

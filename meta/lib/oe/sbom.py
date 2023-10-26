@@ -77,7 +77,7 @@ def write_doc(d, spdx_doc, arch, subdir, spdx_deploy=None, indent=None):
     dest = doc_path(spdx_deploy, spdx_doc.name, arch, subdir)
     dest.parent.mkdir(exist_ok=True, parents=True)
     with dest.open("wb") as f:
-        doc_sha1 = spdx_doc.to_json(f, sort_keys=True, indent=indent)
+        doc_sha1 = spdx_doc.to_json(f, sort_keys=False, indent=indent)
 
     l = _doc_path_by_namespace(spdx_deploy, arch, spdx_doc.documentNamespace)
     l.parent.mkdir(exist_ok=True, parents=True)
