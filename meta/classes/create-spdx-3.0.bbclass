@@ -42,6 +42,10 @@ SPDX_SUPPLIER[doc] = "The SPDX PackageSupplier field for SPDX packages created f
     is the contact information for the person or organization who is doing the \
     build."
 
+def new_spdxid(d, doc, *suffix):
+    pn = d.getVar("PN")
+    return "/".join([get_doc_namespace(d, doc), pn] + list(suffix))
+
 def extract_licenses(filename):
     import re
 
@@ -83,21 +87,21 @@ def generate_creationInfo(d, document, comment=None):
 
     tool = oe.spdx3.SPDX3Tool()
     tool.name = "OpenEmbedded Core create-spdx.bbclass"
-    tool.spdxId = "spdx-" + d.getVar("PN") + ":SPDXRef-Actor-" + tool.name.replace(" ", "")
+    tool.spdxId = new_spdxid(d, document, "Actor", tool.name.replace(" ", ""))
     tool.creationInfo = document.creationInfo
     document.element.append(tool)
     document.creationInfo.createdUsing.append(tool)
 
     organization = oe.spdx3.SPDX3Organization()
     organization.name = d.getVar("SPDX_ORG")
-    organization.spdxId = "spdx-" + d.getVar("PN") + ":SPDXRef-Actor-" + organization.name.replace(" ", "")
+    organization.spdxId = new_spdxid(d, document, "Actor", organization.name.replace(" ", ""))
     organization.creationInfo = document.creationInfo
     document.element.append(organization)
     document.creationInfo.createdBy.append(organization)
 
     person = oe.spdx3.SPDX3Person()
     person.name = "Person: N/A ()"
-    person.spdxId = "spdx-" + d.getVar("PN") + ":SPDXRef-Actor-" + person.name.replace(" ", "")
+    person.spdxId = new_spdxid(d, document, "Actor", person.name.replace(" ", ""))
     document.creationInfo.createdBy.append(person)
     document.element.append(person)
 
@@ -124,7 +128,7 @@ def get_supplier(d, doc=None):
         raise KeyError("%r is not a valid SPDX agent type" % agentType)
 
     agent.name = agentName
-    agent.spdxId = "spdx-" + d.getVar("PN") + ":SPDXRef-Actor-" + agent.name.replace(" ", "")
+    agent.spdxId = new_spdxid(d, doc, "Actor", agent.name)
     agent.creationInfo = doc.creationInfo
 
     return agent
@@ -136,8 +140,34 @@ def create_annotation(d, doc, recipe, comment):
     c.annotationType = "other"
     c.subject = recipe.spdxId
     c.statement = comment
+    c.spdxId = new_spdxid(d, doc, "annotation", comment)
 
     doc.element.append(c)
+
+def create_relationship(d, doc, _from, relationshipType, to):
+    import oe.spdx3
+
+    if isinstance(_from, oe.spdx3.SPDX3Element):
+        _from = _from.spdxId
+    
+    if isinstance(to, oe.spdx3.SPDX3Element):
+        to = to.spdxId
+
+    for el in doc.element:
+        if isinstance(el, oe.spdx3.SPDX3Relationship) and \
+        el._from == _from and \
+        el.relationshipType == relationshipType:
+            el.to.append(to)
+            return el.spdxId
+    
+    r = oe.spdx3.SPDX3Relationship()
+    r.spdxId = new_spdxid(d, doc, "Relationship", relationshipType)
+    r._from = _from
+    r.to.append(to)
+    r.relationshipType = relationshipType
+
+    doc.element.append(r)
+    return r.spdxId
 
 def recipe_spdx_is_native(doc, recipe):
     import oe.spdx3
@@ -340,7 +370,7 @@ def add_package_files(d, doc, spdx_pkg, topdir, get_spdxid, get_types, *, archiv
 
                 doc.element.append(spdx_file)
 
-                doc.add_relationship(spdx_pkg, "contains", spdx_file)
+                create_relationship(d, doc, spdx_pkg, "contains", spdx_file)
 
                 spdx_files.append(spdx_file)
                 file_counter += 1
@@ -386,14 +416,14 @@ def collect_dep_recipes(d, doc, spdx_recipe):
         dep_recipes.append(oe.sbom.DepRecipe(spdx_dep_doc, spdx_dep_sha1, spdx_dep_recipe))
 
         dep_recipe_ref = oe.spdx3.SPDX3ExternalMap()
-        dep_recipe_ref.externalId = "DocumentRef-%s" % spdx_dep_doc["name"]
+        dep_recipe_ref.externalId = spdx_dep_doc["spdxId"]
         hashSha1 = oe.spdx3.SPDX3Hash()
         hashSha1.algorithm = "sha1"
         hashSha1.hashValue = spdx_dep_sha1
         dep_recipe_ref.verifiedUsing.append(hashSha1)
 
         doc.imports.append(dep_recipe_ref)
-        doc.add_relationship("%s:%s" % (dep_recipe_ref.externalId, spdx_dep_recipe["spdxId"]), "buildDependency", spdx_recipe)
+        create_relationship(d, doc, dep_recipe_ref.externalId, "buildDependency", spdx_recipe)
 
     # return dep_recipes
 
@@ -415,7 +445,7 @@ def add_download_packages(d, doc, recipe):
         for name in f.names:
             package = oe.spdx3.SPDX3Package()
             package.name = "%s-source-%d" % (d.getVar("PN"), download_idx + 1)
-            package.spdxId = oe.sbom.get_download_spdxid(d, download_idx + 1)
+            package.spdxId = new_spdxid(d, doc, "source", str(download_idx + 1))
 
             if f.type == "file":
                 continue
@@ -446,8 +476,8 @@ def add_download_packages(d, doc, recipe):
             package.downloadLocation = uri
             doc.element.append(package)
 
-            doc.add_relationship(doc, "describes", package)
-            doc.add_relationship(package, "buildDependency", recipe)
+            create_relationship(d, doc, doc, "describes", package)
+            create_relationship(d, doc, package, "buildDependency", recipe)
 
 def collect_direct_deps(d, dep_task):
     current_task = "do_" + d.getVar("BB_CURRENTTASK")
@@ -529,10 +559,11 @@ python do_create_spdx() {
 
     doc.name = "recipe-" + d.getVar("PN")
     doc.documentNamespace = get_doc_namespace(d, doc)
+    doc.spdxId = new_spdxid(d, doc, "Document")
     generate_creationInfo(d, doc)
 
     recipe = oe.spdx3.SPDX3Package()
-    recipe.spdxId = oe.sbom.get_recipe_spdxid(d)
+    recipe.spdxId = new_spdxid(d, doc, "Recipe")
     recipe.name = d.getVar("PN")
     recipe.packageVersion = d.getVar("PV")
     recipe.suppliedBy.append(get_supplier(d, doc))
@@ -564,7 +595,7 @@ python do_create_spdx() {
 
     doc.element.append(recipe)
 
-    doc.add_relationship(doc, "describes", recipe)
+    create_relationship(d, doc, doc, "describes", recipe)
 
     add_download_packages(d, doc, recipe)
 
@@ -578,7 +609,7 @@ python do_create_spdx() {
                 doc,
                 recipe,
                 spdx_workdir,
-                lambda file_counter: "SPDXRef-SourceFile-%s-%d" % (d.getVar("PN"), file_counter),
+                lambda file_counter: new_spdxid(d, doc, "sourcefile", str(file_counter)),
                 lambda filepath: ["source"],
                 ignore_dirs=[".git"],
                 ignore_top_level_dirs=["temp"],
@@ -608,6 +639,7 @@ python do_create_spdx() {
             pkg_name = d.getVar("PKG:%s" % package) or package
             doc.name = pkg_name
             doc.documentNamespace = get_doc_namespace(d, doc)
+            doc.spdxId = new_spdxid(d, doc, "Document")
             generate_creationInfo(d, doc)
 
             # TODO: Rework when License Profile implemented
@@ -618,7 +650,7 @@ python do_create_spdx() {
 
             spdx_package = oe.spdx3.SPDX3Package()
 
-            spdx_package.spdxId = oe.sbom.get_package_spdxid(pkg_name)
+            spdx_package.spdxId = new_spdxid(d, doc, "package", pkg_name)
             spdx_package.name = pkg_name
             spdx_package.packageVersion = d.getVar("PV")
             # TODO: Rework when License Profile implemented
@@ -627,8 +659,8 @@ python do_create_spdx() {
 
             doc.element.append(spdx_package)
 
-            doc.add_relationship(recipe, "generates", spdx_package)
-            doc.add_relationship(doc, "describes", spdx_package)
+            create_relationship(d, doc, recipe, "generates", spdx_package)
+            create_relationship(d, doc, doc, "describes", spdx_package)
 
             package_archive = deploy_dir_spdx / "packages" / (doc.name + ".tar.zst")
             with optional_tarfile(package_archive, archive_packaged) as archive:
@@ -637,7 +669,7 @@ python do_create_spdx() {
                     doc,
                     spdx_package,
                     pkgdest / package,
-                    lambda file_counter: oe.sbom.get_packaged_file_spdxid(pkg_name, file_counter),
+                    lambda file_counter: new_spdxid(d, doc, "package", pkg_name, "file", str(file_counter)),
                     lambda filepath: ["executable"],
                     ignore_top_level_dirs=['CONTROL', 'DEBIAN'],
                     archive=archive,
@@ -961,12 +993,13 @@ def combine_spdx(d, rootfs_name, rootfs_deploydir, rootfs_spdxid, packages, spdx
     doc = oe.spdx3.SPDX3SpdxDocument()
     doc.name = rootfs_name
     doc.documentNamespace = get_doc_namespace(d, doc)
+    doc.spdxId = new_spdxid(d, doc, "Document")
     generate_creationInfo(d, doc)
 
     image = oe.spdx3.SPDX3Package()
     image.name = d.getVar("PN")
     image.packageVersion = d.getVar("PV")
-    image.spdxId = rootfs_spdxid
+    image.spdxId = new_spdxid(d, doc, "image", rootfs_spdxid)
     image.suppliedBy.append(get_supplier(d, doc))
 
     doc.element.append(image)
@@ -997,7 +1030,7 @@ def combine_spdx(d, rootfs_name, rootfs_deploydir, rootfs_spdxid, packages, spdx
         for p in j_pkg_pkgs['Package']:
             if p['name'] == name:
                 pkg_ref = oe.spdx3.SPDX3ExternalMap()
-                pkg_ref.externalId = "DocumentRef-%s" % j_pkg_doc['name']
+                pkg_ref.externalId = j_pkg_doc['spdxId']
                 pkg_ref.definingDocument = j_pkg_doc['documentNamespace']
                 hashSha1 = oe.spdx3.SPDX3Hash()
                 hashSha1.algorithm = "sha1"
@@ -1005,7 +1038,7 @@ def combine_spdx(d, rootfs_name, rootfs_deploydir, rootfs_spdxid, packages, spdx
                 pkg_ref.verifiedUsing.append(hashSha1)
 
                 doc.imports.append(pkg_ref)
-                doc.add_relationship(image, "contains", "%s:%s" % (pkg_ref.externalId, p['spdxId']))
+                create_relationship(d, doc, image, "contains", pkg_ref.externalId)
                 break
         else:
             bb.fatal("Unable to find package with name '%s' in SPDX file %s" % (name, pkg_spdx_path))

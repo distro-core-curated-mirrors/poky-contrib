@@ -134,33 +134,6 @@ class SPDX3Element(SPDXObject):
                     main.update({key: value})
         return main
 
-    def add_relationship(self, _from, relationship, _to):
-        if isinstance(_from, SPDX3Element):
-            from_spdxid = _from.spdxId
-        else:
-            from_spdxid = _from
-
-        if isinstance(_to, SPDX3Element):
-            to_spdxid = _to.spdxId
-        else:
-            to_spdxid = _to
-
-        for element in self.element:
-            if isinstance(element, SPDX3Relationship) \
-            and element._from == from_spdxid \
-            and element.relationshipType == relationship:
-                element.to.append(to_spdxid)
-                return element.spdxId
-
-        r = SPDX3Relationship(
-            _from=from_spdxid,
-            relationshipType=relationship,
-            to = [to_spdxid]
-        )
-
-        self.element.append(r)
-        return r.spdxId
-
     def find_external_map(self, sourceDocumentNamespace):
         for i in self.imports:
             if i.definingDocument == sourceDocumentNamespace:
