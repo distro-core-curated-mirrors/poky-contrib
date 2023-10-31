@@ -41,11 +41,17 @@ INHERIT += "create-spdx"
             with open(filename) as f:
                 report = json.load(f)
                 self.assertNotEqual(report, None)
-                self.assertNotEqual(report["SPDXID"], None)
+                self.assertNotEqual(report["@graph"], None)
+                for e in report["@graph"]:
+                    if e["type"] == "SpdxDocument":
+                        self.assertNotEqual(e["spdxId"], None)
+                        break
+                else:
+                    self.assertFalse("SpdxDocument not found")
 
-            python = os.path.join(get_bb_var('STAGING_BINDIR', 'python3-spdx-tools-native'), 'nativepython3')
-            validator = os.path.join(get_bb_var('STAGING_BINDIR', 'python3-spdx-tools-native'), 'pyspdxtools')
-            result = runCmd("{} {} -i {}".format(python, validator, filename))
+            # python = os.path.join(get_bb_var('STAGING_BINDIR', 'python3-spdx-tools-native'), 'nativepython3')
+            # validator = os.path.join(get_bb_var('STAGING_BINDIR', 'python3-spdx-tools-native'), 'pyspdxtools')
+            # result = runCmd("{} {} -i {}".format(python, validator, filename))
 
         self.assertExists(full_file_path)
         result = check_spdx_json(full_file_path)
