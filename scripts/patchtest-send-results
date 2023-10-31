@@ -57,9 +57,8 @@ mbox = mailbox.mbox(args.patch)
 mbox_subject = mbox[0]['subject']
 subject_line = f"Patchtest results for {mbox_subject}"
 
-# extract the submitter email address and use it as the reply address
-# for the results
-reply_address = re.findall("<(.*)>", mbox[0]['from'])
+# extract the message ID and use that as the reply address
+in_reply_to = re.findall("<(.*)>", mbox[0]['Message-ID'])
 
 if "FAIL" in testresult:
     reply_contents = None
@@ -75,7 +74,7 @@ if "FAIL" in testresult:
         Destination={
             'CcAddresses': ['openembedded-core@lists.openembedded.org'],
         },
-        ReplyToAddresses=reply_address,
+        ReplyToAddresses=in_reply_to,
         Message={
             'Subject': {
                 'Data': subject_line,
