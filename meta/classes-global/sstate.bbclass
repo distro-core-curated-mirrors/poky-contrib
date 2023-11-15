@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 #
 
-SSTATE_VERSION = "11"
+SSTATE_VERSION = "VBAD"
 
 SSTATE_ZSTD_CLEVEL ??= "8"
 
