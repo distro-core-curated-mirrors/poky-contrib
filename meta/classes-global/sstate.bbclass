@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 #
 
-SSTATE_VERSION = "11"
+SSTATE_VERSION = "BAD"
 
 SSTATE_ZSTD_CLEVEL ??= "8"
 
