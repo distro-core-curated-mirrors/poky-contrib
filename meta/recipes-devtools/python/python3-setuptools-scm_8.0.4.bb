@@ -8,24 +8,40 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=838c366f69b72c5df05c96dff79b35f2"
 
 SRC_URI[sha256sum] = "b5f43ff6800669595193fd09891564ee9d1d7dcb196cab4b2506d53a2e1c95c7"
 
-inherit pypi python_setuptools_build_meta
+inherit pypi ptest python_setuptools_build_meta
 
 UPSTREAM_CHECK_REGEX = "scm-(?P<pver>.*)\.tar"
+
+SRC_URI += "file://run-ptest"
 
 DEPENDS += "python3-tomli-native python3-packaging-native python3-typing-extensions-native"
 
 RDEPENDS:${PN} = "\
-    ${PYTHON_PN}-packaging \
-    ${PYTHON_PN}-pip \
-    ${PYTHON_PN}-pyparsing \
-    ${PYTHON_PN}-setuptools \
-    ${PYTHON_PN}-tomli \
-    ${PYTHON_PN}-typing-extensions \
+    python3-packaging \
+    python3-pip \
+    python3-pyparsing \
+    python3-setuptools \
+    python3-tomli \
+    python3-typing-extensions \
 "
 
 RDEPENDS:${PN}:append:class-target = " \
     ${PYTHON_PN}-debugger \
     ${PYTHON_PN}-json \
+"
+
+do_install_ptest() {
+    install -d ${D}${PYTHON_SITEPACKAGES_DIR}/setuptools_scm/testing
+    install ${S}/testing/* ${D}${PYTHON_SITEPACKAGES_DIR}/setuptools_scm/testing/
+}
+
+FILES:${PN}-ptest += "${PYTHON_SITEPACKAGES_DIR}/setuptools_scm/testing/*"
+
+RDEPENDS:${PN}-ptest += " \
+    python3-build \
+    python3-core \
+    python3-pytest \
+    python3-unittest-automake-output \
 "
 
 BBCLASSEXTEND = "native nativesdk"
