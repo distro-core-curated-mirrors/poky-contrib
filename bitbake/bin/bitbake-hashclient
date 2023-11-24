@@ -16,6 +16,10 @@ import time
 import warnings
 import netrc
 import json
+import random
+import string
+import re
+from pathlib import Path
 warnings.simplefilter("default")
 
 try:
@@ -50,6 +54,33 @@ def print_user(u):
     if "token" in u:
         print(f"Token:       {u['token']}")
 
+def prompt_yes_no(prompt, args):
+    if args.no:
+        return False
+
+    if args.yes:
+        return True
+
+    while True:
+        answer = input(f"{prompt} (Y)es/(N)o?: ").lower()
+        if answer in ("yes", "y"):
+            return True
+        if answer in ("no", "n"):
+            return False
+
+
+def collect_sstate_files(dirs):
+    hashes = {}
+    for p in dirs:
+        for root, dirs, files in os.walk(p):
+            for filename in files:
+                m = re.match(r".*:(?P<hash>[a-f0-9]{32,})", filename)
+                if not m:
+                    continue
+                h = m.group("hash")
+                hashes.setdefault(h, []).append(Path(root) / filename)
+
+    return hashes
 
 def main():
     def handle_stats(args, client):
@@ -209,6 +240,98 @@ def main():
         print("true" if result else "false")
         return 0
 
+    def handle_gc(argc, client):
+
+        mark = argc.mark or "bitbake-hashclient:" + "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(20))
+
+        print("Collecting files...")
+        hashes = collect_sstate_files(args.dir)
+
+        def mark_progress(amount, total, hashes_marked):
+            pct = amount * 100 / total
+            print(f"\r{pct:.1f}% {amount} of {total} hashes checked. {hashes_marked} hashes marked to keep", end="", flush=True)
+
+        # Start (or continue) a new garbage collection session
+        client.gc_mark(mark, {})
+
+        no_match = 0
+        mark_progress(0, len(hashes), 0)
+        marked_count = 0
+
+        for idx, h in enumerate(hashes):
+            result = client.gc_mark(mark, {"unihash": h})
+            if result["count"] == 0:
+                no_match += 1
+
+            marked_count += result["count"]
+            mark_progress(idx + 1, len(hashes), marked_count)
+
+        print("")
+
+        if no_match:
+            print(f"{no_match} files were found that did not match a unihash on the server")
+
+        result = client.gc_status()
+
+        if result["keep"] == 0 and not args.force:
+            print(f"No matching unihashes found. To really remove all {result['remove']} hashes, use --force")
+            return 0
+
+        print(f"{result['keep']} unihashes will be kept and {result['remove']} will be removed")
+        if not prompt_yes_no("Continue", args):
+            return 0
+
+        result = client.gc_sweep(mark)
+        print(f"Removed {result['count']} unihashes")
+
+        if result["count"]:
+            print("It is recommended to run 'clean-unused' to remove unreferenced outhashes")
+
+        return 0
+
+    def handle_prune_sstate(argc, client):
+        print("Collecting files...")
+        hashes = collect_sstate_files(args.dir)
+
+        def check_progress(hash_amount, hash_total, remove):
+            pct = hash_amount * 100 / hash_total
+            print(f"\r{pct:.1f}% {hash_amount} of {hash_total} hashes checked. Found {remove} files to remove", end="", flush=True)
+
+        remove_hashes = {}
+        total_remove_count = 0
+
+        check_progress(0, len(hashes), 0)
+        for idx, h in enumerate(hashes):
+            if not client.unihash_exists(h):
+                remove_hashes[h] = hashes[h]
+                total_remove_count += len(hashes[h])
+            check_progress(idx + 1, len(hashes), total_remove_count)
+
+        print("")
+
+        if not total_remove_count:
+            return 0
+
+        print(f"{total_remove_count} files will be removed")
+        if not prompt_yes_no("Continue", args):
+            return 0
+
+        def remove_progress(removed, total):
+            pct = removed * 100 / total
+            print(f"\r{pct:.1f}% Removed {removed} of {total} files", end="", flush=True)
+
+        remove_count = 0
+        remove_progress(0, total_remove_count)
+        for hash_files in remove_hashes.values():
+            for file in hash_files:
+                file.unlink()
+            remove_count += len(hash_files)
+            remove_progress(remove_count, total_remove_count)
+
+        print("")
+
+        return 0
+
     parser = argparse.ArgumentParser(description='Hash Equivalence Client')
     parser.add_argument('--address', default=DEFAULT_ADDRESS, help='Server address (default "%(default)s")')
     parser.add_argument('--log', default='WARNING', help='Set logging level')
@@ -294,6 +417,22 @@ def main():
     unihash_exists_parser.add_argument("--quiet", action="store_true", help="Don't print status. Instead, exit with 0 if unihash exists and 1 if it does not")
     unihash_exists_parser.add_argument("unihash", help="Unihash to check")
     unihash_exists_parser.set_defaults(func=handle_unihash_exists)
+
+    gc_parser = subparsers.add_parser("gc", help="Garbage collect server based on SSTATE_DIR")
+    gc_parser.add_argument("--force", "-f", action="store_true", help="Force collection even if it will erase everything on the server")
+    gc_parser.add_argument("--yes", "-y", action="store_true", help="Answer yes to prompt without asking")
+    gc_parser.add_argument("--no", "-n", action="store_true", help="Answer no to prompt without asking (e.g. dry-run)")
+    gc_parser.add_argument("--mark", help="Use MARK as the clean mark instead of a random one")
+    gc_parser.add_argument("--quiet", "-q", action="store_true", help="Quiten output")
+    gc_parser.add_argument("dir", metavar="SSTATE_DIR", action="append", default=[], type=Path, help="SSTATE_DIR to scan for hashes")
+    gc_parser.set_defaults(func=handle_gc)
+
+    prune_sstate_parser = subparsers.add_parser("prune-sstate", help="Prune SSTATE_DIR files based on hashes on the server")
+    prune_sstate_parser.add_argument("--yes", "-y", action="store_true", help="Answer yes to prompt without asking")
+    prune_sstate_parser.add_argument("--no", "-n", action="store_true", help="Answer no to prompt without asking (e.g. dry-run)")
+    prune_sstate_parser.add_argument("--quiet", "-q", action="store_true", help="Quiten output")
+    prune_sstate_parser.add_argument("dir", metavar="SSTATE_DIR", action="append", default=[], type=Path, help="SSTATE_DIR to scan for hashes")
+    prune_sstate_parser.set_defaults(func=handle_prune_sstate)
 
     args = parser.parse_args()
 
