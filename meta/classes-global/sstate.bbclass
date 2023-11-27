@@ -907,6 +907,7 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
 
     found = set()
     missed = set()
+    skipped = set()
 
     def gethash(task):
         return sq_data['unihash'][task]
@@ -1003,10 +1004,22 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
                 bb.event.fire(bb.event.ProcessProgress(msg, next(cnt_tasks_done)), d)
             bb.event.check_for_interrupts(d)
 
+
+        hashes_exists = {}
+        unihashes_exist = getattr(bb.parse.siggen, "unihashes_exist", None)
+        if unihashes_exist:
+            hashes_exist = unihashes_exist({
+                tid: gethash(tid) for tid in missed
+            })
+
         tasklist = []
         for tid in missed:
-            sstatefile = d.expand(getsstatefile(tid, siginfo, d))
-            tasklist.append((tid, sstatefile))
+            if tid not in hashes_exists or hashes_exists[tid]:
+                sstatefile = d.expand(getsstatefile(tid, siginfo, d))
+                tasklist.append((tid, sstatefile))
+            else:
+                bb.debug(1, "Skipping %s because it doesn't exist on hashserver" % tid)
+                skipped.add(tid)
 
         if tasklist:
             nproc = min(int(d.getVar("BB_NUMBER_THREADS")), len(tasklist))
@@ -1026,9 +1039,11 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
                 from queue import Queue
                 connection_cache_pool = Queue(nproc)
                 checkstatus_init()
-                with concurrent.futures.ThreadPoolExecutor(max_workers=nproc) as executor:
-                    executor.map(checkstatus, tasklist.copy())
-                checkstatus_end()
+                try:
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=nproc) as executor:
+                        executor.map(checkstatus, tasklist.copy())
+                finally:
+                    checkstatus_end()
                 bb.event.disable_threadlock()
 
             if progress:
@@ -1055,8 +1070,8 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
         match = 0
         if total:
             match = len(found) / total * 100
-        bb.plain("Sstate summary: Wanted %d Local %d Mirrors %d Missed %d Current %d (%d%% match, %d%% complete)" %
-            (total, foundLocal, len(found)-foundLocal, len(missed), currentcount, match, complete))
+        bb.plain("Sstate summary: Wanted %d Local %d Mirrors %d Missed %d Current %d Skipped %d (%d%% match, %d%% complete)" %
+            (total, foundLocal, len(found)-foundLocal, len(missed), len(skipped), currentcount, match, complete))
 
     if hasattr(bb.parse.siggen, "checkhashes"):
         bb.parse.siggen.checkhashes(sq_data, missed, found, d)
