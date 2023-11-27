@@ -4,10 +4,7 @@ DESCRIPTION = "Small image capable of booting a device. The kernel includes \
 the Minimal RAM-based Initial Root Filesystem (initramfs), which finds the \
 first 'init' program more efficiently."
 
-INITRAMFS_SCRIPTS ?= "\
-                      initramfs-framework-base \
-                      initramfs-module-udev \
-                     "
+INITRAMFS_SCRIPTS ?= "initramfs-framework-base"
 
 PACKAGE_INSTALL = "${INITRAMFS_SCRIPTS} ${VIRTUAL-RUNTIME_base-utils} base-passwd"
 
