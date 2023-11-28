@@ -611,6 +611,40 @@ class RecipetoolCreateTests(RecipetoolBase):
 
         self._test_recipe_contents(recipefile, checkvars, inherits)
 
+    def test_recipetool_create_python3_pep517_maturin(self):
+        # This test require python 3.11 or above for the tomllib module
+        # or tomli module to be installed
+        try:
+            import tomllib
+        except ImportError:
+            try:
+                import tomli
+            except ImportError:
+                self.skipTest('Test requires python 3.11 or above for tomllib module or tomli module')
+
+        # Test creating python3 package from tarball (using maturin class)
+        temprecipe = os.path.join(self.tempdir, 'recipe')
+        os.makedirs(temprecipe)
+        pn = 'pydantic-core'
+        pv = '2.14.5'
+        recipefile = os.path.join(temprecipe, 'python3-%s_%s.bb' % (pn, pv))
+        srcuri = 'https://files.pythonhosted.org/packages/64/26/cffb93fe9c6b5a91c497f37fae14a4b073ecbc47fc36a9979c7aa888b245/pydantic_core-%s.tar.gz' % pv
+        result = runCmd('recipetool create -o %s %s' % (temprecipe, srcuri))
+        self.assertTrue(os.path.isfile(recipefile))
+        checkvars = {}
+        checkvars['HOMEPAGE'] = 'https://github.com/pydantic/pydantic-core'
+        checkvars['LICENSE'] = set(['MIT'])
+        checkvars['LIC_FILES_CHKSUM'] = 'file://LICENSE;md5=ab599c188b4a314d2856b3a55030c75c'
+        checkvars['SRC_URI'] = 'https://files.pythonhosted.org/packages/64/26/cffb93fe9c6b5a91c497f37fae14a4b073ecbc47fc36a9979c7aa888b245/pydantic_core-${PV}.tar.gz'
+        checkvars['SRC_URI[md5sum]'] = '1eb13c211147496c1c9484ff7f8ac438'
+        checkvars['SRC_URI[sha1sum]'] = '0803a731aa793f3eaf4d52f656d7300408ca0b36'
+        checkvars['SRC_URI[sha256sum]'] = '6d30226dfc816dd0fdf120cae611dd2215117e4f9b124af8c60ab9093b6e8e71'
+        checkvars['SRC_URI[sha384sum]'] = 'cca6d9f0ba72ff92e16aaf3d6c628b8df33bdf244cc39c9d59cff9d541f35d4e87ec136e60e4b040ad73c5c69b27cec6'
+        checkvars['SRC_URI[sha512sum]'] = 'e6c3081dfa58d9b59f8c33dfe80712d732ac3048a2f8240f9a0f5448d9bfc83e222c1e08b8bb49779b84f685c3bec3060cc935c113a818b1ab8aa955f3df2238'
+        inherits = ['python_maturin']
+
+        self._test_recipe_contents(recipefile, checkvars, inherits)
+
     def test_recipetool_create_github_tarball(self):
         # Basic test to ensure github URL mangling doesn't apply to release tarballs
         temprecipe = os.path.join(self.tempdir, 'recipe')
