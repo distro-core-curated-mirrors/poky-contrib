@@ -300,7 +300,7 @@ def appendfile(args):
                 if st.st_mode & stat.S_IXUSR:
                     perms = '0755'
             install = {args.newfile: (args.targetpath, perms)}
-        oe.recipeutils.bbappend_recipe(rd, args.destlayer, {args.newfile: sourcepath}, install, wildcardver=args.wildcard_version, machine=args.machine)
+        oe.recipeutils.bbappend_recipe(rd, args.destlayer, {args.newfile: (None, sourcepath)}, install, wildcardver=args.wildcard_version, machine=args.machine)
         tinfoil.modified_files()
         return 0
     else:
@@ -354,7 +354,7 @@ def appendsrc(args, files, rd, extralines=None):
                 logger.warning('{0!r} is already in SRC_URI, not adding'.format(source_uri))
         else:
             extralines.append('SRC_URI += {0}'.format(source_uri))
-        copyfiles[newfile] = srcfile
+        copyfiles[newfile] = (None, srcfile)
 
     dry_run_output = None
     dry_run_outdir = None

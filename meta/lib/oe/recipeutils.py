@@ -671,12 +671,13 @@ def bbappend_recipe(rd, destlayerdir, srcfiles, install=None, wildcardver=False,
         rd: data dictionary for the recipe
         destlayerdir: base directory of the layer to place the bbappend in
             (subdirectory path from there will be determined automatically)
-        srcfiles: dict of source files to add to SRC_URI, where the value
-            is the full path to the file to be added, and the value is the
-            original filename as it would appear in SRC_URI or None if it
-            isn't already present. You may pass None for this parameter if
-            you simply want to specify your own content via the extralines
-            parameter.
+        srcfiles: dict of source files to add to SRC_URI, where the key
+            is the full path to the file to be added, and the value is a tuple
+            containing the original filename as it would appear in SRC_URI
+            or None if it isn't already present and the new name of the file or
+            None to use by default basename(original filename).
+            You may pass None for this parameter if you simply want to specify
+            your own content via the extralines parameter.
         install: dict mapping entries in srcfiles to a tuple of two elements:
             install path (*without* ${D} prefix) and permission value (as a
             string, e.g. '0644').
@@ -764,11 +765,14 @@ def bbappend_recipe(rd, destlayerdir, srcfiles, install=None, wildcardver=False,
     copyfiles = {}
     if srcfiles:
         instfunclines = []
-        for i, (newfile, origsrcfile) in enumerate(srcfiles.items()):
+        for i, (newfile, (origsrcfile, newname)) in enumerate(srcfiles.items()):
             srcfile = origsrcfile
             srcurientry = None
             if not srcfile:
-                srcfile = os.path.basename(newfile)
+                if newname:
+                    srcfile = newname
+                else:
+                    srcfile = os.path.basename(newfile)
                 srcurientry = 'file://%s' % srcfile
                 if params and params[i]:
                     srcurientry = '%s;%s' % (srcurientry, ';'.join('%s=%s' % (k,v) for k,v in params[i].items()))

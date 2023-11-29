@@ -1568,7 +1568,7 @@ def _update_recipe_srcrev(recipename, workspace, srctree, rd, appendlayerdir, wi
                 update_srcuri = True
 
         if appendlayerdir:
-            files = dict((os.path.join(local_files_dir, key), val) for
+            files = dict((os.path.join(local_files_dir, key), (val, None)) for
                           key, val in list(upd_f.items()) + list(new_f.items()))
             removevalues = {}
             if update_srcuri:
@@ -1678,9 +1678,9 @@ def _update_recipe_patch(recipename, workspace, srctree, rd, appendlayerdir, wil
         destpath = None
         srcuri = (rd.getVar('SRC_URI', False) or '').split()
         if appendlayerdir:
-            files = OrderedDict((os.path.join(local_files_dir, key), val) for
+            files = OrderedDict((os.path.join(local_files_dir, key), (val, None)) for
                          key, val in list(upd_f.items()) + list(new_f.items()))
-            files.update(OrderedDict((os.path.join(patches_dir, key), val) for
+            files.update(OrderedDict((os.path.join(patches_dir, key), (val, None)) for
                               key, val in list(upd_p.items()) + list(new_p.items())))
             if files or remove_files:
                 removevalues = None
