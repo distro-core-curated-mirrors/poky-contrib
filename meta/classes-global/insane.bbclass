@@ -84,6 +84,28 @@ def package_qa_clean_path(path, d, pkg=None):
         path = path.replace(os.path.join(d.getVar("PKGDEST"), pkg), "/")
     return path.replace(d.getVar("TMPDIR"), "/").replace("//", "/")
 
+QAPATHTEST[pacbti] = "package_qa_pacbti"
+def package_qa_pacbti(path, name, d, elf, messages):
+    """
+    Verify the binary has PAC/BTI enabld
+    """
+    import subprocess
+
+    if not elf or os.path.islink(path):
+        return
+
+    if '.debug' in path.split(os.path.sep):
+        return
+
+    # TODO check arch first?
+    output = subprocess.check_output(["readelf", "--notes", path], text=True)
+    for line in output.splitlines():
+        if "AArch64 feature" in line:
+            if "BTI" in line and "PAC" in line:
+                break
+    else:
+        oe.qa.add_message(messages, "pacbti", "%s: %s PAC/BTI not enabled" % (name, package_qa_clean_path(path, d, name)))
+
 QAPATHTEST[shebang-size] = "package_qa_check_shebang_size"
 def package_qa_check_shebang_size(path, name, d, elf, messages):
     import stat
