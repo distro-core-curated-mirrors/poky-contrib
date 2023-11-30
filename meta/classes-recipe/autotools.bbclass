@@ -216,6 +216,7 @@ autotools_do_configure() {
 		elif [ "${BPN}" != "gettext" ] && grep -q "^[[:space:]]*AM_GNU_GETTEXT" $CONFIGURE_AC; then
 			# We'd call gettextize here if it wasn't so broken...
 			cp ${STAGING_DATADIR_NATIVE}/gettext/config.rpath ${AUTOTOOLS_AUXDIR}/
+			touch ${S}/ABOUT-NLS
 			if [ -d ${S}/po/ ]; then
 				cp -f ${STAGING_DATADIR_NATIVE}/gettext/po/Makefile.in.in ${S}/po/
 				if [ ! -e ${S}/po/remove-potcdate.sin ]; then
