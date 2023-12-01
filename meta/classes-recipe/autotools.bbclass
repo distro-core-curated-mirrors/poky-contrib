@@ -37,7 +37,7 @@ inherit siteinfo
 export CONFIG_SITE
 
 acpaths ?= "default"
-EXTRA_AUTORECONF += "--exclude=autopoint"
+EXTRA_AUTORECONF ?= ""
 
 export lt_cv_sys_lib_dlsearch_path_spec = "${libdir} ${base_libdir}"
 
@@ -213,17 +213,8 @@ autotools_do_configure() {
 				bbnote Executing glib-gettextize --force --copy
 				echo "no" | glib-gettextize --force --copy
 			fi
-		elif [ "${BPN}" != "gettext" ] && grep -q "^[[:space:]]*AM_GNU_GETTEXT" $CONFIGURE_AC; then
-			# We'd call gettextize here if it wasn't so broken...
-			cp ${STAGING_DATADIR_NATIVE}/gettext/config.rpath ${AUTOTOOLS_AUXDIR}/
-			touch ${S}/ABOUT-NLS
-			if [ -d ${S}/po/ ]; then
-				cp -f ${STAGING_DATADIR_NATIVE}/gettext/po/Makefile.in.in ${S}/po/
-				if [ ! -e ${S}/po/remove-potcdate.sin ]; then
-					cp ${STAGING_DATADIR_NATIVE}/gettext/po/remove-potcdate.sin ${S}/po/
-				fi
-			fi
-			PRUNE_M4="$PRUNE_M4 gettext.m4 iconv.m4 lib-ld.m4 lib-link.m4 lib-prefix.m4 nls.m4 po.m4 progtest.m4"
+		#elif [ "${BPN}" != "gettext" ] && grep -q "^[[:space:]]*AM_GNU_GETTEXT" $CONFIGURE_AC; then
+		#	touch ${AUTOTOOLS_AUXDIR}/config.rpath ${S}/po/Makefile.in.in
 		fi
 		mkdir -p m4
 

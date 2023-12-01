@@ -5,6 +5,7 @@ the removal of gettext-native from most dependency chains (now only \
 needed for gettext for the target)."
 
 require gettext-sources.inc
+# WHY?
 SRC_URI += " \
            file://COPYING \
 "
@@ -34,6 +35,8 @@ python get_aclocal_files() {
 }
 do_install[prefuncs] += "get_aclocal_files"
 
+# can we just install the archive?!
+
 do_install () {
 	install -d ${D}${datadir}/aclocal/
 	for i in `cat ${WORKDIR}/aclocal-files`; do
@@ -43,4 +46,22 @@ do_install () {
 	cp ${S}/build-aux/config.rpath ${D}${datadir}/gettext/
 	cp ${S}/gettext-runtime/po/Makefile.in.in ${D}${datadir}/gettext/po/
 	cp ${S}/gettext-runtime/po/remove-potcdate.sin ${D}${datadir}/gettext/po/
+
+    gzip --stdout ${S}/gettext-tools/misc/archive.dir.tar >${D}${datadir}/gettext/archive.dir.tar.gz
+
+	install -d ${D}${bindir}
+    sed \
+        -e "s|@PACKAGE@|${PN}|g" \
+        -e "s|@VERSION@|${PV}|g" \
+        -e "s|@ARCHIVE_VERSION@|${PV}|g" \
+        -e "s|@ARCHIVE_FORMAT@|dirgz|g" \
+        -e "s|@prefix@|${prefix}|g" \
+        -e "s|@exec_prefix@|${exec_prefix}|g" \
+        -e "s|@bindir@|${bindir}|g" \
+        -e "s|@datadir@|${datadir}|g" \
+        -e "s|@datarootdir@|${datadir}|g" \
+        -e "s|@PATH_SEPARATOR@|/|g" \
+        <${S}/gettext-tools/misc/autopoint.in >${D}${bindir}/autopoint
+    chmod +x ${D}${bindir}/autopoint
+    #install -D ${S}/gettext-tools/misc/autopoint.in ${D}${bindir}/autopoint
 }
