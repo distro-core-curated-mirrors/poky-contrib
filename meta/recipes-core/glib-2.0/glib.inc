@@ -82,12 +82,6 @@ ARM_INSTRUCTION_SET:armv5 = "arm"
 # doesn't support mips16e
 CPPFLAGS:append:class-target:mips16e = " -DNVALGRIND=1"
 
-# GLib generally requires gettext to be present so for USE_NLS to yes.  For
-# native builds as i18n is disabled globally we have to add a gettext-native dependency.
-USE_NLS:class-target = "yes"
-USE_NLS:class-nativesdk = "yes"
-DEPENDS:append:class-native = " gettext-native"
-
 EXEEXT = ""
 EXEEXT:mingw32 = ".exe"
 
