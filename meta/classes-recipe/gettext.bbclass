@@ -8,7 +8,7 @@ def gettext_dependencies(d):
     if d.getVar('INHIBIT_DEFAULT_DEPS') and not oe.utils.inherits(d, 'cross-canadian'):
         return ""
     if d.getVar('USE_NLS') == 'no':
-        return "gettext-minimal-native"
+        return "gettext-tiny-native"
     return "gettext-native"
 
 def gettext_oeconf(d):

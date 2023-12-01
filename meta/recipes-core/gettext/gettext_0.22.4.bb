@@ -15,7 +15,7 @@ LIC_FILES_CHKSUM:append = " ${@bb.utils.contains('PACKAGECONFIG', 'glib', '', 'f
 
 
 DEPENDS = "gettext-native virtual/libiconv"
-DEPENDS:class-native = "gettext-minimal-native"
+DEPENDS:class-native = ""
 PROVIDES = "virtual/libintl virtual/gettext"
 PROVIDES:class-native = "virtual/gettext-native"
 RCONFLICTS:${PN} = "proxy-libintl"
