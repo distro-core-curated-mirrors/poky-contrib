@@ -126,14 +126,9 @@ do_install:append() {
 }
 
 do_install:append:class-native () {
-	rm ${D}${datadir}/aclocal/*
-	rm ${D}${datadir}/gettext/config.rpath
-	rm ${D}${datadir}/gettext/po/Makefile.in.in
-	rm ${D}${datadir}/gettext/po/remove-potcdate.sin
-
-        create_wrapper ${D}${bindir}/msgfmt \
-                GETTEXTDATADIR="${STAGING_DATADIR_NATIVE}/gettext-${PV}/"
-
+    rm -f ${D}${bindir}/autopoint
+    create_wrapper ${D}${bindir}/msgfmt \
+        GETTEXTDATADIR="${STAGING_DATADIR_NATIVE}/gettext-${PV}/"
 }
 
 do_compile_ptest() {
