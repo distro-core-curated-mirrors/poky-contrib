@@ -1,0 +1,27 @@
+From f6273ded03f65c0a917987defd79b370ddc1f7a8 Mon Sep 17 00:00:00 2001
+From: Ross Burton <ross.burton@arm.com>
+Date: Tue, 5 Dec 2023 19:28:43 +0000
+Subject: [PATCH] Use flexible gettext version requirements
+
+Upstream-Status: Backport
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index 9d3391e..be4d591 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -85,7 +85,7 @@ GETTEXT_PACKAGE=matchbox-panel
+ AC_SUBST(GETTEXT_PACKAGE)
+ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, ["$GETTEXT_PACKAGE"], 
+   [Define the gettext package to be used])
+-AM_GNU_GETTEXT_VERSION([0.19.8])
++AM_GNU_GETTEXT_REQUIRE_VERSION([0.19.8])
+ AM_GNU_GETTEXT([external])
+ 
+ # output stuff
+-- 
+2.34.1
+

@@ -23,6 +23,7 @@ RCONFLICTS:${PN} = "matchbox-panel"
 
 SRC_URI = "git://git.yoctoproject.org/${BPN};protocol=https;branch=master \
            file://0001-applets-systray-Allow-icons-to-be-smaller.patch \
+           file://0001-Use-flexible-gettext-version-requirements.patch \
            "
 
 EXTRA_OECONF = "--enable-startup-notification --enable-dbus"
