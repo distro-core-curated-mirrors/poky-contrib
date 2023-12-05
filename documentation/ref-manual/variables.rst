@@ -9736,6 +9736,21 @@ system and gives an overview of their function and contents.
       ``meta-poky/conf/templates/default/local.conf.sample`` in the
       :term:`Source Directory`.
 
+   :term:`USERADD_DEPENDS`
+      Lists a recipe's USERADD dependencies. These are dependencies on
+      other recipes whose create users and groups via useradd.bbclass and are
+      needed by the recipe at build time. This variable is now required for
+      recipes that rely on other recipes for part of their useradd.
+      
+      As an example, consider a recipe ``foo``. Recipe ``bar`` creates a group
+      that foo requires for it's useradd tasks. In order to ensure that the
+      useradd tasks exist for foo, we add the the following assignment::
+
+          $USERADD_DEPENDS = "bar"
+
+      The practical effect of this assignment is that bar's sysroot_setscene is
+      added to :term:`USERADDSETSCENEDEPS` variable.
+
    :term:`USERADD_ERROR_DYNAMIC`
       If set to ``error``, forces the OpenEmbedded build system to produce
       an error if the user identification (``uid``) and group
