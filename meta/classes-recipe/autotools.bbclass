@@ -145,6 +145,8 @@ do_compile[prefuncs] += "autotools_aclocals"
 do_install[prefuncs] += "autotools_aclocals"
 do_configure[postfuncs] += "autotools_postconfigure"
 
+# looks like I can remove this too, mostly.  aclocal --print-ac-dir does the
+# right thing as it got relocated. just need to add target path in non-native build.
 ACLOCALDIR = "${STAGING_DATADIR}/aclocal"
 ACLOCALEXTRAPATH = ""
 ACLOCALEXTRAPATH:class-target = " -I ${STAGING_DATADIR_NATIVE}/aclocal/"
