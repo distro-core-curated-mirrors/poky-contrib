@@ -123,10 +123,10 @@ FILES:gettext-runtime-doc = "${mandir}/man1/gettext.* \
 
 do_install:append() {
     rm -f ${D}${libdir}/preloadable_libintl.so
+    rm -f ${D}${bindir}/autopoint
 }
 
 do_install:append:class-native () {
-    rm -f ${D}${bindir}/autopoint
     create_wrapper ${D}${bindir}/msgfmt \
         GETTEXTDATADIR="${STAGING_DATADIR_NATIVE}/gettext-${PV}/"
 }
@@ -175,6 +175,7 @@ do_install_ptest() {
     fi
 }
 
+RDEPENDS:${PN}:class-native = "gettext-minimal-native"
 RDEPENDS:${PN}-ptest += "make xz bash gawk autoconf locale-base-de-de locale-base-fr-fr"
 RDEPENDS:${PN}-ptest:append:libc-glibc = "\
     glibc-gconv-big5 \
