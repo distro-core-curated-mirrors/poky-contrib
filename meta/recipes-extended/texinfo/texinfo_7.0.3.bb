@@ -45,12 +45,6 @@ MULTILIB_SCRIPTS = "${PN}:${bindir}/texi2any"
 
 EXTRA_AUTORECONF += "-I ${S}/gnulib/m4"
 
-do_configure:prepend () {
-	# autotools_do_configure updates po/Makefile.in.in, we also need
-	# update po_document.
-	cp -f ${STAGING_DATADIR_NATIVE}/gettext/po/Makefile.in.in ${S}/po_document/
-}
-
 do_compile:prepend() {
 	if [ -d tools ];then
 		oe_runmake -C tools/gnulib/lib
