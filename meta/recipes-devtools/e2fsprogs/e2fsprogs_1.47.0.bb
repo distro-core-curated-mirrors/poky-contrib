@@ -13,6 +13,8 @@ SRC_URI:append:class-native = " \
 SRCREV = "f4c9cc4bedacde8408edda3520a32d3842290112"
 UPSTREAM_CHECK_GITTAGREGEX = "v(?P<pver>\d+\.\d+(\.\d+)*)$"
 
+EXTRA_AUTORECONF += "--exclude=autopoint --exclude=aclocal"
+
 EXTRA_OECONF += "--libdir=${base_libdir} --sbindir=${base_sbindir} \
                 --enable-elf-shlibs --disable-libuuid --disable-uuidd \
                 --disable-libblkid --enable-verbose-makecmds \
