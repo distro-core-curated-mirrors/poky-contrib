@@ -18,11 +18,10 @@ S = "${WORKDIR}/git/src"
 
 inherit autotools gettext
 
-# This is custom stuff from upstream's autogen.sh
+# This file needs to exist but isn't part of the git repo (https://github.com/cracklib/cracklib/issues/76)
 do_configure:prepend() {
     mkdir -p ${S}/m4
-    echo EXTRA_DIST = *.m4 > ${S}/m4/Makefile.am
-    touch ${S}/ABOUT-NLS
+    touch ${S}/m4/Makefile.am
 }
 
 do_install:append:class-target() {
