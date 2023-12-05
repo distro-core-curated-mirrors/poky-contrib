@@ -30,3 +30,6 @@ do_install:append:class-target() {
 
 BBCLASSEXTEND = "native nativesdk"
 
+# TODO
+# - remove libdir
+# - add python support
