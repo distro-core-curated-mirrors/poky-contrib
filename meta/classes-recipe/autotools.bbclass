@@ -169,8 +169,6 @@ autotools_do_configure() {
 	# config.sub does not support.  Work around this by installing them manually
 	# regardless.
 
-	PRUNE_M4=""
-
 	for ac in `find ${S} -ignore_readdir_race -name configure.in -o -name configure.ac`; do
 		rm -f `dirname $ac`/configure
 	done
@@ -217,10 +215,6 @@ autotools_do_configure() {
 		#	touch ${AUTOTOOLS_AUXDIR}/config.rpath ${S}/po/Makefile.in.in
 		fi
 		mkdir -p m4
-
-		for i in $PRUNE_M4; do
-			find ${S} -ignore_readdir_race -name $i -delete
-		done
 
 		bbnote Executing ACLOCAL=\"$ACLOCAL\" autoreconf -Wcross --verbose --install --force ${EXTRA_AUTORECONF} $acpaths
 		ACLOCAL="$ACLOCAL" autoreconf -Wcross -Wno-obsolete --verbose --install --force ${EXTRA_AUTORECONF} $acpaths || die "autoreconf execution failed."
