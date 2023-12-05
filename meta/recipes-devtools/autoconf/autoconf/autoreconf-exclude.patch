@@ -1,18 +1,18 @@
-From 0071d28e304745a16871561f23117fdb00dd2559 Mon Sep 17 00:00:00 2001
+From bdae4adea26e089d5f7c68afd996b8f4ded6dc1c Mon Sep 17 00:00:00 2001
 From: Ross Burton <ross.burton@intel.com>
 Date: Thu, 12 Mar 2020 17:25:23 +0000
-Subject: [PATCH 4/7] autoreconf-exclude.patch
+Subject: [PATCH] autoreconf-exclude.patch
 
 Upstream-Status: Inappropriate [oe specific]
 ---
- bin/autoreconf.in | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ bin/autoreconf.in | 32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
 diff --git a/bin/autoreconf.in b/bin/autoreconf.in
-index bb9f316d..7da3005b 100644
+index c6077efe..9796a818 100644
 --- a/bin/autoreconf.in
 +++ b/bin/autoreconf.in
-@@ -82,6 +82,7 @@ Operation modes:
+@@ -83,6 +83,7 @@ Operation modes:
    -i, --install            copy missing standard auxiliary files
        --no-recursive       don't rebuild sub-packages
    -s, --symlink            with -i, install symbolic links instead of copies
@@ -20,7 +20,7 @@ index bb9f316d..7da3005b 100644
    -m, --make               when applicable, re-run ./configure && make
    -W, --warnings=CATEGORY  report the warnings falling in CATEGORY [syntax]
  
-@@ -141,6 +142,10 @@ my $run_make = 0;
+@@ -142,6 +143,10 @@ my $run_make = 0;
  # Recurse into subpackages
  my $recursive = 1;
  
@@ -31,15 +31,15 @@ index bb9f316d..7da3005b 100644
  ## ---------- ##
  ## Routines.  ##
  ## ---------- ##
-@@ -161,6 +166,7 @@ sub parse_args ()
+@@ -162,6 +167,7 @@ sub parse_args ()
  	  'B|prepend-include=s'	 => \@prepend_include,
  	  'i|install'            => \$install,
  	  's|symlink'            => \$symlink,
-+  	  'x|exclude=s'          => \@exclude,
++	  'x|exclude=s'          => \@exclude,
  	  'm|make'               => \$run_make,
  	  'recursive!'           => \$recursive);
  
-@@ -170,6 +176,8 @@ sub parse_args ()
+@@ -171,6 +177,8 @@ sub parse_args ()
    parse_WARNINGS;
    parse_warnings @warning;
  
@@ -48,7 +48,7 @@ index bb9f316d..7da3005b 100644
    # Even if the user specified a configure.ac, trim to get the
    # directory, and look for configure.ac again.  Because (i) the code
    # is simpler, and (ii) we are still able to diagnose simultaneous
-@@ -493,8 +501,11 @@ sub autoreconf_current_directory ($)
+@@ -494,8 +502,11 @@ sub autoreconf_current_directory ($)
      }
    else
      {
@@ -60,7 +60,18 @@ index bb9f316d..7da3005b 100644
      }
  
  
-@@ -687,9 +698,12 @@ sub autoreconf_current_directory ($)
+@@ -554,7 +565,10 @@ sub autoreconf_current_directory ($)
+       # fall.
+       sleep 1;
+ 
++      @ex = grep (/^aclocal$/, @exclude);
++      if ($#ex == -1) {
+       xsystem ("$aclocal $aclocal_flags");
++	  }
+     }
+ 
+   # We might have to rerun aclocal if Libtool (or others) imports new
+@@ -692,9 +706,12 @@ sub autoreconf_current_directory ($)
  	{
  	  $libtoolize .= " --ltdl";
  	}
@@ -73,7 +84,7 @@ index bb9f316d..7da3005b 100644
      }
    else
      {
-@@ -726,8 +740,11 @@ sub autoreconf_current_directory ($)
+@@ -731,8 +748,11 @@ sub autoreconf_current_directory ($)
      }
    elsif ($install)
      {
@@ -85,7 +96,18 @@ index bb9f316d..7da3005b 100644
      }
    else
      {
-@@ -765,7 +782,10 @@ sub autoreconf_current_directory ($)
+@@ -754,7 +774,10 @@ sub autoreconf_current_directory ($)
+ 	}
+       else
+ 	{
++      @ex = grep (/^aclocal$/, @exclude);
++      if ($#ex == -1) {
+ 	  xsystem ("$aclocal $aclocal_flags");
++	  }
+ 	}
+     }
+ 
+@@ -770,7 +793,10 @@ sub autoreconf_current_directory ($)
    # latter runs the former, and (ii) autoconf is stricter than
    # autoheader.  So all in all, autoconf should give better error
    # messages.
@@ -96,7 +118,7 @@ index bb9f316d..7da3005b 100644
  
  
    # -------------------- #
-@@ -786,7 +806,10 @@ sub autoreconf_current_directory ($)
+@@ -791,7 +817,10 @@ sub autoreconf_current_directory ($)
      }
    else
      {
@@ -107,7 +129,7 @@ index bb9f316d..7da3005b 100644
      }
  
  
-@@ -803,7 +826,10 @@ sub autoreconf_current_directory ($)
+@@ -808,7 +837,10 @@ sub autoreconf_current_directory ($)
        # We should always run automake, and let it decide whether it shall
        # update the file or not.  In fact, the effect of '$force' is already
        # included in '$automake' via '--no-force'.
@@ -119,5 +141,5 @@ index bb9f316d..7da3005b 100644
  
    # ---------------------------------------------------- #
 -- 
-2.25.1
+2.34.1
 
