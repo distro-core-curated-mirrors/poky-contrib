@@ -1,0 +1,42 @@
+From e38b1fec2eb4a5dcefafdab7f1a240966f3632f1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Eil=C3=ADs=20=27pidge=27=20N=C3=AD=20Fhlannag=C3=A1in?=
+ <pidge@baylibre.com>
+Date: Wed, 6 Dec 2023 13:00:29 +0000
+Subject: [PATCH] subports: Add _GNU_SOURCE
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+[YOCTO #15074]
+
+syncfs probe fails on glibc (and in theory musl as well) as syncfs is protected
+and requires _GNU_SOURCE.
+
+Signed-off-by: Eilís 'pidge' Ní Fhlannagáin <pidge@baylibre.com>
+---
+Upstream-Status: Pending
+
+ ports/unix/subports | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ports/unix/subports b/ports/unix/subports
+index e41b036..bd5a2f6 100755
+--- a/ports/unix/subports
++++ b/ports/unix/subports
+@@ -1,11 +1,13 @@
+ #!/bin/sh
+ cat > dummy.c <<EOF
++#define _GNU_SOURCE
+ #include <unistd.h>
+ int main(void) {
+ 	syncfs(0);
+ 	return 0;
+ }
+ EOF
++
+ if ${CC} -o dummy dummy.c > /dev/null 2>&1; then
+ 	echo "unix/syncfs"
+ fi
+-- 
+2.34.1
+
