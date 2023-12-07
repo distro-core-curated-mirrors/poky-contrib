@@ -80,7 +80,7 @@ RPROVIDES:coreutils += "${@bb.utils.contains('PACKAGECONFIG', 'single-binary', '
 # absolute since coreutils has a lot of m4 files, otherwise there might
 # be an "Argument list too long" error when it is built in a long/deep
 # directory.
-acpaths = "-I ./m4"
+#acpaths = "-I ./m4"
 
 # Deal with a separate builddir failure if src doesn't exist when creating version.c/version.h
 do_compile:prepend () {

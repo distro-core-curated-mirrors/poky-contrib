@@ -13,7 +13,7 @@ SYSROOT_DIRS_IGNORE += " \
     ${datadir}/libtool/build-aux \
 "
 
-ACLOCALEXTRAPATH:class-target = ""
+#ACLOCALEXTRAPATH:class-target = ""
 
 do_install:append () {
         sed -e 's@--sysroot=${STAGING_DIR_HOST}@@g' \

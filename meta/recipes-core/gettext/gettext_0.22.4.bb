@@ -123,10 +123,11 @@ FILES:gettext-runtime-doc = "${mandir}/man1/gettext.* \
 
 do_install:append() {
     rm -f ${D}${libdir}/preloadable_libintl.so
-    rm -f ${D}${bindir}/autopoint
 }
 
 do_install:append:class-native () {
+    # gettext-native depends on minimal
+    rm -f ${D}${bindir}/autopoint
     create_wrapper ${D}${bindir}/msgfmt \
         GETTEXTDATADIR="${STAGING_DATADIR_NATIVE}/gettext-${PV}/"
 }

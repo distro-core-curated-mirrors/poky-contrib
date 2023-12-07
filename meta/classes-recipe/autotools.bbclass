@@ -145,13 +145,6 @@ do_compile[prefuncs] += "autotools_aclocals"
 do_install[prefuncs] += "autotools_aclocals"
 do_configure[postfuncs] += "autotools_postconfigure"
 
-# looks like I can remove this too, mostly.  aclocal --print-ac-dir does the
-# right thing as it got relocated. just need to add target path in non-native build.
-ACLOCALDIR = "${STAGING_DATADIR}/aclocal"
-#ACLOCALEXTRAPATH = ""
-#ACLOCALEXTRAPATH:class-target = " -I ${STAGING_DATADIR_NATIVE}/aclocal/"
-#ACLOCALEXTRAPATH:class-nativesdk = " -I ${STAGING_DATADIR_NATIVE}/aclocal/"
-
 python autotools_aclocals () {
     sitefiles, searched = siteinfo_get_files(d, sysrootcache=True)
     d.setVar("CONFIG_SITE", " ".join(sitefiles))
@@ -177,8 +170,8 @@ autotools_do_configure() {
 	if [ -e ${AUTOTOOLS_SCRIPT_PATH}/configure.in -o -e ${AUTOTOOLS_SCRIPT_PATH}/configure.ac ]; then
 		olddir=`pwd`
 		cd ${AUTOTOOLS_SCRIPT_PATH}
-		mkdir -p ${ACLOCALDIR}
-		ACLOCAL="aclocal -I ${ACLOCALDIR}/"
+
+		ACLOCAL="aclocal -I ${STAGING_DATADIR}/aclocal/"
 		if [ x"${acpaths}" = xdefault ]; then
 			acpaths=
 			for i in `find ${AUTOTOOLS_SCRIPT_PATH} -ignore_readdir_race -maxdepth 2 -name \*.m4|grep -v 'aclocal.m4'| \
@@ -189,6 +182,7 @@ autotools_do_configure() {
 			acpaths="${acpaths}"
 		fi
 		acpaths="$acpaths ${ACLOCALEXTRAPATH}"
+		acpaths=""
 		#AUTOV=`automake --version | sed -e '1{s/.* //;s/\.[0-9]\+$//};q'`
 		#bbdebug "AUTOV is $AUTOV"
 		#if [ -d ${STAGING_DATADIR_NATIVE}/aclocal-$AUTOV ]; then
