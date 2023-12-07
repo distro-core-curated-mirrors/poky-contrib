@@ -40,3 +40,6 @@ SRC_URI = "${KERNELORG_MIRROR}/linux/utils/util-linux/v${MAJOR_VERSION}/util-lin
            "
 
 SRC_URI[sha256sum] = "87abdfaa8e490f8be6dde976f7c80b9b5ff9f301e1b67e3899e1f05a59a1531f"
+
+# gtk-doc is not enabled as it requires xmlto which requires util-linux
+EXTRA_AUTORECONF += "--exclude=gtkdocize"
