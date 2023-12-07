@@ -148,9 +148,9 @@ do_configure[postfuncs] += "autotools_postconfigure"
 # looks like I can remove this too, mostly.  aclocal --print-ac-dir does the
 # right thing as it got relocated. just need to add target path in non-native build.
 ACLOCALDIR = "${STAGING_DATADIR}/aclocal"
-ACLOCALEXTRAPATH = ""
-ACLOCALEXTRAPATH:class-target = " -I ${STAGING_DATADIR_NATIVE}/aclocal/"
-ACLOCALEXTRAPATH:class-nativesdk = " -I ${STAGING_DATADIR_NATIVE}/aclocal/"
+#ACLOCALEXTRAPATH = ""
+#ACLOCALEXTRAPATH:class-target = " -I ${STAGING_DATADIR_NATIVE}/aclocal/"
+#ACLOCALEXTRAPATH:class-nativesdk = " -I ${STAGING_DATADIR_NATIVE}/aclocal/"
 
 python autotools_aclocals () {
     sitefiles, searched = siteinfo_get_files(d, sysrootcache=True)
@@ -178,7 +178,7 @@ autotools_do_configure() {
 		olddir=`pwd`
 		cd ${AUTOTOOLS_SCRIPT_PATH}
 		mkdir -p ${ACLOCALDIR}
-		ACLOCAL="aclocal --system-acdir=${ACLOCALDIR}/"
+		ACLOCAL="aclocal -I ${ACLOCALDIR}/"
 		if [ x"${acpaths}" = xdefault ]; then
 			acpaths=
 			for i in `find ${AUTOTOOLS_SCRIPT_PATH} -ignore_readdir_race -maxdepth 2 -name \*.m4|grep -v 'aclocal.m4'| \
