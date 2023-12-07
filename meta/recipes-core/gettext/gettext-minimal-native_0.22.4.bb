@@ -10,6 +10,8 @@ SRC_URI += " \
            file://COPYING \
 "
 
+SRC_URI += "file://verbose.patch"
+
 INHIBIT_DEFAULT_DEPS = "1"
 INHIBIT_AUTOTOOLS_DEPS = "1"
 

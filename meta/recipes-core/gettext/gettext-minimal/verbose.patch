@@ -1,0 +1,24 @@
+Upstream-Status: Inappropriate
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+
+diff --git a/gettext-tools/misc/autopoint.in b/gettext-tools/misc/autopoint.in
+index d37b32ccd..2b1971212 100644
+--- a/gettext-tools/misc/autopoint.in
++++ b/gettext-tools/misc/autopoint.in
+@@ -377,6 +377,8 @@ if test -z "$ver"; then
+   func_fatal_error "Missing version: please specify in $configure_in through a line 'AM_GNU_GETTEXT_VERSION(x.yy.zz)' the gettext version the package is using"
+ fi
+ 
++echo "Using gettext version $ver"
++
+ # Check whether the version number is supported.
+ case "$ver" in
+   0.10.35 | 0.10.36 | 0.10.37 | 0.10.38 | 0.10.39 | 0.10.40 | \
+@@ -675,6 +677,7 @@ func_destfile ()
+     po/ ) destfile=`echo "$1" | sed -e "s,^po/,,"` allpodirs=yes ;;
+     * ) destfile="$1" ;;
+   esac
++  echo "$1 will be copied to $destfile"
+ }
+ 
+ # func_compare existingfile gettextfile
