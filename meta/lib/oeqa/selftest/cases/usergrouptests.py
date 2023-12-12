@@ -51,3 +51,10 @@ class UserGroupTests(OESelftestTestCase):
         self.write_config("USERADD_GID_TABLES += \"files/static-group\"")
         self.logger.info("Rebuild with other staticids")
         self.assertTrue(bitbake(' core-image-minimal'))
+        
+    def test_postinst_order(self):
+        # Test for YOCTO #13904
+        bitbake(' bfirstgroup asecondgroup cthirdgroup groupdep -c clean')
+        self.logger.info("Building groupdep do_prepare_recipe_sysroot")
+        self.assertTrue(bitbake(' groupdep -c do_prepare_recipe_sysroot'))
+
