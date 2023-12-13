@@ -11,7 +11,7 @@ https://github.com/libffi/libffi/issues/607. Now that
 clang supports the LDC and SDC instructions, this mitigation
 has been reverted.
 
-Upstream-Status: Backport [00116b6d0171ba69ffe23d6b5c21c0fdb5907a48]
+Upstream-Status: Submitted [https://github.com/libffi/libffi/pull/747]
 Signed-off-by: Brett Warren <brett.warren@arm.com>
 
 ---
