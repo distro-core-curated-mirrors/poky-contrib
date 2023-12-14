@@ -19,7 +19,8 @@ UPSTREAM_CHECK_COMMITS = "1"
 
 CLEANBROKEN = "1"
 
-do_compile[noexec] = "1"
+deltask do_compile
+addtask install after do_configure
 
 do_install () {
 	install -d ${D}${datadir}/gnu-config \
