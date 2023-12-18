@@ -183,6 +183,11 @@ python do_symlink_kernsrc () {
     s = d.getVar("S")
     kernsrc = d.getVar("STAGING_KERNEL_DIR")
     if s != kernsrc:
+        if os.path.islink(s):
+            # this happens for instance when a poky update modifies this class,
+            # forcing symlink_kernsrc to run again after s was already moved to kernsrc
+            bb.info("%s is already a symlink! Not symlinking kernel sources" % s)
+            return 0
         bb.utils.mkdirhier(kernsrc)
         bb.utils.remove(kernsrc, recurse=True)
         if s[-1] == '/':
