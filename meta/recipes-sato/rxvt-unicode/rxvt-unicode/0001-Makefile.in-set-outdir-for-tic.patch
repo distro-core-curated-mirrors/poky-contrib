@@ -1,0 +1,35 @@
+From 1b7d547453fc57806ef86f64c86706530a23e62e Mon Sep 17 00:00:00 2001
+From: Changqing Li <changqing.li@windriver.com>
+Date: Wed, 13 Dec 2023 11:53:18 +0800
+Subject: [PATCH] Makefile.in: set outdir for tic
+
+tic is from ncurses-native, and set TERMINFO as
+${RECIPE_SYSROOT_NATIVE}/${datadir}/terminfo of ncurses-native, so the
+rxvt-unicode terminfo will be wrongly installed in there.  set the
+outdir explicitly to install them to correct dir.
+
+Upstream-Status: Submitted [ https://github.com/exg/rxvt-unicode/pull/4 ]
+
+Signed-off-by: Changqing Li <changqing.li@windriver.com>
+---
+ doc/Makefile.in | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/doc/Makefile.in b/doc/Makefile.in
+index e3d1fe8..1de56d3 100644
+--- a/doc/Makefile.in
++++ b/doc/Makefile.in
+@@ -100,8 +100,8 @@ install: all
+ 	$(INSTALL_DATA) rxvtd.1.man   $(DESTDIR)$(man1dir)/$(RXVTNAME)d.$(man1ext)
+ 	$(INSTALL_DATA) rxvt.7.man    $(DESTDIR)$(man7dir)/$(RXVTNAME).$(man7ext)
+ 	$(INSTALL_DATA) rclock.1.man  $(DESTDIR)$(man1dir)/urclock.$(man1ext)
+-	@TIC@ -x $(srcdir)/etc/rxvt-unicode.terminfo || \
+-           @TIC@ $(srcdir)/etc/rxvt-unicode.terminfo
++	@TIC@ -x $(srcdir)/etc/rxvt-unicode.terminfo -o $(DESTDIR)$(datadir)/terminfo || \
++           @TIC@ $(srcdir)/etc/rxvt-unicode.terminfo -o $(DESTDIR)$(datadir)/terminfo
+ 
+ distdepend: alldoc
+ 
+-- 
+2.25.1
+

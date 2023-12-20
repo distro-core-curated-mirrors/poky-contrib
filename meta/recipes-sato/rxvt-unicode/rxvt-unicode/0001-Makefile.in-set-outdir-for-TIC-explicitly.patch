@@ -1,0 +1,44 @@
+From c88c94e629b6aad1609d13f355c52e5a3acc8d2a Mon Sep 17 00:00:00 2001
+From: Changqing Li <changqing.li@windriver.com>
+Date: Thu, 14 Dec 2023 17:33:15 +0800
+Subject: [PATCH] Makefile.in: set outdir for TIC explicitly
+
+When doing cross-compile, native tic's TERMINFO usually
+set as a native dir, which could not the target install dir,
+which will cause rxvt-unicode terminfo will be wrongly installed.
+set the outdir explicitly to install them to correct dir.
+
+Upstream-Status: Submitted [ https://github.com/exg/rxvt-unicode/pull/4 ]
+
+Signed-off-by: Changqing Li <changqing.li@windriver.com>
+---
+ doc/Makefile.in | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/doc/Makefile.in b/doc/Makefile.in
+index e3d1fe8b..3477551a 100644
+--- a/doc/Makefile.in
++++ b/doc/Makefile.in
+@@ -69,7 +69,7 @@ all:
+ 	sed $(SEDREPLACE) <$< | podselect -section "RXVT-UNICODE\/URXVT FREQUENTLY ASKED QUESTIONS" | pod2text >$@
+ 
+ $(srcdir)/etc/rxvt-unicode.termcap: $(srcdir)/etc/rxvt-unicode.terminfo
+-	tic -C $< >$@
++	@TIC@ -C $< >$@
+ 
+ tags allbin:
+ 
+@@ -100,8 +100,8 @@ install: all
+ 	$(INSTALL_DATA) rxvtd.1.man   $(DESTDIR)$(man1dir)/$(RXVTNAME)d.$(man1ext)
+ 	$(INSTALL_DATA) rxvt.7.man    $(DESTDIR)$(man7dir)/$(RXVTNAME).$(man7ext)
+ 	$(INSTALL_DATA) rclock.1.man  $(DESTDIR)$(man1dir)/urclock.$(man1ext)
+-	@TIC@ -x $(srcdir)/etc/rxvt-unicode.terminfo || \
+-           @TIC@ $(srcdir)/etc/rxvt-unicode.terminfo
++	@TIC@ -x $(srcdir)/etc/rxvt-unicode.terminfo -o $(DESTDIR)$(datadir)/terminfo || \
++           @TIC@ $(srcdir)/etc/rxvt-unicode.terminfo -o -o $(DESTDIR)$(datadir)/terminfo
+ 
+ distdepend: alldoc
+ 
+-- 
+2.25.1
+
