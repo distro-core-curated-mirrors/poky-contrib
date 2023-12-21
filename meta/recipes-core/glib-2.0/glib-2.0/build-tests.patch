@@ -1,0 +1,34 @@
+From fcd6ba4561555988ac8a77479804a80974e305c8 Mon Sep 17 00:00:00 2001
+From: Ross Burton <ross.burton@arm.com>
+Date: Tue, 9 Jan 2024 17:38:19 +0000
+Subject: [PATCH] Build tests if required
+
+The API documentation currently uses pieces of the test suite as source, so the
+tests also need to be built if documentation is enabled.
+
+NOTE: this patch can be dropped when glib is upgraded to 2.80 because the
+documentation no longer depends on the test suite being build in that release.
+
+Upstream-Status: Inappropriate [drop with 2.80]
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+---
+ meson.build | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index f7e936e94..443c079b9 100644
+--- a/meson.build
++++ b/meson.build
+@@ -150,8 +150,7 @@ installed_tests_enabled = get_option('installed_tests')
+ installed_tests_template = files('tests/template.test.in')
+ installed_tests_template_tap = files('tests/template-tap.test.in')
+ 
+-# Don’t build the tests unless we can run them (either natively, in an exe wrapper, or by installing them for later use)
+-build_tests = get_option('tests') and (meson.can_run_host_binaries() or installed_tests_enabled)
++build_tests = get_option('tests') or installed_tests_enabled or get_option('gtk_doc')
+ 
+ common_test_env = [
+   'G_DEBUG=gc-friendly',
+-- 
+2.34.1
+
