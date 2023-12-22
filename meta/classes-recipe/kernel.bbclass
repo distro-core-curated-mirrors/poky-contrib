@@ -194,17 +194,11 @@ python do_symlink_kernsrc () {
             # drop trailing slash, so that os.symlink(kernsrc, s) doesn't use s as
             # directory name and fail
             s = s[:-1]
-        if d.getVar("EXTERNALSRC") and not os.path.islink(s):
+        if d.getVar("EXTERNALSRC"):
             # With EXTERNALSRC S will not be wiped so we can symlink to it
             os.symlink(s, kernsrc)
         else:
             import shutil
-            # perform idempotent/reentrant copy
-            s_copy = s + ".orig"
-            if not os.path.isdir(s_copy):
-                shutil.copytree(s, s_copy)
-            bb.utils.remove(s, recurse=True)
-            shutil.copytree(s_copy, s)
             shutil.move(s, kernsrc)
             os.symlink(kernsrc, s)
 }
