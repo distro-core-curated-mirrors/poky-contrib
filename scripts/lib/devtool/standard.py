@@ -905,6 +905,7 @@ def modify(args, config, basepath, workspace):
                     (stdout, _) = bb.process.run('git rev-list --reverse devtool-base..HEAD', cwd=submodule_path)
                     commits[submodule] = stdout.split()
         else:
+            initial_revs["."] = None
             if os.path.exists(os.path.join(srctree, '.git')):
                 # Check if it's a tree previously extracted by us. This is done
                 # by ensuring that devtool-base and args.branch (devtool) exist.
