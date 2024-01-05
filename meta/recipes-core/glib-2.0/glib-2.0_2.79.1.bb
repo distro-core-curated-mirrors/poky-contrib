@@ -10,8 +10,8 @@ SRC_URI = "${GNOME_MIRROR}/glib/${SHRT_VER}/glib-${PV}.tar.xz \
            file://0001-Remove-the-warning-about-deprecated-paths-in-schemas.patch \
            file://0001-Install-gio-querymodules-as-libexec_PROGRAM.patch \
            file://0010-Do-not-hardcode-python-path-into-various-tools.patch \
-           file://0001-Set-host_machine-correctly-when-building-with-mingw3.patch \
-           file://0001-Do-not-write-bindir-into-pkg-config-files.patch \
+           file://0001-Set-host_machine-correctly-when-building-with-mingw3.patch;apply=0 \
+           file://0001-Do-not-write-bindir-into-pkg-config-files.patch;apply=0 \
            file://0001-meson-Run-atomics-test-on-clang-as-well.patch \
            file://0001-gio-tests-resources.c-comment-out-a-build-host-only-.patch \
            file://0001-Switch-from-the-deprecated-distutils-module-to-the-p.patch \
@@ -22,7 +22,7 @@ SRC_URI:append:class-native = " file://relocate-modules.patch \
                                 file://0001-meson.build-do-not-enable-pidfd-features-on-native-g.patch \
                               "
 
-SRC_URI[sha256sum] = "24b8e0672dca120cc32d394bccb85844e732e04fe75d18bb0573b2dbc7548f63"
+SRC_URI[sha256sum] = "b3764dd6e29b664085921dd4dd6ba2430fc19760ab6857ecfa3ebd4e8c1d114c"
 
 # Find any meson cross files in FILESPATH that are relevant for the current
 # build (using siteinfo) and add them to EXTRA_OEMESON.

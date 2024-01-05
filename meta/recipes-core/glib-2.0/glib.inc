@@ -30,14 +30,17 @@ LEAD_SONAME = "libglib-2.0.*"
 
 inherit meson gettext gtk-doc pkgconfig ptest-gnome upstream-version-is-even bash-completion gio-module-cache manpages gobject-introspection-data
 
-GTKDOC_MESON_OPTION = "gtk_doc"
-
 S = "${WORKDIR}/glib-${PV}"
 
+GIDOCGEN_MESON_OPTION = "documentation"
+
 PACKAGECONFIG ??= "libmount \
-                   ${@bb.utils.contains('PTEST_ENABLED', '1', 'tests', '', d)}"
+                   ${@bb.utils.contains('PTEST_ENABLED', '1', 'tests', '', d)} \
+                   ${@bb.utils.contains('GI_DATA_ENABLED', 'True', 'introspection', '', d)}"
+
+PACKAGECONFIG[introspection] = "-Dintrospection=enabled,-Dintrospection=disabled"
 PACKAGECONFIG[libmount] = "-Dlibmount=enabled,-Dlibmount=disabled,util-linux"
-PACKAGECONFIG[manpages] = "-Dman=true, -Dman=false, libxslt-native xmlto-native"
+PACKAGECONFIG[manpages] = "-Dman-pages=enabled, -Dman-pages=false,python3-docutils-native"
 PACKAGECONFIG[libelf] = "-Dlibelf=enabled,-Dlibelf=disabled,elfutils"
 PACKAGECONFIG[tests] = "-Dinstalled_tests=true,-Dinstalled_tests=false,"
 PACKAGECONFIG[selinux] = "-Dselinux=enabled,-Dselinux=disabled,libselinux"
