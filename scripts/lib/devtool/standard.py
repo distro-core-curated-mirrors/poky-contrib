@@ -609,7 +609,7 @@ def _extract_source(srctree, keep_temp, devbranch, sync, config, basepath, works
                     if 'depends' in d.getVarFlags('do_configure', False):
                         pn = d.getVarFlags('do_configure', False)['depends']
                         pn = pn.replace('${PV}', d.getVar('PV'))
-                        pn = pn.replace('${COMPILERDEP}', d.getVar('COMPILERDEP'))
+                        pn = pn.replace('${COMPILERDEP}', d.getVar('COMPILERDEP') or "")
                         task = None
 
             # Run the fetch + unpack tasks
