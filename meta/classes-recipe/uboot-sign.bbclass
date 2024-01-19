@@ -91,6 +91,18 @@ KERNEL_PN = "${PREFERRED_PROVIDER_virtual/kernel}"
 UBOOT_FIT_UBOOT_LOADADDRESS ?= "${UBOOT_LOADADDRESS}"
 UBOOT_FIT_UBOOT_ENTRYPOINT ?= "${UBOOT_ENTRYPOINT}"
 
+# Trusted Firmware-A (TF-A) provides a reference implementation of
+# secure world software for Armv7-A and Armv8-A,
+# including a Secure Monitor executing at Exception Level 3 (EL3)
+# ATF is used as the initial start code on ARMv8-A cores for all K3 platforms
+UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A ?= "0"
+UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A_IMAGE ?= "bl31.bin"
+
+# OP-TEE is a Trusted Execution Environment (TEE) designed as
+# companion to a non-secure Linux kernel running on Arm
+UBOOT_FIT_OPTEE_OS ?= "0"
+UBOOT_FIT_OPTEE_OS_IMAGE ?= "tee-raw.bin"
+
 python() {
     # We need u-boot-tools-native if we're creating a U-Boot fitImage
     sign = d.getVar('UBOOT_SIGN_ENABLE') == '1'
@@ -237,6 +249,20 @@ addtask uboot_generate_rsa_keys before do_uboot_assemble_fitimage after do_compi
 # Create a ITS file for the U-boot FIT, for use when
 # we want to sign it so that the SPL can verify it
 uboot_fitimage_assemble() {
+	conf_loadables="\"uboot\""
+	conf_firmware=""
+
+	if [ "${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A}" = "1" ]; then
+		conf_firmware="\"atf\""
+		if [ "${UBOOT_FIT_OPTEE_OS}" = "1" ]; then
+			conf_loadables="\"uboot\", \"optee\""
+		fi
+	else
+		if [ "${UBOOT_FIT_OPTEE_OS}" = "1" ]; then
+			conf_firmware="\"optee\""
+		fi
+	fi
+
 	rm -f ${UBOOT_ITS} ${UBOOT_FITIMAGE_BINARY}
 
 	# First we create the ITS script
@@ -289,13 +315,76 @@ EOF
 
 	cat << EOF >> ${UBOOT_ITS}
         };
+EOF
+	if [ "${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A}" = "1" ] ; then
+		cat << EOF >> ${UBOOT_ITS}
+        atf {
+            description = "ARM Trusted Firmware-A";
+            data = /incbin/("${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A_IMAGE}");
+            type = "firmware";
+            arch = "${UBOOT_ARCH}";
+            os = "arm-trusted-firmware";
+            load = <${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A_LOADADDRESS}>;
+            entry = <${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A_ENTRYPOINT}>;
+            compression = "none";
+EOF
+
+		if [ "${SPL_SIGN_ENABLE}" = "1" ] ; then
+			cat << EOF >> ${UBOOT_ITS}
+            signature {
+                algo = "${UBOOT_FIT_HASH_ALG},${UBOOT_FIT_SIGN_ALG}";
+                key-name-hint = "${SPL_SIGN_KEYNAME}";
+            };
+EOF
+		fi
+
+	cat << EOF >> ${UBOOT_ITS}
+        };
+EOF
+	fi
+
+	if [ "${UBOOT_FIT_OPTEE_OS}" = "1" ] ; then
+		cat << EOF >> ${UBOOT_ITS}
+        optee {
+            description = "OPTEE OS Image";
+            data = /incbin/("${UBOOT_FIT_OPTEE_OS_IMAGE}");
+            type = "tee";
+            arch = "${UBOOT_ARCH}";
+            os = "tee";
+            load = <${UBOOT_FIT_OPTEE_OS_LOADADDRESS}>;
+            entry = <${UBOOT_FIT_OPTEE_OS_ENTRYPOINT}>;
+            compression = "none";
+EOF
+
+		if [ "${SPL_SIGN_ENABLE}" = "1" ] ; then
+			cat << EOF >> ${UBOOT_ITS}
+            signature {
+                algo = "${UBOOT_FIT_HASH_ALG},${UBOOT_FIT_SIGN_ALG}";
+                key-name-hint = "${SPL_SIGN_KEYNAME}";
+            };
+EOF
+		fi
+
+	cat << EOF >> ${UBOOT_ITS}
+        };
+EOF
+	fi
+
+	cat << EOF >> ${UBOOT_ITS}
     };
 
     configurations {
         default = "conf";
         conf {
             description = "Boot with signed U-Boot FIT";
-            loadables = "uboot";
+EOF
+	if [ -n "${conf_firmware}" ]; then
+	cat << EOF >> ${UBOOT_ITS}
+            firmware = ${conf_firmware};
+EOF
+	fi
+	cat << EOF >> ${UBOOT_ITS}
+            loadables = ${conf_loadables};
             fdt = "fdt";
         };
     };
