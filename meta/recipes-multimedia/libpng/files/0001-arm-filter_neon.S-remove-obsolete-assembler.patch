@@ -305,6 +305,15 @@ diff --git a/pngpriv.h b/pngpriv.h
 index 7c19373f0..51d26b978 100644
 --- a/pngpriv.h
 +++ b/pngpriv.h
+@@ -135,7 +135,7 @@
+ #  endif
+ #endif
+
+-#if PNG_ARM_NEON_OPT > 0
++#if PNG_ARM_NEON_OPT > 0 && (defined(__ARM_NEON__) || defined(__ARM_NEON))
+    /* NEON optimizations are to be at least considered by libpng, so enable the
+     * callbacks to do this.
+     */
 @@ -140,47 +140,6 @@
      * callbacks to do this.
      */
