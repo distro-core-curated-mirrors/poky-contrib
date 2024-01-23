@@ -383,7 +383,15 @@ layerBranches set.  If not, they are effectively blank.'''
 
                 # Get a list of dependencies and then recursively process them
                 for layerdependency in layerbranch.index.layerDependencies_layerBranchId[layerbranch.id]:
-                    deplayerbranch = layerdependency.dependency_layerBranch
+                    try:
+                        deplayerbranch = layerdependency.dependency_layerBranch
+                    except AttributeError as e:
+                            logger.warning(str(e))
+                            logger.error('LayerBranch does not exist for dependent layer {}:{}\n' \
+                                '       Cannot continue successfully.\n' \
+                                '       Consider reaching out the to the layer maintainers or the layerindex admins' \
+                                .format(layerdependency.dependency.name, layerbranch.branch.name))
+                            pass
 
                     if ignores and deplayerbranch.layer.name in ignores:
                         continue
@@ -846,7 +854,7 @@ class LayerIndexObj():
                     continue
 
                 for layerdependency in layerbranch.index.layerDependencies_layerBranchId[layerbranch.id]:
-                    deplayerbranch = layerdependency.dependency_layerBranch
+                    deplayerbranch = layerdependency.dependency_layerBranch or None
 
                     if ignores and deplayerbranch.layer.name in ignores:
                         continue
