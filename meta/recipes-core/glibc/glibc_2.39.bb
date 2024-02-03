@@ -46,7 +46,6 @@ SRC_URI =  "${GLIBC_GIT_URI};branch=${SRCBRANCH};name=glibc \
            file://0018-sysdeps-gnu-configure.ac-Set-libc_cv_rootsbindir-onl.patch \
            file://0019-timezone-Make-shell-interpreter-overridable-in-tzsel.patch \
            file://0020-tzselect.ksh-Use-bin-sh-default-shell-interpreter.patch \
-           file://0021-fix-create-thread-failed-in-unprivileged-process-BZ-.patch \
            file://0022-Avoid-hardcoded-build-time-paths-in-the-output-binar.patch \
            file://0023-aarch64-configure-Pass-mcpu-along-with-march-to-dete.patch \
            file://0024-mips-FIx-clone3-implementation-BZ-31325.patch \
