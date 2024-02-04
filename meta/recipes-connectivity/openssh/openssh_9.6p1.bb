@@ -93,6 +93,10 @@ CACHED_CONFIGUREVARS += "ac_cv_path_PATH_PASSWD_PROG=${bindir}/passwd"
 # We don't want to depend on libblockfile
 CACHED_CONFIGUREVARS += "ac_cv_header_maillock_h=no"
 
+# mips32r2 fails to build with internal compiler errors (ICE)
+# prepare some artifacts to report upstream to gcc bugzilla
+CFLAGS:append:mips = " -freport-bug --save-temps"
+
 do_configure:prepend () {
 	export LD="${CC}"
 	install -m 0644 ${WORKDIR}/sshd_config ${B}/
