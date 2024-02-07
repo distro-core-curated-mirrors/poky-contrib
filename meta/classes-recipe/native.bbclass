@@ -114,6 +114,9 @@ CLASSOVERRIDE = "class-native"
 MACHINEOVERRIDES = ""
 MACHINE_FEATURES = ""
 
+DISTRO_FEATURES_BACKFILL = ""
+MACHINE_FEATURES_BACKFILL = ""
+
 PATH:prepend = "${COREBASE}/scripts/native-intercept:"
 
 # This class encodes staging paths into its scripts data so can only be
