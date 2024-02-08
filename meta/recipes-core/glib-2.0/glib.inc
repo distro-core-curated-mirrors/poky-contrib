@@ -17,7 +17,7 @@ CVE_PRODUCT = "glib"
 
 BBCLASSEXTEND = "native nativesdk"
 
-DEPENDS = "glib-2.0-native \
+DEPENDS = "${BPN}-native \
            virtual/libintl \
            virtual/libiconv \
            libffi \
@@ -38,7 +38,7 @@ PACKAGECONFIG ??= "libmount \
                    ${@bb.utils.contains('PTEST_ENABLED', '1', 'tests', '', d)} \
                    ${@bb.utils.contains('GI_DATA_ENABLED', 'True', 'introspection', '', d)}"
 
-PACKAGECONFIG[introspection] = "-Dintrospection=enabled,-Dintrospection=disabled"
+PACKAGECONFIG[introspection] = "-Dintrospection=enabled,-Dintrospection=disabled,gobject-introspection-native gobject-introspection"
 PACKAGECONFIG[libmount] = "-Dlibmount=enabled,-Dlibmount=disabled,util-linux"
 PACKAGECONFIG[manpages] = "-Dman-pages=enabled, -Dman-pages=false,python3-docutils-native"
 PACKAGECONFIG[libelf] = "-Dlibelf=enabled,-Dlibelf=disabled,elfutils"
