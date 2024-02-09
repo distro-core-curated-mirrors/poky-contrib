@@ -18,6 +18,7 @@ S = "${WORKDIR}/git/src"
 
 inherit autotools gettext
 
+CFLAGS += "-Wno-error=incompatible-pointer-types"
 # This is custom stuff from upstream's autogen.sh
 do_configure:prepend() {
     mkdir -p ${S}/m4
