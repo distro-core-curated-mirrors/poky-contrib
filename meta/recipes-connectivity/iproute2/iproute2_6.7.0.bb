@@ -30,6 +30,7 @@ IPROUTE2_MAKE_SUBDIRS = "lib tc ip bridge misc genl ${@bb.utils.filter('PACKAGEC
 
 # CFLAGS are computed in Makefile and reference CCOPTS
 #
+CFLAGS += "-Wno-error=incompatible-pointer-types"
 EXTRA_OEMAKE = "\
     CC='${CC}' \
     KERNEL_INCLUDE=${STAGING_INCDIR} \
