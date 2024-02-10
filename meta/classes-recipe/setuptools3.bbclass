@@ -20,7 +20,15 @@ SETUPTOOLS_SKIP_BUILD_BACKEND_CHECK ?= "0"
 
 python check_for_pyprojecttoml_build_backend() {
     import os
-    import tomli
+    try:
+        import tomllib
+    except ModuleNotFoundError:
+        bb.debug(3, 'tomllib not found, falling back to tomli')
+        try:
+            import tomli as tomllib
+        except ImportError:
+            bb.warn('Need either tomli or tomllib in the host environment')
+            return
     from pathlib import Path
 
     if d.getVar('SETUPTOOLS_SKIP_BUILD_BACKEND_CHECK') == "1":
@@ -32,7 +40,7 @@ python check_for_pyprojecttoml_build_backend() {
     if pyprojecttoml_file.exists():
         bb.debug(3, "pyproject.toml found: %s" % pyprojecttoml_file)
         with open(pyprojecttoml_file, "rb") as f:
-            pyprojecttoml_dict = tomli.load(f)
+            pyprojecttoml_dict = tomllib.load(f)
             try:
                 build_system = pyprojecttoml_dict["build-system"]
                 if build_system:
@@ -42,13 +50,19 @@ python check_for_pyprojecttoml_build_backend() {
                         bb.debug(3, "build-backend found: %s" % backend)
                     if backend == "flit_core.buildapi":
                         bb.warn(warn_string % ('flit_core.buildapi',
-                                               'flit_core'))
+                                               'python_flit_core'))
                     elif backend == "setuptools.build_meta":
                         bb.warn(warn_string % ('setuptools.build_meta',
-                                              'setuptools_build_meta'))
+                                              'python_setuptools_build_meta'))
                     elif backend == "poetry.core.masonry.api":
                         bb.warn(warn_layer_string % ('poetry.core.masonry.api',
-                                                     'poetry_core', 'meta-python'))
+                                                     'python_poetry_core'))
+                    elif backend == "hatchling.build":
+                        bb.warn(warn_layer_string % ('hatchling.build',
+                                                     'python_hatchling'))
+                    elif backend == "maturin":
+                        bb.warn(warn_layer_string % ('maturin',
+                                                     'python_maturin'))
                     else:
                         bb.warn("The source has a pyproject.toml which declares '%s' as a build backend, but this is not currently supported in oe-core." % backend)
             except KeyError:
