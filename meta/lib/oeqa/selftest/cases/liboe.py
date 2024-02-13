@@ -102,3 +102,36 @@ class LibOE(OESelftestTestCase):
         self.assertEqual(dstcnt, len(testfiles), "Number of files in dst (%s) differs from number of files in src(%s)." % (dstcnt, srccnt))
 
         oe.path.remove(testloc)
+
+    def test_distro_features_filter(self):
+        config = """
+# Nuke any distro-level manipulation of the features
+DISTRO = "nodistro"
+INIT_MANAGER = "none"
+VIRTUAL-RUNTIME_init_manager = ""
+
+# The base features
+DISTRO_FEATURES = "a b c d"
+
+# The base features get filtered through this mask
+DISTRO_FEATURES_FILTER_NATIVE = "a c"
+DISTRO_FEATURES_FILTER_NATIVESDK = "b d"
+# TODO consider backfill?
+
+# These features are always enabled
+DISTRO_FEATURES_NATIVE = "f"
+DISTRO_FEATURES_NATIVESDK = "g"
+
+DISTRO_FEATURES_BACKFILL:forcevariable = "e"
+        """
+        self.write_config(config)
+
+        def features(expected, recipe):
+            calculated = set(get_bb_var("DISTRO_FEATURES", recipe).split())
+            self.assertEqual(set(expected), calculated, "FEATURE mismatch for %s" % recipe)
+        
+        features("abcde", "m4")
+        features("acf", "m4-native")
+        features("bdg", "nativesdk-m4")
+
+        # TODO machine features
