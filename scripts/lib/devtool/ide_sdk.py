@@ -384,6 +384,8 @@ class RecipeModified:
             self.extra_oemeson = recipe_d.getVar('EXTRA_OEMESON')
             self.meson_cross_file = recipe_d.getVar('MESON_CROSS_FILE')
             self.build_tool = BuildTool.MESON
+        elif bb.data.inherits_class('autotools', recipe_d):
+            self.build_tool = BuildTool.AUTOTOOLS
 
         # Recipe ID is the identifier for IDE config sections
         self.recipe_id = self.bpn + "-" + self.package_arch
