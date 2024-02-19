@@ -20,7 +20,7 @@ UPSTREAM_CHECK_REGEX = "releases/tag/v?(?P<pver>\d+(\.\d+)+)$"
 
 DEPENDS += "python3-cython-native"
 
-inherit ptest setuptools3 github-releases
+inherit ptest python_mesonpy github-releases
 
 S = "${WORKDIR}/numpy-${PV}"
 
@@ -33,32 +33,34 @@ do_compile:prepend() {
 FILES:${PN}-staticdev += "${PYTHON_SITEPACKAGES_DIR}/numpy/core/lib/*.a ${PYTHON_SITEPACKAGES_DIR}/numpy/random/lib/*.a"
 
 # install what is needed for numpy.test()
-RDEPENDS:${PN} = "python3-unittest \
-                  python3-difflib \
-                  python3-pprint \
-                  python3-pickle \
-                  python3-shell \
-                  python3-doctest \
-                  python3-datetime \
-                  python3-misc \
-                  python3-mmap \
-                  python3-netclient \
-                  python3-numbers \
-                  python3-pydoc \
-                  python3-pkgutil \
-                  python3-email \
-                  python3-compression \
-                  python3-ctypes \
-                  python3-threading \
-                  python3-multiprocessing \
-                  python3-json \
+RDEPENDS:${PN} = "\
+    python3-compression \
+    python3-ctypes \
+    python3-datetime \
+    python3-difflib \
+    python3-doctest \
+    python3-email \
+    python3-json \
+    python3-misc \
+    python3-mmap \
+    python3-multiprocessing \
+    python3-netclient \
+    python3-numbers \
+    python3-pickle \
+    python3-pkgutil \
+    python3-pprint \
+    python3-pydoc \
+    python3-shell \
+    python3-threading \
+    python3-unittest \
 "
-RDEPENDS:${PN}-ptest += "python3-pytest \
-                         python3-hypothesis \
-                         python3-sortedcontainers \
-                         python3-resource \
-                         python3-typing-extensions \
-                         ldd \
+RDEPENDS:${PN}-ptest += "\
+    ldd \
+    python3-hypothesis \
+    python3-pytest \
+    python3-resource \
+    python3-sortedcontainers \
+    python3-typing-extensions \
 "
 
 BBCLASSEXTEND = "native nativesdk"
