@@ -11,7 +11,7 @@ import time
 import os
 import base64
 import hashlib
-from . import create_async_client
+from . import create_async_client, PROTOCOL_VERSION
 import bb.asyncrpc
 
 logger = logging.getLogger("hashserv.server")
@@ -290,7 +290,13 @@ class ServerClient(bb.asyncrpc.AsyncServerConnection):
         return False
 
     def validate_proto_version(self):
-        return self.proto_version > (1, 0) and self.proto_version <= (1, 1)
+        return self.proto_version > (1, 0) and self.proto_version <= (1, 2)
+
+    async def handle_headers(self, headers):
+        return {
+            "version": PROTOCOL_VERSION,
+            "supported-api": " ".join(self.handlers.keys()),
+        }
 
     async def process_requests(self):
         async with self.server.db_engine.connect(self.logger) as db:

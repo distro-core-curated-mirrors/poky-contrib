@@ -7,7 +7,7 @@ import logging
 import socket
 import bb.asyncrpc
 import json
-from . import create_async_client
+from . import create_async_client, PROTOCOL_VERSION
 
 
 logger = logging.getLogger("hashserv.client")
@@ -19,7 +19,7 @@ class AsyncClient(bb.asyncrpc.AsyncClient):
     MODE_EXIST_STREAM = 2
 
     def __init__(self, username=None, password=None):
-        super().__init__("OEHASHEQUIV", "1.1", logger)
+        super().__init__("OEHASHEQUIV", PROTOCOL_VERSION, logger, server_headers=True)
         self.mode = self.MODE_NORMAL
         self.username = username
         self.password = password
@@ -83,6 +83,10 @@ class AsyncClient(bb.asyncrpc.AsyncClient):
 
         self.mode = new_mode
 
+    async def _api_is_supported(self, api):
+        supported_apis = await self.get_header("supported-api", "")
+        return api in supported_apis.split()
+
     async def get_unihash(self, method, taskhash):
         await self._set_mode(self.MODE_GET_STREAM)
         r = await self.send_stream("%s %s" % (method, taskhash))
@@ -114,6 +118,9 @@ class AsyncClient(bb.asyncrpc.AsyncClient):
         )
 
     async def unihash_exists(self, unihash):
+        if not await self._api_is_supported("exists-stream"):
+            return True
+
         await self._set_mode(self.MODE_EXIST_STREAM)
         r = await self.send_stream(unihash)
         return r == "true"

@@ -19,6 +19,8 @@ ADDR_TYPE_UNIX = 0
 ADDR_TYPE_TCP = 1
 ADDR_TYPE_WS = 2
 
+PROTOCOL_VERSION = "1.2"
+
 User = namedtuple("User", ("username", "permissions"))
 
 
