@@ -33,6 +33,12 @@ class BuildTool(Enum):
             return True
         return False
 
+    @property
+    def is_c_ccp_make(self):
+        if self is BuildTool.AUTOTOOLS:
+            return True
+        return False
+
 
 class GdbCrossConfig:
     """Base class defining the GDB configuration generator interface

@@ -311,12 +311,13 @@ class RecipeModified:
         self.__oe_init_dir = None
         # main build tool used by this recipe
         self.build_tool = BuildTool.UNDEFINED
+        self.cmd_configure = None
+        self.cmd_compile_wrapper = None
         # build_tool = cmake
         self.oecmake_generator = None
         self.cmake_cache_vars = None
         # build_tool = meson
         self.meson_buildtype = None
-        self.meson_wrapper = None
         self.mesonopts = None
         self.extra_oemeson = None
         self.meson_cross_file = None
@@ -680,8 +681,24 @@ class RecipeModified:
             mwrap.write('exec "%s" "$@"' % meson_real + os.linesep)
         st = os.stat(meson_wrapper)
         os.chmod(meson_wrapper, st.st_mode | stat.S_IEXEC)
-        self.meson_wrapper = meson_wrapper
+        self.cmd_compile_wrapper = meson_wrapper
         self.cmd_compile = meson_wrapper + " compile -C " + self.b
+
+    def gen_configure_wrapper(self):
+        self.cmd_configure = self.gen_configre_script()
+
+    def gen_make_wrapper(self):
+        """Generate a wrapper script to call make with the cross environment"""
+        mwrap = []
+        mwrap.append("#!/bin/sh")
+        for var, val in self.exported_vars.items():
+            mwrap.append('export %s="%s"' % (var, val))
+        make_real = os.path.join(
+            self.recipe_sysroot_native, 'usr', 'bin', 'make')
+        mwrap.append('exec "%s" "$@"' % make_real)
+        make_wrapper = self.write_script(mwrap, 'make')
+        self.cmd_compile_wrapper = make_wrapper
+        self.cmd_compile = make_wrapper + " -C " + self.b
 
     def which(self, executable):
         bin_path = shutil.which(executable, path=self.path)
@@ -783,26 +800,34 @@ class RecipeModified:
                           self.fakerootcmd, self.fakerootenv))
         return self.write_script(cmd_lines, 'deploy_target')
 
-    def gen_install_deploy_script(self, args):
-        """Generate a script which does install and deploy"""
-        cmd_lines = ['#!/bin/bash']
+    def append_oe_init_script(self, cmd_lines):
+        """Append . oe-init-build-env $BUILDDIR
 
-        cmd_lines.append(self.gen_delete_package_dirs())
-
-        # . oe-init-build-env $BUILDDIR
-        # Note: Sourcing scripts with arguments requires bash
+        Note: Sourcing scripts with arguments requires bash
+        """
         cmd_lines.append('cd "%s" || { echo "cd %s failed"; exit 1; }' % (
             self.oe_init_dir, self.oe_init_dir))
         cmd_lines.append('. "%s" "%s" || { echo ". %s %s failed"; exit 1; }' % (
             self.oe_init_build_env, self.topdir, self.oe_init_build_env, self.topdir))
 
+    def gen_configre_script(self):
+        """Generate a script which does bitbake -c configure"""
+        cmd_lines = ['#!/bin/bash']
+        self.append_oe_init_script(cmd_lines)
+        cmd_lines.append(
+            'bitbake %s -c configure --force || { echo "bitbake %s -c configure --force failed"; exit 1; }' % (self.bpn, self.bpn))
+        return self.write_script(cmd_lines, 'configure')
+
+    def gen_install_deploy_script(self, args):
+        """Generate a script which does install and deploy"""
+        cmd_lines = ['#!/bin/bash']
+        cmd_lines.append(self.gen_delete_package_dirs())
+        self.append_oe_init_script(cmd_lines)
         # bitbake -c install
         cmd_lines.append(
             'bitbake %s -c install --force || { echo "bitbake %s -c install --force failed"; exit 1; }' % (self.bpn, self.bpn))
-
         # Self contained devtool deploy-target
         cmd_lines.append(self.gen_deploy_target_script(args))
-
         return self.write_script(cmd_lines, 'install_and_deploy')
 
     def write_script(self, cmd_lines, script_name):
@@ -988,6 +1013,9 @@ def ide_setup(args, config, basepath, workspace):
                 recipe_modified.cmake_preset()
             if recipe_modified.build_tool is BuildTool.MESON:
                 recipe_modified.gen_meson_wrapper()
+            if recipe_modified.build_tool is BuildTool.AUTOTOOLS:
+                recipe_modified.gen_configure_wrapper()
+                recipe_modified.gen_make_wrapper()
             ide.setup_modified_recipe(
                 args, recipe_image, recipe_modified)
     else:

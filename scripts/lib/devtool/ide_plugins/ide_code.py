@@ -107,7 +107,7 @@ class IdeVSCode(IdeBase):
     def __vscode_settings_meson(self, settings_dict, modified_recipe):
         if modified_recipe.build_tool is not BuildTool.MESON:
             return
-        settings_dict["mesonbuild.mesonPath"] = modified_recipe.meson_wrapper
+        settings_dict["mesonbuild.mesonPath"] = modified_recipe.cmd_compile_wrapper
 
         confopts = modified_recipe.mesonopts.split()
         confopts += modified_recipe.meson_cross_file.split()
@@ -124,6 +124,16 @@ class IdeVSCode(IdeBase):
             return
         settings_dict["cmake.configureOnOpen"] = True
         settings_dict["cmake.sourceDirectory"] = modified_recipe.real_srctree
+
+    def __vscode_settings_c_ccp_make(self, settings_dict, modified_recipe):
+        """Add make specific settings to settings.json."""
+        if not modified_recipe.build_tool.is_c_ccp_make:
+            return
+        settings_dict["makefile.makePath"] = modified_recipe.cmd_compile_wrapper
+        settings_dict["makefile.makeDirectory"] = modified_recipe.b
+        # The configure step needs a lot of extra arguments and environment variables.
+        # Make sure VSCode does not call the e.g. autotools configure script without setting them properly.
+        settings_dict["makefile.preConfigureScript"] = modified_recipe.cmd_configure
 
     def vscode_settings(self, modified_recipe, image_recipe):
         files_excludes = {
@@ -152,6 +162,7 @@ class IdeVSCode(IdeBase):
         }
         self.__vscode_settings_cmake(settings_dict, modified_recipe)
         self.__vscode_settings_meson(settings_dict, modified_recipe)
+        self.__vscode_settings_c_ccp_make(settings_dict, modified_recipe)
 
         settings_file = 'settings.json'
         IdeBase.update_json_file(
@@ -174,6 +185,10 @@ class IdeVSCode(IdeBase):
             recommendations += [
                 'mesonbuild.mesonbuild'
             ]
+        if modified_recipe.build_tool.is_c_ccp_make:
+            recommendations += [
+                'ms-vscode.makefile-tools'
+            ]
         extensions_file = 'extensions.json'
         IdeBase.update_json_file(
             self.dot_code_dir(modified_recipe), extensions_file, {"recommendations": recommendations})
@@ -187,7 +202,8 @@ class IdeVSCode(IdeBase):
         elif modified_recipe.build_tool is BuildTool.MESON:
             properties_dict["configurationProvider"] = "mesonbuild.mesonbuild"
             properties_dict["compilerPath"] = os.path.join(modified_recipe.staging_bindir_toolchain, modified_recipe.cxx.split()[0])
-        elif modified_recipe.build_tool.is_c_ccp:
+        elif modified_recipe.build_tool.is_c_ccp_make:
+            properties_dict["configurationProvider"] = "ms-vscode.makefile-tools"
             # Provide a generic linting configuration
             # We provide a C/C++ configuration with the proper sysroot
             properties_dict["compilerPath"] = os.path.join(modified_recipe.staging_bindir_toolchain, modified_recipe.cxx.split()[0])
