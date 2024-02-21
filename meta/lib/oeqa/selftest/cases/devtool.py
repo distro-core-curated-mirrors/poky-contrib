@@ -2698,7 +2698,7 @@ class DevtoolIdeSdkTests(DevtoolBase):
     @OETestTag("runqemu")
     def test_devtool_ide_sdk_none_qemu(self):
         """Start qemu-system and run tests for multiple recipes. ide=none is used."""
-        recipe_names = ["cmake-example", "meson-example"]
+        recipe_names = ["cmake-example", "meson-example", "autotools-example"]
         testimage = "oe-selftest-image"
 
         self._check_workspace()
@@ -2728,6 +2728,21 @@ class DevtoolIdeSdkTests(DevtoolBase):
             recipe_name = "meson-example"
             example_exe = "mesonex"
             build_file = "meson.build"
+            tempdir = self._devtool_ide_sdk_recipe(
+                recipe_name, build_file, testimage)
+            bitbake_sdk_cmd = 'devtool ide-sdk %s %s -t root@%s -c --ide=none' % (
+                recipe_name, testimage, qemu.ip)
+            runCmd(bitbake_sdk_cmd)
+            self._gdb_cross()
+            self._devtool_ide_sdk_qemu(tempdir, qemu, recipe_name, example_exe)
+            # Verify the oe-scripts sym-link is valid
+            self.assertEqual(self._workspace_scripts_dir(
+                recipe_name), self._sources_scripts_dir(tempdir))
+
+            # autotools-example recipe
+            recipe_name = "autotools-example"
+            example_exe = "autoexample"
+            build_file = "Makefile.am"
             tempdir = self._devtool_ide_sdk_recipe(
                 recipe_name, build_file, testimage)
             bitbake_sdk_cmd = 'devtool ide-sdk %s %s -t root@%s -c --ide=none' % (
@@ -2797,6 +2812,46 @@ class DevtoolIdeSdkTests(DevtoolBase):
 
         self._verify_install_script_code(tempdir,  recipe_name)
         self._gdb_cross()
+
+    def test_devtool_ide_sdk_code_autotools(self):
+        """Verify a autotools recipe works with ide=code mode"""
+        recipe_name = "autotools-example"
+        build_file = "Makefile.am"
+        testimage = "oe-selftest-image"
+
+        self._check_workspace()
+        self._write_bb_config([recipe_name])
+        tempdir = self._devtool_ide_sdk_recipe(
+            recipe_name, build_file, testimage)
+        bitbake_sdk_cmd = 'devtool ide-sdk %s %s -t root@192.168.17.17 -c --ide=code' % (
+            recipe_name, testimage)
+        runCmd(bitbake_sdk_cmd)
+
+        with open(os.path.join(tempdir, '.vscode', 'settings.json')) as settings_j:
+            settings_d = json.load(settings_j)
+        make_wrapper = settings_d["makefile.makePath"]
+        make_build_folder = settings_d["makefile.makeDirectory"]
+        autoexample_bin = os.path.join(make_build_folder, 'autoexample')
+
+        # Verify the make native is available
+        self.assertExists(make_wrapper)
+
+        # Verify make re-uses the o files compiled by bitbake
+        result = runCmd('%s -C  %s' %
+                        (make_wrapper, make_build_folder), cwd=tempdir)
+        self.assertIn("make: Nothing to be done for 'all'.", result.output)
+        self.assertExists(autoexample_bin)
+
+        # Verify make clean works
+        result = runCmd('%s -C  %s clean' %
+                        (make_wrapper, make_build_folder), cwd=tempdir)
+        self.assertIn("make: Entering directory '%s'" % make_build_folder, result.output)
+        self.assertNotExists(autoexample_bin)
+
+        # Verify re-compiling works
+        result = runCmd('%s -C  %s' %
+                        (make_wrapper, make_build_folder), cwd=tempdir)
+        self.assertExists(autoexample_bin)
 
     def test_devtool_ide_sdk_shared_sysroots(self):
         """Verify the shared sysroot SDK"""
