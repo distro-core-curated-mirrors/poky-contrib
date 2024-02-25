@@ -157,35 +157,23 @@ class IdeVSCode(IdeBase):
         IdeBase.update_json_file(
             self.dot_code_dir(modified_recipe), settings_file, settings_dict)
 
-    def __vscode_extensions_c_cpp(self, modified_recipe, recommendations):
-        if not modified_recipe.build_tool.is_c_ccp:
-            return
-        recommendations += [
-            "ms-vscode.cpptools",
-            "ms-vscode.cpptools-extension-pack",
-            "ms-vscode.cpptools-themes"
-        ]
-
-    def __vscode_extensions_cmake(self, modified_recipe, recommendations):
-        if modified_recipe.build_tool is not BuildTool.CMAKE:
-            return
-        recommendations += [
-            "twxs.cmake",
-            "ms-vscode.cmake-tools"
-        ]
-
-    def __vscode_extensions_meson(self, modified_recipe, recommendations):
-        if modified_recipe.build_tool is not BuildTool.MESON:
-            return
-        recommendations += [
-            'mesonbuild.mesonbuild'
-        ]
-
     def vscode_extensions(self, modified_recipe):
         recommendations = []
-        self.__vscode_extensions_cmake(modified_recipe, recommendations)
-        self.__vscode_extensions_meson(modified_recipe, recommendations)
-        self.__vscode_extensions_c_cpp(modified_recipe, recommendations)
+        if modified_recipe.build_tool.is_c_ccp:
+            recommendations += [
+                "ms-vscode.cpptools",
+                "ms-vscode.cpptools-extension-pack",
+                "ms-vscode.cpptools-themes"
+            ]
+        if modified_recipe.build_tool is BuildTool.CMAKE:
+            recommendations += [
+                "twxs.cmake",
+                "ms-vscode.cmake-tools"
+            ]
+        if modified_recipe.build_tool is BuildTool.MESON:
+            recommendations += [
+                'mesonbuild.mesonbuild'
+            ]
         extensions_file = 'extensions.json'
         IdeBase.update_json_file(
             self.dot_code_dir(modified_recipe), extensions_file, {"recommendations": recommendations})
