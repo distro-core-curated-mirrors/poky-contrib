@@ -42,6 +42,6 @@ do_install_ptest() {
     install ${S}/test/testdata/* ${D}${PTEST_PATH}/testdata
 }
 
-RDEPENDS:${PN}-ptest += "make bash"
+RDEPENDS:${PN}-ptest += "make"
 
 BBCLASSEXTEND = "native nativesdk"
