@@ -1479,6 +1479,7 @@ RRECOMMENDS:${PN}-qcom-sc8280xp-lenovo-x13s-sensors = "${PN}-qcom-sc8280xp-lenov
 
 FILES:${PN}-liquidio = "${nonarch_base_libdir}/firmware/liquidio"
 
+LICENSE:${PN}-mellanox = "WHENCE"
 FILES:${PN}-mellanox = "${nonarch_base_libdir}/firmware/mellanox"
 
 LICENSE:${PN}-prestera = "Firmware-Marvell"
