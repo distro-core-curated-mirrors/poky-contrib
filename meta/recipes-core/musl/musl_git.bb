@@ -4,7 +4,7 @@
 require musl.inc
 inherit linuxloader
 
-SRCREV = "0784374d561435f7c787a555aeab8ede699ed298"
+SRCREV = "007997299248b8682dcbb73595c53dfe86071c83"
 
 BASEVER = "1.2.5"
 
