@@ -314,3 +314,16 @@ INSANE_SKIP:${PN} = "already-stripped"
 
 # No need to put firmware into the sysroot
 SYSROOT_DIRS_IGNORE += "${nonarch_base_libdir}/firmware"
+
+addtask update_packaging after unpack
+python do_update_packaging() {
+  import oe.whence
+  parser = oe.whence.Parser()
+
+  drivers = parser.parse(os.path.join(d.getVar("S"), "WHENCE"))
+  lics = {d.licence_name: d.licence_file for d in drivers if d.licence_name and d.licence_file}
+  for name in sorted(lics, key=lambda k: k.casefold()):
+    bb.plain(f'NO_GENERIC_LICENSE[Firmware-{name}] = "{lics[name]}"')
+
+}
+do_update_packaging[nostamp] = "1"

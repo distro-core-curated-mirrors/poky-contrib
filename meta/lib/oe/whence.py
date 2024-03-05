@@ -9,7 +9,8 @@ class Driver:
     name: str
     description: str
     files: list[str] = dataclasses.field(default_factory=list)
-    license_file: str = None
+    licence_name: str = None
+    licence_file: str = None
 
 def prime(fn):
     def wrapper(*args, **kwargs):
@@ -22,7 +23,7 @@ class Parser:
     def __init__(self):
         self.state_new_device = self.parse_new_device()
         self.state_files = self.parse_files()
-        self.state_license = self.parse_license()
+        self.state_licence = self.parse_licence()
         self.state = self.state_new_device
 
         self.driver = None
@@ -70,22 +71,24 @@ class Parser:
                 continue
 
             m = re.match(r"Licen[cs]e:", line)
-            if False and m:
-                self.state = self.state_license
+            if m:
+                self.state = self.state_licence
                 self.state.send(line)
                 continue
 
     @prime
-    def parse_license(self):
+    def parse_licence(self):
         while True:
             line = yield
             if line.startswith("------"):
                 self.state = self.state_new_device
                 continue
 
-            m = re.match(r"Licen[cs]e: *Redistributable.*(LICEN[CS]E\.\S+)", line)
+            m = re.match(r"Licen[cs]e: *Redistributable.*(LICEN[CS]E\.(\S+?)(?:\.txt)?) for details", line)
             if m:
-                self.driver.license_file = m.group(1)
+                self.driver.licence_name = m.group(2)
+                self.driver.licence_file = m.group(1)
+                self.state = self.state_files
                 continue
 
             # TODO handle inline
@@ -107,4 +110,4 @@ if __name__ == "__main__":
     for d in drivers:
         print(f"{d.name} ({d.description})")
         print(d.files)
-        print(d.license_file)
+        print(d.licence_file)
