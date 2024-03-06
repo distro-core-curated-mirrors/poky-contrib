@@ -5,6 +5,8 @@ that contains firmware binary blobs necessary for partial or full functionality 
 of certain hardware devices."
 SECTION = "kernel"
 
+require linux-firmware-packaging.inc
+
 LICENSE = "\
     Firmware-Abilis \
     & Firmware-adsp_sst \
@@ -157,83 +159,6 @@ LIC_FILES_CHKSUM = "file://LICENCE.Abilis;md5=b5ee3f410780e56711ad48eadc22b8bc \
 # class-devupstream is selected.
 WHENCE_CHKSUM  = "3113c4ea08e5171555f3bf49eceb5b07"
 
-# These are not common licenses, set NO_GENERIC_LICENSE for them
-# so that the license files will be copied from fetched source
-NO_GENERIC_LICENSE[Firmware-Abilis] = "LICENCE.Abilis"
-NO_GENERIC_LICENSE[Firmware-adsp_sst] = "LICENCE.adsp_sst"
-NO_GENERIC_LICENSE[Firmware-agere] = "LICENCE.agere"
-NO_GENERIC_LICENSE[Firmware-airoha] = "LICENSE.airoha"
-NO_GENERIC_LICENSE[Firmware-amd-sev] = "LICENSE.amd-sev"
-NO_GENERIC_LICENSE[Firmware-amd-ucode] = "LICENSE.amd-ucode"
-NO_GENERIC_LICENSE[Firmware-amd_pmf] = "LICENSE.amd_pmf"
-NO_GENERIC_LICENSE[Firmware-amdgpu] = "LICENSE.amdgpu"
-NO_GENERIC_LICENSE[Firmware-amlogic] = "LICENSE.amlogic"
-NO_GENERIC_LICENSE[Firmware-amlogic_vdec] = "LICENSE.amlogic_vdec"
-NO_GENERIC_LICENSE[Firmware-amphion_vpu] = "LICENSE.amphion_vpu"
-NO_GENERIC_LICENSE[Firmware-atheros_firmware] = "LICENCE.atheros_firmware"
-NO_GENERIC_LICENSE[Firmware-atmel] = "LICENSE.atmel"
-NO_GENERIC_LICENSE[Firmware-broadcom_bcm43xx] = "LICENCE.broadcom_bcm43xx"
-NO_GENERIC_LICENSE[Firmware-ca0132] = "LICENCE.ca0132"
-NO_GENERIC_LICENSE[Firmware-cadence] = "LICENCE.cadence"
-NO_GENERIC_LICENSE[Firmware-cavium] = "LICENCE.cavium"
-NO_GENERIC_LICENSE[Firmware-cavium_liquidio] = "LICENCE.cavium_liquidio"
-NO_GENERIC_LICENSE[Firmware-chelsio_firmware] = "LICENCE.chelsio_firmware"
-NO_GENERIC_LICENSE[Firmware-cirrus] = "LICENSE.cirrus"
-NO_GENERIC_LICENSE[Firmware-cnm] = "LICENCE.cnm"
-NO_GENERIC_LICENSE[Firmware-cw1200] = "LICENCE.cw1200"
-NO_GENERIC_LICENSE[Firmware-cypress] = "LICENCE.cypress"
-NO_GENERIC_LICENSE[Firmware-dib0700] = "LICENSE.dib0700"
-NO_GENERIC_LICENSE[Firmware-e100] = "LICENCE.e100"
-NO_GENERIC_LICENSE[Firmware-ene_firmware] = "LICENCE.ene_firmware"
-NO_GENERIC_LICENSE[Firmware-fw_sst_0f28] = "LICENCE.fw_sst_0f28"
-NO_GENERIC_LICENSE[Firmware-go7007] = "LICENCE.go7007"
-NO_GENERIC_LICENSE[Firmware-hfi1_firmware] = "LICENSE.hfi1_firmware"
-NO_GENERIC_LICENSE[Firmware-i915] = "LICENSE.i915"
-NO_GENERIC_LICENSE[Firmware-ice_enhanced] = "LICENSE.ice_enhanced"
-NO_GENERIC_LICENSE[Firmware-IntcSST2] = "LICENCE.IntcSST2"
-NO_GENERIC_LICENSE[Firmware-ipu3_firmware] = "LICENSE.ipu3_firmware"
-NO_GENERIC_LICENSE[Firmware-it913x] = "LICENCE.it913x"
-NO_GENERIC_LICENSE[Firmware-iwlwifi_firmware] = "LICENCE.iwlwifi_firmware"
-NO_GENERIC_LICENSE[Firmware-ixp4xx] = "LICENSE.ixp4xx"
-NO_GENERIC_LICENSE[Firmware-kaweth] = "LICENCE.kaweth"
-NO_GENERIC_LICENSE[Firmware-linaro] = "LICENCE.linaro"
-NO_GENERIC_LICENSE[Firmware-Lontium] = "LICENSE.Lontium"
-NO_GENERIC_LICENSE[Firmware-Marvell] = "LICENCE.Marvell"
-NO_GENERIC_LICENSE[Firmware-mediatek] = "LICENCE.mediatek"
-NO_GENERIC_LICENSE[Firmware-microchip] = "LICENCE.microchip"
-NO_GENERIC_LICENSE[Firmware-moxa] = "LICENCE.moxa"
-NO_GENERIC_LICENSE[Firmware-myri10ge_firmware] = "LICENCE.myri10ge_firmware"
-NO_GENERIC_LICENSE[Firmware-Netronome] = "LICENCE.Netronome"
-NO_GENERIC_LICENSE[Firmware-nvidia] = "LICENCE.nvidia"
-NO_GENERIC_LICENSE[Firmware-NXP] = "LICENCE.NXP"
-NO_GENERIC_LICENSE[Firmware-nxp] = "LICENSE.nxp"
-NO_GENERIC_LICENSE[Firmware-nxp_mc_firmware] = "LICENSE.nxp_mc_firmware"
-NO_GENERIC_LICENSE[Firmware-OLPC] = "LICENCE.OLPC"
-NO_GENERIC_LICENSE[Firmware-phanfw] = "LICENCE.phanfw"
-NO_GENERIC_LICENSE[Firmware-powervr] = "LICENSE.powervr"
-NO_GENERIC_LICENSE[Firmware-qat_firmware] = "LICENCE.qat_firmware"
-NO_GENERIC_LICENSE[Firmware-qcom_yamato] = "LICENSE.qcom_yamato"
-NO_GENERIC_LICENSE[Firmware-qla1280] = "LICENCE.qla1280"
-NO_GENERIC_LICENSE[Firmware-qla2xxx] = "LICENCE.qla2xxx"
-NO_GENERIC_LICENSE[Firmware-QualcommAtheros_ar3k] = "LICENSE.QualcommAtheros_ar3k"
-NO_GENERIC_LICENSE[Firmware-QualcommAtheros_ath10k] = "LICENSE.QualcommAtheros_ath10k"
-NO_GENERIC_LICENSE[Firmware-r8a779x_usb3] = "LICENCE.r8a779x_usb3"
-NO_GENERIC_LICENSE[Firmware-radeon] = "LICENSE.radeon"
-NO_GENERIC_LICENSE[Firmware-ralink-firmware] = "LICENCE.ralink-firmware.txt"
-NO_GENERIC_LICENSE[Firmware-ralink_a_mediatek_company_firmware] = "LICENCE.ralink_a_mediatek_company_firmware"
-NO_GENERIC_LICENSE[Firmware-rockchip] = "LICENCE.rockchip"
-NO_GENERIC_LICENSE[Firmware-rtlwifi_firmware] = "LICENCE.rtlwifi_firmware.txt"
-NO_GENERIC_LICENSE[Firmware-sdma_firmware] = "LICENSE.sdma_firmware"
-NO_GENERIC_LICENSE[Firmware-siano] = "LICENCE.siano"
-NO_GENERIC_LICENSE[Firmware-ti-connectivity] = "LICENCE.ti-connectivity"
-NO_GENERIC_LICENSE[Firmware-ti-keystone] = "LICENCE.ti-keystone"
-NO_GENERIC_LICENSE[Firmware-ti-tspa] = "LICENCE.ti-tspa"
-NO_GENERIC_LICENSE[Firmware-ueagle-atm4-firmware] = "LICENCE.ueagle-atm4-firmware"
-NO_GENERIC_LICENSE[Firmware-via_vt6656] = "LICENCE.via_vt6656"
-NO_GENERIC_LICENSE[Firmware-wf200] = "LICENCE.wf200"
-NO_GENERIC_LICENSE[Firmware-wl1251] = "LICENCE.wl1251"
-NO_GENERIC_LICENSE[Firmware-xc4000] = "LICENCE.xc4000"
-NO_GENERIC_LICENSE[Firmware-xc5000c] = "LICENCE.xc5000c"
 NO_GENERIC_LICENSE[WHENCE] = "WHENCE"
 
 PE = "1"
@@ -319,15 +244,16 @@ INSANE_SKIP:${PN} = "already-stripped"
 # No need to put firmware into the sysroot
 SYSROOT_DIRS_IGNORE += "${nonarch_base_libdir}/firmware"
 
-addtask update_packaging after unpack
 python do_update_packaging() {
   import oe.whence
   parser = oe.whence.Parser()
 
-  drivers = parser.parse(os.path.join(d.getVar("S"), "WHENCE"))
-  lics = {d.licence_name: d.licence_file for d in drivers if d.licence_name and d.licence_file}
-  for name in sorted(lics, key=lambda k: k.casefold()):
-    bb.plain(f'NO_GENERIC_LICENSE[Firmware-{name}] = "{lics[name]}"')
+  with open(d.expand("${THISDIR}/linux-firmware-packaging.inc"), "wt") as f:
+    drivers = parser.parse(os.path.join(d.getVar("S"), "WHENCE"))
+    lics = {d.licence_name: d.licence_file for d in drivers if d.licence_name and d.licence_file}
+    for name in sorted(lics, key=lambda k: k.casefold()):
+      f.write(f'NO_GENERIC_LICENSE[Firmware-{name}] = "{lics[name]}"\n')
 
 }
 do_update_packaging[nostamp] = "1"
+addtask update_packaging after patch
