@@ -86,7 +86,7 @@ class Parser:
 
             m = re.match(r"Licen[cs]e: *Redistributable.*(LICEN[CS]E\.(\S+?)(?:\.txt)?) for details", line)
             if m:
-                self.driver.licence_name = m.group(2)
+                self.driver.licence_name = m.group(2).replace("_", "-")
                 self.driver.licence_file = m.group(1)
                 self.state = self.state_files
                 continue
