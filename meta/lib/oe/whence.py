@@ -93,6 +93,11 @@ class Parser:
 
             # TODO handle inline
 
+            # fails to handle multiple license texts, such as
+            # Licence: Redistributable. See LICENCE.xc5000 and LICENCE.xc5000c for details
+            # or
+            # License: Redistributable. See LICENSE.ice for details
+            # License: Redistributable. See LICENSE.ice_enhanced for details
 
     def parse(self, filename):
         with open(filename) as f:
