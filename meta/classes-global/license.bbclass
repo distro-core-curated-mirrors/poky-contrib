@@ -192,12 +192,16 @@ def find_license_files(d):
                 oe.qa.handle_error("license-no-generic",
                     "%s: %s is a generic license, please don't use NO_GENERIC_LICENSE for it." % (pn, license_type), d)
 
-        elif non_generic_lic and non_generic_lic in lic_chksums:
+        elif non_generic_lic:
             # if NO_GENERIC_LICENSE is set, we copy the license files from the fetched source
             # of the package rather than the license_source_dirs.
-            lic_files_paths.append(("generic_" + license_type,
-                                    os.path.join(srcdir, non_generic_lic), None, None))
-            non_generic_lics[non_generic_lic] = license_type
+            lic_path = os.path.join(srcdir, non_generic_lic)
+            if os.path.exists(lic_path):
+                lic_files_paths.append(("generic_" + license_type, lic_path, None, None))
+                non_generic_lics[non_generic_lic] = license_type
+            else:
+                oe.qa.handle_error("license-exists",
+                    "%s: No generic license file exists for: %s in any provider" % (pn, license_type), d)
         else:
             # Explicitly avoid the CLOSED license because this isn't generic
             if license_type != 'CLOSED':
