@@ -258,6 +258,12 @@ do_compile() {
 
 do_install() {
         oe_runmake 'DESTDIR=${D}' 'FIRMWAREDIR=${nonarch_base_libdir}/firmware' ${PACKAGECONFIG_CONFARGS}
+
+        # These licenses state that the license text has to be alongside the
+        # binary, not just in documentation.
+        for n in LICENCE.broadcom_bcm43xx LICENCE.cavium LICENCE.cavium_liquidio LICENCE.ene_firmware LICENCE.go7007 LICENCE.nvidia LICENCE.via_vt6656 LICENSE.amd-sev LICENSE.amd-ucode LICENSE.dib0700 LICENSE.it913x LICENSE.mali_csffw LICENSE.qcom ; do
+          install -m644 ${S}/$n ${nonarch_base_libdir}/firmware/
+        done
 }
 
 
