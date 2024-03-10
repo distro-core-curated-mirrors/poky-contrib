@@ -1,0 +1,132 @@
+From a3272275156bb9e9533645a44532ed8daadebe03 Mon Sep 17 00:00:00 2001
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 27 May 2022 07:58:06 +0200
+Subject: [PATCH] block, loop: support partitions without scanning
+
+Historically we did distinguish between a flag that surpressed partition
+scanning, and a combinations of the minors variable and another flag if
+any partitions were supported.  This was generally confusing and doesn't
+make much sense, but some corner case uses of the loop driver actually
+do want to support manually added partitions on a device that does not
+actively scan for partitions.  To make things worsee the loop driver
+also wants to dynamically toggle the scanning for partitions on a live
+gendisk, which makes the disk->flags updates non-atomic.
+
+Introduce a new GD_SUPPRESS_PART_SCAN bit in disk->state that disables
+just scanning for partitions, and toggle that instead of GENHD_FL_NO_PART
+in the loop driver.
+
+[bva: Notes for this backport:
+   - drop return code in disk_scan_partitions for GD_SUPPRESS_PART_SCAN.
+     The check doesn't strictly need ot be in this routine in 5.15, but
+     this faciliates future changes in this area, since there are
+     other checks in the same function.
+   - GD_SUPPRESS_PART_SCAN could go to genh.c, but genhd.c includes
+     blkdev.h, so we leave the new GD_SUPPRESS_PART_SCAN definition
+     in the same places as where it was introduced upstream to keep
+     the changes to a minimum
+   - upstream commit e16e506ccd673 merges blkdev_reread_part into
+     disk_scan_partitions. Backporting that change is more churn
+     than we need, so we also add the check for GD_SUPPRESS_PART_SCAN
+     into that routine to have the check hit in a 5.15 context.
+]
+
+Upstream-Status: Backport [commit b9684a71fca79]
+
+Fixes: 1ebe2e5f9d68 ("block: remove GENHD_FL_EXT_DEVT")
+Reported-by: Ming Lei <ming.lei@redhat.com>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Ming Lei <ming.lei@redhat.com>
+Link: https://lore.kernel.org/r/20220527055806.1972352-1-hch@lst.de
+Signed-off-by: Jens Axboe <axboe@kernel.dk>
+Signed-off-by: Bruce Ashfield <bruce.ashfield@gmail.com>
+---
+ block/genhd.c          | 3 +++
+ block/ioctl.c          | 3 +++
+ drivers/block/loop.c   | 8 ++++----
+ include/linux/blkdev.h | 1 +
+ 4 files changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/block/genhd.c b/block/genhd.c
+index 4d28f1d5f9b0..0e594c3a8321 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -372,6 +372,9 @@ static void disk_scan_partitions(struct gendisk *disk)
+ {
+ 	struct block_device *bdev;
+ 
++	if (test_bit(GD_SUPPRESS_PART_SCAN, &disk->state))
++		return;
++
+ 	if (!get_capacity(disk) || !disk_part_scan_enabled(disk))
+ 		return;
+ 
+diff --git a/block/ioctl.c b/block/ioctl.c
+index 7a939c178660..bc118f224c00 100644
+--- a/block/ioctl.c
++++ b/block/ioctl.c
+@@ -96,6 +96,9 @@ static int blkdev_reread_part(struct block_device *bdev, fmode_t mode)
+ 	if (bdev->bd_disk->open_partitions)
+ 		return -EBUSY;
+ 
++	if (test_bit(GD_SUPPRESS_PART_SCAN, &bdev->bd_disk->state))
++		return -EINVAL;
++
+ 	/*
+ 	 * Reopen the device to revalidate the driver state and force a
+ 	 * partition rescan.
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index 4769caab9ff9..a76302450c46 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -1332,7 +1332,7 @@ static int loop_configure(struct loop_device *lo, fmode_t mode,
+ 		lo->lo_flags |= LO_FLAGS_PARTSCAN;
+ 	partscan = lo->lo_flags & LO_FLAGS_PARTSCAN;
+ 	if (partscan)
+-		lo->lo_disk->flags &= ~GENHD_FL_NO_PART;
++		clear_bit(GD_SUPPRESS_PART_SCAN, &lo->lo_disk->state);
+ 
+ 	/* enable and uncork uevent now that we are done */
+ 	dev_set_uevent_suppress(disk_to_dev(lo->lo_disk), 0);
+@@ -1481,7 +1481,7 @@ static int __loop_clr_fd(struct loop_device *lo, bool release)
+ 	mutex_lock(&lo->lo_mutex);
+ 	lo->lo_flags = 0;
+ 	if (!part_shift)
+-		lo->lo_disk->flags |= GENHD_FL_NO_PART;
++		set_bit(GD_SUPPRESS_PART_SCAN, &lo->lo_disk->state);
+ 	lo->lo_state = Lo_unbound;
+ 	mutex_unlock(&lo->lo_mutex);
+ 
+@@ -1598,7 +1598,7 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
+ 
+ 	if (!err && (lo->lo_flags & LO_FLAGS_PARTSCAN) &&
+ 	     !(prev_lo_flags & LO_FLAGS_PARTSCAN)) {
+-		lo->lo_disk->flags &= ~GENHD_FL_NO_PART;
++		clear_bit(GD_SUPPRESS_PART_SCAN, &lo->lo_disk->state);
+ 		partscan = true;
+ 	}
+ out_unlock:
+@@ -2428,7 +2428,7 @@ static int loop_add(int i)
+ 	 * userspace tools. Parameters like this in general should be avoided.
+ 	 */
+ 	if (!part_shift)
+-		disk->flags |= GENHD_FL_NO_PART;
++		set_bit(GD_SUPPRESS_PART_SCAN, &disk->state);
+ 	disk->flags |= GENHD_FL_EXT_DEVT;
+ 	atomic_set(&lo->lo_refcnt, 0);
+ 	mutex_init(&lo->lo_mutex);
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 905844172cfd..15815f1ced9e 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -813,6 +813,7 @@ static inline unsigned int blk_queue_depth(struct request_queue *q)
+  */
+ #define BLK_DEFAULT_SG_TIMEOUT	(60 * HZ)
+ #define BLK_MIN_SG_TIMEOUT	(7 * HZ)
++#define GD_SUPPRESS_PART_SCAN		5
+ 
+ struct rq_map_data {
+ 	struct page **pages;
+-- 
+2.39.2
+
