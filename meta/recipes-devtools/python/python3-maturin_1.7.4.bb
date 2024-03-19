@@ -10,8 +10,6 @@ SRC_URI += " \
            "
 SRC_URI[sha256sum] = "2b349d742a07527d236f0b4b6cab26f53ebecad0ceabfc09ec4c6a396e3176f9"
 
-S = "${WORKDIR}/maturin-${PV}"
-
 CFLAGS += "-fdebug-prefix-map=${CARGO_HOME}=${TARGET_DBGSRC_DIR}/cargo_home"
 
 DEPENDS += "\
