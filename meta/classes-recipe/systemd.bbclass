@@ -61,6 +61,7 @@ if systemctl >/dev/null 2>/dev/null; then
 			[ -n "${@systemd_filter_services("${SYSTEMD_SERVICE_ESCAPED}", False, d)}" ] && \
 				systemctl --no-block restart ${@systemd_filter_services("${SYSTEMD_SERVICE_ESCAPED}", False, d)}
 		fi
+		sleep 5
 	fi
 fi
 }
