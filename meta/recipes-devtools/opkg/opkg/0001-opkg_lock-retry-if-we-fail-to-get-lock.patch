@@ -1,0 +1,52 @@
+From 0ce85107477b69014f6ef85161ff47084875c147 Mon Sep 17 00:00:00 2001
+From: Tim Orling <tim.orling@konsulko.com>
+Date: Wed, 20 Mar 2024 23:00:31 -0700
+Subject: [PATCH] opkg_lock: retry if we fail to get lock
+
+If we fail to create the lock file (or fd), then
+sleep 10 seconds and retry up to 5 times.
+
+[YOCTO #15428]
+
+Upstream-Status: Pending
+
+Signed-off-by: Tim Orling <tim.orling@konsulko.com>
+---
+ libopkg/opkg_conf.c | 22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/libopkg/opkg_conf.c b/libopkg/opkg_conf.c
+index c2e1c2f..dc22996 100644
+--- a/libopkg/opkg_conf.c
++++ b/libopkg/opkg_conf.c
+@@ -620,14 +620,24 @@ int opkg_lock()
+         return -1;
+     }
+ 
+-    r = lockf(lock_fd, F_TLOCK, (off_t) 0);
++    int retry = 5;
++    do {
++        r = lockf(lock_fd, F_TLOCK, (off_t) 0);
++        if (r == -1) {
++            opkg_perror(INFO, "Could not lock %s, retry %d", opkg_config->lock_file, retry);
++            r = close(lock_fd);
++	    if (r == -1)
++                opkg_perror(ERROR, "Couldn't close descriptor %d (%s)", lock_fd,
++                            opkg_config->lock_file);
++	    retry--;
++            sleep(10);
++        }
++    }
++    while (retry > 0 && r == -1);
++
+     if (r == -1) {
+         opkg_perror(ERROR, "Could not lock %s", opkg_config->lock_file);
+-        r = close(lock_fd);
+-        if (r == -1)
+-            opkg_perror(ERROR, "Couldn't close descriptor %d (%s)", lock_fd,
+-                        opkg_config->lock_file);
+-        lock_fd = -1;
++	lock_fd = -1;
+         return -1;
+     }
+ 
