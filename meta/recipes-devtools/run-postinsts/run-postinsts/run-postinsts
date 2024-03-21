@@ -81,6 +81,12 @@ remove_rcsd_link=1
 if $pm_installed; then
 	case $pm in
 		"ipk")
+			if `flock --wait 30 /run/opkg.lock` ;
+			then
+				echo "opkg_lock succeeded. Proceed..."
+    			else
+				echo "opkg_lock failed. Returned an error"
+			fi
 			eval opkg configure $append_log
 			;;
 
