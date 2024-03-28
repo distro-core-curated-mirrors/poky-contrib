@@ -1,4 +1,4 @@
-From 23245ccab4f18d595c4d8eb0843e187a3eac7714 Mon Sep 17 00:00:00 2001
+From a87e269f4aa9843c5a44d69736f3faa223a036a0 Mon Sep 17 00:00:00 2001
 From: TIm Orling <tim.orling@konsulko.com>
 Date: Wed, 27 Mar 2024 22:15:44 -0700
 Subject: [PATCH] Add --retry-get-lock argument
@@ -32,7 +32,7 @@ Signed-off-by: Tim Orling <tim.orling@konsulko.com>
  2 files changed, 16 insertions(+), 2 deletions(-)
 
 diff --git a/libopkg/opkg_conf.c b/libopkg/opkg_conf.c
-index 4dc777b..504fd4b 100644
+index c2e1c2f..cb6300a 100644
 --- a/libopkg/opkg_conf.c
 +++ b/libopkg/opkg_conf.c
 @@ -90,6 +90,7 @@ static opkg_option_t options[] = {
@@ -43,7 +43,7 @@ index 4dc777b..504fd4b 100644
  #if defined(HAVE_GPGME)
      {"gpg_dir", OPKG_OPT_TYPE_STRING, &_conf.gpg_dir},
      {"gpg_trust_level", OPKG_OPT_TYPE_STRING, &_conf.gpg_trust_level},
-@@ -660,7 +661,12 @@ int opkg_lock()
+@@ -620,7 +621,12 @@ int opkg_lock()
          return -1;
      }
  
@@ -58,10 +58,10 @@ index 4dc777b..504fd4b 100644
          opkg_perror(ERROR, "Could not lock %s", opkg_config->lock_file);
          r = close(lock_fd);
 diff --git a/src/opkg.c b/src/opkg.c
-index 6249fd9..e138f6f 100644
+index 0c729ff..996aac9 100644
 --- a/src/opkg.c
 +++ b/src/opkg.c
-@@ -67,6 +67,7 @@ enum {
+@@ -66,6 +66,7 @@ enum {
      ARGS_OPT_HOST_CACHE_DIR,
      ARGS_OPT_SHORT_DESCRIPTION,
      ARGS_OPT_FIELDS_FILTER,
@@ -69,7 +69,7 @@ index 6249fd9..e138f6f 100644
  };
  
  static struct option long_options[] = {
-@@ -126,6 +127,8 @@ static struct option long_options[] = {
+@@ -124,6 +125,8 @@ static struct option long_options[] = {
      {"volatile-cache", 0, 0, ARGS_OPT_VOLATILE_CACHE},
      {"short-description", 0, 0, ARGS_OPT_SHORT_DESCRIPTION},
      {"fields", 1, 0, ARGS_OPT_FIELDS_FILTER},
@@ -78,9 +78,9 @@ index 6249fd9..e138f6f 100644
      {"verbosity", 2, 0, 'V'},
      {"version", 0, 0, 'v'},
      {0, 0, 0, 0}
-@@ -330,6 +333,9 @@ static int args_parse_stage2(int argc, char *argv[])
+@@ -266,6 +269,9 @@ static int args_parse(int argc, char *argv[])
          case ARGS_OPT_FIELDS_FILTER:
-             store_str_arg(&opkg_config->fields_filter, optarg);
+             opkg_config->fields_filter = xstrdup(optarg);
              break;
 +        case ARGS_OPT_RETRY_GET_LOCK:
 +            store_str_arg(&opkg_config->retry_get_lock = 1);
@@ -88,7 +88,7 @@ index 6249fd9..e138f6f 100644
          case ARGS_OPT_COMBINE:
              opkg_config->combine = 1;
              break;
-@@ -442,7 +448,9 @@ static void usage()
+@@ -384,7 +390,9 @@ static void usage()
      printf("\t                                automatically to satisfy dependencies\n");
      printf("\t--host-cache-dir                Don't place cache in offline root dir.\n");
      printf("\t--volatile-cache                Use volatile cache.\n");
@@ -99,6 +99,3 @@ index 6249fd9..e138f6f 100644
      printf("\n");
  
      printf(" glob could be something like 'pkgname*' '*file*' or similar\n");
--- 
-2.34.1
-

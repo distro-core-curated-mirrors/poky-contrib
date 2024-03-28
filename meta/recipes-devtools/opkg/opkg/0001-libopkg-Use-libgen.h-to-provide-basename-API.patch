@@ -1,7 +1,7 @@
-From 7a1c13a48cf020c40dda1721d5c2ffd95e8e669a Mon Sep 17 00:00:00 2001
+From 76f8fe4d316232f13ee5bc4ab709d0495c348c73 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Sun, 10 Dec 2023 19:39:29 -0800
-Subject: [PATCH v2] libopkg: Use libgen.h to provide basename API
+Subject: [PATCH] libopkg: Use libgen.h to provide basename API
 
 Also ensure that copy of filename is passed into archive_entry_set_pathname
 so it can be operated upon by posix basename which expect non-const
@@ -15,14 +15,12 @@ dropped from string.h [1]
 Upstream-Status: Backport [74fc3a991f974095644897d18d43846b5f359dae]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
-v2: Do not override basename wholesale
-
  libopkg/opkg_archive.c | 6 ++++--
  libopkg/opkg_remove.c  | 1 +
  2 files changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/libopkg/opkg_archive.c b/libopkg/opkg_archive.c
-index 03a4afb..b099f5b 100644
+index 8dd902d..23575b1 100644
 --- a/libopkg/opkg_archive.c
 +++ b/libopkg/opkg_archive.c
 @@ -20,6 +20,7 @@
@@ -57,6 +55,3 @@ index 889c672..5254388 100644
  #include <stdio.h>
  #include <glob.h>
  #include <unistd.h>
--- 
-2.43.0
-
