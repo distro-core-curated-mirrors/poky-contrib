@@ -1,0 +1,48 @@
+From de8228d017192c38a64cf5dcb76bdf3d66108ff8 Mon Sep 17 00:00:00 2001
+From: Ross Burton <ross.burton@arm.com>
+Date: Wed, 17 Apr 2024 11:40:54 +0000
+Subject: [PATCH] check subprocess didn't fail
+
+Upstream-Status: Pending
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+---
+ gio/glib-compile-resources.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/gio/glib-compile-resources.c b/gio/glib-compile-resources.c
+index 46eec1914..701e87f8f 100644
+--- a/gio/glib-compile-resources.c
++++ b/gio/glib-compile-resources.c
+@@ -333,6 +333,9 @@ end_element (GMarkupParseContext  *context,
+ 
+                   proc = g_subprocess_new (G_SUBPROCESS_FLAGS_STDOUT_SILENCE, error,
+                                            xmllint, "--nonet", "--noblanks", "--output", tmp_file, real_file, NULL);
++                  if (proc == NULL)
++                    goto cleanup;
++
+                   g_free (real_file);
+                   real_file = NULL;
+ 
+@@ -390,6 +393,9 @@ end_element (GMarkupParseContext  *context,
+ 
+                   proc = g_subprocess_new (G_SUBPROCESS_FLAGS_STDOUT_SILENCE, error,
+                                            jsonformat, "--output", tmp_file, real_file, NULL);
++                  if (proc == NULL)
++                    goto cleanup;
++
+                   g_free (real_file);
+                   real_file = NULL;
+ 
+@@ -438,6 +444,9 @@ end_element (GMarkupParseContext  *context,
+ 
+               proc = g_subprocess_new (G_SUBPROCESS_FLAGS_STDOUT_SILENCE, error,
+                                        gdk_pixbuf_pixdata, real_file, tmp_file, NULL);
++              if (proc == NULL)
++                goto cleanup;
++
+               g_free (real_file);
+               real_file = NULL;
+ 
+-- 
+2.34.1
+
