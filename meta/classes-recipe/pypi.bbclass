@@ -49,3 +49,5 @@ UPSTREAM_CHECK_URI ?= "https://pypi.org/project/${UPSTREAM_CHECK_PYPI_PACKAGE}/"
 UPSTREAM_CHECK_REGEX ?= "/${UPSTREAM_CHECK_PYPI_PACKAGE}/(?P<pver>(\d+[\.\-_]*)+)/"
 
 CVE_PRODUCT ?= "python:${PYPI_PACKAGE}"
+
+RPROVIDES:${PN}:append = "python-module-${PYPI_PACKAGE}"
