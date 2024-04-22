@@ -125,20 +125,6 @@ def logger_create(name):
     logger.setLevel(logging.INFO)
     return logger
 
-def get_subject_prefix(path):
-    prefix = ""
-    mbox = mailbox.mbox(path)
-
-    if len(mbox):
-        subject = mbox[0]['subject']
-        if subject:
-            pattern = re.compile(r"(\[.*\])", re.DOTALL)
-            match = pattern.search(subject)
-            if match:
-                prefix = match.group(1)
-
-    return prefix
-
 def valid_branch(branch):
     """ Check if branch is valid name """
     lbranch = branch.lower()
@@ -153,7 +139,17 @@ def valid_branch(branch):
 
 def get_branch(path):
     """ Get the branch name from mbox """
-    fullprefix = get_subject_prefix(path)
+    fullprefix = ""
+    mbox = mailbox.mbox(path)
+
+    if len(mbox):
+        subject = mbox[0]['subject']
+        if subject:
+            pattern = re.compile(r"(\[.*\])", re.DOTALL)
+            match = pattern.search(subject)
+            if match:
+                fullprefix = match.group(1)
+
     branch, branches, valid_branches = None, [], []
 
     if fullprefix:
