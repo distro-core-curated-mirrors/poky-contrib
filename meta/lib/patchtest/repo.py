@@ -55,8 +55,9 @@ class PatchTestRepo(object):
 
         self._workingbranch = "%s_%s" % (PatchTestRepo.prefix, os.getpid())
 
-        # create working branch
-        self._exec({'cmd': ['git', 'checkout', '-b', self._workingbranch, self._commit]})
+        # create working branch. Use the '-B' flag so that we just
+        # check out the existing one if it's there
+        self._repo.git.execute(['git', 'checkout', '-B', self._workingbranch, self._commit])
 
         self._patchmerged = False
 
