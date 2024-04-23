@@ -133,18 +133,9 @@ class PatchTestRepo(object):
             return None
 
         try:
-            cmd = {'cmd':['git', 'rev-parse', '--short', commit]}
-            return self._exec(cmd)[0]['stdout']
-        except utils.CmdException as ce:
-            # try getting the commit under any remotes
-            cmd = {'cmd':['git', 'remote']}
-            remotes = self._exec(cmd)[0]['stdout']
-            for remote in remotes.splitlines():
-                cmd = {'cmd':['git', 'rev-parse', '--short', '%s/%s' % (remote, commit)]}
-                try:
-                    return self._exec(cmd)[0]['stdout']
-                except utils.CmdException:
-                    pass
+            return self._repo.rev_parse(commit).hexsha
+        except Exception as e:
+            print(f"Couldn't find commit {commit} in repo")
 
         return None
 
