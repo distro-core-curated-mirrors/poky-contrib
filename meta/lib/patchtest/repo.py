@@ -11,6 +11,7 @@
 import os
 import utils
 import logging
+import git
 from patch import PatchTestPatch
 
 logger = logging.getLogger('patchtest')
@@ -21,15 +22,17 @@ class PatchTestRepo(object):
     # prefixes used for temporal branches/stashes
     prefix = 'patchtest'
 
+
     def __init__(self, patch, repodir, commit=None, branch=None):
         self._repodir = repodir
+        self._repo = git.Repo.init(repodir)
         self._patch = PatchTestPatch(patch)
         self._current_branch = self._get_current_branch()
 
         # targeted branch defined on the patch may be invalid, so make sure there
         # is a corresponding remote branch
         valid_patch_branch = None
-        if self._patch.branch in self.upstream_branches():
+        if self._patch.branch in self._repo.branches:
             valid_patch_branch = self._patch.branch
             
         # Target Branch
@@ -152,14 +155,6 @@ class PatchTestRepo(object):
                     pass
 
         return None
-
-    def upstream_branches(self):
-        cmd = {'cmd':['git', 'branch', '--remotes']}
-        remote_branches = self._exec(cmd)[0]['stdout']
-
-        # just get the names, without the remote name
-        branches = set(branch.split('/')[-1] for branch in remote_branches.splitlines())
-        return branches
 
     def merge(self):
         if self._patchcanbemerged:
