@@ -147,6 +147,6 @@ class PatchTestRepo(object):
             self._patchmerged = True
 
     def clean(self):
-        self._exec({'cmd':['git', 'checkout', '%s' % self._current_branch]})
-        self._exec({'cmd':['git', 'branch', '-D', self._workingbranch]})
+        self._repo.git.execute(['git', 'checkout', self._current_branch])
+        self._repo.git.execute(['git', 'branch', '-D', self._workingbranch])
         self._patchmerged = False
