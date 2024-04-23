@@ -27,7 +27,7 @@ class PatchTestRepo(object):
         self._repodir = repodir
         self._repo = git.Repo.init(repodir)
         self._patch = PatchTestPatch(patch)
-        self._current_branch = self._get_current_branch()
+        self._current_branch = self._repo.active_branch
 
         # targeted branch defined on the patch may be invalid, so make sure there
         # is a corresponding remote branch
@@ -126,14 +126,6 @@ class PatchTestRepo(object):
                     logger.debug("CMD: %s RCODE: %s STDOUT: %s STDERR: %s" % (cmd, rc, stdout, stderr))
 
         return results
-
-    def _get_current_branch(self, commit='HEAD'):
-        cmd = {'cmd':['git', 'rev-parse', '--abbrev-ref', commit]}
-        cb = self._exec(cmd)[0]['stdout']
-        if cb == commit:
-            logger.warning('You may be detached so patchtest will checkout to master after execution')
-            cb = 'master'
-        return cb
 
     def _get_commitid(self, commit):
 
