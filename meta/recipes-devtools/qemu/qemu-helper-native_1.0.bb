@@ -6,7 +6,8 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/qemu-oe-bridge-helper.c;endline=4;md5=ae00
 
 SRC_URI = "file://qemu-oe-bridge-helper.c"
 
-S = "${WORKDIR}"
+S = "${WORKDIR}/sources"
+UNPACKDIR = "${S}"
 
 inherit native
 
