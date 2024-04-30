@@ -1606,6 +1606,9 @@ python () {
     workdir = d.getVar("WORKDIR")
     if sourcedir == workdir:
         bb.warn("Using S = ${WORKDIR} is no longer supported")
+    for var in ["do_install", "do_compile"]:
+        if "${WORKDIR}" in d.getVar(var, False):
+            bb.warn("Using ${WORKDIR} in %s is not recommended" % var)
 
     # Some people mistakenly use DEPENDS:${PN} instead of DEPENDS and wonder
     # why it doesn't work.
