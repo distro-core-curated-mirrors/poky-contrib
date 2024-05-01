@@ -75,20 +75,28 @@ def get_source_date_epoch_from_known_files(d, sourcedir):
     return source_date_epoch
 
 def find_git_folder(d, sourcedir):
-    # Try ${S}
+    # First guess: WORKDIR/git
+    # This is the default git fetcher unpack path
+    workdir = d.getVar('WORKDIR')
+    gitpath = os.path.join(workdir, "git/.git")
+    if os.path.isdir(gitpath):
+        return gitpath
+
+    # Second guess: ${S}
     gitpath = os.path.join(sourcedir, ".git")
     if os.path.isdir(gitpath):
         return gitpath
 
     # Perhaps there was a subpath or destsuffix specified.
-    # Go looking in S
-    exclude = set(["patches"])
-    for root, dirs, files in os.walk(sourcedir, topdown=True):
+    # Go looking in the WORKDIR
+    exclude = set(["build", "image", "license-destdir", "patches", "pseudo",
+                   "recipe-sysroot", "recipe-sysroot-native", "sysroot-destdir", "temp"])
+    for root, dirs, files in os.walk(workdir, topdown=True):
         dirs[:] = [d for d in dirs if d not in exclude]
         if '.git' in dirs:
             return os.path.join(root, ".git")
 
-    bb.warn("Failed to find a git repository in S: %s" % sourcedir)
+    bb.warn("Failed to find a git repository in WORKDIR: %s" % workdir)
     return None
 
 def get_source_date_epoch_from_git(d, sourcedir):
