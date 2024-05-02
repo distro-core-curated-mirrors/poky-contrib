@@ -67,7 +67,7 @@ class PatchTestRepo(object):
             # Make sure to get the absolute path of the file
             self._repo.git.execute(['git', 'am', '--keep-cr', os.path.abspath(self._patch.path)])
         except utils.CmdException as ce:
-            self._exec({'cmd': ['git', 'am', '--abort']})
+            self._repo.git.execute(['git', 'am', '--abort'])
             self._patchcanbemerged = False
         finally:
             # if patch was applied, remove it
