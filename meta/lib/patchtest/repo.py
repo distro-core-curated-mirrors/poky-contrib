@@ -72,7 +72,7 @@ class PatchTestRepo(object):
         finally:
             # if patch was applied, remove it
             if self._patchcanbemerged:
-                self._exec({'cmd':['git', 'reset', '--hard', self._commit]})
+                self._repo.git.execute(['git', 'reset', '--hard', self._commit])
 
         # for debugging purposes, print all repo parameters
         logger.debug("Parameters")
