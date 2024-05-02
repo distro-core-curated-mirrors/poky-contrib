@@ -102,33 +102,6 @@ class PatchTestRepo(object):
     def canbemerged(self):
         return self._patchcanbemerged
 
-    def _exec(self, cmds):
-        _cmds = []
-        if isinstance(cmds, dict):
-            _cmds.append(cmds)
-        elif isinstance(cmds, list):
-            _cmds = cmds
-        else:
-            raise utils.CmdException({'cmd':str(cmds)})
-
-        results = []
-        cmdfailure = False
-        try:
-            results = utils.exec_cmds(_cmds, self._repodir)
-        except utils.CmdException as ce:
-            cmdfailure = True
-            raise ce
-        finally:
-            if cmdfailure:
-                for cmd in _cmds:
-                    logger.debug("CMD: %s" % ' '.join(cmd['cmd']))
-            else:
-                for result in results:
-                    cmd, rc, stdout, stderr = ' '.join(result['cmd']), result['returncode'], result['stdout'], result['stderr']
-                    logger.debug("CMD: %s RCODE: %s STDOUT: %s STDERR: %s" % (cmd, rc, stdout, stderr))
-
-        return results
-
     def _get_commitid(self, commit):
 
         if not commit:
