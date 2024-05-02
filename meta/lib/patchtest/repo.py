@@ -64,7 +64,8 @@ class PatchTestRepo(object):
         # Check if patch can be merged using git-am
         self._patchcanbemerged = True
         try:
-            self._exec({'cmd': ['git', 'am', '--keep-cr'], 'input': self._patch.contents})
+            # Make sure to get the absolute path of the file
+            self._repo.git.execute(['git', 'am', '--keep-cr', os.path.abspath(self._patch.path)])
         except utils.CmdException as ce:
             self._exec({'cmd': ['git', 'am', '--abort']})
             self._patchcanbemerged = False
@@ -142,7 +143,7 @@ class PatchTestRepo(object):
 
     def merge(self):
         if self._patchcanbemerged:
-            self._repo.git.execute(['git', 'am', '--keep-cr', self._patch.path])
+            self._repo.git.execute(['git', 'am', '--keep-cr', os.path.abspath(self._patch.path)])
             self._patchmerged = True
 
     def clean(self):
