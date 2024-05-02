@@ -142,9 +142,7 @@ class PatchTestRepo(object):
 
     def merge(self):
         if self._patchcanbemerged:
-            self._exec({'cmd': ['git', 'am', '--keep-cr'],
-                        'input': self._patch.contents,
-                        'updateenv': {'PTRESOURCE':self._patch.path}})
+            self._repo.git.execute(['git', 'am', '--keep-cr', self._patch.path])
             self._patchmerged = True
 
     def clean(self):
