@@ -65,14 +65,9 @@ class PatchTestRepo(object):
         self._patchcanbemerged = True
         try:
             # Make sure to get the absolute path of the file
-            self._repo.git.execute(['git', 'am', '--keep-cr', os.path.abspath(self._patch.path)])
-        except utils.CmdException as ce:
-            self._repo.git.execute(['git', 'am', '--abort'])
+            self._repo.git.execute(['git', 'apply', '--check', os.path.abspath(self._patch.path)], with_exceptions=True)
+        except git.exc.GitCommandError as ce:
             self._patchcanbemerged = False
-        finally:
-            # if patch was applied, remove it
-            if self._patchcanbemerged:
-                self._repo.git.execute(['git', 'reset', '--hard', self._commit])
 
         # for debugging purposes, print all repo parameters
         logger.debug("Parameters")
