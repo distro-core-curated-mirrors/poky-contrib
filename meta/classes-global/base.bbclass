@@ -153,20 +153,35 @@ python base_do_fetch() {
 }
 
 addtask unpack after do_fetch
-do_unpack[dirs] = "${UNPACKDIR}"
-
-do_unpack[cleandirs] = "${@d.getVar('S') if os.path.normpath(d.getVar('S')) != os.path.normpath(d.getVar('WORKDIR')) else os.path.join('${S}', 'patches')}"
+do_unpack[cleandirs] = "${UNPACKDIR}"
 
 python base_do_unpack() {
+    import shutil
+
     src_uri = (d.getVar('SRC_URI') or "").split()
     if not src_uri:
         return
+
+    sourcedir = d.getVar('S')
+    basedir = None
+    workdir = d.getVar('WORKDIR')
+    unpackdir = d.getVar('UNPACKDIR')
+    if sourcedir.startswith(workdir) and not sourcedir.startswith(unpackdir):
+        basedir = sourcedir.replace(workdir, '').strip("/").split('/')[0]
+        bb.utils.remove(sourcedir, True)
+        if basedir:
+            bb.utils.remove(workdir + '/' + basedir, True)
 
     try:
         fetcher = bb.fetch2.Fetch(src_uri, d)
         fetcher.unpack(d.getVar('UNPACKDIR'))
     except bb.fetch2.BBFetchException as e:
         bb.fatal("Bitbake Fetcher Error: " + repr(e))
+
+    if basedir and os.path.exists(unpackdir + '/' + basedir):
+        # Compatibility magic to ensure ${WORKDIR}/git and ${WORKDIR}/${BP}
+        # as often used in S work as expected.
+        shutil.move(unpackdir + '/' + basedir, workdir + '/' + basedir)
 }
 
 SSTATETASKS += "do_deploy_source_date_epoch"
