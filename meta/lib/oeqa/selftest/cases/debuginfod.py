@@ -62,7 +62,7 @@ class Debuginfod(OESelftestTestCase):
 
         raise TimeoutError("Cannot connect debuginfod, still %d scan jobs running" % latest)
 
-    def start_debuginfod(self):
+    def start_debuginfod(self, feed_dir):
         # We assume that the caller has already bitbake'd elfutils-native:do_addto_recipe_sysroot
 
         # Save some useful paths for later
@@ -82,7 +82,7 @@ class Debuginfod(OESelftestTestCase):
             # Disable rescanning, this is a one-shot test
             "--rescan-time=0",
             "--groom-time=0",
-            get_bb_var("DEPLOY_DIR"),
+            feed_dir,
         ]
 
         format = get_bb_var("PACKAGE_CLASSES").split()[0]
@@ -118,7 +118,7 @@ DISTRO_FEATURES:append = " debuginfod"
         bitbake("elfutils-native:do_addto_recipe_sysroot xz xz:do_package")
 
         try:
-            self.start_debuginfod()
+            self.start_debuginfod(get_bb_var("DEPLOY_DIR"))
 
             env = os.environ.copy()
             env["DEBUGINFOD_URLS"] = "http://localhost:%d/" % self.port
@@ -146,7 +146,7 @@ CORE_IMAGE_EXTRA_INSTALL += "elfutils xz"
         bitbake("core-image-minimal elfutils-native:do_addto_recipe_sysroot")
 
         try:
-            self.start_debuginfod()
+            self.start_debuginfod(get_bb_var("DEPLOY_DIR"))
 
             with runqemu("core-image-minimal", runqemuparams="nographic") as qemu:
                 cmd = "DEBUGINFOD_URLS=http://%s:%d/ debuginfod-find debuginfo /usr/bin/xz" % (qemu.server_ip, self.port)
