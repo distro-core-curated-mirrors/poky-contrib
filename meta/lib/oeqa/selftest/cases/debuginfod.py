@@ -114,11 +114,12 @@ class Debuginfod(OESelftestTestCase):
         self.write_config("""
 TMPDIR = "${TOPDIR}/tmp-debuginfod"
 DISTRO_FEATURES:append = " debuginfod"
+INHERIT += "minifeed"
 """)
-        bitbake("elfutils-native:do_addto_recipe_sysroot xz xz:do_package")
+        bitbake("elfutils-native:do_addto_recipe_sysroot xz xz:do_package xz:do_minifeed")
 
         try:
-            self.start_debuginfod(get_bb_var("DEPLOY_DIR"))
+            self.start_debuginfod(get_bb_var("MINIFEED_DIR", "xz"))
 
             env = os.environ.copy()
             env["DEBUGINFOD_URLS"] = "http://localhost:%d/" % self.port
@@ -141,12 +142,13 @@ DISTRO_FEATURES:append = " debuginfod"
         self.write_config("""
 TMPDIR = "${TOPDIR}/tmp-debuginfod"
 DISTRO_FEATURES:append = " debuginfod"
+INHERIT += "minifeed"
 CORE_IMAGE_EXTRA_INSTALL += "elfutils xz"
         """)
-        bitbake("core-image-minimal elfutils-native:do_addto_recipe_sysroot")
+        bitbake("core-image-minimal elfutils-native:do_addto_recipe_sysroot xz:do_minifeed")
 
         try:
-            self.start_debuginfod(get_bb_var("DEPLOY_DIR"))
+            self.start_debuginfod(get_bb_var("MINIFEED_DIR", "xz"))
 
             with runqemu("core-image-minimal", runqemuparams="nographic") as qemu:
                 cmd = "DEBUGINFOD_URLS=http://%s:%d/ debuginfod-find debuginfo /usr/bin/xz" % (qemu.server_ip, self.port)
