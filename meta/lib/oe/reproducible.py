@@ -93,6 +93,10 @@ def find_git_folder(d, sourcedir):
         if '.git' in dirs:
             return os.path.join(root, ".git")
 
+    for root, dirs, files in os.walk(sourcedir, topdown=True):
+        if '.git' in dirs:
+            return os.path.join(root, ".git")
+
     bb.warn("Failed to find a git repository in UNPACKDIR: %s" % unpackdir)
     return None
 

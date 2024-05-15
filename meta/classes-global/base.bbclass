@@ -158,19 +158,22 @@ do_unpack[cleandirs] = "${UNPACKDIR}"
 python base_do_unpack() {
     import shutil
 
+    sourcedir = d.getVar('S')
+    # Intentionally keep SOURCE_BASEDIR internal to the task just for SDE
+    d.setVar("SOURCE_BASEDIR", sourcedir)
+
     src_uri = (d.getVar('SRC_URI') or "").split()
     if not src_uri:
         return
 
-    sourcedir = d.getVar('S')
     basedir = None
-    workdir = d.getVar('WORKDIR')
     unpackdir = d.getVar('UNPACKDIR')
+    workdir = d.getVar('WORKDIR')
     if sourcedir.startswith(workdir) and not sourcedir.startswith(unpackdir):
         basedir = sourcedir.replace(workdir, '').strip("/").split('/')[0]
-        bb.utils.remove(sourcedir, True)
         if basedir:
             bb.utils.remove(workdir + '/' + basedir, True)
+            d.setVar("SOURCE_BASEDIR", workdir + '/' + basedir)
 
     try:
         fetcher = bb.fetch2.Fetch(src_uri, d)
@@ -214,8 +217,8 @@ addtask do_deploy_source_date_epoch_setscene
 addtask do_deploy_source_date_epoch before do_configure after do_patch
 
 python create_source_date_epoch_stamp() {
-    # Version: 1
-    source_date_epoch = oe.reproducible.get_source_date_epoch(d, d.getVar('S'))
+    # Version: 2
+    source_date_epoch = oe.reproducible.get_source_date_epoch(d, d.getVar('SOURCE_BASEDIR') or d.getVar('S'))
     oe.reproducible.epochfile_write(source_date_epoch, d.getVar('SDE_FILE'), d)
 }
 do_unpack[postfuncs] += "create_source_date_epoch_stamp"
