@@ -37,7 +37,7 @@ class GccSelfTestBase(OESelftestTestCase, OEPTestResultTestCase):
         features = []
         features.append('MAKE_CHECK_TARGETS = "{0}"'.format(" ".join(targets)))
         if ssh is not None:
-            features.append('TOOLCHAIN_TEST_TARGET = "ssh"')
+            features.append('TOOLCHAIN_TEST_TARGET = "linux-ssh"')
             features.append('TOOLCHAIN_TEST_HOST = "{0}"'.format(ssh))
             features.append('TOOLCHAIN_TEST_HOST_USER = "root"')
             features.append('TOOLCHAIN_TEST_HOST_PORT = "22"')
@@ -54,6 +54,7 @@ class GccSelfTestBase(OESelftestTestCase, OEPTestResultTestCase):
         bb_vars = get_bb_vars(["B", "TARGET_SYS"], recipe)
         builddir, target_sys = bb_vars["B"], bb_vars["TARGET_SYS"]
 
+        all_tests_passed = True
         for suite in suites:
             sumspath = os.path.join(builddir, "gcc", "testsuite", suite, "{0}.sum".format(suite))
             if not os.path.exists(sumspath): # check in target dirs
@@ -67,7 +68,12 @@ class GccSelfTestBase(OESelftestTestCase, OEPTestResultTestCase):
             self.ptest_section(ptestsuite, duration = int(end_time - start_time), logfile = logpath)
             with open(sumspath, "r") as f:
                 for test, result in parse_values(f):
+                    if result!= "PASS":
+                        all_tests_passed = False
                     self.ptest_result(ptestsuite, test, result)
+
+        if not all_tests_passed:
+            self.fail("All tests not passed")
 
     def run_check_emulated(self, *args, **kwargs):
         # build core-image-minimal with required packages
