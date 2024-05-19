@@ -8,6 +8,7 @@ inherit python3native meson-routines qemu
 
 DEPENDS:append = " meson-native ninja-native"
 
+EXEWRAPPER_EXE ?= "exe_wrapper = '${WORKDIR}/meson-qemuwrapper'"
 EXEWRAPPER_ENABLED:class-native = "False"
 EXEWRAPPER_ENABLED:class-nativesdk = "False"
 EXEWRAPPER_ENABLED ?= "${@bb.utils.contains('MACHINE_FEATURES', 'qemu-usermode', 'True', 'False', d)}"
@@ -61,7 +62,7 @@ def rust_tool(d, target_var):
     return "rust = %s" % repr(cmd)
 
 addtask write_config before do_configure
-do_write_config[vardeps] += "CC CXX AR NM STRIP READELF OBJCOPY CFLAGS CXXFLAGS LDFLAGS RUSTC RUSTFLAGS EXEWRAPPER_ENABLED"
+do_write_config[vardeps] += "CC CXX AR NM STRIP READELF OBJCOPY CFLAGS CXXFLAGS LDFLAGS RUSTC RUSTFLAGS EXEWRAPPER_ENABLED EXEWRAPPER_EXE"
 do_write_config() {
     # This needs to be Py to split the args into single-element lists
     cat >${WORKDIR}/meson.cross <<EOF
@@ -80,7 +81,7 @@ cups-config = 'cups-config'
 g-ir-scanner = '${STAGING_BINDIR}/g-ir-scanner-wrapper'
 g-ir-compiler = '${STAGING_BINDIR}/g-ir-compiler-wrapper'
 ${@rust_tool(d, "RUST_HOST_SYS")}
-${@"exe_wrapper = '${WORKDIR}/meson-qemuwrapper'" if d.getVar('EXEWRAPPER_ENABLED') == 'True' else ""}
+${@"${EXEWRAPPER_EXE}" if d.getVar('EXEWRAPPER_ENABLED') == 'True' else ""}
 
 [built-in options]
 c_args = ${@meson_array('CFLAGS', d)}
