@@ -15,7 +15,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=a6f89e2100d9b6cdffcea4f398e37343 \
                    "
 inherit autotools bash-completion gtk-doc pkgconfig manpages update-alternatives
 
-SRCREV = "aff617ea871d0568cc491bd116c0be1e857463bb"
+SRCREV = "41faa59711742c1476d59985011ee0f27ed91d30"
 
 SRC_URI = "git://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git;branch=master;protocol=https \
            file://depmod-search.conf \
@@ -50,12 +50,6 @@ EXTRA_OECONF += "--bindir=${base_bindir} --sbindir=${base_sbindir}"
 
 do_install:append () {
         install -dm755 ${D}${base_bindir}
-        install -dm755 ${D}${base_sbindir}
-        # add symlinks to kmod
-        ln -rs ${D}${base_bindir}/kmod ${D}${base_bindir}/lsmod
-        for tool in insmod rmmod depmod modinfo modprobe; do
-                ln -rs ${D}${base_bindir}/kmod ${D}${base_sbindir}/${tool}
-        done
         # configuration directories
         install -dm755 ${D}${nonarch_base_libdir}/depmod.d
         install -dm755 ${D}${nonarch_base_libdir}/modprobe.d
@@ -71,16 +65,14 @@ do_install:append () {
 
 ALTERNATIVE_PRIORITY = "70"
 
-ALTERNATIVE:kmod = "insmod modprobe rmmod modinfo bin-lsmod lsmod depmod"
+ALTERNATIVE:kmod = "insmod modprobe rmmod modinfo lsmod depmod"
 
-ALTERNATIVE_LINK_NAME[depmod] = "${base_sbindir}/depmod"
-ALTERNATIVE_LINK_NAME[insmod] = "${base_sbindir}/insmod"
-ALTERNATIVE_LINK_NAME[modprobe] = "${base_sbindir}/modprobe"
-ALTERNATIVE_LINK_NAME[rmmod] = "${base_sbindir}/rmmod"
-ALTERNATIVE_LINK_NAME[modinfo] = "${base_sbindir}/modinfo"
-ALTERNATIVE_LINK_NAME[bin-lsmod] = "${base_bindir}/lsmod"
-ALTERNATIVE_LINK_NAME[lsmod] = "${base_sbindir}/lsmod"
-ALTERNATIVE_TARGET[lsmod] = "${base_bindir}/lsmod.${BPN}"
+ALTERNATIVE_LINK_NAME[depmod] = "${base_bindir}/depmod"
+ALTERNATIVE_LINK_NAME[insmod] = "${base_bindir}/insmod"
+ALTERNATIVE_LINK_NAME[modprobe] = "${base_bindir}/modprobe"
+ALTERNATIVE_LINK_NAME[rmmod] = "${base_bindir}/rmmod"
+ALTERNATIVE_LINK_NAME[modinfo] = "${base_bindir}/modinfo"
+ALTERNATIVE_LINK_NAME[lsmod] = "${base_bindir}/lsmod"
 
 PACKAGES =+ "libkmod"
 FILES:libkmod = "${base_libdir}/libkmod*${SOLIBS} ${libdir}/libkmod*${SOLIBS}"
