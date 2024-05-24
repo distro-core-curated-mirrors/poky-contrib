@@ -45,6 +45,36 @@ inherit meson-routines
 #   real paths by meson-setup.sh when the SDK is extracted.
 # - Some overrides aren't needed, since the SDK injects paths that take care of
 #   them.
+def var_list2str(var, d):
+    items = d.getVar(var).split()
+    return items[0] if len(items) == 1 else ', '.join(repr(s) for s in items)
+
+def generate_native_link_template(d):
+    val = ['-L@{OECORE_NATIVE_SYSROOT}${libdir_native}',
+           '-L@{OECORE_NATIVE_SYSROOT}${base_libdir_native}',
+           '-Wl,-rpath-link,@{OECORE_NATIVE_SYSROOT}${libdir_native}',
+           '-Wl,-rpath-link,@{OECORE_NATIVE_SYSROOT}${base_libdir_native}',
+           '-Wl,--allow-shlib-undefined'
+        ]
+    build_arch = d.getVar('BUILD_ARCH')
+    if 'x86_64' in build_arch:
+        loader = 'ld-linux-x86-64.so.2'
+    elif 'i686' in build_arch:
+        loader = 'ld-linux.so.2'
+    elif 'aarch64' in build_arch:
+        loader = 'ld-linux-aarch64.so.1'
+    elif 'ppc64le' in build_arch:
+        loader = 'ld64.so.2'
+    elif 'loongarch64' in build_arch:
+        loader = 'ld-linux-loongarch-lp64d.so.1'
+    elif 'riscv64' in build_arch:
+        loader = 'ld-linux-riscv64-lp64d.so.1'
+
+    if loader:
+        val += ['-Wl,--dynamic-linker=@{OECORE_NATIVE_SYSROOT}${base_libdir_native}/' + loader]
+
+    return repr(val)
+
 install_templates() {
     install -d ${D}${datadir}/meson
 
@@ -59,11 +89,10 @@ readelf = ${@meson_array('BUILD_READELF', d)}
 pkg-config = 'pkg-config-native'
 
 [built-in options]
-c_args = ${@meson_array('BUILD_CFLAGS', d)}
-c_link_args = ${@meson_array('BUILD_LDFLAGS', d)}
-cpp_args = ${@meson_array('BUILD_CXXFLAGS', d)}
-cpp_link_args = ${@meson_array('BUILD_LDFLAGS', d)}
-
+c_args = ['-isystem@{OECORE_NATIVE_SYSROOT}${includedir_native}' , ${@var_list2str('BUILD_OPTIMIZATION', d)}]
+c_link_args = ${@generate_native_link_template(d)}
+cpp_args = ['-isystem@{OECORE_NATIVE_SYSROOT}${includedir_native}' , ${@var_list2str('BUILD_OPTIMIZATION', d)}]
+cpp_link_args = ${@generate_native_link_template(d)}
 [properties]
 sys_root = '@OECORE_NATIVE_SYSROOT'
 EOF
