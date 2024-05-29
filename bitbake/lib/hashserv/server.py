@@ -411,7 +411,16 @@ class ServerClient(bb.asyncrpc.AsyncServerConnection):
 
     @permissions(READ_PERM)
     async def handle_get_stream(self, request):
+        count = 0
+
         async def handler(l):
+            nonlocal count
+
+            count += 1
+            if count == 3:
+                print("Closing connection")
+                raise bb.asyncrpc.ConnectionClosedError("test")
+
             (method, taskhash) = l.split()
             # self.logger.debug('Looking up %s %s' % (method, taskhash))
             row = await self.db.get_equivalent(method, taskhash)
