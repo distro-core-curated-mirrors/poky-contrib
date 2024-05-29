@@ -378,21 +378,30 @@ class ClientPool(bb.asyncrpc.ClientPool):
         return client
 
     def _run_key_tasks(self, queries, call):
-        results = {key: None for key in queries.keys()}
+        keys = list(queries.keys())
+        results = {}
 
-        def make_task(key, args):
-            async def task(client):
-                nonlocal results
-                unihash = await call(client, args)
-                results[key] = unihash
+        async def task(client):
+            client_keys = []
 
-            return task
+            def get_next():
+                nonlocal client_keys
+                nonlocal keys
 
-        def gen_tasks():
-            for key, args in queries.items():
-                yield make_task(key, args)
+                if not keys:
+                    return
 
-        self.run_tasks(gen_tasks())
+                k = keys.pop()
+                client_keys.append(k)
+
+                yield queries[k]
+
+            r = await call(client, get_next())
+
+            for idx, k in enumerate(client_keys):
+                results[k] = r[idx]
+
+        self.run_tasks(task for _ in range(self.max_clients))
         return results
 
     def get_unihashes(self, queries):
@@ -407,9 +416,8 @@ class ClientPool(bb.asyncrpc.ClientPool):
         failed)
         """
 
-        async def call(client, args):
-            method, taskhash = args
-            return await client.get_unihash(method, taskhash)
+        async def call(client, gen):
+            return await client.get_unihash_batch(gen)
 
         return self._run_key_tasks(queries, call)
 
@@ -425,7 +433,7 @@ class ClientPool(bb.asyncrpc.ClientPool):
         None if there was a failure)
         """
 
-        async def call(client, unihash):
-            return await client.unihash_exists(unihash)
+        async def call(client, gen):
+            return await client.unihash_exists_batch(gen)
 
         return self._run_key_tasks(queries, call)
