@@ -534,6 +534,16 @@ def _generate_license_diff(old_licenses, new_licenses):
             diff = diff + line
     return diff
 
+def _run_recipe_update_extra_tasks(pn, rd, tinfoil):
+    tasks = []
+    for task in rd.getVar('RECIPE_UPDATE_EXTRA_TASKS:%s' % pn).split():
+        try:
+            logger.info('Running extra recipe update task: %s' % task)
+            res = tinfoil.build_targets(pn, task, handle_events=True)
+        except (bb.process.ExecutionError, Exception) as e:
+            logger.fatal("Failed to run recipe task (%s): %s" % (task, e.msg))
+    return res
+
 def upgrade(args, config, basepath, workspace):
     """Entry point for the devtool 'upgrade' subcommand"""
 
@@ -608,6 +618,8 @@ def upgrade(args, config, basepath, workspace):
         af = _write_append(rf, srctree, srctree_s, args.same_dir, args.no_same_dir, rev2,
                         copied, config.workspace_path, rd)
         standard._add_md5(config, pn, af)
+
+        _run_recipe_update_extra_tasks(pn, rd, tinfoil)
 
         update_unlockedsigs(basepath, workspace, args.fixed_setup, [pn])
 
