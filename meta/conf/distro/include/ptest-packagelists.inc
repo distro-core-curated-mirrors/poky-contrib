@@ -57,6 +57,7 @@ PTESTS_FAST = "\
     popt \
     python3-atomicwrites \
     python3-attrs \
+    python3-babel \
     python3-bcrypt \
     python3-calver \
     python3-freezegun \
