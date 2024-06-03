@@ -59,6 +59,7 @@ PTESTS_FAST = "\
     python3-attrs \
     python3-bcrypt \
     python3-calver \
+    python3-freezegun \
     python3-hypothesis \
     python3-jinja2 \
     python3-jsonpointer \
