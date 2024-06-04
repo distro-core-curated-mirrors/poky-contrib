@@ -1,29 +1,4 @@
 ac_cv_func_setvbuf_reversed=no
-ac_cv_sizeof___int64=${ac_cv_sizeof___int64=0}
-ac_cv_sizeof_char=${ac_cv_sizeof_char=1}
-ac_cv_sizeof_char_p=${ac_cv_sizeof_char_p=4}
-ac_cv_sizeof_double=${ac_cv_sizeof_double=8}
-ac_cv_sizeof_float=${ac_cv_sizeof_float=4}
-ac_cv_sizeof_int=${ac_cv_sizeof_int=4}
-ac_cv_sizeof_int_p=${ac_cv_sizeof_int_p=4}
-ac_cv_sizeof_long=${ac_cv_sizeof_long=4}
-ac_cv_sizeof_long_p=${ac_cv_sizeof_long_p=4}
-ac_cv_sizeof_long_int=${ac_cv_sizeof_long_int=4}
-ac_cv_sizeof_long_long=${ac_cv_sizeof_long_long=8}
-ac_cv_sizeof_long_long_int=${ac_cv_sizeof_long_long_int=8}
-ac_cv_sizeof_short=${ac_cv_sizeof_short=2}
-ac_cv_sizeof_short_int=${ac_cv_sizeof_short_int=2}
-ac_cv_sizeof_signed_char=${ac_cv_sizeof_signed_char=1}
-ac_cv_sizeof_size_t=${ac_cv_sizeof_size_t=4}
-ac_cv_sizeof_unsigned_char=${ac_cv_sizeof_unsigned_char=1}
-ac_cv_sizeof_unsigned_int=${ac_cv_sizeof_unsigned_int=4}
-ac_cv_sizeof_unsigned_long=${ac_cv_sizeof_unsigned_long=4}
-ac_cv_sizeof_unsigned_long_int=${ac_cv_sizeof_unsigned_long_int=4}
-ac_cv_sizeof_unsigned_long_long_int=${ac_cv_sizeof_unsigned_long_long_int=8}
-ac_cv_sizeof_unsigned_short=${ac_cv_sizeof_unsigned_short=2}
-ac_cv_sizeof_unsigned_short_int=${ac_cv_sizeof_unsigned_short_int=2}
-ac_cv_sizeof_void_p=${ac_cv_sizeof_void_p=4}
-ac_cv_sizeof_wchar_t=${ac_cv_sizeof_wchar_t=4}
 ac_cv_type___int64=${ac_cv_type___int64=no}
 ac_cv_type_size_t=${ac_cv_type_size_t=yes}
 ac_cv_type_void_p=${ac_cv_type_void_p=yes}
@@ -33,10 +8,6 @@ ac_cv_ulong=${ac_cv_ulong=yes}
 ac_cv_ushort=${ac_cv_ushort=yes}
 ac_cv_time_r_type=${ac_cv_time_r_type=POSIX}
 cookie_io_functions_use_off64_t=${cookie_io_functions_use_off64_t=yes}
-
-
-# apache
-ac_cv_sizeof_ssize_t=${ac_cv_sizeof_ssize_t=4}
 
 # ssh
 ac_cv_have_space_d_name_in_struct_dirent=${ac_cv_dirent_have_space_d_name=yes}
@@ -136,12 +107,8 @@ ac_cv_have_openpty_ctty_bug=${ac_cv_have_openpty_ctty_bug='yes'}
 ac_cv_have_accrights_in_msghdr=${ac_cv_have_accrights_in_msghdr='no'}
 ac_cv_have_control_in_msghdr=${ac_cv_have_control_in_msghdr='yes'}
 
-# vim
-ac_cv_sizeof_int=${ac_cv_sizeof_int='4'}
-
 #modphp 
 ac_cv_c_bigendian_php=${ac_cv_c_bigendian_php=yes}
-ac_cv_sizeof_ptrdiff_t=${ac_cv_sizeof_ptrdiff_t=4}
 
 # apache2 (note other apache stanza in this file)
 ap_void_ptr_lt_long=${ap_void_ptr_lt_long=no}
@@ -151,7 +118,6 @@ apr_cv_pthreads_cflags=${apr_cv_pthreads_cflags=-pthread}
 apr_cv_pthreads_lib=${apr_cv_pthreads_lib=-lpthread}
 ac_cv_func_mmap=${ac_cv_func_mmap=yes}
 ac_cv_file__dev_zero=${ac_cv_file__dev_zero=yes}
-ac_cv_sizeof_pid_t=${ac_cv_sizeof_pid_t=4}
 ac_cv_socklen_t=${ac_cv_socklen_t=yes}
 ac_cv_struct_rlimit=${ac_cv_struct_rlimit=yes}
 ac_cv_negative_eai=${ac_cv_negative_eai=yes}
@@ -159,7 +125,6 @@ apr_cv_gai_addrconfig=${apr_cv_gai_addrconfig=no}
 apr_cv_tcp_nodelay_with_cork=${apr_cv_tcp_nodelay_with_cork=yes}
 
 # binutils (libiberty)
-ac_cv_sizeof_int=${ac_cv_sizeof_int=4}
 ac_cv_type_int=${ac_cv_type_int=yes}
 ac_cv_type_uintptr_t=${ac_cv_type_uintptr_t=yes}
 liberty_cv_uint64=${liberty_cv_uint64=uint64_t}

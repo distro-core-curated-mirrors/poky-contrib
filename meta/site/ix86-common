@@ -1,25 +1,4 @@
 # general
-ac_cv_sizeof_char=${ac_cv_sizeof_char=1}
-ac_cv_sizeof_unsigned_char=${ac_cv_sizeof_unsigned_char=1}
-ac_cv_sizeof_char_p=${ac_cv_sizeof_char_p=4}
-ac_cv_sizeof_unsigned_char_p=${ac_cv_sizeof_unsigned_char_p=4}
-ac_cv_sizeof_int=${ac_cv_sizeof_int=4}
-ac_cv_sizeof_unsigned_int=${ac_cv_sizeof_unsigned_int=4}
-ac_cv_sizeof_int_p=${ac_cv_sizeof_int_p=4}
-ac_cv_sizeof_long=${ac_cv_sizeof_long=4}
-ac_cv_sizeof_unsigned_long=${ac_cv_sizeof_unsigned_long=4}
-ac_cv_sizeof_long_long=${ac_cv_sizeof_long_long=8}
-ac_cv_sizeof_unsigned_long_long=${ac_cv_sizeof_unsigned_long_long=8}
-ac_cv_sizeof_short=${ac_cv_sizeof_short=2}
-ac_cv_sizeof_unsigned_short=${ac_cv_sizeof_unsigned_short=2}
-ac_cv_sizeof_size_t=${ac_cv_sizeof_size_t=4}
-ac_cv_sizeof_ssize_t=${ac_cv_sizeof_ssize_t=4}
-ac_cv_sizeof_void_p=${ac_cv_sizeof_void_p=4}
-ac_cv_sizeof_long_p=${ac_cv_sizeof_long_p=4}
-ac_cv_sizeof_float=${ac_cv_sizeof_float=4}
-ac_cv_sizeof_uid_t=${ac_cv_sizeof_uid_t=4}
-ac_cv_sizeof_gid_t=${ac_cv_sizeof_gid_t=4}
-ac_cv_sizeof_dev_t=${ac_cv_sizeof_dev_t=8}
 ac_cv_func_lstat_dereferences_slashed_symlink=${ac_cv_func_lstat_dereferences_slashed_symlink=yes}
 ac_cv_func_lstat_empty_string_bug=${ac_cv_func_lstat_empty_string_bug=no}
 ac_cv_func_setvbuf_reversed=${ac_cv_func_setvbuf_reversed=no}
@@ -71,9 +50,6 @@ ac_cv_uchar=${ac_cv_uchar=no}
 ac_cv_uint=${ac_cv_uint=yes}
 ac_cv_ulong=${ac_cv_ulong=yes}
 ac_cv_ushort=${ac_cv_ushort=yes}
-
-# jikes-native
-ac_cv_sizeof_wchar_t=4
 
 # lftp
 ac_cv_need_trio=${ac_cv_need_trio=no}

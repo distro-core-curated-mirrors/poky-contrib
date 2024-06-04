@@ -41,8 +41,5 @@ am_cv_func_working_getline=${am_cv_func_working_getline=yes}
 # samba
 samba_cv_HAVE_GETTIMEOFDAY_TZ=${samba_cv_HAVE_GETTIMEOFDAY_TZ=yes}
 
-# vim
-ac_cv_sizeof_int=${ac_cv_sizeof_int=4}
-
 # lmbench
 ac_cv_uint=${ac_cv_uint=yes}

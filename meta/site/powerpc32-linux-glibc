@@ -1,5 +1,3 @@
-ac_cv_sizeof_long_double=${ac_cv_sizeof_long_double=16}
-
 # libc
 libc_cv_ppc_machine=${libc_cv_ppc_machine=yes}
 libc_cv_mlong_double_128ibm=${libc_cv_mlong_double_128ibm=yes}
