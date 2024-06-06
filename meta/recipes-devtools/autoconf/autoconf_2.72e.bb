@@ -19,6 +19,7 @@ SRC_URI = " \
            file://preferbash.patch \
            file://autotest-automake-result-format.patch \
            file://man-host-perl.patch \
+			file://cached.patch \
 "
 SRC_URI:append:class-native = " file://no-man.patch"
 
