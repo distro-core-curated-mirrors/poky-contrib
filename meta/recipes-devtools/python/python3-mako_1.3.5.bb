@@ -5,6 +5,7 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=d0995d6f7ba3f186a03118f244e88f57"
 
 PYPI_PACKAGE = "Mako"
+PYPI_ARCHIVE_NAME = "${PYPI_PACKAGE}"
 
 inherit pypi python_setuptools_build_meta ptest
 
