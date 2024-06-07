@@ -8,6 +8,8 @@ DEPENDS += "openssl python3-cryptography"
 SRC_URI[sha256sum] = "cabed4bfaa5df9f1a16c0ef64a0cb65318b5cd077a7eda7d6970131ca2f41a6f"
 
 PYPI_PACKAGE = "pyOpenSSL"
+PYPI_ARCHIVE_NAME = "${PYPI_PACKAGE}"
+
 inherit pypi setuptools3
 
 PACKAGES =+ "${PN}-tests"

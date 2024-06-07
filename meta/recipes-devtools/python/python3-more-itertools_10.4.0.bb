@@ -7,6 +7,8 @@ SRC_URI[sha256sum] = "fe0e63c4ab068eac62410ab05cccca2dc71ec44ba8ef29916a0090df06
 
 inherit pypi python_flit_core ptest
 
+PYPI_ARCHIVE_NAME = "${PYPI_PACKAGE}"
+
 SRC_URI += " \
 	file://run-ptest \
 "

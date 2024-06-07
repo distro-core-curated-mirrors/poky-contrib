@@ -6,7 +6,9 @@ and the messy, low-level world of C."
 SECTION = "devel/python"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=61c3ee8961575861fa86c7e62bc9f69c"
+
 PYPI_PACKAGE = "Cython"
+PYPI_ARCHIVE_NAME = "${PYPI_PACKAGE}"
 
 SRC_URI[sha256sum] = "dcc96739331fb854dcf503f94607576cfe8488066c61ca50dfd55836f132de99"
 

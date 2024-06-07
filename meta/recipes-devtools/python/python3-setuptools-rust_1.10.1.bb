@@ -15,6 +15,8 @@ PYPI_PACKAGE = "setuptools_rust"
 
 inherit cargo pypi python_setuptools_build_meta
 
+PYPI_ARCHIVE_NAME = "${PYPI_PACKAGE}"
+
 DEPENDS += "python3-setuptools-scm-native python3-wheel-native"
 
 RDEPENDS:${PN} += " \

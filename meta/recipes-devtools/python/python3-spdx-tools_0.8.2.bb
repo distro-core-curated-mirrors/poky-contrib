@@ -10,6 +10,8 @@ BBCLASSEXTEND = "native nativesdk"
 
 inherit pypi python_setuptools_build_meta
 
+PYPI_ARCHIVE_NAME = "${PYPI_PACKAGE}"
+
 DEPENDS += "python3-setuptools-scm-native"
 
 # Dependency required for pyspdxtools : python3-click

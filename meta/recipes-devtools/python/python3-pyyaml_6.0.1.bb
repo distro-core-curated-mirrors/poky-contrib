@@ -6,6 +6,7 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=6d8242660a8371add5fe547adf083079"
 
 PYPI_PACKAGE = "PyYAML"
+PYPI_ARCHIVE_NAME = "${PYPI_PACKAGE}"
 
 inherit pypi python_setuptools_build_meta
 

@@ -8,6 +8,7 @@ SRC_URI += " file://0001-Fix-man-page-installation.patch"
 SRC_URI[sha256sum] = "d8b617f6610a73e46509de70dcf82f76861b79762ff602d546f4e80918ec81f3"
 
 PYPI_PACKAGE = "SCons"
+PYPI_ARCHIVE_NAME = "${PYPI_PACKAGE}"
 
 inherit pypi python_setuptools_build_meta
 

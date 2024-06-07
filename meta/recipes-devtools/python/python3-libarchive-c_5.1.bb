@@ -10,6 +10,7 @@ SRC_URI += " \
 "
 
 PYPI_PACKAGE = "libarchive-c"
+PYPI_ARCHIVE_NAME = "${PYPI_PACKAGE}"
 
 inherit pypi setuptools3 ptest
 
