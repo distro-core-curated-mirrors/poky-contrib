@@ -110,6 +110,7 @@ PTESTS_SLOW = "\
     openssl \
     parted \
     perl \
+    python3-asyncssh \
     python3-cryptography \
     python3 \
     python3-click \
