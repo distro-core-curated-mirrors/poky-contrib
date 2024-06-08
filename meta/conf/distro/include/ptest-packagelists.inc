@@ -27,6 +27,7 @@ PTESTS_FAST = "\
     gzip \
     json-c \
     json-glib \
+    kirk \
     libconvert-asn1-perl \
     libgpg-error\
     libnl \
