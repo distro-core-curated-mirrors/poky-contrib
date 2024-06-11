@@ -7,12 +7,24 @@ SRC_URI[sha256sum] = "bf1dcf6450f873a13e952a29504887c89e6de7506209e5b1bcc3460135
 
 DEPENDS += "python3-setuptools-scm-native"
 
-inherit pypi python_setuptools_build_meta
+inherit pypi python_setuptools_build_meta ptest
 
 DEPENDS += "python3-toml-native"
+
+SRC_URI += "file://run-ptest"
 
 RDEPENDS:${PN} += "python3-compression \
                    python3-math \
                    python3-more-itertools"
+
+RDEPENDS:${PN}-ptest += " \
+    python3-pytest \
+    python3-unittest-automake-output \
+"
+
+do_install_ptest() {
+    install -d ${D}${PTEST_PATH}/tests
+    cp -rf ${S}/tests/* ${D}${PTEST_PATH}/tests/
+}
 
 BBCLASSEXTEND = "native nativesdk"

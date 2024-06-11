@@ -73,6 +73,7 @@ PTESTS_FAST = "\
     python3-trove-classifiers \
     python3-wcwidth \
     python3-webcolors \
+    python3-zipp \
     qemu \
     quilt \
     sed \
