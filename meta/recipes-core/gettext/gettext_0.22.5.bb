@@ -44,7 +44,6 @@ EXTRA_OECONF += "--without-lispdir \
                  --without-cvs \
                  --without-git \
                  --without-included-libcroco \
-                 --cache-file=${B}/config.cache \
                 "
 EXTRA_OECONF:append:class-target = " \
                  --with-bisonlocaledir=${datadir}/locale \
