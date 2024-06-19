@@ -57,7 +57,11 @@ export CXXFLAGS_FOR_BUILD="${BUILD_CXXFLAGS}"
 export LD_FOR_BUILD = "${BUILD_LD}"
 export LDFLAGS_FOR_BUILD = "${BUILD_LDFLAGS}"
 
-CONFIGUREOPTS = " --build=${BUILD_SYS} \
+AUTOTOOLS_CACHE ?= "--config-cache"
+
+CONFIGUREOPTS = " \
+		  ${AUTOTOOLS_CACHE} \
+		  --build=${BUILD_SYS} \
 		  --host=${HOST_SYS} \
 		  --target=${TARGET_SYS} \
 		  --prefix=${prefix} \
@@ -250,3 +254,12 @@ autotools_do_install() {
 EXPORT_FUNCTIONS do_configure do_compile do_install
 
 B = "${WORKDIR}/build"
+
+# i think?
+BUILDHISTORY_PRESERVE += "config.cache"
+
+buildhistory_emit_buildconfig() {
+	if test -f ${B}/config.cache ; then
+		cp -f ${B}/config.cache ${BUILDHISTORY_DIR_PACKAGE}/
+	fi
+}

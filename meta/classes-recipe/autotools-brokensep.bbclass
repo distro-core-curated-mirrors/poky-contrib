@@ -9,3 +9,7 @@
 # this.
 inherit autotools
 B = "${S}"
+
+autotools_do_configure:prepend() {
+    rm -f ${B}/config.cache
+}
