@@ -1022,3 +1022,12 @@ def write_latest_ptest_result(d, histdir):
                     bb.error('Failed to run %s!' % cmd)
         finally:
             bb.utils.unlockfile(lock)
+
+
+
+do_configure[postfuncs] += "buildhistory_emit_buildconfig"
+do_configure[vardepsexclude] += "buildhistory_emit_buildconfig"
+
+buildhistory_emit_buildconfig() {
+    :
+}
