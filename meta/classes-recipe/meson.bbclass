@@ -186,3 +186,9 @@ meson_do_install() {
 }
 
 EXPORT_FUNCTIONS do_configure do_compile do_install
+
+BUILDHISTORY_PRESERVE += "config.meson"
+
+buildhistory_emit_buildconfig() {
+    meson introspect ${B} --buildoptions --indent >${BUILDHISTORY_DIR_PACKAGE}/config.meson
+}
