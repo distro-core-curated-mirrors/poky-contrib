@@ -19,6 +19,8 @@ GCCPIE ??= ""
 
 SYMVERS_CONF ?= "--enable-symvers=gnu"
 
+AUTOTOOLS_CACHE = ""
+
 EXTRA_OECONF = "\
     ${@['--enable-clocale=generic', ''][d.getVar('USE_NLS') != 'no']} \
     --with-gnu-ld \
