@@ -359,3 +359,6 @@ do_install_ptest:append:libc-musl() {
         rm -rf ${D}${PTEST_PATH}/$t
     done
 }
+
+inherit recipe-upgrade-additional-rename
+RECIPE_UPGRADE_ADDITIONAL_RENAME = "util-linux-libuuid_{pv}.bb"
