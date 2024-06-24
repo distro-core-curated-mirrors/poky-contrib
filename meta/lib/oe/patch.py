@@ -675,7 +675,7 @@ class QuiltTree(PatchSet):
 
             # determine which patches are applied -> self._current
             try:
-                output = self.run_quilt(["applied", self.dir])
+                output = self.run_quilt(["applied"])
             except subprocess.CalledProcessError:
                 import sys
                 if sys.exc_value.output.strip() == "No patches applied":
