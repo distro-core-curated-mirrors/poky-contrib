@@ -306,10 +306,9 @@ class GitApplyTree(PatchTree):
             self._initRepo()
 
     def _isInitialized(self, d):
-        cmd = "git rev-parse --show-toplevel"
         try:
-            output = runcmd(cmd.split(), self.dir).strip()
-        except CmdError as err:
+            output = runcmd(["git", "rev-parse", "--show-toplevel"], self.dir).strip()
+        except CmdError:
             ## runcmd returned non-zero which most likely means 128
             ## Not a git directory
             return False
@@ -317,9 +316,9 @@ class GitApplyTree(PatchTree):
         return os.path.samefile(output, self.dir) or oe.path.is_path_parent(d.getVar('WORKDIR'), output)
 
     def _initRepo(self):
-        runcmd("git init".split(), self.dir)
-        runcmd("git add .".split(), self.dir)
-        runcmd("git commit -a --allow-empty -m bitbake_patching_started".split(), self.dir)
+        runcmd(["git", "init"], self.dir)
+        runcmd(["git", "add", "."], self.dir)
+        runcmd(["git", "commit", "-a", "--allow-empty", "-m", "bitbake_patching_started"], self.dir)
 
     @staticmethod
     def extractPatchHeader(patchfile):
@@ -427,8 +426,8 @@ class GitApplyTree(PatchTree):
         outlines, author, date, subject = GitApplyTree.interpretPatchHeader(lines)
         if not author or not subject or not date:
             try:
-                shellcmd = ["git", "log", "--format=email", "--follow", "--diff-filter=A", "--", patchfile]
-                out = runcmd(["sh", "-c", " ".join(shellcmd)], os.path.dirname(patchfile))
+                cmd = ["git", "log", "--format=email", "--follow", "--diff-filter=A", "--", patchfile]
+                out = runcmd(cmd, dir=os.path.dirname(patchfile))
             except CmdError:
                 out = None
             if out:
@@ -520,7 +519,7 @@ class GitApplyTree(PatchTree):
                 if paths:
                     shellcmd.append('--')
                     shellcmd.extend(paths)
-                out = runcmd(["sh", "-c", " ".join(shellcmd)], os.path.join(tree, name))
+                out = runcmd(shellcmd, dir=os.path.join(tree, name))
                 if out:
                     for srcfile in out.split():
                         # This loop, which is used to remove any line that
@@ -573,15 +572,13 @@ class GitApplyTree(PatchTree):
     def _commitpatch(self, patch):
         output = ""
         # Add all files
-        shellcmd = ["git", "add", "-f", "-A", "."]
-        output += runcmd(["sh", "-c", " ".join(shellcmd)], self.dir)
+        output += runcmd(["git", "add", "-f", "-A", "."], self.dir)
         # Exclude the patches directory
-        shellcmd = ["git", "reset", "HEAD", self.patchdir]
-        output += runcmd(["sh", "-c", " ".join(shellcmd)], self.dir)
+        output += runcmd(["git", "reset", "HEAD", self.patchdir], self.dir)
         # Commit the result
         (tmpfile, shellcmd) = self.prepareCommit(patch['file'], self.commituser, self.commitemail)
         try:
-            output += runcmd(["sh", "-c", " ".join(shellcmd)], self.dir)
+            output += runcmd(shellcmd, self.dir)
         finally:
             os.remove(tmpfile)
         return output
@@ -595,12 +592,12 @@ class GitApplyTree(PatchTree):
 
             shellcmd.append(patch['file'])
 
-            if not run:
-                return "sh" + "-c" + " ".join(shellcmd)
+            if run:
+                return runcmd(shellcmd, self.dir)
+            else:
+                return shellcmd
 
-            return runcmd(["sh", "-c", " ".join(shellcmd)], self.dir)
-
-        reporoot = (runcmd("git rev-parse --show-toplevel".split(), self.dir) or '').strip()
+        reporoot = (runcmd(["git", "rev-parse", "--show-toplevel"], self.dir) or '').strip()
         if not reporoot:
             raise Exception("Cannot get repository root for directory %s" % self.dir)
 
@@ -627,16 +624,13 @@ class GitApplyTree(PatchTree):
             except CmdError:
                 # Need to abort the git am, or we'll still be within it at the end
                 try:
-                    shellcmd = ["git", "--work-tree=%s" % reporoot, "am", "--abort"]
-                    runcmd(["sh", "-c", " ".join(shellcmd)], self.dir)
+                    runcmd(["git", "--work-tree=%s" % reporoot, "am", "--abort"], self.dir)
                 except CmdError:
                     pass
                 # git am won't always clean up after itself, sadly, so...
-                shellcmd = ["git", "--work-tree=%s" % reporoot, "reset", "--hard", "HEAD"]
-                runcmd(["sh", "-c", " ".join(shellcmd)], self.dir)
+                runcmd(["git", "--work-tree=%s" % reporoot, "reset", "--hard", "HEAD"], self.dir)
                 # Also need to take care of any stray untracked files
-                shellcmd = ["git", "--work-tree=%s" % reporoot, "clean", "-f"]
-                runcmd(["sh", "-c", " ".join(shellcmd)], self.dir)
+                runcmd(["git", "--work-tree=%s" % reporoot, "clean", "-f"], self.dir)
 
                 # Fall back to git apply
                 shellcmd = ["git", "--git-dir=%s" % reporoot, "apply", "-p%s" % patch['strippath']]
@@ -834,7 +828,7 @@ class UserResolver(Resolver):
         os.chdir(self.patchset.dir)
         try:
             self.patchset.Push(False)
-        except CmdError as v:
+        except CmdError:
             # Patch application failed
             patchcmd = self.patchset.Push(True, False, False)
 
