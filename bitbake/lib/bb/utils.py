@@ -390,7 +390,10 @@ def _print_exception(t, value, tb, realfile, text, context):
         # the output (which hopefully includes stderr).
         if isinstance(value, subprocess.CalledProcessError) and value.output:
             error.append("Subprocess output:")
-            error.append(value.output.decode("utf-8", errors="ignore"))
+            if isinstance(value.output, str):
+                error.append(value)
+            else:
+                error.append(value.output.decode("utf-8", errors="ignore"))
     finally:
         logger.error("\n".join(error))
 
