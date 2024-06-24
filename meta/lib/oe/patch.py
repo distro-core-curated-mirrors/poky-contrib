@@ -17,47 +17,15 @@ class NotFoundError(bb.BBHandledException):
     def __str__(self):
         return "Error: %s not found." % self.path
 
-class CmdError(bb.BBHandledException):
-    def __init__(self, command, exitstatus, output):
-        self.command = command
-        self.status = exitstatus
-        self.output = output
+def runcmd(cmd, dir=None):
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, cwd=dir, check=True, universal_newlines=True)
 
-    def __str__(self):
-        return "Command Error: '%s' exited with %d  Output:\n%s" % \
-                (self.command, self.status, self.output)
+    if " fuzz " in proc.stdout and "Hunk " in proc.stdout:
+        # Drop patch fuzz info with header and footer to log file so
+        # insane.bbclass can handle to throw error/warning
+        bb.note("--- Patch fuzz start ---\n%s\n--- Patch fuzz end ---" % format(stdout))
 
-
-def runcmd(args, dir = None):
-    if dir:
-        olddir = os.path.abspath(os.curdir)
-        if not os.path.exists(dir):
-            raise NotFoundError(dir)
-        os.chdir(dir)
-        # print("cwd: %s -> %s" % (olddir, dir))
-
-    try:
-        args = [ shlex.quote(str(arg)) for arg in args ]
-        cmd = " ".join(args)
-        # print("cmd: %s" % cmd)
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        stdout, stderr = proc.communicate()
-        stdout = stdout.decode('utf-8')
-        stderr = stderr.decode('utf-8')
-        exitstatus = proc.returncode
-        if exitstatus != 0:
-            raise CmdError(cmd, exitstatus >> 8, "stdout: %s\nstderr: %s" % (stdout, stderr))
-        if " fuzz " in stdout and "Hunk " in stdout:
-            # Drop patch fuzz info with header and footer to log file so
-            # insane.bbclass can handle to throw error/warning
-            bb.note("--- Patch fuzz start ---\n%s\n--- Patch fuzz end ---" % format(stdout))
-
-        return stdout
-
-    finally:
-        if dir:
-            os.chdir(olddir)
-
+    return proc.stdout
 
 class PatchError(Exception):
     def __init__(self, msg):
@@ -247,7 +215,7 @@ class PatchTree(PatchSet):
 
             shellcmd.pop(len(shellcmd) - 1)
             output = runcmd(["sh", "-c", " ".join(shellcmd)], self.dir)
-        except CmdError as err:
+        except subprocess.CalledProcessError as err:
             raise bb.BBHandledException("Applying '%s' failed:\n%s" %
                                         (os.path.basename(patch['file']), err.output))
 
@@ -308,7 +276,7 @@ class GitApplyTree(PatchTree):
     def _isInitialized(self, d):
         try:
             output = runcmd(["git", "rev-parse", "--show-toplevel"], self.dir).strip()
-        except CmdError:
+        except subprocess.CalledProcessError:
             ## runcmd returned non-zero which most likely means 128
             ## Not a git directory
             return False
@@ -428,7 +396,7 @@ class GitApplyTree(PatchTree):
             try:
                 cmd = ["git", "log", "--format=email", "--follow", "--diff-filter=A", "--", patchfile]
                 out = runcmd(cmd, dir=os.path.dirname(patchfile))
-            except CmdError:
+            except subprocess.CalledProcessError:
                 out = None
             if out:
                 _, newauthor, newdate, newsubject = GitApplyTree.interpretPatchHeader(out.splitlines())
@@ -485,7 +453,7 @@ class GitApplyTree(PatchTree):
         try:
             note = runcmd(["git", "notes", "--ref", GitApplyTree.notes_ref, "show", ref], repo)
             prefix = ""
-        except CmdError:
+        except subprocess.CalledProcessError:
             note = runcmd(['git', 'show', '-s', '--format=%B', ref], repo)
             prefix = "%% "
 
@@ -607,7 +575,7 @@ class GitApplyTree(PatchTree):
                 # Check dirtyness of the tree
                 try:
                     output = runcmd(["git", "--work-tree=%s" % reporoot, "status", "--short"])
-                except CmdError:
+                except subprocess.CalledProcessError:
                     pass
                 else:
                     if output:
@@ -621,11 +589,11 @@ class GitApplyTree(PatchTree):
                 self.gitCommandUserOptions(shellcmd, self.commituser, self.commitemail)
                 shellcmd += ["am", "-3", "--keep-cr", "--no-scissors", "-p%s" % patch['strippath']]
                 return _applypatchhelper(shellcmd, patch, force, reverse, run)
-            except CmdError:
+            except subprocess.CalledProcessError:
                 # Need to abort the git am, or we'll still be within it at the end
                 try:
                     runcmd(["git", "--work-tree=%s" % reporoot, "am", "--abort"], self.dir)
-                except CmdError:
+                except subprocess.CalledProcessError:
                     pass
                 # git am won't always clean up after itself, sadly, so...
                 runcmd(["git", "--work-tree=%s" % reporoot, "reset", "--hard", "HEAD"], self.dir)
@@ -636,7 +604,7 @@ class GitApplyTree(PatchTree):
                 shellcmd = ["git", "--git-dir=%s" % reporoot, "apply", "-p%s" % patch['strippath']]
                 try:
                     output = _applypatchhelper(shellcmd, patch, force, reverse, run)
-                except CmdError:
+                except subprocess.CalledProcessError:
                     # Fall back to patch
                     output = PatchTree._applypatch(self, patch, force, reverse, run)
                 output += self._commitpatch(patch)
@@ -698,7 +666,7 @@ class QuiltTree(PatchSet):
             # determine which patches are applied -> self._current
             try:
                 output = self.run_quilt(["applied"])
-            except CmdError:
+            except subprocess.CalledProcessError:
                 import sys
                 if sys.exc_value.output.strip() == "No patches applied":
                     return
@@ -828,7 +796,7 @@ class UserResolver(Resolver):
         os.chdir(self.patchset.dir)
         try:
             self.patchset.Push(False)
-        except CmdError:
+        except subprocess.CalledProcessError:
             # Patch application failed
             patchcmd = self.patchset.Push(True, False, False)
 
