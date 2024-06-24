@@ -628,11 +628,13 @@ class GitApplyTree(PatchTree):
 
 
 class QuiltTree(PatchSet):
-    def _runcmd(self, args, run = True):
+    def run_quilt(self, args, run=True):
         quiltrc = self.d.getVar('QUILTRCFILE')
-        if not run:
-            return ["quilt"] + ["--quiltrc"] + [quiltrc] + args
-        runcmd(["quilt"] + ["--quiltrc"] + [quiltrc] + args, self.dir)
+        cmd = ["quilt"] + ["--quiltrc"] + [quiltrc] + args
+        if run:
+            runcmd(cmd, dir=self.dir)
+        else:
+            return cmd
 
     def _quiltpatchpath(self, file):
         return os.path.join(self.dir, "patches", os.path.basename(file))
@@ -649,7 +651,7 @@ class QuiltTree(PatchSet):
         try:
             # make sure that patches/series file exists before quilt pop to keep quilt-0.67 happy
             open(os.path.join(self.dir, "patches","series"), 'a').close()
-            self._runcmd(["pop", "-a", "-f"])
+            self.run_quilt(["pop", "-a", "-f"])
             oe.path.remove(os.path.join(self.dir, "patches","series"))
         except Exception:
             pass
@@ -673,7 +675,7 @@ class QuiltTree(PatchSet):
 
             # determine which patches are applied -> self._current
             try:
-                output = self._runcmd(["applied"], self.dir)
+                output = self.run_quilt(["applied", self.dir])
             except subprocess.CalledProcessError:
                 import sys
                 if sys.exc_value.output.strip() == "No patches applied":
@@ -712,9 +714,9 @@ class QuiltTree(PatchSet):
         if all:
             args.append("-a")
         if not run:
-            return self._runcmd(args, run)
+            return self.run_quilt(args, run)
 
-        self._runcmd(args)
+        self.run_quilt(args)
 
         if self._current is not None:
             self._current = self._current + 1
@@ -729,7 +731,7 @@ class QuiltTree(PatchSet):
         if all:
             args.append("-a")
 
-        self._runcmd(args)
+        self.run_quilt(args)
 
         if self._current == 0:
             self._current = None
@@ -758,7 +760,7 @@ class QuiltTree(PatchSet):
                 args.append(os.path.basename(kwargs["quiltfile"]))
             elif kwargs.get("patch"):
                 args.append(os.path.basename(self.patches[kwargs["patch"]]["quiltfile"]))
-            self._runcmd(args)
+            self.run_quilt(args)
 
 class Resolver(object):
     def __init__(self, patchset, terminal):
