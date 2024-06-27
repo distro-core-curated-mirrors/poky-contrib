@@ -73,6 +73,7 @@ PTESTS_FAST = "\
     python3-pyyaml \
     python3-rpds-py \
     python3-trove-classifiers \
+    python3-typeguard \
     python3-wcwidth \
     python3-webcolors \
     qemu \
