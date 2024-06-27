@@ -11,4 +11,20 @@ PYPI_PACKAGE = "importlib_metadata"
 DEPENDS += "python3-setuptools-scm-native"
 RDEPENDS:${PN} += "python3-zipp python3-typing-extensions"
 
+inherit ptest
+
+SRC_URI += " \
+    file://run-ptest \
+"
+
+RDEPENDS:${PN}-ptest += " \
+    python3-pytest \
+    python3-unittest-automake-output \
+"
+
+do_install_ptest() {
+    install -d ${D}${PTEST_PATH}/tests
+    cp -rf ${S}/tests/* ${D}${PTEST_PATH}/tests/
+}
+
 BBCLASSEXTEND = "native nativesdk"
