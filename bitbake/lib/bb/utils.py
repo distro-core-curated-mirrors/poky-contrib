@@ -550,9 +550,9 @@ def md5_file(filename):
     """
     import hashlib
     try:
-        sig = hashlib.new('MD5', usedforsecurity=False)
+        sig = hashlib.new('MD5', usedforsecurity=False) # novermin
     except TypeError:
-        # Some configurations don't appear to support two arguments
+        # usedforsecurity is Python 3.9+
         sig = hashlib.new('MD5')
     return _hasher(sig, filename)
 

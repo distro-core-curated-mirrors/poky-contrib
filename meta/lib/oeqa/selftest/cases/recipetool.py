@@ -31,7 +31,7 @@ def tearDownModule():
 def needTomllib(test):
     # This test require python 3.11 or above for the tomllib module or tomli module to be installed
     try:
-        import tomllib
+        import tomllib # novermin
     except ImportError:
         try:
             import tomli

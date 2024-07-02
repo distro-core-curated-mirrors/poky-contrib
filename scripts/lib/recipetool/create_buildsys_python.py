@@ -821,7 +821,7 @@ class PythonPyprojectTomlRecipeHandler(PythonRecipeHandler):
 
         try:
             try:
-                import tomllib
+                import tomllib # novermin
             except ImportError:
                 try:
                     import tomli as tomllib
