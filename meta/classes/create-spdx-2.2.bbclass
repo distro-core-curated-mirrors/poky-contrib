@@ -259,7 +259,7 @@ def collect_dep_recipes(d, doc, spdx_recipe):
     import oe.spdx
 
     deploy_dir_spdx = Path(d.getVar("DEPLOY_DIR_SPDX"))
-    package_archs = d.getVar("SSTATE_ARCHS").split()
+    package_archs = d.getVar("ALL_MULTILIB_SSTATE_ARCHS").split()
     package_archs.reverse()
 
     dep_recipes = []
@@ -304,7 +304,7 @@ def collect_dep_recipes(d, doc, spdx_recipe):
 
     return dep_recipes
 
-collect_dep_recipes[vardepsexclude] = "SSTATE_ARCHS"
+collect_dep_recipes[vardepsexclude] = "ALL_MULTILIB_SSTATE_ARCHS"
 
 def collect_dep_sources(d, dep_recipes):
     import oe.sbom
@@ -600,7 +600,7 @@ python do_create_runtime_spdx() {
 
     providers = collect_package_providers(d)
     pkg_arch = d.getVar("SSTATE_PKGARCH")
-    package_archs = d.getVar("SSTATE_ARCHS").split()
+    package_archs = d.getVar("ALL_MULTILIB_SSTATE_ARCHS").split()
     package_archs.reverse()
 
     if not is_native:
@@ -706,7 +706,7 @@ python do_create_runtime_spdx() {
             oe.sbom.write_doc(d, runtime_doc, pkg_arch, "runtime", spdx_deploy, indent=get_json_indent(d))
 }
 
-do_create_runtime_spdx[vardepsexclude] += "OVERRIDES SSTATE_ARCHS"
+do_create_runtime_spdx[vardepsexclude] += "OVERRIDES ALL_MULTILIB_SSTATE_ARCHS"
 
 addtask do_create_runtime_spdx after do_create_spdx before do_build do_rm_work
 SSTATETASKS += "do_create_runtime_spdx"
@@ -787,7 +787,7 @@ def combine_spdx(d, rootfs_name, rootfs_deploydir, rootfs_spdxid, packages, spdx
     import bb.compress.zstd
 
     providers = collect_package_providers(d)
-    package_archs = d.getVar("SSTATE_ARCHS").split()
+    package_archs = d.getVar("ALL_MULTILIB_SSTATE_ARCHS").split()
     package_archs.reverse()
 
     creation_time = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -939,4 +939,4 @@ def combine_spdx(d, rootfs_name, rootfs_deploydir, rootfs_spdxid, packages, spdx
 
             tar.addfile(info, fileobj=index_str)
 
-combine_spdx[vardepsexclude] += "BB_NUMBER_THREADS SSTATE_ARCHS"
+combine_spdx[vardepsexclude] += "BB_NUMBER_THREADS ALL_MULTILIB_SSTATE_ARCHS"
