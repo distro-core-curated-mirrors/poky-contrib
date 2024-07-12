@@ -451,7 +451,7 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
         wicimg = wicout[0]
 
         # verify partition size with wic
-        res = runCmd("parted -m %s unit b p 2>/dev/null" % wicimg)
+        res = runCmd("parted -m %s unit b p 2>/dev/null" % wicimg, native_sysroot=self.wic_native_sysroot)
 
         # parse parted output which looks like this:
         # BYT;\n
@@ -473,7 +473,7 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
         # Test partition 1, should contain the normal root directories, except
         # /usr.
         res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % \
-                            os.path.join(self.resultdir, "selftest_img.part1"))
+                            os.path.join(self.resultdir, "selftest_img.part1"), native_sysroot=self.wic_native_sysroot)
         files = extract_files(res.output)
         self.assertIn("etc", files)
         self.assertNotIn("usr", files)
@@ -481,7 +481,7 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
         # Partition 2, should contain common directories for /usr, not root
         # directories.
         res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % \
-                            os.path.join(self.resultdir, "selftest_img.part2"))
+                            os.path.join(self.resultdir, "selftest_img.part2"), native_sysroot=self.wic_native_sysroot)
         files = extract_files(res.output)
         self.assertNotIn("etc", files)
         self.assertNotIn("usr", files)
@@ -490,14 +490,14 @@ part /etc --source rootfs --ondisk mmcblk0 --fstype=ext4 --exclude-path bin/ --r
         # Partition 3, should contain the same as partition 2, including the bin
         # directory, but not the files inside it.
         res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % \
-                            os.path.join(self.resultdir, "selftest_img.part3"))
+                            os.path.join(self.resultdir, "selftest_img.part3"), native_sysroot=self.wic_native_sysroot)
         files = extract_files(res.output)
         self.assertNotIn("etc", files)
         self.assertNotIn("usr", files)
         self.assertIn("share", files)
         self.assertIn("bin", files)
         res = runCmd("debugfs -R 'ls -p bin' %s 2>/dev/null" % \
-                            os.path.join(self.resultdir, "selftest_img.part3"))
+                            os.path.join(self.resultdir, "selftest_img.part3"), native_sysroot=self.wic_native_sysroot)
         files = extract_files(res.output)
         self.assertIn(".", files)
         self.assertIn("..", files)
@@ -529,13 +529,13 @@ part /part2 --source rootfs --ondisk mmcblk0 --fstype=ext4 --include-path %s"""
         part2 = glob(os.path.join(self.resultdir, 'temp-*.direct.p2'))[0]
 
         # Test partition 1, should not contain 'test-file'
-        res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % (part1))
+        res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % (part1), native_sysroot=self.wic_native_sysroot)
         files = extract_files(res.output)
         self.assertNotIn('test-file', files)
         self.assertEqual(True, files_own_by_root(res.output))
 
         # Test partition 2, should contain 'test-file'
-        res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % (part2))
+        res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % (part2), native_sysroot=self.wic_native_sysroot)
         files = extract_files(res.output)
         self.assertIn('test-file', files)
         self.assertEqual(True, files_own_by_root(res.output))
@@ -558,12 +558,12 @@ part / --source rootfs  --fstype=ext4 --include-path %s --include-path core-imag
 
         part1 = glob(os.path.join(self.resultdir, 'temp-*.direct.p1'))[0]
 
-        res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % (part1))
+        res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % (part1), native_sysroot=self.wic_native_sysroot)
         files = extract_files(res.output)
         self.assertIn('test-file', files)
         self.assertEqual(True, files_own_by_root(res.output))
 
-        res = runCmd("debugfs -R 'ls -p /export/etc/' %s 2>/dev/null" % (part1))
+        res = runCmd("debugfs -R 'ls -p /export/etc/' %s 2>/dev/null" % (part1), native_sysroot=self.wic_native_sysroot)
         files = extract_files(res.output)
         self.assertIn('passwd', files)
         self.assertEqual(True, files_own_by_root(res.output))
@@ -644,7 +644,7 @@ part /etc --source rootfs --fstype=ext4 --change-directory=etc
                                     % (wks_file, self.resultdir))
 
             for part in glob(os.path.join(self.resultdir, 'temp-*.direct.p*')):
-                res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % (part))
+                res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % (part), native_sysroot=self.wic_native_sysroot)
                 self.assertEqual(True, files_own_by_root(res.output))
 
             config = 'IMAGE_FSTYPES += "wic"\nWKS_FILE = "%s"\n' % wks_file
@@ -654,7 +654,7 @@ part /etc --source rootfs --fstype=ext4 --change-directory=etc
 
             # check each partition for permission
             for part in glob(os.path.join(tmpdir, 'temp-*.direct.p*')):
-                res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % (part))
+                res = runCmd("debugfs -R 'ls -p' %s 2>/dev/null" % (part), native_sysroot=self.wic_native_sysroot)
                 self.assertTrue(files_own_by_root(res.output)
                     ,msg='Files permission incorrect using wks set "%s"' % test)
 
