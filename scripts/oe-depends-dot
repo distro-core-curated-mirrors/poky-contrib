@@ -31,7 +31,7 @@ class Dot(object):
             help = "Remove duplicated dependencies to reduce the size of the dot files."
                     " For example, A->B, B->C, A->C, then A->C can be removed.",
             action="store_true", default=False)
-
+        parser.add_argument("-l", "--leaf", action="store_true")
         parser.epilog = """
 Examples:
 First generate the .dot file:
@@ -126,6 +126,30 @@ Reduce the .dot file packages only, no tasks:
                 else:
                     depends[key] = set()
                     depends[key].add(dep)
+
+        if self.args.leaf:
+            nodes = set(r.replace("-native", "").replace("nativesdk-", "") for r in depends.keys())
+            for key,deps in depends.items():
+                if key == "meta-world-pkgdata":# or key.startswith("packagegroup-"):
+                    try:
+                        nodes.remove(key)
+                    except KeyError:
+                        pass
+                    continue
+
+                if key.startswith("nativesdk-") or key.endswith("-native"):
+                    key = key.replace("-native", "").replace("nativesdk-", "")
+
+                for dep in deps:
+                    try:
+                        if dep.startswith("nativesdk-") or dep.endswith("-native"):
+                            dep = dep.replace("-native", "").replace("nativesdk-", "")
+                        nodes.remove(dep)
+                    except KeyError:
+                        pass
+            print(f"{len(nodes)} recipes with no build dependencies:")
+            for recipe in sorted(nodes):
+                print(recipe)
 
         if self.args.remove:
             reduced_depends = {}
