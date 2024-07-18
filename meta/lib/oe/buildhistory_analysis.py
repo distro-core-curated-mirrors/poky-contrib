@@ -266,21 +266,22 @@ def blob_to_dict(blob):
             adict[splitv[0]] = splitv[1]
     return adict
 
+FileInfo = collections.namedtuple('FileInfo', ['mode', 'user', 'group', 'size', 'name', 'target'])
 
 def file_list_to_dict(lines):
+    # Returns a dictionary of path to FileInfo tuples
     adict = {}
     for line in lines:
         # Leave the last few fields intact so we handle file names containing spaces
-        splitv = line.split(None,4)
+        mode, user, group, size, path = line.split(None, 4)
         # Grab the path and remove the leading .
-        path = splitv[4][1:].strip()
+        path = path[1:].strip()
         # Handle symlinks
+        target = None
         if(' -> ' in path):
             target = path.split(' -> ')[1]
             path = path.split(' -> ')[0]
-            adict[path] = splitv[0:3] + [target]
-        else:
-            adict[path] = splitv[0:3]
+        adict[path] = FileInfo(mode, user, group, size, path, target)
     return adict
 
 numeric_removal = str.maketrans('0123456789', 'XXXXXXXXXX')
