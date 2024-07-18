@@ -214,6 +214,7 @@ class FileChange:
     changetype_ownergroup = 'O'
     changetype_link = 'L'
     changetype_move = 'M'
+    changetype_total_size = "TS"
 
     def __init__(self, path, changetype, oldvalue = None, newvalue = None):
         self.path = path
@@ -254,6 +255,8 @@ class FileChange:
             return '%s changed symlink target from %s to %s' % (self.path, self.oldvalue, self.newvalue)
         elif self.changetype == self.changetype_move:
             return '%s moved to %s' % (self.path, self.oldvalue)
+        elif self.changetype == self.changetype_total_size:
+            return 'Total size changed from %s to %s' % (self.oldvalue, self.newvalue)
         else:
             return '%s changed (unknown)' % self.path
 
@@ -290,9 +293,20 @@ numeric_removal = str.maketrans('0123456789', 'XXXXXXXXXX')
 def compare_file_lists(alines, blines, compare_ownership=True):
     adict = file_list_to_dict(alines)
     bdict = file_list_to_dict(blines)
+    old_size = 0
+    new_size = 0
     filechanges = []
     additions = []
     removals = []
+
+    for info in adict.values():
+        old_size += info.size
+    for info in bdict.values():
+        new_size += info.size
+    if old_size != new_size:
+        filechanges.append(FileChange(None, FileChange.changetype_total_size, old_size, new_size))
+
+    print(f"got sysroot sizes {old_size=} {new_size=}")
 
     for path, info in adict.items():
         newinfo = bdict.pop(path, None)
