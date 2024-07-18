@@ -276,6 +276,7 @@ def file_list_to_dict(lines):
         mode, user, group, size, path = line.split(None, 4)
         # Grab the path and remove the leading .
         path = path[1:].strip()
+        size = int(size)
         # Handle symlinks
         target = None
         if(' -> ' in path):
