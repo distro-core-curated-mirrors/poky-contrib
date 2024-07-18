@@ -292,35 +292,33 @@ def compare_file_lists(alines, blines, compare_ownership=True):
     filechanges = []
     additions = []
     removals = []
-    for path, splitv in adict.items():
-        newsplitv = bdict.pop(path, None)
-        if newsplitv:
+
+    for path, info in adict.items():
+        newinfo = bdict.pop(path, None)
+        if newinfo:
             # Check type
-            oldvalue = splitv[0][0]
-            newvalue = newsplitv[0][0]
+            oldvalue = info.mode[0]
+            newvalue = newinfo.mode[0]
             if oldvalue != newvalue:
                 filechanges.append(FileChange(path, FileChange.changetype_type, oldvalue, newvalue))
 
             # Check permissions
-            oldvalue = splitv[0][1:]
-            newvalue = newsplitv[0][1:]
+            oldvalue = info.mode[1:]
+            newvalue = newinfo.mode[1:]
             if oldvalue != newvalue:
                 filechanges.append(FileChange(path, FileChange.changetype_perms, oldvalue, newvalue))
 
             if compare_ownership:
                 # Check owner/group
-                oldvalue = '%s/%s' % (splitv[1], splitv[2])
-                newvalue = '%s/%s' % (newsplitv[1], newsplitv[2])
+                oldvalue = '%s/%s' % (info.user, info.group)
+                newvalue = '%s/%s' % (newinfo.user, newinfo.group)
                 if oldvalue != newvalue:
                     filechanges.append(FileChange(path, FileChange.changetype_ownergroup, oldvalue, newvalue))
 
             # Check symlink target
-            if newsplitv[0][0] == 'l':
-                if len(splitv) > 3:
-                    oldvalue = splitv[3]
-                else:
-                    oldvalue = None
-                newvalue = newsplitv[3]
+            if newinfo.mode[0] == 'l':
+                oldvalue = info.target
+                newvalue = newinfo.target
                 if oldvalue != newvalue:
                     filechanges.append(FileChange(path, FileChange.changetype_link, oldvalue, newvalue))
         else:
