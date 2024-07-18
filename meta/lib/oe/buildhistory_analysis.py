@@ -306,8 +306,6 @@ def compare_file_lists(alines, blines, compare_ownership=True):
     if old_size != new_size:
         filechanges.append(FileChange(None, FileChange.changetype_total_size, old_size, new_size))
 
-    print(f"got sysroot sizes {old_size=} {new_size=}")
-
     for path, info in adict.items():
         newinfo = bdict.pop(path, None)
         if newinfo:
