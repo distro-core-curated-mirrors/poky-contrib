@@ -13,7 +13,7 @@ SETUPTOOLS_BUILD_ARGS ?= ""
 SETUPTOOLS_SETUP_PATH ?= "${S}"
 
 setuptools3_do_configure() {
-    :
+        grep -q 'build-backend' ${S}/pyproject.toml && bbwarn "Found build-backend in ${S}/pyproject.toml" || true
 }
 
 setuptools3_do_compile() {
