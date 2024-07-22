@@ -14,7 +14,7 @@ SRCREV = "eff4ec3d21df38c9d857bcf58aa98437c6610489"
 
 S = "${WORKDIR}/git"
 
-inherit setuptools3
+inherit python_poetry_core
 
 RDEPENDS:${PN} += "python3-asyncio python3-core python3-jinja2 python3-json python3-markdown python3-markupsafe python3-pygments python3-typogrify python3-xml"
 
