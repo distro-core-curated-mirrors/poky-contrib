@@ -39,3 +39,6 @@ RDEPENDS:${PN} += "\
 "
 
 BBCLASSEXTEND = "native nativesdk"
+
+inherit ptest-pydeps
+PTEST_PYDEPS_MODULES = "poetry.core"

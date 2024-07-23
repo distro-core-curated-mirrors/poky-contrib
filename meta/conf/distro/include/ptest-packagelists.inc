@@ -4,57 +4,6 @@
 # ptests which take less than ~30s each
 #
 PTESTS_FAST = "\
-    acl \
-    apr-util \
-    attr \
-    babeltrace \
-    babeltrace2 \
-    bc \
-    bluez5 \
-    busybox \
-    cpio \
-    diffstat \
-    diffutils \
-    ethtool \
-    expat \
-    expect \
-    findutils \
-    flex \
-    gawk \
-    gdbm \
-    gdk-pixbuf \
-    glib-networking \
-    gzip \
-    json-c \
-    json-glib \
-    libconvert-asn1-perl \
-    libexif \
-    libgpg-error\
-    libnl \
-    libpcre \
-    libssh2 \
-    libtest-fatal-perl \
-    libtest-needs-perl \
-    libtest-warnings-perl \
-    libtimedate-perl \
-    libtry-tiny-perl \
-    liburi-perl \
-    libusb1 \
-    libxml-namespacesupport-perl \
-    libxml-parser-perl \
-    libxml-perl \
-    libxml-sax-base-perl \
-    libxml-sax-perl \
-    libxml-simple-perl \
-    libxml2 \
-    libxmlb \
-    logrotate \
-    lua \
-    lzo \
-    m4 \
-    nettle \
-    opkg \
-    popt \
     python3-atomicwrites \
     python3-attrs \
     python3-bcrypt \
@@ -92,13 +41,6 @@ PTESTS_FAST = "\
     python3-webcolors \
     python3-websockets \
     python3-yamllint \
-    qemu \
-    quilt \
-    sed \
-    slang \
-    wayland \
-    xz \
-    zlib \
 "
 PTESTS_FAST:append:libc-glibc = " glibc-y2038-tests"
 PTESTS_PROBLEMS:remove:libc-glibc = "glibc-y2038-tests"

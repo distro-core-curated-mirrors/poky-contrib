@@ -17,3 +17,5 @@ RDEPENDS:${PN} += "\
 "
 
 BBCLASSEXTEND = "native nativesdk"
+
+inherit ptest-pydeps

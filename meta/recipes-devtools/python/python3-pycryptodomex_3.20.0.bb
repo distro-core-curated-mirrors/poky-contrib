@@ -7,3 +7,6 @@ FILES:${PN}-tests = " \
     ${PYTHON_SITEPACKAGES_DIR}/Cryptodome/SelfTest/ \
     ${PYTHON_SITEPACKAGES_DIR}/Cryptodome/SelfTest/__pycache__/ \
 "
+
+inherit ptest-pydeps
+PTEST_PYDEPS_MODULES = "Cryptodome.Cipher Cryptodome.Hash Cryptodome.Protocol Cryptodome.PublicKey Cryptodome.Util Cryptodome.Signature Cryptodome.IO Cryptodome.Math"

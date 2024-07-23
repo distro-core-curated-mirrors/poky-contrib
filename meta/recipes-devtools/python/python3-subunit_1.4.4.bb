@@ -13,3 +13,6 @@ inherit pypi python_setuptools_build_meta
 RDEPENDS:${PN} = " python3-testtools python3-iso8601"
 
 BBCLASSEXTEND = "nativesdk"
+
+inherit ptest-pydeps
+PTEST_PYDEPS_MODULES = "subunit subunit.run"

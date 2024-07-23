@@ -33,3 +33,5 @@ do_install:append:class-native() {
 }
 
 BBCLASSEXTEND = "native"
+
+inherit ptest-pydeps
