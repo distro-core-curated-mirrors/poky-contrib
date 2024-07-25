@@ -19,3 +19,5 @@ RDEPENDS:${PN}:class-target += " \
 "
 
 BBCLASSEXTEND = "native nativesdk"
+
+inherit ptest-pydeps

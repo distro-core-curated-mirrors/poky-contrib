@@ -28,3 +28,6 @@ RDEPENDS:${PN} += "\
   python3-uritools \
   python3-xmltodict \
   "
+
+inherit ptest-pydeps
+PTEST_PYDEPS_MODULES = "spdx_tools.spdx spdx_tools.spdx3"

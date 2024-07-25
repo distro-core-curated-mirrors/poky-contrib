@@ -10,6 +10,9 @@ PYPI_PACKAGE = "pyelftools"
 
 inherit pypi python_setuptools_build_meta
 
+RDEPENDS:${PN} += "python3-debugger python3-pprint"
+
 BBCLASSEXTEND = "native"
 
-RDEPENDS:${PN} += "python3-debugger python3-pprint"
+inherit ptest-pydeps
+PTEST_PYDEPS_MODULES = "elftools"

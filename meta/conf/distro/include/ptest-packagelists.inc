@@ -57,19 +57,34 @@ PTESTS_FAST = "\
     python3-atomicwrites \
     python3-attrs \
     python3-bcrypt \
+    python3-beartype \
     python3-calver \
+    python3-cffi \
+    python3-chardet \
     python3-hypothesis \
     python3-jinja2 \
     python3-jsonpointer \
+    python3-jsonschema \
     python3-license-expression \
     python3-mako \
     python3-markupsafe \
     python3-more-itertools \
+    python3-pathspec \
     python3-pluggy \
+    python3-poetry-core \
+    python3-psutil \
     python3-pyasn1 \
+    python3-pycryptodome \
+    python3-pycryptodomex \
+    python3-pyelftools \
     python3-pytz \
     python3-pyyaml \
     python3-rpds-py \
+    python3-ruamel-yaml \
+    python3-scons \
+    python3-setuptools \
+    python3-spdx-tools \
+    python3-subunit \
     python3-trove-classifiers \
     python3-uritools \
     python3-wcwidth \
@@ -82,6 +97,8 @@ PTESTS_FAST = "\
     xz \
     zlib \
     libexif \
+    python3-websockets \
+    python3-yamllint \
 "
 PTESTS_FAST:append:libc-glibc = " glibc-y2038-tests"
 PTESTS_PROBLEMS:remove:libc-glibc = "glibc-y2038-tests"

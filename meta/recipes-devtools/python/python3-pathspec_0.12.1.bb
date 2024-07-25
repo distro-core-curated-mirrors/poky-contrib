@@ -11,3 +11,5 @@ inherit pypi python_flit_core
 BBCLASSEXTEND = "native nativesdk"
 
 RDEPENDS:${PN} += "python3-profile"
+
+inherit ptest-pydeps
