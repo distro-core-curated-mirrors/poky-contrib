@@ -8,6 +8,13 @@ inherit terminal
 
 DEVSHELL = "${SHELL}"
 
+OE_TERMINAL_EXPORTS:append = " oe_runtask"
+
+oe_runtask() {
+    echo FOO AND BAR
+    echo ${T}
+}
+
 python do_devshell () {
     if d.getVarFlag("do_devshell", "manualfakeroot"):
        d.prependVar("DEVSHELL", "pseudo ")

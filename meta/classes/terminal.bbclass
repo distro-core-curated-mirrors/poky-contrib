@@ -58,6 +58,9 @@ def oe_terminal(command, title, d):
         if value is not None:
             os.environ[export] = str(value)
             envdata.setVar(export, str(value))
+            if export == "oe_runtask":
+                bb.warn("magic casing")
+                envdata.setVarFlag(export, 'func', '1')
             envdata.setVarFlag(export, 'export', '1')
         if export == "PSEUDO_DISABLED":
             if "PSEUDO_UNLOAD" in os.environ:
