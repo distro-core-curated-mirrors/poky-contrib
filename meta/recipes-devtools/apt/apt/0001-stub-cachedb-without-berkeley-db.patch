@@ -1,0 +1,210 @@
+From fc6355e120fe134967f069a353d782ee4260e92f Mon Sep 17 00:00:00 2001
+From: Ross Burton <ross.burton@arm.com>
+Date: Fri, 26 Jul 2024 16:53:41 +0100
+Subject: [PATCH] stub cachedb without berkeley db
+
+Upstream-Status: Inappropriate
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+---
+ CMake/config.h.in            |  3 ++
+ CMakeLists.txt               |  2 +-
+ ftparchive/CMakeLists.txt    | 18 ++++----
+ ftparchive/apt-ftparchive.cc |  1 -
+ ftparchive/cachedb-stub.h    | 81 ++++++++++++++++++++++++++++++++++++
+ ftparchive/writer.cc         |  1 -
+ ftparchive/writer.h          |  6 +++
+ 7 files changed, 102 insertions(+), 10 deletions(-)
+ create mode 100644 ftparchive/cachedb-stub.h
+
+diff --git a/CMake/config.h.in b/CMake/config.h.in
+index e875c37..886e266 100644
+--- a/CMake/config.h.in
++++ b/CMake/config.h.in
+@@ -29,6 +29,9 @@
+ /* Define if we have the seccomp library */
+ #cmakedefine HAVE_SECCOMP
+ 
++/* Define if we have the Berkeley DB library */
++#cmakedefine HAVE_BDB
++
+ /* These two are used by the statvfs shim for glibc2.0 and bsd */
+ /* Define if we have sys/vfs.h */
+ #cmakedefine HAVE_VFS_H
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6548836..805b437 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -85,7 +85,7 @@ add_optional_compile_options(Wsuggest-override)
+ add_optional_compile_options(Werror=suggest-override)
+ add_optional_compile_options(Werror=return-type)
+ # apt-ftparchive dependencies
+-find_package(Berkeley REQUIRED)
++find_package(Berkeley)
+ if (BERKELEY_FOUND)
+   set(HAVE_BDB 1)
+ endif()
+diff --git a/ftparchive/CMakeLists.txt b/ftparchive/CMakeLists.txt
+index 4af2504..f2b6407 100644
+--- a/ftparchive/CMakeLists.txt
++++ b/ftparchive/CMakeLists.txt
+@@ -1,13 +1,17 @@
+-include_directories(${BERKELEY_INCLUDE_DIRS})
+-# Definition of the C++ files used to build the program - note that this
+-# is expanded at CMake time, so you have to rerun cmake if you add or remove
+-# a file (you can just run cmake . in the build directory)
+-file(GLOB_RECURSE source "*.cc")
+-add_executable(apt-ftparchive ${source})
++set(sources apt-ftparchive.cc byhash.cc contents.cc multicompress.cc override.cc sources.cc writer.cc apt-ftparchive.h byhash.h contents.h multicompress.h override.h sources.h writer.h)
++
++add_executable(apt-ftparchive ${sources})
+ 
+ # Link the executables against the libraries
++target_link_libraries(apt-ftparchive apt-pkg apt-private)
++
++if (BERKELEY_FOUND)
++list(APPEND sources cachedb.cc cachedb.h)
+ target_include_directories(apt-ftparchive PRIVATE ${BERKELEY_INCLUDE_DIRS})
+-target_link_libraries(apt-ftparchive apt-pkg apt-private ${BERKELEY_LIBRARIES})
++target_link_libraries(apt-ftparchive ${BERKELEY_LIBRARIES})
++else()
++list(APPEND sources cachedb-stub.h)
++endif()
+ 
+ # Install the executables
+ install(TARGETS apt-ftparchive RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+diff --git a/ftparchive/apt-ftparchive.cc b/ftparchive/apt-ftparchive.cc
+index 0a253b1..e4e9baa 100644
+--- a/ftparchive/apt-ftparchive.cc
++++ b/ftparchive/apt-ftparchive.cc
+@@ -37,7 +37,6 @@
+ #include <math.h>
+ 
+ #include "apt-ftparchive.h"
+-#include "cachedb.h"
+ #include "multicompress.h"
+ #include "override.h"
+ #include "writer.h"
+diff --git a/ftparchive/cachedb-stub.h b/ftparchive/cachedb-stub.h
+new file mode 100644
+index 0000000..a74968e
+--- /dev/null
++++ b/ftparchive/cachedb-stub.h
+@@ -0,0 +1,81 @@
++// -*- mode: cpp; mode: fold -*-
++// Description								/*{{{*/
++/* ######################################################################
++
++   CacheDB
++   
++   Simple uniform interface to a cache database.
++   
++   ##################################################################### */
++									/*}}}*/
++#ifndef CACHEDB_H
++#define CACHEDB_H
++
++#include <apt-pkg/debfile.h>
++#include <apt-pkg/hashes.h>
++
++#include <string>
++#include <errno.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <string.h>
++
++#include "contents.h"
++#include "sources.h"
++
++class FileFd;
++
++
++class CacheDB
++{
++   public:
++
++   // Data collection helpers
++   debDebFile::MemControlExtract Control;
++   ContentsExtract Contents;
++   DscExtract Dsc;
++   HashStringList HashesList;
++
++   // Runtime statistics
++   struct Stats
++   {
++      double Bytes;
++      double MD5Bytes;
++      double SHA1Bytes;
++      double SHA256Bytes;
++      double SHA512Bytes;
++      unsigned long Packages;
++      unsigned long Misses;  
++      unsigned long long DeLinkBytes;
++      
++      inline void Add(const Stats &S) {};
++      Stats() : Bytes(0), MD5Bytes(0), SHA1Bytes(0), SHA256Bytes(0),
++		SHA512Bytes(0),Packages(0), Misses(0), DeLinkBytes(0) {};
++   } Stats;
++   
++   bool ReadyDB(std::string const &DB = "") { return true; }
++   inline bool DBFailed() { return true;};
++   inline bool Loaded() {return true;};
++   
++   inline unsigned long long GetFileSize(void) {return 0;}
++   
++   bool SetFile(std::string const &FileName,struct stat St,FileFd *Fd) { return true; };
++
++   // terrible old overloaded interface
++   bool GetFileInfo(std::string const &FileName,
++	 bool const &DoControl,
++	 bool const &DoContents,
++	 bool const &GenContentsOnly,
++	 bool const DoSource,
++	 unsigned int const DoHashes,
++	 bool const &checkMtime = false) { return false; }
++
++   bool Finish() { return true; };
++   
++   bool Clean() { return true; };
++   
++   explicit CacheDB(std::string const &DB) {};
++   ~CacheDB() {};
++};
++    
++#endif
+diff --git a/ftparchive/writer.cc b/ftparchive/writer.cc
+index ae427b1..aa1137f 100644
+--- a/ftparchive/writer.cc
++++ b/ftparchive/writer.cc
+@@ -42,7 +42,6 @@
+ 
+ #include "apt-ftparchive.h"
+ #include "byhash.h"
+-#include "cachedb.h"
+ #include "multicompress.h"
+ #include "writer.h"
+ 
+diff --git a/ftparchive/writer.h b/ftparchive/writer.h
+index 9aa2168..131e75b 100644
+--- a/ftparchive/writer.h
++++ b/ftparchive/writer.h
+@@ -12,6 +12,8 @@
+ #ifndef WRITER_H
+ #define WRITER_H
+ 
++#include <config.h>
++
+ #include <apt-pkg/hashes.h>
+ 
+ #include <iostream>
+@@ -25,7 +27,11 @@
+ #include <sys/types.h>
+ 
+ #include "apt-ftparchive.h"
++#if HAVE_BDB
+ #include "cachedb.h"
++#else
++#include "cachedb-stub.h"
++#endif
+ #include "contents.h"
+ #include "override.h"
+ 
