@@ -10,10 +10,11 @@ DEPENDS = "dbus glib-2.0 udev mobile-broadband-provider-info ell"
 SRC_URI = "\
     ${KERNELORG_MIRROR}/linux/network/${BPN}/${BP}.tar.xz \
     file://ofono \
+    file://run-ptest \
 "
 SRC_URI[sha256sum] = "fa908ac79e2ffaa52391b6c6737cd451275ef788284e46d3f05a7a409bc52cfc"
 
-inherit autotools pkgconfig update-rc.d systemd gobject-introspection-data
+inherit autotools pkgconfig update-rc.d systemd gobject-introspection-data ptest
 
 INITSCRIPT_NAME = "ofono"
 INITSCRIPT_PARAMS = "defaults 22"
@@ -28,9 +29,18 @@ PACKAGECONFIG[bluez] = "--enable-bluetooth, --disable-bluetooth, bluez5"
 
 EXTRA_OECONF += "--enable-test --enable-external-ell"
 
+do_compile_ptest() {
+    oe_runmake buildtest-TESTS
+}
+
 do_install:append() {
     install -d ${D}${sysconfdir}/init.d/
     install -m 0755 ${UNPACKDIR}/ofono ${D}${sysconfdir}/init.d/ofono
+}
+
+do_install_ptest() {
+    install -m755 -Dt ${D}${PTEST_PATH} $(find ${B}/unit -executable -type f)
+    install -m644 -Dt ${D}${PTEST_PATH}/unit ${B}/unit/test-provision.db
 }
 
 PACKAGES =+ "${PN}-tests"

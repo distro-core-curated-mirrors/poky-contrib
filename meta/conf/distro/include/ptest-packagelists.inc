@@ -53,6 +53,7 @@ PTESTS_FAST = "\
     lzo \
     m4 \
     nettle \
+    ofono \
     opkg \
     popt \
     python3-atomicwrites \
