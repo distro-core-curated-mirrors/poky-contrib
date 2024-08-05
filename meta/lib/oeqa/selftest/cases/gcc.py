@@ -5,6 +5,7 @@
 #
 import os
 import time
+import subprocess
 from oeqa.core.decorator import OETestTag
 from oeqa.core.case import OEPTestResultTestCase
 from oeqa.selftest.case import OESelftestTestCase
@@ -37,7 +38,7 @@ class GccSelfTestBase(OESelftestTestCase, OEPTestResultTestCase):
         features = []
         features.append('MAKE_CHECK_TARGETS = "{0}"'.format(" ".join(targets)))
         if ssh is not None:
-            features.append('TOOLCHAIN_TEST_TARGET = "ssh"')
+            features.append('TOOLCHAIN_TEST_TARGET = "linux-ssh"')
             features.append('TOOLCHAIN_TEST_HOST = "{0}"'.format(ssh))
             features.append('TOOLCHAIN_TEST_HOST_USER = "root"')
             features.append('TOOLCHAIN_TEST_HOST_PORT = "22"')
@@ -54,6 +55,7 @@ class GccSelfTestBase(OESelftestTestCase, OEPTestResultTestCase):
         bb_vars = get_bb_vars(["B", "TARGET_SYS"], recipe)
         builddir, target_sys = bb_vars["B"], bb_vars["TARGET_SYS"]
 
+        all_tests_passed = True
         for suite in suites:
             sumspath = os.path.join(builddir, "gcc", "testsuite", suite, "{0}.sum".format(suite))
             if not os.path.exists(sumspath): # check in target dirs
@@ -67,7 +69,25 @@ class GccSelfTestBase(OESelftestTestCase, OEPTestResultTestCase):
             self.ptest_section(ptestsuite, duration = int(end_time - start_time), logfile = logpath)
             with open(sumspath, "r") as f:
                 for test, result in parse_values(f):
+                    if result!= "PASS":
+                        all_tests_passed = False
                     self.ptest_result(ptestsuite, test, result)
+
+        if ssh is not None:
+            # Define the control path used for the SSH connection
+            control_path = os.path.expanduser("~/.ssh/control-{}@{}:22".format("root", ssh))
+
+            # Check if the control socket exists
+            if os.path.exists(control_path):
+                # Close the master SSH connection
+                close_command = [
+                    "ssh", "-o", "ControlPath={}".format(control_path),
+                    "-O", "exit", "root@{}".format(ssh)
+                ]
+                subprocess.run(close_command, check=True)
+
+        if not all_tests_passed:
+            self.fail("All tests not passed")
 
     def run_check_emulated(self, *args, **kwargs):
         # build core-image-minimal with required packages
@@ -83,6 +103,15 @@ class GccSelfTestBase(OESelftestTestCase, OEPTestResultTestCase):
             # validate that SSH is working
             status, _ = qemu.run("uname")
             self.assertEqual(status, 0)
+            qemu_ip = qemu.ip
+            ssh_command = [
+            "ssh", "-o", "StrictHostKeyChecking=no",
+            "-o", "UserKnownHostsFile=/dev/null",
+            "-o", "ControlMaster=auto",
+            "-o", "ControlPath=~/.ssh/control-%r@%h:%p",
+            "-o", "Controlpersist=yes", "root@{}".format(qemu_ip),
+            "exit" ]
+            subprocess.run(ssh_command, check=True)
 
             return self.run_check(*args, ssh=qemu.ip, **kwargs)
 
