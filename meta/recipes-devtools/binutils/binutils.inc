@@ -142,20 +142,8 @@ export CXX_FOR_HOST = "${CCACHE}${HOST_PREFIX}gcc ${HOST_CC_ARCH}"
 # to unset LD_LIBRARY_PATH.
 export CC_FOR_BUILD = "LD_LIBRARY_PATH= ${BUILD_CC}"
 
-MULTIARCH := "${@bb.utils.contains("DISTRO_FEATURES", "multiarch", "yes", "no", d)}"
-do_configure[vardeps] += "MULTIARCH"
-do_configure () {
-	(cd ${S} && gnu-configize)
-
-	oe_runconf
-#
-# must prime config.cache to ensure the build of libiberty
-#
-	mkdir -p ${B}/build-${BUILD_SYS}
-	for i in ${CONFIG_SITE}; do
-		cat $i >> ${B}/build-${BUILD_SYS}/config.cache || true
-	done
-}
+# Fixes: aclocal: error: gdb/acinclude.m4:13: file 'acx_configure_dir.m4' does not exist
+acpaths = "-I ."
 
 do_install () {
 	autotools_do_install

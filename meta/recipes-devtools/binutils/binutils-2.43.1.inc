@@ -24,6 +24,7 @@ SRCREV ?= "b82e2250574ef00faf7fcb1e95e14f22b1fa85af"
 BINUTILS_GIT_URI ?= "git://sourceware.org/git/binutils-gdb.git;branch=${SRCBRANCH};protocol=https"
 SRC_URI = "\
      ${BINUTILS_GIT_URI} \
+     file://binutils-autoconf.patch \
      file://0004-Point-scripts-location-to-libdir.patch \
      file://0005-don-t-let-the-distro-compiler-point-to-the-wrong-ins.patch \
      file://0006-warn-for-uses-of-system-directories-when-cross-linki.patch \

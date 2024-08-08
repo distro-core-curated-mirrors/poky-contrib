@@ -7,8 +7,8 @@ BPN = "binutils"
 # Ignore how TARGET_ARCH is computed.
 TARGET_ARCH[vardepvalue] = "${TARGET_ARCH}"
 
-INHIBIT_DEFAULT_DEPS = "1"
-INHIBIT_AUTOTOOLS_DEPS = "1"
+#INHIBIT_DEFAULT_DEPS = "1"
+#INHIBIT_AUTOTOOLS_DEPS = "1"
 
 SRC_URI += "file://0002-binutils-cross-Do-not-generate-linker-script-directo.patch"
 
