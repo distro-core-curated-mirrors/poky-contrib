@@ -33,3 +33,5 @@ RDEPENDS:${PN} = "\
     "
 
 BBCLASSEXTEND = "native nativesdk"
+
+inherit pydeps
