@@ -50,4 +50,7 @@ UPSTREAM_CHECK_REGEX ?= "/${UPSTREAM_CHECK_PYPI_PACKAGE}/(?P<pver>(\d+[\.\-_]*)+
 
 CVE_PRODUCT ?= "python:${PYPI_PACKAGE}"
 
+# TODO if OE supports it embed the version, ie Provides: bar (= 1.0)
+# If OE doesn't support it then we can't use virtual names and instead will
+# need to maintain a map of pypi package to oe package (like solibs)
 RPROVIDES:${PN}:append = "python-module-${PYPI_PACKAGE}"
