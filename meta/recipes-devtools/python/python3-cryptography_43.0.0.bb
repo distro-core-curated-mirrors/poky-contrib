@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=8c3617db4fb6fae01f1d253ab91511e4 \
                    "
 LDSHARED += "-pthread"
 
-SRC_URI[sha256sum] = "8d09d05439ce7baa8e9e95b07ec5b6c886f548deb7e0f69ef25f64b3bce842f2"
+SRC_URI[sha256sum] = "b88075ada2d51aa9f18283532c9f60e72170041bba88d7f37e49cbb10275299e"
 
 SRC_URI += "file://0001-pyproject.toml-remove-benchmark-disable-option.patch \
             file://check-memfree.py \
@@ -17,7 +17,7 @@ SRC_URI += "file://0001-pyproject.toml-remove-benchmark-disable-option.patch \
 
 require ${BPN}-crates.inc
 
-inherit pypi python_setuptools3_rust cargo-update-recipe-crates pkgconfig
+inherit pypi python_maturin cargo-update-recipe-crates pkgconfig
 
 DEPENDS += " \
     python3-cffi-native \
