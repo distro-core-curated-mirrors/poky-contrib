@@ -4,17 +4,18 @@ SECTION = "devel/python"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=d903b0b8027f461402bac9b5169b36f7"
 
-SRC_URI += " file://0001-Fix-man-page-installation.patch"
-SRC_URI[sha256sum] = "d8b617f6610a73e46509de70dcf82f76861b79762ff602d546f4e80918ec81f3"
+SRC_URI[sha256sum] = "2c7377ff6a22ca136c795ae3dc3d0824696e5478d1e4940f2af75659b0d45454"
 
 PYPI_PACKAGE = "SCons"
-PYPI_ARCHIVE_NAME = "${PYPI_PACKAGE}"
 
 inherit pypi python_setuptools_build_meta
+
+S = "${UNPACKDIR}/${PYPI_PACKAGE}-${PV}"
 
 RDEPENDS:${PN}:class-target = "\
   python3-core \
   python3-compression \
+  python3-db \
   python3-fcntl \
   python3-io \
   python3-json \
@@ -26,8 +27,14 @@ RDEPENDS:${PN}:class-target = "\
 
 do_install:append() {
     install -d ${D}${mandir}/man1
-    mv ${D}${prefix}/scons*.1 ${D}${mandir}/man1/
+    cp ${S}/scons*.1 ${D}${mandir}/man1/
 }
+
+inherit manpages
+
+# inherit manpages requires this to be present, however python3-scons does not have
+# configuration options, and installs manpages always
+PACKAGECONFIG[manpages] = ""
 
 do_install:append:class-native() {
     create_wrapper ${D}${bindir}/scons SCONS_LIB_DIR='${STAGING_DIR_HOST}/${PYTHON_SITEPACKAGES_DIR}' PYTHONNOUSERSITE='1'
