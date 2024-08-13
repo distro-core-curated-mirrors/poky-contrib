@@ -1,7 +1,7 @@
 SUMMARY = "A small utility for printing debug source file locations embedded in binaries"
 DESCRIPTION = "${SUMMARY}"
 LICENSE = "GPL-2.0-or-later"
-LIC_FILES_CHKSUM = "file://dwarfsrcfiles.c;md5=31483894e453a77acbb67847565f1b5c;beginline=1;endline=8"
+LIC_FILES_CHKSUM = "file://dwarfsrcfiles.c;md5=59532371ea15aa959c87b5a426e3614c;beginline=1;endline=6"
 
 SRC_URI = "file://dwarfsrcfiles.c"
 BBCLASSEXTEND = "native"
