@@ -13,7 +13,7 @@ Upstream-Status: Pending
  3 files changed, 3 insertions(+)
 
 diff --git a/src/bootlogd.c b/src/bootlogd.c
-index 787db87..8b07903 100644
+index a323a76..343cbbe 100644
 --- a/src/bootlogd.c
 +++ b/src/bootlogd.c
 @@ -29,6 +29,7 @@
@@ -25,7 +25,7 @@ index 787db87..8b07903 100644
  #include <sys/utsname.h>
  #include <time.h>
 diff --git a/src/mountpoint.c b/src/mountpoint.c
-index 5f20522..94df7a1 100644
+index c55b0df..5920e13 100644
 --- a/src/mountpoint.c
 +++ b/src/mountpoint.c
 @@ -25,6 +25,7 @@
@@ -37,7 +37,7 @@ index 5f20522..94df7a1 100644
  #include <stdlib.h>
  #include <string.h>
 diff --git a/src/shutdown.c b/src/shutdown.c
-index b744a2c..40b7faf 100644
+index 89b63a5..7730e53 100644
 --- a/src/shutdown.c
 +++ b/src/shutdown.c
 @@ -40,6 +40,7 @@

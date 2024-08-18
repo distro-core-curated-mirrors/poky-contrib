@@ -16,15 +16,13 @@ SRC_URI = "${GITHUB_BASE_URI}/download/${PV}/${BP}.tar.xz \
            file://pidof-add-m-option.patch \
            file://realpath.patch \
            file://0001-include-sys-sysmacros.h-for-major-minor-defines-in-g.patch \
-           file://sysvinit_remove_linux_fs.patch \
            file://rcS-default \
            file://rc \
            file://rcS \
            file://bootlogd.init \
            file://01_bootlogd \
-           file://0001-hddown-include-libgen.h-for-basename-API.patch \
            "
-SRC_URI[sha256sum] = "2a621fe6e4528bc91308b74867ddaaebbdf7753f02395c0c5bae817bd2b7e3a5"
+SRC_URI[sha256sum] = "c52d22f63e187a1247ad491b6a3a049561b887400a166d6b04fc9d67705c4da6"
 
 S = "${WORKDIR}/sysvinit-${PV}"
 
