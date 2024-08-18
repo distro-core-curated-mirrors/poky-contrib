@@ -15,11 +15,11 @@ Upstream-Status: Inappropriate [configuration]
  1 file changed, 2 insertions(+), 9 deletions(-)
 
 diff --git a/src/Makefile b/src/Makefile
-index 5b1a5a2..b686394 100644
+index 6a66d27..48b7828 100644
 --- a/src/Makefile
 +++ b/src/Makefile
-@@ -97,15 +97,8 @@ else
- endif
+@@ -102,15 +102,8 @@ endif
+ ROOT	?= $(DESTDIR)
  
  # Additional libs for GNU libc.
 -ifneq ($(wildcard $(ROOT)/usr/lib*/libcrypt.*),)
