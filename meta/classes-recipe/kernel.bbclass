@@ -154,7 +154,7 @@ set -e
             bb.build.addtask('do_bundle_initramfs', 'do_deploy', 'do_install', d)
             add_initramfs_dep_task('do_bundle_initramfs', d)
             bb.build.addtask('do_transform_bundled_initramfs', 'do_deploy', 'do_bundle_initramfs', d)
-        else:
+        elif not bb.data.inherits_class('kernel-fitimage', d):
             add_initramfs_dep_task('do_deploy', d)
 
     # NOTE: setting INITRAMFS_TASK is for backward compatibility
@@ -488,7 +488,8 @@ kernel_do_install() {
 	# So, at the level of the install task we should not try to install the fitImage. fitImage is still not
 	# generated yet.
 	# After the generation of the fitImage, the deploy task copies the fitImage from the build directory to
-	# the deploy folder.
+	# the deploy folder. If INITRAMFS_IMAGE_BUNDLE != 1 the fitImage with initramfs is deployed after the
+	# deploy task.
 	#
 
 	for imageType in ${KERNEL_IMAGETYPES} ; do
