@@ -25,24 +25,45 @@ ROOT_DIR="$(echo "$DIRNAME" | sed -ne 's:/etc/.*::p')"
 CFGDIR="${ROOT_DIR}/etc/default/volatiles"
 TMPROOT="${ROOT_DIR}/var/volatile/tmp"
 COREDEF="00_core"
+SUFFIX=".populate-volatile.tmp"
+if [ -z "$ROOT_DIR" ]; then
+	SYNC_CMD="sync" # on target run sync
+else
+	# At rootfs time sync is not required. Moreover sync symlink is not
+	# present in ${TMPDIR}/hosttools directory while building rootfs, hence
+	# attempting to execute sync would cause a silent error (further
+	# commands won't be executed).
+	SYNC_CMD="true"
+fi
 
 [ "${VERBOSE}" != "no" ] && echo "Populating volatile Filesystems."
 
 create_file() {
-	EXEC=""
+	EXEC="(
+	clean_temp()
+	{
+		rm -rf \"${1}${SUFFIX}\"
+	}
+	trap clean_temp EXIT
+	clean_temp&&
+	"
 	if [ -z "$2" ]; then
 		EXEC="
-		touch \"$1\";
+		${EXEC}
+		touch \"${1}${SUFFIX}\"&&
 		"
 	else
 		EXEC="
-		cp \"$2\" \"$1\";
+		${EXEC}
+		cp \"$2\" \"${1}${SUFFIX}\"&&
 		"
 	fi
 	EXEC="
 	${EXEC}
-	chown ${TUSER}:${TGROUP} $1 || echo \"Failed to set owner -${TUSER}- for -$1-.\";
-	chmod ${TMODE} $1 || echo \"Failed to set mode -${TMODE}- for -$1-.\" "
+	chown \"${TUSER}:${TGROUP}\" \"${1}${SUFFIX}\"&&
+	chmod \"${TMODE}\" \"${1}${SUFFIX}\"&&
+	$SYNC_CMD \"${1}${SUFFIX}\"&&
+	mv \"${1}${SUFFIX}\" \"$1\")"
 
 	test "$VOLATILE_ENABLE_CACHE" = yes && echo "$EXEC" >> /etc/volatile.cache.build
 
@@ -62,10 +83,18 @@ create_file() {
 }
 
 mk_dir() {
-	EXEC="
-	mkdir -p \"$1\";
-	chown ${TUSER}:${TGROUP} $1 || echo \"Failed to set owner -${TUSER}- for -$1-.\";
-	chmod ${TMODE} $1 || echo \"Failed to set mode -${TMODE}- for -$1-.\" "
+	EXEC="(
+	clean_temp()
+	{
+		rm -rf \"${1}${SUFFIX}\"
+	}
+	trap clean_temp EXIT
+	clean_temp&&
+	mkdir \"${1}${SUFFIX}\"&&
+	chown \"${TUSER}:${TGROUP}\" \"${1}${SUFFIX}\"&&
+	chmod \"${TMODE}\" \"${1}${SUFFIX}\"&&
+	$SYNC_CMD \"${1}${SUFFIX}\"&&
+	mv \"${1}${SUFFIX}\" \"$1\")"
 
 	test "$VOLATILE_ENABLE_CACHE" = yes && echo "$EXEC" >> /etc/volatile.cache.build
 	if [ -e "$1" ]; then
@@ -82,20 +111,37 @@ mk_dir() {
 }
 
 link_file() {
-	EXEC="
+	EXEC="(
+	clean_temp()
+	{
+		rm -rf \"${2}${SUFFIX}\"
+	}
+	create_symlink()
+	{
+		ln -sf \"$1\" \"${2}${SUFFIX}\"&&
+		chown -h \"${TUSER}:${TGROUP}\" \"${2}${SUFFIX}\"&&
+		$SYNC_CMD \"${2}${SUFFIX}\"&&
+		mv \"${2}${SUFFIX}\" \"$2\"
+	}
+	trap clean_temp EXIT
+	clean_temp&&
 	if [ -L \"$2\" ]; then
-		[ \"\$(readlink \"$2\")\" != \"$1\" ] && { rm -f \"$2\"; ln -sf \"$1\" \"$2\"; };
+		if [ \"\$(readlink \"$2\")\" != \"$1\" ]; then
+			rm -f \"$2\"&&
+			create_symlink
+		fi
 	elif [ -d \"$2\" ]; then
 		if awk '\$2 == \"$2\" {exit 1}' /proc/mounts; then
 			cp -a $2/* $1 2>/dev/null;
 			cp -a $2/.[!.]* $1 2>/dev/null;
-			rm -rf \"$2\";
-			ln -sf \"$1\" \"$2\";
+			$SYNC_CMD&&
+			rm -rf \"$2\"&&
+			create_symlink
 		fi
 	else
-		ln -sf \"$1\" \"$2\";
+		create_symlink
 	fi
-        "
+	)"
 
 	test "$VOLATILE_ENABLE_CACHE" = yes && echo "	$EXEC" >> /etc/volatile.cache.build
 
