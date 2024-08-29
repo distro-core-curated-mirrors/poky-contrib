@@ -216,14 +216,17 @@ rm_systemd_unitdir() {
 }
 
 rm_sysvinit_initddir() {
+	set -x
 	local sysv_initddir=${INIT_D_DIR}
 	: ${sysv_initddir:=${sysconfdir}/init.d}
 
+	[ ! -d ${D}${systemd_system_unitdir} ] ||  /usr/bin/tree ${D}${systemd_system_unitdir}
 	# If systemd_system_unitdir contains anything, delete sysv_initddir
         if find ${D}${systemd_system_unitdir} -mindepth 1 -maxdepth 1 2>/dev/null | read DUMMY; then
 		rm -rf ${D}$sysv_initddir
 		rmdir -p $(dirname ${D}$sysv_initddir) 2>/dev/null || :
 	fi
+	[ ! -d ${D}$sysv_initddir ] || /usr/bin/tree ${D}$sysv_initddir
 }
 
 do_install[postfuncs] += "${RMINITDIR}"
