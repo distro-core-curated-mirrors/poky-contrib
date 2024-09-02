@@ -753,11 +753,16 @@ fitimage_assemble() {
 	# Step 8: Sign the image
 	#
 	if [ "x${UBOOT_SIGN_ENABLE}" = "x1" ] ; then
-		${UBOOT_MKIMAGE_SIGN} \
+		output=$(${UBOOT_MKIMAGE_SIGN} \
 			${@'-D "${UBOOT_MKIMAGE_DTCOPTS}"' if len('${UBOOT_MKIMAGE_DTCOPTS}') else ''} \
 			-F -k "${UBOOT_SIGN_KEYDIR}" \
 			-r ${KERNEL_OUTPUT_DIR}/$2 \
-			${UBOOT_MKIMAGE_SIGN_ARGS}
+			${UBOOT_MKIMAGE_SIGN_ARGS})
+		echo "$output"
+		if err=$(echo "$output" | grep -C9 -E "Sign value:\s*unavailable"); then
+			bberror "${UBOOT_MKIMAGE_SIGN} failed to provide signatures for these images:"
+			bbfatal_log "\n$err"
+		fi
 	fi
 }
 
