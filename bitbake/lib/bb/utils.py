@@ -1675,6 +1675,9 @@ def disable_network(uid=None, gid=None):
     Disable networking in the current process if the kernel supports it, else
     just return after logging to debug. To do this we need to create a new user
     namespace, then map back to the original uid/gid.
+
+    Returns True/False if it knows the networking was disabled or not, or raises
+    an Exception.
     """
     libc = ctypes.CDLL('libc.so.6')
 
@@ -1692,13 +1695,14 @@ def disable_network(uid=None, gid=None):
     ret = libc.unshare(CLONE_NEWNET | CLONE_NEWUSER)
     if ret != 0:
         logger.debug("System doesn't support disabling network without admin privs")
-        return
+        return False
     with open("/proc/self/uid_map", "w") as f:
         f.write("%s %s 1" % (uid, uid))
     with open("/proc/self/setgroups", "w") as f:
         f.write("deny")
     with open("/proc/self/gid_map", "w") as f:
         f.write("%s %s 1" % (gid, gid))
+    return True
 
 def export_proxies(d):
     from bb.fetch2 import get_fetcher_environment
