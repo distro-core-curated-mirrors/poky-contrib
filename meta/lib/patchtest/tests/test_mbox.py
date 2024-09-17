@@ -12,39 +12,73 @@ import re
 import subprocess
 from patchtest_parser import PatchtestParser
 
+
 def headlog():
     output = subprocess.check_output(
         "cd %s; git log --pretty='%%h#%%aN#%%cD:#%%s' -1" % PatchtestParser.repodir,
         universal_newlines=True,
-        shell=True
-        )
-    return output.split('#')
+        shell=True,
+    )
+    return output.split("#")
+
 
 class TestMbox(base.Base):
 
     # base paths of main yocto project sub-projects
     paths = {
-        'oe-core': ['meta-selftest', 'meta-skeleton', 'meta', 'scripts'],
-        'bitbake': ['bitbake'],
-        'documentation': ['documentation'],
-        'poky': ['meta-poky','meta-yocto-bsp'],
-        'oe': ['meta-filesystems', 'meta-gnome', 'meta-initramfs',
-               'meta-multimedia', 'meta-networking','meta-oe',
-               'meta-perl', 'meta-python', 'meta-webserver', 'meta-xfce']
-        }
+        "oe-core": ["meta-selftest", "meta-skeleton", "meta", "scripts"],
+        "bitbake": ["bitbake"],
+        "documentation": ["documentation"],
+        "poky": ["meta-poky", "meta-yocto-bsp"],
+        "oe": [
+            "meta-filesystems",
+            "meta-gnome",
+            "meta-initramfs",
+            "meta-multimedia",
+            "meta-networking",
+            "meta-oe",
+            "meta-perl",
+            "meta-python",
+            "meta-webserver",
+            "meta-xfce",
+        ],
+    }
 
-    Project = collections.namedtuple('Project', ['name', 'listemail', 'gitrepo', 'paths'])
+    Project = collections.namedtuple(
+        "Project", ["name", "listemail", "gitrepo", "paths"]
+    )
 
-    bitbake = Project(name='Bitbake', listemail='bitbake-devel@lists.openembedded.org', gitrepo='http://git.openembedded.org/bitbake/', paths=paths['bitbake'])
-    doc     = Project(name='Documentantion', listemail='yocto@yoctoproject.org', gitrepo='http://git.yoctoproject.org/cgit/cgit.cgi/yocto-docs/', paths=paths['documentation'])
-    poky    = Project(name='Poky', listemail='poky@yoctoproject.org', gitrepo='http://git.yoctoproject.org/cgit/cgit.cgi/poky/', paths=paths['poky'])
-    oe      = Project(name='oe', listemail='openembedded-devel@lists.openembedded.org', gitrepo='http://git.openembedded.org/meta-openembedded/', paths=paths['oe'])
-
+    bitbake = Project(
+        name="Bitbake",
+        listemail="bitbake-devel@lists.openembedded.org",
+        gitrepo="http://git.openembedded.org/bitbake/",
+        paths=paths["bitbake"],
+    )
+    doc = Project(
+        name="Documentantion",
+        listemail="yocto@yoctoproject.org",
+        gitrepo="http://git.yoctoproject.org/cgit/cgit.cgi/yocto-docs/",
+        paths=paths["documentation"],
+    )
+    poky = Project(
+        name="Poky",
+        listemail="poky@yoctoproject.org",
+        gitrepo="http://git.yoctoproject.org/cgit/cgit.cgi/poky/",
+        paths=paths["poky"],
+    )
+    oe = Project(
+        name="oe",
+        listemail="openembedded-devel@lists.openembedded.org",
+        gitrepo="http://git.openembedded.org/meta-openembedded/",
+        paths=paths["oe"],
+    )
 
     def test_signed_off_by_presence(self):
         for commit in self.commits:
             # skip those patches that revert older commits, these do not required the tag presence
-            if patchtest_patterns.mbox_revert_shortlog_regex.search_string(commit.shortlog):
+            if patchtest_patterns.mbox_revert_shortlog_regex.search_string(
+                commit.shortlog
+            ):
                 continue
             if not patchtest_patterns.signed_off_by.search_string(commit.payload):
                 self.fail(
@@ -56,7 +90,7 @@ class TestMbox(base.Base):
         for commit in self.commits:
             shortlog = commit.shortlog
             if not shortlog.strip():
-                self.skip('Empty shortlog, no reason to execute shortlog format test')
+                self.skip("Empty shortlog, no reason to execute shortlog format test")
             else:
                 # no reason to re-check on revert shortlogs
                 if shortlog.startswith('Revert "'):
@@ -64,13 +98,15 @@ class TestMbox(base.Base):
                 try:
                     patchtest_patterns.shortlog.parseString(shortlog)
                 except pyparsing.ParseException as pe:
-                    self.fail('Commit shortlog (first line of commit message) should follow the format "<target>: <summary>"',
-                              commit=commit)
+                    self.fail(
+                        'Commit shortlog (first line of commit message) should follow the format "<target>: <summary>"',
+                        commit=commit,
+                    )
 
     def test_shortlog_length(self):
         for commit in self.commits:
             # no reason to re-check on revert shortlogs
-            shortlog = re.sub('^(\[.*?\])+ ', '', commit.shortlog)
+            shortlog = re.sub("^(\[.*?\])+ ", "", commit.shortlog)
             if shortlog.startswith('Revert "'):
                 continue
             l = len(shortlog)
@@ -111,31 +147,47 @@ class TestMbox(base.Base):
         for commit in self.commits:
             match = project_regex.search_string(commit.subject)
             if match:
-                self.fail('Series sent to the wrong mailing list or some patches from the series correspond to different mailing lists',
-                          commit=commit)
+                self.fail(
+                    "Series sent to the wrong mailing list or some patches from the series correspond to different mailing lists",
+                    commit=commit,
+                )
 
         for patch in self.patchset:
-            folders = patch.path.split('/')
+            folders = patch.path.split("/")
             base_path = folders[0]
             for project in [self.bitbake, self.doc, self.oe, self.poky]:
                 if base_path in project.paths:
-                    self.fail('Series sent to the wrong mailing list or some patches from the series correspond to different mailing lists',
-                              data=[('Suggested ML', '%s [%s]' % (project.listemail, project.gitrepo)),
-                                    ('Patch\'s path:', patch.path)])
+                    self.fail(
+                        "Series sent to the wrong mailing list or some patches from the series correspond to different mailing lists",
+                        data=[
+                            (
+                                "Suggested ML",
+                                "%s [%s]" % (project.listemail, project.gitrepo),
+                            ),
+                            ("Patch's path:", patch.path),
+                        ],
+                    )
 
     def test_mbox_format(self):
         if self.unidiff_parse_error:
-            self.fail('Series has malformed diff lines. Create the series again using git-format-patch and ensure it applies using git am',
-                      data=[('Diff line',self.unidiff_parse_error)])
+            self.fail(
+                "Series has malformed diff lines. Create the series again using git-format-patch and ensure it applies using git am",
+                data=[("Diff line", self.unidiff_parse_error)],
+            )
 
     def test_commit_message_presence(self):
         for commit in self.commits:
             if not commit.commit_message.strip():
-                self.fail('Please include a commit message on your patch explaining the change', commit=commit)
+                self.fail(
+                    "Please include a commit message on your patch explaining the change",
+                    commit=commit,
+                )
 
     def test_bugzilla_entry_format(self):
         for commit in self.commits:
-            if not patchtest_patterns.mbox_bugzilla.search_string(commit.commit_message):
+            if not patchtest_patterns.mbox_bugzilla.search_string(
+                commit.commit_message
+            ):
                 self.skip("No bug ID found")
             elif not patchtest_patterns.mbox_bugzilla_validation.search_string(
                 commit.commit_message
@@ -149,7 +201,11 @@ class TestMbox(base.Base):
         for commit in self.commits:
             for invalid in patchtest_patterns.invalid_submitters:
                 if invalid.search_string(commit.author):
-                    self.fail('Invalid author %s. Resend the series with a valid patch author' % commit.author, commit=commit)
+                    self.fail(
+                        "Invalid author %s. Resend the series with a valid patch author"
+                        % commit.author,
+                        commit=commit,
+                    )
 
     def test_non_auh_upgrade(self):
         for commit in self.commits:

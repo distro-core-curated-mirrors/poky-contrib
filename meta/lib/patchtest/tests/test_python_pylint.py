@@ -12,9 +12,9 @@ import pylint.lint as lint
 
 
 class PyLint(base.Base):
-    pythonpatches  = []
+    pythonpatches = []
     pylint_pretest = {}
-    pylint_test    = {}
+    pylint_test = {}
     pylint_options = " -E --disable='E0611, E1101, F0401, E0602' --msg-template='L:{line} F:{module} I:{msg}'"
 
     @classmethod
@@ -22,26 +22,32 @@ class PyLint(base.Base):
         # get just those patches touching python files
         cls.pythonpatches = []
         for patch in cls.patchset:
-            if patch.path.endswith('.py'):
+            if patch.path.endswith(".py"):
                 if not patch.is_removed_file:
                     cls.pythonpatches.append(patch)
 
     def setUp(self):
         if self.unidiff_parse_error:
-            self.skip('Python-unidiff parse error')
+            self.skip("Python-unidiff parse error")
         if not PyLint.pythonpatches:
-            self.skip('No python related patches, skipping test')
+            self.skip("No python related patches, skipping test")
 
     def pretest_pylint(self):
         for pythonpatch in self.pythonpatches:
             if pythonpatch.is_modified_file:
                 pylint_output = StringIO()
                 reporter = TextReporter(pylint_output)
-                lint.Run([self.pylint_options, pythonpatch.path], reporter=reporter, exit=False)
+                lint.Run(
+                    [self.pylint_options, pythonpatch.path],
+                    reporter=reporter,
+                    exit=False,
+                )
                 for line in pylint_output.readlines():
-                    if not '*' in line:
+                    if not "*" in line:
                         if line.strip():
-                            self.pylint_pretest[line.strip().split(' ',1)[0]] = line.strip().split(' ',1)[1]
+                            self.pylint_pretest[line.strip().split(" ", 1)[0]] = (
+                                line.strip().split(" ", 1)[1]
+                            )
 
     def test_pylint(self):
         for pythonpatch in self.pythonpatches:
@@ -53,13 +59,22 @@ class PyLint(base.Base):
                 path = pythonpatch.path
             pylint_output = StringIO()
             reporter = TextReporter(pylint_output)
-            lint.Run([self.pylint_options, pythonpatch.path], reporter=reporter, exit=False)
+            lint.Run(
+                [self.pylint_options, pythonpatch.path], reporter=reporter, exit=False
+            )
             for line in pylint_output.readlines():
-                    if not '*' in line:
-                        if line.strip():
-                            self.pylint_test[line.strip().split(' ',1)[0]] = line.strip().split(' ',1)[1]
+                if not "*" in line:
+                    if line.strip():
+                        self.pylint_test[line.strip().split(" ", 1)[0]] = (
+                            line.strip().split(" ", 1)[1]
+                        )
 
         for issue in self.pylint_test:
-             if self.pylint_test[issue] not in self.pylint_pretest.values():
-                 self.fail('Errors in your Python code were encountered. Please check your code with a linter and resubmit',
-                           data=[('Output', 'Please, fix the listed issues:'), ('', issue + ' ' + self.pylint_test[issue])])
+            if self.pylint_test[issue] not in self.pylint_pretest.values():
+                self.fail(
+                    "Errors in your Python code were encountered. Please check your code with a linter and resubmit",
+                    data=[
+                        ("Output", "Please, fix the listed issues:"),
+                        ("", issue + " " + self.pylint_test[issue]),
+                    ],
+                )
