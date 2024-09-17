@@ -28,11 +28,10 @@ class TestMbox(base.Base):
         'bitbake': ['bitbake'],
         'documentation': ['documentation'],
         'poky': ['meta-poky','meta-yocto-bsp'],
-        'oe': ['meta-gpe', 'meta-gnome', 'meta-efl', 'meta-networking', 'meta-multimedia','meta-initramfs', 'meta-ruby', 'contrib', 'meta-xfce', 'meta-filesystems', 'meta-perl', 'meta-webserver', 'meta-systemd', 'meta-oe', 'meta-python']
+        'oe': ['meta-filesystems', 'meta-gnome', 'meta-initramfs',
+               'meta-multimedia', 'meta-networking','meta-oe',
+               'meta-perl', 'meta-python', 'meta-webserver', 'meta-xfce']
         }
-
-    # scripts folder is a mix of oe-core and poky, most is oe-core code except:
-    poky_scripts = ['scripts/yocto-bsp', 'scripts/yocto-kernel', 'scripts/yocto-layer', 'scripts/lib/bsp']
 
     Project = collections.namedtuple('Project', ['name', 'listemail', 'gitrepo', 'paths'])
 
@@ -43,7 +42,7 @@ class TestMbox(base.Base):
 
 
     def test_signed_off_by_presence(self):
-        for commit in TestMbox.commits:
+        for commit in self.commits:
             # skip those patches that revert older commits, these do not required the tag presence
             if patterns.mbox_revert_shortlog_regex.search_string(commit.shortlog):
                 continue
@@ -52,7 +51,7 @@ class TestMbox(base.Base):
                           commit=commit)
 
     def test_shortlog_format(self):
-        for commit in TestMbox.commits:
+        for commit in self.commits:
             shortlog = commit.shortlog
             if not shortlog.strip():
                 self.skip('Empty shortlog, no reason to execute shortlog format test')
@@ -67,7 +66,7 @@ class TestMbox(base.Base):
                               commit=commit)
 
     def test_shortlog_length(self):
-        for commit in TestMbox.commits:
+        for commit in self.commits:
             # no reason to re-check on revert shortlogs
             shortlog = re.sub('^(\[.*?\])+ ', '', commit.shortlog)
             if shortlog.startswith('Revert "'):
@@ -78,13 +77,16 @@ class TestMbox(base.Base):
                           commit=commit)
 
     def test_series_merge_on_head(self):
-        self.skip("Merge test is disabled for now")
-        if PatchTestInput.repo.branch != "master":
-            self.skip("Skipping merge test since patch is not intended for master branch. Target detected is %s" % PatchTestInput.repo.branch)
+        if PatchTestInput.repo.patch.branch != "master":
+            self.skip("Skipping merge test since patch is not intended"\
+                      " for master branch. Target detected is %s" %
+                      PatchTestInput.repo.patch.branch)
         if not PatchTestInput.repo.ismerged:
             commithash, author, date, shortlog = headlog()
-            self.fail('Series does not apply on top of target branch %s' % PatchTestInput.repo.branch,
-                      data=[('Targeted branch', '%s (currently at %s)' % (PatchTestInput.repo.branch, commithash))])
+            self.fail('Series does not apply on top of target branch %s'
+                      % PatchTestInput.repo.patch.branch,
+                      data=[('Targeted branch', '%s (currently at %s)' %
+                             (PatchTestInput.repo.patch.branch, commithash))])
 
     def test_target_mailing_list(self):
         """In case of merge failure, check for other targeted projects"""
@@ -94,7 +96,7 @@ class TestMbox(base.Base):
         # a meta project may be indicted in the message subject, if this is the case, just fail
         # TODO: there may be other project with no-meta prefix, we also need to detect these
         project_regex = pyparsing.Regex("\[(?P<project>meta-.+)\]")
-        for commit in TestMbox.commits:
+        for commit in self.commits:
             match = project_regex.search_string(commit.subject)
             if match:
                 self.fail('Series sent to the wrong mailing list or some patches from the series correspond to different mailing lists',
@@ -104,17 +106,10 @@ class TestMbox(base.Base):
             folders = patch.path.split('/')
             base_path = folders[0]
             for project in [self.bitbake, self.doc, self.oe, self.poky]:
-                if base_path in  project.paths:
+                if base_path in project.paths:
                     self.fail('Series sent to the wrong mailing list or some patches from the series correspond to different mailing lists',
                               data=[('Suggested ML', '%s [%s]' % (project.listemail, project.gitrepo)),
                                     ('Patch\'s path:', patch.path)])
-
-            # check for poky's scripts code
-            if base_path.startswith('scripts'):
-                for poky_file in self.poky_scripts:
-                    if patch.path.startswith(poky_file):
-                        self.fail('Series sent to the wrong mailing list or some patches from the series correspond to different mailing lists',
-                                  data=[('Suggested ML', '%s [%s]' % (self.poky.listemail, self.poky.gitrepo)),('Patch\'s path:', patch.path)])
 
     def test_mbox_format(self):
         if self.unidiff_parse_error:
@@ -122,12 +117,12 @@ class TestMbox(base.Base):
                       data=[('Diff line',self.unidiff_parse_error)])
 
     def test_commit_message_presence(self):
-        for commit in TestMbox.commits:
+        for commit in self.commits:
             if not commit.commit_message.strip():
                 self.fail('Please include a commit message on your patch explaining the change', commit=commit)
 
     def test_bugzilla_entry_format(self):
-        for commit in TestMbox.commits:
+        for commit in self.commits:
             if not patterns.mbox_bugzilla.search_string(commit.commit_message):
                 self.skip("No bug ID found")
             elif not patterns.mbox_bugzilla_validation.search_string(commit.commit_message):
