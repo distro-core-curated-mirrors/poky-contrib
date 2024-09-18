@@ -49,7 +49,7 @@ class TestPatch(base.Base):
                 self.fail('Added patch file is missing Upstream-Status: <Valid status> in the commit message',
                           data=[('Standard format', self.standard_format), ('Valid status', self.valid_status)])
             for line in payload.splitlines():
-                if self.patchmetadata_regex.match(line):
+                if patterns.patchmetadata_regex.match(line):
                     continue
                 if patterns.upstream_status_regex.search_string(line):
                         if patterns.inappropriate.searchString(line):
@@ -78,7 +78,7 @@ class TestPatch(base.Base):
         for newpatch in TestPatch.newpatches:
             payload = newpatch.__str__()
             for line in payload.splitlines():
-                if self.patchmetadata_regex.match(line):
+                if patterns.patchmetadata_regex.match(line):
                     continue
                 if TestPatch.prog.search_string(payload):
                     break

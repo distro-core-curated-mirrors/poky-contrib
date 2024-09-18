@@ -10,18 +10,21 @@ import json
 import unidiff
 from data import PatchTestInput
 import mailbox
+import patterns
 import collections
 import sys
 import os
 import re
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'pyparsing'))
+logger = logging.getLogger("patchtest")
+debug = logger.debug
+info = logger.info
+warn = logger.warn
+error = logger.error
 
-logger = logging.getLogger('patchtest')
-debug=logger.debug
-info=logger.info
-warn=logger.warn
-error=logger.error
+Commit = collections.namedtuple(
+    "Commit", ["author", "subject", "commit_message", "shortlog", "payload"]
+)
 
 Commit = collections.namedtuple('Commit', ['author', 'subject', 'commit_message', 'shortlog', 'payload'])
 
@@ -33,9 +36,6 @@ class PatchtestOEError(Exception):
 
 class Base(unittest.TestCase):
     # if unit test fails, fail message will throw at least the following JSON: {"id": <testid>}
-
-    endcommit_messages_regex = re.compile(r'\(From \w+-\w+ rev:|(?<!\S)Signed-off-by|(?<!\S)---\n')
-    patchmetadata_regex   = re.compile(r'-{3} \S+|\+{3} \S+|@{2} -\d+,\d+ \+\d+,\d+ @{2} \S+')
 
     @staticmethod
     def msg_to_commit(msg):
@@ -49,7 +49,7 @@ class Base(unittest.TestCase):
     @staticmethod
     def commit_message(payload):
         commit_message = payload.__str__()
-        match = Base.endcommit_messages_regex.search(payload)
+        match = patterns.endcommit_messages_regex.search(payload)
         if match:
             commit_message = payload[:match.start()]
         return commit_message
