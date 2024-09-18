@@ -10,11 +10,11 @@ import patterns
 import pyparsing
 import re
 import subprocess
-from data import PatchTestInput
+from patchtest_parser import PatchtestParser
 
 def headlog():
     output = subprocess.check_output(
-        "cd %s; git log --pretty='%%h#%%aN#%%cD:#%%s' -1" % PatchTestInput.repodir,
+        "cd %s; git log --pretty='%%h#%%aN#%%cD:#%%s' -1" % PatchtestParser.repodir,
         universal_newlines=True,
         shell=True
         )
@@ -77,18 +77,25 @@ class TestMbox(base.Base):
                           commit=commit)
 
     def test_series_merge_on_head(self):
-        if PatchTestInput.repo.patch.branch != "master":
+        if PatchtestParser.repo.patch.branch != "master":
             self.skip(
                 "Skipping merge test since patch is not intended"
                 " for master branch. Target detected is %s"
-                % PatchTestInput.repo.patch.branch
+                % PatchtestParser.repo.patch.branch
             )
-        if not PatchTestInput.repo.canbemerged:
+        if not PatchtestParser.repo.canbemerged:
             commithash, author, date, shortlog = headlog()
-            self.fail('Series does not apply on top of target branch %s'
-                      % PatchTestInput.repo.patch.branch,
-                      data=[('Targeted branch', '%s (currently at %s)' %
-                             (PatchTestInput.repo.patch.branch, commithash))])
+            self.fail(
+                "Series does not apply on top of target branch %s"
+                % PatchtestParser.repo.patch.branch,
+                data=[
+                    (
+                        "Targeted branch",
+                        "%s (currently at %s)"
+                        % (PatchtestParser.repo.patch.branch, commithash),
+                    )
+                ],
+            )
 
     def test_target_mailing_list(self):
         """Check for other targeted projects"""

@@ -8,7 +8,7 @@ import unittest
 import logging
 import json
 import unidiff
-from data import PatchTestInput
+from patchtest_parser import PatchtestParser
 import mailbox
 import patterns
 import collections
@@ -65,13 +65,15 @@ class Base(unittest.TestCase):
     def setUpClass(cls):
 
         # General objects: mailbox.mbox and patchset
-        cls.mbox = mailbox.mbox(PatchTestInput.repo.patch.path)
+        cls.mbox = mailbox.mbox(PatchtestParser.repo.patch.path)
 
         # Patch may be malformed, so try parsing it
         cls.unidiff_parse_error = ''
         cls.patchset = None
         try:
-            cls.patchset = unidiff.PatchSet.from_filename(PatchTestInput.repo.patch.path, encoding=u'UTF-8')
+            cls.patchset = unidiff.PatchSet.from_filename(
+                PatchtestParser.repo.patch.path, encoding="UTF-8"
+            )
         except unidiff.UnidiffParseError as upe:
             cls.patchset = []
             cls.unidiff_parse_error = str(upe)
@@ -148,7 +150,7 @@ class Metadata(Base):
 
         # import relevant libraries
         try:
-            scripts_path = os.path.join(PatchTestInput.repodir, 'scripts', 'lib')
+            scripts_path = os.path.join(PatchtestParser.repodir, "scripts", "lib")
             if scripts_path not in sys.path:
                 sys.path.insert(0, scripts_path)
             import scriptpath
@@ -223,11 +225,23 @@ class Metadata(Base):
         for patch in patchset:
             if patch.path.endswith('.bb') or patch.path.endswith('.bbappend') or patch.path.endswith('.inc'):
                 if patch.is_added_file:
-                    added_paths.append(os.path.join(os.path.abspath(PatchTestInput.repodir), patch.path))
+                    added_paths.append(
+                        os.path.join(
+                            os.path.abspath(PatchtestParser.repodir), patch.path
+                        )
+                    )
                 elif patch.is_modified_file:
-                    modified_paths.append(os.path.join(os.path.abspath(PatchTestInput.repodir), patch.path))
+                    modified_paths.append(
+                        os.path.join(
+                            os.path.abspath(PatchtestParser.repodir), patch.path
+                        )
+                    )
                 elif patch.is_removed_file:
-                    removed_paths.append(os.path.join(os.path.abspath(PatchTestInput.repodir), patch.path))
+                    removed_paths.append(
+                        os.path.join(
+                            os.path.abspath(PatchtestParser.repodir), patch.path
+                        )
+                    )
 
         data = cls.tinfoil.cooker.recipecaches[''].pkg_fn.items()
 

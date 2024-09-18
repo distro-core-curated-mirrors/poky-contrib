@@ -5,10 +5,14 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import base
+import collections
 import os
 import patterns
 import pyparsing
-from data import PatchTestInput, PatchTestDataStore
+from patchtest_parser import PatchtestParser
+
+# Data store commonly used to share values between pre and post-merge tests
+PatchTestDataStore = collections.defaultdict(str)
 
 class TestMetadata(base.Metadata):
 
@@ -96,8 +100,8 @@ class TestMetadata(base.Metadata):
 
     def pretest_src_uri_left_files(self):
         # these tests just make sense on patches that can be merged
-        if not PatchTestInput.repo.canbemerged:
-            self.skip('Patch cannot be merged')
+        if not PatchtestParser.repo.canbemerged:
+            self.skip("Patch cannot be merged")
         if not self.modified:
             self.skip('No modified recipes, skipping pretest')
 
@@ -111,8 +115,8 @@ class TestMetadata(base.Metadata):
 
     def test_src_uri_left_files(self):
         # these tests just make sense on patches that can be merged
-        if not PatchTestInput.repo.canbemerged:
-            self.skip('Patch cannot be merged')
+        if not PatchtestParser.repo.canbemerged:
+            self.skip("Patch cannot be merged")
         if not self.modified:
             self.skip('No modified recipes, skipping pretest')
 
@@ -168,8 +172,12 @@ class TestMetadata(base.Metadata):
     def test_cve_check_ignore(self):
         # Skip if we neither modified a recipe or target branches are not
         # Nanbield and newer. CVE_CHECK_IGNORE was first deprecated in Nanbield.
-        if not self.modified or PatchTestInput.repo.patch.branch == "kirkstone" or PatchTestInput.repo.patch.branch == "dunfell":
-            self.skip('No modified recipes or older target branch, skipping test')
+        if (
+            not self.modified
+            or PatchtestParser.repo.patch.branch == "kirkstone"
+            or PatchtestParser.repo.patch.branch == "dunfell"
+        ):
+            self.skip("No modified recipes or older target branch, skipping test")
         for pn in self.modified:
             # we are not interested in images
             if 'core-image' in pn:
