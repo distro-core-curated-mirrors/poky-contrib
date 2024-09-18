@@ -6,7 +6,7 @@
 
 import base
 import collections
-import patterns
+import patchtest_patterns
 import pyparsing
 import re
 import subprocess
@@ -44,11 +44,13 @@ class TestMbox(base.Base):
     def test_signed_off_by_presence(self):
         for commit in self.commits:
             # skip those patches that revert older commits, these do not required the tag presence
-            if patterns.mbox_revert_shortlog_regex.search_string(commit.shortlog):
+            if patchtest_patterns.mbox_revert_shortlog_regex.search_string(commit.shortlog):
                 continue
-            if not patterns.signed_off_by.search_string(commit.payload):
-                self.fail('Mbox is missing Signed-off-by. Add it manually or with "git commit --amend -s"',
-                          commit=commit)
+            if not patchtest_patterns.signed_off_by.search_string(commit.payload):
+                self.fail(
+                    'Mbox is missing Signed-off-by. Add it manually or with "git commit --amend -s"',
+                    commit=commit,
+                )
 
     def test_shortlog_format(self):
         for commit in self.commits:
@@ -60,7 +62,7 @@ class TestMbox(base.Base):
                 if shortlog.startswith('Revert "'):
                     continue
                 try:
-                    patterns.shortlog.parseString(shortlog)
+                    patchtest_patterns.shortlog.parseString(shortlog)
                 except pyparsing.ParseException as pe:
                     self.fail('Commit shortlog (first line of commit message) should follow the format "<target>: <summary>"',
                               commit=commit)
@@ -72,9 +74,12 @@ class TestMbox(base.Base):
             if shortlog.startswith('Revert "'):
                 continue
             l = len(shortlog)
-            if l > patterns.mbox_shortlog_maxlength:
-                self.fail('Edit shortlog so that it is %d characters or less (currently %d characters)' % (patterns.mbox_shortlog_maxlength, l),
-                          commit=commit)
+            if l > patchtest_patterns.mbox_shortlog_maxlength:
+                self.fail(
+                    "Edit shortlog so that it is %d characters or less (currently %d characters)"
+                    % (patchtest_patterns.mbox_shortlog_maxlength, l),
+                    commit=commit,
+                )
 
     def test_series_merge_on_head(self):
         if PatchtestParser.repo.patch.branch != "master":
@@ -130,18 +135,27 @@ class TestMbox(base.Base):
 
     def test_bugzilla_entry_format(self):
         for commit in self.commits:
-            if not patterns.mbox_bugzilla.search_string(commit.commit_message):
+            if not patchtest_patterns.mbox_bugzilla.search_string(commit.commit_message):
                 self.skip("No bug ID found")
-            elif not patterns.mbox_bugzilla_validation.search_string(commit.commit_message):
-                self.fail('Bugzilla issue ID is not correctly formatted - specify it with format: "[YOCTO #<bugzilla ID>]"', commit=commit)
+            elif not patchtest_patterns.mbox_bugzilla_validation.search_string(
+                commit.commit_message
+            ):
+                self.fail(
+                    'Bugzilla issue ID is not correctly formatted - specify it with format: "[YOCTO #<bugzilla ID>]"',
+                    commit=commit,
+                )
 
     def test_author_valid(self):
         for commit in self.commits:
-            for invalid in patterns.invalid_submitters:
+            for invalid in patchtest_patterns.invalid_submitters:
                 if invalid.search_string(commit.author):
                     self.fail('Invalid author %s. Resend the series with a valid patch author' % commit.author, commit=commit)
 
     def test_non_auh_upgrade(self):
         for commit in self.commits:
-            if patterns.auh_email in commit.commit_message:
-                self.fail('Invalid author %s. Resend the series with a valid patch author' % patterns.auh_email, commit=commit)
+            if patchtest_patterns.auh_email in commit.commit_message:
+                self.fail(
+                    "Invalid author %s. Resend the series with a valid patch author"
+                    % patchtest_patterns.auh_email,
+                    commit=commit,
+                )

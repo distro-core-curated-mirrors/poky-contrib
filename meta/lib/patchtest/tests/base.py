@@ -10,7 +10,7 @@ import json
 import unidiff
 from patchtest_parser import PatchtestParser
 import mailbox
-import patterns
+import patchtest_patterns
 import collections
 import sys
 import os
@@ -49,7 +49,7 @@ class Base(unittest.TestCase):
     @staticmethod
     def commit_message(payload):
         commit_message = payload.__str__()
-        match = patterns.endcommit_messages_regex.search(payload)
+        match = patchtest_patterns.endcommit_messages_regex.search(payload)
         if match:
             commit_message = payload[:match.start()]
         return commit_message
