@@ -79,10 +79,12 @@ class GccSelfTestBase(OESelftestTestCase, OEPTestResultTestCase):
         bitbake("core-image-minimal")
 
         # wrap the execution with a qemu instance
-        with runqemu("core-image-minimal", runqemuparams = "nographic") as qemu:
+        with runqemu("core-image-minimal", runqemuparams = "nographic", qemuparams = "-m 512") as qemu:
             # validate that SSH is working
             status, _ = qemu.run("uname")
             self.assertEqual(status, 0)
+            qemu.run('echo "MaxStartups 75:30:100" >> /etc/ssh/sshd_config')
+            qemu.run('service sshd restart')
 
             return self.run_check(*args, ssh=qemu.ip, **kwargs)
 
