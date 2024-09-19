@@ -1,0 +1,177 @@
+#!/usr/bin/env python3
+# ex:ts=4:sw=4:sts=4:et
+# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
+#
+# patchtest2: execute all unittest test cases discovered for a single
+# patch, with new API usage!
+#
+# Copyright (C) 2024 BayLibre SAS
+#
+# SPDX-License-Identifier: GPL-2.0-only
+#
+
+import argparse
+import git
+import logging
+import os
+import re
+import sys
+import unittest
+
+
+# Include current path so test cases can see it
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+
+# Include patchtest library
+sys.path.insert(
+    0,
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "../meta/lib/patchtest"),
+)
+
+from patchtest import PatchSeries, TargetRepo
+
+logger = logging.getLogger("patchtest")
+loggerhandler = logging.StreamHandler()
+loggerhandler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(loggerhandler)
+logger.setLevel(logging.INFO)
+info = logger.info
+error = logger.error
+
+default_testdir = os.path.abspath(os.path.dirname(__file__) +
+                                  "/../meta/lib/patchtest/tests")
+default_repodir = os.path.abspath(os.path.dirname(__file__) +
+                                  "/../")
+
+def get_parser():
+    parser = argparse.ArgumentParser()
+
+    # patch_filepath can either be a single file, or a directory
+    target_patch_group = parser.add_mutually_exclusive_group(required=True)
+    target_patch_group.add_argument(
+        "--patch", metavar="PATCH", dest="patch_filepath", help="The patch to be tested"
+    )
+    target_patch_group.add_argument(
+        "--directory",
+        metavar="DIRECTORY",
+        dest="patch_dir",
+        help="The directory containing patches to be tested",
+    )
+
+    parser.add_argument(
+        "--repodir",
+        metavar="REPO",
+        default=default_repodir,
+        help="Name of the repository where patch is merged",
+    )
+
+    parser.add_argument(
+        "--testdir",
+        metavar="TESTDIR",
+        default=default_testdir,
+        help="Directory where test cases are located",
+    )
+
+    parser.add_argument(
+        "--top-level-directory",
+        "-t",
+        dest="topdir",
+        default=None,
+        help="Top level directory of project (defaults to start directory)",
+    )
+
+    parser.add_argument(
+        "--pattern",
+        "-p",
+        dest="pattern",
+        default="test*.py",
+        help="Pattern to match test files",
+    )
+
+    parser.add_argument(
+        "--base-commit",
+        "-c",
+        dest="basecommit",
+        help="Commit ID used by patchtest to branch from. By default, it uses HEAD.",
+    )
+
+    parser.add_argument(
+        "--log-results",
+        action="store_true",
+        help='Enable logging to a file matching the target patch name with ".testresult" appended',
+    )
+
+    parser.add_argument(
+        "--target-branch",
+        "-b",
+        dest="target_branch",
+        help="Branch to test the patch against. If not provided, master will be used.",
+    )
+
+
+    return parser
+
+def main(args):
+    patch_filepath = args.patch_filepath
+    git_status = os.popen("(cd %s && git status)" % args.repodir).read()
+    status_matches = ["Changes not staged for commit", "Changes to be committed"]
+    if any([match in git_status for match in status_matches]):
+        logger.error(
+            "patchtest: there are uncommitted changes in the target repo that would be overwritten. Please commit or restore them before running patchtest"
+        )
+        return 1
+
+    if os.path.isdir(patch_filepath):
+        patchfile_list = [
+            os.path.join(patch_filepath, filename)
+            for filename in sorted(os.listdir(patch_filepath))
+        ]
+    else:
+        patchfile_list = [patch_filepath]
+
+    target_repo = TargetRepo(args.repodir)
+
+    for patchfile in patchfile_list:
+        if os.path.getsize(patchfile) == 0:
+            logger.error("patchtest: patch is empty")
+            return 1
+
+        logger.info("Testing patch %s" % patchfile)
+
+        if args.log_results:
+            log_path = patch + ".testresult"
+            with open(log_path, "a") as f:
+                f.write("Patchtest results for patch '%s':\n\n" %
+                        patchfile)
+
+        unittest.installHandler()
+
+        series = PatchSeries(patchfile)
+
+        test_merge(target_repo, patchfile)
+
+def test_merge(target_repo, patchfile):
+    result = target_repo.can_be_merged(patchfile)
+    if result != True:
+        regexp = re.compile("Patch failed at [0-9]{4} (.*)")
+        failing_commit = regexp.search(str(result)).group(1)
+
+        print(f"merge test failed at commit with subject: '{failing_commit}'")
+
+
+if __name__ == "__main__":
+    ret = 1
+
+    # parse input
+    parser = get_parser()
+    patchtest_args = parser.parse_args()
+
+    try:
+        ret = main(patchtest_args)
+    except Exception:
+        import traceback
+
+        traceback.print_exc(5)
+
+    sys.exit(ret)
+
