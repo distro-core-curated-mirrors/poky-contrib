@@ -280,7 +280,7 @@ EXTRA_OEMAKE:prepend:task-check = "${PARALLEL_MAKE} "
 MAKE_CHECK_TARGETS ??= "check-gcc ${@" ".join("check-target-" + i for i in d.getVar("RUNTIMETARGET").split())}"
 # prettyprinters and xmethods require gdb tooling
 MAKE_CHECK_IGNORE ??= "prettyprinters.exp xmethods.exp"
-MAKE_CHECK_RUNTESTFLAGS ??= "${MAKE_CHECK_BOARDARGS} --ignore '${MAKE_CHECK_IGNORE}'"
+MAKE_CHECK_RUNTESTFLAGS ??= "${MAKE_CHECK_BOARDARGS} --ignore '${MAKE_CHECK_IGNORE}' -r vect.exp"
 
 # specific host and target dependencies required for test suite running
 do_check[depends] += "dejagnu-native:do_populate_sysroot expect-native:do_populate_sysroot"
