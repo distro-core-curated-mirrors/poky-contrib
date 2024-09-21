@@ -320,7 +320,6 @@ class VariableHistory(object):
             else:
                 o.write("#\n# $%s [%d operations]\n" % (var, len(history)))
             for event in history:
-                # o.write("# %s\n" % str(event))
                 if 'func' in event:
                     # If we have a function listed, this is internal
                     # code, not an operation in a config file, and the
@@ -540,7 +539,6 @@ class DataSmart(MutableMapping):
         return var in self.overridedata
 
     def setVar(self, var, value, **loginfo):
-        #print("var=" + str(var) + "  val=" + str(value))
 
         if not var.startswith("__anon_") and ("_append" in var or "_prepend" in var or "_remove" in var):
             info = "%s" % var
