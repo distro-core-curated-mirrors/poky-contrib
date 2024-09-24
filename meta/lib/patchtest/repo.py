@@ -12,10 +12,11 @@ import git
 import os
 import mbox
 
+
 class PatchTestRepo(object):
 
     # prefixes used for temporal branches/stashes
-    prefix = 'patchtest'
+    prefix = "patchtest"
 
     def __init__(self, patch, repodir, commit=None, branch=None):
         self.repodir = repodir
@@ -28,23 +29,27 @@ class PatchTestRepo(object):
         valid_patch_branch = None
         if self.patch.branch in self.repo.branches:
             valid_patch_branch = self.patch.branch
-            
+
         # Target Commit
         # Priority (top has highest priority):
         #    1. commit given at cmd line
         #    2. branch given at cmd line
         #    3. branch given at the patch
         #    3. current HEAD
-        self._commit = self._get_commitid(commit) or \
-          self._get_commitid(branch) or \
-          self._get_commitid(valid_patch_branch) or \
-          self._get_commitid('HEAD')
+        self._commit = (
+            self._get_commitid(commit)
+            or self._get_commitid(branch)
+            or self._get_commitid(valid_patch_branch)
+            or self._get_commitid("HEAD")
+        )
 
         self._workingbranch = "%s_%s" % (PatchTestRepo.prefix, os.getpid())
 
         # create working branch. Use the '-B' flag so that we just
         # check out the existing one if it's there
-        self.repo.git.execute(['git', 'checkout', '-B', self._workingbranch, self._commit])
+        self.repo.git.execute(
+            ["git", "checkout", "-B", self._workingbranch, self._commit]
+        )
 
         self._patchmerged = False
 
@@ -52,7 +57,10 @@ class PatchTestRepo(object):
         self._patchcanbemerged = True
         try:
             # Make sure to get the absolute path of the file
-            self.repo.git.execute(['git', 'apply', '--check', os.path.abspath(self.patch.path)], with_exceptions=True)
+            self.repo.git.execute(
+                ["git", "apply", "--check", os.path.abspath(self.patch.path)],
+                with_exceptions=True,
+            )
         except git.exc.GitCommandError as ce:
             self._patchcanbemerged = False
 
@@ -76,10 +84,12 @@ class PatchTestRepo(object):
 
     def merge(self):
         if self._patchcanbemerged:
-            self.repo.git.execute(['git', 'am', '--keep-cr', os.path.abspath(self.patch.path)])
+            self.repo.git.execute(
+                ["git", "am", "--keep-cr", os.path.abspath(self.patch.path)]
+            )
             self._patchmerged = True
 
     def clean(self):
-        self.repo.git.execute(['git', 'checkout', self.current_branch])
-        self.repo.git.execute(['git', 'branch', '-D', self._workingbranch])
+        self.repo.git.execute(["git", "checkout", self.current_branch])
+        self.repo.git.execute(["git", "branch", "-D", self._workingbranch])
         self._patchmerged = False

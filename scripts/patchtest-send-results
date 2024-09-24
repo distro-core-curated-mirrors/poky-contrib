@@ -10,7 +10,7 @@
 # Copyright (C) 2023 BayLibre Inc.
 #
 # SPDX-License-Identifier: GPL-2.0-only
-# 
+#
 
 import argparse
 import boto3
@@ -33,19 +33,36 @@ under 'Yocto Project Subprojects'). For more information on specific
 failures, see: https://wiki.yoctoproject.org/wiki/Patchtest. Thank
 you!"""
 
-def has_a_failed_test(raw_results):
-    return any(raw_result.split(':')[0] == "FAIL" for raw_result in raw_results.splitlines())
 
-parser = argparse.ArgumentParser(description="Send patchtest results to a submitter for a given patch")
-parser.add_argument("-p", "--patch", dest="patch", required=True, help="The patch file to summarize")
-parser.add_argument("-d", "--debug", dest="debug", required=False, action='store_true', help="Print raw email headers and content, but don't actually send it")
+def has_a_failed_test(raw_results):
+    return any(
+        raw_result.split(":")[0] == "FAIL" for raw_result in raw_results.splitlines()
+    )
+
+
+parser = argparse.ArgumentParser(
+    description="Send patchtest results to a submitter for a given patch"
+)
+parser.add_argument(
+    "-p", "--patch", dest="patch", required=True, help="The patch file to summarize"
+)
+parser.add_argument(
+    "-d",
+    "--debug",
+    dest="debug",
+    required=False,
+    action="store_true",
+    help="Print raw email headers and content, but don't actually send it",
+)
 args = parser.parse_args()
 
 if not os.path.exists(args.patch):
     print(f"Patch '{args.patch}' not found - did you provide the right path?")
     sys.exit(1)
 elif not os.path.exists(args.patch + ".testresult"):
-    print(f"Found patch '{args.patch}' but '{args.patch}.testresult' was not present. Have you run patchtest on the patch?")
+    print(
+        f"Found patch '{args.patch}' but '{args.patch}.testresult' was not present. Have you run patchtest on the patch?"
+    )
     sys.exit(1)
 
 result_file = args.patch + ".testresult"
@@ -57,17 +74,17 @@ with open(result_file, "r") as f:
 # we know these patch files will only contain a single patch, so only
 # worry about the first element for getting the subject
 mbox = mailbox.mbox(args.patch)
-mbox_subject = mbox[0]['subject']
+mbox_subject = mbox[0]["subject"]
 subject_line = f"Patchtest results for {mbox_subject}"
 
 # extract the submitter email address and use it as the reply address
 # for the results
-reply_address = mbox[0]['from']
+reply_address = mbox[0]["from"]
 
 # extract the message ID and use that as the in-reply-to address
 # TODO: This will need to change again when patchtest can handle a whole
 # series at once
-in_reply_to = mbox[0]['Message-ID']
+in_reply_to = mbox[0]["Message-ID"]
 
 # the address the results email is sent from
 from_address = "patchtest@automation.yoctoproject.org"
@@ -77,24 +94,35 @@ cc_address = "openembedded-core@lists.openembedded.org"
 
 if has_a_failed_test(testresult):
     reply_contents = None
-    if len(max(open(result_file, 'r'), key=len)) > 220:
+    if len(max(open(result_file, "r"), key=len)) > 220:
         warning = "Tests failed for the patch, but the results log could not be processed due to excessive result line length."
         reply_contents = greeting + warning + suggestions
     else:
         reply_contents = greeting + testresult + suggestions
 
-    ses_client = boto3.client('ses', region_name='us-west-2')
+    ses_client = boto3.client("ses", region_name="us-west-2")
 
     # Construct the headers for the email. We only want to reply
     # directly to the tested patch, so make In-Reply-To and References
     # the same value.
-    raw_data = 'From: ' + from_address + '\nTo: ' + reply_address + \
-        '\nCC: ' + cc_address + '\nSubject:' + subject_line + \
-        '\nIn-Reply-To:' + in_reply_to + \
-        '\nReferences:' + in_reply_to + \
-        '\nMIME-Version: 1.0" + \
-        "\nContent-type: Multipart/Mixed;boundary="NextPart"\n\n--NextPart\nContent-Type: text/plain\n\n' + \
-        reply_contents + '\n\n--NextPart'
+    raw_data = (
+        "From: "
+        + from_address
+        + "\nTo: "
+        + reply_address
+        + "\nCC: "
+        + cc_address
+        + "\nSubject:"
+        + subject_line
+        + "\nIn-Reply-To:"
+        + in_reply_to
+        + "\nReferences:"
+        + in_reply_to
+        + '\nMIME-Version: 1.0" + \
+        "\nContent-type: Multipart/Mixed;boundary="NextPart"\n\n--NextPart\nContent-Type: text/plain\n\n'
+        + reply_contents
+        + "\n\n--NextPart"
+    )
 
     if args.debug:
         print(f"RawMessage: \n\n{raw_data}")

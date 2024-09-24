@@ -26,13 +26,14 @@ Commit = collections.namedtuple(
     "Commit", ["author", "subject", "commit_message", "shortlog", "payload"]
 )
 
-Commit = collections.namedtuple('Commit', ['author', 'subject', 'commit_message', 'shortlog', 'payload'])
 
 class PatchtestOEError(Exception):
     """Exception for handling patchtest-oe errors"""
+
     def __init__(self, message, exitcode=1):
         super().__init__(message)
         self.exitcode = exitcode
+
 
 class Base(unittest.TestCase):
     # if unit test fails, fail message will throw at least the following JSON: {"id": <testid>}
@@ -40,26 +41,28 @@ class Base(unittest.TestCase):
     @staticmethod
     def msg_to_commit(msg):
         payload = msg.get_payload()
-        return Commit(subject=msg['subject'].replace('\n', ' ').replace('  ', ' '),
-                      author=msg.get('From'),
-                      shortlog=Base.shortlog(msg['subject']),
-                      commit_message=Base.commit_message(payload),
-                      payload=payload)
+        return Commit(
+            subject=msg["subject"].replace("\n", " ").replace("  ", " "),
+            author=msg.get("From"),
+            shortlog=Base.shortlog(msg["subject"]),
+            commit_message=Base.commit_message(payload),
+            payload=payload,
+        )
 
     @staticmethod
     def commit_message(payload):
         commit_message = payload.__str__()
         match = patchtest_patterns.endcommit_messages_regex.search(payload)
         if match:
-            commit_message = payload[:match.start()]
+            commit_message = payload[: match.start()]
         return commit_message
 
     @staticmethod
     def shortlog(shlog):
         # remove possible prefix (between brackets) before colon
-        start = shlog.find(']', 0, shlog.find(':'))
+        start = shlog.find("]", 0, shlog.find(":"))
         # remove also newlines and spaces at both sides
-        return shlog[start + 1:].replace('\n', '').strip()
+        return shlog[start + 1 :].replace("\n", "").strip()
 
     @classmethod
     def setUpClass(cls):
@@ -68,7 +71,7 @@ class Base(unittest.TestCase):
         cls.mbox = mailbox.mbox(PatchtestParser.repo.patch.path)
 
         # Patch may be malformed, so try parsing it
-        cls.unidiff_parse_error = ''
+        cls.unidiff_parse_error = ""
         cls.patchset = None
         try:
             cls.patchset = unidiff.PatchSet.from_filename(
@@ -81,7 +84,7 @@ class Base(unittest.TestCase):
         # Easy to iterate list of commits
         cls.commits = []
         for msg in cls.mbox:
-            if msg['subject'] and msg.get_payload():
+            if msg["subject"] and msg.get_payload():
                 cls.commits.append(Base.msg_to_commit(msg))
 
         cls.setUpClassLocal()
@@ -99,38 +102,36 @@ class Base(unittest.TestCase):
         pass
 
     def fail(self, issue, fix=None, commit=None, data=None):
-        """ Convert to a JSON string failure data"""
-        value = {'id': self.id(),
-                 'issue': issue}
+        """Convert to a JSON string failure data"""
+        value = {"id": self.id(), "issue": issue}
 
         if fix:
-            value['fix'] = fix
+            value["fix"] = fix
         if commit:
-            value['commit'] = {'subject': commit.subject,
-                               'shortlog': commit.shortlog}
+            value["commit"] = {"subject": commit.subject, "shortlog": commit.shortlog}
 
         # extend return value with other useful info
         if data:
-            value['data'] = data
+            value["data"] = data
 
         return super(Base, self).fail(json.dumps(value))
 
     def skip(self, issue, data=None):
-        """ Convert the skip string to JSON"""
-        value = {'id': self.id(),
-                 'issue': issue}
+        """Convert the skip string to JSON"""
+        value = {"id": self.id(), "issue": issue}
 
         # extend return value with other useful info
         if data:
-            value['data'] = data
+            value["data"] = data
 
         return super(Base, self).skipTest(json.dumps(value))
 
     def shortid(self):
-        return self.id().split('.')[-1]
+        return self.id().split(".")[-1]
 
     def __str__(self):
-        return json.dumps({'id': self.id()})
+        return json.dumps({"id": self.id()})
+
 
 class Metadata(Base):
     @classmethod
@@ -154,19 +155,20 @@ class Metadata(Base):
             if scripts_path not in sys.path:
                 sys.path.insert(0, scripts_path)
             import scriptpath
+
             scriptpath.add_bitbake_lib_path()
             import bb.tinfoil
         except ImportError:
-            raise PatchtestOEError('Could not import tinfoil module')
+            raise PatchtestOEError("Could not import tinfoil module")
 
         orig_cwd = os.path.abspath(os.curdir)
 
         # Load tinfoil
         tinfoil = None
         try:
-            builddir = os.environ.get('BUILDDIR')
+            builddir = os.environ.get("BUILDDIR")
             if not builddir:
-                logger.warn('Bitbake environment not loaded?')
+                logger.warn("Bitbake environment not loaded?")
                 return tinfoil
             os.chdir(builddir)
             tinfoil = bb.tinfoil.Tinfoil()
@@ -174,7 +176,9 @@ class Metadata(Base):
         except bb.tinfoil.TinfoilUIException as te:
             if tinfoil:
                 tinfoil.shutdown()
-            raise PatchtestOEError('Could not prepare properly tinfoil (TinfoilUIException)')
+            raise PatchtestOEError(
+                "Could not prepare properly tinfoil (TinfoilUIException)"
+            )
         except Exception as e:
             if tinfoil:
                 tinfoil.shutdown()
@@ -194,7 +198,7 @@ class Metadata(Base):
             pn_native = None
             for _path, _pn in data:
                 if path in _path:
-                    if 'native' in _pn:
+                    if "native" in _pn:
                         # store the native PN but look for the non-native one first
                         pn_native = _pn
                     else:
@@ -208,9 +212,9 @@ class Metadata(Base):
                 # on renames (usually upgrades), we need to check (FILE) base names
                 # because the unidiff library does not provided the new filename, just the modified one
                 # and tinfoil datastore, once the patch is merged, will contain the new filename
-                path_basename = path.split('_')[0]
+                path_basename = path.split("_")[0]
                 for _path, _pn in data:
-                    _path_basename = _path.split('_')[0]
+                    _path_basename = _path.split("_")[0]
                     if path_basename == _path_basename:
                         pn = _pn
             return pn
@@ -223,7 +227,11 @@ class Metadata(Base):
 
         # get metadata filename additions, modification and removals
         for patch in patchset:
-            if patch.path.endswith('.bb') or patch.path.endswith('.bbappend') or patch.path.endswith('.inc'):
+            if (
+                patch.path.endswith(".bb")
+                or patch.path.endswith(".bbappend")
+                or patch.path.endswith(".inc")
+            ):
                 if patch.is_added_file:
                     added_paths.append(
                         os.path.join(
@@ -243,10 +251,14 @@ class Metadata(Base):
                         )
                     )
 
-        data = cls.tinfoil.cooker.recipecaches[''].pkg_fn.items()
+        data = cls.tinfoil.cooker.recipecaches[""].pkg_fn.items()
 
-        added = [find_pn(data,path) for path in added_paths]
-        modified = [find_pn(data,path) for path in modified_paths]
-        removed = [find_pn(data,path) for path in removed_paths]
+        added = [find_pn(data, path) for path in added_paths]
+        modified = [find_pn(data, path) for path in modified_paths]
+        removed = [find_pn(data, path) for path in removed_paths]
 
-        return [a for a in added if a], [m for m in modified if m], [r for r in removed if r]
+        return (
+            [a for a in added if a],
+            [m for m in modified if m],
+            [r for r in removed if r],
+        )
