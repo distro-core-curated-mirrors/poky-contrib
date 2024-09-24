@@ -1,4 +1,4 @@
-From 4d4703e0199fb3556c37694e4d951785abca22fd Mon Sep 17 00:00:00 2001
+From 20b224b8ab1837778dfd0e7171643a5d26675f95 Mon Sep 17 00:00:00 2001
 From: Bruce Ashfield <bruce.ashfield@gmail.com>
 Date: Wed, 19 Jan 2022 12:46:42 -0500
 Subject: [PATCH] Revert "libfdt: overlay: make overlay_get_target() public"
@@ -7,6 +7,9 @@ This reverts commit 45f3d1a095dd3440578d5c6313eba555a791f3fb.
 
 Upstream-Status: Inappropriate [embedded specific]
 
+Adjust to apply on v1.7.1.
+
+Signed-off-by: Trevor Gamblin <tgamblin@baylibre.com>
 ---
  libfdt/fdt_overlay.c | 29 ++++++++++++++++++++++-------
  libfdt/libfdt.h      | 18 ------------------
@@ -14,7 +17,7 @@ Upstream-Status: Inappropriate [embedded specific]
  3 files changed, 22 insertions(+), 26 deletions(-)
 
 diff --git a/libfdt/fdt_overlay.c b/libfdt/fdt_overlay.c
-index 5c0c398..d217e79 100644
+index 28b667f..e6e9382 100644
 --- a/libfdt/fdt_overlay.c
 +++ b/libfdt/fdt_overlay.c
 @@ -40,22 +40,37 @@ static uint32_t overlay_get_target_phandle(const void *fdto, int fragment)
@@ -59,7 +62,7 @@ index 5c0c398..d217e79 100644
  		if (path)
  			ret = fdt_path_offset(fdt, path);
  		else
-@@ -621,7 +636,7 @@ static int overlay_merge(void *fdt, void *fdto)
+@@ -848,7 +863,7 @@ static int overlay_merge(void *fdt, void *fdto)
  		if (overlay < 0)
  			return overlay;
  
@@ -68,7 +71,7 @@ index 5c0c398..d217e79 100644
  		if (target < 0)
  			return target;
  
-@@ -764,7 +779,7 @@ static int overlay_symbol_update(void *fdt, void *fdto)
+@@ -991,7 +1006,7 @@ static int overlay_symbol_update(void *fdt, void *fdto)
  			return -FDT_ERR_BADOVERLAY;
  
  		/* get the target of the fragment */
@@ -77,7 +80,7 @@ index 5c0c398..d217e79 100644
  		if (ret < 0)
  			return ret;
  		target = ret;
-@@ -786,7 +801,7 @@ static int overlay_symbol_update(void *fdt, void *fdto)
+@@ -1013,7 +1028,7 @@ static int overlay_symbol_update(void *fdt, void *fdto)
  
  		if (!target_path) {
  			/* again in case setprop_placeholder changed it */
@@ -87,10 +90,10 @@ index 5c0c398..d217e79 100644
  				return ret;
  			target = ret;
 diff --git a/libfdt/libfdt.h b/libfdt/libfdt.h
-index a7f432c..7f117e8 100644
+index 0677fea..c72337b 100644
 --- a/libfdt/libfdt.h
 +++ b/libfdt/libfdt.h
-@@ -2116,24 +2116,6 @@ int fdt_del_node(void *fdt, int nodeoffset);
+@@ -2184,24 +2184,6 @@ int fdt_del_node(void *fdt, int nodeoffset);
   */
  int fdt_overlay_apply(void *fdt, void *fdto);
  
@@ -116,7 +119,7 @@ index a7f432c..7f117e8 100644
  /* Debugging / informational functions                                */
  /**********************************************************************/
 diff --git a/libfdt/version.lds b/libfdt/version.lds
-index cbce5d4..7ab85f1 100644
+index 989cd89..ae5f8c6 100644
 --- a/libfdt/version.lds
 +++ b/libfdt/version.lds
 @@ -77,7 +77,6 @@ LIBFDT_1.2 {
@@ -124,9 +127,9 @@ index cbce5d4..7ab85f1 100644
  		fdt_setprop_inplace_namelen_partial;
  		fdt_create_with_flags;
 -		fdt_overlay_target_offset;
+ 		fdt_get_symbol;
+ 		fdt_get_symbol_namelen;
  	local:
- 		*;
- };
 -- 
-2.19.1
+2.39.5
 

@@ -14,7 +14,7 @@ UPSTREAM_CHECK_GITTAGREGEX = "v(?P<pver>\d+(\.\d+)+)"
 
 LIC_FILES_CHKSUM = "file://pylibfdt/libfdt.i;beginline=1;endline=6;md5=afda088c974174a29108c8d80b5dce90"
 
-SRCREV = "039a99414e778332d8f9c04cbd3072e1dcc62798"
+SRCREV = "99031e3a4a6e479466ae795790b44727434ca27d"
 
 S = "${WORKDIR}/git"
 
