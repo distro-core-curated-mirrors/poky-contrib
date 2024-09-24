@@ -10,6 +10,7 @@ import os
 import patchtest_patterns
 import pyparsing
 
+
 class TestPatch(base.Base):
 
     @classmethod
@@ -17,7 +18,7 @@ class TestPatch(base.Base):
         cls.newpatches = []
         # get just those relevant patches: new software patches
         for patch in cls.patchset:
-            if patch.path.endswith('.patch') and patch.is_added_file:
+            if patch.path.endswith(".patch") and patch.is_added_file:
                 cls.newpatches.append(patch)
 
         cls.mark = str(patchtest_patterns.signed_off_by_prefix).strip('"')
@@ -27,21 +28,27 @@ class TestPatch(base.Base):
 
     def setUp(self):
         if self.unidiff_parse_error:
-            self.skip('Parse error %s' % self.unidiff_parse_error)
+            self.skip("Parse error %s" % self.unidiff_parse_error)
 
-        self.valid_status = ", ".join(patchtest_patterns.upstream_status_nonliteral_valid_status)
+        self.valid_status = ", ".join(
+            patchtest_patterns.upstream_status_nonliteral_valid_status
+        )
         self.standard_format = "Upstream-Status: <Valid status>"
 
         # we are just interested in series that introduce CVE patches, thus discard other
         # possibilities: modification to current CVEs, patch directly introduced into the
         # recipe, upgrades already including the CVE, etc.
-        new_cves = [p for p in self.patchset if p.path.endswith('.patch') and p.is_added_file]
+        new_cves = [
+            p for p in self.patchset if p.path.endswith(".patch") and p.is_added_file
+        ]
         if not new_cves:
-            self.skip('No new CVE patches introduced')
+            self.skip("No new CVE patches introduced")
 
     def test_upstream_status_presence_format(self):
         if not TestPatch.newpatches:
-            self.skip("There are no new software patches, no reason to test Upstream-Status presence/format")
+            self.skip(
+                "There are no new software patches, no reason to test Upstream-Status presence/format"
+            )
 
         for newpatch in TestPatch.newpatches:
             payload = newpatch.__str__()
@@ -91,7 +98,9 @@ class TestPatch(base.Base):
                             )
                     else:
                         try:
-                            patchtest_patterns.upstream_status.parseString(line.lstrip("+"))
+                            patchtest_patterns.upstream_status.parseString(
+                                line.lstrip("+")
+                            )
                         except pyparsing.ParseException as pe:
                             self.fail(
                                 "Upstream-Status is in incorrect format",
@@ -104,7 +113,10 @@ class TestPatch(base.Base):
 
     def test_signed_off_by_presence(self):
         if not TestPatch.newpatches:
-            self.skip("There are no new software patches, no reason to test %s presence" % PatchSignedOffBy.mark)
+            self.skip(
+                "There are no new software patches, no reason to test %s presence"
+                % PatchSignedOffBy.mark
+            )
 
         for newpatch in TestPatch.newpatches:
             payload = newpatch.__str__()
@@ -114,7 +126,10 @@ class TestPatch(base.Base):
                 if TestPatch.prog.search_string(payload):
                     break
             else:
-                self.fail('A patch file has been added without a Signed-off-by tag: \'%s\'' % os.path.basename(newpatch.path))
+                self.fail(
+                    "A patch file has been added without a Signed-off-by tag: '%s'"
+                    % os.path.basename(newpatch.path)
+                )
 
     def test_cve_tag_format(self):
         for commit in TestPatch.commits:
@@ -127,5 +142,7 @@ class TestPatch(base.Base):
                         tag_found = True
                         break
                 if not tag_found:
-                    self.fail('Missing or incorrectly formatted CVE tag in patch file. Correct or include the CVE tag in the patch with format: "CVE: CVE-YYYY-XXXX"',
-                              commit=commit)
+                    self.fail(
+                        'Missing or incorrectly formatted CVE tag in patch file. Correct or include the CVE tag in the patch with format: "CVE: CVE-YYYY-XXXX"',
+                        commit=commit,
+                    )

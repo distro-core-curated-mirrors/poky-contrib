@@ -13,11 +13,12 @@
 import email
 import re
 
+
 # From: https://stackoverflow.com/questions/59681461/read-a-big-mbox-file-with-python
 class MboxReader:
     def __init__(self, filepath):
-        self.handle = open(filepath, 'rb')
-        assert self.handle.readline().startswith(b'From ')
+        self.handle = open(filepath, "rb")
+        assert self.handle.readline().startswith(b"From ")
 
     def __enter__(self):
         return self
@@ -32,23 +33,25 @@ class MboxReader:
         lines = []
         while True:
             line = self.handle.readline()
-            if line == b'' or line.startswith(b'From '):
-                yield email.message_from_bytes(b''.join(lines))
-                if line == b'':
+            if line == b"" or line.startswith(b"From "):
+                yield email.message_from_bytes(b"".join(lines))
+                if line == b"":
                     break
                 lines = []
                 continue
             lines.append(line)
 
+
 class Patch:
     def __init__(self, data):
-        self.author = data['From']
-        self.to = data['To']
-        self.cc = data['Cc']
-        self.subject = data['Subject']
-        self.split_body = re.split('---', data.get_payload(), maxsplit=1)
+        self.author = data["From"]
+        self.to = data["To"]
+        self.cc = data["Cc"]
+        self.subject = data["Subject"]
+        self.split_body = re.split("---", data.get_payload(), maxsplit=1)
         self.commit_message = self.split_body[0]
         self.diff = self.split_body[1]
+
 
 class PatchSeries:
     def __init__(self, filepath):
@@ -78,8 +81,8 @@ class PatchSeries:
         branch, branches, valid_branches = None, [], []
 
         if fullprefix:
-            prefix = fullprefix.strip('[]')
-            branches = [ b.strip() for b in prefix.split(',')]
+            prefix = fullprefix.strip("[]")
+            branches = [b.strip() for b in prefix.split(",")]
             valid_branches = [b for b in branches if PatchSeries.valid_branch(b)]
 
         if len(valid_branches):
@@ -89,20 +92,21 @@ class PatchSeries:
         # found, then assume there was no branch tag in the subject line
         # and that the patch targets master
         if branch is not None:
-            return branch.split(']')[0]
+            return branch.split("]")[0]
         else:
             return "master"
 
     @staticmethod
     def valid_branch(branch):
-        """ Check if branch is valid name """
+        """Check if branch is valid name"""
         lbranch = branch.lower()
 
-        invalid  = lbranch.startswith('patch') or \
-                   lbranch.startswith('rfc') or \
-                   lbranch.startswith('resend') or \
-                   re.search(r'^v\d+', lbranch) or \
-                   re.search(r'^\d+/\d+', lbranch)
+        invalid = (
+            lbranch.startswith("patch")
+            or lbranch.startswith("rfc")
+            or lbranch.startswith("resend")
+            or re.search(r"^v\d+", lbranch)
+            or re.search(r"^\d+/\d+", lbranch)
+        )
 
         return not invalid
-
