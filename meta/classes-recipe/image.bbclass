@@ -324,14 +324,19 @@ addtask do_image_complete_setscene
 # IMAGE_QA_COMMANDS += " \
 #     image_check_everything_ok \
 # "
+#
 # This task runs all functions in IMAGE_QA_COMMANDS after the rootfs
 # construction has completed in order to validate the resulting image.
 #
 # The functions should use ${IMAGE_ROOTFS} to find the unpacked rootfs
 # directory, which if QA passes will be the basis for the images.
 #
-# The functions should use oe.utils.ImageQAFailed(description, name) to raise
-# errors. The name must be listed in ERROR_QA or WARN_QA to prompt.
+# The functions are expected to call oe.qa.handle_error() to report any
+# problems. Alternatively, they can raise
+# oe.utils.ImageQAFailed(description, name), in which case the name
+# needs to be present in either ERROR_QA or WARN_QA for the message to
+# show. Raising ImageQAFailed is deprecated and will be removed in the
+# next major release of OE Core.
 fakeroot python do_image_qa () {
     from oe.utils import ImageQAFailed
 
@@ -343,8 +348,6 @@ fakeroot python do_image_qa () {
         except oe.utils.ImageQAFailed as e:
             qamsg = 'Image QA function %s failed: %s\n' % (e.name, e.description)
             oe.qa.handle_error(e.name, qamsg, d)
-        except Exception as e:
-            qamsg = qamsg + '\tImage QA function %s failed: %s\n' % (cmd, e)
 
     oe.qa.exit_if_errors(d)
 }
