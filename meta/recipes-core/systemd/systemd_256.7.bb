@@ -913,3 +913,49 @@ pkg_postinst:udev-hwdb () {
 pkg_prerm:udev-hwdb () {
 	rm -f $D${sysconfdir}/udev/hwdb.bin
 }
+
+
+PACKAGEFUNCS =+ "package_generate_dlopen_deps"
+# no dep on pyelftool so likely will blow up
+PACKAGE_DEPENDS += "package-notes-native"
+
+python package_generate_dlopen_deps() {
+    import subprocess
+
+    priority_map = {
+        1: "RSUGGESTS",
+        2: "RRECOMMENDS",
+        3: "RDEPENDS"
+    }
+    dep_map = {
+        "recommended": "RRECOMMENDS"
+    }
+    shlibs = oe.package.read_shlib_providers(d)
+
+    for pkg, files in pkgfiles.items():
+        for f in files:
+            if cpath.islink(f):
+                continue
+            # YUCK
+            if ".so" in f:
+                # TODO tries to scan debug info
+                bb.warn(f"{pkg} {f}")
+                try:
+                    # TODO no kmod in my testing?
+                    # Produces lines of the form "libzstd.so.1 recommended"
+                    cmd = ("dlopen-notes.py", "--sonames", f)
+                    out = subprocess.run(cmd, capture_output=True, text=True, check=True)
+                    for line in out.stdout.splitlines():
+                        library, priority = line.rsplit(" ", 1)
+                        dependency = dep_map[priority]
+                        if library in shlibs:
+                            # TODO don't just take first
+                            package_deps = list(shlibs[library].values())[0]
+                            d.appendVar(f"{dependency}:{pkg}", f" {package_deps[0]} (>= {package_deps[1]})")
+                        else:
+                            bb.warn(f"cannot find {library}")
+                except subprocess.CalledProcessError as e:
+                    # eg tries to scan packages-split/systemd-doc/usr/share/man/man8/libnss_resolve.so.2.8.
+                    # TODO elf check. add this to cpath maybe?
+                    bb.note(str(e))
+}
