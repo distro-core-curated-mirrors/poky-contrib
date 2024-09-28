@@ -1,4 +1,4 @@
-From e79835037312f8d58c8c555e1ebf5746e09d10cd Mon Sep 17 00:00:00 2001
+From 5902caf1165d85ddc272f736dee7518e4dcb6565 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 7 Aug 2020 14:31:16 -0700
 Subject: [PATCH] powerpc: Do not ask compiler for finding arch

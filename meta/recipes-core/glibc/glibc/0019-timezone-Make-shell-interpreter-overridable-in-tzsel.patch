@@ -1,4 +1,4 @@
-From 99aac9db31f52c3b59b32c424b26d881069aa5df Mon Sep 17 00:00:00 2001
+From 928e1fd6cecca2cb8751c5c69d23b8c59c54b63c Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Thu, 9 Dec 2021 15:14:42 -0800
 Subject: [PATCH] timezone: Make shell interpreter overridable in tzselect.ksh
@@ -14,7 +14,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  2 files changed, 10 insertions(+)
 
 diff --git a/Makeconfig b/Makeconfig
-index 2d4343b604..1992e19c4e 100644
+index a0abc2239b..3744961ff1 100644
 --- a/Makeconfig
 +++ b/Makeconfig
 @@ -309,6 +309,15 @@ ifndef sysincludedir

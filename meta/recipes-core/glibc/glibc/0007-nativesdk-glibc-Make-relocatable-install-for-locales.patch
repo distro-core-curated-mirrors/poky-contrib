@@ -1,4 +1,4 @@
-From 88c37776dca4603d6618fd7a12a055a15e2a519e Mon Sep 17 00:00:00 2001
+From bdb4a54cfd79138ed6deee842b584fb0b507df9c Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 3 Aug 2018 09:55:12 -0700
 Subject: [PATCH] nativesdk-glibc: Make relocatable install for locales

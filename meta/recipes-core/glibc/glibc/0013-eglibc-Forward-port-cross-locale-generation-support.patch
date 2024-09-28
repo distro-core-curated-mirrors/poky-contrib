@@ -1,4 +1,4 @@
-From ae0b0897228da4c8815061fe57d9b31c2b742dbc Mon Sep 17 00:00:00 2001
+From 9ea3920f66f9ef6a24d496e00e344064d4275358 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 18 Mar 2015 01:33:49 +0000
 Subject: [PATCH] eglibc: Forward port cross locale generation support
@@ -146,7 +146,7 @@ index 36504f238d..56ee97e61b 100644
    return NULL;
  }
 diff --git a/locale/programs/ld-collate.c b/locale/programs/ld-collate.c
-index 5048adbd9f..4232834ead 100644
+index 2cf9a4bc53..0f2e459bab 100644
 --- a/locale/programs/ld-collate.c
 +++ b/locale/programs/ld-collate.c
 @@ -352,7 +352,7 @@ new_element (struct locale_collate_t *collate, const char *mbs, size_t mbslen,
@@ -195,7 +195,7 @@ index 5048adbd9f..4232834ead 100644
  			 == runp->wcnext->wcs[runp->nwcs - 1] + 1));
  
 diff --git a/locale/programs/ld-ctype.c b/locale/programs/ld-ctype.c
-index eb6e7e145c..14736d1cac 100644
+index 2270960bd2..7dc16228da 100644
 --- a/locale/programs/ld-ctype.c
 +++ b/locale/programs/ld-ctype.c
 @@ -914,7 +914,7 @@ ctype_output (struct localedef_t *locale, const struct charmap_t *charmap,
@@ -277,7 +277,7 @@ index eb6e7e145c..14736d1cac 100644
  	      srunp = srunp->next;
  	    }
 diff --git a/locale/programs/ld-time.c b/locale/programs/ld-time.c
-index 1abff3cf53..8a2f2b820a 100644
+index 349b31fff5..0019810543 100644
 --- a/locale/programs/ld-time.c
 +++ b/locale/programs/ld-time.c
 @@ -219,8 +219,10 @@ No definition for %s category found"), "LC_TIME");
@@ -517,7 +517,7 @@ index 3afb0a8d29..46785374e8 100644
 +
  #endif /* locfile.h */
 diff --git a/locale/setlocale.c b/locale/setlocale.c
-index 7bd27e5398..2f194bad7c 100644
+index fc5bf5c427..1b83243130 100644
 --- a/locale/setlocale.c
 +++ b/locale/setlocale.c
 @@ -63,35 +63,6 @@ static char *const _nl_current_used[] =
