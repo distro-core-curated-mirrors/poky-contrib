@@ -44,6 +44,10 @@ PACKAGECONFIG[dt-validation] = ",,python3-dtschema-native"
 # we need the wrappers if validation isn't in the packageconfig
 DEPENDS += "${@bb.utils.contains('PACKAGECONFIG', 'dt-validation', '', 'python3-dtschema-wrapper-native', d)}"
 
+# 6.11+ uses truncate in the build, so we need to either have it in host tools, or
+# build it ourselves
+DEPENDS += "${@bb.utils.contains('HOSTTOOLS', 'truncate', '', 'coreutils-native', d)}"
+
 COMPATIBLE_MACHINE = "^(qemuarmv5|qemuarm|qemuarm64|qemux86|qemuppc|qemumips|qemumips64|qemux86-64|qemuriscv32|qemuriscv64|qemuloongarch64)$"
 
 KERNEL_DEVICETREE:qemuarmv5 = "arm/versatile-pb.dtb"
