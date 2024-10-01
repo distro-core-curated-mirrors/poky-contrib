@@ -201,6 +201,10 @@ class BootimgEFIPlugin(SourcePlugin):
             if dtb:
                 boot_conf += "devicetree /%s\n" % dtb
 
+            boot_conf = ""
+            boot_conf += "title %s\n" % (title if title else "boot")
+            boot_conf += "efi /linux.efi\n"
+
         if not unified_image:
             logger.debug("Writing systemd-boot config "
                          "%s/hdd/boot/loader/entries/boot.conf", cr_workdir)
