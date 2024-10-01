@@ -916,46 +916,69 @@ pkg_prerm:udev-hwdb () {
 
 
 PACKAGEFUNCS =+ "package_generate_dlopen_deps"
-# no dep on pyelftool so likely will blow up
-PACKAGE_DEPENDS += "package-notes-native"
 
 python package_generate_dlopen_deps() {
-    import subprocess
+    # https://systemd.io/ELF_DLOPEN_METADATA/
 
-    priority_map = {
-        1: "RSUGGESTS",
-        2: "RRECOMMENDS",
-        3: "RDEPENDS"
-    }
+    import struct, json
+
+    def extract_segment(filename, segment):
+        """
+        Return the named segment from the ELF.
+        """
+        import tempfile, subprocess
+
+        with tempfile.NamedTemporaryFile() as f:
+            cmd = [d.getVar("OBJCOPY"), "--dump-section", f"{segment}={f.name}", filename]
+            subprocess.run(cmd, check=True)
+            return f.read()
+
+    def parse(buffer, is_little):
+        deps = []
+        offset = 0
+        while offset < len(buffer):
+            format = f"{'<' if is_little else '>'}iii"
+            name_size, desc_size, note_type = struct.unpack_from(format, buffer, offset)
+            offset += struct.calcsize(format)
+
+            format = f"{name_size}s0i{desc_size}s0i"
+            if note_type == 0x407c0c0a:
+                name_b, desc_b = struct.unpack_from(format, buffer, offset)
+                name = name_b.strip(b"\x00").decode("ascii")
+                if name == "FDO":
+                    desc = desc_b.strip(b"\x00").decode("utf-8")
+                    deps.append(*json.loads(desc))
+            offset += struct.calcsize(format)
+        return deps
+
     dep_map = {
-        "recommended": "RRECOMMENDS"
+        "required": "RDEPENDS",
+        "recommended": "RRECOMMENDS",
+        "suggested": "RSUGGESTS"
     }
+
     shlibs = oe.package.read_shlib_providers(d)
 
     for pkg, files in pkgfiles.items():
+        # TODO: skip -dbg?
         for f in files:
             if cpath.islink(f):
                 continue
-            # YUCK
-            if ".so" in f:
-                # TODO tries to scan debug info
-                bb.warn(f"{pkg} {f}")
+
+            if f.endswith(".so") or ".so." in f:
                 try:
-                    # TODO no kmod in my testing?
-                    # Produces lines of the form "libzstd.so.1 recommended"
-                    cmd = ("dlopen-notes.py", "--sonames", f)
-                    out = subprocess.run(cmd, capture_output=True, text=True, check=True)
-                    for line in out.stdout.splitlines():
-                        library, priority = line.rsplit(" ", 1)
-                        dependency = dep_map[priority]
-                        if library in shlibs:
-                            # TODO don't just take first
-                            package_deps = list(shlibs[library].values())[0]
-                            d.appendVar(f"{dependency}:{pkg}", f" {package_deps[0]} (>= {package_deps[1]})")
-                        else:
-                            bb.warn(f"cannot find {library}")
-                except subprocess.CalledProcessError as e:
-                    # eg tries to scan packages-split/systemd-doc/usr/share/man/man8/libnss_resolve.so.2.8.
-                    # TODO elf check. add this to cpath maybe?
-                    bb.note(str(e))
+                    elf = oe.qa.ELFFile(f)
+                    elf.open()
+                    for dep in parse(extract_segment(f, ".note.dlopen"), elf.isLittleEndian()):
+                        dependency = dep_map[dep["priority"]]
+                        for soname in dep["soname"]:
+                            if soname in shlibs:
+                                # TODO don't just take first
+                                package_deps = list(shlibs[soname].values())[0]
+                                bb.note(f"{pkg}: adding {dependency} via dlopen on {package_deps[0]}")
+                                d.appendVar(f"{dependency}:{pkg}", f" {package_deps[0]} (>= {package_deps[1]})")
+                            else:
+                                bb.warn(f"cannot find {soname}")
+                except oe.qa.NotELFFileError:
+                    pass
 }
