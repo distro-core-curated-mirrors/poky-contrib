@@ -134,6 +134,17 @@ class ELFFile:
         """
         return self.getShort(ELFFile.E_MACHINE)
 
+    def extract_segment(self, name):
+        """
+        Return the named segment from the ELF.
+        """
+        import tempfile, subprocess
+
+        with tempfile.NamedTemporaryFile() as f:
+            cmd = ["objcopy", "--dump-section", f"{name}={f.name}", self.name]
+            subprocess.run(cmd, check=True)
+            return f.read()
+
     def set_objdump(self, cmd, output):
         self.objdump_output[cmd] = output
 
@@ -246,3 +257,4 @@ if __name__ == "__main__":
     with ELFFile(sys.argv[1]) as elf:
         elf.open()
         print(elf.isDynamic())
+        print(elf.extract_segment(".note.dlopen"))
