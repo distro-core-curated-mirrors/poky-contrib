@@ -1,0 +1,46 @@
+From 26c8d02255c8139b5341b59a2ad46899ca0076a4 Mon Sep 17 00:00:00 2001
+From: Alexander Kanavin <alex@linutronix.de>
+Date: Tue, 1 Oct 2024 13:38:27 +0200
+Subject: [PATCH] src/module_writer.rs: ensure entries in RECORD files are
+ sorted
+
+This helps build reproducibility.
+
+Upstream-Status: Submitted [xxx]
+Signed-off-by: Alexander Kanavin <alex@linutronix.de>
+---
+ src/module_writer.rs | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/src/module_writer.rs b/src/module_writer.rs
+index a413ac4..610ad6c 100644
+--- a/src/module_writer.rs
++++ b/src/module_writer.rs
+@@ -152,7 +152,10 @@ impl PathWriter {
+             record_file.display()
+         ))?;
+ 
+-        for (filename, hash, len) in self.record {
++        let mut record_sorted = self.record;
++        record_sorted.sort();
++
++        for (filename, hash, len) in record_sorted {
+             buffer
+                 .write_all(format!("{filename},sha256={hash},{len}\n").as_bytes())
+                 .context(format!(
+@@ -387,7 +390,11 @@ impl WheelWriter {
+         let record_filename = self.record_file.to_str().unwrap().replace('\\', "/");
+         debug!("Adding {}", record_filename);
+         self.zip.start_file(&record_filename, options)?;
+-        for (filename, hash, len) in self.record {
++
++        let mut record_sorted = self.record;
++        record_sorted.sort();
++
++        for (filename, hash, len) in record_sorted {
+             self.zip
+                 .write_all(format!("{filename},sha256={hash},{len}\n").as_bytes())?;
+         }
+-- 
+2.39.5
+
