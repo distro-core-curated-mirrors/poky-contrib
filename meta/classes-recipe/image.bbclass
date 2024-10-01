@@ -341,7 +341,7 @@ fakeroot python do_image_qa () {
 
     oe.qa.exit_if_errors(d)
 }
-addtask do_image_qa after do_rootfs before do_image
+addtask do_image_qa after do_image before do_image_complete
 
 SSTATETASKS += "do_image_qa"
 SSTATE_SKIP_CREATION:task-image-qa = '1'
