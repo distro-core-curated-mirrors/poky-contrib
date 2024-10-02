@@ -145,3 +145,14 @@ def machine_dict(d):
         machine_dict.machdata = bb.utils.better_eval(call, locs)
 
   return machine_dict.machdata
+
+
+from oe.vendored.elftools.elf.elffile import ELFFile
+
+def is_elf(filename):
+    from oe.vendored.elftools.common.exceptions import ELFError
+    try:
+      ELFFile.load_from_path(filename)
+      return True
+    except ELFError:
+        return False
