@@ -6,20 +6,14 @@
 
 import inspect
 import traceback
-import bb.namedtuple_with_abc
 from collections import namedtuple
 
-
-class TracebackEntry(namedtuple.abc):
-    """Pickleable representation of a traceback entry"""
-    _fields = 'filename lineno function args code_context index'
-    _header = '  File "{0.filename}", line {0.lineno}, in {0.function}{0.args}'
-
-    def format(self, formatter=None):
+def _format(self, formatter=None):
+        _header = '  File "{0.filename}", line {0.lineno}, in {0.function}{0.args}'
         if not self.code_context:
-            return self._header.format(self) + '\n'
+            return _header.format(self) + '\n'
 
-        formatted = [self._header.format(self) + ':\n']
+        formatted = [_header.format(self) + ':\n']
 
         for lineindex, line in enumerate(self.code_context):
             if formatter:
@@ -31,8 +25,9 @@ class TracebackEntry(namedtuple.abc):
                 formatted.append('     %s' % line)
         return formatted
 
-    def __str__(self):
-        return ''.join(self.format())
+TracebackEntry = namedtuple('TracebackEntry', ['filename', 'lineno', 'function', 'args', 'code_context', 'index'])
+TracebackEntry.format = _format
+TracebackEntry.__str__ = lambda self: ''.join(self.format())
 
 def _get_frame_args(frame):
     """Get the formatted arguments and class (if available) for a frame"""
