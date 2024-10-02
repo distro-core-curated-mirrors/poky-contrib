@@ -125,17 +125,20 @@ def package_qa_check_rpath(file, name, d, elf):
 
     bad_dirs = [d.getVar('BASE_WORKDIR'), d.getVar('STAGING_DIR_TARGET')]
 
-    phdrs = elf.run_objdump("-p", d)
-
-    import re
-    rpath_re = re.compile(r"\s+(?:RPATH|RUNPATH)\s+(.*)")
-    for line in phdrs.split("\n"):
-        m = rpath_re.match(line)
-        if m:
-            rpath = m.group(1)
+    dynamic = elf.get_section_by_name('.dynamic')
+    if not dynamic or dynamic["sh_type"] != "SHT_DYNAMIC":
+        return
+    for tag in dynamic.iter_tags():
+        if tag.entry.d_tag == 'DT_RPATH':
             for dir in bad_dirs:
-                if dir in rpath:
-                    oe.qa.handle_error("rpaths", "%s: %s contains bad RPATH %s" % (name, package_qa_clean_path(file, d, name), rpath), d)
+                if dir in tag.rpath:
+                    oe.qa.handle_error("rpaths", "package %s contains bad RPATH %s in file %s" % (name, tag.rpath, file), d)
+            return
+        elif tag.entry.d_tag == "DT_RUNPATH":
+            for dir in bad_dirs:
+                if dir in tag.runpath:
+                    oe.qa.handle_error("rpaths", "package %s contains bad RPATH %s in file %s" % (name, tag.runpath, file), d)
+            return
 
 QAPATHTEST[useless-rpaths] = "package_qa_check_useless_rpaths"
 def package_qa_check_useless_rpaths(file, name, d, elf):
@@ -151,18 +154,18 @@ def package_qa_check_useless_rpaths(file, name, d, elf):
     libdir = d.getVar("libdir")
     base_libdir = d.getVar("base_libdir")
 
-    phdrs = elf.run_objdump("-p", d)
+    dynamic = elf.get_section_by_name('.dynamic')
+    if not dynamic or dynamic["sh_type"] != "SHT_DYNAMIC":
+        return
 
-    import re
-    rpath_re = re.compile(r"\s+(?:RPATH|RUNPATH)\s+(.*)")
-    for line in phdrs.split("\n"):
-        m = rpath_re.match(line)
-        if m:
-            rpath = m.group(1)
+    for tag in dynamic.iter_tags():
+        if tag.entry.d_tag == 'DT_RPATH':
+            rpath = tag.rpath
             if rpath_eq(rpath, libdir) or rpath_eq(rpath, base_libdir):
                 # The dynamic linker searches both these places anyway.  There is no point in
                 # looking there again.
                 oe.qa.handle_error("useless-rpaths", "%s: %s contains probably-redundant RPATH %s" % (name, package_qa_clean_path(file, d, name), rpath), d)
+
 
 QAPATHTEST[dev-so] = "package_qa_check_dev"
 def package_qa_check_dev(path, name, d, elf):
@@ -245,7 +248,7 @@ def package_qa_check_libdir(d):
     recipes installing /lib/bar.so when ${base_libdir}="lib32" or
     installing in /usr/lib64 when ${libdir}="/usr/lib"
     """
-    import re
+    import re, oe.elf
 
     pkgdest = d.getVar('PKGDEST')
     base_libdir = d.getVar("base_libdir") + os.sep
@@ -283,21 +286,13 @@ def package_qa_check_libdir(d):
                 if lib_re.match(rel_path):
                     if base_libdir not in rel_path:
                         # make sure it's an actual ELF file
-                        elf = oe.qa.ELFFile(full_path)
-                        try:
-                            elf.open()
+                        if oe.elf.is_elf(full_path):
                             messages.append("%s: found library in wrong location: %s" % (package, rel_path))
-                        except (oe.qa.NotELFFileError, FileNotFoundError):
-                            pass
                 if exec_re.match(rel_path):
                     if libdir not in rel_path and libexecdir not in rel_path:
                         # make sure it's an actual ELF file
-                        elf = oe.qa.ELFFile(full_path)
-                        try:
-                            elf.open()
+                        if oe.elf.is_elf(full_path):
                             messages.append("%s: found library in wrong location: %s" % (package, rel_path))
-                        except (oe.qa.NotELFFileError, FileNotFoundError):
-                            pass
 
     if messages:
         oe.qa.handle_error("libdir", "\n".join(messages), d)
@@ -318,7 +313,7 @@ def package_qa_check_arch(path,name,d, elf):
     """
     Check if archs are compatible
     """
-    import re, oe.elf
+    import re, oe.elf, oe.vendored.elftools.elf.enums
 
     if not elf:
         return
@@ -336,9 +331,10 @@ def package_qa_check_arch(path,name,d, elf):
     (expected_machine, expected_osabi, expected_abiversion, expected_littleendian, expected_bits) \
         = oe.elf.machine_dict(d)[host_os][host_arch]
 
-    actual_machine = elf.machine()
-    actual_bits = elf.abiSize()
-    actual_littleendian = elf.isLittleEndian()
+    # TODO bit yuck.
+    actual_machine = oe.vendored.elftools.elf.enums.ENUM_E_MACHINE[elf['e_machine']]
+    actual_bits = elf.elfclass
+    actual_littleendian = elf.little_endian
 
     # BPF don't match the target
     if oe.qa.elf_machine_to_string(actual_machine) == "BPF":
@@ -383,15 +379,14 @@ def package_qa_textrel(path, name, d, elf):
     if not elf:
         return
 
-    phdrs = elf.run_objdump("-p", d)
+    dynamic = elf.get_section_by_name('.dynamic')
+    if not dynamic or dynamic["sh_type"] != "SHT_DYNAMIC":
+        return
+    if list(dynamic.iter_tags('DT_TEXTREL')):
+        path = package_qa_clean_path(path, d, name)
+        oe.qa.handle_error("textrel", "%s: ELF binary %s has relocations in .text" % (name, path), d)
+        return
 
-    import re
-    textrel_re = re.compile(r"\s+TEXTREL\s+")
-    for line in phdrs.split("\n"):
-        if textrel_re.match(line):
-            path = package_qa_clean_path(path, d, name)
-            oe.qa.handle_error("textrel", "%s: ELF binary %s has relocations in .text" % (name, path), d)
-            return
 
 QAPATHTEST[ldflags] = "package_qa_hash_style"
 def package_qa_hash_style(path, name, d, elf):
@@ -408,17 +403,18 @@ def package_qa_hash_style(path, name, d, elf):
     if not gnu_hash:
         return
 
+    dynamic = elf.get_section_by_name('.dynamic')
+    if not dynamic or dynamic["sh_type"] != "SHT_DYNAMIC":
+        return
+
     sane = False
     has_syms = False
-
-    phdrs = elf.run_objdump("-p", d)
-
-    # If this binary has symbols, we expect it to have GNU_HASH too.
-    for line in phdrs.split("\n"):
-        if "SYMTAB" in line:
+    for tag in dynamic.iter_tags():
+        if tag['d_tag'] == "DT_SYMTAB":
             has_syms = True
-        if "GNU_HASH" in line or "MIPS_XHASH" in line:
+        if tag['d_tag'] in ("DT_GNU_HASH", "DT_MIPS_XHASH"):
             sane = True
+
     if has_syms and not sane:
         path = package_qa_clean_path(path, d, name)
         oe.qa.handle_error("ldflags", "File %s in package %s doesn't have GNU_HASH (didn't pass LDFLAGS?)" % (path, name), d)
@@ -592,7 +588,7 @@ def check_32bit_symbols(path, packagename, d, elf):
         (@+(?P<tag>GLIBC_\d+\.\d+\S*)))
         ''', re.VERBOSE
     )
-
+    raise Exception("PORT ME")
     # elf is a oe.qa.ELFFile object
     if elf:
         phdrs = elf.run_objdump("-tw", d)
@@ -778,35 +774,22 @@ def qa_check_staged(path,d):
 
 # Walk over all files in a directory and call func
 def package_qa_walk(checkfuncs, package, d):
+    import oe.elf
     global cpath
 
-    elves = {}
     for path in pkgfiles[package]:
-            elf = None
-            if cpath.isfile(path) and not cpath.islink(path):
-                elf = oe.qa.ELFFile(path)
-                try:
-                    elf.open()
-                    elf.close()
-                except oe.qa.NotELFFileError:
-                    elf = None
-            if elf:
-                elves[path] = elf
+        elf = None
+        if cpath.isfile(path) and not cpath.islink(path):
+            try:
+                f = open(path, "rb")
+                elf = oe.elf.ELFFile(f)
+            except Exception as e:
+                # ideally use specific exception
+                f.close()
 
-    def prepopulate_objdump_p(elf, d):
-        output = elf.run_objdump("-p", d)
-        return (elf.name, output)
-
-    results = oe.utils.multiprocess_launch(prepopulate_objdump_p, elves.values(), d, extraargs=(d,))
-    for item in results:
-        elves[item[0]].set_objdump("-p", item[1])
-
-    for path in pkgfiles[package]:
-        elf = elves.get(path)
-        if elf:
-            elf.open()
         for func in checkfuncs:
             func(path, package, d, elf)
+
         if elf:
             elf.close()
 
