@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 #
 
+import collections
 import errno
 import fnmatch
 import itertools
@@ -21,12 +22,6 @@ import oe.cachedpath
 def runstrip(arg):
     # Function to strip a single file, called from split_and_strip_files below
     # A working 'file' (one which works on the target architecture)
-    #
-    # The elftype is a bit pattern (explained in is_elf below) to tell
-    # us what type of file we're processing...
-    # 4 - executable
-    # 8 - shared library
-    # 16 - kernel module
 
     if len(arg) == 3:
         (file, elftype, strip) = arg
@@ -43,7 +38,7 @@ def runstrip(arg):
     stripcmd = [strip]
     skip_strip = False
     # kernel module
-    if elftype & 16:
+    if elftype.is_ko:
         if is_kernel_module_signed(file):
             bb.debug(1, "Skip strip on signed module %s" % file)
             skip_strip = True
@@ -51,10 +46,10 @@ def runstrip(arg):
             stripcmd.extend(["--strip-debug", "--remove-section=.comment",
                 "--remove-section=.note", "--preserve-dates"])
     # .so and shared library
-    elif ".so" in file and elftype & 8:
+    elif ".so" in file and elftype.is_shared:
         stripcmd.extend(["--remove-section=.comment", "--remove-section=.note", "--strip-unneeded"])
     # shared or executable:
-    elif elftype & 8 or elftype & 4:
+    elif elftype.is_shared or elftype.is_exe:
         stripcmd.extend(["--remove-section=.comment", "--remove-section=.note"])
         if extra_strip_sections != '':
             for section in extra_strip_sections.split():
@@ -88,21 +83,24 @@ def is_kernel_module_signed(path):
 # 4 - executable
 # 8 - shared library
 # 16 - kernel module
+class ElfType:
+    is_elf = is_stripped = is_exe = is_shared = is_ko = False
+
 def is_elf(path):
-    exec_type = 0
+    exec_type = ElfType()
     result = subprocess.check_output(["file", "-b", path], stderr=subprocess.STDOUT).decode("utf-8")
 
     if "ELF" in result:
-        exec_type |= 1
+        exec_type.is_elf = True
         if "not stripped" not in result:
-            exec_type |= 2
+            exec_type.is_stripped = True
         if "executable" in result:
-            exec_type |= 4
+            exec_type.is_exe = True
         if "shared" in result:
-            exec_type |= 8
+            exec_type.is_shared = True
         if "relocatable" in result:
             if path.endswith(".ko") and path.find("/lib/modules/") != -1 and is_kernel_module(path):
-                exec_type |= 16
+                exec_type.is_ko = True
     return (path, exec_type)
 
 def is_static_lib(path):
@@ -168,9 +166,8 @@ def strip_execs(pn, dstdir, strip_cmd, libdir, base_libdir, max_process, qa_alre
                 inodecache[file] = s.st_ino
     results = oe.utils.multiprocess_launch_mp(is_elf, checkelf, max_process)
     for (file, elf_file) in results:
-                #elf_file = is_elf(file)
-                if elf_file & 1:
-                    if elf_file & 2:
+                if elf_file.is_elf:
+                    if elf_file.is_stripped:
                         if qa_already_stripped:
                             bb.note("Skipping file %s from %s for already-stripped QA test" % (file[len(dstdir):], pn))
                         else:
@@ -191,8 +188,7 @@ def strip_execs(pn, dstdir, strip_cmd, libdir, base_libdir, max_process, qa_alre
     #
     sfiles = []
     for file in elffiles:
-        elf_file = int(elffiles[file])
-        sfiles.append((file, elf_file, strip_cmd))
+        sfiles.append((file, elffiles[file], strip_cmd))
 
     oe.utils.multiprocess_launch_mp(runstrip, sfiles, max_process)
 
@@ -1151,8 +1147,8 @@ def process_split_and_strip_files(d):
         for (file, elf_file) in results:
             # It's a file (or hardlink), not a link
             # ...but is it ELF, and is it already stripped?
-            if elf_file & 1:
-                if elf_file & 2:
+            if elf_file.is_elf:
+                if elf_file.is_stripped:
                     if 'already-stripped' in (d.getVar('INSANE_SKIP:' + pn) or "").split():
                         bb.note("Skipping file %s from %s for already-stripped QA test" % (file[len(dvar):], pn))
                     else:
@@ -1298,11 +1294,12 @@ def process_split_and_strip_files(d):
         strip = d.getVar("STRIP")
         sfiles = []
         for file in elffiles:
-            elf_file = int(elffiles[file])
+            elf_file = elffiles[file]
             #bb.note("Strip %s" % file)
             sfiles.append((file, elf_file, strip))
         if (d.getVar('PACKAGE_STRIP_STATIC') == '1' or d.getVar('PACKAGE_DEBUG_STATIC_SPLIT') == '1'):
             for f in staticlibs:
+                # TODO
                 sfiles.append((f, 16, strip))
 
         oe.utils.multiprocess_launch(oe.package.runstrip, sfiles, d)
