@@ -570,6 +570,7 @@ ENUM_D_TAG_COMMON = dict(
     DT_VERDEFNUM=0x6ffffffd,
     DT_VERNEED=0x6ffffffe,
     DT_VERNEEDNUM=0x6fffffff,
+    DT_MIPS_XHASH=0x70000036,
     DT_AUXILIARY=0x7ffffffd,
     DT_FILTER=0x7fffffff,
     _default_=Pass,
