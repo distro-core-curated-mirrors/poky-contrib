@@ -153,7 +153,7 @@ def package_qa_check_useless_rpaths(file, name, d, elf):
     phdrs = elf.run_objdump("-p", d)
 
     import re
-    rpath_re = re.compile(r"\s+RPATH\s+(.*)")
+    rpath_re = re.compile(r"\s+(?:RPATH|RUNPATH)\s+(.*)")
     for line in phdrs.split("\n"):
         m = rpath_re.match(line)
         if m:
