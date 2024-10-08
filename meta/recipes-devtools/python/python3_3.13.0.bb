@@ -6,7 +6,7 @@ SECTION = "devel/python"
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=3f64a4ff490f884d562feb77bf2435f1"
 
-SRC_URI = "http://www.python.org/ftp/python/3.13.0/Python-${PV}.tar.xz \
+SRC_URI = "http://www.python.org/ftp/python/${PV}/Python-${PV}.tar.xz \
            file://run-ptest \
            file://create_manifest3.py \
            file://get_module_deps3.py \
@@ -36,7 +36,7 @@ SRC_URI:append:class-native = " \
            file://0001-Lib-sysconfig.py-use-prefix-value-from-build-configu.patch \
            "
 
-SRC_URI[sha256sum] = "d60e8b7c10de4f71d2dffaf7c7be8efa54dc1e532fe931dbb84e5f625709e237"
+SRC_URI[sha256sum] = "086de5882e3cb310d4dca48457522e2e48018ecd43da9cdf827f6a0759efb07d"
 
 # exclude pre-releases for both python 2.x and 3.x
 UPSTREAM_CHECK_REGEX = "[Pp]ython-(?P<pver>\d+(\.\d+)+).tar"
@@ -87,6 +87,10 @@ CACHED_CONFIGUREVARS = " \
                 ac_cv_file__dev_ptc=no \
                 ac_cv_working_tzset=yes \
 "
+CACHED_CONFIGUREVARS:append:class-target = " \
+                ac_cv_libatomic_needed=yes \
+"
+
 # set thread stack size to 2MB on musl for interpreter and stdlib C extensions
 # so it does not run into stack limits due to musl's small thread stack
 # This is only needed to build interpreter and not the subsequent modules
