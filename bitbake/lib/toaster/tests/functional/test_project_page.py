@@ -709,13 +709,20 @@ class TestProjectPage(SeleniumFunctionalTestCase):
                 - Check layer description
         """
         self._navigate_to_config_nav('layerstable', 6)
-        layer_link = self.driver.find_element(By.XPATH, '//tr/td[@class="layer__name"]/a[contains(text(),"meta-poky")]')
+        #layer_link = self.driver.find_element(By.XPATH, "//a[text()='openembedded-core']")
+        #layer_link = self.driver.find_element(By.XPATH, '//td[@class="layer__name"]/a[text()="openembedded-core"]')
+        #layer_link = self.driver.find_element(By.XPATH, '//tr/td[@class="layer__name"]/a[text()="meta-poky"]')
+        #layer_link = self.driver.find_element(By.XPATH, '//tr/td[@class="layer__name"]/a[contains(text(),"meta-poky")]')
+        layer_link = self.driver.find_element(By.XPATH, '//tr/td[@class="layer__name"]/a[contains(text(),"openembedded-core")]')
+        #layer_link = self.driver.find_element(By.XPATH, "//a[text='meta-poky']")
+        #layer_link = self.driver.find_element(By.XPATH, '//tr[1]/td[@class="layer__name"]')
+        self.driver.get_screenshot_as_file("/tmp/screenshot-test-moo2.png")
         layer_link.click()
+        #url = reverse("layerdetails", args=(TestProjectPage.project_id, 7))
+        #self.get(url)
         self.wait_until_visible('.page-header')
         # check title is displayed
         self.assertTrue(self.find('.page-header h1').is_displayed())
-
-        # check remove layer button works
         remove_layer_btn = self.find('#add-remove-layer-btn')
         remove_layer_btn.click()
         self.wait_until_visible('#change-notification', poll=2)
@@ -723,6 +730,8 @@ class TestProjectPage(SeleniumFunctionalTestCase):
         self.assertIn(
             f'You have removed 1 layer from your project', str(change_notification.text)
         )
+        hide_button = self.find('#hide-alert')
+        hide_button.click()
         # check add layer button works
         add_layer_btn = self.find('#add-remove-layer-btn')
         add_layer_btn.click()
@@ -731,9 +740,12 @@ class TestProjectPage(SeleniumFunctionalTestCase):
         self.assertIn(
             f'You have added 1 layer to your project', str(change_notification.text)
         )
+        hide_button = self.find('#hide-alert')
+        hide_button.click()
         # check tabs(layers, recipes, machines) are displayed
         tabs = self.find_all('.nav-tabs li')
         self.assertEqual(len(tabs), 3)
+        self.driver.get_screenshot_as_file("/tmp/screenshot-test-moo5.png")
         # Check first tab
         tabs[0].click()
         self.assertIn(
@@ -743,6 +755,8 @@ class TestProjectPage(SeleniumFunctionalTestCase):
         # Ensure page is scrolled to the top
         self.driver.find_element(By.XPATH, '//body').send_keys(Keys.CONTROL + Keys.HOME)
         self.wait_until_visible('.nav-tabs')
+        # Check second tab
+        self.driver.get_screenshot_as_file("/tmp/screenshot-test-moo4.png")
         tabs[1].click()
         self.assertIn(
             'active', str(self.find('#recipes').get_attribute('class'))
@@ -751,6 +765,19 @@ class TestProjectPage(SeleniumFunctionalTestCase):
         # Ensure page is scrolled to the top
         self.driver.find_element(By.XPATH, '//body').send_keys(Keys.CONTROL + Keys.HOME)
         self.wait_until_visible('.nav-tabs')
+        self.driver.get_screenshot_as_file("/tmp/screenshot-test-moo.png")
+        self.driver.execute_script("window.scrollBy(0,-document.body.scrollTop);")
+        import time
+        time.sleep(1)
+
+        #tabs[2].click()
+        #link = tabs[2].find_element(By.XPATH, '//a')
+        from selenium.webdriver.common.keys import Keys
+        self.driver.find_element(By.XPATH, '//body').send_keys(Keys.CONTROL + Keys.HOME)
+        self.wait_until_visible('.nav-tabs')
+        #self.driver.execute_script("arguments[0].scrollIntoView();", tabs[2])
+        self.driver.get_screenshot_as_file("/tmp/screenshot-test-moo3.png")
+        #link.click()
         tabs[2].click()
         self.assertIn(
             'active', str(self.find('#machines').get_attribute('class'))
