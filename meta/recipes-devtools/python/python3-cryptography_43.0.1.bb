@@ -8,43 +8,21 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=8c3617db4fb6fae01f1d253ab91511e4 \
                    "
 LDSHARED += "-pthread"
 
-SRC_URI[sha256sum] = "8d09d05439ce7baa8e9e95b07ec5b6c886f548deb7e0f69ef25f64b3bce842f2"
-
-SRC_URI += "file://0001-pyproject.toml-remove-benchmark-disable-option.patch \
-            file://check-memfree.py \
-            file://run-ptest \
-           "
-
-require ${BPN}-crates.inc
-
-inherit pypi python_setuptools3_rust cargo-update-recipe-crates pkgconfig
-
-DEPENDS += " \
+DEPENDS += "\
     python3-cffi-native \
 "
 
-RDEPENDS:${PN} += " \
-    python3-cffi \
+SRC_URI[sha256sum] = "203e92a75716d8cfb491dc47c79e17d0d9207ccffcbcb35f598fbe463ae3444d"
+
+SRC_URI:append = " \
+    file://0001-pyproject.toml-remove-benchmark-disable-option.patch \
+    file://check-memfree.py \
+    file://run-ptest \
 "
 
-RDEPENDS:${PN}:append:class-target = " \
-    python3-numbers \
-    python3-threading \
-"
+require ${BPN}-crates.inc
 
-RDEPENDS:${PN}-ptest += " \
-    python3-bcrypt \
-    python3-cryptography-vectors (= ${PV}) \
-    python3-hypothesis \
-    python3-iso8601 \
-    python3-mmap \
-    python3-pretend \
-    python3-psutil \
-    python3-pytest \
-    python3-unittest-automake-output \
-    python3-pytest-subtests \
-    python3-pytz \
-"
+inherit pypi python_maturin cargo-update-recipe-crates pkgconfig
 
 inherit ptest
 
@@ -60,8 +38,29 @@ do_install_ptest() {
     cp -r ${S}/pyproject.toml ${D}${PTEST_PATH}/
 }
 
-FILES:${PN}-dbg += " \
+FILES:${PN}-dbg += "\
     ${PYTHON_SITEPACKAGES_DIR}/${SRCNAME}/hazmat/bindings/.debug \
+"
+
+RDEPENDS:${PN} += "\
+    python3-cffi \
+"
+
+RDEPENDS:${PN}:append:class-target = " \
+    python3-numbers \
+    python3-threading \
+"
+
+RDEPENDS:${PN}-ptest += "\
+    python3-certifi \
+    python3-cryptography-vectors (= ${PV}) \
+    python3-pretend \
+    python3-pytest \
+    python3-pytest-benchmark \
+    python3-pytest-cov \
+    python3-pytest-subtests \
+    python3-pytest-xdist \
+    python3-unittest-automake-output \
 "
 
 BBCLASSEXTEND = "native nativesdk"
