@@ -90,6 +90,10 @@ CACHED_CONFIGUREVARS = " \
 CACHED_CONFIGUREVARS:append:class-target = " \
                 ac_cv_libatomic_needed=yes \
 "
+# https://bugzilla.yoctoproject.org/show_bug.cgi?id=15618
+CACHED_CONFIGUREVARS:append:armv5 = " \
+                with_mimalloc=no \
+"
 
 # set thread stack size to 2MB on musl for interpreter and stdlib C extensions
 # so it does not run into stack limits due to musl's small thread stack
