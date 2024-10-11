@@ -612,6 +612,10 @@ class TestProjectPage(SeleniumFunctionalTestCase):
         self.assertIn(
             f'You have added {len(list_dependencies)+1} layers to your project: {input_text} and its dependencies', str(change_notification.text)
         )
+
+        hide_button = self.find('#hide-alert')
+        hide_button.click()
+
         # check "Remove layer" button works
         self.wait_until_visible('#layerstable tbody tr')
         rows = self.find_all('#layerstable tbody tr')
@@ -626,6 +630,10 @@ class TestProjectPage(SeleniumFunctionalTestCase):
         self.assertIn(
             f'You have removed 1 layer from your project: {input_text}', str(change_notification.text)
         )
+
+        hide_button = self.find('#hide-alert')
+        hide_button.click()
+
         # check layers table feature(show/hide column, pagination)
         self._navigate_to_config_nav('layerstable', 6)
         column_list = [
