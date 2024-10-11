@@ -56,9 +56,9 @@ class TestProjectPage(SeleniumFunctionalTestCase):
             self.wait_until_visible('#hint-error-project-name')
             url = reverse('project', args=(TestProjectPage.project_id, ))
             self.get(url)
-            self.wait_until_visible('#config-nav', poll=3)
+            self.wait_until_visible('#config-nav')
         except TimeoutException:
-            self.wait_until_visible('#config-nav', poll=3)
+            self.wait_until_visible('#config-nav')
 
     def _random_string(self, length):
         return ''.join(
@@ -192,7 +192,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
         def test_show_rows(row_to_show, show_row_link):
             # Check that we can show rows == row_to_show
             show_row_link.select_by_value(str(row_to_show))
-            self.wait_until_visible(f'#{table_selector} tbody tr', poll=3)
+            self.wait_until_visible(f'#{table_selector} tbody tr')
             # check at least some rows are visible
             self.assertTrue(
                 len(self.find_all(f'#{table_selector} tbody tr')) > 0
@@ -540,7 +540,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
             searchBtn_selector='search-submit-machinestable',
             table_selector='machinestable'
         )
-        self.wait_until_visible('#machinestable tbody tr', poll=3)
+        self.wait_until_visible('#machinestable tbody tr')
         rows = self.find_all('#machinestable tbody tr')
         machine_to_add = rows[0]
         add_btn = machine_to_add.find_element(By.XPATH, '//td[@class="add-del-layers"]')
@@ -590,7 +590,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
             table_selector='layerstable'
         )
         # check "Add layer" button works
-        self.wait_until_visible('#layerstable tbody tr', poll=3)
+        self.wait_until_visible('#layerstable tbody tr')
         rows = self.find_all('#layerstable tbody tr')
         layer_to_add = rows[0]
         add_btn = layer_to_add.find_element(
@@ -599,7 +599,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
         )
         add_btn.click()
         # check modal is displayed
-        self.wait_until_visible('#dependencies-modal', poll=3)
+        self.wait_until_visible('#dependencies-modal')
         list_dependencies = self.find_all('#dependencies-list li')
         # click on add-layers button
         add_layers_btn = self.driver.find_element(
@@ -613,7 +613,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
             f'You have added {len(list_dependencies)+1} layers to your project: {input_text} and its dependencies', str(change_notification.text)
         )
         # check "Remove layer" button works
-        self.wait_until_visible('#layerstable tbody tr', poll=3)
+        self.wait_until_visible('#layerstable tbody tr')
         rows = self.find_all('#layerstable tbody tr')
         layer_to_remove = rows[0]
         remove_btn = layer_to_remove.find_element(
@@ -621,7 +621,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
             '//td[@class="add-del-layers"]'
         )
         remove_btn.click()
-        self.wait_until_visible('#change-notification', poll=2)
+        self.wait_until_visible('#change-notification')
         change_notification = self.find('#change-notification')
         self.assertIn(
             f'You have removed 1 layer from your project: {input_text}', str(change_notification.text)
@@ -673,7 +673,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
             '//td[@class="add-del-layers"]//a[1]'
         )
         add_btn.click()
-        self.wait_until_visible('#change-notification', poll=2)
+        self.wait_until_visible('#change-notification')
         change_notification = self.find('#change-notification')
         self.assertIn(
             f'You have changed the distro to: {input_text}', str(change_notification.text)
@@ -725,7 +725,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
         self.assertTrue(self.find('.page-header h1').is_displayed())
         remove_layer_btn = self.find('#add-remove-layer-btn')
         remove_layer_btn.click()
-        self.wait_until_visible('#change-notification', poll=2)
+        self.wait_until_visible('#change-notification')
         change_notification = self.find('#change-notification')
         self.assertIn(
             f'You have removed 1 layer from your project', str(change_notification.text)

@@ -51,12 +51,12 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
         self.find("#create-project-button").click()
 
         try:
-            self.wait_until_visible('#hint-error-project-name', poll=3)
+            self.wait_until_visible('#hint-error-project-name')
             url = reverse('project', args=(TestProjectConfigTab.project_id, ))
             self.get(url)
-            self.wait_until_visible('#config-nav', poll=3)
+            self.wait_until_visible('#config-nav')
         except TimeoutException:
-            self.wait_until_visible('#config-nav', poll=3)
+            self.wait_until_visible('#config-nav')
 
     def _random_string(self, length):
         return ''.join(
@@ -253,7 +253,7 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
         def test_show_rows(row_to_show, show_row_link):
             # Check that we can show rows == row_to_show
             show_row_link.select_by_value(str(row_to_show))
-            self.wait_until_visible('#imagerecipestable tbody tr', poll=3)
+            self.wait_until_visible('#imagerecipestable tbody tr')
             # check at least some rows are visible
             self.assertTrue(
                 len(self.find_all('#imagerecipestable tbody tr'))  > 0
@@ -412,7 +412,7 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
         # back to project page
         self.driver.get(url)
 
-        self.wait_until_visible('#project-page', poll=3)
+        self.wait_until_visible('#project-page')
 
         # Most built recipes
         most_built_recipes = self.driver.find_element(
@@ -420,7 +420,7 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
         title = most_built_recipes.find_element(By.TAG_NAME, 'h3')
         self.assertIn("Most built recipes", title.text)
         # check can select a recipe and build it
-        self.wait_until_visible('#freq-build-list', poll=3)
+        self.wait_until_visible('#freq-build-list')
         recipe_list = self.find('#freq-build-list')
         recipe_list_items = recipe_list.find_elements(By.TAG_NAME, 'li')
         self.assertTrue(
