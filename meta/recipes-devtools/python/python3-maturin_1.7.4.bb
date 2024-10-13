@@ -19,6 +19,10 @@ DEPENDS += "\
 
 require ${BPN}-crates.inc
 
+SRC_URI:append = "\
+    file://0001-module_writer-keep-records-sorted.patch \
+	"
+
 inherit pypi cargo-update-recipe-crates python_pyo3 python_setuptools_build_meta
 
 do_configure() {

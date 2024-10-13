@@ -233,6 +233,7 @@ SRC_URI += " \
     crate://crates.io/snapbox/0.6.16 \
     crate://crates.io/snapbox-macros/0.3.10 \
     crate://crates.io/socks/0.3.4 \
+    crate://crates.io/sorted-vec/0.8.3 \
     crate://crates.io/spin/0.9.8 \
     crate://crates.io/stacker/0.1.15 \
     crate://crates.io/static_assertions/1.1.0 \
@@ -559,6 +560,7 @@ SRC_URI[smawk-0.3.2.sha256sum] = "b7c388c1b5e93756d0c740965c41e8822f866621d41acb
 SRC_URI[snapbox-0.6.16.sha256sum] = "027c936207f85d10d015e21faf5c676c7e08c453ed371adf55c0874c443ca77a"
 SRC_URI[snapbox-macros-0.3.10.sha256sum] = "16569f53ca23a41bb6f62e0a5084aa1661f4814a67fa33696a79073e03a664af"
 SRC_URI[socks-0.3.4.sha256sum] = "f0c3dbbd9ae980613c6dd8e28a9407b50509d3803b57624d5dfe8315218cd58b"
+SRC_URI[sorted-vec-0.8.3.sha256sum] = "c6734caf0b6f51addd5eeacca12fb39b2c6c14e8d4f3ac42f3a78955c0467458"
 SRC_URI[spin-0.9.8.sha256sum] = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
 SRC_URI[stacker-0.1.15.sha256sum] = "c886bd4480155fd3ef527d45e9ac8dd7118a898a46530b7b94c3e21866259fce"
 SRC_URI[static_assertions-1.1.0.sha256sum] = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"

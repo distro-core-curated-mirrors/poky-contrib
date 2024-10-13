@@ -1,0 +1,138 @@
+From d017b75bef2eed8328bf7f9e57243f24c72a9b6a Mon Sep 17 00:00:00 2001
+From: Yoann Congal <yoann.congal@smile.fr>
+Date: Mon, 14 Oct 2024 00:28:32 +0200
+Subject: [PATCH] module_writer: keep records sorted
+
+For reproducible builds, we need the RECORD file and data.tar to be the
+same between builds. In particular, order of the files in RECORD can't
+change arbitrarily.
+
+See for instance difference when building python3-cryptography:
+https://autobuilder.yocto.io/pub/repro-fail/oe-reproducible-20240813-qgfyyhkg/packages/diff-html/
+
+Upstream-Status: Submitted [XXX]
+
+Co-Developed-By: Tim Orling <tim.orling@konsulko.com>
+Signed-off-by: Tim Orling <tim.orling@konsulko.com>
+Signed-off-by: Yoann Congal <yoann.congal@smile.fr>
+---
+ Cargo.lock           |  7 +++++++
+ Cargo.toml           |  1 +
+ src/module_writer.rs | 15 ++++++++-------
+ 3 files changed, 16 insertions(+), 7 deletions(-)
+
+diff --git a/Cargo.lock b/Cargo.lock
+index d3022b7d..22acd994 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1255,6 +1255,7 @@ dependencies = [
+  "serde",
+  "serde_json",
+  "sha2",
++ "sorted-vec",
+  "tar",
+  "target-lexicon",
+  "tempfile",
+@@ -2216,6 +2217,12 @@ dependencies = [
+  "winapi",
+ ]
+ 
++[[package]]
++name = "sorted-vec"
++version = "0.8.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c6734caf0b6f51addd5eeacca12fb39b2c6c14e8d4f3ac42f3a78955c0467458"
++
+ [[package]]
+ name = "spin"
+ version = "0.9.8"
+diff --git a/Cargo.toml b/Cargo.toml
+index c039bcd3..98d12759 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -132,6 +132,7 @@ wild = { version = "2.1.0", optional = true }
+ # JSON schema
+ schemars = { version = "0.8.16", optional = true }
+ pretty_assertions = { version = "1.3.0", optional = true }
++sorted-vec = "0.8.3"
+ 
+ [dev-dependencies]
+ expect-test = "1.4.1"
+diff --git a/src/module_writer.rs b/src/module_writer.rs
+index 84949918..45948fc8 100644
+--- a/src/module_writer.rs
++++ b/src/module_writer.rs
+@@ -21,6 +21,7 @@ use indexmap::IndexMap;
+ use normpath::PathExt as _;
+ use same_file::is_same_file;
+ use sha2::{Digest, Sha256};
++use sorted_vec::SortedVec;
+ use std::collections::HashMap;
+ use std::env;
+ use std::ffi::OsStr;
+@@ -97,7 +98,7 @@ pub trait ModuleWriter {
+ /// A [ModuleWriter] that adds the module somewhere in the filesystem, e.g. in a virtualenv
+ pub struct PathWriter {
+     base_path: PathBuf,
+-    record: Vec<(String, String, usize)>,
++    record: SortedVec<(String, String, usize)>,
+     file_tracker: FileTracker,
+ }
+ 
+@@ -114,7 +115,7 @@ impl PathWriter {
+ 
+         Ok(PathWriter {
+             base_path,
+-            record: Vec::new(),
++            record: SortedVec::new(),
+             file_tracker: FileTracker::default(),
+         })
+     }
+@@ -123,7 +124,7 @@ impl PathWriter {
+     pub fn from_path(path: impl AsRef<Path>) -> Self {
+         Self {
+             base_path: path.as_ref().to_path_buf(),
+-            record: Vec::new(),
++            record: SortedVec::new(),
+             file_tracker: FileTracker::default(),
+         }
+     }
+@@ -152,7 +153,7 @@ impl PathWriter {
+             record_file.display()
+         ))?;
+ 
+-        for (filename, hash, len) in self.record {
++        for (filename, hash, len) in self.record.iter() {
+             buffer
+                 .write_all(format!("{filename},sha256={hash},{len}\n").as_bytes())
+                 .context(format!(
+@@ -229,7 +230,7 @@ impl ModuleWriter for PathWriter {
+ /// A glorified zip builder, mostly useful for writing the record file of a wheel
+ pub struct WheelWriter {
+     zip: ZipWriter<File>,
+-    record: Vec<(String, String, usize)>,
++    record: SortedVec<(String, String, usize)>,
+     record_file: PathBuf,
+     wheel_path: PathBuf,
+     file_tracker: FileTracker,
+@@ -309,7 +310,7 @@ impl WheelWriter {
+ 
+         let mut builder = WheelWriter {
+             zip: ZipWriter::new(file),
+-            record: Vec::new(),
++            record: SortedVec::new(),
+             record_file: metadata23.get_dist_info_dir().join("RECORD"),
+             wheel_path,
+             file_tracker: FileTracker::default(),
+@@ -387,7 +388,7 @@ impl WheelWriter {
+         let record_filename = self.record_file.to_str().unwrap().replace('\\', "/");
+         debug!("Adding {}", record_filename);
+         self.zip.start_file(&record_filename, options)?;
+-        for (filename, hash, len) in self.record {
++        for (filename, hash, len) in self.record.iter() {
+             self.zip
+                 .write_all(format!("{filename},sha256={hash},{len}\n").as_bytes())?;
+         }
+-- 
+2.47.0
+
