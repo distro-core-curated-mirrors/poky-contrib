@@ -54,12 +54,10 @@ RDEPENDS:${PN}:append:class-target = " \
 RDEPENDS:${PN}-ptest += "\
     python3-certifi \
     python3-cryptography-vectors (= ${PV}) \
+	python3-mmap \
     python3-pretend \
     python3-pytest \
-    python3-pytest-benchmark \
-    python3-pytest-cov \
     python3-pytest-subtests \
-    python3-pytest-xdist \
     python3-unittest-automake-output \
 "
 
