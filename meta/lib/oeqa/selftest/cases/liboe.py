@@ -6,8 +6,10 @@
 
 from oeqa.selftest.case import OESelftestTestCase
 from oeqa.utils.commands import get_bb_var, get_bb_vars, bitbake, runCmd
+import oe.cachedpath
 import oe.path
 import os
+import tempfile
 
 class LibOE(OESelftestTestCase):
 
@@ -102,3 +104,85 @@ class LibOE(OESelftestTestCase):
         self.assertEqual(dstcnt, len(testfiles), "Number of files in dst (%s) differs from number of files in src(%s)." % (dstcnt, srccnt))
 
         oe.path.remove(testloc)
+
+
+class CachedPathTests(OESelftestTestCase):
+
+    def touch(self, path):
+        open(path, "w").close()
+
+    def make_tree(self, dirs=[], files=[]):
+        root = tempfile.TemporaryDirectory(prefix="oeqa-cachepath-")
+
+        for directory in dirs + [os.path.dirname(file) for file in files]:
+            os.makedirs(os.path.join(root.name, directory), exist_ok=True)
+
+        for file in files:
+            self.touch(os.path.join(root.name, file))
+
+        return root
+
+    def test_stat_cached(self):
+        cpath = oe.cachedpath.CachedPath()
+        # This should actually do a stat() and cache the result
+        one_stat = cpath.stat("/")
+        # So these should all be cached
+        more_stats = [cpath.stat("/") for i in range(1, 10)]
+        # Check that they all are the same object
+        for stat in more_stats:
+            self.assertEqual(id(one_stat), id(stat))
+
+    def test_isfile(self):
+        import pathlib
+        with tempfile.TemporaryDirectory(prefix="oeqa-cachepath-") as root:
+            root = pathlib.Path(root)
+            self.touch(root / "file")
+            os.symlink(root / "file", root / "link-to-file")
+            os.symlink("/", root / "link-to-dir")
+    
+            cpath = oe.cachedpath.CachedPath()
+            self.assertTrue(cpath.isfile(root / "file"))
+            self.assertTrue(cpath.isfile(root / "link-to-file"))
+            self.assertFalse(cpath.isfile(root / "link-to-dir"))
+            self.assertFalse(cpath.isfile(root / "not-exist"))
+
+    def sorted_walk(self, l):
+        """
+        Helper to sort the result from CachedPath.walk()
+        """
+        l = list(l)
+        for t in l:
+            t[1].sort()
+            t[2].sort()
+        return l
+
+    def test_walk_just_files(self):
+        cpath = oe.cachedpath.CachedPath()
+        files = ["bar", "foo"]
+        with self.make_tree(files=files) as temp:
+            paths = self.sorted_walk(cpath.walk(temp))
+            expected = [
+                (temp, [], files)
+            ]
+            self.assertEqual(paths, expected)
+
+    def test_walk_prune_dirs(self):
+        cpath = oe.cachedpath.CachedPath()
+        files = ["foo/bar", "frob/grob"]
+        with self.make_tree(files=files) as temp:
+            g = cpath.walk(temp)
+
+            (root, dirs, files) = next(g)
+            self.assertEqual(root, temp)
+            self.assertEqual(dirs, ["frob", "foo"])
+            self.assertEqual(files, [])
+
+            dirs.remove("foo")
+
+            (root, dirs, files) = next(g)
+            self.assertEqual(root, os.path.join(temp, "frob"))
+            self.assertEqual(dirs, [])
+            self.assertEqual(files, ["grob"])
+
+            with self.assertRaises(StopIteration):
+                (root, dirs, files) = next(g)
