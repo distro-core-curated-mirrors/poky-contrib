@@ -36,6 +36,8 @@ SRC_URI:append:class-native = " \
            file://0001-Lib-sysconfig.py-use-prefix-value-from-build-configu.patch \
            "
 
+SRC_URI:append:class-target = " file://9446678.diff"
+
 SRC_URI[sha256sum] = "086de5882e3cb310d4dca48457522e2e48018ecd43da9cdf827f6a0759efb07d"
 
 # exclude pre-releases for both python 2.x and 3.x

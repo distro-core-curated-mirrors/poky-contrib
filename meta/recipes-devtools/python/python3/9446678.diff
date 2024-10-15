@@ -1,0 +1,50 @@
+From 9446678d168f88c460893a776fcc45fd3837cd05 Mon Sep 17 00:00:00 2001
+From: Diego Russo <diego.russo@arm.com>
+Date: Mon, 14 Oct 2024 15:47:16 +0100
+Subject: [PATCH] gh-125444: Fix illegal instruction for older Arm archictures
+
+On Arm v5 it is not possible to get the thread ID via c13 register
+hence the illegal instruction. The c13 register started to provide
+thread ID since Arm v6K architecture variant. Other variants of
+Arm v6 (T2, Z and base ) don’t provide the thread ID via c13.
+For the sake of simplicity we group v5 and v6 together and
+consider that instructions for Arm v7 only.
+
+PYTHON_OPTIONS: --configure-flags "--with-mimalloc --disable-gil"
+
+Jira: ENTLLT-7772
+Change-Id: I381f30eabe2030ca5a0bdfe2ca9a58f5e1f348e2
+
+Upstream-Status: Pending
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+---
+
+diff --git a/Include/internal/mimalloc/mimalloc/prim.h b/Include/internal/mimalloc/mimalloc/prim.h
+index 8a60d52..322ab29 100644
+--- a/Include/internal/mimalloc/mimalloc/prim.h
++++ b/Include/internal/mimalloc/mimalloc/prim.h
+@@ -151,9 +151,9 @@
+ // If you test on another platform and it works please send a PR :-)
+ // see also https://akkadia.org/drepper/tls.pdf for more info on the TLS register.
+ #elif defined(__GNUC__) && ( \
+-           (defined(__GLIBC__)   && (defined(__x86_64__) || defined(__i386__) || defined(__arm__) || defined(__aarch64__))) \
++           (defined(__GLIBC__)   && (defined(__x86_64__) || defined(__i386__) || (defined(__arm__) && __ARM_ARCH >= 7) || defined(__aarch64__))) \
+         || (defined(__APPLE__)   && (defined(__x86_64__) || defined(__aarch64__))) \
+-        || (defined(__BIONIC__)  && (defined(__x86_64__) || defined(__i386__) || defined(__arm__) || defined(__aarch64__))) \
++        || (defined(__BIONIC__)  && (defined(__x86_64__) || defined(__i386__) || (defined(__arm__) && __ARM_ARCH >= 7) || defined(__aarch64__))) \
+         || (defined(__FreeBSD__) && (defined(__x86_64__) || defined(__i386__) || defined(__aarch64__))) \
+         || (defined(__OpenBSD__) && (defined(__x86_64__) || defined(__i386__) || defined(__aarch64__))) \
+       )
+diff --git a/Include/object.h b/Include/object.h
+index 5be4ded..7e1b096 100644
+--- a/Include/object.h
++++ b/Include/object.h
+@@ -192,7 +192,7 @@
+     __asm__("movq %%gs:0, %0" : "=r" (tid));  // x86_64 macOSX uses GS
+ #elif defined(__x86_64__)
+    __asm__("movq %%fs:0, %0" : "=r" (tid));  // x86_64 Linux, BSD uses FS
+-#elif defined(__arm__)
++#elif defined(__arm__) && __ARM_ARCH >= 7
+     __asm__ ("mrc p15, 0, %0, c13, c0, 3\nbic %0, %0, #3" : "=r" (tid));
+ #elif defined(__aarch64__) && defined(__APPLE__)
+     __asm__ ("mrs %0, tpidrro_el0" : "=r" (tid));
