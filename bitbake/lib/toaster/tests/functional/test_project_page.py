@@ -615,6 +615,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
 
         hide_button = self.find('#hide-alert')
         hide_button.click()
+        self.wait_until_not_visible('#change-notification')
 
         # check "Remove layer" button works
         self.wait_until_visible('#layerstable tbody tr')
@@ -633,6 +634,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
 
         hide_button = self.find('#hide-alert')
         hide_button.click()
+        self.wait_until_not_visible('#change-notification')
 
         # check layers table feature(show/hide column, pagination)
         self._navigate_to_config_nav('layerstable', 6)
@@ -741,6 +743,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
         hide_button = self.find('#hide-alert')
         hide_button.click()
         # check add layer button works
+        self.wait_until_not_visible('#change-notification')
         add_layer_btn = self.find('#add-remove-layer-btn')
         add_layer_btn.click()
         self.wait_until_visible('#change-notification')
@@ -750,6 +753,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
         )
         hide_button = self.find('#hide-alert')
         hide_button.click()
+        self.wait_until_not_visible('#change-notification')
         # check tabs(layers, recipes, machines) are displayed
         tabs = self.find_all('.nav-tabs li')
         self.assertEqual(len(tabs), 3)

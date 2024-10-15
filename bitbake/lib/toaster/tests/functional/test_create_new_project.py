@@ -11,6 +11,7 @@ import pytest
 import re
 import requests
 from django.urls import reverse
+from django.core import management
 from selenium.webdriver.support.select import Select
 from tests.functional.functional_helpers import SeleniumFunctionalTestCase
 from selenium.webdriver.common.by import By

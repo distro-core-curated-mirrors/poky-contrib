@@ -104,6 +104,8 @@ class Wait(WebDriverWait):
         return value is not False.
         """
 
+        print("Entering at %s with timeout of %s" % (time.time(), self._timeout))
+
         end_time = time.time() + self._timeout
         while True:
             try:
@@ -121,6 +123,8 @@ class Wait(WebDriverWait):
             time.sleep(self._poll)
             if time.time() > end_time:
                 break
+
+        print("Exit at %s with timeout of %s" % (time.time(), self._timeout))
 
         self._driver.get_screenshot_as_file("/tmp/toaster-failing-screenshot-%s.png" % int(time.time()))
         raise TimeoutException(message)
@@ -224,6 +228,13 @@ class SeleniumTestCaseBase(unittest.TestCase):
         is_visible = lambda driver: self.find(selector).is_displayed()
         msg = 'An element matching "%s" should be visible' % selector
         Wait(self.driver, timeout=timeout).until(is_visible, msg)
+        return self.find(selector)
+
+    def wait_until_not_visible(self, selector, timeout=Wait._TIMEOUT):
+        """ Wait until element matching CSS selector is not visible on the page """
+        is_visible = lambda driver: self.find(selector).is_displayed()
+        msg = 'An element matching "%s" should be visible' % selector
+        Wait(self.driver, timeout=timeout).until_not(is_visible, msg)
         return self.find(selector)
 
     def wait_until_clickable(self, selector, timeout=Wait._TIMEOUT):
