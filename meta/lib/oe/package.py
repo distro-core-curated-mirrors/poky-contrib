@@ -968,15 +968,6 @@ def inject_minidebuginfo(file, dvar, dv, d):
 
     subprocess.check_call([objcopy, '--add-section', '.gnu_debugdata={}.xz'.format(minidebugfile), file])
 
-def argh():
-    try:
-        import datetime
-        mtime = os.path.getmtime("/work/ross/build/tmp/work/armv5e-poky-linux-gnueabi/zlib/1.3.1/build/zconf.h")
-        dt = datetime.datetime.fromtimestamp(mtime)
-        bb.warn(f"{dt.strftime('%x')}")
-    except:
-        pass
-
 def copydebugsources(debugsrcdir, sources, d):
     # The debug src information written out to sourcefile is further processed
     # and copied to the destination here.
@@ -1020,7 +1011,6 @@ def copydebugsources(debugsrcdir, sources, d):
         cpath.updatecache(basepath)
 
         for pmap in prefixmap:
-            bb.warn(f"{pmap=}")
             # Ignore files from the recipe sysroots (target and native)
             cmd =  "LC_ALL=C ; sort -z -u '%s' | egrep -v -z '((<internal>|<built-in>)$|/.*recipe-sysroot.*/)' | " % sourcefile
             # We need to ignore files that are not actually ours
@@ -1028,23 +1018,18 @@ def copydebugsources(debugsrcdir, sources, d):
             cmd += "fgrep -zw '%s' | " % prefixmap[pmap]
             # Remove prefix in the source paths
             cmd += "sed 's#%s/##g' | " % (prefixmap[pmap])
-            cmd += "(cd '%s' ; cpio -pd0mlL --no-preserve-owner '%s%s')" % (pmap, dvar, prefixmap[pmap])
+            cmd += "(cd '%s' ; cpio -pd0mlL --no-preserve-owner '%s%s' 2>/dev/null)" % (pmap, dvar, prefixmap[pmap])
 
             try:
-                argh()
                 subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
-            except subprocess.CalledProcessError as e:
-                # As we iterate through multiple directories and try to copy
-                # every file even if they don't exist, we have to ignore all
-                # errors
+            except subprocess.CalledProcessError:
+                # Can "fail" if internal headers/transient sources are attempted
                 pass
-            argh()
             # cpio seems to have a bug with -lL together and symbolic links are just copied, not dereferenced.
             # Work around this by manually finding and copying any symbolic links that made it through.
             cmd = "find %s%s -type l -print0 -delete | sed s#%s%s/##g | (cd '%s' ; cpio -pd0mL --no-preserve-owner '%s%s')" % \
                     (dvar, prefixmap[pmap], dvar, prefixmap[pmap], pmap, dvar, prefixmap[pmap])
             subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
-            argh()
 
         # debugsources.list may be polluted from the host if we used externalsrc,
         # cpio uses copy-pass and may have just created a directory structure
@@ -1066,7 +1051,6 @@ def copydebugsources(debugsrcdir, sources, d):
         for p in nosuchdir[::-1]:
             if os.path.exists(p) and not os.listdir(p):
                 os.rmdir(p)
-        argh()
 
 
 def process_split_and_strip_files(d):
@@ -1299,7 +1283,6 @@ def process_split_and_strip_files(d):
         # Process the dv["srcdir"] if requested...
         # This copies and places the referenced sources for later debugging...
         copydebugsources(dv["srcdir"], sources, d)
-        argh()
     #
     # End of debug splitting
     #
