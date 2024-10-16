@@ -535,7 +535,9 @@ python do_package () {
     for f in (d.getVar('PACKAGE_PREPROCESS_FUNCS') or '').split():
         bb.build.exec_func(f, d)
     oe.package.process_split_and_strip_files(d)
+    oe.package.argh()
     oe.package.fixup_perms(d)
+    oe.package.argh()
 
     ###########################################################################
     # Split up PKGD into PKGDEST
@@ -564,6 +566,7 @@ python do_package () {
     for f in (d.getVar('PACKAGEFUNCS') or '').split():
         bb.build.exec_func(f, d)
 
+    oe.package.argh()
     oe.qa.exit_if_errors(d)
 }
 
