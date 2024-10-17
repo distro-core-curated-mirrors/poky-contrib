@@ -9,6 +9,7 @@
 import string
 import random
 import pytest
+import time
 from django.urls import reverse
 from selenium.webdriver import Keys
 from selenium.webdriver.support.select import Select
@@ -50,13 +51,10 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
 
         self.find("#create-project-button").click()
 
-        try:
-            self.wait_until_visible('#hint-error-project-name')
-            url = reverse('project', args=(TestProjectConfigTab.project_id, ))
-            self.get(url)
-            self.wait_until_visible('#config-nav')
-        except TimeoutException:
-            self.wait_until_visible('#config-nav')
+        self.wait_until_visible('#hint-error-project-name')
+        url = reverse('project', args=(TestProjectConfigTab.project_id, ))
+        self.get(url)
+        self.wait_until_visible('#config-nav', timeout=40)
 
     def _random_string(self, length):
         return ''.join(
@@ -372,6 +370,7 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
         self.wait_until_visible('#layers-in-project-list')
         # check layer is added
         layers_list_items = layers_list.find_elements(By.TAG_NAME, 'li')
+        self.driver.get_screenshot_as_file("/tmp/toaster-failing-screenshot-%s.png" % int(time.time()))
         self.assertEqual(len(layers_list_items), 4)
 
     def test_most_build_recipes(self):

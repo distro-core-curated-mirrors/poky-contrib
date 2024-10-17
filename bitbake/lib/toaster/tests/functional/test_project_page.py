@@ -52,13 +52,10 @@ class TestProjectPage(SeleniumFunctionalTestCase):
 
         self.find("#create-project-button").click()
 
-        try:
-            self.wait_until_visible('#hint-error-project-name')
-            url = reverse('project', args=(TestProjectPage.project_id, ))
-            self.get(url)
-            self.wait_until_visible('#config-nav')
-        except TimeoutException:
-            self.wait_until_visible('#config-nav')
+        self.wait_until_visible('#hint-error-project-name')
+        url = reverse('project', args=(TestProjectPage.project_id, ))
+        self.get(url)
+        self.wait_until_visible('#config-nav', timeout=40)
 
     def _random_string(self, length):
         return ''.join(
@@ -626,7 +623,7 @@ class TestProjectPage(SeleniumFunctionalTestCase):
             '//td[@class="add-del-layers"]'
         )
         remove_btn.click()
-        self.wait_until_visible('#change-notification')
+        self.wait_until_visible('#change-notification', timeout=40)
         change_notification = self.find('#change-notification')
         self.assertIn(
             f'You have removed 1 layer from your project: {input_text}', str(change_notification.text)
@@ -784,7 +781,6 @@ class TestProjectPage(SeleniumFunctionalTestCase):
 
         #tabs[2].click()
         #link = tabs[2].find_element(By.XPATH, '//a')
-        from selenium.webdriver.common.keys import Keys
         self.driver.find_element(By.XPATH, '//body').send_keys(Keys.CONTROL + Keys.HOME)
         self.wait_until_visible('.nav-tabs')
         #self.driver.execute_script("arguments[0].scrollIntoView();", tabs[2])

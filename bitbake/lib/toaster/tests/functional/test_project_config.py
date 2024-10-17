@@ -51,13 +51,10 @@ class TestProjectConfig(SeleniumFunctionalTestCase):
 
         self.find("#create-project-button").click()
 
-        try:
-            self.wait_until_visible('#hint-error-project-name')
-            url = reverse('project', args=(TestProjectConfig.project_id, ))
-            self.get(url)
-            self.wait_until_visible('#config-nav')
-        except TimeoutException:
-            self.wait_until_visible('#config-nav')
+        self.wait_until_visible('#hint-error-project-name')
+        url = reverse('project', args=(TestProjectConfig.project_id, ))
+        self.get(url)
+        self.wait_until_visible('#config-nav', timeout=40)
 
     def _random_string(self, length):
         return ''.join(
@@ -159,11 +156,7 @@ class TestProjectConfig(SeleniumFunctionalTestCase):
         self._navigate_bbv_page()
 
         # activate the input to edit download dir
-        try:
-            change_dl_dir_btn = self.wait_until_visible('#change-dl_dir-icon')
-        except TimeoutException:
-            # If download dir is not displayed, test is skipped
-            change_dl_dir_btn = None
+        change_dl_dir_btn = self.wait_until_visible('#change-dl_dir-icon')
 
         if change_dl_dir_btn:
             change_dl_dir_btn = self.wait_until_visible('#change-dl_dir-icon')
@@ -218,12 +211,8 @@ class TestProjectConfig(SeleniumFunctionalTestCase):
         """
         self._navigate_bbv_page()
 
-        try:
-            btn_chg_sstate_dir = self.wait_until_visible('#change-sstate_dir-icon')
-            self.click('#change-sstate_dir-icon')
-        except TimeoutException:
-            # If sstate_dir is not displayed, test is skipped
-            btn_chg_sstate_dir = None
+        btn_chg_sstate_dir = self.wait_until_visible('#change-sstate_dir-icon')
+        self.click('#change-sstate_dir-icon')
 
         if btn_chg_sstate_dir:  # Skip continuation if sstate_dir is not displayed
             # path doesn't start with / or ${...}

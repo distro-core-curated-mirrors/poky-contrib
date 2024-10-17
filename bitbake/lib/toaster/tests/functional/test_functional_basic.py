@@ -50,6 +50,8 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
     def test_verify_left_bar_menu(self):
         self.get(reverse('all-projects'))
         self.wait_until_present('#projectstable')
+        # Need to wait for some data in the table too
+        self.wait_until_present('td[class="updated"]')
         self.find_element_by_link_text_in_table('projectstable', 'selenium-project').click()
         self.wait_until_present('#config-nav')
         self.assertTrue(self.element_exists('#config-nav'),'Configuration Tab does not exist')
