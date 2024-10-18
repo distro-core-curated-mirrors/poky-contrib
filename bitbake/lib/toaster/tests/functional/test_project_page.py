@@ -473,11 +473,10 @@ class TestProjectPage(TestProjectPageBase):
                 'qemux86-64', project_machine_name.text
             )
         except:
-            self.driver.get_screenshot_as_file("/tmp/screenshot-test-moo2-%s.png" % time.time())
+            self.driver.get_screenshot_as_file("/tmp/screenshot-test-moo2A-%s.png" % time.time())
             raise
         # check "Add layer" button works
         self._navigate_to_config_nav('machinestable', 5)
-        time.sleep(1)
         # Search for a machine whit layer not in project
         self._mixin_test_table_search_input(
             input_selector='search-input-machinestable',
@@ -485,12 +484,6 @@ class TestProjectPage(TestProjectPageBase):
             searchBtn_selector='search-submit-machinestable',
             table_selector='machinestable'
         )
-        self.wait_until_visible('#change-notification')
-        self.assertIn(f'You have changed the machine to: qemux86-64-tpm2', str(change_notification.text))
-
-        hide_button = self.find('#hide-alert')
-        hide_button.click()
-        self.wait_until_not_visible('#change-notification')
 
         self.wait_until_visible('#machinestable tbody tr')
         rows = self.find_all('#machinestable tbody tr')
@@ -506,7 +499,6 @@ class TestProjectPage(TestProjectPageBase):
         hide_button = self.find('#hide-alert')
         hide_button.click()
         self.wait_until_not_visible('#change-notification')
-
 
         # check Machine table feature(show/hide column, pagination)
         self._navigate_to_config_nav('machinestable', 5)
