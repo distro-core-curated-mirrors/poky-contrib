@@ -7,70 +7,27 @@
 #
 
 import string
-import random
 import pytest
 import time
 from django.urls import reverse
 from selenium.webdriver import Keys
 from selenium.webdriver.support.select import Select
 from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException, TimeoutException
-from orm.models import Project
 from tests.functional.functional_helpers import SeleniumFunctionalTestCase
 from selenium.webdriver.common.by import By
 
 from .utils import get_projectId_from_url, wait_until_build, wait_until_build_cancelled
 
-
-@pytest.mark.django_db
-@pytest.mark.order("last")
 class TestProjectConfigTab(SeleniumFunctionalTestCase):
     PROJECT_NAME = 'TestProjectConfigTab'
     project_id = None
 
-    def _create_project(self, project_name, **kwargs):
-        """ Create/Test new project using:
-          - Project Name: Any string
-          - Release: Any string
-          - Merge Toaster settings: True or False
-        """
-        release = kwargs.get('release', '3')
-        self.get(reverse('newproject'))
-        self.wait_until_visible('#new-project-name')
-        self.find("#new-project-name").send_keys(project_name)
-        select = Select(self.find("#projectversion"))
-        select.select_by_value(release)
-
-        # check merge toaster settings
-        checkbox = self.find('.checkbox-mergeattr')
-        if not checkbox.is_selected():
-            checkbox.click()
-
-        if self.PROJECT_NAME != 'TestProjectConfigTab':
-            # Reset project name if it's not the default one
-            self.PROJECT_NAME = 'TestProjectConfigTab'
-
-        self.find("#create-project-button").click()
-
-        self.wait_until_visible('#hint-error-project-name')
-        url = reverse('project', args=(TestProjectConfigTab.project_id, ))
-        self.get(url)
-        self.wait_until_visible('#config-nav', timeout=40)
-
-    def _random_string(self, length):
-        return ''.join(
-            random.choice(string.ascii_letters) for _ in range(length)
-        )
-
     def _navigate_to_project_page(self):
         # Navigate to project page
         if TestProjectConfigTab.project_id is None:
-            self._create_project(project_name=self._random_string(10))
-            current_url = self.driver.current_url
-            TestProjectConfigTab.project_id = get_projectId_from_url(
-                current_url)
-        else:
-            url = reverse('project', args=(TestProjectConfigTab.project_id,))
-            self.get(url)
+            TestProjectConfigTab.project_id = self.create_new_project(self.PROJECT_NAME, '3', None, True)
+        url = reverse('project', args=(TestProjectConfigTab.project_id,))
+        self.get(url)
         self.wait_until_visible('#config-nav')
 
     def _create_builds(self):
@@ -297,9 +254,11 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
                     - meta-poky
                     - meta-yocto-bsp
         """
-        # Create a new project for this test
-        project_name = self._random_string(10)
-        self._create_project(project_name=project_name)
+        project_id = self.create_new_project(self.PROJECT_NAME + "-SectionTest", '3', None, True)
+        url = reverse('project', args=(project_id,))
+        self.get(url)
+        self.wait_until_visible('#config-nav')
+
         # check if the menu is displayed
         self.wait_until_visible('#project-page')
         block_l = self.driver.find_element(
@@ -328,6 +287,9 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
             self.assertIn(
                 f'You have changed the {item_name} to: {new_item_name}', change_notification.text
             )
+            hide_button = self.find('#hide-alert')
+            hide_button.click()
+            self.wait_until_not_visible('#change-notification')
 
         # Machine
         check_machine_distro(self, 'machine', 'qemux86-64', 'machine-section')
@@ -352,25 +314,26 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
         # remove all layers except the first three layers
         for i in range(3, len(layers_list_items)):
             layers_list_items[i].find_element(By.TAG_NAME, 'span').click()
+            time.sleep(1)
         # check can add a layer if exists
         add_layer_input = layers.find_element(By.ID, 'layer-add-input')
         add_layer_input.send_keys('meta-oe')
+        time.sleep(1)
         self.wait_until_visible('#layer-container > form > div > span > div')
         dropdown_item = self.driver.find_element(
             By.XPATH,
             '//*[@id="layer-container"]/form/div/span/div'
         )
-        try:
-            dropdown_item.click()
-        except ElementClickInterceptedException:
-            self.skipTest(
-                "layer-container dropdown item click intercepted. Element not properly visible.")
+        self.driver.get_screenshot_as_file("/tmp/toaster-failing-screenshotA-%s.png" % int(time.time()))
+        dropdown_item.click()
+        time.sleep(1)
         add_layer_btn = layers.find_element(By.ID, 'add-layer-btn')
         add_layer_btn.click()
+        self.driver.get_screenshot_as_file("/tmp/toaster-failing-screenshotA-%s.png" % int(time.time()))
         self.wait_until_visible('#layers-in-project-list')
         # check layer is added
         layers_list_items = layers_list.find_elements(By.TAG_NAME, 'li')
-        self.driver.get_screenshot_as_file("/tmp/toaster-failing-screenshot-%s.png" % int(time.time()))
+        self.driver.get_screenshot_as_file("/tmp/toaster-failing-screenshotA-%s.png" % int(time.time()))
         self.assertEqual(len(layers_list_items), 4)
 
     def test_most_build_recipes(self):
@@ -398,11 +361,14 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
                 # Skip if the build is already cancelled
                 pass
             wait_until_build_cancelled(self)
+
         # Create a new project for remaining asserts
-        project_name = self._random_string(10)
-        self._create_project(project_name=project_name, release='2')
+        project_id = self.create_new_project(self.PROJECT_NAME + "-MostBuilt", '2', None, True)
+        url = reverse('project', args=(project_id,))
+        self.get(url)
+        self.wait_until_visible('#config-nav')
+
         current_url = self.driver.current_url
-        TestProjectConfigTab.project_id = get_projectId_from_url(current_url)
         url = current_url.split('?')[0]
 
         # Create a new builds
@@ -427,7 +393,7 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
             msg="No recipes found in the most built recipes list",
         )
         rebuild_from_most_build_recipes(recipe_list_items)
-        TestProjectConfigTab.project_id = None  # reset project id
+
 
     def test_project_page_tab_importlayer(self):
         """ Test project page tab import layer """
@@ -471,10 +437,11 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
 
     def test_project_page_custom_image_no_image(self):
         """ Test project page tab "New custom image" when no custom image """
-        project_name = self._random_string(10)
-        self._create_project(project_name=project_name)
-        current_url = self.driver.current_url
-        TestProjectConfigTab.project_id = get_projectId_from_url(current_url)
+        project_id = self.create_new_project(self.PROJECT_NAME + "-CustomImage", '3', None, True)
+        url = reverse('project', args=(project_id,))
+        self.get(url)
+        self.wait_until_visible('#config-nav')
+
         # navigate to "Custom image" tab
         custom_image_section = self._get_config_nav_item(2)
         custom_image_section.click()
@@ -491,7 +458,7 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
             By.TAG_NAME, 'a')
         self.assertTrue(TestProjectConfigTab.project_id is not None)
         self.assertIn(
-            f"/toastergui/project/{TestProjectConfigTab.project_id}/newcustomimage", str(
+            f"/toastergui/project/{project_id}/newcustomimage", str(
                 link_create_custom_image.get_attribute('href')
             )
         )
@@ -500,7 +467,6 @@ class TestProjectConfigTab(SeleniumFunctionalTestCase):
                 link_create_custom_image.text
             )
         )
-        TestProjectConfigTab.project_id = None  # reset project id
 
     def test_project_page_image_recipe(self):
         """ Test project page section images

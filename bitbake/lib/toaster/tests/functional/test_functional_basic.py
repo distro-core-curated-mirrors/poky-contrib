@@ -7,6 +7,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 #
 
+import time
 import re
 from django.urls import reverse
 import pytest
@@ -17,8 +18,6 @@ from selenium.webdriver.common.by import By
 from tests.functional.utils import get_projectId_from_url
 
 
-@pytest.mark.django_db
-@pytest.mark.order("second_to_last")
 class FuntionalTestBasic(SeleniumFunctionalTestCase):
     """Basic functional tests for Toaster"""
     project_id = None
@@ -26,25 +25,7 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
     def setUp(self):
         super(FuntionalTestBasic, self).setUp()
         if not FuntionalTestBasic.project_id:
-            self._create_slenium_project()
-            current_url = self.driver.current_url
-            FuntionalTestBasic.project_id = get_projectId_from_url(current_url)
-
-#   testcase (1514)
-    def _create_slenium_project(self):
-        project_name = 'selenium-project'
-        self.get(reverse('newproject'))
-        self.wait_until_visible('#new-project-name')
-        self.driver.find_element(By.ID, "new-project-name").send_keys(project_name)
-        self.driver.find_element(By.ID, 'projectversion').click()
-        self.driver.find_element(By.ID, "create-project-button").click()
-        element = self.wait_until_visible('#project-created-notification')
-        self.assertTrue(self.element_exists('#project-created-notification'),'Project creation notification not shown')
-        self.assertTrue(project_name in element.text,
-                        "New project name not in new project notification")
-        self.assertTrue(Project.objects.filter(name=project_name).count(),
-                        "New project not found in database")
-        return Project.objects.last().id
+            FuntionalTestBasic.project_id = self.create_new_project('selenium-project', '3', None, False)
 
  #  testcase (1515)
     def test_verify_left_bar_menu(self):
@@ -61,51 +42,60 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
 
         try:
             self.driver.find_element(By.XPATH, "//*[@id='config-nav']/ul/li/a[@href="+'"'+project_URL+'customimages/"'+"]").click()
-            self.wait_until_present('#config-nav')
+            self.wait_until_present('#filter-modal-customimagestable')
             self.assertTrue(re.search("Custom images",self.driver.find_element(By.XPATH, "//div[@class='col-md-10']").text),'Custom images information is not loading properly')
         except:
             self.fail(msg='No Custom images tab available')
 
         try:
             self.driver.find_element(By.XPATH, "//*[@id='config-nav']/ul/li/a[@href="+'"'+project_URL+'images/"'+"]").click()
-            self.wait_until_present('#config-nav')
+            self.wait_until_present('#filter-modal-imagerecipestable')
             self.assertTrue(re.search("Compatible image recipes",self.driver.find_element(By.XPATH, "//div[@class='col-md-10']").text),'The Compatible image recipes information is not loading properly')
         except:
             self.fail(msg='No Compatible image tab available')
 
+
         try:
             self.driver.find_element(By.XPATH, "//*[@id='config-nav']/ul/li/a[@href="+'"'+project_URL+'softwarerecipes/"'+"]").click()
-            self.wait_until_present('#config-nav')
+            self.wait_until_present('#filter-modal-softwarerecipestable')
             self.assertTrue(re.search("Compatible software recipes",self.driver.find_element(By.XPATH, "//div[@class='col-md-10']").text),'The Compatible software recipe information is not loading properly')
         except:
             self.fail(msg='No Compatible software recipe tab available')
 
         try:
             self.driver.find_element(By.XPATH, "//*[@id='config-nav']/ul/li/a[@href="+'"'+project_URL+'machines/"'+"]").click()
-            self.wait_until_present('#config-nav')
+            self.wait_until_present('#filter-modal-machinestable')
             self.assertTrue(re.search("Compatible machines",self.driver.find_element(By.XPATH, "//div[@class='col-md-10']").text),'The Compatible machine information is not loading properly')
         except:
             self.fail(msg='No Compatible machines tab available')
 
         try:
             self.driver.find_element(By.XPATH, "//*[@id='config-nav']/ul/li/a[@href="+'"'+project_URL+'layers/"'+"]").click()
-            self.wait_until_present('#config-nav')
+            self.wait_until_present('#filter-modal-layerstable')
             self.assertTrue(re.search("Compatible layers",self.driver.find_element(By.XPATH, "//div[@class='col-md-10']").text),'The Compatible layer information is not loading properly')
         except:
             self.fail(msg='No Compatible layers tab available')
 
         try:
             self.driver.find_element(By.XPATH, "//*[@id='config-nav']/ul/li/a[@href="+'"'+project_URL+'configuration"'+"]").click()
-            self.wait_until_present('#config-nav')
+            self.wait_until_present('#configvar-list')
             self.assertTrue(re.search("Bitbake variables",self.driver.find_element(By.XPATH, "//div[@class='col-md-10']").text),'The Bitbake variables information is not loading properly')
         except:
             self.fail(msg='No Bitbake variables tab available')
+
+
 
 #   testcase (1516)
     def test_review_configuration_information(self):
         self.get(reverse('all-projects'))
         self.wait_until_present('#projectstable')
-        self.find_element_by_link_text_in_table('projectstable', 'selenium-project').click()
+        # Need to wait for some data in the table too
+        self.wait_until_present('td[class="updated"]')
+        try:
+            self.find_element_by_link_text_in_table('projectstable', 'selenium-project').click()
+        except:
+            self.driver.get_screenshot_as_file("/tmp/toaster-failing-screenshot-%s.png" % int(time.time()))
+            raise
         project_URL=self.get_URL()
         self.wait_until_present('#config-nav')
         try:
@@ -149,6 +139,8 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
     def test_verify_machine_information(self):
         self.get(reverse('all-projects'))
         self.wait_until_present('#projectstable')
+        # Need to wait for some data in the table too
+        self.wait_until_present('td[class="updated"]')
         self.find_element_by_link_text_in_table('projectstable', 'selenium-project').click()
         self.wait_until_present('#config-nav')
 
@@ -193,6 +185,8 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
     def test_verify_layer_information(self):
         self.get(reverse('all-projects'))
         self.wait_until_present('#projectstable')
+        # Need to wait for some data in the table too
+        self.wait_until_present('td[class="updated"]')
         self.find_element_by_link_text_in_table('projectstable', 'selenium-project').click()
         self.wait_until_present('#config-nav')
         project_URL=self.get_URL()
@@ -223,6 +217,8 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
     def test_verify_project_detail_links(self):
         self.get(reverse('all-projects'))
         self.wait_until_present('#projectstable')
+        # Need to wait for some data in the table too
+        self.wait_until_present('td[class="updated"]')
         self.find_element_by_link_text_in_table('projectstable', 'selenium-project').click()
         self.wait_until_present('#config-nav')
         project_URL=self.get_URL()

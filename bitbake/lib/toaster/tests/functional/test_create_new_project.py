@@ -9,7 +9,6 @@
 import json
 import pytest
 import re
-import requests
 from django.urls import reverse
 from django.core import management
 from selenium.webdriver.support.select import Select

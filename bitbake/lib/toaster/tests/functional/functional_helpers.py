@@ -12,9 +12,12 @@ import logging
 import subprocess
 import signal
 import re
+import requests
 
+from django.urls import reverse
 from tests.browser.selenium_helpers_base import SeleniumTestCaseBase
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.select import Select
 from selenium.common.exceptions import NoSuchElementException
 
 logger = logging.getLogger("toaster")
@@ -180,6 +183,8 @@ class SeleniumFunctionalTestCase(SeleniumTestCaseBase):
             if checkbox.is_selected():
                 checkbox.click()
 
+        self.wait_until_clickable('#create-project-button')
+
         self.driver.find_element(By.ID, "create-project-button").click()
 
         element = self.wait_until_visible('#project-created-notification')
@@ -200,11 +205,12 @@ class SeleniumFunctionalTestCase(SeleniumTestCaseBase):
         project_id = data['results'][0]['id']
 
         # check release
-        self.assertTrue(re.search(
-            release_title,
-            self.driver.find_element(By.XPATH,
+        if release_title is not None:
+            self.assertTrue(re.search(
+                release_title,
+                self.driver.find_element(By.XPATH,
                                      "//span[@id='project-release-title']"
                                      ).text),
-                        'The project release is not defined')
+                            'The project release is not defined')
 
         return project_id
