@@ -203,7 +203,7 @@ class ToolchainOptions(OESelftestTestCase):
 
         features = 'FORTRAN:forcevariable = ",fortran"\n'
         self.write_config(features)
-        bitbake('fortran-helloworld')
+        bitbake('libgfortran fortran-helloworld')
 
 @OETestTag("yocto-mirrors")
 class SourceMirroring(OESelftestTestCase):
