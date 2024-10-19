@@ -25,6 +25,10 @@ do_install_ptest() {
     rm -f ${D}${PTEST_PATH}/tests/manylinux/build.sh
 }
 
+do_install_ptest:append:libc-musl() {
+    sed -i -e '/^pytest/ s|$| --deselect tests/test_manylinux.py::test_is_manylinux_compatible_old --ignore=tests/test_tags.py|' ${D}${PTEST_PATH}/run-ptest
+}
+
 RDEPENDS:${PN}-ptest = "\
     python3-ctypes \
     python3-pretend \
