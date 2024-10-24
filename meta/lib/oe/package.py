@@ -1022,9 +1022,7 @@ def copydebugsources(debugsrcdir, sources, d):
             cmd += "fgrep -zw '%s' | " % prefixmap[pmap]
             # Remove prefix in the source paths
             cmd += "sed 's#%s/##g' | " % (prefixmap[pmap])
-            # Use --unconditional so that any files in B replace files taken from S, to resolve
-            # reproducibility problems due to timestamp clamping in do_package sstate (#15491)
-            cmd += "(cd '%s' ; cpio -pd0mlL --unconditional --no-preserve-owner '%s%s' 2>/dev/null)" % (pmap, dvar, prefixmap[pmap])
+            cmd += "(cd '%s' ; cpio -pd0mlL --no-preserve-owner '%s%s' 2>/dev/null)" % (pmap, dvar, prefixmap[pmap])
 
             try:
                 subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
