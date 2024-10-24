@@ -1014,7 +1014,8 @@ def copydebugsources(debugsrcdir, sources, d):
         bb.utils.mkdirhier(basepath)
         cpath.updatecache(basepath)
 
-        for pmap in prefixmap:
+        # Big assumption/expectation that DEBUG_PREFIX_MAP is S then B, because we want to sweep B then S.
+        for pmap in reversed(prefixmap):
             # Ignore files from the recipe sysroots (target and native)
             cmd =  "LC_ALL=C ; sort -z -u '%s' | egrep -v -z '((<internal>|<built-in>)$|/.*recipe-sysroot.*/)' | " % sourcefile
             # We need to ignore files that are not actually ours
