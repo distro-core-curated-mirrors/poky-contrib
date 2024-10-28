@@ -1624,11 +1624,11 @@ def process_shlibs(pkgfiles, d):
         needed = set()
         sonames = set()
         ldir = os.path.dirname(file).replace(pkgdest + "/" + pkg, '')
-        cmd = d.getVar('OBJDUMP') + " -p " + shlex.quote(file) + " 2>/dev/null"
-        fd = os.popen(cmd)
-        lines = fd.readlines()
-        fd.close()
         rpath = tuple()
+        cmd = [d.getVar("OBJDUMP"), "-p", file]
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        # Ignore errors silently as not all matching files will be parsed successfully
+        lines = proc.stdout.splitlines()
         for l in lines:
             m = re.match(r"\s+RPATH\s+([^\s]*)", l)
             if m:
