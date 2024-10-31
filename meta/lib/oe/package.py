@@ -1745,6 +1745,14 @@ def process_shlibs(pkgfiles, d):
         if not pkgver:
             pkgver = ver
 
+        def iself(f):
+            try:
+                with oe.qa.ELFFile(f) as elf:
+                    elf.open()
+                    return True
+            except oe.qa.NotELFFileError:
+                return False
+
         needed[pkg] = set()
         sonames = set()
         linuxlist = []
@@ -1756,7 +1764,7 @@ def process_shlibs(pkgfiles, d):
                     darwin_so(file, needed, sonames, pkgver)
                 elif hostos.startswith("mingw"):
                     mingw_dll(file, needed, sonames, pkgver)
-                elif os.access(file, os.X_OK) or lib_re.match(file):
+                elif iself(file):
                     linuxlist.append(file)
 
         if linuxlist:
