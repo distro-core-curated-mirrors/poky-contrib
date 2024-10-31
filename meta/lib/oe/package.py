@@ -1625,31 +1625,37 @@ def process_shlibs(pkgfiles, d):
         sonames = set()
         ldir = os.path.dirname(file).replace(pkgdest + "/" + pkg, '')
         rpath = tuple()
-        cmd = [d.getVar("OBJDUMP"), "-p", file]
-        proc = subprocess.run(cmd, capture_output=True, text=True)
-        # Ignore errors silently as not all matching files will be parsed successfully
-        lines = proc.stdout.splitlines()
-        for l in lines:
-            m = re.match(r"\s+RPATH\s+([^\s]*)", l)
-            if m:
-                rpaths = m.group(1).replace("$ORIGIN", ldir).split(":")
-                rpath = tuple(map(os.path.normpath, rpaths))
-        for l in lines:
-            m = re.match(r"\s+NEEDED\s+([^\s]*)", l)
-            if m:
-                dep = m.group(1)
-                if dep not in needed:
-                    needed.add((dep, file, rpath))
-            m = re.match(r"\s+SONAME\s+([^\s]*)", l)
-            if m:
-                this_soname = m.group(1)
-                prov = (this_soname, ldir, pkgver)
-                if not prov in sonames:
-                    # if library is private (only used by package) then do not build shlib for it
-                    if not private_libs or len([i for i in private_libs if fnmatch.fnmatch(this_soname, i)]) == 0:
-                        sonames.add(prov)
-                if libdir_re.match(os.path.dirname(file)):
-                    needs_ldconfig = True
+
+        try:
+            cmd = [d.getVar("OBJDUMP"), "-p", file]
+            proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
+            lines = proc.stdout.splitlines()
+            for l in lines:
+                m = re.match(r"\s+RPATH\s+([^\s]*)", l)
+                if m:
+                    rpaths = m.group(1).replace("$ORIGIN", ldir).split(":")
+                    rpath = tuple(map(os.path.normpath, rpaths))
+            for l in lines:
+                m = re.match(r"\s+NEEDED\s+([^\s]*)", l)
+                if m:
+                    dep = m.group(1)
+                    if dep not in needed:
+                        needed.add((dep, file, rpath))
+                m = re.match(r"\s+SONAME\s+([^\s]*)", l)
+                if m:
+                    this_soname = m.group(1)
+                    prov = (this_soname, ldir, pkgver)
+                    if not prov in sonames:
+                        # if library is private (only used by package) then do not build shlib for it
+                        if not private_libs or len([i for i in private_libs if fnmatch.fnmatch(this_soname, i)]) == 0:
+                            sonames.add(prov)
+                    if libdir_re.match(os.path.dirname(file)):
+                        needs_ldconfig = True
+        except subprocess.CalledProcessError as e:
+            # Ignore gracefull failures silently as not all matching files will
+            # be parsed successfully
+            if e.returncode != 1:
+                raise
         return (needs_ldconfig, needed, sonames)
 
     def darwin_so(file, needed, sonames, pkgver):
