@@ -31,6 +31,13 @@ setuptools3_do_configure() {
 }
 
 setuptools3_do_compile() {
+        # Write an extra config file to build in parallel
+        export DIST_EXTRA_CONFIG=${WORKDIR}/setuptools-extra.cfg
+        cat <<EOF >$DIST_EXTRA_CONFIG
+[build_ext]
+parallel = ${@oe.utils.parallel_make(d)}
+EOF
+
         cd ${SETUPTOOLS_SETUP_PATH}
         NO_FETCH_BUILD=1 \
         STAGING_INCDIR=${STAGING_INCDIR} \
