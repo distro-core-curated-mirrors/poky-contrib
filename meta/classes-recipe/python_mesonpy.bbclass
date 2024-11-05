@@ -19,7 +19,7 @@ MESONOPTS:remove = "--buildtype ${MESON_BUILDTYPE}"
 
 CONFIGURE_FILES = "pyproject.toml"
 
-DEPENDS += "python3-wheel-native python3-meson-python-native"
+DEPENDS += "python3-meson-python-native"
 
 def mesonpy_get_args(d):
     vars = ['MESONOPTS', 'MESON_CROSS_FILE', 'EXTRA_OEMESON']

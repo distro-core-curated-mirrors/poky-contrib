@@ -6,7 +6,7 @@
 
 inherit setuptools3-base python_pep517
 
-DEPENDS += "python3-setuptools-native python3-wheel-native"
+DEPENDS += "python3-setuptools-native"
 
 do_compile:prepend() {
     # Write an extra config file to build in parallel

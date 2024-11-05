@@ -5,6 +5,8 @@ HOMEPAGE = "https://pypi.org/project/psutil/"
 
 SRC_URI[sha256sum] = "353815f59a7f64cdaca1c0307ee13558a0512f6db064e92fe833784f08539c7a"
 
+DEPENDS = "python3-wheel-native"
+
 inherit pypi python_setuptools_build_meta
 
 PACKAGES =+ "${PN}-tests"

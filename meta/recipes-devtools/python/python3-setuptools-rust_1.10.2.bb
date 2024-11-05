@@ -15,7 +15,7 @@ PYPI_PACKAGE = "setuptools_rust"
 
 inherit cargo pypi python_setuptools_build_meta
 
-DEPENDS += "python3-setuptools-scm-native python3-wheel-native"
+DEPENDS += "python3-setuptools-scm-native"
 
 RDEPENDS:${PN} += " \
     python3-json \

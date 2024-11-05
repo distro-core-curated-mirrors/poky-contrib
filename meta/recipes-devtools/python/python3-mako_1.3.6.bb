@@ -9,6 +9,8 @@ UPSTREAM_CHECK_PYPI_PACKAGE = "Mako"
 
 inherit pypi python_setuptools_build_meta ptest
 
+DEPENDS += "python3-wheel-native"
+
 SRC_URI:append = " \
     file://run-ptest \
 "
