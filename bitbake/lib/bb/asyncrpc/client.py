@@ -68,7 +68,12 @@ class AsyncClient(object):
 
     async def connect_tcp(self, address, port):
         async def connect_sock():
-            reader, writer = await asyncio.open_connection(address, port)
+            try:
+                reader, writer = await asyncio.wait_for(
+                        asyncio.open_connection(address, port),
+                        timeout=5)
+            except asyncio.TimeoutError as e:
+                raise ConnectionError(f"Timeout connecting to {address}:{port}") from e
             return StreamConnection(reader, writer, self.timeout, self.max_chunk)
 
         self._connect_sock = connect_sock
