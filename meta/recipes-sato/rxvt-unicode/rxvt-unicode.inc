@@ -39,6 +39,7 @@ do_configure:prepend () {
 	if [ ! -e ${S}/acinclude.m4 ]; then
 		cp ${S}/aclocal.m4 ${S}/acinclude.m4
 	fi
+	sed -i -e 's#@TIC@#:#g' ${S}/doc/Makefile.in
 }
 
 do_compile:prepend () {
