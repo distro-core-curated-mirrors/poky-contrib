@@ -17,6 +17,8 @@ KBRANCH ?= "master"
 KMACHINE ?= "${MACHINE}"
 SRCREV_FORMAT ?= "meta_machine"
 
+KBUILD_DEFCONFIG ?= ""
+
 # LEVELS:
 #   0: no reporting
 #   1: report options that are specified, but not in the final config
