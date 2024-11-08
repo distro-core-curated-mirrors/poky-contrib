@@ -15,7 +15,8 @@
 # For example, in conf/local.conf:
 #
 # RM_WORK_EXCLUDE += "icu-native icu busybox"
-#
+RM_WORK_EXCLUDE ?= ""
+
 # Recipes can also configure which entries in their ${WORKDIR}
 # are preserved besides temp, which already gets excluded by default
 # because it contains logs:
