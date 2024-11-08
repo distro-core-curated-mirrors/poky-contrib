@@ -113,11 +113,7 @@ def get_dirs_with_fragments(d):
 do_kernel_metadata() {
 	set +e
 
-	if [ -n "$1" ]; then
-		mode="$1"
-	else
-		mode="patch"
-	fi
+	mode=${1:-patch}
 
 	cd ${S}
 	export KMETA=${KMETA}
