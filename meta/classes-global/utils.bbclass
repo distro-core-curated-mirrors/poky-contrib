@@ -92,6 +92,7 @@ oe_libinstall() {
 	__runcmd cd $dir
 
 	lafile=$libname.la
+	libfile=
 
 	# If such file doesn't exist, try to cut version suffix
 	if [ ! -f "$lafile" ]; then
