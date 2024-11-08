@@ -330,6 +330,9 @@ def exec_func_python(func, d, runfile, cwd=None):
 
 def shell_trap_code():
     return '''#!/bin/sh\n
+
+set -u
+
 __BITBAKE_LAST_LINE=0
 
 # Emit a useful diagnostic if something fails:
