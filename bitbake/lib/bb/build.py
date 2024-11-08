@@ -377,7 +377,7 @@ bb_bash_debug_handler() {
     fi
 }
 
-case $BASH_VERSION in
+case ${BASH_VERSION:-} in
 "") trap 'bb_sh_exit_handler' 0
     set -e
     ;;
