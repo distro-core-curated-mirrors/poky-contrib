@@ -95,15 +95,15 @@ def map_host_arch_to_uname_arch(host_arch):
 
 cmake_do_generate_toolchain_file() {
 	if [ "${BUILD_SYS}" = "${HOST_SYS}" ]; then
-		cmake_crosscompiling="set( CMAKE_CROSSCOMPILING FALSE )"
+		cmake_env="set( CMAKE_CROSSCOMPILING FALSE )"
 	else
-		cmake_sysroot="set( CMAKE_SYSROOT \"${RECIPE_SYSROOT}\" )"
+		cmake_env="set( CMAKE_SYSROOT \"${RECIPE_SYSROOT}\" )"
 	fi
 
 	cat > ${WORKDIR}/toolchain.cmake <<EOF
 # CMake system name must be something like "Linux".
 # This is important for cross-compiling.
-$cmake_crosscompiling
+$cmake_env
 set( CMAKE_SYSTEM_NAME ${@map_host_os_to_system_name(d.getVar('HOST_OS'))} )
 set( CMAKE_SYSTEM_PROCESSOR ${@map_host_arch_to_uname_arch(d.getVar('HOST_ARCH'))} )
 set( CMAKE_C_COMPILER ${OECMAKE_C_COMPILER} )
@@ -130,8 +130,6 @@ set( CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ${OECMAKE_FIND_ROOT_PATH_MODE_PROGRAM} )
 set( CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY )
 set( CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY )
 set( CMAKE_PROGRAM_PATH "/" )
-
-$cmake_sysroot
 
 # Use qt.conf settings
 set( ENV{QT_CONF_PATH} ${WORKDIR}/qt.conf )
