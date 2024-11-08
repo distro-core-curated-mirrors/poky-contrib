@@ -60,7 +60,7 @@ do_install:append:class-native () {
 }
 
 pkgconfig_sstate_fixup_esdk () {
-	if [ "${BB_CURRENTTASK}" = "populate_sysroot_setscene" -a "${WITHIN_EXT_SDK}" = "1" ] ; then
+	if [ "${BB_CURRENTTASK}" = "populate_sysroot_setscene" -a "${WITHIN_EXT_SDK:-0}" = "1" ] ; then
 		pkgconfdir="${SSTATE_INSTDIR}/recipe-sysroot-native/${bindir_native}"
 		mv $pkgconfdir/pkg-config $pkgconfdir/pkg-config.real
 		ln -rs $pkgconfdir/pkg-config-esdk $pkgconfdir/pkg-config
