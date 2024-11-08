@@ -64,6 +64,9 @@ OECMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "ONLY"
 
 EXTRA_OECMAKE:append = " ${PACKAGECONFIG_CONFARGS}"
 
+# Extra arguments to pass to cmake --build
+EXTRA_OECMAKE_BUILD ?= ""
+
 export CMAKE_BUILD_PARALLEL_LEVEL
 CMAKE_BUILD_PARALLEL_LEVEL:task-compile = "${@oe.utils.parallel_make(d, False)}"
 CMAKE_BUILD_PARALLEL_LEVEL:task-install = "${@oe.utils.parallel_make(d, True)}"
@@ -95,15 +98,15 @@ def map_host_arch_to_uname_arch(host_arch):
 
 cmake_do_generate_toolchain_file() {
 	if [ "${BUILD_SYS}" = "${HOST_SYS}" ]; then
-		cmake_crosscompiling="set( CMAKE_CROSSCOMPILING FALSE )"
+		cmake_env="set( CMAKE_CROSSCOMPILING FALSE )"
 	else
-		cmake_sysroot="set( CMAKE_SYSROOT \"${RECIPE_SYSROOT}\" )"
+		cmake_env="set( CMAKE_SYSROOT \"${RECIPE_SYSROOT}\" )"
 	fi
 
 	cat > ${WORKDIR}/toolchain.cmake <<EOF
 # CMake system name must be something like "Linux".
 # This is important for cross-compiling.
-$cmake_crosscompiling
+$cmake_env
 set( CMAKE_SYSTEM_NAME ${@map_host_os_to_system_name(d.getVar('HOST_OS'))} )
 set( CMAKE_SYSTEM_PROCESSOR ${@map_host_arch_to_uname_arch(d.getVar('HOST_ARCH'))} )
 set( CMAKE_C_COMPILER ${OECMAKE_C_COMPILER} )
@@ -124,14 +127,12 @@ set( CMAKE_CXX_LINK_FLAGS "${OECMAKE_CXX_LINK_FLAGS}" CACHE STRING "LDFLAGS" )
 
 # only search in the paths provided so cmake doesnt pick
 # up libraries and tools from the native build machine
-set( CMAKE_FIND_ROOT_PATH ${STAGING_DIR_HOST} ${STAGING_DIR_NATIVE} ${CROSS_DIR} ${OECMAKE_PERLNATIVE_DIR} ${OECMAKE_EXTRA_ROOT_PATH} ${EXTERNAL_TOOLCHAIN} ${COREBASE}/scripts ${HOSTTOOLS_DIR} )
+set( CMAKE_FIND_ROOT_PATH ${STAGING_DIR_HOST} ${STAGING_DIR_NATIVE} ${CROSS_DIR:-} ${OECMAKE_PERLNATIVE_DIR} ${OECMAKE_EXTRA_ROOT_PATH} ${EXTERNAL_TOOLCHAIN:-} ${COREBASE}/scripts ${HOSTTOOLS_DIR} )
 set( CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY )
 set( CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ${OECMAKE_FIND_ROOT_PATH_MODE_PROGRAM} )
 set( CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY )
 set( CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY )
 set( CMAKE_PROGRAM_PATH "/" )
-
-$cmake_sysroot
 
 # Use qt.conf settings
 set( ENV{QT_CONF_PATH} ${WORKDIR}/qt.conf )
@@ -186,10 +187,6 @@ OECMAKE_ARGS = "\
 "
 
 cmake_do_configure() {
-	if [ "${OECMAKE_BUILDPATH}" ]; then
-		bbnote "cmake.bbclass no longer uses OECMAKE_BUILDPATH.  The default behaviour is now out-of-tree builds with B=WORKDIR/build."
-	fi
-
 	if [ "${S}" = "${B}" ]; then
 		find ${B} -name CMakeFiles -or -name Makefile -or -name cmake_install.cmake -or -name CMakeCache.txt -delete
 	fi
