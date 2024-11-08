@@ -119,3 +119,6 @@ do_configure () {
 
 	oe_runconf
 }
+
+# can we remove this entirely?
+TARGET_VENDOR_MULTILIB_ORIGINAL ?= ""
