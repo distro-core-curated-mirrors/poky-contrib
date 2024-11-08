@@ -89,6 +89,8 @@ do_install () {
 	if [ -n "${@d.getVar('FORTRAN')}" ]; then
 		ln -sf ${STAGING_DIR_NATIVE}${prefix_native}/bin/${TARGET_PREFIX}gfortran ${STAGING_DIR_NATIVE}${prefix_native}/bin/${TARGET_PREFIX}g77 || true
 		fortsymlinks="g77 gfortran"
+	else
+		fortsymlinks=
 	fi
 
 	# Insert symlinks into libexec so when tools without a prefix are searched for, the correct ones are
