@@ -63,3 +63,5 @@ KERNEL_IMAGETYPES ??= "${KERNEL_IMAGETYPE}"
 # the variable to be empty.
 # Git example url: git://git.yoctoproject.org/yocto-firewall-test;protocol=git;rev=master;branch=master
 CONNECTIVITY_CHECK_URIS ?= "https://yoctoproject.org/connectivity.html"
+
+ROOTLESS_X ?= "0"
