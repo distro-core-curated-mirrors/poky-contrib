@@ -491,23 +491,27 @@ python buildhistory_list_installed_sdk_host() {
 }
 
 buildhistory_get_installed() {
-	mkdir -p $1
+	target=$1
+	mode=${2:-}
+	submode=${3:-}
+
+	mkdir -p $target
 
 	# Get list of installed packages
-	pkgcache="$1/installed-packages.tmp"
+	pkgcache="$target/installed-packages.tmp"
 	cat ${WORKDIR}/bh_installed_pkgs_${PID}.txt | sort > $pkgcache && rm ${WORKDIR}/bh_installed_pkgs_${PID}.txt
 
-	cat $pkgcache | awk '{ print $1 }' > $1/installed-package-names.txt
+	cat $pkgcache | awk '{ print $target }' > $target/installed-package-names.txt
 
 	if [ -s $pkgcache ] ; then
-		cat $pkgcache | awk '{ print $2 }' | xargs -n1 basename > $1/installed-packages.txt
+		cat $pkgcache | awk '{ print $2 }' | xargs -n1 basename > $target/installed-packages.txt
 	else
-		printf "" > $1/installed-packages.txt
+		printf "" > $target/installed-packages.txt
 	fi
 
 	# Produce dependency graph
 	# First, quote each name to handle characters that cause issues for dot
-	sed 's:\([^| ]*\):"\1":g' ${WORKDIR}/bh_installed_pkgs_deps_${PID}.txt > $1/depends.tmp &&
+	sed 's:\([^| ]*\):"\1":g' ${WORKDIR}/bh_installed_pkgs_deps_${PID}.txt > $target/depends.tmp &&
 		rm ${WORKDIR}/bh_installed_pkgs_deps_${PID}.txt
 	# Remove lines with rpmlib(...) and config(...) dependencies, change the
 	# delimiter from pipe to "->", set the style for recommend lines and
@@ -519,43 +523,43 @@ buildhistory_get_installed() {
 	       -e 's:"\([<>=]\+\)" "\([^"]*\)":[label="\1 \2"]:' \
 	       -e 's:"\([*]\+\)" "\([^"]*\)":[label="\2"]:' \
 	       -e 's:"\[RPROVIDES\]":[style=dashed]:' \
-		$1/depends.tmp
+		$target/depends.tmp
 	# Add header, sorted and de-duped contents and footer and then delete the temp file
-	printf "digraph depends {\n    node [shape=plaintext]\n" > $1/depends.dot
-	cat $1/depends.tmp | sort -u >> $1/depends.dot
-	echo "}" >>  $1/depends.dot
-	rm $1/depends.tmp
+	printf "digraph depends {\n    node [shape=plaintext]\n" > $target/depends.dot
+	cat $target/depends.tmp | sort -u >> $target/depends.dot
+	echo "}" >>  $target/depends.dot
+	rm $target/depends.tmp
 
 	# Set correct pkgdatadir
 	pkgdatadir=${PKGDATA_DIR}
-	if [ "$2" = "sdk" ] && [ "$3" = "host" ] ; then
+	if [ "$mode" = "sdk" ] && [ "$submode" = "host" ] ; then
 		pkgdatadir="${PKGDATA_DIR_SDK}"
 	fi
 
 	# Produce installed package sizes list
-	oe-pkgdata-util -p $pkgdatadir read-value "PKGSIZE" -n -f $pkgcache > $1/installed-package-sizes.tmp
-	cat $1/installed-package-sizes.tmp | awk '{print $2 "\tKiB\t" $1}' | sort -n -r > $1/installed-package-sizes.txt
-	rm $1/installed-package-sizes.tmp
+	oe-pkgdata-util -p $pkgdatadir read-value "PKGSIZE" -n -f $pkgcache > $target/installed-package-sizes.tmp
+	cat $target/installed-package-sizes.tmp | awk '{print $2 "\tKiB\t" $target}' | sort -n -r > $target/installed-package-sizes.txt
+	rm $target/installed-package-sizes.tmp
 
 	# Produce package info: runtime_name, buildtime_name, recipe, version, size
-	oe-pkgdata-util -p $pkgdatadir read-value "PACKAGE,PN,PV,PKGSIZE" -n -f $pkgcache > $1/installed-package-info.tmp
-	cat $1/installed-package-info.tmp | sort -n -r -k 5 > $1/installed-package-info.txt
-	rm $1/installed-package-info.tmp
+	oe-pkgdata-util -p $pkgdatadir read-value "PACKAGE,PN,PV,PKGSIZE" -n -f $pkgcache > $target/installed-package-info.tmp
+	cat $target/installed-package-info.tmp | sort -n -r -k 5 > $target/installed-package-info.txt
+	rm $target/installed-package-info.tmp
 
 	# We're now done with the cache, delete it
 	rm $pkgcache
 
-	if [ "$2" != "sdk" ] ; then
+	if [ "$mode" != "sdk" ] ; then
 		# Produce some cut-down graphs (for readability)
-		grep -v kernel-image $1/depends.dot | grep -v kernel-3 | grep -v kernel-4 > $1/depends-nokernel.dot
-		grep -v libc6 $1/depends-nokernel.dot | grep -v libgcc > $1/depends-nokernel-nolibc.dot
-		grep -v update- $1/depends-nokernel-nolibc.dot > $1/depends-nokernel-nolibc-noupdate.dot
-		grep -v kernel-module $1/depends-nokernel-nolibc-noupdate.dot > $1/depends-nokernel-nolibc-noupdate-nomodules.dot
+		grep -v kernel-image $target/depends.dot | grep -v kernel-3 | grep -v kernel-4 > $target/depends-nokernel.dot
+		grep -v libc6 $target/depends-nokernel.dot | grep -v libgcc > $target/depends-nokernel-nolibc.dot
+		grep -v update- $target/depends-nokernel-nolibc.dot > $target/depends-nokernel-nolibc-noupdate.dot
+		grep -v kernel-module $target/depends-nokernel-nolibc-noupdate.dot > $target/depends-nokernel-nolibc-noupdate-nomodules.dot
 	fi
 
 	# Add complementary package information
 	if [ -e ${WORKDIR}/complementary_pkgs.txt ]; then
-		cp ${WORKDIR}/complementary_pkgs.txt $1
+		cp ${WORKDIR}/complementary_pkgs.txt $target
 	fi
 }
 
