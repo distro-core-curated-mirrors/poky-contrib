@@ -55,6 +55,7 @@ CVE_STATUS[CVE-2015-20107] = "upstream-wontfix: The mailcap module is insecure b
 CVE_STATUS[CVE-2023-36632] = "disputed: Not an issue, in fact expected behaviour"
 
 PYTHON_MAJMIN = "3.13"
+PYTHON_ABI = ""
 
 S = "${WORKDIR}/Python-${PV}"
 
