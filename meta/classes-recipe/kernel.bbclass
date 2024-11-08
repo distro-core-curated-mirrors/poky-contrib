@@ -52,6 +52,10 @@ KERNEL_VERSION_NAME[vardepvalue] = "${LINUX_VERSION}"
 KERNEL_VERSION_PKG_NAME = "${@legitimize_package_name(d.getVar('KERNEL_VERSION'))}"
 KERNEL_VERSION_PKG_NAME[vardepvalue] = "${LINUX_VERSION}"
 
+KERNEL_VERSION_SANITY_SKIP ?= "0"
+
+KERNEL_IMAGE_MAXSIZE ?= ""
+
 python __anonymous () {
     pn = d.getVar("PN")
     kpn = d.getVar("KERNEL_PACKAGE_NAME")
@@ -387,14 +391,14 @@ kernel_do_compile() {
 	# different initramfs image.  The way to do that in the kernel
 	# is to specify:
 	# make ...args... CONFIG_INITRAMFS_SOURCE=some_other_initramfs.cpio
-	if [ "$use_alternate_initrd" = "" ] && [ "${INITRAMFS_TASK}" != "" ] ; then
+	if [ "${use_alternate_initrd+}" = "" ] && [ "${INITRAMFS_TASK}" != "" ] ; then
 		# The old style way of copying an prebuilt image and building it
 		# is turned on via INTIRAMFS_TASK != ""
 		copy_initramfs
 		use_alternate_initrd=CONFIG_INITRAMFS_SOURCE=${B}/usr/${INITRAMFS_IMAGE_NAME}.cpio
 	fi
 	for typeformake in ${KERNEL_IMAGETYPE_FOR_MAKE} ; do
-		oe_runmake ${PARALLEL_MAKE} ${typeformake} ${KERNEL_EXTRA_ARGS} $use_alternate_initrd
+		oe_runmake ${PARALLEL_MAKE} ${typeformake} ${KERNEL_EXTRA_ARGS} ${use_alternate_initrd+}
 	done
 }
 
@@ -500,7 +504,7 @@ kernel_do_install() {
 
 # Must be ran no earlier than after do_kernel_checkout or else Makefile won't be in ${S}/Makefile
 do_kernel_version_sanity_check() {
-	if [ "x${KERNEL_VERSION_SANITY_SKIP}" = "x1" ]; then
+	if [ "${KERNEL_VERSION_SANITY_SKIP}" = "1" ]; then
 		exit 0
 	fi
 

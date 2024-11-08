@@ -20,6 +20,8 @@ FILES:${KERNEL_PACKAGE_NAME}-devicetree = " \
 
 FILES:${KERNEL_PACKAGE_NAME}-image-zimage-bundle = "/${KERNEL_IMAGEDEST}/zImage-*.dtb.bin"
 
+KERNEL_DEVICETREE ?= ""
+
 # Generate kernel+devicetree bundle
 KERNEL_DEVICETREE_BUNDLE ?= "0"
 
