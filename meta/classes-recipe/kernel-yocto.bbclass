@@ -17,6 +17,8 @@ KBRANCH ?= "master"
 KMACHINE ?= "${MACHINE}"
 SRCREV_FORMAT ?= "meta_machine"
 
+KBUILD_DEFCONFIG ?= ""
+
 # LEVELS:
 #   0: no reporting
 #   1: report options that are specified, but not in the final config
@@ -113,11 +115,7 @@ def get_dirs_with_fragments(d):
 do_kernel_metadata() {
 	set +e
 
-	if [ -n "$1" ]; then
-		mode="$1"
-	else
-		mode="patch"
-	fi
+	mode=${1:-patch}
 
 	cd ${S}
 	export KMETA=${KMETA}
@@ -215,7 +213,7 @@ do_kernel_metadata() {
 	# drop and defconfig's from the src_uri variable, we captured it just above here if it existed
 	sccs_from_src_uri=$(echo $sccs_from_src_uri | awk '(match($0, "defconfig") == 0) { print $0 }' RS=' ')
 
-	if [ -n "$in_tree_defconfig" ]; then
+	if [ -n "${in_tree_defconfig+}" ]; then
 		sccs_defconfig=$in_tree_defconfig
 		if [ -n "$src_uri_defconfig" ]; then
 			bbwarn "[NOTE]: defconfig was supplied both via KBUILD_DEFCONFIG and SRC_URI. Dropping SRC_URI entry $src_uri_defconfig"
@@ -230,7 +228,8 @@ do_kernel_metadata() {
 
 	# check for feature directories/repos/branches that were part of the
 	# SRC_URI. If they were supplied, we convert them into include directives
-	# for the update part of the process
+	# for the update part of the proces
+	includes=""
 	for f in ${feat_dirs}; do
 		if [ -d "${UNPACKDIR}/$f/kernel-meta" ]; then
 			includes="$includes -I${UNPACKDIR}/$f/kernel-meta"
@@ -253,6 +252,7 @@ do_kernel_metadata() {
 
 	# expand kernel features into their full path equivalents
 	bsp_definition=$(spp ${includes} --find -DKMACHINE=${KMACHINE} -DKTYPE=${LINUX_KERNEL_TYPE})
+	KMETA_EXTERNAL_BSPS=""
 	if [ -z "$bsp_definition" ]; then
 		if [ -z "$sccs_defconfig" ]; then
 			bbfatal_log "Could not locate BSP definition for ${KMACHINE}/${LINUX_KERNEL_TYPE} and no defconfig was provided"
@@ -333,7 +333,7 @@ do_kernel_metadata() {
 			bbnote "Non kernel-cache (external) bsp"
 		fi
 		bbnote "BSP entry point / definition: $bsp_definition"
-		if [ -n "$in_tree_defconfig" ]; then
+		if [ -n "${in_tree_defconfig+}" ]; then
 			bbnote "KBUILD_DEFCONFIG: ${KBUILD_DEFCONFIG}"
 		fi
 		bbnote "Fragments from SRC_URI: $sccs_from_src_uri"
@@ -461,7 +461,7 @@ do_kernel_configme() {
 
 	# translate the kconfig_mode into something that merge_config.sh
 	# understands
-	case ${KCONFIG_MODE} in
+	case ${KCONFIG_MODE+} in
 		*allnoconfig)
 			config_flags="-n"
 			;;
@@ -471,6 +471,8 @@ do_kernel_configme() {
 		*)
 			if [ -f ${UNPACKDIR}/defconfig ]; then
 				config_flags="-n"
+			else
+				config_flags=""
 			fi
 			;;
 	esac
