@@ -184,10 +184,6 @@ OECMAKE_ARGS = "\
 "
 
 cmake_do_configure() {
-	if [ "${OECMAKE_BUILDPATH}" ]; then
-		bbnote "cmake.bbclass no longer uses OECMAKE_BUILDPATH.  The default behaviour is now out-of-tree builds with B=WORKDIR/build."
-	fi
-
 	if [ "${S}" = "${B}" ]; then
 		find ${B} -name CMakeFiles -or -name Makefile -or -name cmake_install.cmake -or -name CMakeCache.txt -delete
 	fi
