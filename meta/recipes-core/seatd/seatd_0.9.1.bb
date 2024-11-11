@@ -24,6 +24,8 @@ PACKAGECONFIG ?= " \
 PACKAGECONFIG[libseat-builtin] = "-Dlibseat-builtin=enabled,-Dlibseat-builtin=disabled"
 PACKAGECONFIG[systemd] = "-Dlibseat-logind=systemd,,systemd"
 
+EXTRA_OEMESON = "-Dman-pages=disabled"
+
 do_install:append() {
         if [ "${VIRTUAL-RUNTIME_init_manager}" != "systemd" ]; then
                 install -Dm755 ${UNPACKDIR}/init ${D}/${sysconfdir}/init.d/seatd
