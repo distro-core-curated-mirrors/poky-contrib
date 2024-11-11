@@ -169,6 +169,8 @@ PACKAGECONFIG[journal-color] = ",,,less"
 PACKAGECONFIG[journal-upload] = "-Dlibcurl=enabled,-Dlibcurl=disabled,curl"
 PACKAGECONFIG[kmod] = "-Dkmod=enabled,-Dkmod=disabled,kmod,libkmod"
 PACKAGECONFIG[ldconfig] = "-Dldconfig=true,-Dldconfig=false,,ldconfig"
+PACKAGECONFIG[libarchive] = "-Dlibarchive=enabled,-Dlibarchive=disabled,libarchive"
+PACKAGECONFIG[libfido2] = "-Dlibfido2=enabled,-Dlibfido2=disabled,libfido2"
 PACKAGECONFIG[libidn] = "-Dlibidn=enabled,-Dlibidn=disabled,libidn,,libidn"
 PACKAGECONFIG[libidn2] = "-Dlibidn2=enabled,-Dlibidn2=disabled,libidn2,,libidn2"
 # Link udev shared with systemd helper library.
@@ -193,6 +195,7 @@ PACKAGECONFIG[oomd] = "-Doomd=true,-Doomd=false"
 PACKAGECONFIG[openssl] = "-Dopenssl=enabled,-Dopenssl=disabled,openssl"
 PACKAGECONFIG[p11kit] = "-Dp11kit=enabled,-Dp11kit=disabled,p11-kit"
 PACKAGECONFIG[pam] = "-Dpam=enabled,-Dpam=disabled,libpam,${PAM_PLUGINS}"
+PACKAGECONFIG[passwdqc] = "-Dpasswdqc=enabled,-Dpasswdqc=disabled,passwdqc"
 PACKAGECONFIG[pcre2] = "-Dpcre2=enabled,-Dpcre2=disabled,libpcre2"
 PACKAGECONFIG[polkit] = "-Dpolkit=enabled,-Dpolkit=disabled"
 # If polkit is disabled and networkd+hostnamed are in use, enabling this option and
@@ -202,15 +205,18 @@ PACKAGECONFIG[polkit_hostnamed_fallback] = ",,,,dbus-broker,polkit"
 PACKAGECONFIG[portabled] = "-Dportabled=true,-Dportabled=false"
 PACKAGECONFIG[pstore] = "-Dpstore=true,-Dpstore=false"
 PACKAGECONFIG[pni-names] = ",,,"
+PACKAGECONFIG[pwquality] = "-Dpwquality=enabled,-Dpwquality=disabled,libpwquality"
 PACKAGECONFIG[qrencode] = "-Dqrencode=enabled,-Dqrencode=disabled,qrencode,,qrencode"
 PACKAGECONFIG[quotacheck] = "-Dquotacheck=true,-Dquotacheck=false"
 PACKAGECONFIG[randomseed] = "-Drandomseed=true,-Drandomseed=false"
+PACKAGECONFIG[remote] = "-Dremote=enabled,-Dremote=disabled"
 PACKAGECONFIG[resolved] = "-Dresolve=true,-Dresolve=false"
 PACKAGECONFIG[rfkill] = "-Drfkill=true,-Drfkill=false"
 PACKAGECONFIG[seccomp] = "-Dseccomp=enabled,-Dseccomp=disabled,libseccomp"
 PACKAGECONFIG[selinux] = "-Dselinux=enabled,-Dselinux=disabled,libselinux,initscripts-sushell"
 PACKAGECONFIG[smack] = "-Dsmack=true,-Dsmack=false"
 PACKAGECONFIG[sysext] = "-Dsysext=true, -Dsysext=false"
+PACKAGECONFIG[sysupdate] = "-Dsysupdate=enabled,-Dsysupdate=disabled"
 PACKAGECONFIG[sysusers] = "-Dsysusers=true,-Dsysusers=false"
 PACKAGECONFIG[sysvinit] = "-Dsysvinit-path=${sysconfdir}/init.d -Dsysvrcnd-path=${sysconfdir},-Dsysvinit-path= -Dsysvrcnd-path=,,systemd-compat-units update-rc.d"
 # When enabled use reproducible build timestamp if set as time epoch,
@@ -264,6 +270,8 @@ EXTRA_OEMESON += "-Dkexec-path=${sbindir}/kexec \
                   -Dumount-path=${base_bindir}/umount \
                   -Dloadkeys-path=${bindir}/loadkeys \
                   -Dsetfont-path=${bindir}/setfont"
+
+EXTRA_OEMESON += "-Dapparmor=disabled -Dxenctrl=disabled -Dukify=disabled"
 
 # The 60 seconds is watchdog's default vaule.
 WATCHDOG_TIMEOUT ??= "60"
