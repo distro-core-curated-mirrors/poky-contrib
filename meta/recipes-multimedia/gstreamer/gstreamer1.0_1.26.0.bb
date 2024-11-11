@@ -57,6 +57,8 @@ EXTRA_OEMESON += " \
     ${@gettext_oemeson(d)} \
 "
 
+EXTRA_OEMESON += "--auto-features=auto"
+
 GIR_MESON_ENABLE_FLAG = "enabled"
 GIR_MESON_DISABLE_FLAG = "disabled"
 
