@@ -22,7 +22,9 @@ PACKAGECONFIG ?= " \
 "
 
 PACKAGECONFIG[libseat-builtin] = "-Dlibseat-builtin=enabled,-Dlibseat-builtin=disabled"
-PACKAGECONFIG[systemd] = ",,systemd"
+PACKAGECONFIG[systemd] = "-Dlibseat-logind=systemd,-Dlibseat-logind=disabled,systemd"
+
+EXTRA_OEMESON = "-Dman-pages=disabled"
 
 do_install:append() {
         if [ "${VIRTUAL-RUNTIME_init_manager}" != "systemd" ]; then
