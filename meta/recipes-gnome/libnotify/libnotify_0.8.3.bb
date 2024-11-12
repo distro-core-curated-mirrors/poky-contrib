@@ -22,7 +22,7 @@ ANY_OF_DISTRO_FEATURES = "${@bb.utils.contains('PACKAGECONFIG', 'tests', '${GTK3
 
 SRC_URI[archive.sha256sum] = "ee8f3ef946156ad3406fdf45feedbdcd932dbd211ab4f16f75eba4f36fb2f6c0"
 
-EXTRA_OEMESON = "-Dman=false"
+EXTRA_OEMESON = "-Dman=false -Ddocbook_docs=disabled"
 
 # there were times, we had two versions of libnotify (oe-core libnotify:0.6.x /
 # meta-gnome libnotify3: 0.7.x)
