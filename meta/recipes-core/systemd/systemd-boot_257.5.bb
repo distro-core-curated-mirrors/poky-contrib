@@ -26,8 +26,8 @@ MESON_CROSS_FILE:append = " --cross-file ${WORKDIR}/meson-${PN}.cross"
 MESON_TARGET = "systemd-boot"
 
 EXTRA_OEMESON += "-Defi=true \
-                  -Dbootloader=true \
-                  -Dman=false \
+                  -Dbootloader=enabled \
+                  -Dman=disabled \
                   "
 
 # install to the image as boot*.efi if its the EFI_PROVIDER,
