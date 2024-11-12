@@ -15,9 +15,10 @@ SRC_URI = "gitsm://github.com/p11-glue/p11-kit;branch=master;protocol=https \
 SRCREV = "0dd113361057e477f40ff4d8788f3e7e400af5f9"
 S = "${WORKDIR}/git"
 
-PACKAGECONFIG ??= ""
+PACKAGECONFIG ??= "${@bb.utils.filter('DISTRO_FEATURES', 'systemd', d)}"
 PACKAGECONFIG[manpages] = "-Dman=true,-Dman=false,libxslt-native"
 PACKAGECONFIG[trust-paths] = "-Dtrust_paths=/etc/ssl/certs/ca-certificates.crt,,,ca-certificates"
+PACKAGECONFIG[systemd] = "-Dsystemd=enabled,-Dsystemd=disabled,systemd"
 
 GTKDOC_MESON_OPTION = 'gtk_doc'
 
