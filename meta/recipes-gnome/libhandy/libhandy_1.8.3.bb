@@ -23,5 +23,7 @@ ANY_OF_DISTRO_FEATURES = "${GTK3DISTROFEATURES}"
 
 DEPENDS += "gtk+3"
 
+EXTRA_OEMESON = "-Dglade_catalog=disabled"
+
 PACKAGES =+ "${PN}-examples"
 FILES:${PN}-examples = "${bindir}"
