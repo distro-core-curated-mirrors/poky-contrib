@@ -326,6 +326,20 @@ class InheritDeferredNode(AstNode):
         inherits.append(self.inherit)
         data.setVar('__BBDEFINHERITS', inherits)
 
+class AddFragmentsNode(AstNode):
+    def __init__(self, filename, lineno, fragments_path_prefix, fragments_variable):
+        AstNode.__init__(self, filename, lineno)
+        self.path = fragments_path_prefix
+        self.variable = fragments_variable
+
+    def eval(self, data):
+        fragments = data.getVar(self.variable)
+        if not fragments:
+            return
+        for f in fragments.split():
+            full_fragment_name = data.expand("{}/{}.conf".format(self.path, f))
+            bb.parse.ConfHandler.include(self.filename, full_fragment_name, self.lineno, data, "include fragment")
+
 def handleInclude(statements, filename, lineno, m, force):
     statements.append(IncludeNode(filename, lineno, m.group(1), force))
 
@@ -369,6 +383,11 @@ def handleInherit(statements, filename, lineno, m):
 def handleInheritDeferred(statements, filename, lineno, m):
     classes = m.group(1)
     statements.append(InheritDeferredNode(filename, lineno, classes))
+
+def handleAddFragments(statements, filename, lineno, m):
+    fragments_path_prefix = m.group(1)
+    fragments_variable = m.group(2)
+    statements.append(AddFragmentsNode(filename, lineno, fragments_path_prefix, fragments_variable))
 
 def runAnonFuncs(d):
     code = []
