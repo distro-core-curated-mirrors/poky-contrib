@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="IE=edge">
+  <meta name="referrer" content="no-referrer" />
+  <meta name="generator" content="diffoscope" />
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAADdgAAA3YBfdWCzAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAM8SURBVFiF7dZdaJZlGAfw3/O+e9XNjy3XllZzWImBxIpifqTgsmUHBSIeBNFBdRh0UHQ0xGdb66CFBIERZEFRQRRUw0HkQkLMYQSBdpCFWdgSP6jpNn2393k68Nn2bj3vXtb6UOh/cl/39b/u67mem/913zf/4z9GUDw5xNI8n5WIzW9m/QF2YluJmI8203mALzEvLWAerRs4Pz6vSIkZSlsYk0/GkaB0zEgyDgWMlijyWsJuS2fkQwu8pqpMTA0ypeiShG71Bp0rU8Q+A47MWEDgvHZbZl/Av4SpIgxVYB3IqwZDmoUuYkzosDaNchpAoFqkSmgjGPWzLieF1k3JHVsjvCJQHBYaSy9g1E3m+QImQiK9SbNGqJDzuiDZ0lggQJCsyelDq8BB47sbCWTsnvhG3kqcLL833eqF4hk1EOoTOjZjnnaRdq2l6KtMAyl4/g23bKJrun+Mt9uOq7nvqOVbebWYy9Adc1fM/R/3CO780dONbIeFPHsPw+ULeM5ZHTbXHfUtXpxOZzgT5z02UGsZThRzF/ilht9G+fr4zfbfccIxXIa7uVTup69i7LJXaEEqF3on1d9ludBLpVLOVoT1lky9QYtwQ6p3WAVqSyUslWwSbRrkPJrMtgn0iBVk7BPJ4sGE24EPQKW3jLgdzWKLBTbg0yTuZeGkDsp2gcUGDesHGQ/gK5G8nLMigWiCe3jCrnTRiJ9EYjm1ImsUEq5l8hScPXbpsVtlKhfan+pv0yD0ZqmU5XegGBmnDIo/pylj8oYLOP3Eab/v5Zmi6EtZ3vv1FU/2r7LioYSL2dNybbdiMdptFU57++20Vqh+iq/Tap1WpaWY611wmyWyUzxZDbIWTvEV1Ildn5agfBumoUMTtoisFvhebAAHZWxX0ChwTuScvHdVeVykToysMyJ7ittwbmj31J+6IrRDp5XTfBt1WJ+WYnZdMB0F3xlUgD5uDVj2Sa+a4SrzH+FeyHHmw17V112waBOZgP4WczkLZsILar1fpIliMU4XZoK/poE0XHl+N8v6QcGAUbVymnDIZVnzrTXqGzmnhKLxZX/niyiDjIJgwg4Se1GR/Y8idGPysh6fr0i1i/AHMWHgrwUJgNAAAAAASUVORK5CYII=" />
+  <title>/usr/bin/diffoscope --debug --html diff.html --html-dir . python3-numpy-2.1.3-r0.core2_64.rpm.A python3-numpy-2.1.3-r0.core2_64.rpm.B</title>
+<style>
+body.diffoscope {
+  background: white;
+  color: black;
+}
+.diffoscope .footer {
+  font-size: small;
+}
+.diffoscope .difference {
+  border: outset #888 1px;
+  background: #E8E8E8;
+  background: rgba(0,0,0,.1);
+  padding: 0.5em;
+  margin: 0.5em 0;
+}
+.diffoscope .difference table {
+  table-layout: fixed;
+  width: 100%;
+  border: 0;
+}
+.diffoscope .difference th,
+.diffoscope .difference td {
+  border: 0;
+}
+.diffoscope table.diff {
+  border: 0;
+  border-collapse:collapse;
+  font-size:0.75em;
+  font-family: 'Lucida Console', monospace;
+  word-break: break-word;
+}
+.diffoscope table.diff tr:hover td {
+  background: #FFFF00;
+}
+.diffoscope .line {
+  color:#8080a0
+}
+.diffoscope th {
+  background: black;
+  color: white
+}
+.diffoscope .diffunmodified td {
+  background: #D0D0E0
+}
+.diffoscope .diffhunk td {
+  background: #A0A0A0
+}
+.diffoscope .diffadded td {
+  background: #CCFFCC
+}
+.diffoscope .diffdeleted td {
+  background: #FFCCCC
+}
+.diffoscope .diffchanged td {
+  background: #FFFFA0
+}
+.diffoscope ins, del {
+  background: #E0C880;
+  text-decoration: none
+}
+.diffoscope .dp {
+  color: #B08080
+}
+.diffoscope .comment {
+  font-style: italic;
+}
+.diffoscope .comment.multiline {
+  font-style: normal;
+  font-family: monospace;
+  white-space: pre;
+}
+.diffoscope .source {
+  font-weight: bold;
+}
+.diffoscope .error {
+  border: solid black 1px;
+  background: red;
+  color: white;
+  padding: 0.2em;
+}
+.diffoscope .anchor {
+  margin-left: 0.5em;
+  font-size: 80%;
+  color: #333;
+  text-decoration: none;
+  display: none;
+}
+.diffoscope .diffheader:hover .anchor {
+  display: inline;
+}
+.diffoscope .diffcontrol, .diffoscope .diffcontrol-nochildren {
+  float: left;
+  margin-right: 0.3em;
+  cursor: pointer;
+  display: none; /* currently, only available in html-dir output where jquery is enabled */
+}
+.diffoscope .colines {
+  width: 3em;
+}
+.diffoscope .coldiff {
+  width: 99%;
+}
+.diffoscope .diffsize {
+  float: right;
+}
+.diffoscope table.diff tr.ondemand td, .diffoscope div.ondemand-details {
+  background: #f99;
+  text-align: center;
+  padding: 0.5em 0;
+}
+.diffoscope table.diff tr.ondemand:hover td, .diffoscope div.ondemand-details:hover {
+  background: #faa;
+  cursor: pointer;
+}
+</style>
+</head>
+<body class="diffoscope">
+<div class="difference">
+  <div class="diffheader">
+  <div class="diffcontrol diffcontrol-double">⊟</div>
+  <div><span class="diffsize">7.03 KB</span></div>
+  <div><span class="source">python3-numpy-2.1.3-r0.core2_64.rpm.A</span> vs.</div>
+  <div id="top"><span class="source">python3-numpy-2.1.3-r0.core2_64.rpm.B</span>
+    <a class="anchor" href="#top">¶</a>
+  </div>
+  </div>
+  <div class="difference">
+    <div class="diffheader">
+    <div class="diffcontrol">⊟</div>
+    <div><span class="diffsize">5.57 KB</span></div>
+    <div id="header"><span class="source">header</span>
+      <a class="anchor" href="#header">¶</a>
+    </div>
+    </div>
+<table class="diff">
+<colgroup><col class="colines"/><col class="coldiff"/>
+<col class="colines"/><col class="coldiff"/></colgroup>
+<tr style="display:none;"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr class="diffhunk"><td colspan="2">Offset 348, 17 lines modified</td><td colspan="2">Offset 348, 17 lines modified</td></tr>
+<tr class="diffunmodified"><td class="diffline">348 </td><td class="diffpresent">4464672644646726446467264464672644646726446467264464672644646726446467264464672644646726446467264464</td><td class="diffline">348 </td><td class="diffpresent">4464672644646726446467264464672644646726446467264464672644646726446467264464672644646726446467264464</td></tr>
+<tr class="diffunmodified"><td class="diffline">349 </td><td class="diffpresent">6726446467264464672644646726446467264464672644646726446467264464672644646726446467264464672644646726</td><td class="diffline">349 </td><td class="diffpresent">6726446467264464672644646726446467264464672644646726446467264464672644646726446467264464672644646726</td></tr>
+<tr class="diffunmodified"><td class="diffline">350 </td><td class="diffpresent">4464672644646726446467264464672644646726446467264464000038303730356664663534366465393938653366626133</td><td class="diffline">350 </td><td class="diffpresent">4464672644646726446467264464672644646726446467264464000038303730356664663534366465393938653366626133</td></tr>
+<tr class="diffunmodified"><td class="diffline">351 </td><td class="diffpresent">3964353762306666356333633835373934313466393334666533653431633732396136366635386431640039656134313961</td><td class="diffline">351 </td><td class="diffpresent">3964353762306666356333633835373934313466393334666533653431633732396136366635386431640039656134313961</td></tr>
+<tr class="diffunmodified"><td class="diffline">352 </td><td class="diffpresent">3534663065393039626339393637323030303363633666393135326261303139633732666432323235363933356632386565</td><td class="diffline">352 </td><td class="diffpresent">3534663065393039626339393637323030303363633666393135326261303139633732666432323235363933356632386565</td></tr>
+<tr class="diffunmodified"><td class="diffline">353 </td><td class="diffpresent">6238353433363600000000000030316662303136383439616134323765646231626262626435356639316332366361366361</td><td class="diffline">353 </td><td class="diffpresent">6238353433363600000000000030316662303136383439616134323765646231626262626435356639316332366361366361</td></tr>
+<tr class="diffunmodified"><td class="diffline">354 </td><td class="diffpresent">6462333261356232306537663030303635356464303562303736300063303233616438333334303663306233303663666639</td><td class="diffline">354 </td><td class="diffpresent">6462333261356232306537663030303635356464303562303736300063303233616438333334303663306233303663666639</td></tr>
+<tr class="diffchanged"><td class="diffline">355 </td><td class="diffpresent">643964633234336534363664643264346233306239393036636131323866623837386136373537636439006<del>1</del>3<del>7</del>6<del>3</del>3<del>8</del>3<del>6</del>6<del>13</del><del>3</del></td><td class="diffline">355 </td><td class="diffpresent">643964633234336534363664643264346233306239393036636131323866623837386136373537636439006<ins>43</ins><ins>8</ins>3<ins>6</ins>6<ins>4</ins>3<ins>2</ins>3<ins>7</ins>6<ins>5</ins></td></tr>
+<tr class="diffchanged"><td class="diffline">356 </td><td class="diffpresent">323<del>4</del>6<del>6</del>336<del>162</del>323<del>96</del>5<del>3734</del>3<del>2</del>373<del>5</del>3<del>6</del>3<del>9</del>6231<del>61</del>3<del>7</del>3<del>6626165</del>356<del>4</del>3<del>5</del>363<del>5656</del>4<del>34</del>3<del>2</del>6<del>5</del>3<del>7</del>6<del>3</del>65336<del>1</del>6<del>3</del><del>3</del>6<del>3</del><del>9</del>3<del>3</del>3<del>363</del>6164<del>3730</del>38</td><td class="diffline">356 </td><td class="diffpresent"><ins>65</ins>32<ins>36</ins>3<ins>5</ins>6<ins>1</ins>336<ins>335</ins>323<ins>43</ins>5<ins>6361</ins>3<ins>0</ins>373<ins>9</ins>3<ins>1</ins>3<ins>7</ins>6231<ins>38</ins>3<ins>8</ins>3<ins>0373838</ins>3<ins>86</ins>56<ins>3</ins>3<ins>3</ins>363<ins>7313</ins>4<ins>66</ins>363<ins>8</ins>6<ins>2</ins>653<ins>9</ins>3<ins>8</ins>6<ins>4</ins>6<ins>5</ins>6<ins>1</ins>3<ins>2</ins>3<ins>539</ins>616438</td></tr>
+<tr class="diffchanged"><td class="diffline">357 </td><td class="diffpresent">3<del>0</del>663036<del>353</del><del>5</del>3<del>7</del>00666461323164303036666239643464393466346333633930306535346231333330653430663432383262</td><td class="diffline">357 </td><td class="diffpresent"><ins>62</ins>3<ins>96</ins><ins>4</ins>663036<ins>6</ins>300666461323164303036666239643464393466346333633930306535346231333330653430663432383262</td></tr>
+<tr class="diffunmodified"><td class="diffline">358 </td><td class="diffpresent">3139623665363135353335636139313236663730313200653236356333333631323433343364313837613863303565343439</td><td class="diffline">358 </td><td class="diffpresent">3139623665363135353335636139313236663730313200653236356333333631323433343364313837613863303565343439</td></tr>
+<tr class="diffunmodified"><td class="diffline">359 </td><td class="diffpresent">6630316463663936326335333136363931373161613533373435356239613733366432616400303537633364393965366334</td><td class="diffline">359 </td><td class="diffpresent">6630316463663936326335333136363931373161613533373435356239613733366432616400303537633364393965366334</td></tr>
+<tr class="diffunmodified"><td class="diffline">360 </td><td class="diffpresent">3838386465396635396561343933656438376138633863626630616234303839353164343963646162306563323835633133</td><td class="diffline">360 </td><td class="diffpresent">3838386465396635396561343933656438376138633863626630616234303839353164343963646162306563323835633133</td></tr>
+<tr class="diffunmodified"><td class="diffline">361 </td><td class="diffpresent">6164006461616661396633363637376562326231633634643164366434353064336133623063343266316562306266346562</td><td class="diffline">361 </td><td class="diffpresent">6164006461616661396633363637376562326231633634643164366434353064336133623063343266316562306266346562</td></tr>
+<tr class="diffunmodified"><td class="diffline">362 </td><td class="diffpresent">6639316135666531656462653730323933006238346138353637373932303463306565653238666662616564373032336533</td><td class="diffline">362 </td><td class="diffpresent">6639316135666531656462653730323933006238346138353637373932303463306565653238666662616564373032336533</td></tr>
+<tr class="diffunmodified"><td class="diffline">363 </td><td class="diffpresent">3864373462353065393937633763366563623939613735393363376664623332003339633432646230323735343866393538</td><td class="diffline">363 </td><td class="diffpresent">3864373462353065393937633763366563623939613735393363376664623332003339633432646230323735343866393538</td></tr>
+<tr class="diffunmodified"><td class="diffline">364 </td><td class="diffpresent">6530393665386261626533666130653365373733643234616133396562363336336663306533616262656333346231006461</td><td class="diffline">364 </td><td class="diffpresent">6530393665386261626533666130653365373733643234616133396562363336336663306533616262656333346231006461</td></tr>
+<tr class="diffhunk"><td colspan="2">Offset 3813, 24 lines modified</td><td colspan="2">Offset 3813, 24 lines modified</td></tr>
+<tr class="diffunmodified"><td class="diffline">3813 </td><td class="diffpresent">3d663734303563666134353239316531343537333663336433343032356339616137366232323131652c2073747269707065</td><td class="diffline">3813 </td><td class="diffpresent">3d663734303563666134353239316531343537333663336433343032356339616137366232323131652c2073747269707065</td></tr>
+<tr class="diffunmodified"><td class="diffline">3814 </td><td class="diffpresent">6400454c462036342d626974204c534220736861726564206f626a6563742c207838362d36342c2076657273696f6e203120</td><td class="diffline">3814 </td><td class="diffpresent">6400454c462036342d626974204c534220736861726564206f626a6563742c207838362d36342c2076657273696f6e203120</td></tr>
+<tr class="diffunmodified"><td class="diffline">3815 </td><td class="diffpresent">2853595356292c2064796e616d6963616c6c79206c696e6b65642c204275696c6449445b736861315d3d3038366235666236</td><td class="diffline">3815 </td><td class="diffpresent">2853595356292c2064796e616d6963616c6c79206c696e6b65642c204275696c6449445b736861315d3d3038366235666236</td></tr>
+<tr class="diffunmodified"><td class="diffline">3816 </td><td class="diffpresent">35313330626566316461613639346639383839373834383034376166346465322c207374726970706564006120707974686f</td><td class="diffline">3816 </td><td class="diffpresent">35313330626566316461613639346639383839373834383034376166346465322c207374726970706564006120707974686f</td></tr>
+<tr class="diffunmodified"><td class="diffline">3817 </td><td class="diffpresent">6e207363726970742c20415343494920746578742065786563757461626c6500454c462036342d626974204c534220736861</td><td class="diffline">3817 </td><td class="diffpresent">6e207363726970742c20415343494920746578742065786563757461626c6500454c462036342d626974204c534220736861</td></tr>
+<tr class="diffunmodified"><td class="diffline">3818 </td><td class="diffpresent">726564206f626a6563742c207838362d36342c2076657273696f6e2031202853595356292c2064796e616d6963616c6c7920</td><td class="diffline">3818 </td><td class="diffpresent">726564206f626a6563742c207838362d36342c2076657273696f6e2031202853595356292c2064796e616d6963616c6c7920</td></tr>
+<tr class="diffunmodified"><td class="diffline">3819 </td><td class="diffpresent">6c696e6b65642c204275696c6449445b736861315d3d30333863656664343438613734366631366636383631313636663630</td><td class="diffline">3819 </td><td class="diffpresent">6c696e6b65642c204275696c6449445b736861315d3d30333863656664343438613734366631366636383631313636663630</td></tr>
+<tr class="diffchanged"><td class="diffline">3820 </td><td class="diffpresent">6638353931386232333661372c20737472697070656400000000000000087574662d3800<del>6662</del>3<del>4</del>3<del>2</del>3<del>3</del>61<del>6130</del>3<del>1</del>3<del>0</del>6<del>6</del>3<del>73561</del></td><td class="diffline">3820 </td><td class="diffpresent">6638353931386232333661372c20737472697070656400000000000000087574662d3800<ins>3035</ins>3<ins>7</ins>3<ins>5</ins>3<ins>7</ins>61<ins>3266</ins>3<ins>9</ins>3<ins>3</ins>6<ins>4</ins>3<ins>16636</ins></td></tr>
+<tr class="diffdeleted"><td class="diffline">3821 </td><td class="diffpresent">6633376130633533653362663231613139363239386266376138326163353033666631303134306530303338346165313365</td><td colspan="2"> </td></tr>
+<tr class="diffdeleted"><td class="diffline">3822 </td><td class="diffpresent">0000000000083532306166626136343532326264326563343463643533383630323538613137396238303539653230366362</td><td colspan="2"> </td></tr>
+<tr class="diffchanged"><td class="diffline">3823 </td><td class="diffpresent"><del>3</del>63<del>7</del>323<del>4</del>663<del>1</del>3566<del>32</del>6<del>5</del>3<del>2</del>39373<del>661</del>333<del>1</del>313<del>2</del>30<del>00000000</del>3<del>f00000007fffffcb000000010</del></td><td class="diffline">3821 </td><td class="diffpresent"><ins>6</ins><ins>5</ins>6<ins>3</ins>3<ins>1</ins>3<ins>16</ins>2<ins>66383</ins>3<ins>6</ins><ins>3</ins>66<ins>33</ins>3<ins>0</ins>356<ins>4</ins>6<ins>5</ins><ins>66</ins>6<ins>3</ins>3<ins>3</ins>39<ins>30</ins>37<ins>33</ins>3<ins>734</ins>3<ins>8</ins>3<ins>9</ins>3<ins>96</ins><ins>3</ins>313<ins>66</ins><ins>3</ins>30<ins>3</ins><ins>16162356</ins>3<ins>6</ins><ins>6656237346165646438653634</ins></td></tr>
+<tr class="diffadded"><td colspan="2"> </td><td class="diffline">3822 </td><td class="diffpresent">0000000000086333643735306336303231633061626462306666396230616463613466336433303530333732346135363931</td></tr>
+<tr class="diffadded"><td colspan="2"> </td><td class="diffline">3823 </td><td class="diffpresent">6530343935326133643132383838386237623665000000003f00000007fffffcb000000010</td></tr>
+<tr class="diffunmodified"><td class="diffline">3824 </td><td class="diffpresent">HEADERI18NTABLE:<span class="dp">·</span></td><td class="diffline">3824 </td><td class="diffpresent">HEADERI18NTABLE:<span class="dp">·</span></td></tr>
+<tr class="diffunmodified"><td class="diffline">3825 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>C</td><td class="diffline">3825 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>C</td></tr>
+<tr class="diffchanged"><td class="diffline">3826 </td><td class="diffpresent">SIGSIZE:<span class="dp">·</span>8935<del>023</del></td><td class="diffline">3826 </td><td class="diffpresent">SIGSIZE:<span class="dp">·</span>8935<ins>100</ins></td></tr>
+<tr class="diffdeleted"><td class="diffline">3827 </td><td class="diffpresent">SIGMD5:<span class="dp">·</span>4171f84c18e224039b933741eb44e647</td><td colspan="2"> </td></tr>
+<tr class="diffdeleted"><td class="diffline">3828 </td><td class="diffpresent">SHA1HEADER:<span class="dp">·</span>c3109fcd772ef55ad6f9b6485d8715e498cfe4d3</td><td colspan="2"> </td></tr>
+<tr class="diffchanged"><td class="diffline">3829 </td><td class="diffpresent">S<del>HA256</del><del>HEA</del>D<del>E</del><del>R</del>:<span class="dp">·</span><del>66f3b</del>7<del>250</del>e<del>fff3</del><del>2</del>e<del>c7347f</del>f<del>27c373</del><del>533</del>b5<del>4</del><del>9773c6b</del>7<del>34c1</del>e<del>6</del>f<del>f9f17d3</del>0<del>1</del>c<del>ae2</del><del>7</del></td><td class="diffline">3827 </td><td class="diffpresent">S<ins>IGM</ins>D<ins>5</ins>:<span class="dp">·</span>7e<ins>a</ins>ef<ins>a0b</ins>b5<ins>14f4089</ins>7e<ins>0</ins>f<ins>90685fe</ins>0<ins>9</ins>c<ins>3</ins></td></tr>
+<tr class="diffadded"><td colspan="2"> </td><td class="diffline">3828 </td><td class="diffpresent">SHA1HEADER:<span class="dp">·</span>6683af22aa54aa1150ee041d7736d3059a6e904d</td></tr>
+<tr class="diffadded"><td colspan="2"> </td><td class="diffline">3829 </td><td class="diffpresent">SHA256HEADER:<span class="dp">·</span>6905f57fa1c2ee081b6a9f071e040c3a8a0fad1a9b7e69eaa704c1604708e869</td></tr>
+<tr class="diffunmodified"><td class="diffline">3830 </td><td class="diffpresent">NAME:<span class="dp">·</span>python3-numpy</td><td class="diffline">3830 </td><td class="diffpresent">NAME:<span class="dp">·</span>python3-numpy</td></tr>
+<tr class="diffunmodified"><td class="diffline">3831 </td><td class="diffpresent">VERSION:<span class="dp">·</span>2.1.3</td><td class="diffline">3831 </td><td class="diffpresent">VERSION:<span class="dp">·</span>2.1.3</td></tr>
+<tr class="diffunmodified"><td class="diffline">3832 </td><td class="diffpresent">RELEASE:<span class="dp">·</span>r0</td><td class="diffline">3832 </td><td class="diffpresent">RELEASE:<span class="dp">·</span>r0</td></tr>
+<tr class="diffunmodified"><td class="diffline">3833 </td><td class="diffpresent">SUMMARY:<span class="dp">·</span>A<span class="dp">·</span>sophisticated<span class="dp">·</span>Numeric<span class="dp">·</span>Processing<span class="dp">·</span>Package<span class="dp">·</span>for<span class="dp">·</span>Python</td><td class="diffline">3833 </td><td class="diffpresent">SUMMARY:<span class="dp">·</span>A<span class="dp">·</span>sophisticated<span class="dp">·</span>Numeric<span class="dp">·</span>Processing<span class="dp">·</span>Package<span class="dp">·</span>for<span class="dp">·</span>Python</td></tr>
+<tr class="diffunmodified"><td class="diffline">3834 </td><td class="diffpresent">DESCRIPTION:<span class="dp">·</span>NumPy<span class="dp">·</span>is<span class="dp">·</span>the<span class="dp">·</span>fundamental<span class="dp">·</span>package<span class="dp">·</span>needed<span class="dp">·</span>for<span class="dp">·</span>scientific<span class="dp">·</span>computing<span class="dp">·</span>with<span class="dp">·</span>Python.</td><td class="diffline">3834 </td><td class="diffpresent">DESCRIPTION:<span class="dp">·</span>NumPy<span class="dp">·</span>is<span class="dp">·</span>the<span class="dp">·</span>fundamental<span class="dp">·</span>package<span class="dp">·</span>needed<span class="dp">·</span>for<span class="dp">·</span>scientific<span class="dp">·</span>computing<span class="dp">·</span>with<span class="dp">·</span>Python.</td></tr>
+<tr class="diffunmodified"><td class="diffline">3835 </td><td class="diffpresent">BUILDTIME:<span class="dp">·</span>1730561124</td><td class="diffline">3835 </td><td class="diffpresent">BUILDTIME:<span class="dp">·</span>1730561124</td></tr>
+<tr class="diffunmodified"><td class="diffline">3836 </td><td class="diffpresent">BUILDHOST:<span class="dp">·</span>reproducible</td><td class="diffline">3836 </td><td class="diffpresent">BUILDHOST:<span class="dp">·</span>reproducible</td></tr>
+<tr class="diffhunk"><td colspan="2">Offset 9281, 15 lines modified</td><td colspan="2">Offset 9281, 15 lines modified</td></tr>
+<tr class="diffunmodified"><td class="diffline">9281 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span></td><td class="diffline">9281 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span></td></tr>
+<tr class="diffunmodified"><td class="diffline">9282 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span></td><td class="diffline">9282 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span></td></tr>
+<tr class="diffunmodified"><td class="diffline">9283 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span></td><td class="diffline">9283 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span></td></tr>
+<tr class="diffunmodified"><td class="diffline">9284 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span></td><td class="diffline">9284 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span></td></tr>
+<tr class="diffunmodified"><td class="diffline">9285 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span></td><td class="diffline">9285 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span></td></tr>
+<tr class="diffunmodified"><td class="diffline">9286 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>01fb016849aa427edb1bbbbd55f91c26ca6cadb32a5b20e7f000655dd05b0760</td><td class="diffline">9286 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>01fb016849aa427edb1bbbbd55f91c26ca6cadb32a5b20e7f000655dd05b0760</td></tr>
+<tr class="diffunmodified"><td class="diffline">9287 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>c023ad833406c0b306cff9d9dc243e466dd2d4b30b9906ca128fb878a6757cd9</td><td class="diffline">9287 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>c023ad833406c0b306cff9d9dc243e466dd2d4b30b9906ca128fb878a6757cd9</td></tr>
+<tr class="diffchanged"><td class="diffline">9288 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span><del>a7c86a3</del>2<del>4f</del>3<del>ab</del>2<del>9e742</del>7<del>569</del>b1<del>a</del>7<del>6ba</del>e<del>5</del><del>d5</del>6<del>5</del><del>ed</del>4<del>2e7c</del>e<del>3ac6933c</del>ad<del>7080</del>f06<del>55</del><del>7</del></td><td class="diffline">9288 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span><ins>d</ins><ins>86d27ee</ins>2<ins>6</ins><ins>5a</ins>3<ins>c5</ins>2<ins>45ca0</ins>7<ins>917</ins>b1<ins>88</ins><ins>0</ins>7<ins>888</ins>e<ins>c3</ins>6<ins>71</ins>4<ins>f68b</ins>e<ins>98dea259</ins>ad<ins>8b9d</ins>f06<ins>c</ins></td></tr>
+<tr class="diffunmodified"><td class="diffline">9289 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>fda21d006fb9d4d94f4c3c900e54b1330e40f4282b19b6e615535ca9126f7012</td><td class="diffline">9289 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>fda21d006fb9d4d94f4c3c900e54b1330e40f4282b19b6e615535ca9126f7012</td></tr>
+<tr class="diffunmodified"><td class="diffline">9290 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>e265c336124343d187a8c05e449f01dcf962c531669171aa537455b9a736d2ad</td><td class="diffline">9290 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>e265c336124343d187a8c05e449f01dcf962c531669171aa537455b9a736d2ad</td></tr>
+<tr class="diffunmodified"><td class="diffline">9291 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>057c3d99e6c4888de9f59ea493ed87a8c8cbf0ab408951d49cdab0ec285c13ad</td><td class="diffline">9291 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>057c3d99e6c4888de9f59ea493ed87a8c8cbf0ab408951d49cdab0ec285c13ad</td></tr>
+<tr class="diffunmodified"><td class="diffline">9292 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>daafa9f36677eb2b1c64d1d6d450d3a3b0c42f1eb0bf4ebf91a5fe1edbe70293</td><td class="diffline">9292 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>daafa9f36677eb2b1c64d1d6d450d3a3b0c42f1eb0bf4ebf91a5fe1edbe70293</td></tr>
+<tr class="diffunmodified"><td class="diffline">9293 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>b84a856779204c0eee28ffbaed7023e38d74b50e997c7c6ecb99a7593c7fdb32</td><td class="diffline">9293 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>b84a856779204c0eee28ffbaed7023e38d74b50e997c7c6ecb99a7593c7fdb32</td></tr>
+<tr class="diffunmodified"><td class="diffline">9294 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>39c42db027548f958e096e8babe3fa0e3e773d24aa39eb6363fc0e3abbec34b1</td><td class="diffline">9294 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>39c42db027548f958e096e8babe3fa0e3e773d24aa39eb6363fc0e3abbec34b1</td></tr>
+<tr class="diffunmodified"><td class="diffline">9295 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>dac670211c1a090794d5414f23c981acc29e624c63dc7352751da922df9ecb3d</td><td class="diffline">9295 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>dac670211c1a090794d5414f23c981acc29e624c63dc7352751da922df9ecb3d</td></tr>
+<tr class="diffhunk"><td colspan="2">Offset 27331, 11 lines modified</td><td colspan="2">Offset 27331, 11 lines modified</td></tr>
+<tr class="diffunmodified"><td class="diffline">27331 </td><td class="diffpresent">BuildID[sha1]=086b5fb65130bef1daa694f98897848047af4de2,<span class="dp">·</span>stripped</td><td class="diffline">27331 </td><td class="diffpresent">BuildID[sha1]=086b5fb65130bef1daa694f98897848047af4de2,<span class="dp">·</span>stripped</td></tr>
+<tr class="diffunmodified"><td class="diffline">27332 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>a<span class="dp">·</span>python<span class="dp">·</span>script,<span class="dp">·</span>ASCII<span class="dp">·</span>text<span class="dp">·</span>executable</td><td class="diffline">27332 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>a<span class="dp">·</span>python<span class="dp">·</span>script,<span class="dp">·</span>ASCII<span class="dp">·</span>text<span class="dp">·</span>executable</td></tr>
+<tr class="diffunmodified"><td class="diffline">27333 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>ELF<span class="dp">·</span>64-bit<span class="dp">·</span>LSB<span class="dp">·</span>shared<span class="dp">·</span>object,<span class="dp">·</span>x86-64,<span class="dp">·</span>version<span class="dp">·</span>1<span class="dp">·</span>(SYSV),<span class="dp">·</span>dynamically<span class="dp">·</span>linked,</td><td class="diffline">27333 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span>ELF<span class="dp">·</span>64-bit<span class="dp">·</span>LSB<span class="dp">·</span>shared<span class="dp">·</span>object,<span class="dp">·</span>x86-64,<span class="dp">·</span>version<span class="dp">·</span>1<span class="dp">·</span>(SYSV),<span class="dp">·</span>dynamically<span class="dp">·</span>linked,</td></tr>
+<tr class="diffunmodified"><td class="diffline">27334 </td><td class="diffpresent">BuildID[sha1]=038cefd448a746f16f6861166f60f85918b236a7,<span class="dp">·</span>stripped</td><td class="diffline">27334 </td><td class="diffpresent">BuildID[sha1]=038cefd448a746f16f6861166f60f85918b236a7,<span class="dp">·</span>stripped</td></tr>
+<tr class="diffunmodified"><td class="diffline">27335 </td><td class="diffpresent">FILEDIGESTALGO:<span class="dp">·</span>8</td><td class="diffline">27335 </td><td class="diffpresent">FILEDIGESTALGO:<span class="dp">·</span>8</td></tr>
+<tr class="diffunmodified"><td class="diffline">27336 </td><td class="diffpresent">ENCODING:<span class="dp">·</span>utf-8</td><td class="diffline">27336 </td><td class="diffpresent">ENCODING:<span class="dp">·</span>utf-8</td></tr>
+<tr class="diffunmodified"><td class="diffline">27337 </td><td class="diffpresent">PAYLOADDIGEST:<span class="dp">·</span></td><td class="diffline">27337 </td><td class="diffpresent">PAYLOADDIGEST:<span class="dp">·</span></td></tr>
+<tr class="diffchanged"><td class="diffline">27338 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span><del>f</del><del>b423a</del>a<del>0</del><del>10f75a</del>f<del>37a0c53e</del>3<del>b</del>f<del>21a1962</del>9<del>8bf</del>7<del>a</del>8<del>2a</del>c<del>5</del><del>03ff</del>1<del>0</del><del>140e0038</del>4ae<del>13</del>e</td><td class="diffline">27338 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span><ins>05757</ins>a<ins>2f93d1</ins>f<ins>6ec11bf8</ins>3<ins>c</ins>f<ins>3</ins><ins>05defc3</ins>9<ins>073</ins>7<ins>4</ins>8<ins>99</ins>c<ins>16c0</ins>1<ins>ab5cfeb7</ins>4ae<ins>d</ins><ins>d8</ins>e<ins>64</ins></td></tr>
+<tr class="diffunmodified"><td class="diffline">27339 </td><td class="diffpresent">PAYLOADDIGESTALGO:<span class="dp">·</span>8</td><td class="diffline">27339 </td><td class="diffpresent">PAYLOADDIGESTALGO:<span class="dp">·</span>8</td></tr>
+<tr class="diffunmodified"><td class="diffline">27340 </td><td class="diffpresent">PAYLOADDIGESTALT:<span class="dp">·</span></td><td class="diffline">27340 </td><td class="diffpresent">PAYLOADDIGESTALT:<span class="dp">·</span></td></tr>
+<tr class="diffchanged"><td class="diffline">27341 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span><del>520afba</del>6<del>45</del><del>2</del>2<del>b</del><del>d2ec44cd5386</del>0<del>258</del>a<del>179b8</del>05<del>9e2</del>0<del>6cb</del><del>6</del>724<del>f15f2</del>e<del>2</del>9<del>76</del>a3<del>1</del>12<del>0</del></td><td class="diffline">27341 </td><td class="diffpresent"><span class="dp">·</span>-<span class="dp">·</span><ins>c3d750c</ins>6<ins>0</ins>2<ins>1c0abdb0ff9b</ins>0<ins>adc</ins>a<ins>4f3d3</ins>050<ins>3</ins>724<ins>a5691</ins>e<ins>0</ins><ins>4</ins>9<ins>52</ins>a3<ins>d</ins>12<ins>8888b7b6</ins><ins>e</ins></td></tr>
+</table>  </div>
+  <div class="difference">
+    <div class="diffheader">
+    <div class="diffcontrol">⊟</div>
+    <div><span class="diffsize">1.39 KB</span></div>
+    <div id="content"><span class="source">content</span>
+      <a class="anchor" href="#content">¶</a>
+    </div>
+    </div>
+    <div class="difference">
+      <div class="diffheader">
+      <div class="diffcontrol">⊟</div>
+      <div><span class="diffsize">1.37 KB</span></div>
+      <div id="content---.-usr-lib-python-.---site-packages-numpy--.-.-.dist-info-RECORD"><span class="source">./usr/lib/python3.13/site-packages/numpy-2.1.3.dist-info/RECORD</span>
+        <a class="anchor" href="#content---.-usr-lib-python-.---site-packages-numpy--.-.-.dist-info-RECORD">¶</a>
+      </div>
+      </div>
+<table class="diff">
+<colgroup><col class="colines"/><col class="coldiff"/>
+<col class="colines"/><col class="coldiff"/></colgroup>
+<tr style="display:none;"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr class="diffhunk"><td colspan="2">Offset 1, 15 lines modified</td><td colspan="2">Offset 1, 15 lines modified</td></tr>
+<tr class="diffunmodified"><td class="diffline">1 </td><td class="diffpresent">../../../bin/f2py,sha256=gHBf31Rt6Zjj-6OdV7D_XDyFeUFPk0_j5Bxymmb1jR0,220</td><td class="diffline">1 </td><td class="diffpresent">../../../bin/f2py,sha256=gHBf31Rt6Zjj-6OdV7D_XDyFeUFPk0_j5Bxymmb1jR0,220</td></tr>
+<tr class="diffunmodified"><td class="diffline">2 </td><td class="diffpresent">numpy-2.1.3.dist-info/LICENSE.txt,sha256=AfsBaEmqQn7bG7u9VfkcJspsrbMqWyDn8ABlXdBbB2A,1543</td><td class="diffline">2 </td><td class="diffpresent">numpy-2.1.3.dist-info/LICENSE.txt,sha256=AfsBaEmqQn7bG7u9VfkcJspsrbMqWyDn8ABlXdBbB2A,1543</td></tr>
+<tr class="diffunmodified"><td class="diffline">3 </td><td class="diffpresent">numpy-2.1.3.dist-info/METADATA,sha256=wCOtgzQGwLMGz_nZ3CQ-Rm3S1LMLmQbKEo-4eKZ1fNk,7335</td><td class="diffline">3 </td><td class="diffpresent">numpy-2.1.3.dist-info/METADATA,sha256=wCOtgzQGwLMGz_nZ3CQ-Rm3S1LMLmQbKEo-4eKZ1fNk,7335</td></tr>
+<tr class="diffunmodified"><td class="diffline">4 </td><td class="diffpresent">numpy-2.1.3.dist-info/RECORD,,</td><td class="diffline">4 </td><td class="diffpresent">numpy-2.1.3.dist-info/RECORD,,</td></tr>
+<tr class="diffunmodified"><td class="diffline">5 </td><td class="diffpresent">numpy-2.1.3.dist-info/WHEEL,sha256=_aIdAG-51NlPTDyQDlSxMw5A9CgrGbbmFVNcqRJvcBI,88</td><td class="diffline">5 </td><td class="diffpresent">numpy-2.1.3.dist-info/WHEEL,sha256=_aIdAG-51NlPTDyQDlSxMw5A9CgrGbbmFVNcqRJvcBI,88</td></tr>
+<tr class="diffunmodified"><td class="diffline">6 </td><td class="diffpresent">numpy-2.1.3.dist-info/entry_points.txt,sha256=4mXDNhJDQ9GHqMBeRJ8B3PlixTFmkXGqU3RVuac20q0,172</td><td class="diffline">6 </td><td class="diffpresent">numpy-2.1.3.dist-info/entry_points.txt,sha256=4mXDNhJDQ9GHqMBeRJ8B3PlixTFmkXGqU3RVuac20q0,172</td></tr>
+<tr class="diffunmodified"><td class="diffline">7 </td><td class="diffpresent">../../../bin/numpy-config,sha256=nqQZpU8OkJvJlnIAA8xvkVK6AZxy_SIlaTXyjuuFQ2Y,220</td><td class="diffline">7 </td><td class="diffpresent">../../../bin/numpy-config,sha256=nqQZpU8OkJvJlnIAA8xvkVK6AZxy_SIlaTXyjuuFQ2Y,220</td></tr>
+<tr class="diffchanged"><td class="diffline">8 </td><td class="diffpresent">numpy/__config__.py,sha256=<del>L</del><del>B</del>Y<del>rUmIHm2B2y13K4BMBgBUKc-qlrSe</del>l<del>_46XU2PP704</del>,101<del>0</del>4</td><td class="diffline">8 </td><td class="diffpresent">numpy/__config__.py,sha256=<ins>l</ins>Y<ins>70BN2qySNDrgyhAQ9xHcEA7nvzOI</ins>l<ins>v</ins><ins>F-gKEpJwhDY</ins>,<ins>1</ins>1014</td></tr>
+<tr class="diffunmodified"><td class="diffline">9 </td><td class="diffpresent">numpy/__init__.cython-30.pxd,sha256=2q-p82Z36yscZNHW1FDTo7DELx6wv06_kaX-HtvnApM,45784</td><td class="diffline">9 </td><td class="diffpresent">numpy/__init__.cython-30.pxd,sha256=2q-p82Z36yscZNHW1FDTo7DELx6wv06_kaX-HtvnApM,45784</td></tr>
+<tr class="diffunmodified"><td class="diffline">10 </td><td class="diffpresent">numpy/__init__.pxd,sha256=uEqFZ3kgTA7uKP-67XAj4410tQ6ZfHxuy5mnWTx_2zI,42418</td><td class="diffline">10 </td><td class="diffpresent">numpy/__init__.pxd,sha256=uEqFZ3kgTA7uKP-67XAj4410tQ6ZfHxuy5mnWTx_2zI,42418</td></tr>
+<tr class="diffunmodified"><td class="diffline">11 </td><td class="diffpresent">numpy/__init__.py,sha256=OcQtsCdUj5WOCW6Lq-P6Dj53PSSqOetjY_wOOrvsNLE,22007</td><td class="diffline">11 </td><td class="diffpresent">numpy/__init__.py,sha256=OcQtsCdUj5WOCW6Lq-P6Dj53PSSqOetjY_wOOrvsNLE,22007</td></tr>
+<tr class="diffunmodified"><td class="diffline">12 </td><td class="diffpresent">numpy/__init__.pyi,sha256=2sZwIRwaCQeU1UFPI8mBrMKeYkxj3HNSdR2pIt-eyz0,150455</td><td class="diffline">12 </td><td class="diffpresent">numpy/__init__.pyi,sha256=2sZwIRwaCQeU1UFPI8mBrMKeYkxj3HNSdR2pIt-eyz0,150455</td></tr>
+<tr class="diffunmodified"><td class="diffline">13 </td><td class="diffpresent">numpy/_array_api_info.py,sha256=qiHJDVG58rAk1iTlXsFrnhZ7Y-ghPUkyBpJiMvPK2jg,10381</td><td class="diffline">13 </td><td class="diffpresent">numpy/_array_api_info.py,sha256=qiHJDVG58rAk1iTlXsFrnhZ7Y-ghPUkyBpJiMvPK2jg,10381</td></tr>
+<tr class="diffunmodified"><td class="diffline">14 </td><td class="diffpresent">numpy/_array_api_info.pyi,sha256=4BzgW4K9n_ZNxeY-Htyr1QohEPvAENeoD6WUrUN0_pM,5025</td><td class="diffline">14 </td><td class="diffpresent">numpy/_array_api_info.pyi,sha256=4BzgW4K9n_ZNxeY-Htyr1QohEPvAENeoD6WUrUN0_pM,5025</td></tr>
+<tr class="diffunmodified"><td class="diffline">15 </td><td class="diffpresent">numpy/_configtool.py,sha256=asiPfz_TX2Dp0msoNjG43pZKRYgNYusSIg2ieczK8as,1007</td><td class="diffline">15 </td><td class="diffpresent">numpy/_configtool.py,sha256=asiPfz_TX2Dp0msoNjG43pZKRYgNYusSIg2ieczK8as,1007</td></tr>
+</table>    </div>
+  </div>
+</div>
+<div class="footer">
+Generated by
+<a href="https://diffoscope.org" rel="noopener noreferrer" target="_blank">
+diffoscope</a> 240
+</div>
+</body>
+</html>
+
