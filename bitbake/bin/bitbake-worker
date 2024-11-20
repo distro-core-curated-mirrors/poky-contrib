@@ -21,8 +21,15 @@ import traceback
 import queue
 import shlex
 import subprocess
+import fcntl
 from multiprocessing import Lock
 from threading import Thread
+
+# Remove when we have a minimum of python 3.10
+if not hasattr(fcntl, 'F_SETPIPE_SZ'):
+    import platform
+    if platform.system() == 'Linux':
+        fcntl.F_SETPIPE_SZ = 1031
 
 bb.utils.check_system_locale()
 
@@ -44,7 +51,6 @@ if sys.argv[1].startswith("decafbadbad"):
 # updates to log files for use with tail
 try:
     if sys.stdout.name == '<stdout>':
-        import fcntl
         fl = fcntl.fcntl(sys.stdout.fileno(), fcntl.F_GETFL)
         fl |= os.O_SYNC 
         fcntl.fcntl(sys.stdout.fileno(), fcntl.F_SETFL, fl)
@@ -56,6 +62,7 @@ logger = logging.getLogger("BitBake")
 
 worker_pipe = sys.stdout.fileno()
 bb.utils.nonblockingfd(worker_pipe)
+fcntl.fcntl(worker_pipe, fcntl.F_SETPIPE_SZ, 512 * 1024)
 # Need to guard against multiprocessing being used in child processes
 # and multiple processes trying to write to the parent at the same time
 worker_pipe_lock = None
@@ -357,7 +364,7 @@ class runQueueWorkerPipe():
     def read(self):
         start = len(self.queue)
         try:
-            self.queue.extend(self.input.read(102400) or b"")
+            self.queue.extend(self.input.read(512*1024) or b"")
         except (OSError, IOError) as e:
             if e.errno != errno.EAGAIN:
                 raise
