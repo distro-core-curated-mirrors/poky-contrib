@@ -814,32 +814,29 @@ class ObjectSet(oe.spdx30.SHACLObjectSet):
 
         return objset
 
-    def expand_collection(self, *, add_objectsets=[]):
+    def merge_doc(self, other):
+        imports = {e.externalSpdxId: e for e in self.doc.import_}
+
+        for e in other.doc.import_:
+            if e.externalSpdxId not in imports:
+                imports[e.externalSpdxId] = e
+
+        self.objects |= other.objects
+        self.doc.import_ = sorted(imports.values(), key=lambda e: e.externalSpdxId)
+
+    def expand_collection(self):
         """
         Expands a collection to pull in all missing elements
 
         Returns the set of ids that could not be found to link into the document
         """
         missing_spdxids = set()
-        imports = {e.externalSpdxId: e for e in self.doc.import_}
-
-        def merge_doc(other):
-            nonlocal imports
-
-            for e in other.doc.import_:
-                if not e.externalSpdxId in imports:
-                    imports[e.externalSpdxId] = e
-
-            self.objects |= other.objects
-
-        for o in add_objectsets:
-            merge_doc(o)
 
         needed_spdxids = self.link()
         provided_spdxids = set(self.obj_by_id.keys())
 
         while True:
-            import_spdxids = set(imports.keys())
+            import_spdxids = set(e.externalSpdxId for e in self.doc.import_)
             searching_spdxids = (
                 needed_spdxids - provided_spdxids - missing_spdxids - import_spdxids
             )
@@ -859,11 +856,10 @@ class ObjectSet(oe.spdx30.SHACLObjectSet):
                     bb.fatal(f"{spdxid} not found in {dep_path}")
                 provided_spdxids |= dep_provided
                 needed_spdxids |= dep_objset.missing_ids
-                merge_doc(dep_objset)
+                self.merge_doc(dep_objset)
             else:
                 missing_spdxids.add(spdxid)
 
-        self.doc.import_ = sorted(imports.values(), key=lambda e: e.externalSpdxId)
         bb.debug(1, "Linking...")
         self.link()
 
@@ -878,7 +874,7 @@ class ObjectSet(oe.spdx30.SHACLObjectSet):
                     else:
                         self.missing_ids.add(d.value)
 
-        self.missing_ids -= set(imports.keys())
+        self.missing_ids -= {e.externalSpdxId for e in self.doc.import_}
         return self.missing_ids
 
 
@@ -1048,7 +1044,14 @@ def find_by_spdxid(d, spdxid, *, required=False):
     return find_jsonld(d, *jsonld_hash_path(hash_id(spdxid)), required=required)
 
 
-def create_sbom(d, name, root_elements, add_objectsets=[]):
+def create_sbom(
+    d,
+    name,
+    root_elements,
+    add_objectsets=[],
+    expand=True,
+    import_missing=False,
+):
     objset = ObjectSet.new_objset(d, name)
 
     sbom = objset.add(
@@ -1061,8 +1064,19 @@ def create_sbom(d, name, root_elements, add_objectsets=[]):
         )
     )
 
-    missing_spdxids = objset.expand_collection(add_objectsets=add_objectsets)
-    if missing_spdxids:
+    for o in add_objectsets:
+        objset.merge_doc(o)
+
+    if expand:
+        missing_spdxids = objset.expand_collection()
+    else:
+        missing_spdxids = objset.link()
+
+    if import_missing:
+        for m in missing_spdxids:
+            objset.doc.import_.append(oe.spdx30.ExternalMap(externalSpdxId=m))
+
+    elif missing_spdxids:
         bb.warn(
             "The following SPDX IDs were unable to be resolved:\n  "
             + "\n  ".join(sorted(list(missing_spdxids)))

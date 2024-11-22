@@ -911,6 +911,14 @@ def create_spdx(d):
     oe.sbom30.write_recipe_jsonld_doc(d, build_objset, "recipes", deploydir)
 
 
+def get_package_data(d, package):
+    localdata = bb.data.createCopy(d)
+    pkg_name = d.getVar("PKG:%s" % package) or package
+    localdata.setVar("PKG", pkg_name)
+    localdata.setVar("OVERRIDES", d.getVar("OVERRIDES", False) + ":" + package)
+    return localdata
+
+
 def create_package_spdx(d):
     deploy_dir_spdx = Path(d.getVar("DEPLOY_DIR_SPDX"))
     deploydir = Path(d.getVar("SPDXRUNTIMEDEPLOY"))
@@ -936,10 +944,8 @@ def create_package_spdx(d):
 
     pkgdest = Path(d.getVar("PKGDEST"))
     for package in d.getVar("PACKAGES").split():
-        localdata = bb.data.createCopy(d)
         pkg_name = d.getVar("PKG:%s" % package) or package
-        localdata.setVar("PKG", pkg_name)
-        localdata.setVar("OVERRIDES", d.getVar("OVERRIDES", False) + ":" + package)
+        localdata = get_package_data(d, package)
 
         if not oe.packagedata.packaged(package, localdata):
             continue
@@ -1352,6 +1358,53 @@ def create_image_sbom_spdx(d):
                 link.symlink_to(os.path.relpath(target_path, link.parent))
 
     make_image_link(spdx_path, ".spdx.json")
+
+
+def create_build_sbom(d, dest):
+    pn = d.getVar("PN")
+    deploydir = Path(d.getVar("SPDXRECIPEBUILDDEPLOYDIR"))
+    pkg_arch = d.getVar("SSTATE_PKGARCH")
+
+    spdx_path = deploydir / (pn + "-build.spdx.json")
+
+    add_objsets = []
+
+    build, build_objset = oe.sbom30.find_root_obj_in_jsonld(
+        d,
+        "recipes",
+        pn,
+        oe.spdx30.build_Build,
+    )
+    add_objsets.append(build_objset)
+
+    bb.build.exec_func("read_subpackage_metadata", d)
+
+    for package in d.getVar("PACKAGES").split():
+        pkg_name = d.getVar("PKG:%s" % package) or package
+        localdata = get_package_data(d, package)
+
+        if not oe.packagedata.packaged(package, localdata):
+            continue
+
+        pkg_objset, _ = oe.sbom30.load_jsonld_by_arch(
+            d,
+            pkg_arch,
+            "packages",
+            pkg_name,
+            required=True,
+        )
+        add_objsets.append(pkg_objset)
+
+    sbom_objset, _ = oe.sbom30.create_sbom(
+        d,
+        pn + "-build",
+        [build],
+        add_objectsets=add_objsets,
+        expand=False,
+        import_missing=True,
+    )
+
+    oe.sbom30.write_jsonld_doc(d, sbom_objset, dest)
 
 
 def sdk_create_spdx(d, sdk_type, spdx_work_dir, toolchain_outputname):

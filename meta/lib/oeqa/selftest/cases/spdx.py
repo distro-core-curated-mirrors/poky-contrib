@@ -283,3 +283,12 @@ class SPDX30Check(SPDX3CheckBase, OESelftestTestCase):
                 break
         else:
             self.assertTrue(False, "Unable to find imported Host SpdxID")
+
+    def test_deploy_build_sbom_spdx_bash(self):
+        objset = self.check_recipe_spdx(
+            "bash",
+            "{DEPLOY_DIR_IMAGE}/bash-build.spdx.json",
+            task="deploy_build_sbom_spdx",
+        )
+
+        self.check_objset_missing_ids(objset)

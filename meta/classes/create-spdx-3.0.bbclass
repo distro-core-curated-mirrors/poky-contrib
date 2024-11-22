@@ -124,6 +124,8 @@ SPDX_PACKAGE_SUPPLIER[doc] = "The base variable name to describe the Agent who \
 IMAGE_CLASSES:append = " create-spdx-image-3.0"
 SDK_CLASSES += "create-spdx-sdk-3.0"
 
+SPDXRECIPEBUILDDEPLOYDIR = "${SPDXDIR}/recipe-build-deploy"
+
 oe.spdx30_tasks.set_timestamp_now[vardepsexclude] = "SPDX_INCLUDE_TIMESTAMPS"
 oe.spdx30_tasks.get_package_sources_from_debug[vardepsexclude] += "STAGING_KERNEL_DIR"
 oe.spdx30_tasks.collect_dep_objsets[vardepsexclude] = "SPDX_MULTILIB_SSTATE_ARCHS"
@@ -214,6 +216,29 @@ addtask do_create_package_spdx_setscene
 do_create_package_spdx[dirs] = "${SPDXRUNTIMEDEPLOY}"
 do_create_package_spdx[cleandirs] = "${SPDXRUNTIMEDEPLOY}"
 do_create_package_spdx[rdeptask] = "do_create_spdx"
+
+python do_deploy_build_sbom_spdx() {
+    import oe.spdx30_tasks
+    from pathlib import Path
+
+    deploydir = Path(d.getVar("SPDXRECIPEBUILDDEPLOYDIR"))
+    spdx_path = deploydir / (d.getVar("PN") + "-build.spdx.json")
+
+    oe.spdx30_tasks.create_build_sbom(d, spdx_path)
+}
+addtask do_deploy_build_sbom_spdx after do_create_spdx do_create_package_spdx
+SSTATETASKS += "do_deploy_build_sbom_spdx"
+SSTATE_SKIP_CREATION:task-create-recipe-sbom = "1"
+do_deploy_build_sbom_spdx[sstate-inputdirs] = "${SPDXRECIPEBUILDDEPLOYDIR}"
+do_deploy_build_sbom_spdx[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
+do_deploy_build_sbom_spdx[stamp-extra-info] = "${MACHINE_ARCH}"
+do_deploy_build_sbom_spdx[cleandirs] = "${SPDXRECIPEBUILDDEPLOYDIR}"
+do_deploy_build_sbom_spdx[file-checksums] += "${SPDX3_LIB_DEP_FILES}"
+
+python do_deploy_build_sbom_spdx_setscene() {
+    sstate_setscene(d)
+}
+addtask do_deploy_build_sbom_spdx_setscene
 
 python spdx30_build_started_handler () {
     import oe.spdx30_tasks
