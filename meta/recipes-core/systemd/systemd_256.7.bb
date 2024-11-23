@@ -421,6 +421,8 @@ PACKAGE_BEFORE_PN = "\
     ${PN}-journal-remote \
     ${PN}-kernel-install \
     ${PN}-mime \
+    ${PN}-networkd \
+    ${PN}-networkd-defaults \
     ${PN}-rpm-macros \
     ${PN}-udev-rules \
     ${PN}-vconsole-setup \
@@ -449,6 +451,7 @@ SYSTEMD_PACKAGES = "${@bb.utils.contains('PACKAGECONFIG', 'binfmt', '${PN}-binfm
                     ${@bb.utils.contains('PACKAGECONFIG', 'microhttpd', '${PN}-journal-gatewayd', '', d)} \
                     ${@bb.utils.contains('PACKAGECONFIG', 'microhttpd', '${PN}-journal-remote', '', d)} \
                     ${@bb.utils.contains('PACKAGECONFIG', 'journal-upload', '${PN}-journal-upload', '', d)} \
+                    ${@bb.utils.contains('PACKAGECONFIG', 'networkd', '${PN}-networkd', '', d)} \
 "
 SYSTEMD_SERVICE:${PN}-binfmt = "systemd-binfmt.service"
 
@@ -462,7 +465,7 @@ GROUPADD_PARAM:${PN} = "-r systemd-journal;"
 GROUPADD_PARAM:udev = "-r render"
 GROUPADD_PARAM:${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'polkit_hostnamed_fallback', '-r systemd-hostname;', '', d)}"
 USERADD_PARAM:${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'coredump', '--system -d / -M --shell /sbin/nologin systemd-coredump;', '', d)}"
-USERADD_PARAM:${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'networkd', '--system -d / -M --shell /sbin/nologin systemd-network;', '', d)}"
+USERADD_PARAM:${PN}-networkd += "${@bb.utils.contains('PACKAGECONFIG', 'networkd', '--system -d / -M --shell /sbin/nologin systemd-network;', '', d)}"
 USERADD_PARAM:${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'polkit', '--system --no-create-home --user-group --home-dir ${datadir}/polkit-1 polkitd;', '', d)}"
 USERADD_PARAM:${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'resolved', '--system -d / -M --shell /sbin/nologin systemd-resolve;', '', d)}"
 USERADD_PARAM:${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'timesyncd', '--system -d / -M --shell /sbin/nologin systemd-timesync;', '', d)}"
@@ -631,6 +634,34 @@ FILES:${PN}-extra-utils = "\
 FILES:${PN}-mime = "${MIMEDIR}"
 RRECOMMENDS:${PN} += "${PN}-mime"
 
+FILES:${PN}-networkd = "\
+    ${bindir}/networkctl \
+    ${datadir}/dbus-1/system-services/org.freedesktop.network1.service \
+    ${datadir}/dbus-1/system.d/org.freedesktop.network1.conf \
+    ${datadir}/polkit-1/actions/org.freedesktop.network1.policy \
+    ${libdir}/systemd/network/80-6rd-tunnel.network \
+    ${libdir}/systemd/network/80-vm-vt.network \
+    ${libdir}/systemd/networkd.conf \
+    ${systemd_system_unitdir}/systemd-networkd* \
+    ${libdir}/systemd/systemd-networkd* \
+    ${libdir}/sysusers.d/systemd-network.conf \
+    ${libdir}/tmpfiles.d/systemd-network.conf \
+    ${sysconfdir}/systemd/networkd.conf \
+"
+SYSTEMD_SERVICE:${PN}-networkd = "\
+    systemd-networkd.service \
+    systemd-networkd-wait-online.service \
+"
+CONFFILES:${PN}-networkd = "${sysconfdir}/systemd/networkd.conf"
+RDEPENDS:${PN}-networkd += "${PN}"
+RRECOMMENDS:${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'networkd', '${PN}-networkd', '', d)}"
+
+# Files which are usually not used for embedded devices
+FILES:${PN}-networkd-defaults = "\
+    ${libdir}/systemd/network/*.network \
+    ${libdir}/systemd/network/*.example \
+"
+
 FILES:${PN}-udev-rules = "\
                         ${rootlibexecdir}/udev/rules.d/70-uaccess.rules \
                         ${rootlibexecdir}/udev/rules.d/71-seat.rules \
@@ -641,7 +672,6 @@ FILES:${PN}-udev-rules = "\
 CONFFILES:${PN} = "${sysconfdir}/systemd/coredump.conf \
 	${sysconfdir}/systemd/journald.conf \
 	${sysconfdir}/systemd/logind.conf \
-	${sysconfdir}/systemd/networkd.conf \
 	${sysconfdir}/systemd/pstore.conf \
 	${sysconfdir}/systemd/resolved.conf \
 	${sysconfdir}/systemd/sleep.conf \
@@ -709,7 +739,6 @@ FILES:${PN} = " ${base_bindir}/* \
                 ${rootlibexecdir}/modprobe.d/README \
                 ${datadir}/dbus-1/system.d/org.freedesktop.timedate1.conf \
                 ${datadir}/dbus-1/system.d/org.freedesktop.locale1.conf \
-                ${datadir}/dbus-1/system.d/org.freedesktop.network1.conf \
                 ${datadir}/dbus-1/system.d/org.freedesktop.resolve1.conf \
                 ${datadir}/dbus-1/system.d/org.freedesktop.systemd1.conf \
                 ${@bb.utils.contains('PACKAGECONFIG', 'polkit_hostnamed_fallback', '${datadir}/dbus-1/system.d/org.freedesktop.hostname1_no_polkit.conf', '', d)} \
