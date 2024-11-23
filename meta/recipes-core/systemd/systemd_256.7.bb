@@ -548,6 +548,8 @@ FILES:${PN}-container = "${sysconfdir}/dbus-1/system.d/org.freedesktop.import1.c
                          ${systemd_system_unitdir}/systemd-machined.service \
                          ${systemd_system_unitdir}/dbus-org.freedesktop.machine1.service \
                          ${systemd_system_unitdir}/var-lib-machines.mount \
+                         ${libdir}/systemd/network/80-container-*.network \
+                         ${libdir}/systemd/network/80-namespace-ns.network \
                          ${rootlibexecdir}/systemd/systemd-import \
                          ${rootlibexecdir}/systemd/systemd-importd \
                          ${rootlibexecdir}/systemd/systemd-machined \
