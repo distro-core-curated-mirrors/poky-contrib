@@ -461,7 +461,7 @@ def create_spdx(d):
     if not include_vex in ("none", "current", "all"):
         bb.fatal("SPDX_INCLUDE_VEX must be one of 'none', 'current', 'all'")
 
-    build_objset = oe.sbom30.ObjectSet.new_objset(d, d.getVar("PN"))
+    build_objset = oe.sbom30.ObjectSet.new_objset(d, d.getVar("PN"), link_prefix="recipe")
 
     build = build_objset.new_task_build("recipe", "recipe")
     build_objset.set_element_alias(build)
@@ -574,7 +574,7 @@ def create_spdx(d):
 
             bb.debug(1, "Creating SPDX for package %s" % pkg_name)
 
-            pkg_objset = oe.sbom30.ObjectSet.new_objset(d, pkg_name)
+            pkg_objset = oe.sbom30.ObjectSet.new_objset(d, pkg_name, link_prefix="package")
 
             spdx_package = pkg_objset.add_root(
                 oe.spdx30.software_Package(
@@ -793,7 +793,7 @@ def create_package_spdx(d):
     # Any element common to all packages that need to be referenced by ID
     # should be written into this objset set
     common_objset = oe.sbom30.ObjectSet.new_objset(
-        d, "%s-package-common" % d.getVar("PN")
+        d, "%s-package-common" % d.getVar("PN"), link_prefix="package"
     )
 
     pkgdest = Path(d.getVar("PKGDEST"))
@@ -812,6 +812,7 @@ def create_package_spdx(d):
             "packages-staging",
             pkg_name,
             oe.spdx30.software_Package,
+            link_prefix="package",
             software_primaryPurpose=oe.spdx30.software_SoftwarePurpose.install,
         )
 
@@ -1002,7 +1003,7 @@ def create_rootfs_spdx(d):
     with root_packages_file.open("r") as f:
         packages = json.load(f)
 
-    objset = oe.sbom30.ObjectSet.new_objset(d, "%s-%s" % (image_basename, machine))
+    objset = oe.sbom30.ObjectSet.new_objset(d, "%s-%s" % (image_basename, machine), link_prefix="rootfs")
 
     rootfs = objset.add_root(
         oe.spdx30.software_Package(
@@ -1037,7 +1038,7 @@ def create_image_spdx(d):
     image_basename = d.getVar("IMAGE_BASENAME")
     machine = d.getVar("MACHINE")
 
-    objset = oe.sbom30.ObjectSet.new_objset(d, "%s-%s" % (image_basename, machine))
+    objset = oe.sbom30.ObjectSet.new_objset(d, "%s-%s" % (image_basename, machine), link_prefix="image")
 
     with manifest_path.open("r") as f:
         manifest = json.load(f)
@@ -1150,7 +1151,7 @@ def sdk_create_spdx(d, sdk_type, spdx_work_dir, toolchain_outputname):
     sdk_name = toolchain_outputname + "-" + sdk_type
     sdk_packages = oe.sdk.sdk_list_installed_packages(d, sdk_type == "target")
 
-    objset = oe.sbom30.ObjectSet.new_objset(d, sdk_name)
+    objset = oe.sbom30.ObjectSet.new_objset(d, sdk_name, link_prefix="sdk")
 
     sdk_rootfs = objset.add_root(
         oe.spdx30.software_Package(
