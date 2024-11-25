@@ -919,10 +919,23 @@ def jsonld_arch_path(d, arch, subdir, name, deploydir=None):
     return deploydir / arch / subdir / (name + ".spdx.json")
 
 
-def jsonld_hash_path(_id):
-    h = hashlib.sha256(_id.encode("utf-8")).hexdigest()
+def jsonld_link_path(_id, d):
+    spdx_namespace_prefix = d.getVar("SPDX_NAMESPACE_PREFIX")
+    m = re.match(f"^{spdx_namespace_prefix}/openembedded-alias/([^/]+)/UNIHASH/", _id)
+    if m:
+        # Parse alias
+        # http://spdx.org/spdxdocs/openembedded-alias/recipe-shadow/UNIHASH/license/3_24_0/BSD-3-Clause -> recipe-shadow
+        link_path = m.group(1)
+    else:
+        m = re.match(f"^{spdx_namespace_prefix}/([^/]+)/", _id)
+        if m:
+            # Parse spdxId
+            # http://spdx.org/spdxdocs/recipe-shadow-10e66933-65cf-5a2d-9a1d-99b12a405441/55a7286167e0c1a871d49da1af6070709d52370a5b52fdea03d248452f919aaa/source/4 -> recipe-shadow
+            link_path = m.group(1)[0:-len(str(uuid.NAMESPACE_DNS))-1]
+        else:
+            bb.fatal("Invalid id %s, neither SPDX ID or alias" % _id)
 
-    return Path("by-spdxid-hash") / h[:2], h
+    return Path("by-spdxid-link"), link_path
 
 
 def load_jsonld_by_arch(d, arch, subdir, name, *, required=False, link_prefix=None):
@@ -993,7 +1006,7 @@ def write_recipe_jsonld_doc(
     dest = jsonld_arch_path(d, pkg_arch, subdir, objset.doc.name, deploydir=deploydir)
 
     def link_id(_id):
-        hash_path = jsonld_hash_path(_id)
+        hash_path = jsonld_link_path(_id, d)
 
         link_name = jsonld_arch_path(
             d,
@@ -1001,6 +1014,11 @@ def write_recipe_jsonld_doc(
             *hash_path,
             deploydir=deploydir,
         )
+
+        # Return if expected symlink exists
+        if link_name.is_symlink() and link_name.resolve() == dest:
+            return hash_path[-1]
+
         try:
             link_name.parent.mkdir(exist_ok=True, parents=True)
             link_name.symlink_to(os.path.relpath(dest, link_name.parent))
@@ -1067,7 +1085,7 @@ def load_obj_in_jsonld(d, arch, subdir, fn_name, obj_type, link_prefix=None, **a
 
 
 def find_by_spdxid(d, spdxid, *, required=False):
-    return find_jsonld(d, *jsonld_hash_path(spdxid), required=required)
+    return find_jsonld(d, *jsonld_link_path(spdxid, d), required=required)
 
 
 def create_sbom(d, name, root_elements, add_objectsets=[]):
