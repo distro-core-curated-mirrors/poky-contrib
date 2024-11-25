@@ -183,6 +183,20 @@ class SPDX30Check(SPDX3CheckBase, OESelftestTestCase):
         # Document should be fully linked
         self.check_objset_missing_ids(objset)
 
+    def test_core_image_minimal_include_source(self):
+        objset = self.check_recipe_spdx(
+            "core-image-minimal",
+            "{DEPLOY_DIR_IMAGE}/core-image-minimal-{MACHINE}.rootfs.spdx.json",
+            extraconf=textwrap.dedent(
+                """\
+                SPDX_INCLUDE_SOURCES = "1"
+                """
+            ),
+        )
+
+        # Document should be fully linked
+        self.check_objset_missing_ids(objset)
+
     def test_core_image_minimal_sdk(self):
         objset = self.check_recipe_spdx(
             "core-image-minimal",
