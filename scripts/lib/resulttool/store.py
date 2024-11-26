@@ -69,16 +69,22 @@ def store(args, logger):
                 logger.info('skipping %s as non-matching' % r[0])
                 continue
             keywords = {'commit': r[0], 'branch': r[1], "commit_count": r[2]}
-            subprocess.check_call(["find", tempdir, "-name", "testresults.json", "!", "-path", "./.git/*", "-delete"])
-            resultutils.save_resultsdata(results, tempdir, ptestlogs=True)
+            dest = tempdir
+            if args.update_inplace:
+                dest = args.source
 
-            logger.info('Storing test result into git repository %s' % args.git_dir)
+            subprocess.check_call(["find", dest, "-name", "testresults.json", "!", "-path", "./.git/*", "-delete"])
+            resultutils.save_resultsdata(results, dest, ptestlogs=True)
+
+            if not args.update_inplace:
+                logger.info('Storing test result into git repository %s' % args.git_dir)
 
             excludes = []
             if args.logfile_archive:
-                excludes = ['*.log', "*.log.zst"]
-
-            tagname = gitarchive.gitarchive(tempdir, args.git_dir, False, False,
+                excludes = ['*.log', "*.log.zst", "log"]
+            tagname = None
+            if not args.update_inplace:
+                tagname = gitarchive.gitarchive(tempdir, args.git_dir, False, False,
                                   "Results of {branch}:{commit}", "branch: {branch}\ncommit: {commit}", "{branch}",
                                   False, "{branch}/{commit_count}-g{commit}/{tag_number}",
                                   'Test run #{tag_number} of {branch}:{commit}', '',
@@ -94,6 +100,26 @@ def store(args, logger):
                             continue
                         f = os.path.join(root, name)
                         subprocess.run(["zstd", f, "--rm"], check=True, capture_output=True)
+            elif args.git_dir != "None":
+                tagname = args.git_dir
+            else:
+                print("Error: Tagname not set")
+
+            if args.logfile_archive and tagname:
+                logdir = args.logfile_archive + "/" + tagname
+                shutil.copytree(tempdir, logdir)
+                for root, dirs,  files in os.walk(logdir):
+                    for name in files:
+                        if not name.endswith(".log") and name != "log" and not name.endswith(".json"):
+                            continue
+                        f = os.path.join(root, name)
+                        subprocess.run(["zstd", f, "--rm"], check=True, capture_output=True)
+
+            if args.update_inplace:
+                subprocess.check_call(["find", args.source, "-name", "*.log", "!", "-path", "./.git/*", "-delete"])
+                subprocess.check_call(["find", args.source, "-name", "log", "!", "-path", "./.git/*", "-delete"])
+                if args.logfile_archive and tagname:
+                    shutil.copytree(args.source, logdir, dirs_exist_ok=True)
     finally:
         subprocess.check_call(["rm", "-rf",  tempdir])
 
@@ -123,3 +149,5 @@ def register_commands(subparsers):
                               help='only store data for the specified revision')
     parser_build.add_argument('-l', '--logfile-archive', default='',
                               help='directory to separately archive log files along with a copy of the results')
+    parser_build.add_argument('-i', '--update-inplace', action='store_true',
+                              help='refresh the source inplace instead of commiting')
