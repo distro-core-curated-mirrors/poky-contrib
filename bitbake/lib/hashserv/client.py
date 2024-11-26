@@ -80,6 +80,8 @@ class AsyncClient(bb.asyncrpc.AsyncClient):
     MODE_EXIST_STREAM = 2
 
     def __init__(self, username=None, password=None):
+        HIDE_FRAME_ARGS = True  # Do not leak password on exception
+
         super().__init__("OEHASHEQUIV", "1.1", logger)
         self.mode = self.MODE_NORMAL
         self.username = username
@@ -236,6 +238,8 @@ class AsyncClient(bb.asyncrpc.AsyncClient):
         return await self.invoke({"clean-unused": {"max_age_seconds": max_age}})
 
     async def auth(self, username, token):
+        HIDE_FRAME_ARGS = True  # Do not leak token on exception
+
         result = await self.invoke({"auth": {"username": username, "token": token}})
         self.username = username
         self.password = token
@@ -319,6 +323,8 @@ class AsyncClient(bb.asyncrpc.AsyncClient):
 
 class Client(bb.asyncrpc.Client):
     def __init__(self, username=None, password=None):
+        HIDE_FRAME_ARGS = True  # Do not leak password on exception
+
         self.username = username
         self.password = password
 
