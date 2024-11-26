@@ -1,4 +1,4 @@
-From c3a068cf24a22bea7349849ec111ae8d91a54db4 Mon Sep 17 00:00:00 2001
+From 0a157b913b0e3b87dddfee77e94d5cdaca0da129 Mon Sep 17 00:00:00 2001
 From: Jeff Dike <jdike@x86_64.user-mode-linux.org>
 Date: Wed, 14 Jul 2010 14:35:52 -0400
 Subject: [PATCH] sysvinit - Remove sulogin dependency on /usr/lib*/libcrypt.a
@@ -9,17 +9,16 @@ Upstream-Status: Inappropriate [configuration]
 # build environment.  This patch checks for $LCRYPT in the environment
 # and uses it if it's there.
 # - jdike@linux.intel.com
-
 ---
  src/Makefile | 11 ++---------
  1 file changed, 2 insertions(+), 9 deletions(-)
 
 diff --git a/src/Makefile b/src/Makefile
-index 5b1a5a2..b686394 100644
+index 21cbb2e..a2c103c 100644
 --- a/src/Makefile
 +++ b/src/Makefile
-@@ -97,15 +97,8 @@ else
- endif
+@@ -95,15 +95,8 @@ endif
+ ROOT	?= $(DESTDIR)
  
  # Additional libs for GNU libc.
 -ifneq ($(wildcard $(ROOT)/usr/lib*/libcrypt.*),)
