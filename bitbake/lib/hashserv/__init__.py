@@ -28,6 +28,8 @@ def create_server(
     admin_password=None,
     reuseport=False,
 ):
+    HIDE_FRAME_ARGS = True  # Do not leak password on exception
+
     def sqlite_engine():
         from .sqlite import DatabaseEngine
 
@@ -70,6 +72,8 @@ def create_server(
 
 
 def create_client(addr, username=None, password=None):
+    HIDE_FRAME_ARGS = True  # Do not leak password on exception
+
     from . import client
 
     c = client.Client(username, password)
@@ -89,6 +93,8 @@ def create_client(addr, username=None, password=None):
 
 
 async def create_async_client(addr, username=None, password=None):
+    HIDE_FRAME_ARGS = True  # Do not leak password on exception
+
     from . import client
 
     c = client.AsyncClient(username, password)
