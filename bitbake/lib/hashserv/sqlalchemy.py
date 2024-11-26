@@ -115,6 +115,8 @@ class UnihashesV2(DeprecatedBase):
 
 class DatabaseEngine(object):
     def __init__(self, url, username=None, password=None):
+        HIDE_FRAME_ARGS = True  # Do not leak password on exception
+
         self.logger = logging.getLogger("hashserv.sqlalchemy")
         self.url = sqlalchemy.engine.make_url(url)
 

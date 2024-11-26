@@ -793,6 +793,8 @@ class Server(bb.asyncrpc.AsyncServer):
         admin_username=None,
         admin_password=None,
     ):
+        HIDE_FRAME_ARGS = True  # Do not leak password on exception
+
         if upstream and read_only:
             raise bb.asyncrpc.ServerError(
                 "Read-only hashserv cannot pull from an upstream server"
