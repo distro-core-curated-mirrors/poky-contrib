@@ -98,7 +98,6 @@ class SignatureGenerator(object):
         # from the fully parsed data store provided
 
         mc = d.getVar("__BBMULTICONFIG", False) or ""
-        tasks = d.getVar('__BBTASKS', False)
 
         self.datacaches = {}
         self.datacaches[mc] = types.SimpleNamespace()
@@ -106,7 +105,7 @@ class SignatureGenerator(object):
         self.datacaches[mc].stamp[mcfn] = d.getVar('STAMP')
         setattr(self.datacaches[mc], "stamp_extrainfo", {})
         self.datacaches[mc].stamp_extrainfo[mcfn] = {}
-        for t in tasks:
+        for t in bb.build.listtasks(d):
             flag = d.getVarFlag(t, "stamp-extra-info")
             if flag:
                 self.datacaches[mc].stamp_extrainfo[mcfn][t] = flag
