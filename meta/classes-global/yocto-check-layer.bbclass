@@ -27,6 +27,36 @@ def check_insane_skip(d):
             d.setVar("QA_ERRORS_FOUND", "True")
 
 
+# Check that only approved tasks can reach the network
+def check_network_flag(d):
+    # BPN:task names that are allowed to reach the network, using fnmatch to compare.
+    allowed = []
+    # fetch and checkuri by definition need to reach the network
+    allowed += ["*:do_fetch", "*:do_checkuri"]
+    # The tests need to SSH to their target and download tarballs
+    allowed += ["*:do_testimage", "*:do_testsdk", "*:do_testsdkext"]
+    # devshell needs to be unconstrained
+    allowed += ["*:do_devshell", "*:do_pydevshell"]
+
+    # Recipe-specific tasks in oe-core that we allow:
+    # The toolchain tests need to SSH to their target
+    allowed += ["binutils*:do_check", "gcc*:do_check", "glibc*:do_check"]
+    # build-appliance-image uses pip at image time
+    allowed += ["build-appliance-image:do_image"]
+
+    def is_allowed(bpn, task):
+        from fnmatch import fnmatch
+        name = f"{bpn}:{task}"
+        return any(fnmatch(name, pattern) for pattern in allowed)
+
+    bpn = d.getVar("BPN")
+    for task in bb.build.listtasks(d):
+        network = bb.utils.to_boolean(d.getVarFlag(task, "network"))
+        if network and not is_allowed(bpn, task):
+            bb.error(f"QA Issue: task {task} has network enabled")
+
+
 python () {
     check_insane_skip(d)
+    check_network_flag(d)
 }
