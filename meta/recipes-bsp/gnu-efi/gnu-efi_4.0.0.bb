@@ -47,6 +47,8 @@ EXTRA_OEMAKE = "'V=1' 'ARCH=${@gnu_efi_arch(d)}' \
                 'PREFIX=${prefix}' 'LIBDIR=${libdir}' 'INCLUDEDIR=${includedir}' \
                 "
 
+EXTRA_OEMAKE:append:class-native = " SUBDIRS='lib inc gnuefi'"
+
 # gnu-efi's Makefile treats prefix as toolchain prefix, so don't
 # export it.
 prefix[unexport] = "1"
