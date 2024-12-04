@@ -11,7 +11,9 @@ BBCLASSEXTEND = "native nativesdk"
 
 PACKAGES =+ "${PN}-xxd"
 FILES:${PN}-xxd = "${bindir}/xxd"
-RPROVIDES:${PN}-xxd = "xxd"
+RPROVIDES:${BPN}-xxd = "xxd"
+RPROVIDES:${BPN}-xxd-native = "xxd-native"
+RPROVIDES:nativesdk-${BPN}-xxd = "nativesdk-xxd"
 
 ALTERNATIVE:${PN}-xxd = "xxd"
 ALTERNATIVE_TARGET[xxd] = "${bindir}/xxd"
