@@ -16,7 +16,6 @@ SRC_URI = "${GNU_MIRROR}/libtool/libtool-${PV}.tar.gz \
            file://0005-libtool-Check-for-static-libs-for-internal-compiler-.patch \
            file://0006-libtool-Fix-tools-path-issues.patch \
            file://0007-libtool-Fix-problem-with-libtoolize-in-multilib.patch \
-           file://0008-libtool-Avoid-relinking-when-cross-compiling-its-poi.patch \
           "
 
 SRC_URI[sha256sum] = "da8ebb2ce4dcf46b90098daf962cffa68f4b4f62ea60f798d0ef12929ede6adf"
