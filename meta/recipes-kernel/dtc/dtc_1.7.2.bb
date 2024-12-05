@@ -22,7 +22,7 @@ inherit meson pkgconfig
 EXTRA_OEMESON = "-Dpython=disabled -Dvalgrind=disabled"
 
 PACKAGECONFIG ??= "tools"
-PACKAGECONFIG[tests] = "-Dtestss=true,-Dtests=false,"
+PACKAGECONFIG[tests] = "-Dtests=true,-Dtests=false,"
 PACKAGECONFIG[tools] = "-Dtools=true,-Dtools=false,flex-native bison-native"
 PACKAGECONFIG[yaml] = "-Dyaml=enabled,-Dyaml=disabled,libyaml"
 
