@@ -169,6 +169,25 @@ class BootimgPcbiosPlugin(SourcePlugin):
         for install_cmd in cmds:
             exec_cmd(install_cmd)
 
+        # this is hardcoded to where the cpio.gz is deployed to
+        deploy_dir_image = get_bitbake_var("DEPLOY_DIR_IMAGE")
+        # this can be passed from the .wks.in file via sourceparams
+        initrd = source_params.get('initrd')
+        # for convenience added together
+        initrd_dir_and_file = os.path.join(deploy_dir_image, initrd)
+
+        # in case we have a separate cpio.gz let's copy it to
+        # the boot partition
+        if os.path.isfile(initrd_dir_and_file):
+            logger.debug("Found %s", initrd_dir_and_file)
+        else:
+            logger.debug("Did not find %s", initrd_dir_and_file)
+
+        new_cmd = ("install -m 444 %s %s" %
+                  (initrd_dir_and_file, hdddir))
+
+        exec_cmd(new_cmd)
+
         du_cmd = "du -bks %s" % hdddir
         out = exec_cmd(du_cmd)
         blocks = int(out.split()[0])
