@@ -754,7 +754,9 @@ share the task.
 This section presents the mechanisms BitBake provides to allow you to
 share functionality between recipes. Specifically, the mechanisms
 include ``include``, ``inherit``, :term:`INHERIT`, and ``require``
-directives.
+directives. There is also a higher-level abstraction called
+``configuration fragments`` that is enabled with ``addfragments``
+directive.
 
 Locating Include and Class Files
 --------------------------------
@@ -961,6 +963,39 @@ separate the classes. The following example shows how to inherit both
 the ``autotools`` and ``pkgconfig`` classes::
 
    INHERIT += "autotools pkgconfig"
+
+``addfragments`` Directive
+--------------------------
+
+This directive allows fine-tuning local configurations with configuration
+snippets contained in layers in a structured, controlled way. Typically it would
+go into ``bitbake.conf``, for example::
+
+   addfragments conf/fragments OE_FRAGMENTS
+
+``addfragments`` takes two parameters:
+
+-  path prefix for fragment files inside the layer file tree that bitbake
+uses to construct full paths to the fragment files
+
+-  name of variable that holds the list of enabled fragments in an
+active build
+
+This allows listing enabled configuration fragments in ``OE_FRAGMENTS``
+variable like this::
+
+   OE_FRAGMENTS = "core/domain/somefragment core/someotherfragment anotherlayer/anotherdomain/anotherfragment"
+
+Fragment names listed in this variable must be prefixed by the layer name
+where a fragment file is located, defined by :term:`BBFILE_COLLECTIONS` in ``layer.conf``.
+
+The implementation then expands this list into
+:ref:`require <bitbake-user-manual/bitbake-user-manual-metadata:\`\`require\`\` directive>`
+directives with full paths to respective layers::
+
+   require /path/to/core-layer/conf/fragments/domain/somefragment.conf
+   require /path/to/core-layer/conf/fragments/someotherfragment.conf
+   require /path/to/another-layer/conf/fragments/anotherdomain/anotherfragment.conf
 
 Functions
 =========
