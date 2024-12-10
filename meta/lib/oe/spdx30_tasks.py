@@ -56,6 +56,7 @@ def add_license_expression(d, objset, license_expression, license_data):
                 name=name,
             )
         )
+        objset.set_element_alias(lic)
         simple_license_text[name] = lic
 
         if name == "PD":
@@ -109,7 +110,9 @@ def add_license_expression(d, objset, license_expression, license_data):
 
         spdx_license = "LicenseRef-" + l
         if spdx_license not in license_text_map:
-            license_text_map[spdx_license] = add_license_text(l)._id
+            license_text_map[spdx_license] = oe.sbom30.get_element_link_id(
+                add_license_text(l)
+            )
 
         return spdx_license
 
@@ -281,7 +284,7 @@ def collect_dep_objsets(d, build):
     for dep in deps:
         bb.debug(1, "Fetching SPDX for dependency %s" % (dep.pn))
         dep_build, dep_objset = oe.sbom30.find_root_obj_in_jsonld(
-            d, "recipes", dep.pn, oe.spdx30.build_Build
+            d, "recipes", "recipe-" + dep.pn, oe.spdx30.build_Build
         )
         # If the dependency is part of the taskhash, return it to be linked
         # against. Otherwise, it cannot be linked against because this recipe
@@ -465,7 +468,7 @@ def create_spdx(d):
     if not include_vex in ("none", "current", "all"):
         bb.fatal("SPDX_INCLUDE_VEX must be one of 'none', 'current', 'all'")
 
-    build_objset = oe.sbom30.ObjectSet.new_objset(d, d.getVar("PN"))
+    build_objset = oe.sbom30.ObjectSet.new_objset(d, "recipe-" + d.getVar("PN"))
 
     build = build_objset.new_task_build("recipe", "recipe")
     build_objset.set_element_alias(build)
@@ -505,8 +508,11 @@ def create_spdx(d):
                 bb.debug(1, "Skipping %s since it is already fixed upstream" % cve)
                 continue
 
+            spdx_cve = build_objset.new_cve_vuln(cve)
+            build_objset.set_element_alias(spdx_cve)
+
             cve_by_status.setdefault(decoded_status["mapping"], {})[cve] = (
-                build_objset.new_cve_vuln(cve),
+                spdx_cve,
                 decoded_status["detail"],
                 decoded_status["description"],
             )
@@ -578,7 +584,7 @@ def create_spdx(d):
 
             bb.debug(1, "Creating SPDX for package %s" % pkg_name)
 
-            pkg_objset = oe.sbom30.ObjectSet.new_objset(d, pkg_name)
+            pkg_objset = oe.sbom30.ObjectSet.new_objset(d, "package-" + pkg_name)
 
             spdx_package = pkg_objset.add_root(
                 oe.spdx30.software_Package(
@@ -666,20 +672,21 @@ def create_spdx(d):
             for status, cves in cve_by_status.items():
                 for cve, items in cves.items():
                     spdx_cve, detail, description = items
+                    spdx_cve_id = oe.sbom30.get_element_link_id(spdx_cve)
 
-                    all_cves.add(spdx_cve._id)
+                    all_cves.add(spdx_cve_id)
 
                     if status == "Patched":
                         pkg_objset.new_vex_patched_relationship(
-                            [spdx_cve._id], [spdx_package]
+                            [spdx_cve_id], [spdx_package]
                         )
                     elif status == "Unpatched":
                         pkg_objset.new_vex_unpatched_relationship(
-                            [spdx_cve._id], [spdx_package]
+                            [spdx_cve_id], [spdx_package]
                         )
                     elif status == "Ignored":
                         spdx_vex = pkg_objset.new_vex_ignored_relationship(
-                            [spdx_cve._id],
+                            [spdx_cve_id],
                             [spdx_package],
                             impact_statement=description,
                         )
@@ -814,7 +821,7 @@ def create_package_spdx(d):
             d,
             pkg_arch,
             "packages-staging",
-            pkg_name,
+            "package-" + pkg_name,
             oe.spdx30.software_Package,
             software_primaryPurpose=oe.spdx30.software_SoftwarePurpose.install,
         )
@@ -853,7 +860,7 @@ def create_package_spdx(d):
                 dep_spdx_package, _ = oe.sbom30.find_root_obj_in_jsonld(
                     d,
                     "packages-staging",
-                    dep_pkg,
+                    "package-" + dep_pkg,
                     oe.spdx30.software_Package,
                     software_primaryPurpose=oe.spdx30.software_SoftwarePurpose.install,
                 )
@@ -953,13 +960,14 @@ def write_bitbake_spdx(d):
             )
 
     for obj in objset.foreach_type(oe.spdx30.Element):
-        obj.extension.append(oe.sbom30.OELinkExtension(link_spdx_id=False))
         obj.extension.append(oe.sbom30.OEIdAliasExtension())
 
     oe.sbom30.write_jsonld_doc(d, objset, deploy_dir_spdx / "bitbake.spdx.json")
 
 
 def collect_build_package_inputs(d, objset, build, packages):
+    import oe.sbom30
+
     providers = oe.spdx_common.collect_package_providers(d)
 
     build_deps = set()
@@ -976,11 +984,11 @@ def collect_build_package_inputs(d, objset, build, packages):
         pkg_spdx, _ = oe.sbom30.find_root_obj_in_jsonld(
             d,
             "packages",
-            pkg_name,
+            "package-" + pkg_name,
             oe.spdx30.software_Package,
             software_primaryPurpose=oe.spdx30.software_SoftwarePurpose.install,
         )
-        build_deps.add(pkg_spdx._id)
+        build_deps.add(oe.sbom30.get_element_link_id(pkg_spdx))
 
     if missing_providers:
         bb.fatal(
@@ -1006,7 +1014,9 @@ def create_rootfs_spdx(d):
     with root_packages_file.open("r") as f:
         packages = json.load(f)
 
-    objset = oe.sbom30.ObjectSet.new_objset(d, "%s-%s" % (image_basename, machine))
+    objset = oe.sbom30.ObjectSet.new_objset(
+        d, "%s-%s-rootfs" % (image_basename, machine)
+    )
 
     rootfs = objset.add_root(
         oe.spdx30.software_Package(
@@ -1034,6 +1044,8 @@ def create_rootfs_spdx(d):
 
 
 def create_image_spdx(d):
+    import oe.sbom30
+
     image_deploy_dir = Path(d.getVar("IMGDEPLOYDIR"))
     manifest_path = Path(d.getVar("IMAGE_OUTPUT_MANIFEST"))
     spdx_work_dir = Path(d.getVar("SPDXIMAGEWORK"))
@@ -1041,7 +1053,9 @@ def create_image_spdx(d):
     image_basename = d.getVar("IMAGE_BASENAME")
     machine = d.getVar("MACHINE")
 
-    objset = oe.sbom30.ObjectSet.new_objset(d, "%s-%s" % (image_basename, machine))
+    objset = oe.sbom30.ObjectSet.new_objset(
+        d, "%s-%s-image" % (image_basename, machine)
+    )
 
     with manifest_path.open("r") as f:
         manifest = json.load(f)
@@ -1094,7 +1108,7 @@ def create_image_spdx(d):
         rootfs_image, _ = oe.sbom30.find_root_obj_in_jsonld(
             d,
             "rootfs",
-            "%s-%s" % (image_basename, machine),
+            "%s-%s-rootfs" % (image_basename, machine),
             oe.spdx30.software_Package,
             # TODO: Should use a purpose to filter here?
         )
@@ -1102,7 +1116,7 @@ def create_image_spdx(d):
             builds,
             oe.spdx30.RelationshipType.hasInput,
             oe.spdx30.LifecycleScopeType.build,
-            [rootfs_image._id],
+            [oe.sbom30.get_element_link_id(rootfs_image)],
         )
 
     objset.add_aliases()
@@ -1111,6 +1125,8 @@ def create_image_spdx(d):
 
 
 def create_image_sbom_spdx(d):
+    import oe.sbom30
+
     image_name = d.getVar("IMAGE_NAME")
     image_basename = d.getVar("IMAGE_BASENAME")
     image_link_name = d.getVar("IMAGE_LINK_NAME")
@@ -1125,17 +1141,17 @@ def create_image_sbom_spdx(d):
     rootfs_image, _ = oe.sbom30.find_root_obj_in_jsonld(
         d,
         "rootfs",
-        "%s-%s" % (image_basename, machine),
+        "%s-%s-rootfs" % (image_basename, machine),
         oe.spdx30.software_Package,
         # TODO: Should use a purpose here?
     )
-    root_elements.append(rootfs_image._id)
+    root_elements.append(oe.sbom30.get_element_link_id(rootfs_image))
 
     image_objset, _ = oe.sbom30.find_jsonld(
-        d, "image", "%s-%s" % (image_basename, machine), required=True
+        d, "image", "%s-%s-image" % (image_basename, machine), required=True
     )
     for o in image_objset.foreach_root(oe.spdx30.software_File):
-        root_elements.append(o._id)
+        root_elements.append(oe.sbom30.get_element_link_id(o))
 
     objset, sbom = oe.sbom30.create_sbom(d, image_name, root_elements)
 
