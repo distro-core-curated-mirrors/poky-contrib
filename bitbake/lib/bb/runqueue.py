@@ -26,6 +26,7 @@ from multiprocessing import Process
 import shlex
 import pprint
 import time
+import itertools
 
 bblogger = logging.getLogger("BitBake")
 logger = logging.getLogger("BitBake.RunQueue")
@@ -1622,6 +1623,7 @@ class RunQueue:
 
         if self.state is runQueueRunning:
             retval = self.rqexe.execute()
+            #self.rqexe.logit("Exit Execute %s" % retval)
 
         if self.state is runQueueCleanUp:
             retval = self.rqexe.finish()
@@ -2192,16 +2194,27 @@ class RunQueueExecute:
                 err = True
         return err
 
+    def logit(self, msg):
+         with open("/tmp/rplog", "a+") as f:
+             f.write("%s: %s\n" % (time.time(), msg))
 
     def execute(self):
         """
         Run the tasks in a queue prepared by prepare_runqueue
         """
 
+        if not hasattr(self, "printed2"):
+            self.printed2 = True
+            logger.warning("%s: Started!" % time.time())
+
+
+        #self.logit("Enter Execute")
+        logger.debug("Enter Execute")
         self.rq.read_workers()
         if self.updated_taskhash_queue or self.pending_migrations:
             self.process_possible_migrations()
 
+        #self.logit("Enter Execute2")
         if not hasattr(self, "sorted_setscene_tids"):
             # Don't want to sort this set every execution
             self.sorted_setscene_tids = sorted(self.rqdata.runq_setscene_tids)
@@ -2209,12 +2222,14 @@ class RunQueueExecute:
             self.setscene_tids_generator = itertools.cycle(self.rqdata.runq_setscene_tids)
 
         task = None
+        loopcount = 0
         if not self.sqdone and self.can_start_task():
             loopcount = 0
             # Find the next setscene to run, exit the loop when we've processed all tids or found something to execute
             while loopcount < len(self.rqdata.runq_setscene_tids):
                 loopcount += 1
                 nexttask = next(self.setscene_tids_generator)
+                #self.logit("Processing %s" % nexttask)
                 if nexttask in self.sq_buildable and nexttask not in self.sq_running and self.sqdata.stamps[nexttask] not in self.build_stamps.values() and nexttask not in self.sq_harddep_deferred:
                     if nexttask in self.sq_deferred and self.sq_deferred[nexttask] not in self.runq_complete:
                         # Skip deferred tasks quickly before the 'expensive' tests below - this is key to performant multiconfig builds
@@ -2264,6 +2279,9 @@ class RunQueueExecute:
                         logger.debug2("Setscene task %s is unskippable" % nexttask)
                     task = nexttask
                     break
+
+        logger.debug("Enter Execute2 %s" % task)
+
         if task is not None:
             (mc, fn, taskname, taskfn) = split_tid_mcfn(task)
             taskname = taskname + "_setscene"
@@ -2325,6 +2343,12 @@ class RunQueueExecute:
             self.stats.updateActiveSetscene(len(self.sq_live))
             if self.can_start_task():
                 return True
+
+        if not hasattr(self, "printed"):
+            self.printed = True
+            logger.warning("%s: Here!" % time.time())
+
+        logger.debug("Enter Execute3")
 
         self.update_holdofftasks()
 
