@@ -786,7 +786,7 @@ class ObjectSet(oe.spdx30.SHACLObjectSet):
             OEIdAliasExtension(
                 alias=objset.new_alias_id(
                     document,
-                    OE_DOC_ALIAS_PREFIX + d.getVar("PN") + "/" + name + "/",
+                    OE_DOC_ALIAS_PREFIX + d.getVar("SSTATE_PKGARCH") + "/" + d.getVar("PN") + "/" + name + "/",
                 ),
             )
         )
