@@ -16,7 +16,9 @@ PV = "0.3+git"
 
 inherit native
 
-SRC_URI = "git://git.yoctoproject.org/yocto-kernel-tools.git;branch=master;protocol=https"
+SRC_URI = "git://git.yoctoproject.org/yocto-kernel-tools.git;branch=master;protocol=https \
+           file://0001-symbol_why-fix-SyntaxWarning-for-RegEx-calls-on-Pyth.patch \
+"
 S = "${WORKDIR}/git"
 
 do_configure() {
