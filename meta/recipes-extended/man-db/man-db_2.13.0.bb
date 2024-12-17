@@ -22,7 +22,7 @@ USE_NLS:libc-musl = "no"
 inherit gettext pkgconfig autotools systemd
 
 EXTRA_OECONF = "--with-pager=less --with-systemdsystemunitdir=${systemd_system_unitdir}"
-EXTRA_AUTORECONF += "-I ${S}/gl/m4"
+acpaths = "-I ./m4 -I ./gl/m4"
 
 PACKAGECONFIG[bzip2] = "--with-bzip2=bzip2,ac_cv_prog_have_bzip2='',bzip2"
 PACKAGECONFIG[gzip] = "--with-gzip=gzip,ac_cv_prog_have_gzip='',gzip"
