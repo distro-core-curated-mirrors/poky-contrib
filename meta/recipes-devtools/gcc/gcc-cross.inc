@@ -4,6 +4,7 @@ INHIBIT_DEFAULT_DEPS = "1"
 EXTRADEPENDS = ""
 DEPENDS = "virtual/${TARGET_PREFIX}binutils ${EXTRADEPENDS} ${NATIVEDEPS}"
 PROVIDES = "virtual/${TARGET_PREFIX}gcc virtual/${TARGET_PREFIX}g++"
+do_create_spdx[vardeps] += "SSTATE_ARCHS_TUNEPKG"
 python () {
     if d.getVar("TARGET_OS").startswith("linux"):
         d.setVar("EXTRADEPENDS", "linux-libc-headers")
