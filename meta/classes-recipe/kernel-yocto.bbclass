@@ -9,6 +9,12 @@ SRCTREECOVEREDTASKS += "do_validate_branches do_kernel_configcheck do_kernel_che
 PATCH_GIT_USER_EMAIL ?= "kernel-yocto@oe"
 PATCH_GIT_USER_NAME ?= "OpenEmbedded"
 
+reproducible_git_committer() {
+	export GIT_COMMITTER_NAME="${PATCH_GIT_USER_NAME}"
+	export GIT_COMMITTER_EMAIL="${PATCH_GIT_USER_EMAIL}"
+	export GIT_COMMITTER_DATE="$(date -d @${SOURCE_DATE_EPOCH})"
+}
+
 # The distro or local.conf should set this, but if nobody cares...
 LINUX_KERNEL_TYPE ??= "standard"
 
@@ -349,6 +355,7 @@ do_patch() {
 	cd ${S}
 
 	check_git_config
+	reproducible_git_committer
 	meta_dir=$(kgit --meta)
 	(cd ${meta_dir}; ln -sf patch.queue series)
 	if [ -f "${meta_dir}/series" ]; then
@@ -431,8 +438,9 @@ do_kernel_checkout() {
 		rm -f .gitignore
 		git init
 		check_git_config
+		reproducible_git_committer
 		git add .
-		git commit -q -n -m "baseline commit: creating repo for ${PN}-${PV}"
+		git commit --author="${PATCH_GIT_USER_NAME} <${PATCH_GIT_USER_EMAIL}>" --date=${SOURCE_DATE_EPOCH} -q -n -m "baseline commit: creating repo for ${PN}-${PV}"
 		git clean -d -f
 	fi
 
