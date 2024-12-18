@@ -22,13 +22,12 @@ RCONFLICTS:${PN} = "proxy-libintl"
 
 require gettext-sources.inc
 SRC_URI += " \
-           file://parallel.patch \
            file://use-pkgconfig.patch \
            file://run-ptest \
            file://serial-tests-config.patch \
            file://0001-tests-autopoint-3-unset-MAKEFLAGS.patch \
            file://0001-init-env.in-do-not-add-C-CXX-parameters.patch \
-           file://0001-intl-Fix-build-failure-with-make-j.patch \
+           file://fix-libxml2.patch \
            "
 
 inherit autotools texinfo pkgconfig ptest
@@ -130,7 +129,7 @@ do_install:append:class-native () {
 	rm ${D}${datadir}/aclocal/*
 	rm ${D}${datadir}/gettext/config.rpath
 	rm ${D}${datadir}/gettext/po/Makefile.in.in
-	rm ${D}${datadir}/gettext/po/remove-potcdate.sin
+	rm ${D}${datadir}/gettext/po/remove-potcdate.sed
 
         create_wrapper ${D}${bindir}/msgfmt \
                 GETTEXTDATADIR="${STAGING_DATADIR_NATIVE}/gettext-${PV}/"
