@@ -1,4 +1,4 @@
-From db5c5763f3e3172f1dd011355b41469770dafc0f Mon Sep 17 00:00:00 2001
+From 7d2a358ca19320bef6e7ebce8b17183ba45ac005 Mon Sep 17 00:00:00 2001
 From: Petr Viktorin <encukou@gmail.com>
 Date: Thu, 28 Nov 2024 13:29:27 +0100
 Subject: [PATCH] gh-127330: Update for OpenSSL 3.4 & document+improve the
@@ -31,10 +31,10 @@ Signed-off-by: Peter Marko <peter.marko@siemens.com>
  rename Modules/{_ssl_data_31.h => _ssl_data_34.h} (92%)
 
 diff --git a/Modules/_ssl.c b/Modules/_ssl.c
-index b6b5ebf094c..e5b8bf21002 100644
+index a7a278d..c988643 100644
 --- a/Modules/_ssl.c
 +++ b/Modules/_ssl.c
-@@ -122,7 +122,7 @@ static void _PySSLFixErrno(void) {
+@@ -121,7 +121,7 @@ static void _PySSLFixErrno(void) {
  
  /* Include generated data (error codes) */
  #if (OPENSSL_VERSION_NUMBER >= 0x30100000L)
@@ -44,7 +44,7 @@ index b6b5ebf094c..e5b8bf21002 100644
  #include "_ssl_data_300.h"
  #elif (OPENSSL_VERSION_NUMBER >= 0x10101000L)
 diff --git a/Modules/_ssl_data_111.h b/Modules/_ssl_data_111.h
-index 093c786e6a2..061fac2bd58 100644
+index 093c786..061fac2 100644
 --- a/Modules/_ssl_data_111.h
 +++ b/Modules/_ssl_data_111.h
 @@ -1,4 +1,6 @@
@@ -56,7 +56,7 @@ index 093c786e6a2..061fac2bd58 100644
  #ifdef ERR_LIB_ASN1
      {"ASN1", ERR_LIB_ASN1},
 diff --git a/Modules/_ssl_data_300.h b/Modules/_ssl_data_300.h
-index dc66731f6b6..b687ce43c77 100644
+index dc66731..b687ce4 100644
 --- a/Modules/_ssl_data_300.h
 +++ b/Modules/_ssl_data_300.h
 @@ -1,4 +1,7 @@
@@ -72,7 +72,7 @@ diff --git a/Modules/_ssl_data_31.h b/Modules/_ssl_data_34.h
 similarity index 92%
 rename from Modules/_ssl_data_31.h
 rename to Modules/_ssl_data_34.h
-index c589c501f4e..d4af3e1c1fa 100644
+index c589c50..d4af3e1 100644
 --- a/Modules/_ssl_data_31.h
 +++ b/Modules/_ssl_data_34.h
 @@ -1,4 +1,6 @@
@@ -1078,7 +1078,7 @@ index c589c501f4e..d4af3e1c1fa 100644
    #ifdef SSL_R_TLSV1_ALERT_ACCESS_DENIED
      {"TLSV1_ALERT_ACCESS_DENIED", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_ACCESS_DENIED},
    #else
-@@ -7470,6 +7982,16 @@ static struct py_ssl_error_code error_codes[] = {
+@@ -7470,11 +7982,26 @@ static struct py_ssl_error_code error_codes[] = {
    #else
      {"TLSV1_ALERT_DECODE_ERROR", 20, 1050},
    #endif
@@ -1087,57 +1087,60 @@ index c589c501f4e..d4af3e1c1fa 100644
 +  #else
 +    {"TLSV1_ALERT_DECODE_ERROR", 20, 1050},
 +  #endif
+   #ifdef SSL_R_TLSV1_ALERT_DECRYPTION_FAILED
+     {"TLSV1_ALERT_DECRYPTION_FAILED", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_DECRYPTION_FAILED},
+   #else
+     {"TLSV1_ALERT_DECRYPTION_FAILED", 20, 1021},
+   #endif
 +  #ifdef SSL_R_TLSV1_ALERT_DECRYPTION_FAILED
 +    {"TLSV1_ALERT_DECRYPTION_FAILED", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_DECRYPTION_FAILED},
 +  #else
 +    {"TLSV1_ALERT_DECRYPTION_FAILED", 20, 1021},
 +  #endif
-   #ifdef SSL_R_TLSV1_ALERT_DECRYPTION_FAILED
-     {"TLSV1_ALERT_DECRYPTION_FAILED", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_DECRYPTION_FAILED},
-   #else
-@@ -7480,6 +8002,16 @@ static struct py_ssl_error_code error_codes[] = {
-   #else
-     {"TLSV1_ALERT_DECRYPT_ERROR", 20, 1051},
-   #endif
 +  #ifdef SSL_R_TLSV1_ALERT_DECRYPT_ERROR
 +    {"TLSV1_ALERT_DECRYPT_ERROR", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_DECRYPT_ERROR},
 +  #else
 +    {"TLSV1_ALERT_DECRYPT_ERROR", 20, 1051},
 +  #endif
+   #ifdef SSL_R_TLSV1_ALERT_DECRYPT_ERROR
+     {"TLSV1_ALERT_DECRYPT_ERROR", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_DECRYPT_ERROR},
+   #else
+@@ -7485,6 +8012,16 @@ static struct py_ssl_error_code error_codes[] = {
+   #else
+     {"TLSV1_ALERT_EXPORT_RESTRICTION", 20, 1060},
+   #endif
 +  #ifdef SSL_R_TLSV1_ALERT_EXPORT_RESTRICTION
 +    {"TLSV1_ALERT_EXPORT_RESTRICTION", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_EXPORT_RESTRICTION},
 +  #else
 +    {"TLSV1_ALERT_EXPORT_RESTRICTION", 20, 1060},
 +  #endif
-   #ifdef SSL_R_TLSV1_ALERT_EXPORT_RESTRICTION
-     {"TLSV1_ALERT_EXPORT_RESTRICTION", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_EXPORT_RESTRICTION},
-   #else
-@@ -7490,6 +8022,16 @@ static struct py_ssl_error_code error_codes[] = {
-   #else
-     {"TLSV1_ALERT_INAPPROPRIATE_FALLBACK", 20, 1086},
-   #endif
 +  #ifdef SSL_R_TLSV1_ALERT_INAPPROPRIATE_FALLBACK
 +    {"TLSV1_ALERT_INAPPROPRIATE_FALLBACK", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_INAPPROPRIATE_FALLBACK},
 +  #else
 +    {"TLSV1_ALERT_INAPPROPRIATE_FALLBACK", 20, 1086},
 +  #endif
+   #ifdef SSL_R_TLSV1_ALERT_INAPPROPRIATE_FALLBACK
+     {"TLSV1_ALERT_INAPPROPRIATE_FALLBACK", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_INAPPROPRIATE_FALLBACK},
+   #else
+@@ -7495,11 +8032,36 @@ static struct py_ssl_error_code error_codes[] = {
+   #else
+     {"TLSV1_ALERT_INSUFFICIENT_SECURITY", 20, 1071},
+   #endif
 +  #ifdef SSL_R_TLSV1_ALERT_INSUFFICIENT_SECURITY
 +    {"TLSV1_ALERT_INSUFFICIENT_SECURITY", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_INSUFFICIENT_SECURITY},
 +  #else
 +    {"TLSV1_ALERT_INSUFFICIENT_SECURITY", 20, 1071},
 +  #endif
-   #ifdef SSL_R_TLSV1_ALERT_INSUFFICIENT_SECURITY
-     {"TLSV1_ALERT_INSUFFICIENT_SECURITY", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_INSUFFICIENT_SECURITY},
-   #else
-@@ -7500,6 +8042,26 @@ static struct py_ssl_error_code error_codes[] = {
-   #else
-     {"TLSV1_ALERT_INTERNAL_ERROR", 20, 1080},
-   #endif
 +  #ifdef SSL_R_TLSV1_ALERT_INTERNAL_ERROR
 +    {"TLSV1_ALERT_INTERNAL_ERROR", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_INTERNAL_ERROR},
 +  #else
 +    {"TLSV1_ALERT_INTERNAL_ERROR", 20, 1080},
 +  #endif
+   #ifdef SSL_R_TLSV1_ALERT_INTERNAL_ERROR
+     {"TLSV1_ALERT_INTERNAL_ERROR", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_INTERNAL_ERROR},
+   #else
+     {"TLSV1_ALERT_INTERNAL_ERROR", 20, 1080},
+   #endif
 +  #ifdef SSL_R_TLSV1_ALERT_NO_APPLICATION_PROTOCOL
 +    {"TLSV1_ALERT_NO_APPLICATION_PROTOCOL", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_NO_APPLICATION_PROTOCOL},
 +  #else
@@ -1156,7 +1159,7 @@ index c589c501f4e..d4af3e1c1fa 100644
    #ifdef SSL_R_TLSV1_ALERT_NO_RENEGOTIATION
      {"TLSV1_ALERT_NO_RENEGOTIATION", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_NO_RENEGOTIATION},
    #else
-@@ -7510,21 +8072,56 @@ static struct py_ssl_error_code error_codes[] = {
+@@ -7510,6 +8072,16 @@ static struct py_ssl_error_code error_codes[] = {
    #else
      {"TLSV1_ALERT_PROTOCOL_VERSION", 20, 1070},
    #endif
@@ -1165,26 +1168,23 @@ index c589c501f4e..d4af3e1c1fa 100644
 +  #else
 +    {"TLSV1_ALERT_PROTOCOL_VERSION", 20, 1070},
 +  #endif
-   #ifdef SSL_R_TLSV1_ALERT_RECORD_OVERFLOW
-     {"TLSV1_ALERT_RECORD_OVERFLOW", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_RECORD_OVERFLOW},
-   #else
-     {"TLSV1_ALERT_RECORD_OVERFLOW", 20, 1022},
-   #endif
 +  #ifdef SSL_R_TLSV1_ALERT_RECORD_OVERFLOW
 +    {"TLSV1_ALERT_RECORD_OVERFLOW", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_RECORD_OVERFLOW},
 +  #else
 +    {"TLSV1_ALERT_RECORD_OVERFLOW", 20, 1022},
 +  #endif
+   #ifdef SSL_R_TLSV1_ALERT_RECORD_OVERFLOW
+     {"TLSV1_ALERT_RECORD_OVERFLOW", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_RECORD_OVERFLOW},
+   #else
+@@ -7520,11 +8092,36 @@ static struct py_ssl_error_code error_codes[] = {
+   #else
+     {"TLSV1_ALERT_UNKNOWN_CA", 20, 1048},
+   #endif
 +  #ifdef SSL_R_TLSV1_ALERT_UNKNOWN_CA
 +    {"TLSV1_ALERT_UNKNOWN_CA", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_UNKNOWN_CA},
 +  #else
 +    {"TLSV1_ALERT_UNKNOWN_CA", 20, 1048},
 +  #endif
-   #ifdef SSL_R_TLSV1_ALERT_UNKNOWN_CA
-     {"TLSV1_ALERT_UNKNOWN_CA", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_UNKNOWN_CA},
-   #else
-     {"TLSV1_ALERT_UNKNOWN_CA", 20, 1048},
-   #endif
 +  #ifdef SSL_R_TLSV1_ALERT_UNKNOWN_PSK_IDENTITY
 +    {"TLSV1_ALERT_UNKNOWN_PSK_IDENTITY", ERR_LIB_SSL, SSL_R_TLSV1_ALERT_UNKNOWN_PSK_IDENTITY},
 +  #else
@@ -1213,7 +1213,7 @@ index c589c501f4e..d4af3e1c1fa 100644
    #ifdef SSL_R_TLSV1_BAD_CERTIFICATE_HASH_VALUE
      {"TLSV1_BAD_CERTIFICATE_HASH_VALUE", ERR_LIB_SSL, SSL_R_TLSV1_BAD_CERTIFICATE_HASH_VALUE},
    #else
-@@ -7535,6 +8132,16 @@ static struct py_ssl_error_code error_codes[] = {
+@@ -7535,11 +8132,26 @@ static struct py_ssl_error_code error_codes[] = {
    #else
      {"TLSV1_BAD_CERTIFICATE_STATUS_RESPONSE", 20, 1113},
    #endif
@@ -1222,30 +1222,35 @@ index c589c501f4e..d4af3e1c1fa 100644
 +  #else
 +    {"TLSV1_BAD_CERTIFICATE_STATUS_RESPONSE", 20, 1113},
 +  #endif
+   #ifdef SSL_R_TLSV1_CERTIFICATE_UNOBTAINABLE
+     {"TLSV1_CERTIFICATE_UNOBTAINABLE", ERR_LIB_SSL, SSL_R_TLSV1_CERTIFICATE_UNOBTAINABLE},
+   #else
+     {"TLSV1_CERTIFICATE_UNOBTAINABLE", 20, 1111},
+   #endif
 +  #ifdef SSL_R_TLSV1_CERTIFICATE_UNOBTAINABLE
 +    {"TLSV1_CERTIFICATE_UNOBTAINABLE", ERR_LIB_SSL, SSL_R_TLSV1_CERTIFICATE_UNOBTAINABLE},
 +  #else
 +    {"TLSV1_CERTIFICATE_UNOBTAINABLE", 20, 1111},
 +  #endif
-   #ifdef SSL_R_TLSV1_CERTIFICATE_UNOBTAINABLE
-     {"TLSV1_CERTIFICATE_UNOBTAINABLE", ERR_LIB_SSL, SSL_R_TLSV1_CERTIFICATE_UNOBTAINABLE},
-   #else
-@@ -7545,6 +8152,16 @@ static struct py_ssl_error_code error_codes[] = {
-   #else
-     {"TLSV1_UNRECOGNIZED_NAME", 20, 1112},
-   #endif
 +  #ifdef SSL_R_TLSV1_UNRECOGNIZED_NAME
 +    {"TLSV1_UNRECOGNIZED_NAME", ERR_LIB_SSL, SSL_R_TLSV1_UNRECOGNIZED_NAME},
 +  #else
 +    {"TLSV1_UNRECOGNIZED_NAME", 20, 1112},
 +  #endif
+   #ifdef SSL_R_TLSV1_UNRECOGNIZED_NAME
+     {"TLSV1_UNRECOGNIZED_NAME", ERR_LIB_SSL, SSL_R_TLSV1_UNRECOGNIZED_NAME},
+   #else
+@@ -7550,6 +8162,11 @@ static struct py_ssl_error_code error_codes[] = {
+   #else
+     {"TLSV1_UNSUPPORTED_EXTENSION", 20, 1110},
+   #endif
 +  #ifdef SSL_R_TLSV1_UNSUPPORTED_EXTENSION
 +    {"TLSV1_UNSUPPORTED_EXTENSION", ERR_LIB_SSL, SSL_R_TLSV1_UNSUPPORTED_EXTENSION},
 +  #else
 +    {"TLSV1_UNSUPPORTED_EXTENSION", 20, 1110},
 +  #endif
-   #ifdef SSL_R_TLSV1_UNSUPPORTED_EXTENSION
-     {"TLSV1_UNSUPPORTED_EXTENSION", ERR_LIB_SSL, SSL_R_TLSV1_UNSUPPORTED_EXTENSION},
+   #ifdef SSL_R_TLS_ILLEGAL_EXPORTER_LABEL
+     {"TLS_ILLEGAL_EXPORTER_LABEL", ERR_LIB_SSL, SSL_R_TLS_ILLEGAL_EXPORTER_LABEL},
    #else
 @@ -7665,6 +8282,11 @@ static struct py_ssl_error_code error_codes[] = {
    #else
@@ -1359,7 +1364,7 @@ index c589c501f4e..d4af3e1c1fa 100644
      {"WRONG_LOOKUP_TYPE", ERR_LIB_X509, X509_R_WRONG_LOOKUP_TYPE},
    #else
 diff --git a/Tools/c-analyzer/cpython/_parser.py b/Tools/c-analyzer/cpython/_parser.py
-index 21be53e7884..a08b32fa45d 100644
+index 12010f0..104cf22 100644
 --- a/Tools/c-analyzer/cpython/_parser.py
 +++ b/Tools/c-analyzer/cpython/_parser.py
 @@ -70,9 +70,7 @@ Python/thread_pthread.h
@@ -1374,7 +1379,7 @@ index 21be53e7884..a08b32fa45d 100644
  Modules/unicodedata_db.h
  Modules/unicodename_db.h
 diff --git a/Tools/ssl/make_ssl_data.py b/Tools/ssl/make_ssl_data.py
-index 9860871..0cd05c7 100755
+index 9860871..982d05a 100755
 --- a/Tools/ssl/make_ssl_data.py
 +++ b/Tools/ssl/make_ssl_data.py
 @@ -5,9 +5,28 @@ This script should be called *manually* when we want to upgrade SSLError
@@ -1447,6 +1452,3 @@ index eae0e0c..fb06f63 100755
  ]
  
  LIBRESSL_OLD_VERSIONS = [
--- 
-2.30.2
-

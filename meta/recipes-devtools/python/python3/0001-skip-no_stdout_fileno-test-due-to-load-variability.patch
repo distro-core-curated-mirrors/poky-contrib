@@ -1,4 +1,4 @@
-From c5bdd39f8ebc4e6c58a47d7e424eac028eddb4ff Mon Sep 17 00:00:00 2001
+From 05f73d0fb156a64aa941bbe47fdcfe28a4858a77 Mon Sep 17 00:00:00 2001
 From: Trevor Gamblin <tgamblin@baylibre.com>
 Date: Fri, 15 Sep 2023 08:48:33 -0400
 Subject: [PATCH] skip no_stdout_fileno test due to load variability
@@ -16,7 +16,7 @@ Signed-off-by: Trevor Gamblin <tgamblin@baylibre.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/Lib/test/test_builtin.py b/Lib/test/test_builtin.py
-index c5394de..ed17fb6 100644
+index 3a55319..31094e5 100644
 --- a/Lib/test/test_builtin.py
 +++ b/Lib/test/test_builtin.py
 @@ -2435,6 +2435,7 @@ class PtyTests(unittest.TestCase):
