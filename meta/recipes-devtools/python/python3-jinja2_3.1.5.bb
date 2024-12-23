@@ -4,7 +4,7 @@ HOMEPAGE = "https://pypi.org/project/Jinja2/"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=5dc88300786f1c214c1e9827a5229462"
 
-SRC_URI[sha256sum] = "4a3aee7acbbe7303aede8e9648d13b8bf88a429282aa6122a993f0ac800cb369"
+SRC_URI[sha256sum] = "8fefff8dc3034e27bb80d67c671eb8a9bc424c0ef4c0826edbff304cceff43bb"
 
 PYPI_PACKAGE = "jinja2"
 
@@ -13,10 +13,6 @@ CVE_PRODUCT = "jinja2 jinja"
 CLEANBROKEN = "1"
 
 inherit pypi python_flit_core ptest-python-pytest
-
-SRC_URI += " \
-	file://fix-3.13.patch \
-"
 
 RDEPENDS:${PN}-ptest += " \
     python3-unixadmin \
