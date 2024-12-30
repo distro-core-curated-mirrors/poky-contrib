@@ -31,7 +31,7 @@ SRC_URI += " \
            file://0001-intl-Fix-build-failure-with-make-j.patch \
            "
 
-inherit autotools texinfo pkgconfig ptest
+inherit autotools autotools-brokensep texinfo pkgconfig ptest
 
 EXTRA_OECONF += "--without-lispdir \
                  --disable-csharp \
