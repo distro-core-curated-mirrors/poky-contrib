@@ -27,15 +27,27 @@ python __anonymous () {
 }
 
 do_uboot_mkimage[dirs] += "${B}"
-do_uboot_mkimage() {
-	linux_comp="$(uboot_prep_kimage)"
+python do_uboot_mkimage() {
+    import subprocess
 
-	ENTRYPOINT=${UBOOT_ENTRYPOINT}
-	if [ -n "${UBOOT_ENTRYSYMBOL}" ]; then
-		ENTRYPOINT=`${HOST_PREFIX}nm ${B}/vmlinux | \
-			awk '$3=="${UBOOT_ENTRYSYMBOL}" {print "0x"$1;exit}'`
-	fi
+    uboot_prep_kimage()
 
-	uboot-mkimage -A ${UBOOT_ARCH} -O linux -T ${UBOOT_MKIMAGE_KERNEL_TYPE} -C "$linux_comp" -a ${UBOOT_LOADADDRESS} -e $ENTRYPOINT -n "${DISTRO_NAME}/${PV}/${MACHINE}" -d linux.bin ${B}/arch/${ARCH}/boot/uImage
-	rm -f linux.bin
+    entrypoint = d.getVar('UBOOT_ENTRYPOINT')
+    if d.getVar('UBOOT_ENTRYSYMBOL'):
+        entrysymbol = d.getVar('UBOOT_ENTRYSYMBOL')
+        vmlinux_path = os.path.join(d.getVar('B'), 'vmlinux')
+        entrypoint = subprocess.check_output(
+            f"{d.getVar('HOST_PREFIX')}nm {vmlinux_path} | awk '$3==\"{entrysymbol}\" {{print \"0x\"$1;exit}}'",
+            shell=True
+        ).strip().decode('utf-8')
+
+    uboot_mkimage_cmd = (
+        f"uboot-mkimage -A {d.getVar('UBOOT_ARCH')} -O linux -T {d.getVar('UBOOT_MKIMAGE_KERNEL_TYPE')} "
+        f"-C {d.getVar('linux_comp')} -a {d.getVar('UBOOT_LOADADDRESS')} -e {entrypoint} "
+        f"-n \"{d.getVar('DISTRO_NAME')}/{d.getVar('PV')}/{d.getVar('MACHINE')}\" "
+        f"-d linux.bin {os.path.join(d.getVar('B'), 'arch', d.getVar('ARCH'), 'boot', 'uImage')}"
+    )
+    subprocess.run(uboot_mkimage_cmd, shell=True, check=True)
+    if os.path.exists('linux.bin'):
+        os.remove('linux.bin')
 }
