@@ -28,6 +28,20 @@ Index: git/pseudo_wrappers.c
  #include <assert.h>
  #include <stdlib.h>
  #include <limits.h>
+Index: git/pseudolog.c
+===================================================================
+--- git.orig/pseudolog.c
++++ git/pseudolog.c
+@@ -10,6 +10,9 @@
+  * we then don't get S_IFSOCK... _GNU_SOURCE turns on everything. */
+ #define _DEFAULT_SOURCE
+ #define _XOPEN_SOURCE
++/* This is mainly to avoid issues on older systems that do not
++ * recognize _DEFAULT_SOURCE. */
++#define _BSD_SOURCE
+
+ #include <ctype.h>
+ #include <limits.h>
 Index: git/pseudo_util.c
 ===================================================================
 --- git.orig/pseudo_util.c
