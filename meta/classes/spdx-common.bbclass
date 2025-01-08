@@ -39,6 +39,17 @@ SPDX_CUSTOM_ANNOTATION_VARS ??= ""
 
 SPDX_MULTILIB_SSTATE_ARCHS ??= "${SSTATE_ARCHS}"
 
+def create_spdx_cve_check_deps(d):
+    if (
+        d.getVar("SPDX_INCLUDE_VEX") == "all"
+        and bb.data.inherits_class('cve-check', d)
+        and d.getVar("CVE_CHECK_FORMAT_JSON") == "1"
+    ):
+        pn = d.getVar('PN')
+        return pn + ":do_cve_check"
+
+    return ""
+
 def create_spdx_source_deps(d):
     import oe.spdx_common
 

@@ -42,8 +42,9 @@ SPDX_INCLUDE_VEX[doc] = "Controls what VEX information is in the output. Set to 
     'none' to disable all VEX data. Set to 'current' to only include VEX data \
     for vulnerabilities not already fixed in the upstream source code \
     (recommended). Set  to 'all' to get all known historical vulnerabilities, \
-    including those already fixed upstream (warning: This can be large and \
-    slow)."
+    including those already fixed upstream, if cve_check is inherited, set to 'all' \
+    to get all known historical vulnerabilities from cve check result \
+    (warning: This can be large and slow)."
 
 SPDX_INCLUDE_TIMESTAMPS ?= "0"
 SPDX_INCLUDE_TIMESTAMPS[doc] = "Include time stamps in SPDX output. This is \
@@ -141,6 +142,7 @@ do_create_spdx[vardeps] += "\
     SPDX_PROFILES \
     SPDX_NAMESPACE_PREFIX \
     SPDX_UUID_NAMESPACE \
+    SPDX_INCLUDE_VEX \
     "
 
 addtask do_create_spdx after \
@@ -164,6 +166,7 @@ do_create_spdx[cleandirs] = "${SPDXDEPLOY} ${SPDXWORK}"
 do_create_spdx[depends] += " \
     ${PATCHDEPENDENCY} \
     ${@create_spdx_source_deps(d)} \
+    ${@create_spdx_cve_check_deps(d)} \
 "
 
 python do_create_package_spdx() {

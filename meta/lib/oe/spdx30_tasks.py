@@ -437,8 +437,33 @@ def set_purposes(d, element, *var_names, force_purposes=[]):
         getattr(oe.spdx30.software_SoftwarePurpose, p) for p in purposes[1:]
     ]
 
-def get_cves(d):
+def get_cves(d, include_vex):
     cve_status = {}
+
+    # Get CVEs from cve-check
+    if (
+        include_vex == "all"
+        and bb.data.inherits_class('cve-check', d)
+        and d.getVar("CVE_CHECK_FORMAT_JSON") == "1"
+    ):
+        pkgfilepath = d.getVar("CVE_CHECK_RECIPE_FILE_JSON")
+        if os.path.exists(pkgfilepath):
+            with open(pkgfilepath) as j:
+                data = json.load(j)
+                json_data = {"version":"1", "package": []}
+                oe.cve_check.cve_check_merge_jsons(json_data, data)
+                for issue in json_data["package"][0].get("issue", []):
+                    cve = issue["id"]
+                    cve_status[cve] = {
+                        "mapping": issue["status"],
+                        "detail": issue["detail"],
+                        "description": issue.get("description", None)
+                    }
+
+                if cve_status:
+                    return cve_status
+
+    # Get CVEs from recipe
     patched_cves = oe.cve_check.get_patched_cves(d)
     for cve, patched_cve in patched_cves.items():
         cve_status[cve] = {
@@ -498,7 +523,7 @@ def create_spdx(d):
     # Add CVEs
     cve_by_status = {}
     if include_vex != "none":
-        cve_data = get_cves(d)
+        cve_data = get_cves(d, include_vex)
         for cve, decoded_status in cve_data.items():
 
             # If this CVE is fixed upstream, skip it unless all CVEs are
