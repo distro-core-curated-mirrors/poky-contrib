@@ -437,6 +437,17 @@ def set_purposes(d, element, *var_names, force_purposes=[]):
         getattr(oe.spdx30.software_SoftwarePurpose, p) for p in purposes[1:]
     ]
 
+def get_cves(d):
+    cve_status = {}
+    patched_cves = oe.cve_check.get_patched_cves(d)
+    for cve, patched_cve in patched_cves.items():
+        cve_status[cve] = {
+            "mapping": patched_cve["abbrev-status"],
+            "detail": patched_cve["status"],
+            "description": patched_cve.get("justification", None)
+        }
+
+    return cve_status
 
 def create_spdx(d):
     def set_var_field(var, obj, name, package=None):
@@ -487,8 +498,8 @@ def create_spdx(d):
     # Add CVEs
     cve_by_status = {}
     if include_vex != "none":
-        for cve in d.getVarFlags("CVE_STATUS") or {}:
-            decoded_status = oe.cve_check.decode_cve_status(d, cve)
+        cve_data = get_cves(d)
+        for cve, decoded_status in cve_data.items():
 
             # If this CVE is fixed upstream, skip it unless all CVEs are
             # specified.
