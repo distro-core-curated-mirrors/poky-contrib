@@ -1,0 +1,2238 @@
+From a80cdcfc8603987c32a29fbae61a23c8fa87945f Mon Sep 17 00:00:00 2001
+From: Alexander Kanavin <alex@linutronix.de>
+Date: Mon, 20 Jan 2025 12:48:56 +0100
+Subject: [PATCH] expect: port to tcl 9.x
+
+As expect continues to be unmaintained, someone has provided
+an unofficial 9.x port with autotools updates via
+https://wiki.tcl-lang.org/page/Porting+extensions+to+Tcl+9
+
+I've extracted portions of the tarball that are relevant to tcl9.x
+and made a patch out of them.
+
+Upstream-Status: Inactive-Upstream [no activity since 2018; cvs server went read-only]
+Signed-off-by: Alexander Kanavin <alex@linutronix.de>
+---
+ Dbg.c          |  58 ++++++++++++++-------
+ Makefile.in    |   2 +-
+ exp_chan.c     | 110 +++++++++++++++++++++++++++++++--------
+ exp_clib.c     | 123 ++++++++++++++++++++++++++------------------
+ exp_command.c  |  76 +++++++++++++--------------
+ exp_command.h  | 136 ++++++++++++++++++++++++-------------------------
+ exp_event.h    |  28 +++++-----
+ exp_glob.c     |  28 +++++-----
+ exp_int.h      |  16 +++---
+ exp_inter.c    |   6 +--
+ exp_log.c      |  18 +++----
+ exp_log.h      |  78 ++++++++++++++--------------
+ exp_main_sub.c |  18 ++++---
+ exp_memmove.c  |   4 +-
+ exp_poll.c     |  10 ++--
+ exp_pty.c      |  11 ++--
+ exp_pty.h      |   2 +-
+ exp_rename.h   |  14 +++++
+ exp_trap.c     |  12 ++---
+ exp_tstamp.h   |   4 +-
+ exp_tty.c      |   8 ++-
+ exp_win.h      |  16 +++---
+ expect.c       |  64 +++++++++++------------
+ expect.h       |  36 ++++++-------
+ expect_tcl.h   |  22 ++++----
+ pty_sgttyb.c   |   3 ++
+ pty_termios.c  |   2 +-
+ retoglob.c     |  28 +++++-----
+ tcldbg.h       |  55 ++++++++++++--------
+ 29 files changed, 574 insertions(+), 414 deletions(-)
+
+diff --git a/Dbg.c b/Dbg.c
+index c7689e5..c5eef0f 100644
+--- a/Dbg.c
++++ b/Dbg.c
+@@ -37,6 +37,26 @@ would appreciate credit if this program or parts of it are used.
+ #define FALSE 0
+ #endif
+ 
++#if !defined(TCL_VARARGS)
++#  if defined(__STDC__) || defined(HAVE_STDARG_H)
++#   include <stdarg.h>
++#   define TCL_VARARGS(type, name) (type name, ...)
++#   define TCL_VARARGS_DEF(type, name) (type name, ...)
++#   define TCL_VARARGS_START(type, name, list) (va_start(list, name), name)
++#  else
++#   include <varargs.h>
++#   ifdef __cplusplus
++#	define TCL_VARARGS(type, name) (type name, ...)
++#	define TCL_VARARGS_DEF(type, name) (type va_alist, ...)
++#   else
++#	define TCL_VARARGS(type, name) ()
++#	define TCL_VARARGS_DEF(type, name) (va_alist)
++#   endif
++#   define TCL_VARARGS_START(type, name, list) \
++	(va_start(list), va_arg(list, type))
++#  endif /* use stdarg.h */
++#  endif /* use stdarg.h */
++
+ static int simple_interactor (Tcl_Interp *interp, ClientData data);
+ static int zero (Tcl_Interp *interp, char *string);
+ 
+@@ -50,7 +70,7 @@ static Dbg_OutputProc *printproc = 0;
+ static ClientData printdata = 0;
+ static int stdinmode;
+ 
+-static void print _ANSI_ARGS_(TCL_VARARGS(Tcl_Interp *,interp));
++static void print TCL_VARARGS(Tcl_Interp *,interp);
+ 
+ static int debugger_active = FALSE;
+ 
+@@ -382,8 +402,8 @@ char *argv[];
+ 	arg_index = 1;
+ 	
+ 	while (argc && (space > 0)) {
+-		CONST char *elementPtr;
+-		CONST char *nextPtr;
++		const char *elementPtr;
++		const char *nextPtr;
+ 		int wrap;
+ 
+ 		/* braces/quotes have been stripped off arguments */
+@@ -398,7 +418,7 @@ char *argv[];
+ #if TCL_MAJOR_VERSION >= 8
+ 					      -1,
+ #endif
+-				&elementPtr,&nextPtr,(int *)0,(int *)0);
++				&elementPtr,&nextPtr,(Tcl_Size) 0,(Tcl_Size) 0);
+ 			if (*elementPtr == '\0') wrap = TRUE;
+ 			else if (*nextPtr == '\0') wrap = FALSE;
+ 			else wrap = TRUE;
+@@ -443,7 +463,7 @@ Tcl_Obj *objv[];
+ {
+     char **argv;
+     int argc;
+-    int len;
++    Tcl_Size len;
+     argv = (char **)ckalloc(objc+1 * sizeof(char *));
+     for (argc=0 ; argc<objc ; argc++) {
+ 	argv[argc] = Tcl_GetStringFromObj(objv[argc],&len);
+@@ -487,7 +507,7 @@ Tcl_Interp *interp;
+ CallFrame *curf;	/* current FramePtr */
+ CallFrame *viewf;	/* view FramePtr */
+      int objc;
+-     Tcl_Obj *CONST objv[];		/* Argument objects. */
++     Tcl_Obj *const objv[];		/* Argument objects. */
+ char *level;
+ {
+ 	PrintStackBelow(interp,curf,viewf);
+@@ -544,14 +564,14 @@ enum debug_cmd cmdtype;
+ /* debugger's trace handler */
+ 
+ static int
+-debugger_trap _ANSI_ARGS_ ((
++debugger_trap (
+      ClientData clientData,
+      Tcl_Interp *interp,
+      int level,
+-     CONST char *command,
++     const char *command,
+      Tcl_Command commandInfo,
+      int objc,
+-     struct Tcl_Obj * CONST * objv));
++     struct Tcl_Obj * const * objv);
+ 
+ 
+ /*ARGSUSED*/
+@@ -562,10 +582,10 @@ debugger_trap(clientData,interp,level,command,commandInfo,objc,objv)
+      int level;			/* positive number if called by Tcl, -1 if */
+ 				/* called by Dbg_On in which case we don't */
+ 				/* know the level */
+-     CONST char *command;
++     const char *command;
+      Tcl_Command commandInfo; /* Unused */
+      int objc;
+-     struct Tcl_Obj * CONST * objv;
++     struct Tcl_Obj * const * objv;
+ {
+ 	char level_text[6];	/* textual representation of level */
+ 
+@@ -734,7 +754,7 @@ cmdNext(clientData, interp, objc, objv)
+ ClientData clientData;
+ Tcl_Interp *interp;
+      int objc;
+-     Tcl_Obj *CONST objv[];		/* Argument objects. */
++     Tcl_Obj *const objv[];		/* Argument objects. */
+ {
+ 	debug_new_action = TRUE;
+ 	debug_cmd = *(enum debug_cmd *)clientData;
+@@ -758,7 +778,7 @@ cmdDir(clientData, interp, objc, objv)
+ ClientData clientData;
+ Tcl_Interp *interp;
+      int objc;
+-     Tcl_Obj *CONST objv[];		/* Argument objects. */
++     Tcl_Obj *const objv[];		/* Argument objects. */
+ {
+     char* frame;
+     debug_cmd = *(enum debug_cmd *)clientData;
+@@ -780,7 +800,7 @@ cmdSimple(clientData, interp, objc, objv)
+ ClientData clientData;
+ Tcl_Interp *interp;
+      int objc;
+-     Tcl_Obj *CONST objv[];		/* Argument objects. */
++     Tcl_Obj *const objv[];		/* Argument objects. */
+ {
+ 	debug_new_action = TRUE;
+ 	debug_cmd = *(enum debug_cmd *)clientData;
+@@ -831,7 +851,7 @@ cmdWhere(clientData, interp, objc, objv)
+ ClientData clientData;
+ Tcl_Interp *interp;
+      int objc;
+-     Tcl_Obj *CONST objv[];		/* Argument objects. */
++     Tcl_Obj *const objv[];		/* Argument objects. */
+ {
+     static char* options [] = {
+ 	"-compress",
+@@ -903,7 +923,7 @@ cmdBreak(clientData, interp, objc, objv)
+ ClientData clientData;
+ Tcl_Interp *interp;
+      int objc;
+-     Tcl_Obj *CONST objv[];		/* Argument objects. */
++     Tcl_Obj *const objv[];		/* Argument objects. */
+ {
+ 	struct breakpoint *b;
+ 	char *error_msg;
+@@ -1111,7 +1131,7 @@ cmdHelp(clientData, interp, objc, objv)
+ ClientData clientData;
+ Tcl_Interp *interp;
+      int objc;
+-     Tcl_Obj *CONST objv[];		/* Argument objects. */
++     Tcl_Obj *const objv[];		/* Argument objects. */
+ {
+ 	char **hp;
+ 
+@@ -1255,7 +1275,7 @@ zero (Tcl_Interp *interp, char *string)
+ 	return 0;
+ }
+ 
+-extern int expSetBlockModeProc _ANSI_ARGS_((int fd, int mode));
++extern int expSetBlockModeProc (int fd, int mode);
+ 
+ static int
+ simple_interactor(Tcl_Interp *interp, ClientData data)
+@@ -1288,7 +1308,7 @@ simple_interactor(Tcl_Interp *interp, ClientData data)
+ 			   version */
+ 
+ 			static int nextid = 0;
+-			CONST char *nextidstr = Tcl_GetVar2(interp,"tcl::history","nextid",0);
++			const char *nextidstr = Tcl_GetVar2(interp,"tcl::history","nextid",0);
+ 			if (nextidstr) {
+ 				sscanf(nextidstr,"%d",&nextid);
+ 			}
+diff --git a/Makefile.in b/Makefile.in
+index 22dabb7..5f05f95 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -331,7 +331,7 @@ pkgIndex.tcl:
+ pkgIndex.tcl-hand:
+ 	(echo 'if {![package vsatisfies [package provide Tcl] @TCL_VERSION@]} {return}' ; \
+ 	 echo 'package ifneeded Expect $(PACKAGE_VERSION) \
+-	    [list load [file join $$dir $(PKG_LIB_FILE)]]'\
++	    [list load [file join $$dir $(PKG_LIB_FILE) ]]'\
+ 	) > pkgIndex.tcl
+ 
+ #========================================================================
+diff --git a/exp_chan.c b/exp_chan.c
+index 4465c66..559389f 100644
+--- a/exp_chan.c
++++ b/exp_chan.c
+@@ -35,22 +35,27 @@
+ #include "exp_prog.h"
+ #include "exp_command.h"
+ #include "exp_log.h"
++#include "exp_event.h"
+ #include "tcldbg.h" /* Dbg_StdinMode */
+ 
+-extern int		expSetBlockModeProc _ANSI_ARGS_((int fd, int mode));
+-static int		ExpBlockModeProc _ANSI_ARGS_((ClientData instanceData,
+-			    int mode));
+-static int		ExpCloseProc _ANSI_ARGS_((ClientData instanceData,
+-			    Tcl_Interp *interp));
+-static int		ExpInputProc _ANSI_ARGS_((ClientData instanceData,
+-		            char *buf, int toRead, int *errorCode));
+-static int		ExpOutputProc _ANSI_ARGS_((
++extern int		expSetBlockModeProc (int fd, int mode);
++static int		ExpBlockModeProc (ClientData instanceData,
++			    int mode);
++static int		ExpCloseProc (ClientData instanceData,
++			    Tcl_Interp *interp);
++static int		ExpClose2Proc (ClientData instanceData,
++			    Tcl_Interp *interp);
++static int		ExpInputProc (ClientData instanceData,
++		            char *buf, int toRead, int *errorCode);
++static int		ExpOutputProc (
+ 			    ClientData instanceData, char *buf, int toWrite,
+-                            int *errorCode));
+-static void		ExpWatchProc _ANSI_ARGS_((ClientData instanceData,
+-		            int mask));
+-static int		ExpGetHandleProc _ANSI_ARGS_((ClientData instanceData,
+-		            int direction, ClientData *handlePtr));
++                            int *errorCode);
++static void		ExpWatchProc (ClientData instanceData,
++		            int mask);
++static int		ExpGetHandleProc (ClientData instanceData,
++		            int direction, ClientData *handlePtr);
++static int		ExpThreadActionProc (ClientData instanceData,
++		            int action);
+ 
+ /*
+  * This structure describes the channel type structure for Expect-based IO:
+@@ -58,16 +63,25 @@ static int		ExpGetHandleProc _ANSI_ARGS_((ClientData instanceData,
+ 
+ Tcl_ChannelType expChannelType = {
+     "exp",				/* Type name. */
+-    ExpBlockModeProc,			/* Set blocking/nonblocking mode.*/
+-    ExpCloseProc,			/* Close proc. */
++    (Tcl_ChannelTypeVersion)TCL_CHANNEL_VERSION_5,	/* Version. */
++    #if TCL_MAJOR_VERSION < 9
++    ExpCloseProc,			 /* Close proc. */
++#else
++    NULL,
++#endif
+     ExpInputProc,			/* Input proc. */
+     ExpOutputProc,			/* Output proc. */
+-    NULL,				/* Seek proc. */
+-    NULL,				/* Set option proc. */
+-    NULL,				/* Get option proc. */
++    NULL,				/* Seek. */
++    NULL,
++    NULL,
+     ExpWatchProc,			/* Initialize notifier. */
+     ExpGetHandleProc,			/* Get OS handles out of channel. */
+-    NULL,				/* Close2 proc */
++    ExpClose2Proc,			 /* Close proc. */
++    ExpBlockModeProc,			/* Set blocking/nonblocking mode.*/
++    NULL, /* FlushProc. Must be NULL as per Tcl docs */
++    NULL, /* HandlerProc. Only valid for stacked channels */
++    NULL, /* WideSeekProc. */
++    NULL,
+ };
+ 
+ typedef struct ThreadSpecificData {
+@@ -83,7 +97,6 @@ typedef struct ThreadSpecificData {
+ } ThreadSpecificData;
+ 
+ static Tcl_ThreadDataKey dataKey;
+-
+ /*
+  *----------------------------------------------------------------------
+  *
+@@ -319,6 +332,63 @@ ExpCloseProc(instanceData, interp)
+ 
+     esPtr->registered = FALSE;
+ 
++#if 0
++    /*
++      Really should check that we created one first.  Since we're sharing fds
++      with Tcl, perhaps a filehandler was created with a plain tcl file - we
++      wouldn't want to delete that.  Although if user really close Expect's
++      user_spawn_id, it probably doesn't matter anyway.
++    */
++
++    Tcl_DeleteFileHandler(esPtr->fdin);
++#endif /*0*/
++
++    Tcl_Free((char*)esPtr->input.buffer);
++    Tcl_DecrRefCount (esPtr->input.newchars);
++
++    /* Actually file descriptor should have been closed earlier. */
++    /* So do nothing here */
++
++    /*
++     * Conceivably, the process may not yet have been waited for.  If this
++     * becomes a requirement, we'll have to revisit this code.  But for now, if
++     * it's just Tcl exiting, the processes will exit on their own soon
++     * anyway.
++     */
++
++    for (nextPtrPtr = &(tsdPtr->firstExpPtr); (*nextPtrPtr) != NULL;
++	 nextPtrPtr = &((*nextPtrPtr)->nextPtr)) {
++	if ((*nextPtrPtr) == esPtr) {
++	    (*nextPtrPtr) = esPtr->nextPtr;
++	    break;
++	}
++    }
++    tsdPtr->channelCount--;
++
++    if (esPtr->bg_status == blocked ||
++	    esPtr->bg_status == disarm_req_while_blocked) {
++	esPtr->freeWhenBgHandlerUnblocked = 1;
++	/*
++	 * If we're in the middle of a bg event handler, then the event
++	 * handler will have to take care of freeing esPtr.
++	 */
++    } else {
++	expStateFree(esPtr);
++    }
++    return 0;
++}
++/*ARGSUSED*/
++static int
++ExpClose2Proc(instanceData, interp)
++    ClientData instanceData;	/* Exp state. */
++    Tcl_Interp *interp;		/* For error reporting - unused. */
++{
++    ExpState *esPtr = (ExpState *) instanceData;
++    ExpState **nextPtrPtr;
++    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
++
++    esPtr->registered = FALSE;
++
+ #if 0
+     /*
+       Really should check that we created one first.  Since we're sharing fds
+diff --git a/exp_clib.c b/exp_clib.c
+index 8f31fc3..b39b207 100644
+--- a/exp_clib.c
++++ b/exp_clib.c
+@@ -8,6 +8,7 @@ would appreciate credit if this program or parts of it are used.
+ */
+ 
+ #include "expect_cf.h"
++#include "exp_command.h"
+ #include <stdio.h>
+ #include <unistd.h>
+ #include <setjmp.h>
+@@ -57,8 +58,30 @@ would appreciate credit if this program or parts of it are used.
+ 
+ #include <errno.h>
+ 
+-#ifdef NO_STDLIB_H
++#include <unistd.h>
++
+ 
++#if !defined(TCL_VARARGS)
++#  if defined(__STDC__) || defined(HAVE_STDARG_H)
++#   include <stdarg.h>
++#   define TCL_VARARGS(type, name) (type name, ...)
++#   define TCL_VARARGS_DEF(type, name) (type name, ...)
++#   define TCL_VARARGS_START(type, name, list) (va_start(list, name), name)
++#  else
++#   include <varargs.h>
++#   ifdef __cplusplus
++#	define TCL_VARARGS(type, name) (type name, ...)
++#	define TCL_VARARGS_DEF(type, name) (type va_alist, ...)
++#   else
++#	define TCL_VARARGS(type, name) ()
++#	define TCL_VARARGS_DEF(type, name) (va_alist)
++#   endif
++#   define TCL_VARARGS_START(type, name, list) \
++	(va_start(list), va_arg(list, type))
++#  endif /* use stdarg.h */
++#  endif /* use stdarg.h */
++
++#ifdef NO_STDLIB_H
+ /*
+  * Tcl's compat/stdlib.h
+  */
+@@ -85,25 +108,25 @@ would appreciate credit if this program or parts of it are used.
+ #ifndef _STDLIB
+ #define _STDLIB
+ 
+-extern void		abort _ANSI_ARGS_((void));
+-extern double		atof _ANSI_ARGS_((CONST char *string));
+-extern int		atoi _ANSI_ARGS_((CONST char *string));
+-extern long		atol _ANSI_ARGS_((CONST char *string));
+-extern char *		calloc _ANSI_ARGS_((unsigned int numElements,
+-			    unsigned int size));
+-extern void		exit _ANSI_ARGS_((int status));
+-extern int		free _ANSI_ARGS_((char *blockPtr));
+-extern char *		getenv _ANSI_ARGS_((CONST char *name));
+-extern char *		malloc _ANSI_ARGS_((unsigned int numBytes));
+-extern void		qsort _ANSI_ARGS_((VOID *base, int n, int size,
+-			    int (*compar)(CONST VOID *element1, CONST VOID
+-			    *element2)));
+-extern char *		realloc _ANSI_ARGS_((char *ptr, unsigned int numBytes));
+-extern double		strtod _ANSI_ARGS_((CONST char *string, char **endPtr));
+-extern long		strtol _ANSI_ARGS_((CONST char *string, char **endPtr,
+-			    int base));
+-extern unsigned long	strtoul _ANSI_ARGS_((CONST char *string,
+-			    char **endPtr, int base));
++extern void		abort (void);
++extern double		atof (const char *string);
++extern int		atoi (const char *string);
++extern long		atol (const char *string);
++extern char *		calloc (unsigned int numElements,
++			    unsigned int size);
++extern void		exit (int status);
++extern int		free (char *blockPtr);
++extern char *		getenv (const char *name);
++extern char *		malloc (unsigned int numBytes);
++extern void		qsort (VOID *base, int n, int size,
++			    int (*compar)(const VOID *element1, const VOID
++			    *element2);
++extern char *		realloc (char *ptr, unsigned int numBytes);
++extern double		strtod (const char *string, char **endPtr);
++extern long		strtol (const char *string, char **endPtr,
++			    int base);
++extern unsigned long	strtoul (const char *string,
++			    char **endPtr, int base);
+ 
+ #endif /* _STDLIB */
+ 
+@@ -328,26 +351,26 @@ static char regdummy;
+  * Forward declarations for TclRegComp()'s friends.
+  */
+ 
+-static char *		reg _ANSI_ARGS_((int paren, int *flagp,
+-			    struct regcomp_state *rcstate));
+-static char *		regatom _ANSI_ARGS_((int *flagp,
+-			    struct regcomp_state *rcstate));
+-static char *		regbranch _ANSI_ARGS_((int *flagp,
+-			    struct regcomp_state *rcstate));
+-static void		regc _ANSI_ARGS_((int b,
+-			    struct regcomp_state *rcstate));
+-static void		reginsert _ANSI_ARGS_((int op, char *opnd,
+-			    struct regcomp_state *rcstate));
+-static char *		regnext _ANSI_ARGS_((char *p));
+-static char *		regnode _ANSI_ARGS_((int op,
+-			    struct regcomp_state *rcstate));
+-static void 		regoptail _ANSI_ARGS_((char *p, char *val));
+-static char *		regpiece _ANSI_ARGS_((int *flagp,
+-			    struct regcomp_state *rcstate));
+-static void 		regtail _ANSI_ARGS_((char *p, char *val));
++static char *		reg (int paren, int *flagp,
++			    struct regcomp_state *rcstate);
++static char *		regatom (int *flagp,
++			    struct regcomp_state *rcstate);
++static char *		regbranch (int *flagp,
++			    struct regcomp_state *rcstate);
++static void		regc (int b,
++			    struct regcomp_state *rcstate);
++static void		reginsert (int op, char *opnd,
++			    struct regcomp_state *rcstate);
++static char *		regnext (char *p);
++static char *		regnode (int op,
++			    struct regcomp_state *rcstate);
++static void 		regoptail (char *p, char *val);
++static char *		regpiece (int *flagp,
++			    struct regcomp_state *rcstate);
++static void 		regtail (char *p, char *val);
+ 
+ #ifdef STRCSPN
+-static int strcspn _ANSI_ARGS_((char *s1, char *s2));
++static int strcspn (char *s1, char *s2);
+ #endif
+ 
+ /*
+@@ -877,17 +900,17 @@ struct regexec_state  {
+ /*
+  * Forwards.
+  */
+-static int 		regtry _ANSI_ARGS_((regexp *prog, char *string,
+-			    struct regexec_state *restate));
+-static int 		regmatch _ANSI_ARGS_((char *prog,
+-			    struct regexec_state *restate));
+-static int 		regrepeat _ANSI_ARGS_((char *p,
+-			    struct regexec_state *restate));
++static int 		regtry (regexp *prog, char *string,
++			    struct regexec_state *restate);
++static int 		regmatch (char *prog,
++			    struct regexec_state *restate);
++static int 		regrepeat (char *p,
++			    struct regexec_state *restate);
+ 
+ #ifdef DEBUG
+ int regnarrate = 0;
+-void regdump _ANSI_ARGS_((regexp *r));
+-static char *regprop _ANSI_ARGS_((char *op));
++void regdump (regexp *r);
++static char *regprop (char *op);
+ #endif
+ 
+ /*
+@@ -2236,7 +2259,7 @@ when trapping, see below in child half of fork */
+ /* returns fd of master side of pty */
+ /*VARARGS*/
+ int
+-exp_spawnl TCL_VARARGS_DEF(char *,arg1)
++exp_spawnl (char * arg1,...)
+ /*exp_spawnl(va_alist)*/
+ /*va_dcl*/
+ {
+@@ -2711,7 +2734,7 @@ struct exp_case *ecases;
+ 
+ /*VARARGS*/
+ int
+-exp_expectl TCL_VARARGS_DEF(int,arg1)
++exp_expectl (int arg1,...)
+ /*exp_expectl(va_alist)*/
+ /*va_dcl*/
+ {
+@@ -2776,7 +2799,7 @@ exp_expectl TCL_VARARGS_DEF(int,arg1)
+ }
+ 
+ int
+-exp_fexpectl TCL_VARARGS_DEF(FILE *,arg1)
++exp_fexpectl (FILE * arg1,...)
+ /*exp_fexpectl(va_alist)*/
+ /*va_dcl*/
+ {
+@@ -2904,7 +2927,7 @@ exp_disconnect()
+ /* use this function for recording unusual things in the log */
+ /*VARARGS*/
+ void
+-exp_debuglog TCL_VARARGS_DEF(char *,arg1)
++exp_debuglog (char * arg1,...)
+ {
+     char *fmt;
+     va_list args;
+diff --git a/exp_command.c b/exp_command.c
+index b554b18..395a42d 100644
+--- a/exp_command.c
++++ b/exp_command.c
+@@ -165,7 +165,8 @@ init_traps(RETSIGTYPE (*traps[])())
+ /* Do not terminate format strings with \n!!! */
+ /*VARARGS*/
+ void
+-exp_error TCL_VARARGS_DEF(Tcl_Interp *,arg1)
++/*exp_error TCL_VARARGS_DEF(Tcl_Interp *,arg1)*/
++exp_error (Tcl_Interp * arg1,...)
+ /*exp_error(va_alist)*/
+ /*va_dcl*/
+ {
+@@ -173,8 +174,9 @@ exp_error TCL_VARARGS_DEF(Tcl_Interp *,arg1)
+     char *fmt;
+     va_list args;
+     char buffer[2000];
+-
+-    interp = TCL_VARARGS_START(Tcl_Interp *,arg1,args);
++/* TCL_VARARGS_START(type, name, list) (va_start(list, name), name) */
++   /* interp = TCL_VARARGS_START(Tcl_Interp *,arg1,args); */
++    interp = (va_start(args, arg1), arg1);
+     fmt = va_arg(args,char *);
+     vsprintf(buffer,fmt,args);
+     Tcl_SetResult(interp,buffer,TCL_VOLATILE);
+@@ -224,7 +226,7 @@ expStateFromChannelName(
+ {
+     ExpState *esPtr;
+     Tcl_Channel channel;
+-    CONST char *chanName;
++    const char *chanName;
+ 
+     if (any) {
+ 	if (0 == strcmp(name,EXP_SPAWN_ID_ANY_LIT)) {
+@@ -576,7 +578,7 @@ Exp_SpawnObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     ExpState *esPtr = 0;
+     int slave;
+@@ -612,7 +614,7 @@ Exp_SpawnObjCmd(
+     char *chanName = 0;
+     int leaveopen = FALSE;
+     int rc, wc;
+-    CONST char *stty_init;
++    const char *stty_init;
+     int slave_write_ioctls = 1;
+     /* by default, slave will be write-ioctled this many times */
+     int slave_opens = 3;
+@@ -1371,7 +1373,7 @@ Exp_ExpPidObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     char *chanName = 0;
+     ExpState *esPtr = 0;
+@@ -1421,7 +1423,7 @@ Exp_GetpidDeprecatedObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     expDiagLog("getpid is deprecated, use pid\r\n");
+     Tcl_SetObjResult (interp, Tcl_NewIntObj (getpid()));
+@@ -1434,7 +1436,7 @@ Exp_SleepObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     double s;
+ 
+@@ -1466,7 +1468,7 @@ get_slow_args(
+     struct slow_arg *x)
+ {
+     int sc;		/* return from scanf */
+-    CONST char *s = exp_get_var(interp,"send_slow");
++    const char *s = exp_get_var(interp,"send_slow");
+     if (!s) {
+ 	exp_error(interp,"send -s: send_slow has no value");
+ 	return(-1);
+@@ -1537,7 +1539,7 @@ get_human_args(
+     struct human_arg *x)
+ {
+     int sc;		/* return from scanf */
+-    CONST char *s = exp_get_var(interp,"send_human");
++    const char *s = exp_get_var(interp,"send_human");
+ 
+     if (!s) {
+ 	exp_error(interp,"send -h: send_human has no value");
+@@ -1837,7 +1839,7 @@ exp_i_parse_states(
+ {
+     struct ExpState *esPtr;
+     char *p = i->value;
+-    int argc;
++    Tcl_Size argc;
+     char **argv;
+     int j;
+ 
+@@ -1917,7 +1919,7 @@ Exp_SendLogObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     static char* options[] = { "--", NULL };
+     enum options { LOG_QUOTE };
+@@ -1960,8 +1962,8 @@ static int
+ Exp_SendObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+-    int objc,
+-    Tcl_Obj *CONST objv[])
++    Tcl_Size objc,
++    Tcl_Obj *const objv[])
+ {
+     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+     ExpState *esPtr = 0;
+@@ -1977,7 +1979,7 @@ Exp_SendObjCmd(
+     int send_style = SEND_STYLE_PLAIN;
+     int want_cooked = TRUE;
+     char *string;		/* string to send */
+-    int len = -1;		/* length of string to send */
++    Tcl_Size len = -1;		/* length of string to send */
+     int zeros;		/* count of how many ascii zeros to send */
+ 
+     char *chanName = 0;
+@@ -2159,7 +2161,7 @@ Exp_LogFileObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     static char resultbuf[1000];
+     char *chanName = 0;
+@@ -2292,7 +2294,7 @@ Exp_LogUserObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int old_loguser = expLogUserGet();
+ 
+@@ -2324,7 +2326,7 @@ Exp_DebugObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int now = FALSE;	/* soon if FALSE, now if TRUE */
+     int exp_tcl_debugger_was_available = exp_tcl_debugger_available;
+@@ -2394,7 +2396,7 @@ Exp_ExpInternalObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int newChannel = FALSE;
+     Tcl_Channel oldChannel;
+@@ -2473,8 +2475,8 @@ static int
+ Exp_ExitObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+-    int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Size objc,
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int value = 0;
+ 
+@@ -2486,7 +2488,7 @@ Exp_ExitObjCmd(
+ 	    objc--;
+ 	    objv++;
+ 	    if (objc) {
+-		int len;
++		Tcl_Size len;
+ 		char* act = Tcl_GetStringFromObj (objv[0], &len);
+ 
+ 		if (exp_onexit_action)
+@@ -2530,12 +2532,12 @@ Exp_ConfigureObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])	/* Argument objects. */
++    Tcl_Obj *const objv[])	/* Argument objects. */
+ {
+     /* Magic configuration stuff. */
+     int i, opt, val;
+ 
+-    static CONST84 char* options [] = {
++    static const char* options [] = {
+ 	"-strictwrite", NULL
+     };
+     enum options {
+@@ -2571,7 +2573,7 @@ Exp_CloseObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[]) 	/* Argument objects. */
++    Tcl_Obj *const objv[]) 	/* Argument objects. */
+ {
+     int onexec_flag = FALSE;	/* true if -onexec seen */
+     int close_onexec;
+@@ -2682,10 +2684,10 @@ tcl_tracer(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int level,
+-    CONST char *command,
++    const char *command,
+     Tcl_Command cmdInfo,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int i;
+ 
+@@ -2709,7 +2711,7 @@ Exp_StraceObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     static int trace_level = 0;
+     static Tcl_Trace trace_handle;
+@@ -2863,7 +2865,7 @@ Exp_WaitObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     char *chanName = 0;
+     struct ExpState *esPtr;
+@@ -3076,7 +3078,7 @@ Exp_ForkObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int rc;
+     if (objc > 1) {
+@@ -3110,7 +3112,7 @@ Exp_DisconnectObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+     
+@@ -3220,7 +3222,7 @@ Exp_OverlayObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int newfd, oldfd;
+     int dash_name = 0;
+@@ -3311,7 +3313,7 @@ Exp_InterpreterObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     Tcl_Obj *eofObj = 0;
+     int i;
+@@ -3359,7 +3361,7 @@ Exp_ExpContinueObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     if (objc == 1) {
+ 	return EXP_CONTINUE;
+@@ -3379,7 +3381,7 @@ Exp_InterReturnObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])
++    Tcl_Obj *const objv[])
+ {
+     /* let Tcl's return command worry about args */
+     /* if successful (i.e., TCL_RETURN is returned) */
+@@ -3400,7 +3402,7 @@ Exp_OpenObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     ExpState *esPtr;
+     char *chanName = 0;
+diff --git a/exp_command.h b/exp_command.h
+index d30d911..2534636 100644
+--- a/exp_command.h
++++ b/exp_command.h
+@@ -27,21 +27,21 @@ would appreciate credit if this program or parts of it are used.
+ 
+ #define EXP_CHANNELNAMELEN (16 + TCL_INTEGER_SPACE)
+ 
+-EXTERN char *		exp_get_var _ANSI_ARGS_((Tcl_Interp *,char *));
++EXTERN char *		exp_get_var (Tcl_Interp *,char *);
+ 
+ EXTERN int exp_default_match_max;
+ EXTERN int exp_default_parity;
+ EXTERN int exp_default_rm_nulls;
+ EXTERN int exp_default_close_on_eof;
+ 
+-EXTERN int		exp_one_arg_braced _ANSI_ARGS_((Tcl_Obj *));
++EXTERN int		exp_one_arg_braced (Tcl_Obj *);
+ 
+-EXTERN Tcl_Obj*		exp_eval_with_one_arg _ANSI_ARGS_((ClientData,
+-				Tcl_Interp *, struct Tcl_Obj * CONST objv[]));
++EXTERN Tcl_Obj*		exp_eval_with_one_arg (ClientData,
++				Tcl_Interp *, struct Tcl_Obj * const objv[]);
+ 
+-EXTERN void		exp_lowmemcpy _ANSI_ARGS_((char *,char *,int));
++EXTERN void		exp_lowmemcpy (char *,char *,int);
+ 
+-EXTERN int exp_flageq_code _ANSI_ARGS_((char *,char *,int));
++EXTERN int exp_flageq_code (char *,char *,int);
+ 
+ #define exp_flageq(flag,string,minlen) \
+ (((string)[0] == (flag)[0]) && (exp_flageq_code(((flag)+1),((string)+1),((minlen)-1))))
+@@ -209,16 +209,16 @@ extern Tcl_ChannelType expChannelType;
+ #define EXP_DIRECT	1
+ #define EXP_INDIRECT	2
+ 
+-EXTERN void		expAdjust _ANSI_ARGS_((ExpState *));
+-EXTERN int		expWriteChars _ANSI_ARGS_((ExpState *,char *,int));
+-EXTERN int		expWriteCharsUni _ANSI_ARGS_((ExpState *,Tcl_UniChar *,int));
+-EXTERN void		exp_buffer_shuffle _ANSI_ARGS_((Tcl_Interp *,ExpState *,int,char *,char *));
+-EXTERN int		exp_close _ANSI_ARGS_((Tcl_Interp *,ExpState *));
+-EXTERN void		exp_close_all _ANSI_ARGS_((Tcl_Interp *));
++EXTERN void		expAdjust (ExpState *);
++EXTERN int		expWriteChars (ExpState *,char *,int);
++EXTERN int		expWriteCharsUni (ExpState *,Tcl_UniChar *,int);
++EXTERN void		exp_buffer_shuffle (Tcl_Interp *,ExpState *,int,char *,char *);
++EXTERN int		exp_close (Tcl_Interp *,ExpState *);
++EXTERN void		exp_close_all (Tcl_Interp *);
+ EXTERN void		exp_ecmd_remove_fd_direct_and_indirect 
+-				_ANSI_ARGS_((Tcl_Interp *,int));
+-EXTERN void		exp_trap_on _ANSI_ARGS_((int));
+-EXTERN int		exp_trap_off _ANSI_ARGS_((char *));
++				(Tcl_Interp *,int);
++EXTERN void		exp_trap_on (int);
++EXTERN int		exp_trap_off (char *);
+ 
+ EXTERN void		exp_strftime(char *format, const struct tm *timeptr,Tcl_DString *dstring);
+ 
+@@ -231,26 +231,26 @@ EXTERN int exp_configure_count;	/* # of times descriptors have been closed */
+ EXTERN int exp_nostack_dump;	/* TRUE if user has requested unrolling of */
+ 				/* stack with no trace */
+ 
+-EXTERN void		exp_init_pty _ANSI_ARGS_((void));
+-EXTERN void		exp_pty_exit _ANSI_ARGS_((void));
+-EXTERN void		exp_init_tty _ANSI_ARGS_((void));
+-EXTERN void		exp_init_stdio _ANSI_ARGS_((void));
+-/*EXTERN void		exp_init_expect _ANSI_ARGS_((Tcl_Interp *));*/
+-EXTERN void		exp_init_spawn_ids _ANSI_ARGS_((Tcl_Interp *));
+-EXTERN void		exp_init_spawn_id_vars _ANSI_ARGS_((Tcl_Interp *));
+-EXTERN void		exp_init_trap _ANSI_ARGS_((void));
+-EXTERN void		exp_init_send _ANSI_ARGS_((void));
+-EXTERN void		exp_init_unit_random _ANSI_ARGS_((void));
+-EXTERN void		exp_init_sig _ANSI_ARGS_((void));
+-EXTERN void		expChannelInit _ANSI_ARGS_((void));
+-EXTERN int		expChannelCountGet _ANSI_ARGS_((void));
+-EXTERN int              expChannelStillAlive _ANSI_ARGS_((ExpState *, char *));
+-
+-EXTERN int		exp_tcl2_returnvalue _ANSI_ARGS_((int));
+-EXTERN int		exp_2tcl_returnvalue _ANSI_ARGS_((int));
+-
+-EXTERN void		exp_rearm_sigchld _ANSI_ARGS_((Tcl_Interp *));
+-EXTERN int		exp_string_to_signal _ANSI_ARGS_((Tcl_Interp *,char *));
++EXTERN void		exp_init_pty (void);
++EXTERN void		exp_pty_exit (void);
++EXTERN void		exp_init_tty (void);
++EXTERN void		exp_init_stdio (void);
++/*EXTERN void		exp_init_expect (Tcl_Interp *));*/
++EXTERN void		exp_init_spawn_ids (Tcl_Interp *);
++EXTERN void		exp_init_spawn_id_vars (Tcl_Interp *);
++EXTERN void		exp_init_trap (void);
++EXTERN void		exp_init_send (void);
++EXTERN void		exp_init_unit_random (void);
++EXTERN void		exp_init_sig (void);
++EXTERN void		expChannelInit (void);
++EXTERN int		expChannelCountGet (void);
++EXTERN int              expChannelStillAlive (ExpState *, char *);
++
++EXTERN int		exp_tcl2_returnvalue (int);
++EXTERN int		exp_2tcl_returnvalue (int);
++
++EXTERN void		exp_rearm_sigchld (Tcl_Interp *);
++EXTERN int		exp_string_to_signal (Tcl_Interp *,char *);
+ 
+ EXTERN char *exp_onexit_action;
+ 
+@@ -286,16 +286,16 @@ struct exp_i {
+ 	struct exp_i *next;
+ };
+ 
+-EXTERN struct exp_i *	exp_new_i_complex _ANSI_ARGS_((Tcl_Interp *,
+-					char *, int, Tcl_VarTraceProc *));
+-EXTERN struct exp_i *	exp_new_i_simple _ANSI_ARGS_((ExpState *,int));
+-EXTERN struct exp_state_list *exp_new_state _ANSI_ARGS_((ExpState *));
+-EXTERN void		exp_free_i _ANSI_ARGS_((Tcl_Interp *,struct exp_i *,
+-					Tcl_VarTraceProc *));
+-EXTERN void		exp_free_state _ANSI_ARGS_((struct exp_state_list *));
+-EXTERN void		exp_free_state_single _ANSI_ARGS_((struct exp_state_list *));
+-EXTERN int		exp_i_update _ANSI_ARGS_((Tcl_Interp *,
+-					struct exp_i *));
++EXTERN struct exp_i *	exp_new_i_complex (Tcl_Interp *,
++					char *, int, Tcl_VarTraceProc *);
++EXTERN struct exp_i *	exp_new_i_simple (ExpState *,int);
++EXTERN struct exp_state_list *exp_new_state (ExpState *);
++EXTERN void		exp_free_i (Tcl_Interp *,struct exp_i *,
++					Tcl_VarTraceProc *);
++EXTERN void		exp_free_state (struct exp_state_list *);
++EXTERN void		exp_free_state_single (struct exp_state_list *);
++EXTERN int		exp_i_update (Tcl_Interp *,
++					struct exp_i *);
+ 
+ /*
+  * definitions for creating commands
+@@ -314,34 +314,34 @@ struct exp_cmd_data {
+ 	int 		flags;
+ };
+ 
+-EXTERN void		exp_create_commands _ANSI_ARGS_((Tcl_Interp *,
+-						struct exp_cmd_data *));
+-EXTERN void		exp_init_main_cmds _ANSI_ARGS_((Tcl_Interp *));
+-EXTERN void		exp_init_expect_cmds _ANSI_ARGS_((Tcl_Interp *));
+-EXTERN void		exp_init_most_cmds _ANSI_ARGS_((Tcl_Interp *));
+-EXTERN void		exp_init_trap_cmds _ANSI_ARGS_((Tcl_Interp *));
+-EXTERN void		exp_init_interact_cmds _ANSI_ARGS_((Tcl_Interp *));
++EXTERN void		exp_create_commands (Tcl_Interp *,
++						struct exp_cmd_data *);
++EXTERN void		exp_init_main_cmds (Tcl_Interp *);
++EXTERN void		exp_init_expect_cmds (Tcl_Interp *);
++EXTERN void		exp_init_most_cmds (Tcl_Interp *);
++EXTERN void		exp_init_trap_cmds (Tcl_Interp *);
++EXTERN void		exp_init_interact_cmds (Tcl_Interp *);
+ EXTERN void		exp_init_tty_cmds();
+ 
+-EXTERN ExpState *	expStateCheck _ANSI_ARGS_((Tcl_Interp *,ExpState *,int,int,char *));
+-EXTERN ExpState *       expStateCurrent _ANSI_ARGS_((Tcl_Interp *,int,int,int));
+-EXTERN ExpState *       expStateFromChannelName _ANSI_ARGS_((Tcl_Interp *,char *,int,int,int,char *));
+-EXTERN void		expStateFree _ANSI_ARGS_((ExpState *));
+-
+-EXTERN ExpState *	expCreateChannel _ANSI_ARGS_((Tcl_Interp *,int,int,int));
+-EXTERN ExpState *	expWaitOnAny _ANSI_ARGS_((void));
+-EXTERN ExpState *	expWaitOnOne _ANSI_ARGS_((void));
+-EXTERN void		expExpectVarsInit _ANSI_ARGS_((void));
+-EXTERN int		expStateAnyIs _ANSI_ARGS_((ExpState *));
+-EXTERN int		expDevttyIs _ANSI_ARGS_((ExpState *));
+-EXTERN int		expStdinoutIs _ANSI_ARGS_((ExpState *));
+-EXTERN ExpState *	expStdinoutGet _ANSI_ARGS_((void));
+-EXTERN ExpState *	expDevttyGet _ANSI_ARGS_((void));
++EXTERN ExpState *	expStateCheck (Tcl_Interp *,ExpState *,int,int,char *);
++EXTERN ExpState *       expStateCurrent (Tcl_Interp *,int,int,int);
++EXTERN ExpState *       expStateFromChannelName (Tcl_Interp *,char *,int,int,int,char *);
++EXTERN void		expStateFree (ExpState *);
++
++EXTERN ExpState *	expCreateChannel (Tcl_Interp *,int,int,int);
++EXTERN ExpState *	expWaitOnAny (void);
++EXTERN ExpState *	expWaitOnOne (void);
++EXTERN void		expExpectVarsInit (void);
++EXTERN int		expStateAnyIs (ExpState *);
++EXTERN int		expDevttyIs (ExpState *);
++EXTERN int		expStdinoutIs (ExpState *);
++EXTERN ExpState *	expStdinoutGet (void);
++EXTERN ExpState *	expDevttyGet (void);
+ 
+ /* generic functions that really should be provided by Tcl */
+ #if 0 /* Redefined as macros. */
+-EXTERN int		expSizeGet _ANSI_ARGS_((ExpState *));
+-EXTERN int		expSizeZero _ANSI_ARGS_((ExpState *));
++EXTERN int		expSizeGet (ExpState *);
++EXTERN int		expSizeZero (ExpState *);
+ #else
+ #define expSizeGet(esPtr)  ((esPtr)->input.use)
+ #define expSizeZero(esPtr) (((esPtr)->input.use) == 0)
+diff --git a/exp_event.h b/exp_event.h
+index 5eb7561..645208f 100644
+--- a/exp_event.h
++++ b/exp_event.h
+@@ -1,21 +1,21 @@
+ /* exp_event.h - event definitions */
+ 
+-int exp_get_next_event _ANSI_ARGS_((Tcl_Interp *,ExpState **, int, ExpState **, int, int));
+-int exp_get_next_event_info _ANSI_ARGS_((Tcl_Interp *, ExpState *));
+-int exp_dsleep _ANSI_ARGS_((Tcl_Interp *, double));
+-void exp_init_event _ANSI_ARGS_((void));
++int exp_get_next_event (Tcl_Interp *,ExpState **, int, ExpState **, int, int);
++int exp_get_next_event_info (Tcl_Interp *, ExpState *);
++int exp_dsleep (Tcl_Interp *, double);
++void exp_init_event (void);
+ 
+-extern void (*exp_event_exit) _ANSI_ARGS_((Tcl_Interp *));
++extern void (*exp_event_exit) (Tcl_Interp *);
+ 
+-void exp_event_disarm _ANSI_ARGS_((ExpState *,Tcl_FileProc *));
+-void exp_event_disarm_bg _ANSI_ARGS_((ExpState *));
+-void exp_event_disarm_fg _ANSI_ARGS_((ExpState *));
++void exp_event_disarm (ExpState *,Tcl_FileProc *);
++void exp_event_disarm_bg (ExpState *);
++void exp_event_disarm_fg (ExpState *);
+ 
+-void exp_arm_background_channelhandler _ANSI_ARGS_((ExpState *));
+-void exp_disarm_background_channelhandler _ANSI_ARGS_((ExpState *));
+-void exp_disarm_background_channelhandler_force _ANSI_ARGS_((ExpState *));
+-void exp_unblock_background_channelhandler _ANSI_ARGS_((ExpState *));
+-void exp_block_background_channelhandler _ANSI_ARGS_((ExpState *));
++void exp_arm_background_channelhandler (ExpState *);
++void exp_disarm_background_channelhandler (ExpState *);
++void exp_disarm_background_channelhandler_force (ExpState *);
++void exp_unblock_background_channelhandler (ExpState *);
++void exp_block_background_channelhandler (ExpState *);
+ 
+-void exp_background_channelhandler _ANSI_ARGS_((ClientData,int));
++void exp_background_channelhandler (ClientData,int);
+ 
+diff --git a/exp_glob.c b/exp_glob.c
+index 4e2282c..7f0a960 100644
+--- a/exp_glob.c
++++ b/exp_glob.c
+@@ -17,12 +17,12 @@ would appreciate credit if this program or parts of it are used.
+ 
+ /* Proper forward declaration of internal function */
+ static int
+-Exp_StringCaseMatch2 _ANSI_ARGS_((CONST Tcl_UniChar *string, /* String. */
+-				  CONST Tcl_UniChar *stop,   /* First char _after_ string */
+-				  CONST Tcl_UniChar *pattern,	 /* Pattern, which may contain
++Exp_StringCaseMatch2 (const Tcl_UniChar *string, /* String. */
++				  const Tcl_UniChar *stop,   /* First char _after_ string */
++				  const Tcl_UniChar *pattern,	 /* Pattern, which may contain
+ 								  * special characters. */
+-				  CONST Tcl_UniChar *pstop,   /* First char _after_ pattern */
+-				  int nocase));
++				  const Tcl_UniChar *pstop,   /* First char _after_ pattern */
++				  int nocase);
+ 
+ /* The following functions implement expect's glob-style string matching */
+ /* Exp_StringMatch allow's implements the unanchored front (or conversely */
+@@ -37,9 +37,9 @@ Exp_StringCaseMatch(string, strlen, pattern, plen, nocase, offset)		/* INTL */
+      int nocase;
+      int *offset;	/* offset in chars from beginning of string where pattern matches */
+ {
+-    CONST Tcl_UniChar *s;
+-    CONST Tcl_UniChar *stop = string + strlen;
+-    CONST Tcl_UniChar *pstop = pattern + plen;
++    const Tcl_UniChar *s;
++    const Tcl_UniChar *stop = string + strlen;
++    const Tcl_UniChar *pstop = pattern + plen;
+     int ssm, sm;	/* count of bytes matched or -1 */
+     int caret = FALSE;
+     int star = FALSE;
+@@ -124,16 +124,16 @@ Exp_StringCaseMatch(string, strlen, pattern, plen, nocase, offset)		/* INTL */
+ 
+ static int
+ Exp_StringCaseMatch2(string,stop,pattern,pstop,nocase)	/* INTL */
+-     register CONST Tcl_UniChar *string; /* String. */
+-     register CONST Tcl_UniChar *stop;   /* First char _after_ string */
+-     register CONST Tcl_UniChar *pattern;	 /* Pattern, which may contain
++     register const Tcl_UniChar *string; /* String. */
++     register const Tcl_UniChar *stop;   /* First char _after_ string */
++     register const Tcl_UniChar *pattern;	 /* Pattern, which may contain
+ 				 * special characters. */
+-     register CONST Tcl_UniChar *pstop;   /* First char _after_ pattern */
++     register const Tcl_UniChar *pstop;   /* First char _after_ pattern */
+     int nocase;
+ {
+     Tcl_UniChar ch1, ch2, p;
+     int match = 0;	/* # of bytes matched */
+-    CONST Tcl_UniChar *oldString;
++    const Tcl_UniChar *oldString;
+ 
+ #ifdef EXP_INTERNAL_TRACE_GLOB
+     expDiagLog("    ESCM2 pattern=\"");
+@@ -177,7 +177,7 @@ Exp_StringCaseMatch2(string,stop,pattern,pstop,nocase)	/* INTL */
+ 	 */
+ 	
+ 	if (*pattern == '*') {
+-	    CONST Tcl_UniChar *tail;
++	    const Tcl_UniChar *tail;
+ 
+ 	    /*
+ 	     * Skip all successive *'s in the pattern
+diff --git a/exp_int.h b/exp_int.h
+index a7cd496..ddcf1ae 100644
+--- a/exp_int.h
++++ b/exp_int.h
+@@ -21,14 +21,14 @@ would appreciate credit if this program or parts of it are used.
+ 
+ #include <errno.h>
+ 
+-void	exp_console_set     _ANSI_ARGS_((void));
+-void	expDiagLogPtrSet    _ANSI_ARGS_((void (*)_ANSI_ARGS_((char *))));
+-void	expDiagLogPtr       _ANSI_ARGS_((char *));
+-void	expDiagLogPtrX      _ANSI_ARGS_((char *,int));
+-void	expDiagLogPtrStr    _ANSI_ARGS_((char *,char *));
+-void	expDiagLogPtrStrStr _ANSI_ARGS_((char *,char *,char *));
+-void	expErrnoMsgSet      _ANSI_ARGS_((char * (*) _ANSI_ARGS_((int))));
+-char * expErrnoMsg    _ANSI_ARGS_((int));
++void	exp_console_set     (void);
++void	expDiagLogPtrSet    (void (*)(char *));
++void	expDiagLogPtr       (char *);
++void	expDiagLogPtrX      (char *,int);
++void	expDiagLogPtrStr    (char *,char *);
++void	expDiagLogPtrStrStr (char *,char *,char *);
++void	expErrnoMsgSet      (char * (*) (int));
++char * expErrnoMsg    (int);
+ 
+ #ifdef NO_STDLIB_H
+ #  include "../compat/stdlib.h"
+diff --git a/exp_inter.c b/exp_inter.c
+index 8802032..3c0180d 100644
+--- a/exp_inter.c
++++ b/exp_inter.c
+@@ -714,12 +714,12 @@ int
+ Exp_InteractObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+-    int objc,
+-    Tcl_Obj *CONST initial_objv[])		/* Argument objects. */
++    Tcl_Size objc,
++    Tcl_Obj *const initial_objv[])		/* Argument objects. */
+ {
+     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+ 
+-    Tcl_Obj *CONST *objv_copy;	/* original, for error messages */
++    Tcl_Obj *const *objv_copy;	/* original, for error messages */
+     Tcl_Obj **objv = (Tcl_Obj **) initial_objv;
+     char *string;
+     Tcl_UniChar *ustring;
+diff --git a/exp_log.c b/exp_log.c
+index b378641..9011c7b 100644
+--- a/exp_log.c
++++ b/exp_log.c
+@@ -46,7 +46,7 @@ static Tcl_ThreadDataKey dataKey;
+  */
+ static char bigbuf[2000];
+ 
+-static void expDiagWriteCharsUni _ANSI_ARGS_((Tcl_UniChar *str,int len));
++static void expDiagWriteCharsUni (Tcl_UniChar *str,int len);
+ 
+ /*
+  * Following this are several functions that log the conversation.  Some
+@@ -164,14 +164,14 @@ expLogInteractionU(esPtr,buf,buflen)
+ #define LOGUSER		(tsdPtr->logUser || force_stdout)
+ /*VARARGS*/
+ void
+-expStdoutLog TCL_VARARGS_DEF(int,arg1)
++expStdoutLog (int arg1,...)
+ {
+     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+     int force_stdout;
+     char *fmt;
+     va_list args;
+ 
+-    force_stdout = TCL_VARARGS_START(int,arg1,args);
++    force_stdout = (va_start(args, arg1), arg1);
+     fmt = va_arg(args,char *);
+ 
+     if ((!tsdPtr->logUser) && (!force_stdout) && (!tsdPtr->logAll)) return;
+@@ -214,14 +214,14 @@ int force_stdout;	/* override value of logUser */
+ /* use this function for error conditions */
+ /*VARARGS*/
+ void
+-expErrorLog TCL_VARARGS_DEF(char *,arg1)
++expErrorLog (char * arg1,...)
+ {
+     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+ 
+     char *fmt;
+     va_list args;
+ 
+-    fmt = TCL_VARARGS_START(char *,arg1,args);
++    fmt = (va_start(args, arg1), arg1);
+     (void) vsprintf(bigbuf,fmt,args);
+ 
+     expDiagWriteChars(bigbuf,-1);
+@@ -253,7 +253,7 @@ char *buf;
+ /* use this function for recording unusual things in the log */
+ /*VARARGS*/
+ void
+-expDiagLog TCL_VARARGS_DEF(char *,arg1)
++expDiagLog (char * arg1,...)
+ {
+     char *fmt;
+     va_list args;
+@@ -262,7 +262,7 @@ expDiagLog TCL_VARARGS_DEF(char *,arg1)
+ 
+     if ((tsdPtr->diagToStderr == 0) && (tsdPtr->diagChannel == 0)) return;
+ 
+-    fmt = TCL_VARARGS_START(char *,arg1,args);
++    fmt = (va_start(args, arg1), arg1);
+ 
+     (void) vsprintf(bigbuf,fmt,args);
+ 
+@@ -299,14 +299,14 @@ char *str;
+ 
+ /*VARARGS*/
+ void
+-expPrintf TCL_VARARGS_DEF(char *,arg1)
++expPrintf (char * arg1,...)
+ {
+   char *fmt;
+   va_list args;
+   char bigbuf[2000];
+   int len, rc;
+ 
+-  fmt = TCL_VARARGS_START(char *,arg1,args);
++  fmt = (va_start(args, arg1), arg1);
+   len = vsprintf(bigbuf,arg1,args);
+  retry:
+   rc = write(2,bigbuf,len);
+diff --git a/exp_log.h b/exp_log.h
+index ca78386..54932f3 100644
+--- a/exp_log.h
++++ b/exp_log.h
+@@ -1,47 +1,47 @@
+ /* exp_log.h */
+ 
+-extern void		expErrorLog _ANSI_ARGS_(TCL_VARARGS(char *,fmt));
+-extern void		expErrorLogU _ANSI_ARGS_((char *));
++extern void		expErrorLog (char *,...);
++extern void		expErrorLogU (char *);
+ 
+-extern void		expStdoutLog _ANSI_ARGS_(TCL_VARARGS(int,force_stdout));
+-extern void		expStdoutLogU _ANSI_ARGS_((char *buf, int force_stdout));
++extern void		expStdoutLog (int,...);
++extern void		expStdoutLogU (char *buf, int force_stdout);
+ 
+-EXTERN void		expDiagInit _ANSI_ARGS_((void));
+-EXTERN int		expDiagChannelOpen _ANSI_ARGS_((Tcl_Interp *,char *));
+-EXTERN Tcl_Channel	expDiagChannelGet _ANSI_ARGS_((void));
+-EXTERN void		expDiagChannelClose _ANSI_ARGS_((Tcl_Interp *));
+-EXTERN char *		expDiagFilename _ANSI_ARGS_((void));
+-EXTERN int		expDiagToStderrGet _ANSI_ARGS_((void));
+-EXTERN void		expDiagToStderrSet _ANSI_ARGS_((int));
+-EXTERN void		expDiagWriteBytes _ANSI_ARGS_((char *,int));
+-EXTERN void		expDiagWriteChars _ANSI_ARGS_((char *,int));
+-EXTERN void		expDiagWriteObj _ANSI_ARGS_((Tcl_Obj *));
+-EXTERN void		expDiagLog _ANSI_ARGS_(TCL_VARARGS(char *,fmt));
+-EXTERN void		expDiagLogU _ANSI_ARGS_((char *));
++EXTERN void		expDiagInit (void);
++EXTERN int		expDiagChannelOpen (Tcl_Interp *,char *);
++EXTERN Tcl_Channel	expDiagChannelGet (void);
++EXTERN void		expDiagChannelClose (Tcl_Interp *);
++EXTERN char *		expDiagFilename (void);
++EXTERN int		expDiagToStderrGet (void);
++EXTERN void		expDiagToStderrSet (int);
++EXTERN void		expDiagWriteBytes (char *,int);
++EXTERN void		expDiagWriteChars (char *,int);
++EXTERN void		expDiagWriteObj (Tcl_Obj *);
++EXTERN void		expDiagLog (char *,...);
++EXTERN void		expDiagLogU (char *);
+ 
+-EXTERN char *		expPrintify _ANSI_ARGS_((char *));
+-EXTERN char *		expPrintifyUni _ANSI_ARGS_((Tcl_UniChar *,int));
+-EXTERN char *		expPrintifyObj _ANSI_ARGS_((Tcl_Obj *));
+-EXTERN void		expPrintf _ANSI_ARGS_(TCL_VARARGS(char *,fmt));
++EXTERN char *		expPrintify (char *);
++EXTERN char *		expPrintifyUni (Tcl_UniChar *,int);
++EXTERN char *		expPrintifyObj (Tcl_Obj *);
++EXTERN void		expPrintf (char *,...);
+ 
+-EXTERN void		expLogInit _ANSI_ARGS_((void));
+-EXTERN int		expLogChannelOpen _ANSI_ARGS_((Tcl_Interp *,char *,int));
+-EXTERN Tcl_Channel 	expLogChannelGet _ANSI_ARGS_((void));
+-EXTERN int		expLogChannelSet _ANSI_ARGS_((Tcl_Interp *,char *));
+-EXTERN void		expLogChannelClose _ANSI_ARGS_((Tcl_Interp *));
+-EXTERN char *		expLogFilenameGet _ANSI_ARGS_((void));
+-EXTERN void		expLogAppendSet _ANSI_ARGS_((int));
+-EXTERN int		expLogAppendGet _ANSI_ARGS_((void));
+-EXTERN void		expLogLeaveOpenSet _ANSI_ARGS_((int));
+-EXTERN int		expLogLeaveOpenGet _ANSI_ARGS_((void));
+-EXTERN void		expLogAllSet _ANSI_ARGS_((int));
+-EXTERN int		expLogAllGet _ANSI_ARGS_((void));
+-EXTERN void		expLogToStdoutSet _ANSI_ARGS_((int));
+-EXTERN int		expLogToStdoutGet _ANSI_ARGS_((void));
+-EXTERN void		expLogDiagU _ANSI_ARGS_((char *));
+-EXTERN int		expWriteBytesAndLogIfTtyU _ANSI_ARGS_((ExpState *,Tcl_UniChar *,int));
++EXTERN void		expLogInit (void);
++EXTERN int		expLogChannelOpen (Tcl_Interp *,char *,int);
++EXTERN Tcl_Channel 	expLogChannelGet (void);
++EXTERN int		expLogChannelSet (Tcl_Interp *,char *);
++EXTERN void		expLogChannelClose (Tcl_Interp *);
++EXTERN char *		expLogFilenameGet (void);
++EXTERN void		expLogAppendSet (int);
++EXTERN int		expLogAppendGet (void);
++EXTERN void		expLogLeaveOpenSet (int);
++EXTERN int		expLogLeaveOpenGet (void);
++EXTERN void		expLogAllSet (int);
++EXTERN int		expLogAllGet (void);
++EXTERN void		expLogToStdoutSet (int);
++EXTERN int		expLogToStdoutGet (void);
++EXTERN void		expLogDiagU (char *);
++EXTERN int		expWriteBytesAndLogIfTtyU (ExpState *,Tcl_UniChar *,int);
+ 
+-EXTERN int		expLogUserGet _ANSI_ARGS_((void));
+-EXTERN void		expLogUserSet _ANSI_ARGS_((int));
++EXTERN int		expLogUserGet (void);
++EXTERN void		expLogUserSet (int);
+ 
+-EXTERN void		expLogInteractionU _ANSI_ARGS_((ExpState *,Tcl_UniChar *,int));
++EXTERN void		expLogInteractionU (ExpState *,Tcl_UniChar *,int);
+diff --git a/exp_main_sub.c b/exp_main_sub.c
+index f53b89e..a1a1944 100644
+--- a/exp_main_sub.c
++++ b/exp_main_sub.c
+@@ -75,6 +75,12 @@ int exp_getpid;
+ 
+ int exp_strict_write = 0;
+ 
++int
++exp_tty_cooked_echo(
++    Tcl_Interp *interp,
++    exp_tty *tty_old,
++    int *was_raw,
++    int *was_echo);
+ 
+ static void
+ usage(interp)
+@@ -167,7 +173,7 @@ Tcl_Interp *interp;
+        maintain our own static version */
+ 
+     static int nextid = 0;
+-    CONST char *nextidstr = Tcl_GetVar2(interp,"tcl::history","nextid",0);
++    const char *nextidstr = Tcl_GetVar2(interp,"tcl::history","nextid",0);
+     if (nextidstr) {
+ 	/* intentionally ignore failure */
+ 	(void) sscanf(nextidstr,"%d",&nextid);
+@@ -188,7 +194,7 @@ Exp_Prompt1ObjCmd(clientData, interp, objc, objv)
+ ClientData clientData;
+ Tcl_Interp *interp;
+ int objc;
+-Tcl_Obj *CONST objv[];		/* Argument objects. */
++Tcl_Obj *const objv[];		/* Argument objects. */
+ {
+     static char buffer[200];
+ 
+@@ -205,7 +211,7 @@ Exp_Prompt2ObjCmd(clientData, interp, objc, objv)
+ ClientData clientData;
+ Tcl_Interp *interp;
+ int objc;
+-Tcl_Obj *CONST objv[];
++Tcl_Obj *const objv[];
+ {
+     Tcl_SetResult(interp,prompt2_default,TCL_STATIC);
+     return(TCL_OK);
+@@ -441,7 +447,7 @@ Exp_ExpVersionObjCmd(clientData, interp, objc, objv)
+ ClientData clientData;
+ Tcl_Interp *interp;
+      int objc;
+-     Tcl_Obj *CONST objv[];		/* Argument objects. */
++     Tcl_Obj *const objv[];		/* Argument objects. */
+ {
+ 	int emajor, umajor;
+ 	char *user_version;	/* user-supplied version string */
+@@ -551,7 +557,7 @@ Tcl_Interp *interp;
+       return TCL_ERROR;
+     }
+ #else
+-    if (Tcl_InitStubs(interp, "8.1", 0) == NULL) {
++    if (Tcl_InitStubs(interp, "8.6-", 0) == NULL) {
+       return TCL_ERROR;
+     }
+ #endif
+@@ -824,7 +830,7 @@ char **argv;
+ 					exp_cmdfilename = 0;
+ 					expCloseOnExec(fileno(exp_cmdfile));
+ 				} else {
+-					CONST char *msg;
++					const char *msg;
+ 
+ 					if (errno == 0) {
+ 						msg = "could not read - odd file name?";
+diff --git a/exp_memmove.c b/exp_memmove.c
+index 324bc2d..dfebbcd 100644
+--- a/exp_memmove.c
++++ b/exp_memmove.c
+@@ -8,11 +8,11 @@
+ char *
+ memmove(dest,src,n)
+ VOID *dest;
+-CONST VOID *src;
++const VOID *src;
+ int n;
+ {
+ 	char *d;
+-	CONST char *s;
++	const char *s;
+ 
+ 	d = dest;
+ 	s = src;
+diff --git a/exp_poll.c b/exp_poll.c
+index 69324b0..145b10c 100644
+--- a/exp_poll.c
++++ b/exp_poll.c
+@@ -115,11 +115,11 @@ static int initialized = 0;
+  * Static routines defined in this file.
+  */
+ 
+-static void		InitNotifier _ANSI_ARGS_((void));
+-static void		NotifierExitHandler _ANSI_ARGS_((
+-			    ClientData clientData));
+-static int		FileHandlerEventProc _ANSI_ARGS_((Tcl_Event *evPtr,
+-			    int flags));
++static void		InitNotifier (void);
++static void		NotifierExitHandler (
++			    ClientData clientData);
++static int		FileHandlerEventProc (Tcl_Event *evPtr,
++			    int flags);
+ 
+ /*
+  *----------------------------------------------------------------------
+diff --git a/exp_pty.c b/exp_pty.c
+index 0970211..e5499ef 100644
+--- a/exp_pty.c
++++ b/exp_pty.c
+@@ -31,6 +31,9 @@ would appreciate credit if this program or parts of it are used.
+ # endif
+ #endif
+ 
++/* Needed for Mac */
++#include <termios.h>
++
+ #include <signal.h>
+ #include <setjmp.h>
+ #include <sys/file.h>
+@@ -302,11 +305,11 @@ exp_pty_lock(
+  * ones that call expDiagLog from the two different environments.
+  */
+ 
+-static void		(*expDiagLogPtrVal) _ANSI_ARGS_((char *));
++static void		(*expDiagLogPtrVal) (char *);
+ 
+ void
+ expDiagLogPtrSet(fn)
+-     void (*fn) _ANSI_ARGS_((char *));
++     void (*fn) (char *);
+ {
+   expDiagLogPtrVal = fn;
+ }
+@@ -351,7 +354,7 @@ expDiagLogPtrStrStr(fmt,str1,str2)
+   (*expDiagLogPtrVal)(buf);
+ }
+ 
+-static char *		(*expErrnoMsgVal) _ANSI_ARGS_((int));
++static char *		(*expErrnoMsgVal) (int);
+ 
+ char *
+ expErrnoMsg(errorNo)
+@@ -362,7 +365,7 @@ int errorNo;
+ 
+ void
+ expErrnoMsgSet(fn)
+-     char * (*fn) _ANSI_ARGS_((int));
++     char * (*fn) (int);
+ {
+   expErrnoMsgVal = fn;
+ }
+diff --git a/exp_pty.h b/exp_pty.h
+index 4ad73b1..a5c9417 100644
+--- a/exp_pty.h
++++ b/exp_pty.h
+@@ -14,6 +14,6 @@ int exp_pty_test(char *master_name, char *slave_name, char bank, char *num);
+ void exp_pty_unlock(void);
+ int exp_pty_lock(char bank, char *num);
+ int exp_getptymaster(void);
+-int exp_getptyslave(int ttycopy, int ttyinit, CONST char *stty_args);
++int exp_getptyslave(int ttycopy, int ttyinit, const char *stty_args);
+ 
+ extern char *exp_pty_slave_name;
+diff --git a/exp_rename.h b/exp_rename.h
+index 1815ad4..2f46d7b 100644
+--- a/exp_rename.h
++++ b/exp_rename.h
+@@ -9,3 +9,17 @@ Design and implementation of this program was paid for by U.S. tax
+ dollars.  Therefore it is public domain.  However, the author and NIST
+ would appreciate credit if this program or parts of it are used.  */
+ 
++/* Check, if Tcl version supports Tcl_Size,
++   which was introduced in Tcl 8.7 and 9.
++*/
++#ifndef TCL_SIZE_MAX
++    #include <limits.h>
++    #define TCL_SIZE_MAX INT_MAX
++
++    #ifndef Tcl_Size
++        typedef int Tcl_Size;
++    #endif
++
++    #define TCL_SIZE_MODIFIER ""
++    #define Tcl_GetSizeIntFromObj Tcl_GetIntFromObj
++#endif
+diff --git a/exp_trap.c b/exp_trap.c
+index 390e0e3..ea52242 100644
+--- a/exp_trap.c
++++ b/exp_trap.c
+@@ -47,7 +47,7 @@ static struct trap {
+ 				/* is processed */
+ 	int code;		/* return our new code instead of code */
+ 				/* available when signal is processed */
+-	CONST char *name;	/* name of signal */
++	const char *name;	/* name of signal */
+ 	int reserved;		/* if unavailable for trapping */
+ } traps[NSIG];
+ 
+@@ -63,7 +63,7 @@ static int got_sig;		/* this records the last signal received */
+ 
+ static Tcl_AsyncHandler async_handler;
+ 
+-static CONST char *
++static const char *
+ signal_to_string(sig)
+ int sig;
+ {
+@@ -277,7 +277,7 @@ Tcl_Interp *interp;
+ char *s;
+ {
+ 	int sig;
+-	CONST char *name;
++	const char *name;
+ 
+ 	/* try interpreting as an integer */
+ 	if (1 == sscanf(s,"%d",&sig)) {
+@@ -301,10 +301,10 @@ Exp_TrapObjCmd(clientData, interp, objc, objv)
+ ClientData clientData;
+ Tcl_Interp *interp;
+ int objc;
+-Tcl_Obj *CONST objv[];
++Tcl_Obj *const objv[];
+ {
+ 	char *action = 0;
+-	int n;		/* number of signals in list */
++	Tcl_Size n;		/* number of signals in list */
+ 	Tcl_Obj **list;	/* list of signals */
+ 	char *arg;
+ 	int len;	/* length of action */
+@@ -509,7 +509,7 @@ int oldcode;
+ 
+ 		if (eip) {
+ 		  /* odd that Tcl doesn't have a call that does all this at once */
+-		  int len;
++		  Tcl_Size len;
+ 		  char *s = Tcl_GetStringFromObj(eip,&len);
+ 		  Tcl_AddObjErrorInfo(interp,s,len);
+ 		  Tcl_DecrRefCount(eip);
+diff --git a/exp_tstamp.h b/exp_tstamp.h
+index 5cadc7d..3ecf441 100644
+--- a/exp_tstamp.h
++++ b/exp_tstamp.h
+@@ -1,2 +1,2 @@
+-EXTERN void		exp_timestamp _ANSI_ARGS_((Tcl_Interp *,time_t *,
+-				char *));
++EXTERN void		exp_timestamp (Tcl_Interp *,time_t *,
++				char *);
+diff --git a/exp_tty.c b/exp_tty.c
+index 3f22c90..664cdf0 100644
+--- a/exp_tty.c
++++ b/exp_tty.c
+@@ -18,6 +18,9 @@
+ #endif
+ #include <sys/types.h>
+ 
++/* Needed for Mac */
++#include <termios.h>
++
+ #ifdef HAVE_UNISTD_H
+ # include <unistd.h>
+ #endif
+@@ -37,6 +40,7 @@
+ #include "exp_command.h"
+ #include "exp_log.h"
+ #include "exp_win.h"
++#include "exp_event.h"
+ 
+ static int is_raw = FALSE;
+ static int is_noecho = FALSE;
+@@ -759,7 +763,7 @@ Exp_SystemCmd(
+ 			(char *) NULL);
+ 		abnormalExit = TRUE;
+ 	    } else if (WIFSIGNALED(waitStatus)) {
+-		CONST char *p;
++		const char *p;
+ 	
+ 		p = Tcl_SignalMsg((int) (WTERMSIG(waitStatus)));
+ 		Tcl_SetErrorCode(interp, "CHILDKILLED", msg1,
+@@ -768,7 +772,7 @@ Exp_SystemCmd(
+ 		Tcl_AppendResult(interp, "child killed: ", p, "\n",
+ 			(char *) NULL);
+ 	    } else if (WIFSTOPPED(waitStatus)) {
+-		CONST char *p;
++		const char *p;
+ 
+ 		p = Tcl_SignalMsg((int) (WSTOPSIG(waitStatus)));
+ 		Tcl_SetErrorCode(interp, "CHILDSUSP", msg1,
+diff --git a/exp_win.h b/exp_win.h
+index 8e77aea..0962858 100644
+--- a/exp_win.h
++++ b/exp_win.h
+@@ -11,12 +11,12 @@ would appreciate credit if you use this file or parts of it.
+ int exp_window_size_set();
+ int exp_window_size_get();
+ 
+-void  exp_win_rows_set    _ANSI_ARGS_ ((char* rows));
+-char* exp_win_rows_get    _ANSI_ARGS_ ((void));
+-void  exp_win_columns_set _ANSI_ARGS_ ((char* columns));
+-char* exp_win_columns_get _ANSI_ARGS_ ((void));
++void  exp_win_rows_set    (char* rows);
++char* exp_win_rows_get    (void);
++void  exp_win_columns_set (char* columns);
++char* exp_win_columns_get (void);
+ 
+-void  exp_win2_rows_set    _ANSI_ARGS_ ((int fd, char* rows));
+-char* exp_win2_rows_get    _ANSI_ARGS_ ((int fd));
+-void  exp_win2_columns_set _ANSI_ARGS_ ((int fd, char* columns));
+-char* exp_win2_columns_get _ANSI_ARGS_ ((int fd));
++void  exp_win2_rows_set    (int fd, char* rows);
++char* exp_win2_rows_get    (int fd);
++void  exp_win2_columns_set (int fd, char* columns);
++char* exp_win2_columns_get (int fd);
+diff --git a/expect.c b/expect.c
+index 86b4abf..06bcb08 100644
+--- a/expect.c
++++ b/expect.c
+@@ -55,9 +55,9 @@ int exp_default_close_on_eof =  TRUE;
+ #define EXPECT_TIMEOUT		"timeout"
+ #define EXPECT_OUT		"expect_out"
+ 
+-extern int Exp_StringCaseMatch _ANSI_ARGS_((Tcl_UniChar *string, int strlen,
++extern int Exp_StringCaseMatch (Tcl_UniChar *string, int strlen,
+ 					    Tcl_UniChar *pattern,int plen,
+-					    int nocase,int *offset));
++					    int nocase,int *offset);
+ 
+ typedef struct ThreadSpecificData {
+     int timeout;
+@@ -276,16 +276,16 @@ Tcl_Obj*
+ exp_eval_with_one_arg(
+     ClientData clientData,
+     Tcl_Interp *interp,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     Tcl_Obj* res = Tcl_NewListObj (1,objv);
+ 
+ #define NUM_STATIC_OBJS 20
+     Tcl_Token *tokenPtr;
+-    CONST char *p;
+-    CONST char *next;
++    const char *p;
++    const char *next;
+     int rc;
+-    int bytesLeft, numWords;
++    Tcl_Size bytesLeft, numWords;
+     Tcl_Parse parse;
+ 
+     /*
+@@ -324,9 +324,9 @@ exp_eval_with_one_arg(
+ 	    for (tokenPtr = parse.tokenPtr; numWords > 0;
+ 		 numWords--, tokenPtr += (tokenPtr->numComponents + 1)) {
+ 		/* FUTURE: Save token information, do substitution later */
++		Tcl_Obj* w = Tcl_EvalTokensStandard(interp, tokenPtr+1,
++			tokenPtr->numComponents); 
+ 
+-		Tcl_Obj* w = Tcl_EvalTokens(interp, tokenPtr+1,
+-			tokenPtr->numComponents);
+ 		/* w has refCount 1 here, if not NULL */
+ 		if (w == NULL) {
+ 		    Tcl_DecrRefCount (res);
+@@ -335,7 +335,7 @@ exp_eval_with_one_arg(
+ 
+ 		}
+ 		Tcl_ListObjAppendElement (interp, res, w);
+-		Tcl_DecrRefCount (w); /* Local reference goes away */
++		Tcl_DecrRefCount (w); 
+ 	    }
+ 	}
+ 
+@@ -409,7 +409,7 @@ parse_expect_args(
+     struct exp_cmd_descriptor *eg,
+     ExpState *default_esPtr,	/* suggested ExpState if called as expect_user or _tty */
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int i;
+     char *string;
+@@ -490,7 +490,7 @@ parse_expect_args(
+ 		{
+ 		    Tcl_Obj* g;
+ 		    Tcl_UniChar* str;
+-		    int strlen;
++		    Tcl_Size strlen;
+ 
+ 		    str = Tcl_GetUnicodeFromObj (objv[i], &strlen);
+ 		    g = exp_retoglob (str, strlen);
+@@ -852,7 +852,7 @@ eval_case_string(
+ 	expDiagLog("\"? ");
+ 
+ 	if (e->gate) {
+-	    int plen;
++	    Tcl_Size plen;
+ 	    Tcl_UniChar* pat = Tcl_GetUnicodeFromObj(e->gate,&plen);
+ 
+ 	    expDiagLog("Gate \"");
+@@ -915,7 +915,7 @@ eval_case_string(
+ 	expDiagLogU(expPrintify(Tcl_GetString(e->pat)));
+ 	expDiagLog("\"? ");
+ 	if (str) {
+-	    int plen;
++	    Tcl_Size plen;
+ 	    Tcl_UniChar* pat = Tcl_GetUnicodeFromObj(e->pat,&plen);
+ 
+ 	    match = Exp_StringCaseMatch(str,numchars, pat, plen,
+@@ -932,7 +932,7 @@ eval_case_string(
+ 	}
+ 	expDiagLogU(no);
+     } else if (e->use == PAT_EXACT) {
+-	int patLength;
++	Tcl_Size patLength;
+ 	char *pat = Tcl_GetStringFromObj(e->pat, &patLength);
+ 	Tcl_UniChar *p;
+ 
+@@ -958,7 +958,7 @@ eval_case_string(
+ 	    return(EXP_MATCH);
+ 	} else expDiagLogU(no);
+     } else if (e->use == PAT_NULL) {
+-	CONST Tcl_UniChar *p;
++	const Tcl_UniChar *p;
+ 	expDiagLogU("null? ");
+ 	p = string_first_char (str, 0); /* NEW function in this file, see above */
+ 
+@@ -1297,7 +1297,7 @@ expect_info(
+     Tcl_Interp *interp,
+     struct exp_cmd_descriptor *ecmd,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     struct exp_i *exp_i;
+     int i;
+@@ -1384,8 +1384,8 @@ int
+ Exp_ExpectGlobalObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+-    int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Size objc,
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int result = TCL_OK;
+     struct exp_i *exp_i, **eip;
+@@ -2058,7 +2058,7 @@ static int
+ get_timeout(Tcl_Interp *interp)
+ {
+     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+-    CONST char *t;
++    const char *t;
+ 
+     if (NULL != (t = exp_get_var(interp,EXPECT_TIMEOUT))) {
+ 	tsdPtr->timeout = atoi(t);
+@@ -2525,8 +2525,8 @@ int
+ Exp_ExpectObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+-    int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Size objc,
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int cc;			/* number of chars returned in a single read */
+ 				/* or negative EXP_whatever */
+@@ -2783,7 +2783,7 @@ Exp_TimestampObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+ 	char *format = 0;
+ 	time_t seconds = -1;
+@@ -2869,23 +2869,23 @@ Exp_TimestampObjCmd(
+  */
+ 
+ static int
+-process_di _ANSI_ARGS_ ((Tcl_Interp* interp,
++process_di (Tcl_Interp* interp,
+ 			 int objc,
+-			 Tcl_Obj *CONST objv[],		/* Argument objects. */
++			 Tcl_Obj *const objv[],		/* Argument objects. */
+ 			 int* at,
+ 			 int* Default,
+ 			 ExpState **esOut,
+-			 CONST char* cmd));
++			 const char* cmd);
+ 
+ static int
+ process_di (
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[],		/* Argument objects. */
++    Tcl_Obj *const objv[],		/* Argument objects. */
+     int* at,
+     int* Default,
+     ExpState **esOut,
+-    CONST char* cmd)
++    const char* cmd)
+ {
+     static char* options[] = {
+ 	"-d",
+@@ -2963,7 +2963,7 @@ Exp_MatchMaxObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int size = -1;
+     ExpState *esPtr = 0;
+@@ -3009,7 +3009,7 @@ Exp_RemoveNullsObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int value = -1;
+     ExpState *esPtr = 0;
+@@ -3053,7 +3053,7 @@ Exp_ParityObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int parity;
+     ExpState *esPtr = 0;
+@@ -3092,7 +3092,7 @@ Exp_CloseOnEofObjCmd(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+     int close_on_eof;
+     ExpState *esPtr = 0;
+@@ -3192,7 +3192,7 @@ cmdX(
+     ClientData clientData,
+     Tcl_Interp *interp,
+     int objc,
+-    Tcl_Obj *CONST objv[])		/* Argument objects. */
++    Tcl_Obj *const objv[])		/* Argument objects. */
+ {
+ 	exp_cmds_print();
+ 	return TCL_OK;
+diff --git a/expect.h b/expect.h
+index e5e29e3..f2d64f9 100644
+--- a/expect.h
++++ b/expect.h
+@@ -318,11 +318,11 @@ typedef struct regexp {
+ 	char program[1];	/* Unwarranted chumminess with compiler. */
+ } regexp;
+ 
+-EXTERN regexp *TclRegComp _ANSI_ARGS_((char *exp));
+-EXTERN int TclRegExec _ANSI_ARGS_((regexp *prog, char *string, char *start));
+-EXTERN void TclRegSub _ANSI_ARGS_((regexp *prog, char *source, char *dest));
+-EXTERN void exp_TclRegError _ANSI_ARGS_((char *msg));
+-EXTERN char *TclGetRegError _ANSI_ARGS_((void));
++EXTERN regexp *TclRegComp (char *exp);
++EXTERN int TclRegExec (regexp *prog, char *string, char *start);
++EXTERN void TclRegSub (regexp *prog, char *source, char *dest);
++EXTERN void exp_TclRegError (char *msg);
++EXTERN char *TclGetRegError (void);
+ 
+ # undef TCL_STORAGE_CLASS
+ # define TCL_STORAGE_CLASS DLLIMPORT
+@@ -392,27 +392,27 @@ EXTERN int exp_is_debugging;
+ EXTERN int exp_loguser;
+ 
+ EXTERN void (*exp_close_in_child)();	/* procedure to close files in child */
+-EXTERN void exp_slave_control _ANSI_ARGS_((int,int));
++EXTERN void exp_slave_control (int,int);
+ EXTERN int exp_logfile_all;
+ EXTERN FILE *exp_debugfile;
+ EXTERN FILE *exp_logfile;
+-extern void exp_debuglog _ANSI_ARGS_(TCL_VARARGS(char *,fmt));
+-extern void exp_errorlog _ANSI_ARGS_(TCL_VARARGS(char *,fmt));
++extern void exp_debuglog (char * fmt,...);
++extern void exp_errorlog (char * fmt,...);
+ 
+-EXTERN int exp_disconnect _ANSI_ARGS_((void));
+-EXTERN FILE *exp_popen	_ANSI_ARGS_((char *command));
+-EXTERN void (*exp_child_exec_prelude) _ANSI_ARGS_((void));
++EXTERN int exp_disconnect (void);
++EXTERN FILE *exp_popen	(char *command);
++EXTERN void (*exp_child_exec_prelude) (void);
+ 
+ #ifndef EXP_DEFINE_FNS
+-EXTERN int exp_spawnl	_ANSI_ARGS_(TCL_VARARGS(char *,file));
+-EXTERN int exp_expectl	_ANSI_ARGS_(TCL_VARARGS(int,fd));
+-EXTERN int exp_fexpectl	_ANSI_ARGS_(TCL_VARARGS(FILE *,fp));
++EXTERN int exp_spawnl	(char * file,...);
++EXTERN int exp_expectl	(int fd,...);
++EXTERN int exp_fexpectl	(FILE * fp,...);
+ #endif
+ 
+-EXTERN int exp_spawnv	_ANSI_ARGS_((char *file, char *argv[]));
+-EXTERN int exp_expectv	_ANSI_ARGS_((int fd, struct exp_case *cases));
+-EXTERN int exp_fexpectv	_ANSI_ARGS_((FILE *fp, struct exp_case *cases));
++EXTERN int exp_spawnv	(char *file, char *argv[]);
++EXTERN int exp_expectv	(int fd, struct exp_case *cases);
++EXTERN int exp_fexpectv	(FILE *fp, struct exp_case *cases);
+ 
+-EXTERN int exp_spawnfd	_ANSI_ARGS_((int fd));
++EXTERN int exp_spawnfd	(int fd);
+ 
+ #endif /* _EXPECT_H */
+diff --git a/expect_tcl.h b/expect_tcl.h
+index 0fa5a99..ea7b484 100644
+--- a/expect_tcl.h
++++ b/expect_tcl.h
+@@ -37,21 +37,21 @@ EXTERN int exp_tcl_debugger_available;
+ EXTERN Tcl_Interp *exp_interp;
+ 
+ #define Exp_Init Expect_Init
+-EXTERN int	Expect_Init _ANSI_ARGS_((Tcl_Interp *));	/* for Tcl_AppInit apps */
+-EXTERN void	exp_parse_argv _ANSI_ARGS_((Tcl_Interp *,int argc,char **argv));
+-EXTERN int	exp_interpreter _ANSI_ARGS_((Tcl_Interp *,Tcl_Obj *));
+-EXTERN int	exp_interpret_cmdfile _ANSI_ARGS_((Tcl_Interp *,FILE *));
+-EXTERN int	exp_interpret_cmdfilename _ANSI_ARGS_((Tcl_Interp *,char *));
+-EXTERN void	exp_interpret_rcfiles _ANSI_ARGS_((Tcl_Interp *,int my_rc,int sys_rc));
++EXTERN int	Expect_Init (Tcl_Interp *);	/* for Tcl_AppInit apps */
++EXTERN void	exp_parse_argv (Tcl_Interp *,int argc,char **argv);
++EXTERN int	exp_interpreter (Tcl_Interp *,Tcl_Obj *);
++EXTERN int	exp_interpret_cmdfile (Tcl_Interp *,FILE *);
++EXTERN int	exp_interpret_cmdfilename (Tcl_Interp *,char *);
++EXTERN void	exp_interpret_rcfiles (Tcl_Interp *,int my_rc,int sys_rc);
+ 
+-EXTERN char *	exp_cook _ANSI_ARGS_((char *s,int *len));
++EXTERN char *	exp_cook (char *s,int *len);
+ 
+-EXTERN void	expCloseOnExec _ANSI_ARGS_((int));
++EXTERN void	expCloseOnExec (int);
+ 
+ 			/* app-specific exit handler */
+-EXTERN void	(*exp_app_exit)_ANSI_ARGS_((Tcl_Interp *));
+-EXTERN void	exp_exit_handlers _ANSI_ARGS_((ClientData));
++EXTERN void	(*exp_app_exit)(Tcl_Interp *);
++EXTERN void	exp_exit_handlers (ClientData);
+ 
+-EXTERN void	exp_error _ANSI_ARGS_(TCL_VARARGS(Tcl_Interp *,interp));
++EXTERN void	exp_error (Tcl_Interp * interp,...);
+ 
+ #endif /* _EXPECT_TCL_H */
+diff --git a/pty_sgttyb.c b/pty_sgttyb.c
+index 8389eef..93d0cb5 100644
+--- a/pty_sgttyb.c
++++ b/pty_sgttyb.c
+@@ -9,6 +9,8 @@ would appreciate credit if this program or parts of it are used.
+ */
+ 
+ #include <stdio.h>		/* tmp for debugging */
++#include <stdlib.h>
++#include <string.h>
+ #include <signal.h>
+ 
+ #if defined(SIGCLD) && !defined(SIGCHLD)
+@@ -21,6 +23,7 @@ would appreciate credit if this program or parts of it are used.
+ #include <sys/file.h>
+ #include <signal.h>
+ #include <setjmp.h>
++#include "tcl.h"
+ #include "expect_cf.h"
+ #include "exp_rename.h"
+ #include "exp_tty_in.h"
+diff --git a/pty_termios.c b/pty_termios.c
+index 80ed5e7..e902ee3 100644
+--- a/pty_termios.c
++++ b/pty_termios.c
+@@ -637,7 +637,7 @@ int
+ exp_getptyslave(
+     int ttycopy,
+     int ttyinit,
+-    CONST char *stty_args)
++    const char *stty_args)
+ {
+ 	int slave, slave2;
+ 	char buf[10240];
+diff --git a/retoglob.c b/retoglob.c
+index 521d0ae..1e2f86e 100644
+--- a/retoglob.c
++++ b/retoglob.c
+@@ -8,34 +8,34 @@
+ #define DEBUG 0
+ 
+ static void
+-ExpChopNested _ANSI_ARGS_ ((Tcl_UniChar** xstr,
++ExpChopNested (Tcl_UniChar** xstr,
+ 			    int*          xstrlen,
+ 			    Tcl_UniChar   open,
+-			    Tcl_UniChar   close));
++			    Tcl_UniChar   close);
+ 
+ static Tcl_UniChar*
+-ExpLiteral _ANSI_ARGS_ ((Tcl_UniChar* nexto,
++ExpLiteral (Tcl_UniChar* nexto,
+ 			 Tcl_UniChar* str,
+-			 int          strlen));
++			 int          strlen);
+ 
+ static Tcl_UniChar*
+-ExpCollapseStar _ANSI_ARGS_ ((Tcl_UniChar* src,
+-			      Tcl_UniChar* last));
++ExpCollapseStar (Tcl_UniChar* src,
++			      Tcl_UniChar* last);
+ static Tcl_UniChar*
+-ExpCollapseQForward _ANSI_ARGS_ ((Tcl_UniChar* src,
+-				  Tcl_UniChar* last));
++ExpCollapseQForward (Tcl_UniChar* src,
++				  Tcl_UniChar* last);
+ 
+ static Tcl_UniChar*
+-ExpCollapseQBack _ANSI_ARGS_ ((Tcl_UniChar* src,
+-			       Tcl_UniChar* last));
++ExpCollapseQBack (Tcl_UniChar* src,
++			       Tcl_UniChar* last);
+ 
+ static Tcl_UniChar
+-ExpBackslash _ANSI_ARGS_ ((char prefix,
++ExpBackslash (char prefix,
+ 			 Tcl_UniChar* str,
+-			 int          strlen));
++			 int          strlen);
+ 
+ static int
+-ExpCountStar _ANSI_ARGS_ ((Tcl_UniChar* src, Tcl_UniChar* last));
++ExpCountStar (Tcl_UniChar* src, Tcl_UniChar* last);
+ 
+ 
+ static char*
+@@ -100,7 +100,7 @@ exp_retoglob (
+ #define CHOPC(c) {while (*str != (c) && strlen) CHOP(1) ;}
+ #define EMIT(c)  {lastsz = 1; *nexto++ = (c);}
+ #define EMITX(c) {lastsz++;   *nexto++ = (c);}
+-#define MATCH(lit) ((strlen >= (sizeof (lit)/sizeof (Tcl_UniChar))) && (0 == Tcl_UniCharNcmp (str,(lit),sizeof(lit)/sizeof (Tcl_UniChar))))
++#define MATCH(lit) ((strlen >= (sizeof (lit)/sizeof (Tcl_UniChar))) && (0 == Tcl_UtfNcmp (str,(lit),sizeof(lit)/sizeof (Tcl_UniChar))))
+ #define MATCHC(c) (strlen && (*str == (c)))
+ #define PUSHPAREN {*nextp++ = nexto;}
+ #define UNEMIT {nexto -= lastsz; lastsz = -1;}
+diff --git a/tcldbg.h b/tcldbg.h
+index 8f9cb9a..cd90d5a 100644
+--- a/tcldbg.h
++++ b/tcldbg.h
+@@ -14,14 +14,29 @@ would appreciate credit if this program or parts of it are used.
+ 
+ #include "tcl.h"
+ 
+-typedef int (Dbg_InterProc) _ANSI_ARGS_((Tcl_Interp *interp, ClientData data));
+-typedef int (Dbg_IgnoreFuncsProc) _ANSI_ARGS_((
++/* Check, if Tcl version supports Tcl_Size,
++   which was introduced in Tcl 8.7 and 9.
++*/
++#ifndef TCL_SIZE_MAX
++    #include <limits.h>
++    #define TCL_SIZE_MAX INT_MAX
++
++    #ifndef Tcl_Size
++        typedef int Tcl_Size;
++    #endif
++
++    #define TCL_SIZE_MODIFIER ""
++    #define Tcl_GetSizeIntFromObj Tcl_GetIntFromObj
++#endif
++
++typedef int (Dbg_InterProc) (Tcl_Interp *interp, ClientData data);
++typedef int (Dbg_IgnoreFuncsProc) (
+ 			Tcl_Interp *interp,
+-			char *funcname));
+-typedef void (Dbg_OutputProc) _ANSI_ARGS_((
++			char *funcname);
++typedef void (Dbg_OutputProc) (
+ 			Tcl_Interp *interp,
+ 			char *output,
+-			ClientData data));
++			ClientData data);
+ 
+ typedef struct {
+   Dbg_InterProc *func;
+@@ -37,26 +52,26 @@ EXTERN char *Dbg_VarName;
+ EXTERN char *Dbg_DefaultCmdName;
+ 
+ /* trivial interface, creates a "debug" command in your interp */
+-EXTERN int Tcldbg_Init _ANSI_ARGS_((Tcl_Interp *));
+-
+-EXTERN void Dbg_On _ANSI_ARGS_((Tcl_Interp *interp,
+-					int immediate));
+-EXTERN void Dbg_Off _ANSI_ARGS_((Tcl_Interp *interp));
+-EXTERN char **Dbg_ArgcArgv _ANSI_ARGS_((int argc,char *argv[],
+-					int copy));
+-EXTERN int Dbg_Active _ANSI_ARGS_((Tcl_Interp *interp));
+-EXTERN Dbg_InterStruct Dbg_Interactor _ANSI_ARGS_((
++EXTERN int Tcldbg_Init (Tcl_Interp *);
++
++EXTERN void Dbg_On (Tcl_Interp *interp,
++					int immediate);
++EXTERN void Dbg_Off (Tcl_Interp *interp);
++EXTERN char **Dbg_ArgcArgv (int argc,char *argv[],
++					int copy);
++EXTERN int Dbg_Active (Tcl_Interp *interp);
++EXTERN Dbg_InterStruct Dbg_Interactor (
+ 					Tcl_Interp *interp,
+ 					Dbg_InterProc *interactor,
+-					ClientData data));
+-EXTERN Dbg_IgnoreFuncsProc *Dbg_IgnoreFuncs _ANSI_ARGS_((
++					ClientData data);
++EXTERN Dbg_IgnoreFuncsProc *Dbg_IgnoreFuncs (
+ 					Tcl_Interp *interp,
+-					Dbg_IgnoreFuncsProc *));
+-EXTERN Dbg_OutputStruct Dbg_Output _ANSI_ARGS_((
++					Dbg_IgnoreFuncsProc *);
++EXTERN Dbg_OutputStruct Dbg_Output (
+ 					Tcl_Interp *interp,
+ 					Dbg_OutputProc *,
+-					ClientData data));
++					ClientData data);
+ 
+-EXTERN void Dbg_StdinMode _ANSI_ARGS_((int mode));
++EXTERN void Dbg_StdinMode (int mode);
+ 
+ #endif /* _NIST_DBG */

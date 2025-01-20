@@ -19,14 +19,6 @@ diff --git a/exp_chan.c b/exp_chan.c
 index 79f486c..50375d3 100644
 --- a/exp_chan.c
 +++ b/exp_chan.c
-@@ -35,6 +35,7 @@
- #include "exp_prog.h"
- #include "exp_command.h"
- #include "exp_log.h"
-+#include "exp_event.h" /* exp_background_channelhandler */
- #include "tcldbg.h" /* Dbg_StdinMode */
- 
- extern int		expSetBlockModeProc _ANSI_ARGS_((int fd, int mode));
 @@ -631,7 +632,7 @@ expWaitOnOne() {
  }
  
@@ -101,13 +93,3 @@ index c605b23..80ed5e7 100644
  #include <stdio.h>
  #include <signal.h>
  
-@@ -15,6 +16,9 @@ would appreciate credit if you use this file or parts of it.
- #endif
- 
- #include "expect_cf.h"
-+#include "tclInt.h"
-+
-+extern char * expErrnoMsg    _ANSI_ARGS_((int));
- 
- /*
-    The following functions are linked from the Tcl library.  They
