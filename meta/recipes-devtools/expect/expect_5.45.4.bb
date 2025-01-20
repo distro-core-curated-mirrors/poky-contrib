@@ -13,8 +13,8 @@ SECTION = "devel"
 
 LIC_FILES_CHKSUM = "file://license.terms;md5=fbf2de7e9102505b1439db06fc36ce5c"
 
-DEPENDS += "tcl8"
-RDEPENDS:${PN} = "tcl8"
+DEPENDS += "tcl"
+RDEPENDS:${PN} = "tcl"
 
 inherit autotools update-alternatives ptest
 
@@ -23,14 +23,12 @@ SRC_URI = "${SOURCEFORGE_MIRROR}/expect/Expect/${PV}/${BPN}${PV}.tar.gz \
            file://0002-tcl.m4.patch \
            file://0001-expect-install-scripts-without-using-the-fixline1-tc.patch \
            file://0001-Resolve-string-formatting-issues.patch \
-           file://0001-expect-Fix-segfaults-if-Tcl-is-built-with-stubs-and-.patch \
            file://0001-exp_main_sub.c-Use-PATH_MAX-for-path.patch \
            file://0001-fixline1-fix-line-1.patch \
            file://0001-Add-prototype-to-function-definitions.patch \
            file://expect-configure-c99.patch \
-           file://tcl840.patch \
            file://run-ptest \
-           file://0001-Replace-tclsh-with-tclsh8-in-the-scripts-used-in-the.patch \
+           file://0001-expect-port-to-tcl-9.x.patch \
            "
 SRC_URI[sha256sum] = "49a7da83b0bdd9f46d04a04deec19c7767bb9a323e40c4781f89caf760b92c34"
 
@@ -40,6 +38,7 @@ UPSTREAM_CHECK_REGEX = "/Expect/(?P<pver>(\d+[\.\-_]*)+)/"
 S = "${UNPACKDIR}/${BPN}${PV}"
 
 EXTRA_AUTORECONF += "--exclude=aclocal"
+CFLAGS += "-fpermissive"
 
 CFLAGS += "-std=gnu17"
 
@@ -54,9 +53,9 @@ do_install_ptest() {
     cp -r ${S}/tests ${D}${PTEST_PATH}
 }
 
-# Apparently the public Tcl headers are only in /usr/include/tcl8.6
+# Apparently the public Tcl headers are only in /usr/include/tcl9.0
 # when building for the target and nativesdk.
-TCL_INCLUDE_PATH = "--with-tclinclude=${STAGING_INCDIR}/tcl8.6"
+TCL_INCLUDE_PATH = "--with-tclinclude=${STAGING_INCDIR}/tcl9.0"
 TCL_INCLUDE_PATH:class-native = ""
 
 EXTRA_OECONF += "--with-tcl=${STAGING_LIBDIR} \
