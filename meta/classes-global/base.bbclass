@@ -372,6 +372,7 @@ base_do_compile() {
 	else
 		bbnote "nothing to compile changed"
                 bbnode "Testing replication"
+                bbnode "Testing replication"
 	fi
 }
 
