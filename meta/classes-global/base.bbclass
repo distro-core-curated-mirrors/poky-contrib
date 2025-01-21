@@ -371,7 +371,7 @@ base_do_compile() {
 		oe_runmake || die "make failed"
 	else
 		bbnote "nothing to compile changed"
-
+                bbnode "Testing replication"
 	fi
 }
 
