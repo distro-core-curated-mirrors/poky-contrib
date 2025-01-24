@@ -373,6 +373,7 @@ base_do_compile() {
 		bbnote "nothing to compile changed"
                 bbnode "Testing replication"
                 bbnode "Testing replication"
+                bbnode "Testing replication Jan 24"
 	fi
 }
 
