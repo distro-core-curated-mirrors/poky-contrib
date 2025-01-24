@@ -371,7 +371,7 @@ def testimage_main(d):
             pass
         results = tc.runTests()
         complete = True
-        if oe.types.boolean(d.getVar('TESTIMAGE_RUN_FAILURE_POST_ACTIONS')) and results.hasAnyFailingTest():
+        if True: # or oe.types.boolean(d.getVar('TESTIMAGE_RUN_FAILURE_POST_ACTIONS')) and results.hasAnyFailingTest():
             run_failed_tests_post_actions(d, tc)
     except (KeyboardInterrupt, BlockingIOError, RuntimeError) as err:
         if isinstance(err, KeyboardInterrupt):
