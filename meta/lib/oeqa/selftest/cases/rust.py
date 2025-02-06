@@ -64,6 +64,7 @@ class RustSelfTestSystemEmulated(OESelftestTestCase, OEPTestResultTestCase):
                             'src/doc/rustc',
                             'src/doc/rustdoc',
                             'src/doc/unstable-book',
+                            'src/etc/test-float-parse',
                             'src/librustdoc',
                             'src/rustdoc-json-types',
                             'src/tools/jsondoclint',
