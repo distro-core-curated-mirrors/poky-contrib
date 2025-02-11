@@ -17,4 +17,4 @@ case $(readlink -f "${getty}") in
         ;;
 esac
 
-${setsid:-} ${getty} ${options:-} -L $SPEED $DEVICE $TERM
+exec ${setsid:-} ${getty} ${options:-} -L $SPEED $DEVICE $TERM
