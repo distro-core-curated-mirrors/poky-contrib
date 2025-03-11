@@ -50,6 +50,16 @@ setup_cargo_environment () {
 
 inherit rust-target-config
 
+do_unpack:append() {
+    import os
+    import shutil
+
+    # Remove gcc directory after unpacking
+    gcc_dir = os.path.join(d.getVar('S'), 'src', 'gcc')
+    if os.path.isdir(gcc_dir):
+        shutil.rmtree(gcc_dir)
+}
+
 do_rust_setup_snapshot () {
     for installer in "${UNPACKDIR}/rust-snapshot-components/"*"/install.sh"; do
         "${installer}" --prefix="${WORKDIR}/rust-snapshot" --disable-ldconfig
@@ -137,6 +147,8 @@ python do_configure() {
     config.add_section("rust")
     config.set("rust", "rpath", e(True))
     config.set("rust", "remap-debuginfo", e(True))
+    config.set("rust", "download-rustc", e(False))
+    config.set("rust", "llvm-tools", e(False))
     config.set("rust", "channel", e(d.expand("${RUST_CHANNEL}")))
 
     # Whether or not to optimize the compiler and standard library
