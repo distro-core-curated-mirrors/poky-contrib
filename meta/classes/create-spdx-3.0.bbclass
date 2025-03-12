@@ -132,6 +132,25 @@ SPDX3_LIB_DEP_FILES = "\
     ${COREBASE}/meta/lib/oe/spdx_common.py:True \
     "
 
+python do_create_product_spdx() {
+    import oe.spdx30_tasks
+    oe.spdx30_tasks.create_product_spdx(d)
+}
+addtask do_create_product_spdx before do_build do_rm_work
+
+SSTATETASKS += "do_create_product_spdx"
+do_create_product_spdx[sstate-inputdirs] = "${SPDXPRODUCTDEPLOY}"
+do_create_product_spdx[sstate-outputdirs] = "${DEPLOY_DIR_SPDX}"
+do_create_product_spdx[file-checksums] += "${SPDX3_LIB_DEP_FILES}"
+
+python do_create_spdx_product_setscene () {
+    sstate_setscene(d)
+}
+addtask do_create_spdx_product_setscene
+
+do_create_product_spdx[dirs] = "${SPDXPRODUCTDEPLOY}"
+do_create_product_spdx[cleandirs] = "${SPDXPRODUCTDEPLOY}"
+
 python do_create_spdx() {
     import oe.spdx30_tasks
     oe.spdx30_tasks.create_spdx(d)
@@ -146,6 +165,7 @@ do_create_spdx[vardeps] += "\
 
 addtask do_create_spdx after \
     do_collect_spdx_deps \
+    do_create_product_spdx \
     do_deploy_source_date_epoch \
     do_populate_sysroot do_package do_packagedata \
     before do_populate_sdk do_populate_sdk_ext do_build do_rm_work

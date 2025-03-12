@@ -240,6 +240,14 @@ class ObjectSet(oe.spdx30.SHACLObjectSet):
         self.doc.rootElement.append(obj)
         return obj
 
+    def foreach_rel_to(self, rel_typ, *, rel_class=oe.spdx30.Relationship, from_=None):
+        for r in self.foreach_filter(rel_class, relationshipType=rel_typ):
+            if from_ is not None and r.from_ != from_:
+                continue
+
+            for t in r.to:
+                yield t
+
     def is_native(self):
         for e in self.doc.extension:
             if not isinstance(e, oe.sbom30.OEDocumentExtension):

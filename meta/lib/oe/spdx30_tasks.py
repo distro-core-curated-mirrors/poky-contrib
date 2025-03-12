@@ -32,7 +32,13 @@ def set_timestamp_now(d, o, prop):
         delattr(o, prop)
 
 
-def add_license_expression(d, objset, license_expression, license_data):
+def add_license_expression(
+    d,
+    objset,
+    license_expression,
+    license_data,
+    search_objsets=[],
+):
     simple_license_text = {}
     license_text_map = {}
     license_ref_idx = 0
@@ -44,14 +50,14 @@ def add_license_expression(d, objset, license_expression, license_data):
         if name in simple_license_text:
             return simple_license_text[name]
 
-        lic = objset.find_filter(
-            oe.spdx30.simplelicensing_SimpleLicensingText,
-            name=name,
-        )
-
-        if lic is not None:
-            simple_license_text[name] = lic
-            return lic
+        for o in [objset] + search_objsets:
+            lic = o.find_filter(
+                oe.spdx30.simplelicensing_SimpleLicensingText,
+                name=name,
+            )
+            if lic is not None:
+                simple_license_text[name] = lic
+                return lic
 
         lic = objset.add(
             oe.spdx30.simplelicensing_SimpleLicensingText(
@@ -448,6 +454,134 @@ def set_purposes(d, element, *var_names, force_purposes=[]):
     ]
 
 
+def create_product_spdx(d):
+    license_data = oe.spdx_common.load_spdx_license_data(d)
+
+    deploydir = Path(d.getVar("SPDXPRODUCTDEPLOY"))
+    deploy_dir_spdx = Path(d.getVar("DEPLOY_DIR_SPDX"))
+    pkg_arch = d.getVar("SSTATE_PKGARCH")
+    include_vex = d.getVar("SPDX_INCLUDE_VEX")
+    if not include_vex in ("none", "current", "all"):
+        bb.fatal("SPDX_INCLUDE_VEX must be one of 'none', 'current', 'all'")
+
+    objset = oe.sbom30.ObjectSet.new_objset(d, "product-" + d.getVar("PN"))
+
+    product = objset.add_root(
+        oe.spdx30.software_Package(
+            _id=objset.new_spdxid("product", d.getVar("PN")),
+            creationInfo=objset.doc.creationInfo,
+            name=d.getVar("PN"),
+            software_packageVersion=d.getVar("PV"),
+            software_primaryPurpose=oe.spdx30.software_SoftwarePurpose.source,
+        )
+    )
+    objset.set_element_alias(product)
+
+    if val := d.getVar("HOMEPAGE"):
+        product.software_homePage = val
+
+    if val := d.getVar("SUMMARY"):
+        product.summary = val
+
+    if val := d.getVar("DESCRIPTION"):
+        product.description = val
+
+    product_license = add_license_expression(
+        d,
+        objset,
+        d.getVar("LICENSE"),
+        license_data,
+    )
+    objset.new_relationship(
+        [product],
+        oe.spdx30.RelationshipType.hasConcludedLicense,
+        [product_license],
+    )
+
+    for cpe_id in oe.cve_check.get_cpe_ids(
+        d.getVar("CVE_PRODUCT"), d.getVar("CVE_VERSION")
+    ):
+        product.externalIdentifier.append(
+            oe.spdx30.ExternalIdentifier(
+                externalIdentifierType=oe.spdx30.ExternalIdentifierType.cpe23,
+                identifier=cpe_id,
+            )
+        )
+
+    for var in (d.getVar("SPDX_CUSTOM_ANNOTATION_VARS") or "").split():
+        new_annotation(
+            d,
+            objset,
+            product,
+            "%s=%s" % (var, d.getVar(var)),
+            oe.spdx30.AnnotationType.other,
+        )
+
+    all_cves = set()
+    if include_vex != "none":
+        for cve, data in oe.cve_check.get_patched_cves(d).items():
+            spdx_cve = objset.new_cve_vuln(cve)
+            objset.set_element_alias(spdx_cve)
+            all_cves.add(spdx_cve)
+
+            vex_status = data["abbrev-status"]
+            status = data["status"]
+
+            # If this CVE is fixed upstream, skip it unless all CVEs are
+            # specified.
+            if include_vex != "all" and status in (
+                "fixed-version",
+                "cpe-stable-backport",
+            ):
+                bb.debug(1, f"Skipping {cve} since it is already fixed upstream")
+                continue
+
+            if vex_status == "Patched":
+                objset.new_vex_patched_relationship([spdx_cve], [product])
+
+            elif vex_status == "Unpatched":
+                objset.new_vex_unpatched_relationship([spdx_cve], [product])
+
+            elif vex_status == "Ignored":
+                spdx_vex = objset.new_vex_ignored_relationship(
+                    [spdx_cve],
+                    [product],
+                    impact_statement=data["justification"],
+                )
+
+                if status in (
+                    "ignored",
+                    "cpe-incorrect",
+                    "disputed",
+                    "upstream-wontfix",
+                ):
+                    # VEX doesn't have justifications for this
+                    pass
+
+                elif status in (
+                    "not-applicable-config",
+                    "not-applicable-platform",
+                ):
+                    for v in spdx_vex:
+                        v.security_justificationType = (
+                            oe.spdx30.security_VexJustificationType.vulnerableCodeNotPresent
+                        )
+
+                else:
+                    bb.fatal(f"Unknown status '{status}' for ignored {cve}")
+            else:
+                bb.fatal(f"Unknown {cve} status '{vex_status}'")
+
+    if all_cves:
+        objset.new_relationship(
+            [product],
+            oe.spdx30.RelationshipType.hasAssociatedVulnerability,
+            sorted(list(all_cves)),
+        )
+
+    oe.sbom30.write_recipe_jsonld_doc(d, objset, "product", deploydir)
+
+
 def create_spdx(d):
     def set_var_field(var, obj, name, package=None):
         val = None
@@ -470,9 +604,12 @@ def create_spdx(d):
     is_native = bb.data.inherits_class("native", d) or bb.data.inherits_class(
         "cross", d
     )
-    include_vex = d.getVar("SPDX_INCLUDE_VEX")
-    if not include_vex in ("none", "current", "all"):
-        bb.fatal("SPDX_INCLUDE_VEX must be one of 'none', 'current', 'all'")
+    product, prod_objset = oe.sbom30.find_root_obj_in_jsonld(
+        d,
+        "product",
+        "product-" + d.getVar("PN"),
+        oe.spdx30.software_Package,
+    )
 
     build_objset = oe.sbom30.ObjectSet.new_objset(d, "recipe-" + d.getVar("PN"))
 
@@ -483,63 +620,29 @@ def create_spdx(d):
 
     build_objset.set_is_native(is_native)
 
-    for var in (d.getVar("SPDX_CUSTOM_ANNOTATION_VARS") or "").split():
-        new_annotation(
-            d,
-            build_objset,
-            build,
-            "%s=%s" % (var, d.getVar(var)),
-            oe.spdx30.AnnotationType.other,
-        )
-
     build_inputs = set()
-
-    # Add CVEs
-    cve_by_status = {}
-    if include_vex != "none":
-        patched_cves = oe.cve_check.get_patched_cves(d)
-        for cve, patched_cve in patched_cves.items():
-            decoded_status = {
-                "mapping": patched_cve["abbrev-status"],
-                "detail": patched_cve["status"],
-                "description": patched_cve.get("justification", None)
-            }
-
-            # If this CVE is fixed upstream, skip it unless all CVEs are
-            # specified.
-            if (
-                include_vex != "all"
-                and "detail" in decoded_status
-                and decoded_status["detail"]
-                in (
-                    "fixed-version",
-                    "cpe-stable-backport",
-                )
-            ):
-                bb.debug(1, "Skipping %s since it is already fixed upstream" % cve)
-                continue
-
-            spdx_cve = build_objset.new_cve_vuln(cve)
-            build_objset.set_element_alias(spdx_cve)
-
-            cve_by_status.setdefault(decoded_status["mapping"], {})[cve] = (
-                spdx_cve,
-                decoded_status["detail"],
-                decoded_status["description"],
-            )
 
     cpe_ids = oe.cve_check.get_cpe_ids(d.getVar("CVE_PRODUCT"), d.getVar("CVE_VERSION"))
 
     source_files = add_download_files(d, build_objset)
     build_inputs |= source_files
 
-    recipe_spdx_license = add_license_expression(
-        d, build_objset, d.getVar("LICENSE"), license_data
+    product_spdx_licenses = set(
+        prod_objset.foreach_rel_to(
+            oe.spdx30.RelationshipType.hasConcludedLicense, from_=product
+        )
     )
+    if not product_spdx_licenses:
+        bb.fatal("Unable to find licenses in product")
+
+    for r in product_spdx_licenses:
+        if not isinstance(r, oe.spdx30.simplelicensing_AnyLicenseInfo):
+            bb.fatal("License from product is not AnyLicenseInfo")
+
     build_objset.new_relationship(
         source_files,
         oe.spdx30.RelationshipType.hasConcludedLicense,
-        [oe.sbom30.get_element_link_id(recipe_spdx_license)],
+        [oe.sbom30.get_element_link_id(r) for r in product_spdx_licenses],
     )
 
     dep_sources = {}
@@ -666,69 +769,82 @@ def create_spdx(d):
             # prevents duplicate license SPDX IDs in the packages
             package_license = d.getVar("LICENSE:%s" % package)
             if package_license and package_license != d.getVar("LICENSE"):
-                package_spdx_license = add_license_expression(
-                    d, build_objset, package_license, license_data
-                )
+                package_spdx_licenses = [
+                    add_license_expression(
+                        d,
+                        build_objset,
+                        package_license,
+                        license_data,
+                        [prod_objset],
+                    )
+                ]
             else:
-                package_spdx_license = recipe_spdx_license
+                package_spdx_licenses = product_spdx_licenses
 
             pkg_objset.new_relationship(
                 [spdx_package],
                 oe.spdx30.RelationshipType.hasConcludedLicense,
-                [oe.sbom30.get_element_link_id(package_spdx_license)],
+                [oe.sbom30.get_element_link_id(lic) for lic in package_spdx_licenses],
+            )
+
+            pkg_objset.new_relationship(
+                [oe.sbom30.get_element_link_id(product)],
+                oe.spdx30.RelationshipType.packagedBy,
+                [spdx_package],
             )
 
             # NOTE: CVE Elements live in the recipe collection
-            all_cves = set()
-            for status, cves in cve_by_status.items():
-                for cve, items in cves.items():
-                    spdx_cve, detail, description = items
-                    spdx_cve_id = oe.sbom30.get_element_link_id(spdx_cve)
+            # if d.getVar("SPDX_INCLUDE_RUNTIME_VEX") == "1":
+            #    all_cves = set()
+            #    for status, cves in cve_by_status.items():
+            #        for cve, items in cves.items():
+            #            spdx_cve, detail, description = items
+            #            spdx_cve_id = oe.sbom30.get_element_link_id(spdx_cve)
 
-                    all_cves.add(spdx_cve_id)
+            #            all_cves.add(spdx_cve_id)
 
-                    if status == "Patched":
-                        pkg_objset.new_vex_patched_relationship(
-                            [spdx_cve_id], [spdx_package]
-                        )
-                    elif status == "Unpatched":
-                        pkg_objset.new_vex_unpatched_relationship(
-                            [spdx_cve_id], [spdx_package]
-                        )
-                    elif status == "Ignored":
-                        spdx_vex = pkg_objset.new_vex_ignored_relationship(
-                            [spdx_cve_id],
-                            [spdx_package],
-                            impact_statement=description,
-                        )
+            #            if status == "Patched":
+            #                pkg_objset.new_vex_patched_relationship(
+            #                    [spdx_cve_id], [spdx_package]
+            #                )
+            #            elif status == "Unpatched":
+            #                pkg_objset.new_vex_unpatched_relationship(
+            #                    [spdx_cve_id], [spdx_package]
+            #                )
+            #            elif status == "Ignored":
+            #                spdx_vex = pkg_objset.new_vex_ignored_relationship(
+            #                    [spdx_cve_id],
+            #                    [spdx_package],
+            #                    impact_statement=description,
+            #                )
 
-                        if detail in (
-                            "ignored",
-                            "cpe-incorrect",
-                            "disputed",
-                            "upstream-wontfix",
-                        ):
-                            # VEX doesn't have justifications for this
-                            pass
-                        elif detail in (
-                            "not-applicable-config",
-                            "not-applicable-platform",
-                        ):
-                            for v in spdx_vex:
-                                v.security_justificationType = (
-                                    oe.spdx30.security_VexJustificationType.vulnerableCodeNotPresent
-                                )
-                        else:
-                            bb.fatal(f"Unknown detail '{detail}' for ignored {cve}")
-                    else:
-                        bb.fatal(f"Unknown {cve} status '{status}'")
+            #                if detail in (
+            #                    "ignored",
+            #                    "cpe-incorrect",
+            #                    "disputed",
+            #                    "upstream-wontfix",
+            #                ):
+            #                    # VEX doesn't have justifications for this
+            #                    pass
+            #                elif detail in (
+            #                    "not-applicable-config",
+            #                    "not-applicable-platform",
+            #                ):
+            #                    for v in spdx_vex:
+            #                        v.security_justificationType = (
+            #                            oe.spdx30.security_VexJustificationType.vulnerableCodeNotPresent
+            #                        )
+            #                else:
+            #                    bb.fatal(f"Unknown detail '{detail}' for ignored {cve}")
+            #            else:
+            #                bb.fatal(f"Unknown {cve} status '{status}'")
 
-            if all_cves:
-                pkg_objset.new_relationship(
-                    [spdx_package],
-                    oe.spdx30.RelationshipType.hasAssociatedVulnerability,
-                    sorted(list(all_cves)),
-                )
+            #    if all_cves:
+            #        pkg_objset.new_relationship(
+            #            [spdx_package],
+            #            oe.spdx30.RelationshipType.hasAssociatedVulnerability,
+            #            sorted(list(all_cves)),
+            #        )
 
             bb.debug(1, "Adding package files to SPDX for package %s" % pkg_name)
             package_files = add_package_files(
@@ -1131,17 +1247,17 @@ def create_image_spdx(d):
             image_path = image_deploy_dir / image_filename
             if os.path.isdir(image_path):
                 a = add_package_files(
-                        d,
-                        objset,
-                        image_path,
-                        lambda file_counter: objset.new_spdxid(
-                            "imagefile", str(file_counter)
-                        ),
-                        lambda filepath: [],
-                        license_data=None,
-                        ignore_dirs=[],
-                        ignore_top_level_dirs=[],
-                        archive=None,
+                    d,
+                    objset,
+                    image_path,
+                    lambda file_counter: objset.new_spdxid(
+                        "imagefile", str(file_counter)
+                    ),
+                    lambda filepath: [],
+                    license_data=None,
+                    ignore_dirs=[],
+                    ignore_top_level_dirs=[],
+                    archive=None,
                 )
                 artifacts.extend(a)
             else:
@@ -1167,7 +1283,6 @@ def create_image_spdx(d):
                 )
 
                 set_timestamp_now(d, a, "builtTime")
-
 
         if artifacts:
             objset.new_scoped_relationship(

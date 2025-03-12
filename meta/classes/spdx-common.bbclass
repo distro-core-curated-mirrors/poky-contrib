@@ -24,6 +24,7 @@ SPDX_TOOL_NAME ??= "oe-spdx-creator"
 SPDX_TOOL_VERSION ??= "1.0"
 
 SPDXRUNTIMEDEPLOY = "${SPDXDIR}/runtime-deploy"
+SPDXPRODUCTDEPLOY = "${SPDXDIR}/product-deploy"
 
 SPDX_INCLUDE_SOURCES ??= "0"
 SPDX_ARCHIVE_SOURCES ??= "0"
