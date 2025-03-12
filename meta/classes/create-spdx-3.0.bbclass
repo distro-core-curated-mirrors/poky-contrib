@@ -45,6 +45,13 @@ SPDX_INCLUDE_VEX[doc] = "Controls what VEX information is in the output. Set to 
     including those already fixed upstream (warning: This can be large and \
     slow)."
 
+SPDX_INCLUDE_RUNTIME_VEX ?= "0"
+SPDX_INCLUDE_RUNTIME_VEX[doc] = "If '1', VEX information will be added to \
+    runtime packages when they are generated which allows looking up vulnerability \
+    based only on the runtime data. If '0' (the default), VEX information is \
+    only available in the product data which describes the upstream. \
+    Setting to '1' can cause SPDX output to be much larger an slower."
+
 SPDX_INCLUDE_TIMESTAMPS ?= "0"
 SPDX_INCLUDE_TIMESTAMPS[doc] = "Include time stamps in SPDX output. This is \
     useful if you want to know when artifacts were produced and when builds \
