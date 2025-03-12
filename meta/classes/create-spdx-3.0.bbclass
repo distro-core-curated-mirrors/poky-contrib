@@ -128,6 +128,8 @@ oe.spdx30_tasks.collect_dep_objsets[vardepsexclude] = "SPDX_MULTILIB_SSTATE_ARCH
 SPDX3_LIB_DEP_FILES = "\
     ${COREBASE}/meta/lib/oe/sbom30.py:True \
     ${COREBASE}/meta/lib/oe/spdx30.py:True \
+    ${COREBASE}/meta/lib/oe/spdx30_tasks.py:True \
+    ${COREBASE}/meta/lib/oe/spdx_common.py:True \
     "
 
 python do_create_spdx() {
