@@ -920,8 +920,16 @@ def find_jsonld(d, subdir, name, *, required=False):
         if objset is not None:
             return (objset, path)
 
+    # Dumb hack for now
+    if "allarch" in package_archs:
+        objset, path = load_jsonld_by_arch(d, "all", subdir, name)
+        if objset is not None:
+            return (objset, path)
+
     if required:
-        bb.fatal("Could not find a %s SPDX document named %s" % (subdir, name))
+        bb.fatal(
+            f"Could not find a {subdir} SPDX document named {name}. Searched arches {', '.join(package_archs)}"
+        )
 
     return (None, None)
 
