@@ -151,14 +151,13 @@ SSTATETASKS += "do_create_product_spdx"
 do_create_product_spdx[sstate-inputdirs] = "${SPDXPRODUCTDEPLOY}"
 do_create_product_spdx[sstate-outputdirs] = "${DEPLOY_DIR_SPDX}"
 do_create_product_spdx[file-checksums] += "${SPDX3_LIB_DEP_FILES}"
+do_create_product_spdx[dirs] = "${SPDXPRODUCTDEPLOY}"
+do_create_product_spdx[cleandirs] = "${SPDXPRODUCTDEPLOY}"
 
 python do_create_spdx_product_setscene () {
     sstate_setscene(d)
 }
 addtask do_create_spdx_product_setscene
-
-do_create_product_spdx[dirs] = "${SPDXPRODUCTDEPLOY}"
-do_create_product_spdx[cleandirs] = "${SPDXPRODUCTDEPLOY}"
 
 python do_create_spdx() {
     import oe.spdx30_tasks
@@ -183,18 +182,18 @@ SSTATETASKS += "do_create_spdx"
 do_create_spdx[sstate-inputdirs] = "${SPDXDEPLOY}"
 do_create_spdx[sstate-outputdirs] = "${DEPLOY_DIR_SPDX}"
 do_create_spdx[file-checksums] += "${SPDX3_LIB_DEP_FILES}"
-
-python do_create_spdx_setscene () {
-    sstate_setscene(d)
-}
-addtask do_create_spdx_setscene
-
 do_create_spdx[dirs] = "${SPDXWORK}"
 do_create_spdx[cleandirs] = "${SPDXDEPLOY} ${SPDXWORK}"
 do_create_spdx[depends] += " \
     ${PATCHDEPENDENCY} \
     ${@create_spdx_source_deps(d)} \
 "
+
+python do_create_spdx_setscene () {
+    sstate_setscene(d)
+}
+addtask do_create_spdx_setscene
+
 
 python do_create_package_spdx() {
     import oe.spdx30_tasks
@@ -207,15 +206,14 @@ SSTATETASKS += "do_create_package_spdx"
 do_create_package_spdx[sstate-inputdirs] = "${SPDXRUNTIMEDEPLOY}"
 do_create_package_spdx[sstate-outputdirs] = "${DEPLOY_DIR_SPDX}"
 do_create_package_spdx[file-checksums] += "${SPDX3_LIB_DEP_FILES}"
+do_create_package_spdx[dirs] = "${SPDXRUNTIMEDEPLOY}"
+do_create_package_spdx[cleandirs] = "${SPDXRUNTIMEDEPLOY}"
+do_create_package_spdx[rdeptask] = "do_create_spdx"
 
 python do_create_package_spdx_setscene () {
     sstate_setscene(d)
 }
 addtask do_create_package_spdx_setscene
-
-do_create_package_spdx[dirs] = "${SPDXRUNTIMEDEPLOY}"
-do_create_package_spdx[cleandirs] = "${SPDXRUNTIMEDEPLOY}"
-do_create_package_spdx[rdeptask] = "do_create_spdx"
 
 python do_deploy_build_sbom_spdx() {
     import oe.spdx30_tasks
