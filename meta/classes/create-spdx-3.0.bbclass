@@ -130,8 +130,6 @@ oe.spdx30_tasks.set_timestamp_now[vardepsexclude] = "SPDX_INCLUDE_TIMESTAMPS"
 oe.spdx30_tasks.get_package_sources_from_debug[vardepsexclude] += "STAGING_KERNEL_DIR"
 oe.spdx30_tasks.collect_dep_objsets[vardepsexclude] = "SPDX_MULTILIB_SSTATE_ARCHS"
 
-SPDX_PRODUCT_COLLECT_MANIFEST = "${DEPLOY_DIR_SPDX}/product-manifest.txt"
-
 # SPDX library code makes heavy use of classes, which bitbake cannot easily
 # parse out dependencies. As such, the library code files that make use of
 # classes are explicitly added as file checksum dependencies.
@@ -149,6 +147,7 @@ python do_create_product_spdx() {
 addtask do_create_product_spdx before do_build do_rm_work
 
 SSTATETASKS += "do_create_product_spdx"
+do_create_product_spdx[recrdeptask] = "do_create_product_spdx"
 do_create_product_spdx[sstate-inputdirs] = "${SPDXPRODUCTDEPLOY}"
 do_create_product_spdx[sstate-outputdirs] = "${DEPLOY_DIR_SPDX}"
 do_create_product_spdx[file-checksums] += "${SPDX3_LIB_DEP_FILES}"
@@ -160,47 +159,25 @@ python do_create_spdx_product_setscene () {
 }
 addtask do_create_spdx_product_setscene
 
-python do_write_product_spdx_manifest() {
-    # Writes the product SPDX id link to the end of the manifest file for later
-    # inclusion into an SBoM
-    import oe.sbom30
-
-    manifest = d.getVar("SPDX_PRODUCT_COLLECT_MANIFEST")
-
-    product, _ = oe.sbom30.find_root_obj_in_jsonld(
-        d,
-        "product",
-        "product-" + d.getVar("PN"),
-        oe.spdx30.software_Package,
-    )
-
-    with bb.utils.fileslocked([manifest + ".lock"]):
-        with open(manifest, "a") as f:
-            f.write(oe.sbom30.get_element_link_id(product) + "\n")
-}
-addtask do_write_product_spdx_manifest after do_create_product_spdx
-do_write_product_spdx_manifest[deptask] = "do_write_product_spdx_manifest"
-do_write_product_spdx_manifest[recrdeptask] = "do_write_product_spdx_manifest"
-do_write_product_spdx_manifest[nostamp] = "1"
-
 python do_collect_product_spdx() {
-    # Collect all the product packages written by the
-    # do_write_product_spdx_manifest tasks and creates a complete SBoM from
-    # them
     import oe.sbom30
     import oe.spdx30
+    import oe.spdx_common
     from pathlib import Path
 
-    manifest = d.getVar("SPDX_PRODUCT_COLLECT_MANIFEST")
     dest = Path(d.getVar("SPDXCOLLECTPRODUCTDEPLOY")) / (d.getVar("PN") + "-products.spdx.json")
 
+    deps = oe.spdx_common.collect_all_deps(d, "do_create_product_spdx")
+
     products = set()
-    with open(manifest, "r") as f:
-        for line in f:
-            line = line.rstrip()
-            if not line:
-                continue
-            products.add(line)
+    for dep_pn in deps:
+        product, _ = oe.sbom30.find_root_obj_in_jsonld(
+            d,
+            "product",
+            "product-" + dep_pn,
+            oe.spdx30.software_Package,
+        )
+        products.add(oe.sbom30.get_element_link_id(product))
 
     objset, _ = oe.sbom30.create_sbom(
         d,
@@ -211,14 +188,17 @@ python do_collect_product_spdx() {
     oe.sbom30.write_jsonld_doc(d, objset, dest)
 }
 addtask do_collect_product_spdx
-do_collect_product_spdx[recrdeptask] = "do_write_product_spdx_manifest"
-do_collect_product_spdx[rdeptask] = "do_write_product_spdx_manifest"
-do_collect_product_spdx[deptask] = "do_write_product_spdx_manifest"
+SSTATETASKS += "do_collect_product_spdx"
+do_collect_product_spdx[recrdeptask] = "do_create_product_spdx"
 do_collect_product_spdx[sstate-inputdirs] = "${SPDXCOLLECTPRODUCTDEPLOY}"
 do_collect_product_spdx[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
 do_collect_product_spdx[dirs] = "${SPDXCOLLECTPRODUCTDEPLOY}"
 do_collect_product_spdx[cleandirs] = "${SPDXCOLLECTPRODUCTDEPLOY}"
-do_collect_product_spdx[nostamp] = "1"
+
+python do_collect_spdx_product_setscene () {
+    sstate_setscene(d)
+}
+addtask do_collect_spdx_product_setscene
 
 python do_create_spdx() {
     import oe.spdx30_tasks
@@ -303,10 +283,6 @@ python spdx30_build_started_handler () {
     import oe.spdx30_tasks
     d = e.data.createCopy()
     oe.spdx30_tasks.write_bitbake_spdx(d)
-
-    # Clear out any existing product manifest file in preparation for creating
-    # a new one
-    bb.utils.remove(d.getVar("SPDX_PRODUCT_COLLECT_MANIFEST"))
 }
 
 addhandler spdx30_build_started_handler

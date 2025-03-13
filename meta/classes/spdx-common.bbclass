@@ -98,6 +98,7 @@ do_collect_spdx_deps[deptask] = "do_create_spdx"
 do_collect_spdx_deps[dirs] = "${SPDXDIR}"
 
 oe.spdx_common.collect_direct_deps[vardepsexclude] += "BB_TASKDEPDATA"
+oe.spdx_common.collect_all_deps[vardepsexclude] += "BB_TASKDEPDATA"
 oe.spdx_common.collect_direct_deps[vardeps] += "DEPENDS"
 oe.spdx_common.collect_package_providers[vardepsexclude] += "BB_TASKDEPDATA"
 oe.spdx_common.get_patched_src[vardepsexclude] += "STAGING_KERNEL_DIR"

@@ -112,6 +112,38 @@ def collect_direct_deps(d, dep_task):
     return sorted(deps)
 
 
+def collect_all_deps(d, dep_task):
+    """
+    Find all dependencies of current task
+
+    Returns the list of all recipes that have a dep_task that the current task
+    depends on, recursively
+    """
+    taskdepdata = d.getVar("BB_TASKDEPDATA", False)
+    deps = set()
+
+    def find_pn_dep(pn, task):
+        for dep in taskdepdata.values():
+            if dep.pn == pn and dep.taskname == task:
+                return dep
+
+        bb.fatal(f"Unable to find this {pn}:{task} in taskdepdata")
+
+    def collect_dep(pn, task):
+        nonlocal deps
+
+        this_dep = find_pn_dep(pn, task)
+
+        for dep_name in this_dep.deps:
+            dep_data = taskdepdata[dep_name]
+            if dep_data.taskname == dep_task and not dep_data.pn in deps:
+                deps.add(dep_data.pn)
+                collect_dep(dep_data.pn, dep_task)
+
+    collect_dep(d.getVar("PN"), "do_" + d.getVar("BB_CURRENTTASK"))
+    return deps
+
+
 def get_spdx_deps(d):
     """
     Reads the SPDX dependencies JSON file and returns the data
