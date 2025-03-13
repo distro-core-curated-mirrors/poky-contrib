@@ -1347,7 +1347,12 @@ def create_image_sbom_spdx(d):
     for o in image_objset.foreach_root(oe.spdx30.software_File):
         root_elements.append(oe.sbom30.get_element_link_id(o))
 
-    objset, sbom = oe.sbom30.create_sbom(d, image_name, root_elements)
+    objset, sbom = oe.sbom30.create_sbom(
+        d,
+        image_name,
+        root_elements,
+        sbom_types=[oe.spdx30.software_SbomType.build],
+    )
 
     oe.sbom30.write_jsonld_doc(d, objset, spdx_path)
 
@@ -1402,6 +1407,7 @@ def create_build_sbom(d, dest):
         add_objectsets=add_objsets,
         expand=False,
         import_missing=True,
+        sbom_types=[oe.spdx30.software_SbomType.build],
     )
 
     oe.sbom30.write_jsonld_doc(d, sbom_objset, dest)
@@ -1504,7 +1510,11 @@ def create_sdk_sbom(d, sdk_deploydir, spdx_work_dir, toolchain_outputname):
         bb.warn(f"No SDK output files found in {sdk_deploydir}")
 
     objset, sbom = oe.sbom30.create_sbom(
-        d, toolchain_outputname, sorted(list(files)), [rootfs_objset]
+        d,
+        toolchain_outputname,
+        sorted(list(files)),
+        [rootfs_objset],
+        sbom_types=[oe.spdx30.software_SbomType.build],
     )
 
     oe.sbom30.write_jsonld_doc(

@@ -1049,8 +1049,10 @@ def create_sbom(
     name,
     root_elements,
     add_objectsets=[],
+    *,
     expand=True,
     import_missing=False,
+    sbom_types=[],
 ):
     objset = ObjectSet.new_objset(d, name)
 
@@ -1059,7 +1061,7 @@ def create_sbom(
             _id=objset.new_spdxid("sbom", name),
             name=name,
             creationInfo=objset.doc.creationInfo,
-            software_sbomType=[oe.spdx30.software_SbomType.build],
+            software_sbomType=sbom_types,
             rootElement=root_elements,
         )
     )
