@@ -1,3 +1,22 @@
+# FIXME: the LIC_FILES_CHKSUM values have been updated by 'devtool upgrade'.
+# The following is the difference between the old and the new license text.
+# Please update the LICENSE value if needed, and summarize the changes in
+# the commit message via 'License-Update:' tag.
+# (example: 'License-Update: copyright years updated.')
+#
+# The changes:
+#
+# --- LICENSE
+# +++ LICENSE
+# @@ -1,4 +1,4 @@
+# -Copyright (c) 2006-2024 Roy Marples <roy@marples.name>
+# +Copyright (c) 2006-2025 Roy Marples <roy@marples.name>
+#  All rights reserved.
+#  
+#  Redistribution and use in source and binary forms, with or without
+# 
+#
+
 SECTION = "console/network"
 SUMMARY = "dhcpcd - a DHCP client"
 DESCRIPTION = "dhcpcd runs on your machine and silently configures your \
