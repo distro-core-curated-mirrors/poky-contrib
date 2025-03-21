@@ -225,6 +225,8 @@ rust_runx () {
 
     oe_cargo_fix_env
 
+    export LD_LIBRARY_PATH=${S}/build/${RUST_BUILD_SYS}/stage1/lib:${S}/build/${RUST_BUILD_SYS}/stage1/lib64:$LD_LIBRARY_PATH
+
     python3 src/bootstrap/bootstrap.py ${@oe.utils.parallel_make_argument(d, '-j %d')} "$@" --verbose
 }
 rust_runx[vardepsexclude] += "PARALLEL_MAKE"
