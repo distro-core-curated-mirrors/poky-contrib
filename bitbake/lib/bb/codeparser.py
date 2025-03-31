@@ -300,6 +300,8 @@ class PythonParser():
                         self.references.add('%s[%s]' % (varname, node.args[1].value))
                     else:
                         self.warn(node.func, node.args[1])
+                        # None constant varflag. Depend on all flag values
+                        self.references.add(varname)
                 else:
                     self.references.add(varname)
             else:
