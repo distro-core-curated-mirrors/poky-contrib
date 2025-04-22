@@ -55,5 +55,8 @@ fi
 
 unset OEROOT
 
-[ -z "$BUILDDIR" ] || cd "$BUILDDIR"
+# explicitly set relative umask to deal with mLinux security hardening
+umask u+rwx,g+rx,o+rx
+
+# [ -z "$BUILDDIR" ] || cd "$BUILDDIR"
 
