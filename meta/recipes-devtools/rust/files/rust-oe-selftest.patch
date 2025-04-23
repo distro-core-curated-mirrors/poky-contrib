@@ -43,66 +43,6 @@ diff --git a/compiler/rustc_interface/src/tests.rs b/compiler/rustc_interface/sr
  fn test_can_print_warnings() {
      sess_and_cfg(&["-Awarnings"], |sess, _cfg| {
          assert!(!sess.dcx().can_emit_warnings());
-diff --git a/library/std/src/sync/poison/rwlock/tests.rs b/library/std/src/sync/poison/rwlock/tests.rs
-index 1a9d3d3f12f..0a9cfc48806 100644
---- a/library/std/src/sync/poison/rwlock/tests.rs
-+++ b/library/std/src/sync/poison/rwlock/tests.rs
-@@ -47,6 +47,7 @@ fn frob() {
- }
-
- #[test]
-+#[ignore]
- fn test_rw_arc_poison_wr() {
-     let arc = Arc::new(RwLock::new(1));
-     let arc2 = arc.clone();
-@@ -72,6 +73,7 @@ fn test_rw_arc_poison_mapped_w_r() {
- }
-
- #[test]
-+#[ignore]
- fn test_rw_arc_poison_ww() {
-     let arc = Arc::new(RwLock::new(1));
-     assert!(!arc.is_poisoned());
-@@ -100,6 +102,7 @@ fn test_rw_arc_poison_mapped_w_w() {
- }
-
- #[test]
-+#[ignore]
- fn test_rw_arc_no_poison_rr() {
-     let arc = Arc::new(RwLock::new(1));
-     let arc2 = arc.clone();
-@@ -127,6 +130,7 @@ fn test_rw_arc_no_poison_mapped_r_r() {
- }
-
- #[test]
-+#[ignore]
- fn test_rw_arc_no_poison_rw() {
-     let arc = Arc::new(RwLock::new(1));
-     let arc2 = arc.clone();
-@@ -192,6 +196,7 @@ fn test_rw_arc() {
- }
-
- #[test]
-+#[ignore]
- fn test_rw_arc_access_in_unwind() {
-     let arc = Arc::new(RwLock::new(1));
-     let arc2 = arc.clone();
-@@ -275,6 +280,7 @@ fn drop(&mut self) {
- }
-
- #[test]
-+#[ignore]
- fn test_into_inner_poison() {
-     let m = new_poisoned_rwlock(NonCopy(10));
-
-@@ -299,6 +305,7 @@ fn test_get_mut() {
- }
-
- #[test]
-+#[ignore]
- fn test_get_mut_poison() {
-     let mut m = new_poisoned_rwlock(NonCopy(10));
-
 diff --git a/library/std/src/thread/tests.rs b/library/std/src/thread/tests.rs
 index 5d6b9e94ee9..a5aacb2eb87 100644
 --- a/library/std/src/thread/tests.rs
@@ -146,39 +86,6 @@ index 5d6b9e94ee9..a5aacb2eb87 100644
 +#[ignore]
  fn test_try_panic_any_message_unit_struct() {
      struct Juju;
-
-diff --git a/library/test/src/tests.rs b/library/test/src/tests.rs
---- a/library/test/src/tests.rs
-+++ b/library/test/src/tests.rs
-@@ -424,6 +424,7 @@
- }
-
- #[test]
-+#[ignore]
- fn test_time_options_threshold() {
-     let unit = TimeThreshold::new(Duration::from_millis(50), Duration::from_millis(100));
-     let integration = TimeThreshold::new(Duration::from_millis(500), Duration::from_millis(1000));
-diff --git a/library/std/src/sync/poison/mutex/tests.rs b/library/std/src/sync/poison/mutex/tests.rs
---- a/library/std/src/sync/poison/mutex/tests.rs
-+++ b/library/std/src/sync/poison/mutex/tests.rs
-@@ -193,6 +193,7 @@
- }
-
- #[test]
-+#[ignore]
- fn test_mutex_arc_poison_mapped() {
-     let arc = Arc::new(Mutex::new(1));
-     assert!(!arc.is_poisoned());
-diff --git a/library/std/src/sync/poison/mutex/tests.rs b/library/std/src/sync/poison/mutex/tests.rs
---- a/library/std/src/sync/poison/mutex/tests.rs
-+++ b/library/std/src/sync/poison/mutex/tests.rs
-@@ -272,6 +272,7 @@
- }
-
- #[test]
-+#[ignore]
- fn panic_while_mapping_unlocked_poison() {
-     let lock = Mutex::new(());
 
 diff --git a/library/std/src/sync/rwlock/tests.rs b/library/std/src/sync/poison/rwlock/tests.rs
 --- a/library/std/src/sync/poison/rwlock/tests.rs
