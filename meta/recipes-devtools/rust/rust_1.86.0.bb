@@ -2,12 +2,12 @@ SUMMARY = "Rust compiler and runtime libaries"
 HOMEPAGE = "http://www.rust-lang.org"
 SECTION = "devel"
 LICENSE = "(MIT | Apache-2.0) & Unicode-3.0"
-LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=9c0fae516fe8aaea2fb601db4800daf7"
+LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=11a3899825f4376896e438c8c753f8dc"
 
 inherit rust
 inherit cargo_common
 
-DEPENDS += "file-native python3-native"
+DEPENDS += "file-native python3-native pkgconfig-native openssl"
 DEPENDS:append:class-native = " rust-llvm-native"
 DEPENDS:append:class-nativesdk = " nativesdk-rust-llvm"
 
@@ -18,7 +18,7 @@ DEPENDS:append:class-nativesdk = " cargo-native rust-native"
 
 DEPENDS += "rust-llvm (=${PV})"
 
-RDEPENDS:${PN}:append:class-target = " gcc g++ binutils"
+RDEPENDS:${PN}:append:class-target = " gcc g++ binutils bash"
 
 # Otherwise we'll depend on what we provide
 INHIBIT_DEFAULT_RUST_DEPS:class-native = "1"
@@ -130,6 +130,7 @@ python do_configure() {
     config.add_section("llvm")
     config.set("llvm", "static-libstdcpp", e(False))
     config.set("llvm", "download-ci-llvm", e(False))
+    config.set("llvm", "ninja", e(False))
     if "llvm" in (d.getVar('TC_CXX_RUNTIME') or ""):
         config.set("llvm", "use-libcxx", e(True))
 
@@ -214,9 +215,12 @@ rust_runx () {
     fi
 
     oe_cargo_fix_env
+    install -m 0755 ${RECIPE_SYSROOT_NATIVE}/usr/lib/llvm-rust/bin/llvm-tblgen ${RECIPE_SYSROOT}/usr/lib/llvm-rust/bin/
 
     python3 src/bootstrap/bootstrap.py ${@oe.utils.parallel_make_argument(d, '-j %d')} "$@" --verbose
+    rm -rf ${D}/usr/share/zsh
 }
+
 rust_runx[vardepsexclude] += "PARALLEL_MAKE"
 
 require rust-source.inc
@@ -256,6 +260,10 @@ rust_do_install() {
     rust_runx install
 }
 
+rust_do_install:append:class-native () {
+    rm -f ${D}${bindir}/cargo
+}
+
 rust_do_install:class-nativesdk() {
     export PSEUDO_UNLOAD=1
     rust_runx install
@@ -268,6 +276,8 @@ rust_do_install:class-nativesdk() {
         cp build/${RUST_BUILD_SYS}/stage2-tools/${RUST_HOST_SYS}/release/$i ${D}${bindir}
         chrpath -r "\$ORIGIN/../lib" ${D}${bindir}/$i
     done
+
+    install -m 0644 ${RECIPE_SYSROOT_NATIVE}/usr/lib/llvm-rust/bin/llvm-tblgen ${STAGING_DIR_NATIVE}/usr/lib/llvm-rust/bin/
 
     chown root:root ${D}/ -R
     rm ${D}${libdir}/rustlib/uninstall.sh
@@ -306,6 +316,7 @@ rust_do_install:class-target() {
 
     install -d ${D}${libdir}/rustlib/${RUST_HOST_SYS}
     install -m 0644 ${WORKDIR}/rust-targets/${RUST_HOST_SYS}.json ${D}${libdir}/rustlib/${RUST_HOST_SYS}/target.json
+    install -m 0644 ${RECIPE_SYSROOT_NATIVE}/usr/lib/llvm-rust/bin/llvm-tblgen ${RECIPE_SYSROOT}/usr/lib/llvm-rust/bin/
 
     chown root:root ${D}/ -R
     rm ${D}${libdir}/rustlib/uninstall.sh
@@ -390,6 +401,6 @@ CARGO_SNAPSHOT = "cargo-${SNAPSHOT_VERSION}-${RUST_BUILD_ARCH}-unknown-linux-gnu
 RUSTLIB_DEP:class-nativesdk = ""
 
 # musl builds include libunwind.a
-INSANE_SKIP:${PN} = "staticdev"
+INSANE_SKIP:${PN} = "staticdev already-stripped ldflags"
 
 BBCLASSEXTEND = "native nativesdk"
