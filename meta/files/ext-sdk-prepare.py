@@ -68,10 +68,16 @@ def main():
 
     with open(logfile, 'a') as logf:
         logf.write('Preparing SDK for %s...\n' % ', '.join(sdk_targets))
+        logf.write('Env %s\n' % str(os.environ))
 
-        ret = run_command_interruptible('BB_SETSCENE_ENFORCE=1 bitbake --quiet %s' % ' '.join(sdk_targets))
+        cmd = 'BB_SETSCENE_ENFORCE=1 bitbake -DDD %s' % ' '.join(sdk_targets)
+        logf.write('Running %s\n' % cmd)
+        ret = run_command_interruptible(cmd)
+
         if not ret:
-            ret = run_command_interruptible('bitbake --quiet build-sysroots -c build_native_sysroot && bitbake --quiet build-sysroots -c build_target_sysroot')
+            cmd = 'bitbake --quiet build-sysroots -c build_native_sysroot && bitbake --quiet build-sysroots -c build_target_sysroot'
+            logf.write('Running %s\n' % cmd)
+            ret = run_command_interruptible(cmd)
         lastlog = get_last_consolelog()
         if lastlog:
             with open(lastlog, 'r') as f:
