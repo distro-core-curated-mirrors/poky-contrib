@@ -117,10 +117,10 @@ SPDX_PACKAGE_VERSION ??= "${PV}"
 SPDX_PACKAGE_VERSION[doc] = "The version of a package, software_packageVersion \
     in software_Package"
 
-SPDX_PACKAGE_URL ??= ""
-SPDX_PACKAGE_URL[doc] = "Provides a place for the SPDX data creator to record \
-the package URL string (in accordance with the Package URL specification) for \
-a software Package."
+SPDX_PACKAGE_URLS ??= "${@oe.spdx_common.get_base_purl(d)}"
+SPDX_PACKAGE_URLS[doc] = "A space separated list of Package URLs (purls) for \
+the software Package. The first item in this list will be listed as the packageUrl \
+property of the packages, and all will be listed as external references"
 
 IMAGE_CLASSES:append = " create-spdx-image-3.0"
 SDK_CLASSES += "create-spdx-sdk-3.0"

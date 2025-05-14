@@ -5,11 +5,13 @@
 #
 
 import bb
+import bb.process
 import collections
 import json
 import oe.packagedata
 import re
 import shutil
+import urllib.parse
 
 from pathlib import Path
 from dataclasses import dataclass
@@ -242,3 +244,68 @@ def fetch_data_to_uri(fd, name):
         uri = uri + "@" + fd.revision
 
     return uri
+
+
+def purl_quote(s):
+    return urllib.parse.quote(s, safe="")
+
+
+def get_base_purl(d):
+    layername = d.getVar("FILE_LAYERNAME")
+    bpn = d.getVar("BPN")
+    pv = d.getVar("PV")
+    return f"pkg:yocto/{purl_quote(layername)}/{purl_quote(bpn)}@{purl_quote(pv)}"
+
+
+def get_recipe_purls(d):
+    file_dirname = d.getVar("FILE_DIRNAME")
+
+    def run_cmd(cmd):
+        try:
+            out, _ = bb.process.run(cmd, cwd=file_dirname)
+        except (bb.process.ExecutionError, bb.process.NotFoundError):
+            return None
+        return out.strip()
+
+    base_purl = get_base_purl(d)
+    purls = []
+    purls.append(base_purl)
+
+    rev = run_cmd("git rev-parse HEAD")
+    if not rev:
+        return purls
+
+    contains = run_cmd(f"git branch -r --format='%(refname)' --contains {rev}")
+    if not contains:
+        return purls
+
+    remote_branches = {}
+    for b in contains.splitlines():
+        if b.startswith("refs/remotes/"):
+            _, _, remote, branch = b.split("/", 3)
+            if branch == "HEAD":
+                continue
+            remote_branches.setdefault(remote, set()).add(branch)
+
+    remotes = run_cmd("git remote")
+    if not remotes:
+        return purls
+
+    purls = []
+    for r in remotes.splitlines():
+        if r not in remote_branches:
+            continue
+
+        uri = run_cmd(f"git remote get-url {r}")
+        if not uri:
+            continue
+
+        purls.append(
+            f"{base_purl}?layer_version={purl_quote(rev)}&repository_url={purl_quote(uri)}"
+        )
+        for b in remote_branches[r]:
+            purls.append(
+                f"{base_purl}?layer_version={purl_quote(b)}&repository_url={purl_quote(uri)}"
+            )
+
+    return purls
