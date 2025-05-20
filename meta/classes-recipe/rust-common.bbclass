@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MIT
 #
 
-inherit python3native
 inherit rust-target-config
 
 # Common variables used by all Rust builds
