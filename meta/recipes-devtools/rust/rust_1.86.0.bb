@@ -2,12 +2,12 @@ SUMMARY = "Rust compiler and runtime libaries"
 HOMEPAGE = "http://www.rust-lang.org"
 SECTION = "devel"
 LICENSE = "(MIT | Apache-2.0) & Unicode-3.0"
-LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=9c0fae516fe8aaea2fb601db4800daf7"
+LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=11a3899825f4376896e438c8c753f8dc"
 
 inherit rust
 inherit cargo_common
 
-DEPENDS += "file-native python3-native"
+DEPENDS += "file-native python3-native pkgconfig-native openssl ninja-native"
 DEPENDS:append:class-native = " rust-llvm-native"
 DEPENDS:append:class-nativesdk = " nativesdk-rust-llvm"
 
@@ -18,7 +18,11 @@ DEPENDS:append:class-nativesdk = " cargo-native rust-native"
 
 DEPENDS += "rust-llvm (=${PV})"
 
-RDEPENDS:${PN}:append:class-target = " gcc g++ binutils"
+RDEPENDS:${PN}:append:class-target = " gcc g++ binutils bash"
+
+INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
+INHIBIT_PACKAGE_STRIP = "1"
+INHIBIT_SYSROOT_STRIP = "1"
 
 # Otherwise we'll depend on what we provide
 INHIBIT_DEFAULT_RUST_DEPS:class-native = "1"
@@ -227,6 +231,7 @@ INSANE_SKIP:${PN}:class-native = "already-stripped"
 FILES:${PN} += "${libdir}/rustlib"
 FILES:${PN} += "${libdir}/*.so"
 FILES:${PN}-dev = ""
+FILES:${PN} += "${datadir}/zsh"
 
 do_compile () {
 }
@@ -238,10 +243,12 @@ do_test_compile () {
 
 ALLOW_EMPTY:${PN} = "1"
 
-PACKAGES =+ "${PN}-rustdoc ${PN}-tools-clippy ${PN}-tools-rustfmt"
+PACKAGES =+ "${PN}-rustdoc ${PN}-tools-clippy ${PN}-tools-rustfmt ${PN}-zsh-completion"
 FILES:${PN}-rustdoc = "${bindir}/rustdoc"
 FILES:${PN}-tools-clippy = "${bindir}/cargo-clippy ${bindir}/clippy-driver"
 FILES:${PN}-tools-rustfmt = "${bindir}/rustfmt"
+FILES:${PN}-zsh-completion = "${datadir}/zsh"
+
 RDEPENDS:${PN}-rustdoc = "${PN}"
 RDEPENDS:${PN}-tools-clippy = "${PN}"
 RDEPENDS:${PN}-tools-rustfmt = "${PN}"
@@ -257,8 +264,13 @@ rust_do_install() {
     rust_runx install
 }
 
+rust_do_install:append:class-native () {
+    rm -f ${D}${bindir}/cargo
+}
+
 rust_do_install:class-nativesdk() {
     export PSEUDO_UNLOAD=1
+    install -m 0755 ${BASE_WORKDIR}/${MULTIMACH_TARGET_SYS}/nativesdk-rust-llvm/${PV}/recipe-sysroot-native/usr/lib/llvm-rust/bin/llvm-tblgen ${RECIPE_SYSROOT}/${SDKPATHNATIVE}/usr/lib/llvm-rust/bin/llvm-tblgen
     rust_runx install
     rust_runx install clippy
     rust_runx install rustfmt
@@ -294,6 +306,7 @@ FILES:${PN} += "${base_prefix}/environment-setup.d"
 EXTRA_TOOLS ?= "cargo-clippy clippy-driver rustfmt"
 rust_do_install:class-target() {
     export PSEUDO_UNLOAD=1
+    install -m 0755 ${RECIPE_SYSROOT_NATIVE}/usr/lib/llvm-rust/bin/llvm-tblgen ${RECIPE_SYSROOT}/usr/lib/llvm-rust/bin/llvm-tblgen
     rust_runx install
     rust_runx install clippy
     rust_runx install rustfmt
@@ -391,6 +404,6 @@ CARGO_SNAPSHOT = "cargo-${SNAPSHOT_VERSION}-${RUST_BUILD_ARCH}-unknown-linux-gnu
 RUSTLIB_DEP:class-nativesdk = ""
 
 # musl builds include libunwind.a
-INSANE_SKIP:${PN} = "staticdev"
+INSANE_SKIP:${PN} = "staticdev ldflags"
 
 BBCLASSEXTEND = "native nativesdk"
