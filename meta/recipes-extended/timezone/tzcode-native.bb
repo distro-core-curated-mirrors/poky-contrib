@@ -2,7 +2,7 @@ require timezone.inc
 
 SUMMARY = "tzcode, timezone zoneinfo utils -- zic, zdump, tzselect"
 
-inherit native
+inherit_defer native
 
 EXTRA_OEMAKE += "CC='${CC}'"
 

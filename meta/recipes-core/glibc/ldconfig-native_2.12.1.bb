@@ -22,7 +22,7 @@ SRC_URI = "file://ldconfig-native-2.12.1.tar.bz2 \
 
 FILESEXTRAPATHS =. "${FILE_DIRNAME}/${P}:"
 
-inherit native
+inherit_defer native
 
 S = "${WORKDIR}/${PN}-${PV}"
 

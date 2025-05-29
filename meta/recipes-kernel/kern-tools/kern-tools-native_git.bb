@@ -14,7 +14,7 @@ DEPENDS += "git-replacement-native"
 SRCREV = "fe67c98d2e9b74af44d0c4b660fa18e3a95e7edd"
 PV = "0.3+git"
 
-inherit native
+inherit_defer native
 
 SRC_URI = "git://git.yoctoproject.org/yocto-kernel-tools.git;branch=master;protocol=https"
 S = "${WORKDIR}/git"

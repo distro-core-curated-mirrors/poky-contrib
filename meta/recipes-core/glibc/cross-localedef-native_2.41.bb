@@ -15,7 +15,7 @@ require glibc-version.inc
 AUTOTOOLS_SCRIPT_PATH = "${S}/localedef"
 
 inherit autotools
-inherit native
+inherit_defer native
 
 FILESEXTRAPATHS =. "${FILE_DIRNAME}/${PN}:${FILE_DIRNAME}/glibc:"
 

@@ -20,7 +20,8 @@ CVE_PRODUCT = "golang:go"
 
 S = "${WORKDIR}/go"
 
-inherit goarch native
+inherit goarch
+inherit_defer native
 
 do_compile() {
     :

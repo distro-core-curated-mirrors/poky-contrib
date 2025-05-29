@@ -1,7 +1,7 @@
 require systemd.inc
 FILESEXTRAPATHS =. "${FILE_DIRNAME}/systemd:"
 
-inherit native
+inherit_defer native
 
 deltask do_configure
 deltask do_compile

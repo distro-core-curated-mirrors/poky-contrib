@@ -14,4 +14,4 @@ DUMMYPROVIDES = "\
 
 require dummy-sdk-package.inc
 
-inherit nativesdk
+inherit_defer nativesdk

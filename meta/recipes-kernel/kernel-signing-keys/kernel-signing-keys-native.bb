@@ -20,7 +20,7 @@ require conf/image-fitimage.conf
 
 DEPENDS += "openssl-native"
 
-inherit native
+inherit_defer native
 
 do_fetch[noexec] = "1"
 do_unpack[noexec] = "1"

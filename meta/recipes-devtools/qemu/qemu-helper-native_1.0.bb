@@ -9,7 +9,7 @@ SRC_URI = "file://qemu-oe-bridge-helper.c"
 S = "${WORKDIR}/sources"
 UNPACKDIR = "${S}"
 
-inherit native
+inherit_defer native
 
 do_compile() {
 	${CC} ${CFLAGS} ${LDFLAGS} -Wall qemu-oe-bridge-helper.c -o qemu-oe-bridge-helper

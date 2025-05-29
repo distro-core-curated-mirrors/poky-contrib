@@ -4,7 +4,8 @@ require systemd.inc
 
 DEPENDS = "gperf-native libcap-native util-linux-native python3-jinja2-native"
 
-inherit pkgconfig meson native
+inherit pkgconfig meson
+inherit_defer native
 
 MESON_TARGET = "systemctl:executable"
 MESON_INSTALL_TAGS = "systemctl"

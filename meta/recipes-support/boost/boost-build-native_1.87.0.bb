@@ -12,7 +12,7 @@ PE = "1"
 
 UPSTREAM_CHECK_GITTAGREGEX = "boost-(?P<pver>(\d+(\.\d+)+))"
 
-inherit native
+inherit_defer native
 
 S = "${WORKDIR}/git"
 
