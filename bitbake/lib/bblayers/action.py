@@ -38,7 +38,8 @@ class ActionPlugin(LayerPlugin):
                 sys.stderr.write("Specified layer directory %s doesn't contain a conf/layer.conf file\n" % layerdir)
                 return 1
 
-        bblayers_conf = os.path.join(findTopdir(),'conf', 'bblayers.conf')
+        topdir = findTopdir()
+        bblayers_conf = os.path.join(topdir, 'conf', 'bblayers.conf')
         if not os.path.exists(bblayers_conf):
             sys.stderr.write("Unable to find bblayers.conf\n")
             return 1
@@ -47,6 +48,12 @@ class ActionPlugin(LayerPlugin):
         tempdir = tempfile.mkdtemp()
         backup = tempdir + "/bblayers.conf.bak"
         shutil.copy2(bblayers_conf, backup)
+
+        if args.relative:
+            layerdirs = [
+                os.path.join("${TOPDIR}", os.path.relpath(ldir, topdir))
+                for ldir in layerdirs
+            ]
 
         try:
             notadded, _ = bb.utils.edit_bblayers_conf(bblayers_conf, layerdirs, None)
@@ -268,6 +275,7 @@ build results (as the layer priority order has effectively changed).
 
     def register_commands(self, sp):
         parser_add_layer = self.add_command(sp, 'add-layer', self.do_add_layer, parserecipes=False)
+        parser_add_layer.add_argument('-r', '--relative', action='store_true', help='Add layer directories relative to TOPDIR (default is absolute paths)')
         parser_add_layer.add_argument('layerdir', nargs='+', help='Layer directory/directories to add')
 
         parser_remove_layer = self.add_command(sp, 'remove-layer', self.do_remove_layer, parserecipes=False)
