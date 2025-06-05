@@ -1903,6 +1903,10 @@ class CookerCollectFiles(object):
             base = os.path.basename(f).replace('.bbappend', '.bb')
             self.bbappends.append((base, f))
 
+        bbfiles.remove("/media/build/poky/meta/recipes-core/images/core-image-ptest.bb")
+        bbfiles.insert(0, "/media/build/poky/meta/recipes-core/images/core-image-ptest.bb")
+        #bb.warn(str(bbfiles))
+
         # Find overlayed recipes
         # bbfiles will be in priority order which makes this easy
         bbfile_seen = dict()
