@@ -36,6 +36,8 @@ __expand_python_regexp__ = re.compile(r"\${@(?:{.*?}|.)+?}")
 __whitespace_split__ = re.compile(r'(\s)')
 __override_regexp__ = re.compile(r'[a-z0-9]+')
 
+DEBUG_CLEAR = False
+
 bitbake_renamed_vars = {
     "BB_ENV_WHITELIST": "BB_ENV_PASSTHROUGH",
     "BB_ENV_EXTRAWHITE": "BB_ENV_PASSTHROUGH_ADDITIONS",
@@ -500,6 +502,8 @@ class DataSmart(MutableMapping):
             overrride_stack.append(self.overrides)
             self.overridesset = set(self.overrides)
             self.inoverride = False
+            if DEBUG_CLEAR:
+                bb.warn("overrides clear")
             self.expand_cache = {}
             newoverrides = (self.getVar("OVERRIDES") or "").split(":") or []
             if newoverrides == self.overrides:
@@ -557,6 +561,8 @@ class DataSmart(MutableMapping):
             self.setVar("_FAILPARSINGERRORHANDLED", True)
 
         self.expand_cache = {}
+        if DEBUG_CLEAR:
+            bb.warn("setVar clear %s" % (var))
         parsing=False
         if 'parsing' in loginfo:
             parsing=True
@@ -712,6 +718,9 @@ class DataSmart(MutableMapping):
         self.setVar(var + ":prepend", value, ignore=True, parsing=True)
 
     def delVar(self, var, **loginfo):
+
+        if DEBUG_CLEAR:
+            bb.warn("delVar clear %s" % (var))
         self.expand_cache = {}
 
         loginfo['detail'] = ""
@@ -740,6 +749,8 @@ class DataSmart(MutableMapping):
 
     def setVarFlag(self, var, flag, value, **loginfo):
         self.expand_cache = {}
+        if DEBUG_CLEAR:
+            bb.warn("setVarflag clear %s:%s" % (var, flag))
 
         if var == "BB_RENAMED_VARIABLES":
             self._var_renames[flag] = value
@@ -769,6 +780,16 @@ class DataSmart(MutableMapping):
                 self.dict["__exportlist"]["_content"] = set()
             self.dict["__exportlist"]["_content"].add(var)
 
+    def getVarFlag1(self, var, flag, expand=True, noweakdefault=False, parsing=False, retparser=False):
+        return self.getVarFlag(var, flag, expand, noweakdefault, parsing, retparser)
+    def getVarFlag2(self, var, flag, expand=True, noweakdefault=False, parsing=False, retparser=False):
+        return self.getVarFlag(var, flag, expand, noweakdefault, parsing, retparser)
+    def getVarFlag3(self, var, flag, expand=True, noweakdefault=False, parsing=False, retparser=False):
+        return self.getVarFlag(var, flag, expand, noweakdefault, parsing, retparser)
+    def getVarFlag4(self, var, flag, expand=True, noweakdefault=False, parsing=False, retparser=False):
+        return self.getVarFlag(var, flag, expand, noweakdefault, parsing, retparser)
+
+
     def getVarFlag(self, var, flag, expand=True, noweakdefault=False, parsing=False, retparser=False):
         if flag == "_content":
             cachename = var
@@ -778,6 +799,8 @@ class DataSmart(MutableMapping):
                 return None
             cachename = var + "[" + flag + "]"
 
+        if DEBUG_CLEAR:
+            bb.warn(str(len(self.expand_cache)))
         if not expand and retparser and cachename in self.expand_cache:
             return self.expand_cache[cachename].unexpanded_value, self.expand_cache[cachename]
 
@@ -904,6 +927,8 @@ class DataSmart(MutableMapping):
         return value
 
     def delVarFlag(self, var, flag, **loginfo):
+        if DEBUG_CLEAR:
+            bb.warn("delVarflag clear %s:%s" % (var, flag))
         self.expand_cache = {}
 
         local_var = self._findVar(var)
@@ -937,6 +962,8 @@ class DataSmart(MutableMapping):
         self.setVarFlag(var, flag, newvalue, ignore=True)
 
     def setVarFlags(self, var, flags, **loginfo):
+        if DEBUG_CLEAR:
+            bb.warn("setVarflags clear %s:%s" % (var, flags))
         self.expand_cache = {}
         infer_caller_details(loginfo)
         if not var in self.dict:
@@ -972,6 +999,8 @@ class DataSmart(MutableMapping):
         return flags
 
     def delVarFlags(self, var, **loginfo):
+        if DEBUG_CLEAR:
+            bb.warn("delVarflags clear %s" % (var))        
         self.expand_cache = {}
         if not var in self.dict:
             self._makeShadowCopy(var)
