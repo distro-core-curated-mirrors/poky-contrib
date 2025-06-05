@@ -262,6 +262,7 @@ def emit_func_python(func, o=sys.__stdout__, d = init()):
         newdeps -= seen
 
 def build_dependencies(key, keys, mod_funcs, shelldeps, varflagsexcl, ignored_vars, d, codeparsedata):
+    #bb.warn(key)
     def handle_contains(value, contains, exclusions, d):
         newvalue = []
         if value:
@@ -300,7 +301,7 @@ def build_dependencies(key, keys, mod_funcs, shelldeps, varflagsexcl, ignored_va
             vf = key[:-1].split('[')
             if vf[1] == "vardepvalueexclude":
                 return deps, ""
-            value, parser = d.getVarFlag(vf[0], vf[1], False, retparser=True)
+            value, parser = d.getVarFlag1(vf[0], vf[1], False, retparser=True)
             deps |= parser.references
             deps = deps | (keys & parser.execs)
             deps -= ignored_vars
@@ -313,14 +314,14 @@ def build_dependencies(key, keys, mod_funcs, shelldeps, varflagsexcl, ignored_va
             value = varflags.get("vardepvalue")
         elif varflags.get("func"):
             if varflags.get("python"):
-                value = codeparsedata.getVarFlag(key, "_content", False)
+                value = codeparsedata.getVarFlag2(key, "_content", False)
                 parser = bb.codeparser.PythonParser(key, logger)
                 parser.parse_python(value, filename=varflags.get("filename"), lineno=varflags.get("lineno"))
                 deps = deps | parser.references
                 deps = deps | (keys & parser.execs)
                 value = handle_contains(value, parser.contains, exclusions, d)
             else:
-                value, parsedvar = codeparsedata.getVarFlag(key, "_content", False, retparser=True)
+                value, parsedvar = codeparsedata.getVarFlag3(key, "_content", False, retparser=True)
                 parser = bb.codeparser.ShellParser(key, logger)
                 parser.parse_shell(parsedvar.value)
                 deps = deps | shelldeps
@@ -338,7 +339,7 @@ def build_dependencies(key, keys, mod_funcs, shelldeps, varflagsexcl, ignored_va
             if "exports" in varflags:
                 deps = deps | set(varflags["exports"].split())
         else:
-            value, parser = d.getVarFlag(key, "_content", False, retparser=True)
+            value, parser = d.getVarFlag4(key, "_content", False, retparser=True)
             deps |= parser.references
             deps = deps | (keys & parser.execs)
             value = handle_contains(value, parser.contains, exclusions, d)
