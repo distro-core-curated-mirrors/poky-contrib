@@ -583,4 +583,5 @@ def multi_finalize(fn, d):
                 datastores[variant].setVar("__SKIPPED", e.args[0])
 
     datastores[""] = d
+    #bb.warn("Finished %s" % fn)
     return datastores
