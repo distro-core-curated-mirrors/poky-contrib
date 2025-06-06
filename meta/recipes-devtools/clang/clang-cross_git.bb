@@ -10,7 +10,7 @@ PN = "clang-cross-${TARGET_ARCH}"
 
 require common-clang.inc
 require common-source.inc
-inherit_defer cross
+inherit cross
 TOOLCHAIN = "clang"
 DEPENDS += "clang-native virtual/cross-binutils"
 

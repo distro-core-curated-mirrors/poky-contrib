@@ -1,4 +1,4 @@
-inherit_defer cross
+inherit cross
 
 PN = "binutils-cross-${TARGET_ARCH}"
 BPN = "binutils"

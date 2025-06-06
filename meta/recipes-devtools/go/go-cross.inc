@@ -1,4 +1,4 @@
-inherit_defer cross
+inherit cross
 
 PROVIDES = "virtual/${TUNE_PKGARCH}-go"
 DEPENDS = "go-native"

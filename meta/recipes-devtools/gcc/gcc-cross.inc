@@ -1,4 +1,4 @@
-inherit_defer cross
+inherit cross
 
 INHIBIT_DEFAULT_DEPS = "1"
 EXTRADEPENDS = ""
