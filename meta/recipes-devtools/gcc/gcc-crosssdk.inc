@@ -1,4 +1,4 @@
-inherit crosssdk
+inherit_defer crosssdk
 
 PN = "gcc-crosssdk-${SDK_SYS}"
 

@@ -21,7 +21,7 @@ BPN = "gdb"
 # Ignore how TARGET_ARCH is computed.
 TARGET_ARCH[vardepvalue] = "${TARGET_ARCH}"
 
-inherit cross
+inherit_defer cross
 inherit gettext
 
 datadir .= "/gdb-${TARGET_SYS}${TARGET_VENDOR}-${TARGET_OS}"

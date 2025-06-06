@@ -1,6 +1,6 @@
 require binutils-cross_${PV}.bb
 
-inherit crosssdk
+inherit_defer crosssdk
 
 PN = "binutils-crosssdk-${SDK_SYS}"
 

@@ -1,4 +1,4 @@
-inherit crosssdk
+inherit_defer crosssdk
 
 DEPENDS = "go-native virtual/nativesdk-cross-cc virtual/nativesdk-compilerlibs virtual/nativesdk-cross-binutils"
 PN = "go-crosssdk-${SDK_SYS}"
