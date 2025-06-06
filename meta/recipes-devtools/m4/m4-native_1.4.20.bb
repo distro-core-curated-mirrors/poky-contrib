@@ -1,6 +1,6 @@
 require m4-${PV}.inc
 
-inherit_defer native
+inherit native
 
 INHIBIT_AUTOTOOLS_DEPS = "1"
 DEPENDS += "gnu-config-native"

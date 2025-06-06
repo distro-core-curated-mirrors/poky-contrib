@@ -21,7 +21,7 @@ SRC_URI = "file://${COREBASE}/scripts/runqemu \
 S = "${WORKDIR}/sources"
 UNPACKDIR = "${S}"
 
-inherit_defer nativesdk
+inherit nativesdk
 
 do_compile() {
 	:

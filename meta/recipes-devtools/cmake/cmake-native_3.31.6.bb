@@ -1,5 +1,5 @@
 require cmake.inc
-inherit_defer native
+inherit native
 
 DEPENDS += "bzip2-replacement-native xz-native zlib-native ncurses-native zstd-native openssl-native"
 

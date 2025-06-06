@@ -1,2 +1,2 @@
 require quilt.inc
-inherit_defer native
+inherit native

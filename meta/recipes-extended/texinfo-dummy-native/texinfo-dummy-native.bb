@@ -11,7 +11,7 @@ SRC_URI = "file://template.py file://COPYING"
 S = "${WORKDIR}/sources"
 UNPACKDIR = "${S}"
 
-inherit_defer native
+inherit native
 
 #
 # To avoid texinfo-dummy-native and texinfo-native conflicting we install to base_bindir

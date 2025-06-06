@@ -15,7 +15,7 @@ INHIBIT_AUTOTOOLS_DEPS = "1"
 LICENSE = "FSF-Unlimited"
 LIC_FILES_CHKSUM = "file://${UNPACKDIR}/COPYING;md5=4bd090a20bfcd1a18f1f79837b5e3e91"
 
-inherit_defer native
+inherit native
 
 S = "${WORKDIR}/gettext-${PV}"
 

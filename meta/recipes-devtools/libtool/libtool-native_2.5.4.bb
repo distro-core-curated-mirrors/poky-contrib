@@ -2,7 +2,7 @@ require libtool-${PV}.inc
 
 DEPENDS = ""
 
-inherit_defer native
+inherit native
 
 do_install () {
 	autotools_do_install
