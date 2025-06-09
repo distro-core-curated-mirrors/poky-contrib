@@ -74,3 +74,15 @@ python do_cleanccache() {
 }
 addtask cleanall after do_cleanccache
 do_cleanccache[nostamp] = "1"
+
+ccache_clear_stats() {
+    ccache --zero-stats
+}
+do_compile[prefuncs] += "ccache_clear_stats"
+
+# TODO fails if nothing actually ran
+ccache_dump_stats() {
+    HIT=$(ccache --print-stats | awk  -e '/local_storage_hit/ { hit = $2 } /local_storage_miss/ { miss = $2} END { printf "%.0f\n", hit/(hit+miss)*100 }')
+    bbnote ccache hit rate $HIT
+}
+#do_compile[postfuncs] += "ccache_dump_stats"
