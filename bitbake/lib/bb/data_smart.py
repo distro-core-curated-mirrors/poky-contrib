@@ -24,6 +24,7 @@ from collections.abc import MutableMapping
 import logging
 import hashlib
 import bb, bb.codeparser
+import bb.filter
 from bb   import utils
 from bb.COW  import COWDictBase
 
@@ -917,6 +918,9 @@ class DataSmart(MutableMapping):
                 parser.value = "".join(val)
                 if expand:
                     value = parser.value
+
+        if value and expand and flag == "_content" and local_var and "filter" in local_var:
+            value = bb.filter.apply_filters(value, [local_var['filter'],])
 
         if parser:
             self.expand_cache[cachename] = parser

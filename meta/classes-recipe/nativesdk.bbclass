@@ -103,7 +103,7 @@ python () {
     clsextend.rename_packages()
     clsextend.rename_package_variables((d.getVar("PACKAGEVARS") or "").split())
 
-    clsextend.map_depends_variable("DEPENDS")
+    d.setVarFlag("DEPENDS", "filter", "oe.classextend.suffix_filter(val, 'nativesdk')")
     clsextend.map_depends_variable("PACKAGE_WRITE_DEPS")
     clsextend.map_packagevars()
     clsextend.map_variable("PROVIDES")

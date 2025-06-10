@@ -5,6 +5,67 @@
 #
 
 import collections
+import bb.filter
+
+@bb.filter.filter_proc()
+def native_filter(val, pn, bpn, regex=False, selfref=True):
+    deps = val
+    if not deps:
+        return
+    deps = bb.utils.explode_deps(deps)
+    newdeps = []
+    for dep in deps:
+        if regex and dep.startswith("^") and dep.endswith("$"):
+            newdeps.append(dep[:-1].replace(pn, bpn) + "-native$")
+        elif dep == pn:
+            if not selfref:
+                continue
+            newdeps.append(dep)
+        elif "-cross-" in dep:
+            newdeps.append(dep.replace("-cross", "-native"))
+        elif not dep.endswith("-native"):
+            # Replace ${PN} with ${BPN} in the dependency to make sure
+            # dependencies on, e.g., ${PN}-foo become ${BPN}-foo-native
+            # rather than ${BPN}-native-foo-native.
+            newdeps.append(dep.replace(pn, bpn) + "-native")
+        else:
+            newdeps.append(dep)
+    return " ".join(newdeps)
+
+
+@bb.filter.filter_proc()
+def suffix_filter(val, extname):
+    def add_suffix(val, extname):
+        if val.endswith(("-native", "-native-runtime")) or ('nativesdk-' in val) or ('cross-canadian' in val) or ('-crosssdk-' in val):
+            return val
+        if val.startswith("kernel-") or val == "virtual/kernel":
+            return val
+        if val.startswith("rtld"):
+            return val
+        if val.endswith("-crosssdk"):
+            return val
+        if val.endswith("-" + extname):
+            val = val.replace("-" + extname, "")
+        if val.startswith("virtual/"):
+            # Assume large numbers of dashes means a triplet is present and we don't need to convert
+            if val.count("-") >= 3 and val.endswith(("-go",)):
+                return val
+            subs = val.split("/", 1)[1]
+            if not subs.startswith(extname):
+                return "virtual/" + extname + "-" + subs
+            return val
+        if val.startswith("/") or (val.startswith("${") and val.endswith("}")):
+            return val
+        if not val.startswith(extname):
+            return extname + "-" + val
+        return val
+
+    deps = bb.utils.explode_dep_versions2(val)
+    newdeps = collections.OrderedDict()
+    for dep in deps:
+        newdeps[add_suffix(dep, extname)] = deps[dep]
+    return bb.utils.join_deps(newdeps, False)
+
 
 def get_packages(d):
     pkgs = d.getVar("PACKAGES_NONML")
