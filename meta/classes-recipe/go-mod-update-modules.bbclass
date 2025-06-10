@@ -2,11 +2,9 @@ addtask do_update_modules after do_configure
 do_update_modules[nostamp] = "1"
 do_update_modules[network] = "1"
 
-# preserve licenses in case the user updated unknowns
-
 python do_update_modules() {
-    import subprocess, tempfile, json, re
-    from oe.license_finder import find_licenses
+    import subprocess, tempfile, json, re, urllib.parse
+    import oe.license_finder
 
     def unescape_path(path):
         """Unescape capital letters using exclamation points."""
@@ -27,11 +25,24 @@ python do_update_modules() {
             value = " & ".join(value)
         return sorted(list(set(flattened_licenses(value, _choose))), key=str.casefold)
 
+    def parse_existing_licenses():
+        hashes = {}
+        for url in d.getVar("LIC_FILES_CHKSUM").split():
+            (method, host, path, user, pswd, parm) = bb.fetch.decodeurl(url)
+            if "spdx" in parm:
+                hashes[parm["md5"]] = urllib.parse.unquote_plus(parm["spdx"])
+        return hashes
+
+    def find_licenses(srctree, d, first_only=False):
+        licfiles = oe.license_finder.find_license_files(srctree, first_only)
+        licenses = oe.license_finder.match_licenses(licfiles, srctree, d, extra_hashes=extra_hashes)
+        return licenses
+
     bpn = d.getVar("BPN")
     thisdir = d.getVar("THISDIR")
 
     mod_dir = tempfile.mkdtemp(prefix='go-mod-')
-    bb.warn("using tmp mod %s" % mod_dir)
+    # TODO remove when done
     #d.setVar('GOMODCACHE', mod_dir)
     env = dict(os.environ, GOMODCACHE=mod_dir)
 
@@ -47,6 +58,9 @@ python do_update_modules() {
     #
     # Licenses
     #
+
+    # load hashes from the existing licenses.inc
+    extra_hashes = parse_existing_licenses()
 
     # The output of this isn't actually valid JSON, but a series of dicts.
     # Wrap in [] and join the dicts with ,
@@ -65,7 +79,7 @@ python do_update_modules() {
         if not mod or mod.get('Main', False):
             continue
         path = os.path.relpath(mod['Dir'], mod_dir)
-        for license_name, license_file, license_md5 in find_licenses(mod['Dir'], d):
+        for license_name, license_file, license_md5 in find_licenses(mod['Dir'], d, first_only=True):
             lic_files[os.path.join(path, license_file)] = (license_name, license_md5)
 
     for lic_file in lic_files:
@@ -75,7 +89,7 @@ python do_update_modules() {
 
         licenses.add(lic_files[lic_file][0])
         lic_files_chksum.append(
-            f'file://pkg/mod/{lic_file};md5={license_md5};spdx={license_name}')
+            f'file://pkg/mod/{lic_file};md5={license_md5};spdx={urllib.parse.quote_plus(license_name)}')
 
     licenses_filename = os.path.join(thisdir, f"{bpn}-licenses.inc")
     with open(licenses_filename, "w") as f:
