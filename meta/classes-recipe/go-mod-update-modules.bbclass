@@ -4,7 +4,7 @@ do_update_modules[network] = "1"
 
 python do_update_modules() {
     import subprocess, tempfile, json, re, urllib.parse
-    import oe.license_finder
+    from oe.license_finder import find_licenses
 
     def unescape_path(path):
         """Unescape capital letters using exclamation points."""
@@ -32,11 +32,6 @@ python do_update_modules() {
             if "spdx" in parm:
                 hashes[parm["md5"]] = urllib.parse.unquote_plus(parm["spdx"])
         return hashes
-
-    def find_licenses(srctree, d, first_only=False):
-        licfiles = oe.license_finder.find_license_files(srctree, first_only)
-        licenses = oe.license_finder.match_licenses(licfiles, srctree, d, extra_hashes=extra_hashes)
-        return licenses
 
     bpn = d.getVar("BPN")
     thisdir = d.getVar("THISDIR")
@@ -72,14 +67,12 @@ python do_update_modules() {
     lic_files_chksum = []
     lic_files = {}
     for pkg in pkgs:
-        # TODO: If the package is in a subdirectory with its own license
-        # files then report those istead of the license files found in the
-        # module root directory.
         mod = pkg.get('Module', None)
         if not mod or mod.get('Main', False):
             continue
+
         path = os.path.relpath(mod['Dir'], mod_dir)
-        for license_name, license_file, license_md5 in find_licenses(mod['Dir'], d, first_only=True):
+        for license_name, license_file, license_md5 in find_licenses(mod['Dir'], d, first_only=True, extra_hashes=extra_hashes):
             lic_files[os.path.join(path, license_file)] = (license_name, license_md5)
 
     for lic_file in lic_files:
