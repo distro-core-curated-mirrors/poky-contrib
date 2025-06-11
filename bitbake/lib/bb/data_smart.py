@@ -992,7 +992,7 @@ class DataSmart(MutableMapping):
                 else:
                     flags[i] = val
 
-                if expand and i in expand:
+                if expand and i in expand and type(flags[i]) is str and '${' in flags[i]:
                     flags[i] = self.expand(flags[i], var + "[" + i + "]")
         if len(flags) == 0:
             return None
