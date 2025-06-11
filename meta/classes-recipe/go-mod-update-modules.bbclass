@@ -36,103 +36,100 @@ python do_update_modules() {
     bpn = d.getVar("BPN")
     thisdir = d.getVar("THISDIR")
 
-    mod_dir = tempfile.mkdtemp(prefix='go-mod-')
-    # TODO remove when done
-    #d.setVar('GOMODCACHE', mod_dir)
-    env = dict(os.environ, GOMODCACHE=mod_dir)
+    with tempfile.TemporaryDirectory(prefix='go-mod-') as mod_dir:
+        env = dict(os.environ, GOMODCACHE=mod_dir)
 
-    # TODO this feels magic
-    source = d.expand("${WORKDIR}/${GO_SRCURI_DESTSUFFIX}")
+        # TODO this feels magic
+        source = d.expand("${WORKDIR}/${GO_SRCURI_DESTSUFFIX}")
 
-    # TODO is this needed in the refresh case?
-    output = subprocess.check_output(("go", "mod", "edit", "-json"), cwd=source, env=env, text=True)
-    go_mod = json.loads(output)
+        output = subprocess.check_output(("go", "mod", "edit", "-json"), cwd=source, env=env, text=True)
+        go_mod = json.loads(output)
 
-    output = subprocess.check_output(("go", "list", "-json=Dir,Module", "-deps", f"{go_mod['Module']['Path']}/..."), cwd=source, env=env, text=True)
+        output = subprocess.check_output(("go", "list", "-json=Dir,Module", "-deps", f"{go_mod['Module']['Path']}/..."), cwd=source, env=env, text=True)
 
-    #
-    # Licenses
-    #
+        #
+        # Licenses
+        #
 
-    # load hashes from the existing licenses.inc
-    extra_hashes = parse_existing_licenses()
+        # load hashes from the existing licenses.inc
+        extra_hashes = parse_existing_licenses()
 
-    # The output of this isn't actually valid JSON, but a series of dicts.
-    # Wrap in [] and join the dicts with ,
-    # Very frustrating that the json parser in python can't repeatedly
-    # parse from a stream.
-    pkgs = json.loads('[' + output.replace('}\n{', '},\n{') + ']')
-    # Collect licenses for the dependencies.
-    licenses = set()
-    lic_files_chksum = []
-    lic_files = {}
-    for pkg in pkgs:
-        mod = pkg.get('Module', None)
-        if not mod or mod.get('Main', False):
-            continue
+        # The output of this isn't actually valid JSON, but a series of dicts.
+        # Wrap in [] and join the dicts with ,
+        # Very frustrating that the json parser in python can't repeatedly
+        # parse from a stream.
+        pkgs = json.loads('[' + output.replace('}\n{', '},\n{') + ']')
+        # Collect licenses for the dependencies.
+        licenses = set()
+        lic_files_chksum = []
+        lic_files = {}
+        for pkg in pkgs:
+            mod = pkg.get('Module', None)
+            if not mod or mod.get('Main', False):
+                continue
 
-        path = os.path.relpath(mod['Dir'], mod_dir)
-        for license_name, license_file, license_md5 in find_licenses(mod['Dir'], d, first_only=True, extra_hashes=extra_hashes):
-            lic_files[os.path.join(path, license_file)] = (license_name, license_md5)
+            path = os.path.relpath(mod['Dir'], mod_dir)
+            for license_name, license_file, license_md5 in find_licenses(mod['Dir'], d, first_only=True, extra_hashes=extra_hashes):
+                lic_files[os.path.join(path, license_file)] = (license_name, license_md5)
 
-    for lic_file in lic_files:
-        license_name, license_md5 = lic_files[lic_file]
-        if license_name == "Unknown":
-            bb.warn(f"Unknown license: {lic_file} {license_md5}")
+        for lic_file in lic_files:
+            license_name, license_md5 = lic_files[lic_file]
+            if license_name == "Unknown":
+                bb.warn(f"Unknown license: {lic_file} {license_md5}")
 
-        licenses.add(lic_files[lic_file][0])
-        lic_files_chksum.append(
-            f'file://pkg/mod/{lic_file};md5={license_md5};spdx={urllib.parse.quote_plus(license_name)}')
+            licenses.add(lic_files[lic_file][0])
+            lic_files_chksum.append(
+                f'file://pkg/mod/{lic_file};md5={license_md5};spdx={urllib.parse.quote_plus(license_name)}')
 
-    licenses_filename = os.path.join(thisdir, f"{bpn}-licenses.inc")
-    with open(licenses_filename, "w") as f:
-        f.write(f'LICENSE += "& {" & ".join(tidy_licenses(licenses))}"\n\n')
-        f.write('LIC_FILES_CHKSUM += "\\\n')
-        for lic in sorted(lic_files_chksum, key=fold_uri):
-            f.write('    ' + lic + ' \\\n')
-        f.write('"\n')
+        licenses_filename = os.path.join(thisdir, f"{bpn}-licenses.inc")
+        with open(licenses_filename, "w") as f:
+            f.write(f'LICENSE += "& {" & ".join(tidy_licenses(licenses))}"\n\n')
+            f.write('LIC_FILES_CHKSUM += "\\\n')
+            for lic in sorted(lic_files_chksum, key=fold_uri):
+                f.write('    ' + lic + ' \\\n')
+            f.write('"\n')
 
-    #
-    # Sources
-    #
+        #
+        # Sources
+        #
 
-    # Collect the module cache files downloaded by the go list command as
-    # the go list command knows best what the go list command needs and it
-    # needs more files in the module cache than the go install command as
-    # it doesn't do the dependency pruning mentioned in the Go module
-    # reference, https://go.dev/ref/mod, for go 1.17 or higher.
-    src_uris = []
-    downloaddir = os.path.join(mod_dir, 'cache', 'download')
-    for dirpath, _, filenames in os.walk(downloaddir):
-        # We want to process files under @v directories
-        path, base = os.path.split(os.path.relpath(dirpath, downloaddir))
-        if base != '@v':
-            continue
+        # Collect the module cache files downloaded by the go list command as
+        # the go list command knows best what the go list command needs and it
+        # needs more files in the module cache than the go install command as
+        # it doesn't do the dependency pruning mentioned in the Go module
+        # reference, https://go.dev/ref/mod, for go 1.17 or higher.
+        src_uris = []
+        downloaddir = os.path.join(mod_dir, 'cache', 'download')
+        for dirpath, _, filenames in os.walk(downloaddir):
+            # We want to process files under @v directories
+            path, base = os.path.split(os.path.relpath(dirpath, downloaddir))
+            if base != '@v':
+                continue
 
-        path = unescape_path(path)
-        zipver = None
-        for name in filenames:
-            ver, ext = os.path.splitext(name)
-            if ext == '.zip':
-                chksum = bb.utils.sha256_file(os.path.join(dirpath, name))
-                src_uris.append(f'gomod://{path};version={ver};sha256sum={chksum}')
-                zipver = ver
-                break
-        for name in filenames:
-            ver, ext = os.path.splitext(name)
-            if ext == '.mod' and ver != zipver:
-                chksum = bb.utils.sha256_file(os.path.join(dirpath, name))
-                src_uris.append(f'gomod://{path};version={ver};mod=1;sha256sum={chksum}')
+            path = unescape_path(path)
+            zipver = None
+            for name in filenames:
+                ver, ext = os.path.splitext(name)
+                if ext == '.zip':
+                    chksum = bb.utils.sha256_file(os.path.join(dirpath, name))
+                    src_uris.append(f'gomod://{path};version={ver};sha256sum={chksum}')
+                    zipver = ver
+                    break
+            for name in filenames:
+                ver, ext = os.path.splitext(name)
+                if ext == '.mod' and ver != zipver:
+                    chksum = bb.utils.sha256_file(os.path.join(dirpath, name))
+                    src_uris.append(f'gomod://{path};version={ver};mod=1;sha256sum={chksum}')
 
 
-    go_mods_filename = os.path.join(thisdir, f"{bpn}-go-mods.inc")
-    with open(go_mods_filename, "w") as f:
-        f.write('SRC_URI += "\\\n')
-        for uri in sorted(src_uris, key=fold_uri):
-            f.write('    ' + uri + ' \\\n')
-        f.write('"\n')
+        go_mods_filename = os.path.join(thisdir, f"{bpn}-go-mods.inc")
+        with open(go_mods_filename, "w") as f:
+            f.write('SRC_URI += "\\\n')
+            for uri in sorted(src_uris, key=fold_uri):
+                f.write('    ' + uri + ' \\\n')
+            f.write('"\n')
 
-    subprocess.check_output(("go", "clean", "-modcache"), cwd=source, env=env, text=True)
+        subprocess.check_output(("go", "clean", "-modcache"), cwd=source, env=env, text=True)
 }
 
 # This doesn't work as we need to wipe the inc files first so we don't try looking for LICENSE files that don't yet exist
