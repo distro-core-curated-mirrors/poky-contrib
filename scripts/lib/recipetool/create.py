@@ -918,7 +918,8 @@ def create_recipe(args):
                 lastline = line
         log_info_cond('Recipe %s has been created; further editing may be required to make it fully functional' % outfile, args.devtool)
         tinfoil.modified_files()
-
+        # TODO: see if handler needs a task ran
+        #tinfoil.build_file(outfile, "update_modules")
     if tempsrc:
         if args.keep_temp:
             logger.info('Preserving temporary directory %s' % tempsrc)
