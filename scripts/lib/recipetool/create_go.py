@@ -139,6 +139,7 @@ class GoRecipeHandler(RecipeHandler):
         licenses_basename = "{pn}-licenses.inc"
         licenses_filename = os.path.join(localfilesdir, licenses_basename)
         with open(licenses_filename, "w") as f:
+            f.write("# FROM RECIPETOOL\n")
             f.write(f'GO_MOD_LICENSES = "{" & ".join(sorted(licenses))}"\n\n')
             f.write('LIC_FILES_CHKSUM += "\\\n')
             for lic in sorted(lic_files_chksum, key=self.__fold_uri):
@@ -150,11 +151,25 @@ class GoRecipeHandler(RecipeHandler):
         go_mods_basename = "{pn}-go-mods.inc"
         go_mods_filename = os.path.join(localfilesdir, go_mods_basename)
         with open(go_mods_filename, "w") as f:
+            f.write("# FROM RECIPETOOL\n")
             f.write('SRC_URI += "\\\n')
             for uri in sorted(src_uris, key=self.__fold_uri):
                 f.write('    ' + uri + ' \\\n')
             f.write('"\n')
 
+        extravalues['extrafiles'][f"../{go_mods_basename}"] = go_mods_filename
+
+    def __go_mod(self, go_mod, srctree, localfilesdir, extravalues, d):
+        licenses_basename = "{pn}-licenses.inc"
+        licenses_filename = os.path.join(localfilesdir, licenses_basename)
+        with open(licenses_filename, "w") as f:
+            f.write("# FROM RECIPETOOL\n")
+        extravalues['extrafiles'][f"../{licenses_basename}"] = licenses_filename
+
+        go_mods_basename = "{pn}-go-mods.inc"
+        go_mods_filename = os.path.join(localfilesdir, go_mods_basename)
+        with open(go_mods_filename, "w") as f:
+            f.write("# FROM RECIPETOOL\n")
         extravalues['extrafiles'][f"../{go_mods_basename}"] = go_mods_filename
 
     def process(self, srctree, classes, lines_before,
@@ -175,6 +190,7 @@ class GoRecipeHandler(RecipeHandler):
         d.prependVar('PATH', '%s:' % go_bindir)
         handled.append('buildsystem')
         classes.append("go-mod")
+        classes.append("go-mod-update-modules")
 
         tmp_mod_dir = tempfile.mkdtemp(prefix='go-mod-')
         d.setVar('GOMODCACHE', tmp_mod_dir)
@@ -212,8 +228,8 @@ class GoRecipeHandler(RecipeHandler):
     def __rewrite_lic_vars(self, lines_before):
 
         def varfunc(varname, origvalue, op, newlines):
-            if varname == 'LICENSE':
-                return ' & '.join((origvalue, '${GO_MOD_LICENSES}')), None, -1, True
+            #if varname == 'LICENSE':
+            #    return ' & '.join((origvalue, '${GO_MOD_LICENSES}')), None, -1, True
             if varname == 'LIC_FILES_CHKSUM':
                 new_licenses = []
                 licenses = origvalue.split('\\')
