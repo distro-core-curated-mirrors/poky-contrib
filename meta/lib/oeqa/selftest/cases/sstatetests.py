@@ -51,7 +51,8 @@ class SStateBase(OESelftestTestCase):
             temp_sstate_path = os.path.join(self.builddir, "temp_sstate_%s" % datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
             config_temp_sstate = "SSTATE_DIR = \"%s\"" % temp_sstate_path
             self.append_config(config_temp_sstate)
-            self.track_for_cleanup(temp_sstate_path)
+            if not keep_temp_files:
+                self.track_for_cleanup(temp_sstate_path)
         bb_vars = get_bb_vars(['SSTATE_DIR', 'NATIVELSBSTRING'])
         self.sstate_path = bb_vars['SSTATE_DIR']
         self.hostdistro = bb_vars['NATIVELSBSTRING']
@@ -68,15 +69,20 @@ class SStateBase(OESelftestTestCase):
     # Returns a list containing sstate files
     def search_sstate(self, filename_regex, distro_specific=True, distro_nonspecific=True):
         result = []
+        print("Search for: %s %s %s" % (str(filename_regex), distro_specific, distro_nonspecific))
         for root, dirs, files in os.walk(self.sstate_path):
+            print(str(root) + " " + self.sstate_path + " " + self.hostdistro)
             if distro_specific and re.search(r"%s/%s/[a-z0-9]{2}/[a-z0-9]{2}$" % (self.sstate_path, self.hostdistro), root):
+                print(str(files))
                 for f in files:
                     if re.search(filename_regex, f):
                         result.append(f)
             if distro_nonspecific and re.search(r"%s/[a-z0-9]{2}/[a-z0-9]{2}$" % self.sstate_path, root):
+                print(str(files))
                 for f in files:
                     if re.search(filename_regex, f):
                         result.append(f)
+        print("Result: %s" % str(result))
         return result
 
     # Test sstate files creation and their location and directory perms
