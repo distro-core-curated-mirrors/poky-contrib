@@ -83,6 +83,7 @@ python split_kernel_module_packages () {
             m = modinfoexp.match(i)
             if not m:
                 continue
+            # TODO needs to handle multiple values
             vals[m.group(1)] = m.group(2)
         return vals
 
@@ -205,6 +206,17 @@ python split_kernel_module_packages () {
             if not dep in rdepends:
                 rdepends[dep] = []
         d.setVar('RDEPENDS:' + pkg, bb.utils.join_deps(rdepends, commasep=False))
+
+        rrecommends = bb.utils.explode_dep_versions2(d.getVar('RRECOMMENDS:' + pkg) or "")
+        modinfo_deps = []
+        if "firmware" in vals and vals["firmware"]:
+            # TODO split properly
+            dep = vals["firmware"]
+            modinfo_deps.append(f"linux-firmware({dep})")
+        for dep in modinfo_deps:
+            if not dep in rrecommends:
+                rrecommends[dep] = []
+        d.setVar('RRECOMMENDS:' + pkg, bb.utils.join_deps(rrecommends, commasep=False))
 
         # Avoid automatic -dev recommendations for modules ending with -dev.
         d.setVarFlag('RRECOMMENDS:' + pkg, 'nodeprrecs', 1)
