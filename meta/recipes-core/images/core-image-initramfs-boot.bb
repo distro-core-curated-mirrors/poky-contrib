@@ -20,3 +20,5 @@ IMAGE_ROOTFS_SIZE = "8192"
 IMAGE_ROOTFS_EXTRA_SPACE = "0"
 
 inherit image
+
+DEPENDS = "firmwarewip"
