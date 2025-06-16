@@ -401,6 +401,16 @@ def runqemu(pn, ssh=True, runqemuparams='', image_fstype=None, launch_cmd=None, 
         targetlogger.removeHandler(handler)
         qemu.stop()
 
+def runqemu_check_taps():
+    """Check if tap devices for runqemu are available"""
+    result = runCmd('PATH="$PATH:/sbin:/usr/sbin" ip tuntap show', ignore_status=True)
+    if result.status != 0:
+        return False
+    for line in result.output.splitlines():
+        if line.startswith('tap'):
+            return True
+    return False
+
 def updateEnv(env_file):
     """
     Source a file and update environment.
