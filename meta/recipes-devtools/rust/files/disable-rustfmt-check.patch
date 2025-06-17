@@ -1,0 +1,23 @@
+Upstream-Status: Inappropriate [OE testing specific]
+---
+diff --git a/src/bootstrap/src/core/download.rs b/src/bootstrap/src/core/download.rs
+index da305fb18f..a952026442 100644
+--- a/src/bootstrap/src/core/download.rs
++++ b/src/bootstrap/src/core/download.rs
+@@ -431,14 +431,14 @@ impl Config {
+         cargo_clippy
+     }
+
+-    #[cfg(test)]
++    #[cfg(not(test))]
+     pub(crate) fn maybe_download_rustfmt(&self) -> Option<PathBuf> {
+         Some(PathBuf::new())
+     }
+
+     /// NOTE: rustfmt is a completely different toolchain than the bootstrap compiler, so it can't
+     /// reuse target directories or artifacts
+-    #[cfg(not(test))]
++    #[cfg(test)]
+     pub(crate) fn maybe_download_rustfmt(&self) -> Option<PathBuf> {
+         use build_helper::stage0_parser::VersionMetadata;
+
