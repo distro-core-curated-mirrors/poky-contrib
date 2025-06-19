@@ -761,9 +761,8 @@ class RecipetoolCreateTests(RecipetoolBase):
         os.makedirs(temprecipe)
 
         recipefile = os.path.join(temprecipe, 'recipetool-go-test_git.bb')
-        deps_require_file = os.path.join(temprecipe, 'recipetool-go-test', 'recipetool-go-test-modules.inc')
+        deps_require_file = os.path.join(temprecipe, 'recipetool-go-test', 'recipetool-go-test-go-modules.inc')
         lics_require_file = os.path.join(temprecipe, 'recipetool-go-test', 'recipetool-go-test-licenses.inc')
-        modules_txt_file = os.path.join(temprecipe, 'recipetool-go-test', 'modules.txt')
 
         srcuri = 'https://git.yoctoproject.org/recipetool-go-test.git'
         srcrev = "c3e213c01b6c1406b430df03ef0d1ae77de5d2f7"
@@ -772,12 +771,11 @@ class RecipetoolCreateTests(RecipetoolBase):
         result = runCmd('recipetool create -o %s %s -S %s -B %s' % (temprecipe, srcuri, srcrev, srcbranch))
 
         self.maxDiff = None
-        inherits = ['go-vendor']
+        inherits = ['go-mod', 'go-mod-update-modules']
 
         checkvars = {}
         checkvars['GO_IMPORT'] = "git.yoctoproject.org/recipetool-go-test"
-        checkvars['SRC_URI'] = {'git://${GO_IMPORT};destsuffix=git/src/${GO_IMPORT};nobranch=1;name=${BPN};protocol=https',
-                                'file://modules.txt'}
+        checkvars['SRC_URI'] = {'git://${GO_IMPORT};protocol=https;nobranch=1;destsuffix=${GO_SRCURI_DESTSUFFIX}'}
         checkvars['LIC_FILES_CHKSUM'] = {
             'file://src/${GO_IMPORT}/LICENSE;md5=4e3933dd47afbf115e484d11385fb3bd',
             'file://src/${GO_IMPORT}/is/LICENSE;md5=62beaee5a116dd1e80161667b1df39ab'
