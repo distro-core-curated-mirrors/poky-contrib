@@ -21,4 +21,8 @@ DEPENDS = "zlib libyaml"
 PROVIDES += "u-boot-fw-utils"
 RPROVIDES:${PN}-bin += "u-boot-fw-utils"
 
+# libubootenv needs /etc/fw_env.config and /etc/u-boot-initial-env configuration
+# files which are usually provided by the MACHINE specific u-boot-env package
+RRECOMMENDS:${PN} += "u-boot-env"
+
 BBCLASSEXTEND = "native"
