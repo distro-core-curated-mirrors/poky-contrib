@@ -1,0 +1,916 @@
+FIT image beaglebone-yocto
+
+Make the beaglebone-yocto MACHINE also a reference device for the FIT image
+kernel. The default kernel is still the zImage kernel. The FIT image kernel
+can be enabled by the beaglebone-yocto specific variable:
+    FIT_IMAGE_KERNEL = "1"
+
+The beaglebone-yocto MACHINE uses wic to create the final image. Until now
+the kernel artifacts have been installed into the rootfs as well as into /boot.
+This series removes the redundant artifacts from the rootfs.
+
+The beaglebone-yocto machine works with runqemu like the qemu MACHINEs do.
+Qemu does not support FIT image, therefore the zImage kernel is kept for
+Qemu independently from FIT_IMAGE_KERNEL.
+Booting in Qemu is not also supported with INITRAMFS_IMAGE.
+
+Booting beaglebone-yocto in Qemu is now also covered by oe-selftest.
+
+
+Testing booting with zImage kernel
+----------------------------------
+
+local.conf
+    DISTRO = "poky"
+    MACHINE = "beaglebone-yocto"
+    INITRAMFS_IMAGE = "core-image-initramfs-boot"
+    FIT_IMAGE_KERNEL = "0"
+
+bitbake the image
+    bitbake core-image-minimal
+
+Creating the SDCard
+    sudo bmaptool copy build/tmp/deploy/images/beaglebone-yocto/core-image-minimal-beaglebone-yocto.rootfs.wic /dev/sdb
+
+boot log from Beaglebone black hardware device:
+
+    U-Boot SPL 2025.04 (Apr 07 2025 - 21:57:55 +0000)
+    Trying to boot from MMC1
+
+
+    U-Boot 2025.04 (Apr 07 2025 - 21:57:55 +0000)
+
+    CPU  : AM335X-GP rev 2.1
+    Model: TI AM335x BeagleBone Black
+    DRAM:  512 MiB
+    Core:  161 devices, 18 uclasses, devicetree: separate
+    WDT:   Started wdt@44e35000 with servicing every 1000ms (60s timeout)
+    NAND:  0 MiB
+    MMC:   OMAP SD/MMC: 0, OMAP SD/MMC: 1
+    Loading Environment from FAT... Unable to read "uboot.env" from mmc0:1... 
+    <ethaddr> not set. Validating first E-fuse MAC
+    Net:   eth2: ethernet@4a100000using musb-hdrc, OUT ep1out IN ep1in STATUS ep2in
+    MAC de:ad:be:ef:00:01
+    HOST MAC de:ad:be:ef:00:00
+    RNDIS ready
+    , eth3: usb_ether
+    Hit any key to stop autoboot:  0 
+    switch to partitions #0, OK
+    mmc0 is current device
+    Scanning mmc 0:1...
+    Found /extlinux/extlinux.conf
+    Retrieving file: /extlinux/extlinux.conf
+    1:      Yocto
+    Retrieving file: /zImage
+    append: root=PARTUUID=076c4a2a-02 rootwait console=ttyS0,115200
+    Retrieving file: /am335x-boneblack.dtb
+    Kernel image @ 0x82000000 [ 0x000000 - 0x89a5b0 ]
+    ## Flattened Device Tree blob at 88000000
+    Booting using the fdt blob at 0x88000000
+    Working FDT set to 88000000
+    Loading Device Tree to 8ffeb000, end 8ffff3a7 ... OK
+    Working FDT set to 8ffeb000
+
+    Starting kernel ...
+
+    Booting Linux on physical CPU 0x0
+    Linux version 6.12.31-yocto-standard (oe-user@oe-host) (arm-poky-linux-gnueabi-gcc (GCC) 15.1.0, GNU ld (GNU Binutils) 2.44.0.20250429) #1 PREEMPT Thu Jun  5 02:14:18 UTC 2025
+    CPU: ARMv7 Processor [413fc082] revision 2 (ARMv7), cr=10c5387d
+    CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+    OF: fdt: Machine model: TI AM335x BeagleBone Black
+    Memory policy: Data cache writeback
+    cma: Reserved 16 MiB at 0x9e800000 on node -1
+    Zone ranges:
+    Normal   [mem 0x0000000080000000-0x000000009fefffff]
+    HighMem  empty
+    Movable zone start for each node
+    Early memory node ranges
+    node   0: [mem 0x0000000080000000-0x000000009fefffff]
+    Initmem setup node 0 [mem 0x0000000080000000-0x000000009fefffff]
+    OF: reserved mem: Reserved memory: No reserved-memory node in the DT
+    CPU: All CPU(s) started in SVC mode.
+    AM335X ES2.1 (sgx neon)
+    Kernel command line: root=PARTUUID=076c4a2a-02 rootwait console=ttyS0,115200
+    Dentry cache hash table entries: 65536 (order: 6, 262144 bytes, linear)
+    Inode-cache hash table entries: 32768 (order: 5, 131072 bytes, linear)
+    Built 1 zonelists, mobility grouping on.  Total pages: 130816
+    mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+    SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+    ftrace: allocating 49114 entries in 145 pages
+    ftrace: allocated 144 pages with 2 groups
+    rcu: Preemptible hierarchical RCU implementation.
+    rcu:    RCU event tracing is enabled.
+            Trampoline variant of Tasks RCU enabled.
+            Rude variant of Tasks RCU enabled.
+            Tracing variant of Tasks RCU enabled.
+    rcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.
+    RCU Tasks: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+    RCU Tasks Rude: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+    RCU Tasks Trace: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+    NR_IRQS: 16, nr_irqs: 16, preallocated irqs: 16
+    IRQ: Found an INTC at 0x(ptrval) (revision 5.0) with 128 interrupts
+    rcu: srcu_init: Setting srcu_struct sizes based on contention.
+    TI gptimer clocksource: always-on /ocp/interconnect@44c00000/segment@200000/target-module@31000
+    sched_clock: 32 bits at 24MHz, resolution 41ns, wraps every 89478484971ns
+    clocksource: dmtimer: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 79635851949 ns
+    TI gptimer clockevent: 24000000 Hz at /ocp/interconnect@48000000/segment@0/target-module@40000
+    kfence: initialized - using 2097152 bytes for 255 objects at 0x(ptrval)-0x(ptrval)
+    Console: colour dummy device 80x30
+    Calibrating delay loop... 996.14 BogoMIPS (lpj=4980736)
+    CPU: Testing write buffer coherency: ok
+    CPU0: Spectre v2: using BPIALL workaround
+    pid_max: default: 32768 minimum: 301
+    LSM: initializing lsm=capability,landlock
+    landlock: Up and running.
+    Mount-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+    Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+    Setting up static identity map for 0x80100000 - 0x80100060
+    rcu: Hierarchical SRCU implementation.
+    rcu:    Max phase no-delay instances is 1000.
+    Memory: 475192K/523264K available (12288K kernel code, 1747K rwdata, 4752K rodata, 1024K init, 388K bss, 29168K reserved, 16384K cma-reserved, 0K highmem)
+    devtmpfs: initialized
+    VFP support v0.3: implementor 41 architecture 3 part 30 variant c rev 3
+    clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+    futex hash table entries: 256 (order: -1, 3072 bytes, linear)
+    pinctrl core: initialized pinctrl subsystem
+    NET: Registered PF_NETLINK/PF_ROUTE protocol family
+    DMA: preallocated 256 KiB pool for atomic coherent allocations
+    thermal_sys: Registered thermal governor 'step_wise'
+    cpuidle: using governor ladder
+    cpuidle: using governor menu
+    /ocp/interconnect@44c00000/segment@200000/target-module@b000/i2c@0/tda19988@70: Fixed dependency cycle(s) with /ocp/interconnect@48000000/segment@300000/target-module@e000/lcdc@0
+    /ocp/interconnect@48000000/segment@300000/target-module@e000/lcdc@0: Fixed dependency cycle(s) with /ocp/interconnect@44c00000/segment@200000/target-module@b000/i2c@0/tda19988@70
+    hw-breakpoint: debug architecture 0x4 unsupported.
+    Serial: AMBA PL011 UART driver
+    kprobes: kprobe jump-optimization is enabled. All kprobes are optimized if possible.
+    raid6: int32x8  gen()   182 MB/s
+    raid6: int32x4  gen()   210 MB/s
+    raid6: int32x2  gen()   365 MB/s
+    raid6: int32x1  gen()   345 MB/s
+    raid6: using algorithm int32x2 gen() 365 MB/s
+    raid6: .... xor() 207 MB/s, rmw enabled
+    raid6: using intx1 recovery algorithm
+    SCSI subsystem initialized
+    usbcore: registered new interface driver usbfs
+    usbcore: registered new interface driver hub
+    usbcore: registered new device driver usb
+    pps_core: LinuxPPS API ver. 1 registered
+    pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+    PTP clock support registered
+    clocksource: Switched to clocksource dmtimer
+    NET: Registered PF_INET protocol family
+    IP idents hash table entries: 8192 (order: 4, 65536 bytes, linear)
+    tcp_listen_portaddr_hash hash table entries: 1024 (order: 0, 4096 bytes, linear)
+    Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+    TCP established hash table entries: 4096 (order: 2, 16384 bytes, linear)
+    TCP bind hash table entries: 4096 (order: 3, 32768 bytes, linear)
+    TCP: Hash tables configured (established 4096 bind 4096)
+    UDP hash table entries: 256 (order: 0, 4096 bytes, linear)
+    UDP-Lite hash table entries: 256 (order: 0, 4096 bytes, linear)
+    NET: Registered PF_UNIX/PF_LOCAL protocol family
+    RPC: Registered named UNIX socket transport module.
+    RPC: Registered udp transport module.
+    RPC: Registered tcp transport module.
+    RPC: Registered tcp-with-tls transport module.
+    RPC: Registered tcp NFSv4.1 backchannel transport module.
+    Initialise system trusted keyrings
+    workingset: timestamp_bits=14 max_order=17 bucket_order=3
+    NFS: Registering the id_resolver key type
+    Key type id_resolver registered
+    Key type id_legacy registered
+    Key type cifs.idmap registered
+    xor: measuring software checksum speed
+    arm4regs        :  1252 MB/sec
+    8regs           :   940 MB/sec
+    32regs          :  1181 MB/sec
+    xor: using function: arm4regs (1252 MB/sec)
+    Key type asymmetric registered
+    Asymmetric key parser 'x509' registered
+    Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+    io scheduler mq-deadline registered
+    io scheduler kyber registered
+    io scheduler bfq registered
+    Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+    brd: module loaded
+    mtdoops: mtd device (mtddev=name/number) must be supplied
+    usbcore: registered new interface driver usb-storage
+    i2c_dev: i2c /dev entries driver
+    sdhci: Secure Digital Host Controller Interface driver
+    sdhci: Copyright(c) Pierre Ossman
+    sdhci-pltfm: SDHCI platform and OF driver helper
+    usbcore: registered new interface driver usbhid
+    usbhid: USB HID core driver
+    u32 classifier
+        input device check on
+        Actions configured
+    NET: Registered PF_INET6 protocol family
+    Segment Routing with IPv6
+    In-situ OAM (IOAM) with IPv6
+    sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+    NET: Registered PF_PACKET protocol family
+    Bridge firewalling registered
+    l2tp_core: L2TP core driver, V2.0
+    Key type dns_resolver registered
+    NET: Registered PF_VSOCK protocol family
+    ThumbEE CPU extension supported.
+    omap_voltage_late_init: Voltage driver support not added
+    Loading compiled-in X.509 certificates
+    Key type .fscrypt registered
+    Key type fscrypt-provisioning registered
+    Btrfs loaded, zoned=no, fsverity=no
+    Key type encrypted registered
+    /ocp/interconnect@44c00000/segment@200000/target-module@b000/i2c@0/tda19988@70: Fixed dependency cycle(s) with /ocp/interconnect@48000000/segment@300000/target-module@e000/lcdc@0
+    /ocp/interconnect@44c00000/segment@200000/target-module@b000/i2c@0/tda19988@70: Fixed dependency cycle(s) with /ocp/interconnect@48000000/segment@300000/target-module@e000/lcdc@0
+    /ocp/interconnect@44c00000/segment@200000/target-module@b000/i2c@0/tda19988@70: Fixed dependency cycle(s) with /ocp/interconnect@48000000/segment@300000/target-module@e000/lcdc@0
+    /ocp/interconnect@44c00000/segment@200000/target-module@b000/i2c@0/tda19988@70: Fixed dependency cycle(s) with /ocp/interconnect@48000000/segment@300000/target-module@e000/lcdc@0
+    /ocp/interconnect@44c00000/segment@200000/target-module@10000/scm@0/pinmux@800: Fixed dependency cycle(s) with /ocp/interconnect@44c00000/segment@200000/target-module@10000/scm@0/pinmux@800/clkout2-pins
+    pinctrl-single 44e10800.pinmux: 142 pins, size 568
+    ti-sysc 44e31000.target-module: probe with driver ti-sysc failed with error -16
+    omap_wdt: OMAP Watchdog Timer Rev 0x01: initial timeout 60 sec
+    omap_rtc 44e3e000.rtc: already running
+    omap_rtc 44e3e000.rtc: registered as rtc0
+    omap_rtc 44e3e000.rtc: setting system clock to 2018-03-09T12:35:15 UTC (1520598915)
+    /ocp/interconnect@48000000/segment@300000/target-module@e000/lcdc@0: Fixed dependency cycle(s) with /ocp/interconnect@44c00000/segment@200000/target-module@b000/i2c@0/tda19988@70
+    ti-sysc 48040000.target-module: probe with driver ti-sysc failed with error -16
+    OMAP GPIO hardware version 0.1
+    omap_i2c 4819c000.i2c: bus 2 rev0.11 at 100 kHz
+    sdhci-omap 481d8000.mmc: supply pbias not found, using dummy regulator
+    sdhci-omap 481d8000.mmc: supply vqmmc not found, using dummy regulator
+    48000000.interconnect:segment@200000:target-module@0:mpu@0:fck: device ID is greater than 24
+    /ocp/interconnect@48000000/segment@300000/target-module@e000/lcdc@0: Fixed dependency cycle(s) with /ocp/interconnect@44c00000/segment@200000/target-module@b000/i2c@0/tda19988@70
+    /ocp/interconnect@48000000/segment@300000/target-module@e000/lcdc@0: Fixed dependency cycle(s) with /ocp/interconnect@44c00000/segment@200000/target-module@b000/i2c@0/tda19988@70
+    /ocp/interconnect@44c00000/segment@200000/target-module@b000/i2c@0/tda19988@70: Fixed dependency cycle(s) with /ocp/interconnect@48000000/segment@300000/target-module@e000/lcdc@0
+    /ocp/interconnect@48000000/segment@300000/target-module@e000/lcdc@0: Fixed dependency cycle(s) with /ocp/interconnect@44c00000/segment@200000/target-module@b000/i2c@0/tda19988@70
+    random: crng init done
+    omap_rng 48310000.rng: Random Number Generator ver. 20
+    davinci_mdio 4a101000.mdio: davinci mdio revision 1.6, bus freq 1000000
+    SMSC LAN8710/LAN8720 4a101000.mdio:00: probe with driver SMSC LAN8710/LAN8720 failed with error -5
+    davinci_mdio 4a101000.mdio: phy[0]: device 4a101000.mdio:00, driver SMSC LAN8710/LAN8720
+    cpsw-switch 4a100000.switch: initialized cpsw ale version 1.4
+    cpsw-switch 4a100000.switch: ALE Table size 1024, Policers 0
+    cpsw-switch 4a100000.switch: Detected MACID = f4:b8:98:88:e8:84
+    cpsw-switch 4a100000.switch: initialized (regs 0x4a100000, pool size 256) hw_ver:0019010C 1.12 (0)
+    debugfs: Directory '49000000.dma' with parent 'dmaengine' already present!
+    edma 49000000.dma: TI EDMA DMA engine driver
+    am335x-phy-driver 47401300.usb-phy: dummy supplies not allowed for exclusive requests (id=vbus)
+    am335x-phy-driver 47401b00.usb-phy: dummy supplies not allowed for exclusive requests (id=vbus)
+    target-module@4b000000:target-module@140000:pmu@0:fck: device ID is greater than 24
+    hw perfevents: enabled with armv7_cortex_a8 PMU driver, 5 (8000000f) counters available
+    l3-aon-clkctrl:0000:0: failed to disable
+    printk: legacy console [ttyS0] disabled
+    44e09000.serial: ttyS0 at MMIO 0x44e09000 (irq = 39, base_baud = 3000000) is a 8250
+    printk: legacy console [ttyS0] enabled
+    tps65217-pmic: Failed to locate of_node [id: -1]
+    tps65217-bl: Failed to locate of_node [id: -1]
+    tps65217 0-0024: TPS65217 ID 0xe version 1.2
+    tda998x 0-0070: found TDA19988
+    tilcdc 4830e000.lcdc: bound 0-0070 (ops tda998x_ops)
+    [drm] Initialized tilcdc 1.0.0 for 4830e000.lcdc on minor 0
+    tilcdc 4830e000.lcdc: [drm] Cannot find any crtc or sizes
+    tilcdc 4830e000.lcdc: [drm] Cannot find any crtc or sizes
+    omap_i2c 44e0b000.i2c: bus 0 rev0.11 at 400 kHz
+    omap_gpio 44e07000.gpio: Could not set line 6 debounce to 200000 microseconds (-22)
+    sdhci-omap 481d8000.mmc: supply pbias not found, using dummy regulator
+    sdhci-omap 481d8000.mmc: supply vqmmc not found, using dummy regulator
+    musb-hdrc musb-hdrc.1: MUSB HDRC host driver
+    musb-hdrc musb-hdrc.1: new USB bus registered, assigned bus number 1
+    sdhci-omap 48060000.mmc: Got CD GPIO
+    sdhci-omap 48060000.mmc: supply pbias not found, using dummy regulator
+    sdhci-omap 48060000.mmc: supply vqmmc not found, using dummy regulator
+    hub 1-0:1.0: USB hub found
+    hub 1-0:1.0: 1 port detected
+    printk: legacy console [netcon0] enabled
+    netconsole: network logging started
+    cfg80211: Loading compiled-in X.509 certificates for regulatory database
+    mmc0: SDHCI controller on 48060000.mmc [48060000.mmc] using External DMA
+    Loaded X.509 cert 'sforshee: 00b28ddf47aef9cea7'
+    Loaded X.509 cert 'wens: 61c038651aabdcf94bd0ac7ff06c7248db18c600'
+    platform regulatory.0: Direct firmware load for regulatory.db failed with error -2
+    cfg80211: failed to load regulatory.db
+    clk: Disabling unused clocks
+    PM: genpd: Disabling unused power domains
+    mmc1: SDHCI controller on 481d8000.mmc [481d8000.mmc] using External DMA
+    Waiting for root device PARTUUID=076c4a2a-02...
+    mmc0: new high speed SDHC card at address 59b4
+    mmcblk0: mmc0:59b4 USD00 29.5 GiB
+    mmcblk0: p1 p2
+    EXT4-fs (mmcblk0p2): INFO: recovery required on readonly filesystem
+    EXT4-fs (mmcblk0p2): write access will be enabled during recovery
+    mmc1: new high speed MMC card at address 0001
+    mmcblk1: mmc1:0001 MK2704 3.53 GiB
+    mmcblk1: p1 p2 p3
+    mmcblk1boot0: mmc1:0001 MK2704 2.00 MiB
+    mmcblk1boot1: mmc1:0001 MK2704 2.00 MiB
+    mmcblk1rpmb: mmc1:0001 MK2704 512 KiB, chardev (247:0)
+    EXT4-fs (mmcblk0p2): orphan cleanup on readonly fs
+    EXT4-fs (mmcblk0p2): recovery complete
+    EXT4-fs (mmcblk0p2): mounted filesystem e5a3f4ef-830d-43ca-8b8f-b5d185e20721 ro with ordered data mode. Quota mode: disabled.
+    VFS: Mounted root (ext4 filesystem) readonly on device 179:2.
+    devtmpfs: mounted
+    Freeing unused kernel image (initmem) memory: 1024K
+    Run /sbin/init as init process
+    INIT: version 3.14 booting
+    FAT-fs (mmcblk0p1): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.
+    Starting udev
+    udevd[106]: starting version 3.2.14
+    udevd[107]: starting eudev-3.2.14
+    EXT4-fs (mmcblk0p2): re-mounted e5a3f4ef-830d-43ca-8b8f-b5d185e20721 r/w.
+    INIT: Entering runlevel: 5
+    Configuring network interfaces... cpsw-switch 4a100000.switch: starting ndev. mode: dual_mac
+    cpsw-switch 4a100000.switch: phy "/ocp/interconnect@4a000000/segment@0/target-module@100000/switch@0/mdio@1000/ethernet-phy@0" not found on slave 0
+    udhcpc: started, v1.37.0
+    udhcpc: broadcasting discover
+    udhcpc: broadcasting discover
+    udhcpc: broadcasting discover
+    udhcpc: no lease, forking to background
+    ip: SIOCGIFFLAGS: No such device
+    Starting syslogd/klogd: done
+
+    Poky (Yocto Project Reference Distro) 5.2 beaglebone-yocto /dev/ttyS0
+
+    beaglebone-yocto login: root 
+
+    WARNING: Poky is a reference Yocto Project distribution that should be used for
+    testing and development purposes only. It is recommended that you create your
+    own distribution for production use.
+
+    root@beaglebone-yocto:~# ls /boot/
+    MLO                   am335x-bone.dtb       am335x-boneblack.dtb  am335x-bonegreen.dtb  extlinux              u-boot.img            zImage
+    root@beaglebone-yocto:~#
+
+
+
+
+Testing booting with fitImage kernel
+------------------------------------
+
+local.conf
+    DISTRO = "poky"
+    MACHINE = "beaglebone-yocto"
+    INITRAMFS_IMAGE = "core-image-initramfs-boot"
+    FIT_IMAGE_KERNEL = "1"
+
+bitbake the image
+    bitbake core-image-minimal
+
+Creating the SDCard
+    sudo bmaptool copy build/tmp/deploy/images/beaglebone-yocto/core-image-minimal-beaglebone-yocto.rootfs.wic /dev/sdb
+
+boot log from Beaglebone black hardware device:
+
+    U-Boot SPL 2025.04 (Apr 07 2025 - 21:57:55 +0000)
+    Trying to boot from MMC1
+
+
+    U-Boot 2025.04 (Apr 07 2025 - 21:57:55 +0000)
+
+    CPU  : AM335X-GP rev 2.1
+    Model: TI AM335x BeagleBone Black
+    DRAM:  512 MiB
+    Core:  161 devices, 18 uclasses, devicetree: separate
+    WDT:   Started wdt@44e35000 with servicing every 1000ms (60s timeout)
+    NAND:  0 MiB
+    MMC:   OMAP SD/MMC: 0, OMAP SD/MMC: 1
+    Loading Environment from FAT... Unable to read "uboot.env" from mmc0:1... 
+    <ethaddr> not set. Validating first E-fuse MAC
+    Net:   eth2: ethernet@4a100000using musb-hdrc, OUT ep1out IN ep1in STATUS ep2in
+    MAC de:ad:be:ef:00:01
+    HOST MAC de:ad:be:ef:00:00
+    RNDIS ready
+    , eth3: usb_ether
+    Hit any key to stop autoboot:  0 
+    switch to partitions #0, OK
+    mmc0 is current device
+    Scanning mmc 0:1...
+    Found /extlinux/extlinux.conf
+    Retrieving file: /extlinux/extlinux.conf
+    1:      Yocto
+    Retrieving file: /fitImage
+    append: root=PARTUUID=076c4a2a-02 rootwait console=ttyS0,115200
+    ## Loading kernel (any) from FIT Image at 82000000 ...
+    Using 'conf-am335x-bone.dtb' configuration
+    Verifying Hash Integrity ... OK
+    Trying 'kernel-1' kernel subimage
+        Description:  Linux kernel
+        Created:      2011-04-05  23:00:00 UTC
+        Type:         Kernel Image
+        Compression:  uncompressed
+        Data Start:   0x82000128
+        Data Size:    9020848 Bytes = 8.6 MiB
+        Architecture: ARM
+        OS:           Linux
+        Load Address: 0x80008000
+        Entry Point:  0x80008000
+        Hash algo:    sha256
+        Hash value:   b3dd0177cd9089c7d516673fc80db9485f9d5676c4b21768f22060f5a27e179b
+    Verifying Hash Integrity ... sha256+ OK
+    ## Loading ramdisk (any) from FIT Image at 82000000 ...
+    Using 'conf-am335x-bone.dtb' configuration
+    Verifying Hash Integrity ... OK
+    Trying 'ramdisk-1' ramdisk subimage
+        Description:  core-image-initramfs-boot
+        Created:      2011-04-05  23:00:00 UTC
+        Type:         RAMDisk Image
+        Compression:  uncompressed
+        Data Start:   0x828ccb78
+        Data Size:    4615803 Bytes = 4.4 MiB
+        Architecture: ARM
+        OS:           Linux
+        Load Address: 0x89000000
+        Entry Point:  0x89000000
+        Hash algo:    sha256
+        Hash value:   64315862c911d3fcefe30bd5bde3fcad519f6b15ba98000bb4488af2aaad2a4a
+    Verifying Hash Integrity ... sha256+ OK
+    Loading ramdisk from 0x828ccb78 to 0x89000000
+    ## Loading fdt (any) from FIT Image at 82000000 ...
+    Using 'conf-am335x-bone.dtb' configuration
+    Verifying Hash Integrity ... OK
+    Trying 'fdt-am335x-bone.dtb' fdt subimage
+        Description:  Flattened Device Tree blob
+        Created:      2011-04-05  23:00:00 UTC
+        Type:         Flat Device Tree
+        Compression:  uncompressed
+        Data Start:   0x8289a7e4
+        Data Size:    67106 Bytes = 65.5 KiB
+        Architecture: ARM
+        Load Address: 0x88000000
+        Hash algo:    sha256
+        Hash value:   e5b25148dae3ddbfcddcbd66ca662ea74880c166ec1781cd532763e38f271f87
+    Verifying Hash Integrity ... sha256+ OK
+    Loading fdt from 0x8289a7e4 to 0x88000000
+    Booting using the fdt blob at 0x88000000
+    Working FDT set to 88000000
+    Loading Kernel Image to 80008000
+    Loading Ramdisk to 8fb99000, end 8ffffe7b ... OK
+    Loading Device Tree to 8fb85000, end 8fb98621 ... OK
+    Working FDT set to 8fb85000
+
+    Starting kernel ...
+
+    Booting Linux on physical CPU 0x0
+    Linux version 6.12.31-yocto-standard (oe-user@oe-host) (arm-poky-linux-gnueabi-gcc (GCC) 15.1.0, GNU ld (GNU Binutils) 2.44.0.20250429) #1 PREEMPT Thu Jun  5 02:14:18 UTC 2025
+    CPU: ARMv7 Processor [413fc082] revision 2 (ARMv7), cr=10c5387d
+    CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+    OF: fdt: Machine model: TI AM335x BeagleBone
+    Memory policy: Data cache writeback
+    cma: Reserved 16 MiB at 0x9e800000 on node -1
+    Zone ranges:
+    Normal   [mem 0x0000000080000000-0x000000009fefffff]
+    HighMem  empty
+    Movable zone start for each node
+    Early memory node ranges
+    node   0: [mem 0x0000000080000000-0x000000009fefffff]
+    Initmem setup node 0 [mem 0x0000000080000000-0x000000009fefffff]
+    OF: reserved mem: Reserved memory: No reserved-memory node in the DT
+    CPU: All CPU(s) started in SVC mode.
+    AM335X ES2.1 (sgx neon)
+    Kernel command line: root=PARTUUID=076c4a2a-02 rootwait console=ttyS0,115200
+    Dentry cache hash table entries: 65536 (order: 6, 262144 bytes, linear)
+    Inode-cache hash table entries: 32768 (order: 5, 131072 bytes, linear)
+    Built 1 zonelists, mobility grouping on.  Total pages: 130816
+    mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+    SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+    ftrace: allocating 49114 entries in 145 pages
+    ftrace: allocated 144 pages with 2 groups
+    rcu: Preemptible hierarchical RCU implementation.
+    rcu:    RCU event tracing is enabled.
+            Trampoline variant of Tasks RCU enabled.
+            Rude variant of Tasks RCU enabled.
+            Tracing variant of Tasks RCU enabled.
+    rcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.
+    RCU Tasks: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+    RCU Tasks Rude: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+    RCU Tasks Trace: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+    NR_IRQS: 16, nr_irqs: 16, preallocated irqs: 16
+    IRQ: Found an INTC at 0x(ptrval) (revision 5.0) with 128 interrupts
+    rcu: srcu_init: Setting srcu_struct sizes based on contention.
+    TI gptimer clocksource: always-on /ocp/interconnect@44c00000/segment@200000/target-module@31000
+    sched_clock: 32 bits at 24MHz, resolution 41ns, wraps every 89478484971ns
+    clocksource: dmtimer: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 79635851949 ns
+    TI gptimer clockevent: 24000000 Hz at /ocp/interconnect@48000000/segment@0/target-module@40000
+    kfence: initialized - using 2097152 bytes for 255 objects at 0x(ptrval)-0x(ptrval)
+    Console: colour dummy device 80x30
+    Calibrating delay loop... 996.14 BogoMIPS (lpj=4980736)
+    CPU: Testing write buffer coherency: ok
+    CPU0: Spectre v2: using BPIALL workaround
+    pid_max: default: 32768 minimum: 301
+    LSM: initializing lsm=capability,landlock
+    landlock: Up and running.
+    Mount-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+    Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+    Setting up static identity map for 0x80100000 - 0x80100060
+    rcu: Hierarchical SRCU implementation.
+    rcu:    Max phase no-delay instances is 1000.
+    Memory: 470692K/523264K available (12288K kernel code, 1747K rwdata, 4752K rodata, 1024K init, 388K bss, 33668K reserved, 16384K cma-reserved, 0K highmem)
+    devtmpfs: initialized
+    VFP support v0.3: implementor 41 architecture 3 part 30 variant c rev 3
+    clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+    futex hash table entries: 256 (order: -1, 3072 bytes, linear)
+    pinctrl core: initialized pinctrl subsystem
+    NET: Registered PF_NETLINK/PF_ROUTE protocol family
+    DMA: preallocated 256 KiB pool for atomic coherent allocations
+    thermal_sys: Registered thermal governor 'step_wise'
+    cpuidle: using governor ladder
+    cpuidle: using governor menu
+    hw-breakpoint: debug architecture 0x4 unsupported.
+    Serial: AMBA PL011 UART driver
+    kprobes: kprobe jump-optimization is enabled. All kprobes are optimized if possible.
+    raid6: int32x8  gen()   182 MB/s
+    raid6: int32x4  gen()   210 MB/s
+    raid6: int32x2  gen()   365 MB/s
+    raid6: int32x1  gen()   345 MB/s
+    raid6: using algorithm int32x2 gen() 365 MB/s
+    raid6: .... xor() 207 MB/s, rmw enabled
+    raid6: using intx1 recovery algorithm
+    SCSI subsystem initialized
+    usbcore: registered new interface driver usbfs
+    usbcore: registered new interface driver hub
+    usbcore: registered new device driver usb
+    pps_core: LinuxPPS API ver. 1 registered
+    pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+    PTP clock support registered
+    clocksource: Switched to clocksource dmtimer
+    NET: Registered PF_INET protocol family
+    IP idents hash table entries: 8192 (order: 4, 65536 bytes, linear)
+    tcp_listen_portaddr_hash hash table entries: 1024 (order: 0, 4096 bytes, linear)
+    Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+    TCP established hash table entries: 4096 (order: 2, 16384 bytes, linear)
+    TCP bind hash table entries: 4096 (order: 3, 32768 bytes, linear)
+    TCP: Hash tables configured (established 4096 bind 4096)
+    UDP hash table entries: 256 (order: 0, 4096 bytes, linear)
+    UDP-Lite hash table entries: 256 (order: 0, 4096 bytes, linear)
+    NET: Registered PF_UNIX/PF_LOCAL protocol family
+    RPC: Registered named UNIX socket transport module.
+    RPC: Registered udp transport module.
+    RPC: Registered tcp transport module.
+    RPC: Registered tcp-with-tls transport module.
+    RPC: Registered tcp NFSv4.1 backchannel transport module.
+    Trying to unpack rootfs image as initramfs...
+    Initialise system trusted keyrings
+    workingset: timestamp_bits=14 max_order=17 bucket_order=3
+    NFS: Registering the id_resolver key type
+    Key type id_resolver registered
+    Key type id_legacy registered
+    Key type cifs.idmap registered
+    xor: measuring software checksum speed
+    arm4regs        :  1262 MB/sec
+    8regs           :   940 MB/sec
+    32regs          :  1153 MB/sec
+    xor: using function: arm4regs (1262 MB/sec)
+    Key type asymmetric registered
+    Asymmetric key parser 'x509' registered
+    Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+    io scheduler mq-deadline registered
+    io scheduler kyber registered
+    io scheduler bfq registered
+    Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+    brd: module loaded
+    mtdoops: mtd device (mtddev=name/number) must be supplied
+    usbcore: registered new interface driver usb-storage
+    i2c_dev: i2c /dev entries driver
+    sdhci: Secure Digital Host Controller Interface driver
+    sdhci: Copyright(c) Pierre Ossman
+    sdhci-pltfm: SDHCI platform and OF driver helper
+    usbcore: registered new interface driver usbhid
+    usbhid: USB HID core driver
+    u32 classifier
+        input device check on
+        Actions configured
+    NET: Registered PF_INET6 protocol family
+    Segment Routing with IPv6
+    In-situ OAM (IOAM) with IPv6
+    sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+    NET: Registered PF_PACKET protocol family
+    Bridge firewalling registered
+    l2tp_core: L2TP core driver, V2.0
+    Key type dns_resolver registered
+    NET: Registered PF_VSOCK protocol family
+    ThumbEE CPU extension supported.
+    omap_voltage_late_init: Voltage driver support not added
+    Loading compiled-in X.509 certificates
+    Key type .fscrypt registered
+    Key type fscrypt-provisioning registered
+    Btrfs loaded, zoned=no, fsverity=no
+    Freeing initrd memory: 4508K
+    Key type encrypted registered
+    /ocp/interconnect@44c00000/segment@200000/target-module@10000/scm@0/pinmux@800: Fixed dependency cycle(s) with /ocp/interconnect@44c00000/segment@200000/target-module@10000/scm@0/pinmux@800/clkout2-pins
+    pinctrl-single 44e10800.pinmux: 142 pins, size 568
+    ti-sysc 44e31000.target-module: probe with driver ti-sysc failed with error -16
+    omap_wdt: OMAP Watchdog Timer Rev 0x01: initial timeout 60 sec
+    omap_rtc 44e3e000.rtc: registered as rtc0
+    omap_rtc 44e3e000.rtc: setting system clock to 2000-01-01T00:00:00 UTC (946684800)
+    ti-sysc 48040000.target-module: probe with driver ti-sysc failed with error -16
+    OMAP GPIO hardware version 0.1
+    omap_i2c 4819c000.i2c: bus 2 rev0.11 at 100 kHz
+    48000000.interconnect:segment@200000:target-module@0:mpu@0:fck: device ID is greater than 24
+    random: crng init done
+    omap_rng 48310000.rng: Random Number Generator ver. 20
+    davinci_mdio 4a101000.mdio: davinci mdio revision 1.6, bus freq 1000000
+    SMSC LAN8710/LAN8720 4a101000.mdio:00: probe with driver SMSC LAN8710/LAN8720 failed with error -5
+    davinci_mdio 4a101000.mdio: phy[0]: device 4a101000.mdio:00, driver SMSC LAN8710/LAN8720
+    cpsw-switch 4a100000.switch: initialized cpsw ale version 1.4
+    cpsw-switch 4a100000.switch: ALE Table size 1024, Policers 0
+    cpsw-switch 4a100000.switch: Detected MACID = f4:b8:98:88:e8:84
+    cpsw-switch 4a100000.switch: initialized (regs 0x4a100000, pool size 256) hw_ver:0019010C 1.12 (0)
+    debugfs: Directory '49000000.dma' with parent 'dmaengine' already present!
+    edma 49000000.dma: TI EDMA DMA engine driver
+    am335x-phy-driver 47401300.usb-phy: dummy supplies not allowed for exclusive requests (id=vbus)
+    am335x-phy-driver 47401b00.usb-phy: dummy supplies not allowed for exclusive requests (id=vbus)
+    target-module@4b000000:target-module@140000:pmu@0:fck: device ID is greater than 24
+    hw perfevents: enabled with armv7_cortex_a8 PMU driver, 5 (8000000f) counters available
+    l3-aon-clkctrl:0000:0: failed to disable
+    printk: legacy console [ttyS0] disabled
+    44e09000.serial: ttyS0 at MMIO 0x44e09000 (irq = 38, base_baud = 3000000) is a 8250
+    printk: legacy console [ttyS0] enabled
+    tps65217-pmic: Failed to locate of_node [id: -1]
+    tps65217-bl: Failed to locate of_node [id: -1]
+    tps65217 0-0024: TPS65217 ID 0xe version 1.2
+    omap_i2c 44e0b000.i2c: bus 0 rev0.11 at 400 kHz
+    omap_gpio 44e07000.gpio: Could not set line 6 debounce to 200000 microseconds (-22)
+    sdhci-omap 48060000.mmc: Got CD GPIO
+    sdhci-omap 48060000.mmc: supply pbias not found, using dummy regulator
+    musb-hdrc musb-hdrc.1: MUSB HDRC host driver
+    sdhci-omap 48060000.mmc: supply vqmmc not found, using dummy regulator
+    musb-hdrc musb-hdrc.1: new USB bus registered, assigned bus number 1
+    hub 1-0:1.0: USB hub found
+    hub 1-0:1.0: 1 port detected
+    printk: legacy console [netcon0] enabled
+    netconsole: network logging started
+    cfg80211: Loading compiled-in X.509 certificates for regulatory database
+    mmc0: SDHCI controller on 48060000.mmc [48060000.mmc] using External DMA
+    Loaded X.509 cert 'sforshee: 00b28ddf47aef9cea7'
+    Loaded X.509 cert 'wens: 61c038651aabdcf94bd0ac7ff06c7248db18c600'
+    platform regulatory.0: Direct firmware load for regulatory.db failed with error -2
+    clk: Disabling unused clocks
+    PM: genpd: Disabling unused power domains
+    cfg80211: failed to load regulatory.db
+    Freeing unused kernel image (initmem) memory: 1024K
+    Run /init as init process
+    mmc0: new high speed SDHC card at address 59b4
+    mmcblk0: mmc0:59b4 USD00 29.5 GiB
+    mmcblk0: p1 p2
+    udevd[131]: starting version 3.2.14
+    udevd[132]: starting eudev-3.2.14
+    EXT4-fs (mmcblk0p2): mounted filesystem 2032e4eb-cd1d-4256-b7b6-80da8d566601 r/w with ordered data mode. Quota mode: disabled.
+    INIT: version 3.14 booting
+    Starting udev
+    udevd[204]: starting version 3.2.14
+    udevd[205]: starting eudev-3.2.14
+    EXT4-fs (mmcblk0p2): re-mounted 2032e4eb-cd1d-4256-b7b6-80da8d566601.
+    Fri Mar  9 12:34:56 UTC 2018
+    INIT: Entering runlevel: 5
+    Configuring network interfaces... cpsw-switch 4a100000.switch: starting ndev. mode: dual_mac
+    Generic PHY 4a101000.mdio:00: attached PHY driver (mii_bus:phy_addr=4a101000.mdio:00, irq=POLL)
+    udhcpc: started, v1.37.0
+    udhcpc: broadcasting discover
+    udhcpc: broadcasting discover
+    udhcpc: broadcasting discover
+    udhcpc: no lease, forking to background
+    ip: SIOCGIFFLAGS: No such device
+    Starting syslogd/klogd: done
+
+    Poky (Yocto Project Reference Distro) 5.2 beaglebone-yocto /dev/ttyS0
+
+    beaglebone-yocto login: 
+    Poky (Yocto Project Reference Distro) 5.2 beaglebone-yocto /dev/ttyS0
+
+    beaglebone-yocto login: root
+
+    WARNING: Poky is a reference Yocto Project distribution that should be used for
+    testing and development purposes only. It is recommended that you create your
+    own distribution for production use.
+
+    root@beaglebone-yocto:~# ls /boot/
+    MLO         extlinux    fitImage    u-boot.img
+    root@beaglebone-yocto:~# 
+
+
+Booting in Qemu
+---------------
+
+    $ runqemu serialstdio
+    runqemu - INFO - Running bitbake -e  ...
+    runqemu - INFO - Continuing with the following parameters:
+    KERNEL: [/home/adrian/projets/oss/poky/build/tmp/deploy/images/beaglebone-yocto/zImage]
+    MACHINE: [beaglebone-yocto]
+    FSTYPE: [wic (no-kernel-in-fs)]
+    ROOTFS: [/home/adrian/projets/oss/poky/build/tmp/deploy/images/beaglebone-yocto/core-image-minimal-beaglebone-yocto.rootfs-20250620061503.wic]
+    CONFFILE: [/home/adrian/projets/oss/poky/build/tmp/deploy/images/beaglebone-yocto/core-image-minimal-beaglebone-yocto.rootfs-20250620061503.qemuboot.conf]
+
+    runqemu - INFO - Using preconfigured tap device tap0
+    runqemu - INFO - If this is not intended, touch /tmp/qemu-tap-locks/tap0.skip to make runqemu skip tap0.
+    runqemu - INFO - Network configuration: ip=192.168.7.2::192.168.7.1:255.255.255.0::eth0:off:8.8.8.8 net.ifnames=0
+    runqemu - INFO - Running /home/adrian/projets/oss/poky/build/tmp/work/x86_64-linux/qemu-helper-native/1.0/recipe-sysroot-native/usr/bin/qemu-system-arm -device virtio-net-device,netdev=net0,mac=52:54:00:12:34:02 -netdev tap,id=net0,ifname=tap0,script=no,downscript=no -object rng-random,filename=/dev/urandom,id=rng0 -device virtio-rng-pci,rng=rng0 -drive id=disk0,file=/home/adrian/projets/oss/poky/build/tmp/deploy/images/beaglebone-yocto/core-image-minimal-beaglebone-yocto.rootfs-20250620061503.wic,if=none,format=raw -device virtio-blk-device,drive=disk0 -device virtio-rng-device      -initrd /home/adrian/projets/oss/poky/build/tmp/deploy/images/beaglebone-yocto/core-image-initramfs-boot-beaglebone-yocto.cpio.gz  -machine virt -cpu cortex-a15  -m 256 -serial mon:stdio -serial null -display sdl,show-cursor=on  -kernel /home/adrian/projets/oss/poky/build/tmp/deploy/images/beaglebone-yocto/zImage -append 'root=/dev/vda2 rw  mem=256M ip=192.168.7.2::192.168.7.1:255.255.255.0::eth0:off:8.8.8.8 net.ifnames=0 console=ttyS0 console=ttyO0 console=ttyAMA0 console=ttyAMA0 systemd.mask=systemd-networkd swiotlb=0 '
+
+    runqemu - INFO - Host uptime: 172711.46
+
+    Booting Linux on physical CPU 0x0
+    Linux version 6.12.31-yocto-standard (oe-user@oe-host) (arm-poky-linux-gnueabi-gcc (GCC) 15.1.0, GNU ld (GNU Binutils) 2.44.0.20250429) #1 PREEMPT Thu Jun  5 02:14:18 UTC 2025
+    CPU: ARMv7 Processor [414fc0f0] revision 0 (ARMv7), cr=10c53c7d
+    CPU: div instructions available: patching division code
+    CPU: PIPT / VIPT nonaliasing data cache, PIPT instruction cache
+    OF: fdt: Machine model: linux,dummy-virt
+    random: crng init done
+    Memory policy: Data cache writeback
+    cma: Reserved 16 MiB at 0x4f000000 on node -1
+    Zone ranges:
+    Normal   [mem 0x0000000040000000-0x000000004fffffff]
+    HighMem  empty
+    Movable zone start for each node
+    Early memory node ranges
+    node   0: [mem 0x0000000040000000-0x000000004fffffff]
+    Initmem setup node 0 [mem 0x0000000040000000-0x000000004fffffff]
+    OF: reserved mem: Reserved memory: No reserved-memory node in the DT
+    psci: probing for conduit method from DT.
+    psci: PSCIv1.1 detected in firmware.
+    psci: Using standard PSCI v0.2 function IDs
+    psci: Trusted OS migration not required
+    psci: SMC Calling Convention v1.0
+    CPU: All CPU(s) started in SVC mode.
+    Kernel command line: root=/dev/vda2 rw  mem=256M ip=192.168.7.2::192.168.7.1:255.255.255.0::eth0:off:8.8.8.8 net.ifnames=0 console=ttyS0 console=ttyO0 console=ttyAMA0 console=ttyAMA0 systemd.mask=systemd-networkd swiotlb=0 
+    Unknown kernel command line parameters "swiotlb=0", will be passed to user space.
+    Dentry cache hash table entries: 32768 (order: 5, 131072 bytes, linear)
+    Inode-cache hash table entries: 16384 (order: 4, 65536 bytes, linear)
+    Built 1 zonelists, mobility grouping on.  Total pages: 65536
+    mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+    SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+    ftrace: allocating 49114 entries in 145 pages
+    ftrace: allocated 144 pages with 2 groups
+    rcu: Preemptible hierarchical RCU implementation.
+    rcu:    RCU event tracing is enabled.
+            Trampoline variant of Tasks RCU enabled.
+            Rude variant of Tasks RCU enabled.
+            Tracing variant of Tasks RCU enabled.
+    rcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.
+    RCU Tasks: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+    RCU Tasks Rude: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+    RCU Tasks Trace: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+    NR_IRQS: 16, nr_irqs: 16, preallocated irqs: 16
+    rcu: srcu_init: Setting srcu_struct sizes based on contention.
+    arch_timer: cp15 timer(s) running at 62.50MHz (virt).
+    clocksource: arch_sys_counter: mask: 0x1ffffffffffffff max_cycles: 0x1cd42e208c, max_idle_ns: 881590405314 ns
+    sched_clock: 57 bits at 63MHz, resolution 16ns, wraps every 4398046511096ns
+    Switching to timer-based delay loop, resolution 16ns
+    kfence: initialized - using 2097152 bytes for 255 objects at 0x(ptrval)-0x(ptrval)
+    Console: colour dummy device 80x30
+    Calibrating delay loop (skipped), value calculated using timer frequency.. 125.00 BogoMIPS (lpj=625000)
+    CPU: Testing write buffer coherency: ok
+    CPU0: Spectre v2: firmware did not set auxiliary control register IBE bit, system vulnerable
+    CPU0: Spectre BHB: enabling loop workaround for all CPUs
+    pid_max: default: 32768 minimum: 301
+    LSM: initializing lsm=capability,landlock
+    landlock: Up and running.
+    Mount-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+    Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+    Setting up static identity map for 0x40100000 - 0x40100060
+    rcu: Hierarchical SRCU implementation.
+    rcu:    Max phase no-delay instances is 1000.
+    Memory: 211556K/262144K available (12288K kernel code, 1747K rwdata, 4752K rodata, 1024K init, 388K bss, 31960K reserved, 16384K cma-reserved, 0K highmem)
+    devtmpfs: initialized
+    VFP support v0.3: implementor 41 architecture 4 part 30 variant f rev 0
+    clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+    futex hash table entries: 256 (order: -1, 3072 bytes, linear)
+    pinctrl core: initialized pinctrl subsystem
+    NET: Registered PF_NETLINK/PF_ROUTE protocol family
+    DMA: preallocated 256 KiB pool for atomic coherent allocations
+    thermal_sys: Registered thermal governor 'step_wise'
+    cpuidle: using governor ladder
+    cpuidle: using governor menu
+    hw-breakpoint: found 5 (+1 reserved) breakpoint and 4 watchpoint registers.
+    hw-breakpoint: maximum watchpoint size is 8 bytes.
+    Serial: AMBA PL011 UART driver
+    9000000.pl011: ttyAMA0 at MMIO 0x9000000 (irq = 20, base_baud = 0) is a PL011 rev1
+    printk: legacy console [ttyAMA0] enabled
+    9040000.pl011: ttyAMA1 at MMIO 0x9040000 (irq = 21, base_baud = 0) is a PL011 rev1
+    kprobes: kprobe jump-optimization is enabled. All kprobes are optimized if possible.
+    raid6: int32x8  gen()   329 MB/s
+    raid6: int32x4  gen()   337 MB/s
+    raid6: int32x2  gen()   693 MB/s
+    raid6: int32x1  gen()  1107 MB/s
+    raid6: using algorithm int32x1 gen() 1107 MB/s
+    raid6: .... xor() 270 MB/s, rmw enabled
+    raid6: using intx1 recovery algorithm
+    SCSI subsystem initialized
+    usbcore: registered new interface driver usbfs
+    usbcore: registered new interface driver hub
+    usbcore: registered new device driver usb
+    pps_core: LinuxPPS API ver. 1 registered
+    pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+    PTP clock support registered
+    clocksource: Switched to clocksource arch_sys_counter
+    NET: Registered PF_INET protocol family
+    IP idents hash table entries: 4096 (order: 3, 32768 bytes, linear)
+    tcp_listen_portaddr_hash hash table entries: 1024 (order: 0, 4096 bytes, linear)
+    Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+    TCP established hash table entries: 2048 (order: 1, 8192 bytes, linear)
+    TCP bind hash table entries: 2048 (order: 2, 16384 bytes, linear)
+    TCP: Hash tables configured (established 2048 bind 2048)
+    UDP hash table entries: 256 (order: 0, 4096 bytes, linear)
+    UDP-Lite hash table entries: 256 (order: 0, 4096 bytes, linear)
+    NET: Registered PF_UNIX/PF_LOCAL protocol family
+    RPC: Registered named UNIX socket transport module.
+    RPC: Registered udp transport module.
+    RPC: Registered tcp transport module.
+    RPC: Registered tcp-with-tls transport module.
+    RPC: Registered tcp NFSv4.1 backchannel transport module.
+    Trying to unpack rootfs image as initramfs...
+    Initialise system trusted keyrings
+    workingset: timestamp_bits=14 max_order=16 bucket_order=2
+    NFS: Registering the id_resolver key type
+    Key type id_resolver registered
+    Key type id_legacy registered
+    Key type cifs.idmap registered
+    xor: measuring software checksum speed
+    arm4regs        :  2217 MB/sec
+    8regs           :  2505 MB/sec
+    32regs          :  2343 MB/sec
+    xor: using function: 8regs (2505 MB/sec)
+    Key type asymmetric registered
+    Asymmetric key parser 'x509' registered
+    Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+    io scheduler mq-deadline registered
+    io scheduler kyber registered
+    io scheduler bfq registered
+    Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+    brd: module loaded
+    virtio_blk virtio1: 1/0/0 default/read/poll queues
+    virtio_blk virtio1: [vda] 123004 512-byte logical blocks (63.0 MB/60.1 MiB)
+    Freeing initrd memory: 4508K
+    vda: vda1 vda2
+    mtdoops: mtd device (mtddev=name/number) must be supplied
+    usbcore: registered new interface driver usb-storage
+    rtc-pl031 9010000.pl031: registered as rtc0
+    rtc-pl031 9010000.pl031: setting system clock to 2025-06-20T07:01:34 UTC (1750402894)
+    i2c_dev: i2c /dev entries driver
+    sdhci: Secure Digital Host Controller Interface driver
+    sdhci: Copyright(c) Pierre Ossman
+    sdhci-pltfm: SDHCI platform and OF driver helper
+    usbcore: registered new interface driver usbhid
+    usbhid: USB HID core driver
+    u32 classifier
+        input device check on
+        Actions configured
+    NET: Registered PF_INET6 protocol family
+    Segment Routing with IPv6
+    In-situ OAM (IOAM) with IPv6
+    sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+    NET: Registered PF_PACKET protocol family
+    Bridge firewalling registered
+    l2tp_core: L2TP core driver, V2.0
+    Key type dns_resolver registered
+    NET: Registered PF_VSOCK protocol family
+    ThumbEE CPU extension supported.
+    Loading compiled-in X.509 certificates
+    Key type .fscrypt registered
+    Key type fscrypt-provisioning registered
+    Btrfs loaded, zoned=no, fsverity=no
+    Key type encrypted registered
+    printk: legacy console [netcon0] enabled
+    netconsole: network logging started
+    IP-Config: Complete:
+        device=eth0, hwaddr=52:54:00:12:34:02, ipaddr=192.168.7.2, mask=255.255.255.0, gw=192.168.7.1
+        host=192.168.7.2, domain=, nis-domain=(none)
+        bootserver=255.255.255.255, rootserver=255.255.255.255, rootpath=
+        nameserver0=8.8.8.8
+    cfg80211: Loading compiled-in X.509 certificates for regulatory database
+    Loaded X.509 cert 'sforshee: 00b28ddf47aef9cea7'
+    Loaded X.509 cert 'wens: 61c038651aabdcf94bd0ac7ff06c7248db18c600'
+    platform regulatory.0: Direct firmware load for regulatory.db failed with error -2
+    cfg80211: failed to load regulatory.db
+    clk: Disabling unused clocks
+    PM: genpd: Disabling unused power domains
+    Freeing unused kernel image (initmem) memory: 1024K
+    Run /init as init process
+    udevd[241]: starting version 3.2.14
+    udevd[242]: starting eudev-3.2.14
+    EXT4-fs (vda2): mounted filesystem 2032e4eb-cd1d-4256-b7b6-80da8d566601 r/w with ordered data mode. Quota mode: disabled.
+    INIT: version 3.14 booting
+    Starting udev
+    udevd[324]: starting version 3.2.14
+    udevd[325]: starting eudev-3.2.14
+    EXT4-fs (vda2): re-mounted 2032e4eb-cd1d-4256-b7b6-80da8d566601.
+    INIT: Entering runlevel: 5
+    Configuring network interfaces... ip: RTNETLINK answers: File exists
+    udhcpc: started, v1.37.0
+    udhcpc: broadcasting discover
+    udhcpc: broadcasting discover
+    platform gpio-keys: deferred probe pending: gpio-keys: failed to get gpio
+    udhcpc: broadcasting discover
+    udhcpc: no lease, forking to background
+    ip: SIOCGIFFLAGS: No such device
+    Starting syslogd/klogd: done
+    INIT: Id "S0" respawning too fast: disabled for 5 minutes
+
+    Poky (Yocto Project Reference Distro) 5.2 beaglebone-yocto /dev/ttyAMA0
+
+    beaglebone-yocto login: root
+
+    WARNING: Poky is a reference Yocto Project distribution that should be used for
+    testing and development purposes only. It is recommended that you create your
+    own distribution for production use.
+
+    root@beaglebone-yocto:~# ls /boot/
+    MLO         extlinux    fitImage    u-boot.img
+    root@beaglebone-yocto:~# umount /boot/
+    root@beaglebone-yocto:~# ls /boot/
+    root@beaglebone-yocto:~# 
