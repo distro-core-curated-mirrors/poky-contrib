@@ -1,18 +1,12 @@
+# if we can generate all information this isn't needed!
 LICENSE = "WHENCE"
-
-LIC_FILES_CHKSUM = "file://WHENCE;md5=${WHENCE_CHKSUM}"
-# WHENCE checksum is defined separately to ease overriding it if
-# class-devupstream is selected.
-WHENCE_CHKSUM  = "d85e2f182f489a235400712cbfdb017a"
 NO_GENERIC_LICENSE[WHENCE] = "WHENCE"
+LIC_FILES_CHKSUM = "file://WHENCE;md5=e9abc9642f216376bb4b9080c6a3590b"
 
-SRC_URI = "\
-  ${KERNELORG_MIRROR}/linux/kernel/firmware/linux-firmware-${PV}.tar.xz \
-"
+SRC_URI = "git://gitlab.com/kernel-firmware/linux-firmware.git;protocol=https;branch=main"
+SRCREV = "49c833a10ad96a61a218d28028aed20aeeac124c"
 
-SRC_URI[sha256sum] = "f2c60d66f226a28130cb5643e6e544d3229673460e127c91ba03f1080cbd703e"
-
-S = "${WORKDIR}/linux-firmware-${PV}"
+S = "${UNPACKDIR}/firmwarewip-${PV}"
 
 inherit allarch
 
@@ -33,9 +27,6 @@ do_install() {
         if [ "${@bb.utils.contains('PACKAGECONFIG', 'deduplicate', '1', '0', d)}" = "1" ]; then
                 oe_runmake 'DESTDIR=${D}' 'FIRMWAREDIR=${nonarch_base_libdir}/firmware' dedup
         fi
-
-        #cp LICEN[CS]E.* WHENCE ${D}${nonarch_base_libdir}/firmware/
-        #cp wfx/LICEN[CS]E.* ${D}${nonarch_base_libdir}/firmware/wfx/
 }
 
 # Firmware files are generally not ran on the CPU, so they can be
