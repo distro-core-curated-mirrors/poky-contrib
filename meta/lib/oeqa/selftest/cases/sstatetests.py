@@ -20,7 +20,7 @@ import oe
 import bb.siggen
 
 # Set to True to preserve stamp files after test execution for debugging failures
-keep_temp_files = False
+keep_temp_files = True
 
 class SStateBase(OESelftestTestCase):
 
@@ -72,20 +72,15 @@ class SStateBase(OESelftestTestCase):
         self.set_hostdistro()
 
         result = []
-        print("Search for: %s %s %s" % (str(filename_regex), distro_specific, distro_nonspecific))
         for root, dirs, files in os.walk(self.sstate_path):
-            print(str(root) + " " + self.sstate_path + " " + self.hostdistro)
             if distro_specific and re.search(r"%s/%s/[a-z0-9]{2}/[a-z0-9]{2}$" % (self.sstate_path, self.hostdistro), root):
-                print(str(files))
                 for f in files:
                     if re.search(filename_regex, f):
                         result.append(f)
             if distro_nonspecific and re.search(r"%s/[a-z0-9]{2}/[a-z0-9]{2}$" % self.sstate_path, root):
-                print(str(files))
                 for f in files:
                     if re.search(filename_regex, f):
                         result.append(f)
-        print("Result: %s" % str(result))
         return result
 
     # Test sstate files creation and their location and directory perms
