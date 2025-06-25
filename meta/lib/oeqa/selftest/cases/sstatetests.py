@@ -20,7 +20,7 @@ import oe
 import bb.siggen
 
 # Set to True to preserve stamp files after test execution for debugging failures
-keep_temp_files = False
+keep_temp_files = True
 
 class SStateBase(OESelftestTestCase):
 
