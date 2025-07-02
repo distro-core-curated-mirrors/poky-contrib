@@ -25,7 +25,7 @@ class BBUIHelper:
         def removetid(pid, tid):
             self.running_pids.remove(tid)
             del self.running_tasks[tid]
-            if self.pidmap[pid] == tid:
+            if pid in self.pidmap and self.pidmap[pid] == tid:
                 del self.pidmap[pid]
             self.needUpdate = True
 
