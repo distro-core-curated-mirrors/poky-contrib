@@ -73,6 +73,7 @@ PTESTS_FAST = "\
     python3-pefile \
     python3-pyasn1 \
     python3-pyasn1-modules \
+    python3-pytest-asyncio \
     python3-pytz \
     python3-pyyaml \
     python3-rpds-py \
