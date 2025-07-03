@@ -77,6 +77,7 @@ PTESTS_FAST = "\
     python3-rpds-py \
     python3-service-identity \
     python3-trove-classifiers \
+    python3-trustme \
     python3-uritools \
     python3-wcwidth \
     python3-webcolors \
