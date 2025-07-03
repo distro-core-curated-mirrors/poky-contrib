@@ -138,6 +138,7 @@ PTESTS_SLOW = "\
     python3-click \
     python3-cryptography \
     python3-numpy \
+    python3-urllib3 \
     python3-xmltodict \
     strace \
     tar \
