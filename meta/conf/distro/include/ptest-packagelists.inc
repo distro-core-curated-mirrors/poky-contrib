@@ -60,6 +60,7 @@ PTESTS_FAST = "\
     python3-bcrypt \
     python3-blinker \
     python3-calver \
+    python3-flask \
     python3-hypothesis \
     python3-idna \
     python3-itsdangerous \
