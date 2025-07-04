@@ -1,0 +1,40 @@
+#!/bin/sh
+
+TESTS="intltest iotest cintltst"
+TMP="$(mktemp -d)"
+STATUS_R="${TMP}/status.$$"
+TOPDIR=$(dirname "$(realpath $0)")
+for t in ${TESTS}; do
+	cd ${TOPDIR}/test/$t
+	./$t -E${STATUS_R}.$t || (echo "FAIL: $t"; touch ${STATUS_R}.$t; cp ${STATUS_R}.$t ${STATUS_R}.$t.FAIL)
+	[ ! -f ${STATUS_R}.$t.FAIL ] && touch ${STATUS_R}.$t.PASS && echo "PASS: $t"
+	echo "----------------------------------------"
+	if [ -s "${STATUS_R}.$t.FAIL" ];then
+		echo "-------------"
+		echo "| ***     FAILING TEST SUMMARY FOR:              $t"
+		cat ${STATUS_R}.$t.FAIL
+		echo "| *** END FAILING TEST SUMMARY FOR:              $t"
+	fi
+done
+
+goods=""
+bads=""
+for t in ${TESTS}; do
+	if [ -f "${STATUS_R}.$t.FAIL" ];then
+		bads="${bads} $t"
+	elif [ -f "${STATUS_R}.$t.PASS" ];then
+		goods="${goods} $t"
+	else
+		echo "*** subtest did not complete - $t"
+		bads="${bads} $t"
+	fi
+done
+echo "ALL TESTS SUMMARY:"
+if [ ! "x${bads}" = "x" ];then
+	echo "ok: ${goods}"
+	echo "===== ERRS: ${bads}"
+	exit 1
+else
+	echo "All tests OK: ${goods}"
+fi
+rm -rf ${TMP}
