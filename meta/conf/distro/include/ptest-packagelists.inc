@@ -88,6 +88,7 @@ PTESTS_FAST = "\
     python3-wcwidth \
     python3-webcolors \
     python3-wheel \
+    python3-wsproto \
     qemu \
     quilt \
     rpm-sequoia \
