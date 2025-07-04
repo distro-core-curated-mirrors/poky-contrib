@@ -54,6 +54,7 @@ PTESTS_FAST = "\
     nettle \
     opkg \
     popt \
+    python3-asgiref \
     python3-atomicwrites \
     python3-attrs \
     python3-bcrypt \
