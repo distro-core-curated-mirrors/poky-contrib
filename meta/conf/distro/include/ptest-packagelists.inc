@@ -81,6 +81,7 @@ PTESTS_FAST = "\
     python3-pytest-asyncio \
     python3-pytz \
     python3-pyyaml \
+    python3-quart \
     python3-rpds-py \
     python3-service-identity \
     python3-simplejson \
