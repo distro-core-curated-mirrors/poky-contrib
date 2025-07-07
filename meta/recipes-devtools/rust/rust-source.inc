@@ -1,9 +1,16 @@
 RUST_VERSION ?= "${@d.getVar('PV').split('-')[0]}"
 
-SRC_URI += "https://static.rust-lang.org/dist/2025-06-16/rustc-nightly-src.tar.xz;name=rust \
+SRC_URI += "https://static.rust-lang.org/dist/2025-07-03/rustc-nightly-src.tar.xz;name=rust \
+            file://0001-Define-more-ioctl-codes-on-riscv32gc-unknown-linux-g.patch;patchdir=${RUSTSRC} \
+	    file://rust-oe-selftest.patch;patchdir=${RUSTSRC} \
+	    file://repro-issue-fix-with-cc-crate-hashmap.patch;patchdir=${RUSTSRC} \
+	    file://oeqa-selftest-Increase-timeout-in-process-sigpipe-ru.patch;patchdir=${RUSTSRC} \
+	    file://0001-src-core-build_steps-tool.rs-switch-off-lto-for-rust.patch;patchdir=${RUSTSRC} \
+	    file://revert-link-std-statically-in-rustc_driver-feature.patch;patchdir=${RUSTSRC} \
+	    file://0001-libunwind-Use-gcs-instead-of-gcs-target-attribute.patch;patchdir=${RUSTSRC} \
 	    file://disable-rustfmt-check.patch;patchdir=${RUSTSRC} \
 "
-SRC_URI[rust.sha256sum] = "d83737fcf46835deda054fcc0086d84fab924276702befc000f4d0e59b4efc43"
+SRC_URI[rust.sha256sum] = "bd9c1a63ba0b402fc68247ea7f63841b7da6595da271b135740cd6c10219edd9"
 
 RUSTSRC = "${WORKDIR}/rustc-nightly-src"
 

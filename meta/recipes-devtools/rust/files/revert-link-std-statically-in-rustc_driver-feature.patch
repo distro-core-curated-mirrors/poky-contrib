@@ -43,14 +43,16 @@ index 39fa23766b..51d86b4009 100644
  use rustc_hir::def_id::{CrateNum, LOCAL_CRATE};
  use rustc_index::IndexVec;
  use rustc_middle::bug;
-@@ -161,44 +161,19 @@ fn calculate_type(tcx: TyCtxt<'_>, ty: CrateType) -> DependencyList {
+@@ -159,46 +159,19 @@ fn calculate_type(tcx: TyCtxt<'_>, ty: CrateType) -> DependencyList {
          }
          Linkage::Dynamic | Linkage::IncludedFromDylib => {}
      }
 -
 -    let all_dylibs = || {
 -        tcx.crates(()).iter().filter(|&&cnum| {
--            !tcx.dep_kind(cnum).macros_only() && tcx.used_crate_source(cnum).dylib.is_some()
+-            !tcx.dep_kind(cnum).macros_only()
+-                && (tcx.used_crate_source(cnum).dylib.is_some()
+-                    || tcx.used_crate_source(cnum).sdylib_interface.is_some())
 -        })
 -    };
 -
@@ -104,7 +106,7 @@ diff --git a/src/bootstrap/src/bin/rustc.rs b/src/bootstrap/src/bin/rustc.rs
 index d04e2fbeb7..011c289d93 100644
 --- a/src/bootstrap/src/bin/rustc.rs
 +++ b/src/bootstrap/src/bin/rustc.rs
-@@ -89,24 +89,6 @@ fn main() {
+@@ -92,24 +92,6 @@ fn main() {
          rustc_real
      };
 
@@ -129,21 +131,21 @@ index d04e2fbeb7..011c289d93 100644
      let mut cmd = match env::var_os("RUSTC_WRAPPER_REAL") {
          Some(wrapper) if !wrapper.is_empty() => {
              let mut cmd = Command::new(wrapper);
-@@ -117,6 +99,9 @@ fn main() {
+@@ -120,6 +120,9 @@ fn main() {
      };
      cmd.args(&args).env(dylib_path_var(), env::join_paths(&dylib_path).unwrap());
 
 +    // Get the name of the crate we're compiling, if any.
 +    let crate_name = parse_value_from_args(&orig_args, "--crate-name");
 +
-     if let Some(crate_name) = crate_name {
-         if let Some(target) = env::var_os("RUSTC_TIME") {
-             if target == "all"
+     if let Some(crate_name) = crate_name
+         && let Some(target) = env::var_os("RUSTC_TIME")
+         && (target == "all"
 diff --git a/src/bootstrap/src/core/builder/cargo.rs b/src/bootstrap/src/core/builder/cargo.rs
 index 0688a1d689..066e6bf53f 100644
 --- a/src/bootstrap/src/core/builder/cargo.rs
 +++ b/src/bootstrap/src/core/builder/cargo.rs
-@@ -1146,7 +1146,7 @@ impl Builder<'_> {
+@@ -1244,7 +1244,7 @@ impl Builder<'_> {
          // When we build Rust dylibs they're all intended for intermediate
          // usage, so make sure we pass the -Cprefer-dynamic flag instead of
          // linking all deps statically into the dylib.
@@ -168,7 +170,7 @@ index 9754254cdd..dd95cc71cd 100644
 --- a/src/tools/clippy/tests/compile-test.rs
 +++ b/src/tools/clippy/tests/compile-test.rs
 @@ -1,4 +1,4 @@
--#![feature(rustc_private, let_chains)]
+-#![feature(rustc_private)]
 +#![feature(let_chains)]
  #![warn(rust_2018_idioms, unused_lifetimes)]
  #![allow(unused_extern_crates)]
@@ -200,7 +202,7 @@ diff --git a/src/bootstrap/src/core/build_steps/compile.rs b/src/bootstrap/src/c
 index 27bbc8bd8f..a6fc4df2eb 100644
 --- a/src/bootstrap/src/core/build_steps/compile.rs
 +++ b/src/bootstrap/src/core/build_steps/compile.rs
-@@ -1940,24 +1940,8 @@ impl Step for Assemble {
+@@ -2194,24 +2194,8 @@ impl Step for Assemble {
          let src_libdir = builder.sysroot_target_libdir(build_compiler, host);
          for f in builder.read_dir(&src_libdir) {
              let filename = f.file_name().into_string().unwrap();
@@ -223,6 +225,6 @@ index 27bbc8bd8f..a6fc4df2eb 100644
 -            };
 -
 -            if is_dylib_or_debug && can_be_rustc_dynamic_dep && !is_proc_macro {
-                 builder.copy_link(&f.path(), &rustc_libdir.join(&filename));
+                 builder.copy_link(&f.path(), &rustc_libdir.join(&filename), FileType::Regular);
              }
          }
