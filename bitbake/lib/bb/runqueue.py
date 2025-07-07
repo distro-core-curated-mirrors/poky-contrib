@@ -1700,7 +1700,7 @@ class RunQueue:
 
             bb.note("Writing task signature files")
 
-            max_process = int(self.cfgData.getVar("BB_NUMBER_PARSE_THREADS") or os.cpu_count() or 1)
+            max_process = int(self.cfgData.getVar("BB_NUMBER_PARSE_THREADS") or bb.utils.cpu_count() or 1)
             def chunkify(l, n):
                 return [l[i::n] for i in range(n)]
             dumpsigs_tids = chunkify(list(self.rqdata.runtaskentries), max_process)

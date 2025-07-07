@@ -2148,7 +2148,7 @@ class CookerParser(object):
         self.progress_chunk = int(max(self.toparse / 100, 1))
 
         self.num_processes = min(int(self.cfgdata.getVar("BB_NUMBER_PARSE_THREADS") or
-                                 multiprocessing.cpu_count()), self.toparse)
+                                 bb.utils.cpu_count()), self.toparse)
 
         bb.cache.SiggenRecipeInfo.reset()
         self.start()
