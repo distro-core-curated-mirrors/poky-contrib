@@ -1409,11 +1409,16 @@ def get_referenced_vars(start_expr, d):
     return ret
 
 
-def cpu_count():
-    try:
-        return len(os.sched_getaffinity(0))
-    except OSError:
-        return multiprocessing.cpu_count()
+def cpu_count(at_least=1, at_most=64):
+    """
+    Return the number of CPUs available to the process, clamped to the specific
+    range (by default at least 1 and at most 64).
+
+    Note that this is number of cores available and not the number of physical
+    cores, so it reflects any cgroups or CPU affinities.
+    """
+    cpus = len(os.sched_getaffinity(0))
+    return max(min(cpus, at_most), at_least)
 
 def nonblockingfd(fd):
     fcntl.fcntl(fd, fcntl.F_SETFL, fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NONBLOCK)
