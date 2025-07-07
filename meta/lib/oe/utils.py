@@ -268,7 +268,7 @@ def execute_pre_post_process(d, cmds):
 
 @bb.parse.vardepsexclude("BB_NUMBER_THREADS")
 def get_bb_number_threads(d):
-    return int(d.getVar("BB_NUMBER_THREADS") or os.cpu_count() or 1)
+    return int(d.getVar("BB_NUMBER_THREADS") or bb.utils.cpu_count() or 1)
 
 def multiprocess_launch(target, items, d, extraargs=None):
     max_process = get_bb_number_threads(d)
