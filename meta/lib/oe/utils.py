@@ -254,8 +254,7 @@ def trim_version(version, num_parts=2):
     return trimmed
 
 def cpu_count(at_least=1, at_most=64):
-    cpus = len(os.sched_getaffinity(0))
-    return max(min(cpus, at_most), at_least)
+    return bb.utils.cpu_count(at_least=at_least, at_most=at_most)
 
 def execute_pre_post_process(d, cmds):
     if cmds is None:
