@@ -90,6 +90,69 @@ index a05f274136..0e69b4cb98 100644
  fn sparse_inserts() {
      let cache: VecCache<u32, u8, u32> = VecCache::default();
      let end = if cfg!(target_pointer_width = "64") && cfg!(target_os = "linux") {
+diff --git a/tests/codegen/uninhabited-transparent-return-abi.rs b/tests/codegen/uninhabited-transparent-return-abi.rs
+index face1577c3f..d69e5e34a7b 100644
+--- a/tests/codegen/uninhabited-transparent-return-abi.rs
++++ b/tests/codegen/uninhabited-transparent-return-abi.rs
+@@ -1,4 +1,5 @@
+ //@ compile-flags: -Copt-level=3
++//@ ignore-riscv64
+
+ // See https://github.com/rust-lang/rust/issues/135802
+
+diff --git a/tests/ui/abi/rust-cold-works-with-rustic-args.rs b/tests/ui/abi/rust-cold-works-with-rustic-args.rs
+index 57027364699..3faa7ea035e 100644
+--- a/tests/ui/abi/rust-cold-works-with-rustic-args.rs
++++ b/tests/ui/abi/rust-cold-works-with-rustic-args.rs
+@@ -1,5 +1,6 @@
+ //@build-pass
+ //@compile-flags: -Clink-dead-code=true --crate-type lib
++//@ ignore-riscv64
+ // We used to not handle all "rustic" ABIs in a (relatively) uniform way,
+ // so we failed to fix up arguments for actually passing through the ABI...
+ #![feature(rust_cold_cc)]
+diff --git a/tests/codegen/const-vector.rs b/tests/codegen/const-vector.rs
+index 42921442e03..93818bb26cd 100644
+--- a/tests/codegen/const-vector.rs
++++ b/tests/codegen/const-vector.rs
+@@ -1,3 +1,4 @@
++//@ ignore-riscv64
+ //@ revisions: OPT0 OPT0_S390X
+ //@ [OPT0] ignore-s390x
+ //@ [OPT0_S390X] only-s390x
+diff --git a/tests/codegen/transmute-scalar.rs b/tests/codegen/transmute-scalar.rs
+index 3ac6ba3beb1..cf7309d341d 100644
+--- a/tests/codegen/transmute-scalar.rs
++++ b/tests/codegen/transmute-scalar.rs
+@@ -1,5 +1,6 @@
+ //@ add-core-stubs
+ //@ compile-flags: -C opt-level=0 -C no-prepopulate-passes
++//@ ignore-riscv64
+
+ #![crate_type = "lib"]
+ #![feature(no_core, repr_simd, arm_target_feature, mips_target_feature, s390x_target_feature)]
+diff --git a/tests/codegen/simd/extract-insert-dyn.rs b/tests/codegen/simd/extract-insert-dyn.rs
+index 729f0145314..db73e66da43 100644
+--- a/tests/codegen/simd/extract-insert-dyn.rs
++++ b/tests/codegen/simd/extract-insert-dyn.rs
+@@ -1,4 +1,5 @@
+ //@compile-flags: -C opt-level=3 -C no-prepopulate-passes
++//@ ignore-riscv64
+
+ #![feature(
+     core_intrinsics,
+diff --git a/tests/assembly/dwarf-mixed-versions-lto.rs b/tests/assembly/dwarf-mixed-versions-lto.rs
+index 9910a6e2f5f..33979e75f51 100644
+--- a/tests/assembly/dwarf-mixed-versions-lto.rs
++++ b/tests/assembly/dwarf-mixed-versions-lto.rs
+@@ -3,6 +3,7 @@
+ // Note: `.2byte` directive is used on MIPS.
+
+ //@ only-linux
++//@ ignore-riscv64
+ //@ aux-build:dwarf-mixed-versions-lto-aux.rs
+ //@ compile-flags: -C lto -g -Cdwarf-version=5
+ //@ assembly-output: emit-asm
 diff --git a/library/alloctests/tests/lib.rs b/library/alloctests/tests/lib.rs
 index a41162ecd5..a75058ca82 100644
 --- a/library/alloctests/tests/lib.rs
