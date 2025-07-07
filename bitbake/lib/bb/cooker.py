@@ -2201,14 +2201,6 @@ class CookerParser(object):
             bb.event.fire(bb.event.ParseError(eventmsg), self.cfgdata)
             bb.error("Parsing halted due to errors, see error messages above")
 
-        # Cleanup the queue before call process.join(), otherwise there might be
-        # deadlocks.
-        def read_results():
-            while True:
-                try:
-                   self.result_queue.get(timeout=0.25)
-                except queue.Empty:
-                    break
 
         def sync_caches():
             for c in self.bb_caches.values():
@@ -2220,28 +2212,23 @@ class CookerParser(object):
 
         self.parser_quit.set()
 
-        read_results()
+        while self.processes:
+            # Drain all items from the result queue
+            while True:
+                try:
+                    self.result_queue.get(False)
+                except queue.Empty:
+                    break
 
-        for process in self.processes:
-            process.join(2)
-
-        for process in self.processes:
-            if process.exitcode is None:
-                os.kill(process.pid, signal.SIGINT)
-
-        read_results()
-
-        for process in self.processes:
-            process.join(2)
-
-        for process in self.processes:
-            if process.exitcode is None:
-                process.terminate()
-
-        for process in self.processes:
-            process.join()
-            # clean up zombies
-            process.close()
+            processes = self.processes
+            self.processes = []
+            for p in processes:
+                p.join(0.1)
+                if p.exitcode is None:
+                    # Process has not exited yet
+                    self.processes.append(p)
+                    continue
+                p.close()
 
         bb.codeparser.parser_cache_save()
         bb.codeparser.parser_cache_savemerge()
@@ -2269,24 +2256,21 @@ class CookerParser(object):
             yield False, mc, infos
 
     def parse_generator(self):
-        empty = False
-        while self.processes or not empty:
-            for process in self.processes.copy():
-                if not process.is_alive():
-                    process.join()
-                    self.processes.remove(process)
-
+        while True:
             if self.parsed >= self.toparse:
                 break
 
             try:
-                result = self.result_queue.get(timeout=0.25)
+                r = self.result_queue.get(0.25)
+                yield r
             except queue.Empty:
-                empty = True
                 yield None, None, None
-            else:
-                empty = False
-                yield result
+
+        for p in self.processes:
+            p.join()
+            p.close()
+
+        self.processes = []
 
         if not (self.parsed >= self.toparse):
             raise bb.parse.ParseError("Not all recipes parsed, parser thread killed/died? (%s %s of %s) Exiting." % (len(self.processes), self.parsed, self.toparse), None)
