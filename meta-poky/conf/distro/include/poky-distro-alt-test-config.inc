@@ -6,3 +6,6 @@ PREFERRED_VERSION_linux-yocto = "6.12%"
 
 # Ensure the kernel nfs server is enabled
 KERNEL_FEATURES:append:pn-linux-yocto = " features/nfsd/nfsd-enable.scc"
+
+# Use the FIT image for the beaglebone reference hardware just for testing purpose
+FIT_IMAGE_KERNEL = "1"
