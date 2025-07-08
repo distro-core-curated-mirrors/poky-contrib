@@ -2059,34 +2059,20 @@ class Parser(multiprocessing.Process):
         multiprocessing.util.Finalize(None, bb.codeparser.parser_cache_save, exitpriority=1)
         multiprocessing.util.Finalize(None, bb.fetch.fetcher_parse_save, exitpriority=1)
 
-        pending = []
-        havejobs = True
         try:
-            while (havejobs or pending) and not self.exit:
-                if self.quit.is_set():
-                    break
+            while not self.exit and not self.quit.is_set():
+                with self.next_job_id.get_lock():
+                    if self.next_job_id.value >= len(self.jobs):
+                        # All done
+                        break
 
-                job = None
-                if havejobs:
-                    with self.next_job_id.get_lock():
-                        if self.next_job_id.value < len(self.jobs):
-                            job = self.jobs[self.next_job_id.value]
-                            self.next_job_id.value += 1
-                        else:
-                            havejobs = False
+                    jobid = self.next_job_id.value
+                    self.next_job_id.value += 1
 
-                if job:
-                    result = self.parse(*job)
-                    # Clear the siggen cache after parsing to control memory usage, its huge
-                    bb.parse.siggen.postparsing_clean_cache()
-                    pending.append(result)
-
-                if pending:
-                    try:
-                        result = pending.pop()
-                        self.results.put(result, timeout=0.05)
-                    except queue.Full:
-                        pending.append(result)
+                result = self.parse(*self.jobs[jobid])
+                # Clear the siggen cache after parsing to control memory usage, its huge
+                bb.parse.siggen.postparsing_clean_cache()
+                self.results.put(result)
         finally:
             self.results.close()
             self.results.join_thread()
