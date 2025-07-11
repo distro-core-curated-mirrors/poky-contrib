@@ -12,7 +12,7 @@ BPN = "clang"
 
 inherit cross
 
-DEPENDS += "clang-native"
+DEPENDS += "clang-native ${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-lld', 'lld-native', '', d)}"
 
 do_install() {
         install -d ${D}${bindir}
