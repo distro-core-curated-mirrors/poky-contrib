@@ -1,10 +1,7 @@
-# if we can generate all information this isn't needed!
 LICENSE = "WHENCE"
-NO_GENERIC_LICENSE[WHENCE] = "WHENCE"
-LIC_FILES_CHKSUM = "file://WHENCE;md5=e9abc9642f216376bb4b9080c6a3590b"
 
 SRC_URI = "git://gitlab.com/kernel-firmware/linux-firmware.git;protocol=https;branch=main"
-SRCREV = "49c833a10ad96a61a218d28028aed20aeeac124c"
+SRCREV = "a5fbfa20d1bd0f11d7f530ddee7385812da1f24e"
 
 S = "${UNPACKDIR}/firmwarewip-${PV}"
 
