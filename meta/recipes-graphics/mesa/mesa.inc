@@ -255,7 +255,8 @@ PACKAGES =+ "libegl-mesa libegl-mesa-dev \
              libgl-mesa libgl-mesa-dev \
              libglx-mesa libglx-mesa-dev \
              libglapi libglapi-dev \
-             libgbm libgbm-dev \
+             ${@bb.utils.contains('gbm', 'PACKAGECONFIG', 'libgbm libgbm-dev', '', d)} \
+             libgbm-backend-dri \
              libgles1-mesa libgles1-mesa-dev \
              libgles2-mesa libgles2-mesa-dev \
              libopencl-mesa \
@@ -351,6 +352,7 @@ FILES:libgl-mesa = "${libdir}/libGL.so.*"
 FILES:libglx-mesa = "${libdir}/libGLX*.so.*"
 FILES:libopencl-mesa = "${libdir}/lib*OpenCL.so* ${sysconfdir}/OpenCL/vendors/*.icd"
 FILES:libglapi = "${libdir}/libglapi.so.*"
+FILES:libgbm-backend-dri = "${libdir}/gbm/*_gbm.so"
 
 FILES:${PN}-dev = "${libdir}/pkgconfig/dri.pc ${includedir}/GL/internal/dri_interface.h ${includedir}/vulkan ${libdir}/vdpau/*.so"
 FILES:libegl-mesa-dev = "${libdir}/libEGL*.* ${includedir}/EGL ${includedir}/KHR ${libdir}/pkgconfig/egl.pc"
@@ -374,3 +376,6 @@ INSANE_SKIP:libopencl-mesa += "dev-so"
 RREPLACES:mesa-megadriver = "mesa"
 RCONFLICTS:mesa-megadriver = "mesa"
 RPROVIDES:mesa-megadriver = "mesa"
+
+RDEPENDS:libegl-mesa += "libgbm-backend-dri"
+
