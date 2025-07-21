@@ -35,3 +35,5 @@ PROVIDES = " \
 "
 
 RPROVIDES:${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'egl', 'libegl', '', d)}"
+
+# TODO need a way to set the search path in native/nativesdk to point at /usr.
