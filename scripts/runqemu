@@ -471,16 +471,7 @@ class BaseConfig(object):
     def set_mesa_paths(self):
         drivers_path = os.path.join(self.bindir_native, '../lib/dri')
         gbm_path = os.path.join(self.bindir_native, '../lib/gbm')
-        if not os.path.exists(drivers_path) or not os.listdir(drivers_path) \
-                or not os.path.exists(gbm_path) or not os.listdir(gbm_path):
-            raise RunQemuError("""
-qemu has been built without opengl support and accelerated graphics support is not available.
-To enable it, add:
-DISTRO_FEATURES_NATIVE:append = " opengl"
-DISTRO_FEATURES_NATIVESDK:append = " opengl"
-to your build configuration.
-""")
-        self.qemu_environ['LIBGL_DRIVERS_PATH'] = drivers_path
+        #self.qemu_environ['LIBGL_DRIVERS_PATH'] = drivers_path
         self.qemu_environ['GBM_BACKENDS_PATH'] = gbm_path
 
     def check_args(self):
