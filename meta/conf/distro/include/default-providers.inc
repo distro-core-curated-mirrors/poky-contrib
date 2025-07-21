@@ -68,4 +68,8 @@ PREFERRED_PROVIDER_virtual/nativesdk-libsdl2 ?= "nativesdk-libsdl2"
 
 PREFERRED_RPROVIDER_virtual-libegl-icd ?= "mesa"
 PREFERRED_RPROVIDER_virtual-libglx-icd ?= "mesa"
+# For native/nativedk, assume the host has providers
+PREFERRED_RPROVIDER_virtual-libegl-icd-native ?= "dummy-gl-icd"
+PREFERRED_RPROVIDER_virtual-libglx-icd-native ?= "dummy-gl-icd"
+
 PREFERRED_RPROVIDER_virtual-x-terminal-emulator ?= "rxvt-unicode"
