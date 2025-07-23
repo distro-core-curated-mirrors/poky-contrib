@@ -1959,6 +1959,14 @@ def set_process_name(name):
     except:
         pass
 
+    try:
+        from viztracer import get_tracer
+        tracer = get_tracer()
+        if tracer:
+            tracer.process_name = name
+    except ImportError:
+        pass
+
 def enable_loopback_networking():
     # From bits/ioctls.h
     SIOCGIFFLAGS = 0x8913
