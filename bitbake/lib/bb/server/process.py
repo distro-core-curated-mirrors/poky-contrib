@@ -600,7 +600,18 @@ class BitBakeServer(object):
         os.set_inheritable(self.bitbake_lock.fileno(), True)
         os.set_inheritable(self.readypipein, True)
         serverscript = os.path.realpath(os.path.dirname(__file__) + "/../../../bin/bitbake-server")
-        os.execl(sys.executable, sys.executable, serverscript, "decafbad", str(self.bitbake_lock.fileno()), str(self.readypipein), self.logfile, self.bitbake_lock.name, self.sockname,  str(self.server_timeout or 0), str(list(self.profile)), str(self.xmlrpcinterface[0]), str(self.xmlrpcinterface[1]))
+
+        tracer_args = ""
+        try:
+            from viztracer import get_tracer
+            import json
+            tracer = get_tracer()
+            if tracer:
+                tracer_args = json.dumps(get_tracer().init_kwargs)
+        except ImportError:
+            pass
+
+        os.execl(sys.executable, sys.executable, serverscript, "decafbad", str(self.bitbake_lock.fileno()), str(self.readypipein), self.logfile, self.bitbake_lock.name, self.sockname,  str(self.server_timeout or 0), str(list(self.profile)), str(self.xmlrpcinterface[0]), str(self.xmlrpcinterface[1]), tracer_args)
 
 def execServer(lockfd, readypipeinfd, lockname, sockname, server_timeout, xmlrpcinterface, profile):
 

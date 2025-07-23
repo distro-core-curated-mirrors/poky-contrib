@@ -18,7 +18,7 @@ import bb
 bb.utils.check_system_locale()
 
 # Users shouldn't be running this code directly
-if len(sys.argv) != 11 or not sys.argv[1].startswith("decafbad"):
+if len(sys.argv) != 12 or not sys.argv[1].startswith("decafbad"):
     print("bitbake-server is meant for internal execution by bitbake itself, please don't use it standalone.")
     sys.exit(1)
 
@@ -34,6 +34,17 @@ profile = sys.argv[8]
 xmlrpcinterface = (sys.argv[9], int(sys.argv[10]))
 if xmlrpcinterface[0] == "None":
     xmlrpcinterface = (None, xmlrpcinterface[1])
+
+tracerargs = sys.argv[11]
+if tracerargs:
+    try:
+        import json, viztracer
+        init_kwargs = json.loads(tracerargs)
+        tracer = viztracer.VizTracer(**init_kwargs)
+        tracer.register_exit()
+        tracer.start()
+    except ImportError:
+        pass
 
 # Replace standard fds with our own
 with open('/dev/null', 'r') as si:
