@@ -74,6 +74,7 @@ SRC_URI = "${BASEURI} \
            file://0026-fix-incorrect-preprocessor-line-numbers.patch \
            file://0027-aarch64-Fix-fma-steering-when-rename-fails-PR120119.patch \
            file://0028-libsanitizer-Fix-build-with-glibc-2.42.patch \
+           file://add-extra-search-path.patch \
 "
 
 UNPACKDIR = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/sources"
