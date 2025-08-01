@@ -72,6 +72,8 @@ SRC_URI = "${BASEURI} \
            file://0025-gcc-testsuite-tweaks-for-mips-OE.patch \
 "
 
+#           file://add-extra-search-path.patch 
+
 UNPACKDIR = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/sources"
 S = "${UNPACKDIR}/${SOURCEDIR}"
 B = "${WORKDIR}/gcc-${PV}/build.${HOST_SYS}.${TARGET_SYS}"
