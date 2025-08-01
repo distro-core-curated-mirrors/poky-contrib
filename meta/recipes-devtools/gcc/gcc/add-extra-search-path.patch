@@ -1,0 +1,21 @@
+Upstream-Status: Inappropriate [OE specific config]
+
+Index: gcc-15.1.0/gcc/gcc.cc
+===================================================================
+--- gcc-15.1.0.orig/gcc/gcc.cc
++++ gcc-15.1.0/gcc/gcc.cc
+@@ -8661,6 +8661,14 @@ driver::set_up_specs () const
+ 		      NULL, PREFIX_PRIORITY_LAST, 0, 1);
+ 	}
+ 
++      /* OE specific, search /usr/lib/gcc in the sysroot to patch cross compiler build */
++      if (*standard_startfile_prefix_2)
++	add_sysrooted_prefix (&startfile_prefixes,
++			      concat (standard_startfile_prefix_2, "gcc", dir_separator_str, NULL),
++			      "BINUTILS",
++			      PREFIX_PRIORITY_LAST, 0, 1);
++
++
+       /* Sysrooted prefixes are relocated because target_system_root is
+ 	 also relocated by gcc_exec_prefix.  */
+       if (*standard_startfile_prefix_1)
