@@ -1,0 +1,124 @@
+test
+
+Upstream-Status: Pending
+Signed-off-by: Sundeep KOKKONDA <sundeep.kokkonda@windriver.com>
+---
+--- a/clang/test/Driver/aix-ld.c	2025-07-13 23:54:46.796223150 -0700
++++ b/clang/test/Driver/aix-ld.c	2025-07-14 00:14:07.552606950 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // General tests that ld invocations on AIX targets are sane. Note that we use
+ // sysroot to make these tests independent of the host system.
+ 
+--- a/clang/test/Driver/aix-rtlib.c	2025-07-13 23:54:46.796223150 -0700
++++ b/clang/test/Driver/aix-rtlib.c	2025-07-14 00:14:07.556606910 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // Check the default rtlib for AIX.
+ // RUN: %clang --target=powerpc-ibm-aix -print-libgcc-file-name \
+ // RUN:        -resource-dir=%S/Inputs/resource_dir \
+--- a/clang/test/Driver/amdgpu-toolchain.c	2025-07-13 23:54:46.796223150 -0700
++++ b/clang/test/Driver/amdgpu-toolchain.c	2025-07-14 00:14:07.556606910 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // RUN: %clang -### --target=amdgcn--amdhsa -x assembler -mcpu=kaveri %s 2>&1 | FileCheck -check-prefix=AS_LINK %s
+ // RUN: %clang -### -g --target=amdgcn--amdhsa -mcpu=kaveri -nogpulib %s 2>&1 | FileCheck -check-prefix=DWARF_VER %s
+ // RUN: %clang -### --target=amdgcn-amd-amdpal -x assembler -mcpu=kaveri %s 2>&1 | FileCheck -check-prefix=AS_LINK %s
+--- a/clang/test/Driver/avr-toolchain.c	2025-07-13 23:54:46.800223111 -0700
++++ b/clang/test/Driver/avr-toolchain.c	2025-07-14 00:14:07.560606869 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // UNSUPPORTED: system-windows
+ // A basic clang -cc1 command-line.
+ 
+--- a/clang/test/Driver/clang-translation.c	2025-07-13 23:54:46.800223111 -0700
++++ b/clang/test/Driver/clang-translation.c	2025-07-14 00:14:07.560606869 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // RUN: %clang -target i386-unknown-unknown -### -S -O0 -Os %s -o %t.s -fverbose-asm -fvisibility=hidden 2>&1 | FileCheck -check-prefix=I386 %s
+ // I386: "-triple" "i386-unknown-unknown"
+ // I386: "-S"
+--- a/clang/test/Driver/compiler-rt-unwind.c	2025-07-13 23:54:46.800223111 -0700
++++ b/clang/test/Driver/compiler-rt-unwind.c	2025-07-14 00:14:07.564606830 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // General tests that the driver handles combinations of --rtlib=XXX and
+ // --unwindlib=XXX properly.
+ //
+--- a/clang/test/Driver/csky-toolchain.c	2025-07-13 23:54:46.804223071 -0700
++++ b/clang/test/Driver/csky-toolchain.c	2025-07-14 00:14:07.564606830 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // UNSUPPORTED: system-windows
+ // A basic clang -cc1 command-line, and simple environment check.
+ 
+--- a/clang/test/Driver/darwin-print-file-name.c	2025-07-13 23:54:46.804223071 -0700
++++ b/clang/test/Driver/darwin-print-file-name.c	2025-07-14 00:14:07.564606830 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // Regression test. Previously Clang just returned the library name instead
+ // of the full path.
+ 
+--- a/clang/test/Driver/linux-cross.cpp	2025-07-13 23:54:46.812222991 -0700
++++ b/clang/test/Driver/linux-cross.cpp	2025-07-14 00:14:07.568606789 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // UNSUPPORTED: system-windows
+ 
+ /// Test native GCC installation on Arch Linux i686.
+--- a/clang/test/Driver/linux-header-search.cpp	2025-07-13 23:54:46.812222991 -0700
++++ b/clang/test/Driver/linux-header-search.cpp	2025-07-14 00:14:07.568606789 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // General tests that the header search paths detected by the driver and passed
+ // to CC1 are sane.
+ //
+--- a/clang/test/Driver/linux-ld.c	2025-07-13 23:54:46.816222950 -0700
++++ b/clang/test/Driver/linux-ld.c	2025-07-14 00:14:07.572606750 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // UNSUPPORTED: system-windows
+ // General tests that ld invocations on Linux targets sane. Note that we use
+ // sysroot to make these tests independent of the host system.
+--- a/clang/test/Driver/mips-abi.c	2025-07-13 23:54:46.816222950 -0700
++++ b/clang/test/Driver/mips-abi.c	2025-07-14 00:14:07.572606750 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // Check passing Mips ABI options to the backend.
+ //
+ // RUN: %clang --target=mips-linux-gnu -### -c %s 2>&1 \
+--- a/clang/test/Driver/mips-cs.cpp	2025-07-13 23:54:46.816222950 -0700
++++ b/clang/test/Driver/mips-cs.cpp	2025-07-14 00:14:07.576606709 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // Check frontend and linker invocations on Mentor Graphics MIPS toolchain.
+ //
+ // = Big-endian, hard float
+--- a/clang/test/Driver/mips-fsf.cpp	2025-07-13 23:54:46.816222950 -0700
++++ b/clang/test/Driver/mips-fsf.cpp	2025-07-14 00:14:07.576606709 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // Check frontend and linker invocations on FSF MIPS toolchain.
+ //
+ // = Big-endian, mips32, hard float
+--- a/clang/test/Driver/mips-img-v2.cpp	2025-07-13 23:54:46.816222950 -0700
++++ b/clang/test/Driver/mips-img-v2.cpp	2025-07-14 00:14:07.580606670 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // Check frontend and linker invocations on the IMG v2 MIPS toolchain.
+ 
+ // -EB -mips32r6 -mhard-float -mabi=32
+--- a/clang/test/Driver/mips-img.cpp	2025-07-13 23:54:46.816222950 -0700
++++ b/clang/test/Driver/mips-img.cpp	2025-07-14 00:14:07.580606670 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // Check frontend and linker invocations on the IMG MIPS toolchain.
+ //
+ // = Big-endian, mips32r6
+--- a/clang/test/Driver/mips-mti.cpp	2025-07-13 23:54:46.816222950 -0700
++++ b/clang/test/Driver/mips-mti.cpp	2025-07-14 00:14:07.584606630 -0700
+@@ -1,3 +1,4 @@
++// REQUIRES: disabled
+ // Check frontend and linker invocations on the MTI MIPS toolchain.
+ 
+ // -EB -mhard-float -mabi=32

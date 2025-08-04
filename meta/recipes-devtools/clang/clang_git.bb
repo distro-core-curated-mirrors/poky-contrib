@@ -16,6 +16,7 @@ SECTION = "devel"
 
 require common-clang.inc
 require common-source.inc
+require clang-testsuite.inc
 
 BPN = "clang"
 
