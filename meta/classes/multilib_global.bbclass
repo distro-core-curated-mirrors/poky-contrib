@@ -210,13 +210,13 @@ python multilib_virtclass_handler_global () {
             # Process PROVIDES
             origprovs = provs = localdata.getVar("PROVIDES") or ""
             for variant in variants:
-                provs = provs + " " + oe.classextend.suffix_filter_deps(d.getVar("PROVIDES", False) or "", variant, variants)
+                provs = provs + " " + oe.classextend.suffix_filter_deps(localdata.getVar("PROVIDES") or "", variant, variants)
             d.setVar("PROVIDES", provs)
 
             # Process RPROVIDES
             origrprovs = rprovs = localdata.getVar("RPROVIDES") or ""
             for variant in variants:
-                rprovs = rprovs + " " + oe.classextend.suffix_filter_deps(d.getVar("RPROVIDES", False) or "", variant, variants)
+                rprovs = rprovs + " " + oe.classextend.suffix_filter_deps(localdata.getVar("RPROVIDES") or "", variant, variants)
             if rprovs.strip():
                 d.setVar("RPROVIDES", rprovs)
 
@@ -224,7 +224,7 @@ python multilib_virtclass_handler_global () {
             for pkg in (d.getVar("PACKAGES") or "").split():
                 origrprovs = rprovs = localdata.getVar("RPROVIDES:%s" % pkg) or ""
                 for variant in variants:
-                    rprovs = rprovs + " " + oe.classextend.suffix_filter_deps(d.getVar("RPROVIDES:%s" % pkg, False) or "", variant, variants)
+                    rprovs = rprovs + " " + oe.classextend.suffix_filter_deps(localdata.getVar("RPROVIDES:%s" % pkg) or "", variant, variants)
                     rprovs = rprovs + " " + variant + "-" + pkg
                 d.setVar("RPROVIDES:%s" % pkg, rprovs)
 }
