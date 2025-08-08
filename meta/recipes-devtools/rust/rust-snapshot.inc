@@ -5,6 +5,7 @@
 ## The version is replicated here.
 
 SNAPSHOT_VERSION = "beta"
+COMPILER_DATE = "2025-06-24"
 
 SRC_URI[rustc-snapshot-aarch64.sha256sum] = "3d37128f78af2b6fffb661dc05c2f7ace3a8307b3d60176fcc2b70bd4d802b90"
 SRC_URI[rust-std-snapshot-aarch64.sha256sum] = "010bae09b5a25a7b1b0c1a10dc67f5d7db89212fa9ef7149cea4e4f586d5f252"
@@ -56,9 +57,9 @@ SRC_URI[rust-std-snapshot-i586.sha256sum] = "5ca691898ea3cc66822aa32ac9d24996610
 SRC_URI[rust-std-snapshot-sparc64.sha256sum] = "84179facb34fb286545622407ac6bfd5bb2b7546e02e56597152ab5bab49fe93"
 
 SRC_URI += " \
-    ${RUST_DIST_SERVER}/dist/2025-06-24/${RUST_STD_SNAPSHOT}.tar.xz;name=rust-std-snapshot-${RUST_BUILD_ARCH};subdir=rust-snapshot-components \
-    ${RUST_DIST_SERVER}/dist/2025-06-24/${RUSTC_SNAPSHOT}.tar.xz;name=rustc-snapshot-${RUST_BUILD_ARCH};subdir=rust-snapshot-components \
-    ${RUST_DIST_SERVER}/dist/2025-06-24/${CARGO_SNAPSHOT}.tar.xz;name=cargo-snapshot-${RUST_BUILD_ARCH};subdir=rust-snapshot-components \
+    ${RUST_DIST_SERVER}/dist/${COMPILER_DATE}/${RUST_STD_SNAPSHOT}.tar.xz;name=rust-std-snapshot-${RUST_BUILD_ARCH};subdir=rust-snapshot-components \
+    ${RUST_DIST_SERVER}/dist/${COMPILER_DATE}/${RUSTC_SNAPSHOT}.tar.xz;name=rustc-snapshot-${RUST_BUILD_ARCH};subdir=rust-snapshot-components \
+    ${RUST_DIST_SERVER}/dist/${COMPILER_DATE}/${CARGO_SNAPSHOT}.tar.xz;name=cargo-snapshot-${RUST_BUILD_ARCH};subdir=rust-snapshot-components \    
 "
 
 RUST_DIST_SERVER = "https://static.rust-lang.org"
