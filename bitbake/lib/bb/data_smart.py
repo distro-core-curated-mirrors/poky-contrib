@@ -430,6 +430,7 @@ class DataSmart(MutableMapping):
 
         self.inchistory = IncludeHistory()
         self.varhistory = VariableHistory(self)
+        self.filters = {}
         self._tracking = False
         self._var_renames = {}
         self._var_renames.update(bitbake_renamed_vars)
@@ -685,9 +686,6 @@ class DataSmart(MutableMapping):
 
         srcflags = self.getVarFlags(key, False, True) or {}
         for i in srcflags:
-            if i == "filter":
-                dest = self.getVarFlag(key, i, False)
-                self.setVarFlag(newkey, i, dest, ignore=True)
 
             if i not in (__setvar_keyword__):
                 continue
@@ -923,9 +921,11 @@ class DataSmart(MutableMapping):
                 if expand:
                     value = parser.value
 
-        if value and expand and flag == "_content" and local_var and "filter" in local_var:
-            value = bb.filter.apply_filters(value, [local_var['filter'],])
-            parser.value = value
+        if value and expand and flag == "_content":
+            basevar = var.split(":")[0]
+            if basevar in self.filters:
+                value = bb.filter.apply_filters(value, [self.filters[basevar],])
+                parser.value = value
 
         if parser:
             self.expand_cache[cachename] = parser
@@ -1038,6 +1038,7 @@ class DataSmart(MutableMapping):
         data.varhistory = self.varhistory.copy()
         data.varhistory.dataroot = data
         data.inchistory = self.inchistory.copy()
+        data.filters = self.filters.copy()
 
         data._tracking = self._tracking
         data._var_renames = self._var_renames
@@ -1065,6 +1066,15 @@ class DataSmart(MutableMapping):
             referrervalue = self.getVar(key, False)
             if referrervalue and isinstance(referrervalue, str) and ref in referrervalue:
                 self.setVar(key, referrervalue.replace(ref, value))
+
+    def setVarFilter(self, var, filter):
+        if filter:
+            self.filters[var] = filter
+        else:
+            try:
+                del self.filters[var]
+            except KeyError:
+                pass
 
     def localkeys(self):
         for key in self.dict:
