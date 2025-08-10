@@ -140,14 +140,15 @@ python native_virtclass_handler () {
 
     def map_dependencies(varname, d, suffix, selfref=True, regex=False):
         varname = varname + ":" + suffix
-        if d.getVar(varname, False):
-            d.setVarFlag(varname, "filter", "native_filter(val, '" + pn + "', '" + bpn + "')")
         # Handle ${PN}-xxx -> ${BPN}-xxx-native
         if suffix != "${PN}" and "${PN}" in suffix:
             output_varname = varname.replace("${PN}", "${BPN}") + "-native"
             d.renameVar(varname, output_varname)
 
-    d.setVarFlag("DEPENDS", "filter", "native_filter(val, '" + pn + "', '" + bpn + "', selfref=False)")
+    d.setVarFilter("DEPENDS", "native_filter(val, '" + pn + "', '" + bpn + "', selfref=False)")
+
+    for varname in ["RDEPENDS", "RRECOMMENDS", "RSUGGESTS", "RPROVIDES", "RREPLACES"]:
+        d.setVarFilter(varname, "native_filter(val, '" + pn + "', '" + bpn + "')")
 
     # We need to handle things like ${@bb.utils.contains('PTEST_ENABLED', '1', '${PN}-ptest', '', d)}
     # and not pass ${PN}-test since in the native case it would be ignored. This does mean we ignore
@@ -160,8 +161,9 @@ python native_virtclass_handler () {
         map_dependencies("RSUGGESTS", e.data, pkg)
         map_dependencies("RPROVIDES", e.data, pkg)
         map_dependencies("RREPLACES", e.data, pkg)
-    d.setVarFlag("PACKAGES", "filter", "native_filter(val, '" + pn + "', '" + bpn + "')")
-    d.setVarFlag("PACKAGES_DYNAMIC", "filter", "native_filter(val, '" + pn + "', '" + bpn + "', regex=True)")
+
+    d.setVarFilter("PACKAGES", "native_filter(val, '" + pn + "', '" + bpn + "')")
+    d.setVarFilter("PACKAGES_DYNAMIC", "native_filter(val, '" + pn + "', '" + bpn + "', regex=True)")
 
     provides = e.data.getVar("PROVIDES")
     nprovides = []

@@ -117,24 +117,23 @@ class ClassExtender(object):
         if not self.d.getVar(var, False):
             return
         if deps:
-            self.d.setVarFlag(var, "filter", "suffix_filter_deps(val, '" + self.extname + "', " + str(self.prefixes) + ")")
+            self.d.setVarFilter(var, "suffix_filter_deps(val, '" + self.extname + "', " + str(self.prefixes) + ")")
         else:
-            self.d.setVarFlag(var, "filter", "suffix_filter(val, '" + self.extname + "', " + str(self.prefixes) + ")")
+            self.d.setVarFilter(var, "suffix_filter(val, '" + self.extname + "', " + str(self.prefixes) + ")")
 
     def map_packagevars(self):
-        for pkg in (self.d.getVar("PACKAGES").split() + [""]):
-            self.set_filter("RDEPENDS:" + pkg, deps=True)
-            self.set_filter("RRECOMMENDS:" + pkg, deps=True)
-            self.set_filter("RSUGGESTS:" + pkg, deps=True)
-            self.set_filter("RPROVIDES:" + pkg, deps=True)
-            self.set_filter("RREPLACES:" + pkg, deps=True)
-            self.set_filter("RCONFLICTS:" + pkg, deps=True)
-            self.set_filter("PKG:" + pkg, deps=True)
+        self.set_filter("RDEPENDS", deps=True)
+        self.set_filter("RRECOMMENDS", deps=True)
+        self.set_filter("RSUGGESTS", deps=True)
+        self.set_filter("RPROVIDES", deps=True)
+        self.set_filter("RREPLACES", deps=True)
+        self.set_filter("RCONFLICTS", deps=True)
+        self.set_filter("PKG", deps=True)
 
     def rename_package_variables(self, variables):
         pkgs_mapping = get_package_mappings(self.d.getVar('PACKAGES'), self.extname)
-        self.d.setVarFlag('PACKAGES', "filter", "package_suffix_filter(val, '" + self.extname + "')")
-        self.d.setVarFlag('PACKAGES_DYNAMIC', "filter", "suffix_filter_regex(val, '" + self.extname + "', " + str(self.prefixes) + ")")
+        self.d.setVarFilter('PACKAGES', "package_suffix_filter(val, '" + self.extname + "')")
+        self.d.setVarFilter('PACKAGES_DYNAMIC', "suffix_filter_regex(val, '" + self.extname + "', " + str(self.prefixes) + ")")
 
         for pkg_mapping in pkgs_mapping:
             if pkg_mapping[0].startswith("${") and pkg_mapping[0].endswith("}"):
