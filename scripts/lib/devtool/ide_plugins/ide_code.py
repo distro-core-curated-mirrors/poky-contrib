@@ -138,6 +138,59 @@ class IdeVSCode(IdeBase):
         settings_dict["cmake.configureOnOpen"] = True
         settings_dict["cmake.sourceDirectory"] = modified_recipe.real_srctree
 
+    def __vscode_settings_kernel_module(self, settings_dict, modified_recipe):
+        if modified_recipe.build_tool is not BuildTool.KERNEL_MODULE:
+            return
+
+        # Define kernel exclude patterns once
+        kernel_exclude_patterns = [
+            "**/.*.cmd",
+            "**/.*.d",
+            "**/.*.S",
+            "**/.tmp*",
+            "**/*.tmp",
+            "**/*.o",
+            "**/*.a",
+            "**/*.builtin",
+            "**/*.order",
+            "**/*.orig",
+            "**/*.symvers",
+            "**/*.modinfo",
+            "**/*.map",
+            "*.cache/**"
+        ]
+        files_excludes_kernel = {pattern: True for pattern in kernel_exclude_patterns}
+
+        settings_dict["files.exclude"].update(files_excludes_kernel)
+        settings_dict["files.watcherExclude"].update(files_excludes_kernel)
+        settings_dict["python.analysis.exclude"] += kernel_exclude_patterns
+
+        # protect the kernel sources
+        settings_dict["files.readonlyInclude"][modified_recipe.staging_kernel_dir + '/**'] = True
+
+        # Export the complete cross-build environment
+        settings_dict["terminal.integrated.env.linux"] = modified_recipe.exported_vars
+
+        # and the make configuration
+        make_executable = os.path.join(
+            modified_recipe.recipe_sysroot_native, 'usr', 'bin', 'make')
+        settings_dict["makefile.configurations"] = [
+            {
+                "name": ' '.join(modified_recipe.make_targets),
+                "makePath": make_executable,
+                "makeDirectory": modified_recipe.srctree,
+                "makefilePath": os.path.join(modified_recipe.srctree, "Makefile"),
+                "makeArgs": modified_recipe.extra_oemake + modified_recipe.make_targets
+            },
+            {
+                "name": "clean",
+                "makePath": make_executable,
+                "makeDirectory": modified_recipe.srctree,
+                "makefilePath": os.path.join(modified_recipe.srctree, "Makefile"),
+                "makeArgs": modified_recipe.extra_oemake + ["clean"]
+            }
+        ]
+
     def vscode_settings(self, modified_recipe, image_recipe):
         files_excludes = {
             "**/.git/**": True,
@@ -165,35 +218,27 @@ class IdeVSCode(IdeBase):
         }
         self.__vscode_settings_cmake(settings_dict, modified_recipe)
         self.__vscode_settings_meson(settings_dict, modified_recipe)
+        self.__vscode_settings_kernel_module(settings_dict, modified_recipe)
 
         settings_file = 'settings.json'
         IdeBase.update_json_file(
             self.dot_code_dir(modified_recipe), settings_file, settings_dict)
 
-    def __vscode_extensions_cmake(self, modified_recipe, recommendations):
-        if modified_recipe.build_tool is not BuildTool.CMAKE:
-            return
-        recommendations += [
-            "ms-vscode.cmake-tools",
-            "ms-vscode.cpptools",
-            "ms-vscode.cpptools-extension-pack",
-            "ms-vscode.cpptools-themes"
-        ]
-
-    def __vscode_extensions_meson(self, modified_recipe, recommendations):
-        if modified_recipe.build_tool is not BuildTool.MESON:
-            return
-        recommendations += [
-            'mesonbuild.mesonbuild',
-            "ms-vscode.cpptools",
-            "ms-vscode.cpptools-extension-pack",
-            "ms-vscode.cpptools-themes"
-        ]
-
     def vscode_extensions(self, modified_recipe):
         recommendations = []
-        self.__vscode_extensions_cmake(modified_recipe, recommendations)
-        self.__vscode_extensions_meson(modified_recipe, recommendations)
+        if modified_recipe.build_tool.is_c_cpp_kernel:
+            recommendations += [
+                "ms-vscode.cpptools",
+                "ms-vscode.cpptools-extension-pack",
+                "ms-vscode.cpptools-themes"
+            ]
+        if modified_recipe.build_tool is BuildTool.CMAKE:
+            recommendations.append("ms-vscode.cmake-tools")
+        if modified_recipe.build_tool is BuildTool.MESON:
+            recommendations.append("mesonbuild.mesonbuild")
+        if modified_recipe.build_tool is BuildTool.KERNEL_MODULE:
+            recommendations.append("ms-vscode.makefile-tools")
+
         extensions_file = 'extensions.json'
         IdeBase.update_json_file(
             self.dot_code_dir(modified_recipe), extensions_file, {"recommendations": recommendations})
@@ -207,6 +252,15 @@ class IdeVSCode(IdeBase):
         elif modified_recipe.build_tool is BuildTool.MESON:
             properties_dict["configurationProvider"] = "mesonbuild.mesonbuild"
             properties_dict["compilerPath"] = os.path.join(modified_recipe.staging_bindir_toolchain, modified_recipe.cxx.split()[0])
+        elif modified_recipe.build_tool is BuildTool.KERNEL_MODULE:
+            # Using e.g. configurationProvider = "ms-vscode.makefile-tools" was not successful
+            properties_dict["compilerPath"] = os.path.join(modified_recipe.staging_bindir_toolchain, modified_recipe.kernel_cc.split()[0])
+            properties_dict["includePath"] = [
+                "${workspaceFolder}/**",
+                os.path.join(modified_recipe.staging_kernel_dir, "include", "**")
+            ]
+            # https://www.kernel.org/doc/html/next/process/programming-language.html
+            properties_dict["cStandard"] = "gnu11"
         else:  # no C/C++ build
             return
 
@@ -369,6 +423,9 @@ class IdeVSCode(IdeBase):
         IdeBase.update_json_file(
             self.dot_code_dir(modified_recipe), tasks_file, tasks_dict)
 
+    def vscode_tasks_kernel_module(self, args, modified_recipe):
+        pass
+
     def vscode_tasks_fallback(self, args, modified_recipe):
         oe_init_dir = modified_recipe.oe_init_dir
         oe_init = ". %s %s > /dev/null && " % (modified_recipe.oe_init_build_env, modified_recipe.topdir)
@@ -491,6 +548,8 @@ class IdeVSCode(IdeBase):
     def vscode_tasks(self, args, modified_recipe):
         if modified_recipe.build_tool.is_c_ccp:
             self.vscode_tasks_cpp(args, modified_recipe)
+        elif modified_recipe.build_tool == BuildTool.KERNEL_MODULE:
+            self.vscode_tasks_kernel_module(args, modified_recipe)
         else:
             self.vscode_tasks_fallback(args, modified_recipe)
 
