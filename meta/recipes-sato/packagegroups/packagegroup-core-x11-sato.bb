@@ -9,7 +9,7 @@ HOMEPAGE = "https://www.yoctoproject.org/"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 inherit packagegroup features_check
-REQUIRED_DISTRO_FEATURES = "x11"
+REQUIRED_DISTRO_FEATURES = "x11 wayland"
 
 PACKAGES = "${PN} ${PN}-base ${PN}-apps ${PN}-games"
 
@@ -23,11 +23,7 @@ NETWORK_MANAGER ?= "connman-gnome"
 
 SUMMARY:${PN}-base = "Sato desktop - base packages"
 RDEPENDS:${PN}-base = "\
-    matchbox-desktop \
-    matchbox-session-sato \
-    matchbox-keyboard \
-    matchbox-keyboard-applet \
-    matchbox-keyboard-im \
+    weston-desktop-matchbox \
     matchbox-config-gtk \
     xcursor-transparent-theme \
     sato-icon-theme \
@@ -50,7 +46,6 @@ SUMMARY:${PN}-apps = "Sato desktop - applications"
 RDEPENDS:${PN}-apps = "\
     l3afpad \
     matchbox-terminal \
-    sato-screenshot \
     ${FILEMANAGER} \
     ${GSTEXAMPLES} \
     ${WEB} \

@@ -6,10 +6,7 @@ inherit packagegroup features_check
 REQUIRED_DISTRO_FEATURES = "x11"
 
 RDEPENDS:${PN} = "\
-    packagegroup-core-x11-xserver \
     packagegroup-core-x11-utils \
-    matchbox-wm \
-    mini-x-session \
     virtual-x-terminal-emulator \
     liberation-fonts \
     "
