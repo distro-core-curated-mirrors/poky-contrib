@@ -61,6 +61,7 @@ SRC_URI = "\
     file://0038-Prevent-revisiting-block-when-searching-for-noreturn.patch \
     file://0039-Only-build-c-index-test-when-clang-tests-are-include.patch \
     file://0001-Install-lldb-tblgen.patch \
+    file://0001-clang-Support-building-native-tools-when-cross-compi.patch \
 "
 # Fallback to no-PIE if not set
 GCCPIE ??= ""
