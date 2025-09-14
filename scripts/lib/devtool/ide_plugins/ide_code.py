@@ -9,14 +9,16 @@ import json
 import logging
 import os
 import shutil
-from devtool.ide_plugins import BuildTool, IdeBase, GdbCrossConfig, get_devtool_deploy_opts
+from devtool.ide_plugins import BuildTool, IdeBase, GdbCrossConfig, GdbServerModes, get_devtool_deploy_opts
 
 logger = logging.getLogger('devtool')
 
 
 class GdbCrossConfigVSCode(GdbCrossConfig):
-    def __init__(self, image_recipe, modified_recipe, binary):
-        super().__init__(image_recipe, modified_recipe, binary, False)
+    def __init__(self, image_recipe, modified_recipe, binary,
+                 gdbserver_default_mode=GdbServerModes.ONCE):
+        super().__init__(image_recipe, modified_recipe, binary,
+                         gdbserver_default_mode)
 
     def initialize(self):
         self._gen_gdbserver_start_script()
@@ -207,20 +209,20 @@ class IdeVSCode(IdeBase):
         IdeBase.update_json_file(
             self.dot_code_dir(modified_recipe), prop_file, properties_dicts)
 
-    def vscode_launch_bin_dbg(self, gdb_cross_config):
+    def vscode_launch_bin_dbg(self, gdb_cross_config, gdbserver_mode):
         modified_recipe = gdb_cross_config.modified_recipe
 
         launch_config = {
-            "name": gdb_cross_config.id_pretty,
+            "name": gdb_cross_config.id_pretty_mode(gdbserver_mode),
             "type": "cppdbg",
             "request": "launch",
-            "program": os.path.join(modified_recipe.d, gdb_cross_config.binary.lstrip('/')),
+            "program": gdb_cross_config.binary.binary_host_path,
             "stopAtEntry": True,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": False,
             "MIMode": "gdb",
-            "preLaunchTask": gdb_cross_config.id_pretty,
+            "preLaunchTask": gdb_cross_config.id_pretty_mode(gdbserver_mode),
             "miDebuggerPath": modified_recipe.gdb_cross.gdb,
             "miDebuggerServerAddress": "%s:%d" % (modified_recipe.gdb_cross.host, gdb_cross_config.gdbserver_port)
         }
@@ -268,7 +270,8 @@ class IdeVSCode(IdeBase):
         configurations = []
         for gdb_cross_config in self.gdb_cross_configs:
             if gdb_cross_config.modified_recipe is modified_recipe:
-                configurations.append(self.vscode_launch_bin_dbg(gdb_cross_config))
+                for gdbserver_mode in gdb_cross_config.gdbserver_modes():
+                    configurations.append(self.vscode_launch_bin_dbg(gdb_cross_config, gdbserver_mode))
         launch_dict = {
             "version": "0.2.0",
             "configurations": configurations
@@ -294,15 +297,12 @@ class IdeVSCode(IdeBase):
         for gdb_cross_config in self.gdb_cross_configs:
             if gdb_cross_config.modified_recipe is not modified_recipe:
                 continue
-            tasks_dict['tasks'].append(
-                {
-                    "label": gdb_cross_config.id_pretty,
+            for gdbserver_mode in gdb_cross_config.gdbserver_modes():
+                new_task = {
+                    "label": gdb_cross_config.id_pretty_mode(gdbserver_mode),
                     "type": "shell",
                     "isBackground": True,
-                    "dependsOn": [
-                        install_task_name
-                    ],
-                    "command": gdb_cross_config.gdbserver_script,
+                    "command": gdb_cross_config.gdbserver_script(gdbserver_mode),
                     "problemMatcher": [
                         {
                             "pattern": [
@@ -320,7 +320,13 @@ class IdeVSCode(IdeBase):
                             }
                         }
                     ]
-                })
+                }
+                # Deploy the artifacts to the target before starting gdbserver if not already running
+                if gdbserver_mode != GdbServerModes.ATTACH:
+                    new_task['dependsOn'] = [
+                        install_task_name
+                    ]
+                tasks_dict['tasks'].append(new_task)
         tasks_file = 'tasks.json'
         IdeBase.update_json_file(
             self.dot_code_dir(modified_recipe), tasks_file, tasks_dict)
@@ -410,15 +416,12 @@ class IdeVSCode(IdeBase):
             for gdb_cross_config in self.gdb_cross_configs:
                 if gdb_cross_config.modified_recipe is not modified_recipe:
                     continue
-                tasks_dict['tasks'].append(
-                    {
-                        "label": gdb_cross_config.id_pretty,
+                for gdbserver_mode in gdb_cross_config.gdbserver_modes():
+                    new_task = {
+                        "label": gdb_cross_config.id_pretty(gdbserver_mode),
                         "type": "shell",
                         "isBackground": True,
-                        "dependsOn": [
-                            dt_build_deploy_label
-                        ],
-                        "command": gdb_cross_config.gdbserver_script,
+                        "command": gdb_cross_config.gdbserver_script(gdbserver_mode),
                         "problemMatcher": [
                             {
                                 "pattern": [
@@ -436,7 +439,12 @@ class IdeVSCode(IdeBase):
                                 }
                             }
                         ]
-                    })
+                    }
+                    if gdbserver_mode != GdbServerModes.ATTACH:
+                        new_task['dependsOn'] = [
+                            dt_build_deploy_label
+                        ]
+                    tasks_dict['tasks'].append(new_task)
         tasks_file = 'tasks.json'
         IdeBase.update_json_file(
             self.dot_code_dir(modified_recipe), tasks_file, tasks_dict)
@@ -453,7 +461,7 @@ class IdeVSCode(IdeBase):
         self.vscode_c_cpp_properties(modified_recipe)
         if args.target:
             self.initialize_gdb_cross_configs(
-                image_recipe, modified_recipe, gdb_cross_config_class=GdbCrossConfigVSCode)
+                image_recipe, modified_recipe, GdbCrossConfigVSCode)
             self.vscode_launch(modified_recipe)
             self.vscode_tasks(args, modified_recipe)
 
