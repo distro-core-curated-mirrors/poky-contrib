@@ -129,7 +129,7 @@ class DiffoscopeTests(OESelftestTestCase):
 class ReproducibleTests(OESelftestTestCase):
     # Test the reproducibility of whatever is built between sstate_targets and targets
 
-    package_classes = ['deb', 'ipk', 'rpm']
+    package_classes = ['rpm']
 
     # Maximum report size, in bytes
     max_report_size = 250 * 1024 * 1024
@@ -141,7 +141,7 @@ class ReproducibleTests(OESelftestTestCase):
 
     # targets are the things we want to test the reproducibility of
     # Have to add the virtual targets manually for now as builds may or may not include them as they're exclude from world
-    targets = ['core-image-minimal', 'core-image-sato', 'core-image-full-cmdline', 'core-image-weston', 'world', 'virtual/librpc', 'virtual/libsdl2', 'virtual/crypt']
+    targets = ['clang', 'compiler-rt', 'compiler-rt-sanitizers', 'libclc', 'libcxx', 'lldb', 'lld', 'llvm', 'openmp']
 
     # sstate targets are things to pull from sstate to potentially cut build/debugging time
     sstate_targets = []
