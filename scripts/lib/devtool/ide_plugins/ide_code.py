@@ -20,9 +20,20 @@ class GdbCrossConfigVSCode(GdbCrossConfig):
         super().__init__(image_recipe, modified_recipe, binary,
                          gdbserver_default_mode)
 
-    def initialize(self):
-        self._gen_gdbserver_start_script()
+    def target_ssh_gdbserver_start_args(self, gdbserver_mode=None):
+        """Get the ssh command arguments to start gdbserver on the target device
 
+        returns something like:
+          ['-p', '2222', 'root@target', '"/bin/sh -c \'/usr/bin/gdbserver --once :1234 /usr/bin/cmake-example\'"']
+        """
+        if gdbserver_mode is None:
+            gdbserver_mode = self.gdbserver_default_mode
+        return self._target_ssh_gdbserver_args() + [
+            self._target_gdbserver_start_cmd(gdbserver_mode)
+        ]
+
+    def initialize(self):
+        pass
 
 class IdeVSCode(IdeBase):
     """Manage IDE configurations for VSCode
@@ -306,7 +317,8 @@ class IdeVSCode(IdeBase):
                     "label": gdb_cross_config.id_pretty_mode(gdbserver_mode),
                     "type": "shell",
                     "isBackground": True,
-                    "command": gdb_cross_config.gdbserver_script(gdbserver_mode),
+                    "command": gdb_cross_config.gdb_cross.target_device.ssh_sshexec,
+                    "args": gdb_cross_config.target_ssh_gdbserver_start_args(gdbserver_mode),
                     "problemMatcher": [
                         {
                             "pattern": [
@@ -425,7 +437,8 @@ class IdeVSCode(IdeBase):
                         "label": gdb_cross_config.id_pretty(gdbserver_mode),
                         "type": "shell",
                         "isBackground": True,
-                        "command": gdb_cross_config.gdbserver_script(gdbserver_mode),
+                        "command": gdb_cross_config.gdb_cross.target_device.ssh_sshexec,
+                        "args": gdb_cross_config.target_ssh_gdbserver_start_args(gdbserver_mode),
                         "problemMatcher": [
                             {
                                 "pattern": [
