@@ -82,7 +82,6 @@ OECMAKE_SOURCEPATH = "${S}/llvm"
 # https://github.com/llvm/llvm-project/blob/main/llvm/CMakeLists.txt
 LLVM_TARGETS_GPU ?= "${@bb.utils.contains_any('DISTRO_FEATURES', 'opengl vulkan', 'AMDGPU;NVPTX;SPIRV', '', d)}"
 LLVM_TARGETS_TO_BUILD ?= "AArch64;ARM;BPF;Mips;PowerPC;RISCV;X86;LoongArch;${LLVM_TARGETS_GPU}"
-LLVM_TARGETS_TO_BUILD:class-target ?= "${@get_clang_host_arch(bb, d)};BPF;${LLVM_TARGETS_GPU}"
 
 LLVM_EXPERIMENTAL_TARGETS_TO_BUILD ?= ""
 
@@ -106,6 +105,7 @@ EXTRA_OECMAKE += "-DLLVM_ENABLE_ASSERTIONS=OFF \
                   -DLLVM_ENABLE_PIC=ON \
                   -DCLANG_DEFAULT_PIE_ON_LINUX=ON \
                   -DLLVM_BINDINGS_LIST='' \
+                  -DLLVM_INSTALL_UTILS=ON \
                   -DLLVM_ENABLE_FFI=ON \
                   -DLLVM_ENABLE_ZSTD=ON \
                   -DFFI_INCLUDE_DIR=$(pkg-config --variable=includedir libffi) \
@@ -134,7 +134,7 @@ EXTRA_OECMAKE:append:class-target = "\
                   -DCMAKE_AR=${STAGING_BINDIR_TOOLCHAIN}/${TARGET_PREFIX}llvm-ar \
                   -DCMAKE_NM=${STAGING_BINDIR_TOOLCHAIN}/${TARGET_PREFIX}llvm-nm \
                   -DCMAKE_STRIP=${STAGING_BINDIR_TOOLCHAIN}/${TARGET_PREFIX}llvm-strip \
-                  -DLLVM_TARGET_ARCH=${HOST_ARCH} \
+                  -DLLVM_TARGET_ARCH=${@get_clang_target_arch(bb, d)} \
                   -DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_SYS}${HF} \
                   -DLLVM_HOST_TRIPLE=${TARGET_SYS}${HF} \
                   -DLLVM_LIBDIR_SUFFIX=${LLVM_LIBDIR_SUFFIX} \
