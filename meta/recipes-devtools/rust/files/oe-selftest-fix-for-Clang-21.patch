@@ -1,0 +1,63 @@
+Upstream-Status: Backport [https://github.com/rust-lang/rust/commit/63e1074c97b60d248f86321f021871f93ba10c31]
+Upstream-Status: Backport [https://github.com/rust-lang/rust/commit/ccf660f855eec84f976ed07190d9e8a8b93e2c1f]
+Upstream-Status: Backport [https://github.com/rust-lang/rust/commit/7ca9f9363dbb42a845ea70dfb449253f08c83ce1]
+
+diff --git a/compiler/rustc_codegen_llvm/src/context.rs b/compiler/rustc_codegen_llvm/src/context.rs
+index 0324dff6ff..d0f2c5d0ed 100644
+--- a/compiler/rustc_codegen_llvm/src/context.rs
++++ b/compiler/rustc_codegen_llvm/src/context.rs
+@@ -206,6 +206,11 @@ pub(crate) unsafe fn create_module<'ll>(
+             // LLVM 21 updated the default layout on nvptx: https://github.com/llvm/llvm-project/pull/124961
+             target_data_layout = target_data_layout.replace("e-p6:32:32-i64", "e-i64");
+         }
++        if sess.target.arch == "amdgpu" {
++            // LLVM 21 adds the address width for address space 8.
++            // See https://github.com/llvm/llvm-project/pull/139419
++            target_data_layout = target_data_layout.replace("p8:128:128:128:48", "p8:128:128")
++        }
+     }
+
+     // Ensure the data-layout values hardcoded remain the defaults.
+diff --git a/compiler/rustc_target/src/spec/targets/amdgcn_amd_amdhsa.rs b/compiler/rustc_target/src/spec/targets/amdgcn_amd_amdhsa.rs
+index f20782cabb..0d6c6194e2 100644
+--- a/compiler/rustc_target/src/spec/targets/amdgcn_amd_amdhsa.rs
++++ b/compiler/rustc_target/src/spec/targets/amdgcn_amd_amdhsa.rs
+@@ -3,7 +3,7 @@ use crate::spec::{Cc, LinkerFlavor, Lld, PanicStrategy, Target, TargetMetadata,
+ pub(crate) fn target() -> Target {
+     Target {
+         arch: "amdgpu".into(),
+-        data_layout: "e-p:64:64-p1:64:64-p2:32:32-p3:32:32-p4:64:64-p5:32:32-p6:32:32-p7:160:256:256:32-p8:128:128-p9:192:256:256:32-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024-v2048:2048-n32:64-S32-A5-G1-ni:7:8:9".into(),
++        data_layout: "e-p:64:64-p1:64:64-p2:32:32-p3:32:32-p4:64:64-p5:32:32-p6:32:32-p7:160:256:256:32-p8:128:128:128:48-p9:192:256:256:32-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024-v2048:2048-n32:64-S32-A5-G1-ni:7:8:9".into(),
+         llvm_target: "amdgcn-amd-amdhsa".into(),
+         metadata: TargetMetadata {
+             description: Some("AMD GPU".into()),
+diff --git a/tests/assembly/x86-return-float.rs b/tests/assembly/x86-return-float.rs
+index 165c11d228..4db93f6848 100644
+--- a/tests/assembly/x86-return-float.rs
++++ b/tests/assembly/x86-return-float.rs
+@@ -334,9 +334,9 @@ pub fn return_f128(x: f128) -> f128 {
+     // linux-NEXT: .cfi_offset
+     // CHECK-NEXT: movl %esp, %ebp
+     // linux-NEXT: .cfi_def_cfa_register
+-    // linux-NEXT: movaps 8(%ebp), %xmm0
+-    // win-NEXT: movups 8(%ebp), %xmm0
+-    // CHECK-NEXT: popl %ebp
++    // linux: movaps 8(%ebp), %xmm0
++    // win: movups 8(%ebp), %xmm0
++    // CHECK: popl %ebp
+     // linux-NEXT: .cfi_def_cfa
+     // CHECK-NEXT: retl
+     x
+diff --git a/tests/codegen/enum/enum-match.rs b/tests/codegen/enum/enum-match.rs
+index 6da6ad1f07..44a395c8b7 100644
+--- a/tests/codegen/enum/enum-match.rs
++++ b/tests/codegen/enum/enum-match.rs
+@@ -15,7 +15,7 @@ pub enum Enum0 {
+     B,
+ }
+
+-// CHECK-LABEL: define{{( dso_local)?}} noundef{{( range\(i8 [0-9]+, [0-9]+\))?}} i8 @match0(i8{{.+}}%0)
++// CHECK-LABEL: define{{( dso_local)?}} noundef{{( range\(i8 [0-9]+, -?[0-9]+\))?}} i8 @match2(i8{{.+}}%0)
+ // CHECK-NEXT: start:
+ // CHECK-NEXT: %[[IS_B:.+]] = icmp eq i8 %0, 2
+ // CHECK-NEXT: %[[TRUNC:.+]] = and i8 %0, 1
