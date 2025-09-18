@@ -52,6 +52,7 @@ EXTRA_OECMAKE += "-DCMAKE_BUILD_TYPE=MinSizeRel \
                   -DLLVM_TOOL_OBJ2YAML_BUILD=OFF \
                   -DLLVM_TOOL_YAML2OBJ_BUILD=OFF \
                   -DLLVM_TABLEGEN=${STAGING_BINDIR_NATIVE}/llvm-tblgen \
+                  -DLLVM_INSTALL_UTILS=ON \
                  "
 
 EXTRA_OECMAKE:append:class-target = "\
