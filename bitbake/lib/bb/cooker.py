@@ -312,24 +312,30 @@ class BBCooker:
             # Create a new hash server bound to a unix domain socket
             if not self.hashserv:
                 dbfile = (self.data.getVar("PERSISTENT_DIR") or self.data.getVar("CACHE")) + "/hashserv.db"
-                upstream = self.data.getVar("BB_HASHSERVE_UPSTREAM") or None
-                if upstream:
-                    try:
-                        with hashserv.create_client(upstream) as client:
-                            client.ping()
-                    except ImportError as e:
-                        bb.fatal(""""Unable to use hash equivalence server at '%s' due to missing or incorrect python module:
+                upstream = None
+                hashserve_upstream = self.data.getVar("BB_HASHSERVE_UPSTREAM") or None
+                if hashserve_upstream:
+                    for server in hashserve_upstream.split():
+                        try:
+                            with hashserv.create_client(server) as client:
+                                client.ping()
+                                upstream = server
+                                break
+                        except ImportError as e:
+                            bb.warn("""Unable to use hash equivalence server at '%s' due to missing or incorrect python module:
 %s
 Please install the needed module on the build host, or use an environment containing it:
  - if you are using bitbake-setup, run 'bitbake-setup install-buildtools'
  - openembedded-core layer contains 'scripts/install-buildtools' that can also be used
- - or set up pip venv
-You can also remove the BB_HASHSERVE_UPSTREAM setting, but this may result in significantly longer build times as bitbake will be unable to reuse prebuilt sstate artefacts."""
+ - or set up pip venv"""
                                  % (upstream, repr(e)))
-                    except ConnectionError as e:
-                        bb.warn("Unable to connect to hash equivalence server at '%s', please correct or remove BB_HASHSERVE_UPSTREAM:\n%s"
-                                 % (upstream, repr(e)))
-                        upstream = None
+                        except ConnectionError as e:
+                            bb.warn("Unable to connect to hash equivalence server at '%s' due to connection error:\n%s"
+                                    % (server, repr(e)))
+
+                    if not upstream:
+                        bb.fatal("""Unable to any of the hash equivalence servers provided in BB_HASHSERVE_UPSTREAM:
+You can also remove the BB_HASHSERVE_UPSTREAM setting, but this may result in significantly longer build times as bitbake will be unable to reuse prebuilt sstate artefacts.""")
 
                 self.hashservaddr = "unix://%s/hashserve.sock" % self.data.getVar("TOPDIR")
                 self.hashserv = hashserv.create_server(
