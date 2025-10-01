@@ -1200,8 +1200,8 @@ overview of their function and contents.
 
    :term:`INHERIT`
       Causes the named class or classes to be inherited globally. Anonymous
-      functions in the class or classes are not executed for the base
-      configuration and in each individual recipe. The OpenEmbedded build
+      functions in the class or classes are executed either for the base
+      configuration, or in each individual parsed recipe. The OpenEmbedded build
       system ignores changes to :term:`INHERIT` in individual recipes.
 
       For more information on :term:`INHERIT`, see the
