@@ -1,0 +1,28 @@
+Upstream-Status: Inappropriate [OE testing specific]
+---
+diff --git a/src/bootstrap/src/core/download.rs b/src/bootstrap/src/core/download.rs
+index da305fb18f..a952026442 100644
+--- a/src/bootstrap/src/core/download.rs
++++ b/src/bootstrap/src/core/download.rs
+@@ -481,17 +481,17 @@ pub(crate) fn is_download_ci_available(target_triple: &str, llvm_assertions: boo
+     }
+ }
+
+-#[cfg(test)]
++#[cfg(not(test))]
+ pub(crate) fn maybe_download_rustfmt<'a>(
+-    dwn_ctx: impl AsRef<DownloadContext<'a>>,
+-    out: &Path,
++    _dwn_ctx: impl AsRef<DownloadContext<'a>>,
++    _out: &Path,
+ ) -> Option<PathBuf> {
+     Some(PathBuf::new())
+ }
+
+ /// NOTE: rustfmt is a completely different toolchain than the bootstrap compiler, so it can't
+ /// reuse target directories or artifacts
+-#[cfg(not(test))]
++#[cfg(test)]
+ pub(crate) fn maybe_download_rustfmt<'a>(
+     dwn_ctx: impl AsRef<DownloadContext<'a>>,
+     out: &Path,

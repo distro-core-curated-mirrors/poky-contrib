@@ -1,0 +1,204 @@
+#!/usr/bin/env python3
+
+import re
+import hashlib
+import requests
+import os
+import subprocess
+from datetime import datetime, timedelta
+
+def get_yesterday_date():
+    return (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
+
+def update_rust_url_and_sha256(file_path):
+    yesterday = get_yesterday_date()
+    new_url = f"https://static.rust-lang.org/dist/{yesterday}/rustc-nightly-src.tar.xz"
+    temp_file = "rustc-nightly-src.tar.xz"
+
+    # Check if the URL exists
+    print(f"Checking URL: {new_url}")
+    response = requests.head(new_url)
+    if response.status_code != 200:
+        print(f"URL not accessible: {new_url} (Status: {response.status_code})")
+        return False
+
+    # Download tarball
+    print("Downloading tarball to compute SHA256...")
+    with open(temp_file, "wb") as f:
+        f.write(requests.get(new_url).content)
+
+    # Compute SHA256
+    with open(temp_file, "rb") as f:
+        sha256 = hashlib.sha256(f.read()).hexdigest()
+    print(f"SHA256 computed: {sha256}")
+
+    # Remove downloaded file
+    os.remove(temp_file)
+    print("Deleted downloaded tarball.")
+
+    # Read and modify the BitBake file
+    with open(file_path, 'r') as f:
+        content = f.read()
+
+    # Replace the Rust URL date
+    url_pattern = r"https://static\.rust-lang\.org/dist/\d{4}-\d{2}-\d{2}/rustc-nightly-src\.tar\.xz"
+    content, url_count = re.subn(url_pattern, new_url, content)
+
+    # Replace the SHA256
+    sha256_pattern = r'SRC_URI\[rust\.sha256sum\] = ".*?"'
+    sha256_replacement = f'SRC_URI[rust.sha256sum] = "{sha256}"'
+    content, sha256_count = re.subn(sha256_pattern, sha256_replacement, content)
+
+    # Write changes back
+    with open(file_path, 'w') as f:
+        f.write(content)
+
+    print(f"Updated {url_count} URL(s) and {sha256_count} SHA256 line(s) in '{file_path}'")
+    return True
+
+def insert_sanity_tested_distro(conf_file):
+    with open(conf_file, "r") as f:
+        lines = f.readlines()
+
+    updated_lines = []
+    inserted = False
+    for line in lines:
+        updated_lines.append(line)
+        if not inserted and "MACHINE ??=" in line:
+            updated_lines.append('SANITY_TESTED_DISTROS = ""\n')
+            inserted = True
+
+    if inserted:
+        with open(conf_file, "w") as f:
+            f.writelines(updated_lines)
+        print("Inserted SANITY_TESTED_DISTROS after MACHINE ??=")
+    else:
+        print("MACHINE ??= not found, no changes made.")
+
+def run_oe_selftest_in_screen():
+    screen_cmd = """
+cd ..
+source oe-init-build-env > /dev/null
+oe-selftest -r rust -K | tee 2>&1 oe-selftest.log
+if [ $? -eq 0 ]; then
+    echo "oe-selftest passed. Cleaning up..."
+    rm -rf ../*-st
+
+    echo "Running oe-selftest -r reproducible..."
+    oe-selftest -r reproducible | tee 2>&1 repro.log
+    if [ $? -eq 0 ]; then
+        echo "repro passed. Cleaning up..."
+        rm -rf ../*-st
+    else
+        echo "repro failed. Logs saved to repro.log"
+    fi
+
+else
+    echo "oe-selftest failed. Logs saved in oe-selftest.log"
+fi
+exit
+"""
+    print("Launching detached screen session 'rust-nightly' to run oe-selftest...")
+    subprocess.run(
+        ['screen', '-S', 'rust-nightly', '-dm', 'bash', '-c', screen_cmd]
+    )
+    print("Screen session 'rust-nightly' started.")
+
+def switch_machine_and_build(machine_name, local_conf_path="conf/local.conf"):
+    print(f"\nSwitching MACHINE to {machine_name}...")
+
+    with open(local_conf_path, "r") as f:
+        content = f.read()
+
+    new_line = f'MACHINE ??= "{machine_name}"'
+    old_machine_match = re.search(r'MACHINE \?\?= ".*?"', content)
+    if old_machine_match:
+        old_line = old_machine_match.group(0)
+        content = content.replace(old_line, new_line)
+        with open(local_conf_path, "w") as f:
+            f.write(content)
+        print(f"Replaced '{old_line}' with '{new_line}' in {local_conf_path}")
+    else:
+        print("MACHINE line not found in local.conf, skipping replacement.")
+        return
+
+    # Clean previous build
+    subprocess.run(["bitbake", "-c", "clean", "rust"])
+
+    # Build rust
+    log_file = f"rust_{machine_name}.log"
+    print(f"Running bitbake rust for MACHINE={machine_name}, logging to {log_file}...")
+    with open(log_file, "w") as f:
+        process = subprocess.Popen(
+            ["bitbake", "rust"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+        )
+        for line in process.stdout:
+            print(line, end='')
+            f.write(line)
+        process.wait()
+
+    if process.returncode == 0:
+        print(f"Rust build succeeded for MACHINE={machine_name}")
+    else:
+        print(f"Rust build failed for MACHINE={machine_name}. Check {log_file} for details.")
+
+# --- MAIN EXECUTION FLOW ---
+
+print("Starting update_rust_url_and_sha256()...")
+if update_rust_url_and_sha256("../meta/recipes-devtools/rust/rust-source.inc"):
+    print("Update successful, launching bitbake...")
+
+    with open("snapshot.log", "w") as log_file:
+        process = subprocess.Popen(
+            ["bitbake", "rust", "-c", "do_update_snapshot"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+        )
+        for line in process.stdout:
+            print(line, end='')
+            log_file.write(line)
+        process.wait()
+
+    if process.returncode == 0:
+        print("do_update_snapshot task completed successfully.")
+        print("Running full bitbake rust task and saving output to rust.log ...")
+        with open("rust.log", "w") as rust_log:
+            process = subprocess.Popen(
+                ["bitbake", "rust"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+            )
+            for line in process.stdout:
+                print(line, end='')
+                rust_log.write(line)
+            process.wait()
+
+        if process.returncode == 0:
+            print("Full bitbake rust task completed successfully.")
+
+            # Build for additional machines
+            switch_machine_and_build("qemuarm")
+            switch_machine_and_build("qemuriscv64")
+
+            # Restore original MACHINE
+            switch_machine_and_build("qemux86-64")
+
+            # Insert SANITY_TESTED_DISTROS
+            insert_sanity_tested_distro("conf/local.conf")
+
+            # Run selftest
+            run_oe_selftest_in_screen()
+        else:
+            print("Full bitbake rust task failed, check rust.log for details.")
+    else:
+        print("do_update_snapshot task failed, skipping full bitbake rust.")
+else:
+    print("Rust update failed or URL not accessible. Exiting.")
