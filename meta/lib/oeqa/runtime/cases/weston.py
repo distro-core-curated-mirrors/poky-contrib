@@ -14,10 +14,6 @@ import time
 class WestonTest(OERuntimeTestCase):
     weston_log_file = '/tmp/weston-2.log'
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.tc.target.run('rm %s' % cls.weston_log_file, ignore_ssh_fails=True)
-
     @OETestDepends(['ssh.SSHTest.test_ssh'])
     @OEHasPackage(['weston'])
     def test_weston_running(self):
@@ -36,6 +32,7 @@ class WestonTest(OERuntimeTestCase):
         return 'export XDG_RUNTIME_DIR=/run/user/`id -u weston`; export WAYLAND_DISPLAY=wayland-1; %s' % cmd
 
     def run_weston_init(self):
+        self.target.run('rm -f %s' % self.weston_log_file)
         if 'systemd' in self.tc.td['VIRTUAL-RUNTIME_init_manager']:
             self.target.run('systemd-run --collect --unit=weston-ptest.service --uid=0 -p PAMName=login -p TTYPath=/dev/tty6 -E XDG_RUNTIME_DIR=/tmp -E WAYLAND_DISPLAY=wayland-0 /usr/bin/weston --socket=wayland-1 --log=%s' % self.weston_log_file)
         else:
