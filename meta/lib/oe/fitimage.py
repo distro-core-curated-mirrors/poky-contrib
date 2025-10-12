@@ -289,7 +289,7 @@ class ItsNodeRootKernel(ItsNode):
         self._kernel = kernel_node
 
     def fitimage_emit_section_dtb(self, dtb_id, dtb_path, dtb_loadaddress=None,
-                                  dtbo_loadaddress=None, add_compatible=False):
+                                  dtbo_loadaddress=None, add_compatible=False, compatible_extension=""):
         """Emit the fitImage ITS DTB section"""
         load=None
         dtb_ext = os.path.splitext(dtb_path)[1]
@@ -310,6 +310,8 @@ class ItsNodeRootKernel(ItsNode):
         compatible = None
         if add_compatible:
             compatible = get_compatible_from_dtb(dtb_path)
+            if compatible and compatible_extension:
+                compatible[0] = compatible[0] + "-" + compatible_extension
 
         dtb_node = self.its_add_node_dtb(
             "fdt-" + dtb_id,
