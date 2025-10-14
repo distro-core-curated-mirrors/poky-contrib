@@ -66,6 +66,12 @@ inherit kernel-yocto
 
 B = "${WORKDIR}/linux-${PACKAGE_ARCH}-${LINUX_KERNEL_TYPE}-build"
 
+do_patch:append(){
+	if [ ! -d ${STAGING_DIR_NATIVE}/usr/lib/rustlib/src/rust ]; then
+                mkdir -p ${STAGING_DIR_NATIVE}/usr/lib/rustlib/src/rust/
+                cp -r ${TMPDIR}/work-shared/rust ${STAGING_DIR_NATIVE}/usr/lib/rustlib/src/.
+        fi
+}
 do_install:append(){
 	if [ -n "${KMETA}" ]; then
 		rm -rf ${STAGING_KERNEL_DIR}/${KMETA}
@@ -81,7 +87,7 @@ KERNEL_DEBUG ?= ""
 DEPENDS += '${@bb.utils.contains_any("ARCH", [ "x86", "arm64", "powerpc" ], "elfutils-native", "", d)}'
 DEPENDS += "openssl-native util-linux-native"
 DEPENDS += "gmp-native libmpc-native"
-
+DEPENDS += "clang-native  bindgen-cli-native"
 # Some options depend on CONFIG_PAHOLE_VERSION, so need to make pahole-native available before do_kernel_configme
 do_kernel_configme[depends] += '${@bb.utils.contains("KERNEL_DEBUG", "True", "pahole-native:do_populate_sysroot", "", d)}'
 

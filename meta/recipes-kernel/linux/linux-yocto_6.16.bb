@@ -77,3 +77,7 @@ KERNEL_FEATURES:append:powerpc64le = " arch/powerpc/powerpc-debug.scc"
 # Check again during next major version upgrade
 KERNEL_FEATURES:remove:riscv32 = "features/debug/debug-kernel.scc"
 INSANE_SKIP:kernel-vmlinux:qemuppc64 = "textrel"
+INSANE_SKIP:kernel-vmlinux = "buildpaths"
+INSANE_SKIP:kernel-dbg = "buildpaths"
+SRC_URI += "file://rust.scc"
+KERNEL_FEATURES += "rust.scc"

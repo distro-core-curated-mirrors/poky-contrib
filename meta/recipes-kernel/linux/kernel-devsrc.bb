@@ -139,6 +139,7 @@ do_install() {
         cd ${S}
 
         cp -a scripts $kerneldir/build
+        cp -a rust    $kerneldir/build
 
         # for v6.1+ (otherwise we are missing multiple default targets)
         cp -a --parents Kbuild $kerneldir/build 2>/dev/null || :
