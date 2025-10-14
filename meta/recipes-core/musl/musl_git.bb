@@ -14,6 +14,8 @@ SRC_URI = "git://git.musl-libc.org/musl;branch=master \
            file://0001-Make-dynamic-linker-a-relative-symlink-to-libc.patch \
            file://0002-ldso-Use-syslibdir-and-libdir-as-default-pathes-to-l.patch \
            file://0001-Update-syscalls-for-r32-rv64-from-kernel-6.4-through.patch \
+           file://0001-include-netinet-if_ether.h-define-__UAPI_DEF_ETHHDR-.patch \
+           file://0001-include-netinet-if_ether.h-guard-ethhdr-definition-t.patch \
           "
 
 PROVIDES += "virtual/libc virtual/libiconv virtual/libintl virtual/crypt"

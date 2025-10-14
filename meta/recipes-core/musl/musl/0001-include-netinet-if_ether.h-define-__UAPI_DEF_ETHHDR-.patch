@@ -1,0 +1,39 @@
+From 5ab64f7e08ea0325d83d446dd4015f82b4c179dd Mon Sep 17 00:00:00 2001
+From: Chen Qi <Qi.Chen@windriver.com>
+Date: Mon, 29 Sep 2025 21:39:01 +0800
+Subject: [PATCH] include/netinet/if_ether.h: define __UAPI_DEF_ETHHDR early
+
+After 'struct ethhdr' is defined, we should immediately define
+__UAPI_DEF_ETHHDR. Because the following lines are header inclusion
+lines which might introduce header files checking __UAPI_DEF_ETHHDR.
+If we don't define this macro early, we will get redefinition error.
+
+Upstream-Status: Submitted [https://www.openwall.com/lists/musl/2025/09/30/1]
+
+Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+---
+ include/netinet/if_ether.h | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/include/netinet/if_ether.h b/include/netinet/if_ether.h
+index 3479f511..b1646f6f 100644
+--- a/include/netinet/if_ether.h
++++ b/include/netinet/if_ether.h
+@@ -117,6 +117,7 @@ struct ethhdr {
+ 	uint8_t h_source[ETH_ALEN];
+ 	uint16_t h_proto;
+ };
++#define __UAPI_DEF_ETHHDR       0
+ 
+ #include <net/ethernet.h>
+ #include <net/if_arp.h>
+@@ -144,6 +145,4 @@ do { \
+ 	(enaddr)[5] = ((uint8_t *)ipaddr)[3]; \
+ } while(0)
+ 
+-#define __UAPI_DEF_ETHHDR       0
+-
+ #endif
+-- 
+2.34.1
+

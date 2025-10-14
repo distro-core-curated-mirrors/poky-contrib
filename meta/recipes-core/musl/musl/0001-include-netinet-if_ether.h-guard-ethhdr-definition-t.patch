@@ -1,0 +1,39 @@
+From 67976391887c3c65138a3b6fc306f2f5b490aeb4 Mon Sep 17 00:00:00 2001
+From: Chen Qi <Qi.Chen@windriver.com>
+Date: Tue, 30 Sep 2025 10:42:51 +0800
+Subject: [PATCH] include/netinet/if_ether.h: guard ethhdr definition to better
+ work with other header files
+
+The unconditional definition of 'struct ethhdr' has the implicit
+requirement on this header file, that is, it needs to be included
+before other header files defining ethhdr.
+
+Upstream-Status: Submitted [https://www.openwall.com/lists/musl/2025/09/30/2]
+
+Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+---
+ include/netinet/if_ether.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/netinet/if_ether.h b/include/netinet/if_ether.h
+index b1646f6f..e5a1ebd0 100644
+--- a/include/netinet/if_ether.h
++++ b/include/netinet/if_ether.h
+@@ -112,12 +112,14 @@
+ #define ETH_P_XDSA	0x00F8
+ #define ETH_P_MAP	0x00F9
+ 
++#ifndef __UAPI_DEF_ETHHDR
+ struct ethhdr {
+ 	uint8_t h_dest[ETH_ALEN];
+ 	uint8_t h_source[ETH_ALEN];
+ 	uint16_t h_proto;
+ };
+ #define __UAPI_DEF_ETHHDR       0
++#endif
+ 
+ #include <net/ethernet.h>
+ #include <net/if_arp.h>
+-- 
+2.34.1
+
