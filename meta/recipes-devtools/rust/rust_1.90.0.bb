@@ -54,7 +54,11 @@ do_rust_setup_snapshot () {
     # and fail without it there.
     mkdir -p ${RUSTSRC}/build/${RUST_BUILD_SYS}
     ln -sf ${WORKDIR}/rust-snapshot/ ${RUSTSRC}/build/${RUST_BUILD_SYS}/stage0
-
+    
+    if [ ! -d ${TMPDIR}/work-shared/rust ]; then    
+        mkdir -p ${TMPDIR}/work-shared/rust
+        cp -r ${RUSTSRC}/library ${TMPDIR}/work-shared/rust/.
+    fi
     # Need to use uninative's loader if enabled/present since the library paths
     # are used internally by rust and result in symbol mismatches if we don't
     if [ ! -z "${UNINATIVE_LOADER}" -a -e "${UNINATIVE_LOADER}" ]; then
@@ -255,6 +259,20 @@ do_install () {
 
 rust_do_install() {
     rust_runx install
+}
+
+#do_install:append:class-native () {
+#    if [ ! -d ${TMPDIR}/work-shared/rust ]; then
+#        mkdir -p ${TMPDIR}/work-shared/rust
+#        cp -a ${RUSTSRC}/library   ${TMPDIR}/work-shared/rust/.
+#    fi
+#}
+
+do_install:append:class-nativesdk () {
+    if [ ! -d ${D}${SDKPATHNATIVE}/usr/lib/rustlib/src/rust ]; then
+        mkdir -p ${D}${SDKPATHNATIVE}/usr/lib/rustlib/src/rust
+        cp -r --no-preserve=ownership  ${S}/library ${D}${SDKPATHNATIVE}/usr/lib/rustlib/src/rust/
+    fi
 }
 
 rust_do_install:class-nativesdk() {
