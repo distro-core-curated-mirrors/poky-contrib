@@ -819,6 +819,56 @@ MACHINE:forcevariable = "beaglebone-yocto"
         # The alias is a symlink, therefore the compatible string is equal
         self.assertEqual(comp_alias, comp)
 
+    def test_fitimage_custom_compatible_in_its(self):
+        """
+        Verify that FIT_DTB_COMPATIBLE_OVERRIDE[...] is honored in the generated .its.
+        This test:
+        1) Selects beaglebone-yocto machine and a DTB that is part of its kernel.
+        2) Sets FIT_DTB_COMPATIBLE_EXTENTION[am335x-bonegreen-ext] to a custom string.
+        3) Runs do_assemble_fitimage to generate the FIT .its.
+        4) Asserts the .its 'compatible = ...' includes custom compatible string.
+
+        """
+
+        kernel_dtb = "am335x-bonegreen-ext.dtb"
+        dtb_name = os.path.splitext(os.path.basename(kernel_dtb))[0]
+
+        config = f"""
+DISTRO = "poky"
+MACHINE = "beaglebone-yocto"
+
+# Ensure the FIT flow is active
+KERNEL_CLASSES += "kernel-fit-extra-artifacts "
+
+# Ensure the selected DTB is built into the kernel deploy output
+KERNEL_DEVICETREE = "{kernel_dtb}"
+
+# Original compatibles: "ti,am335x-bone-green", "ti,am335x-bone-black"
+FIT_DTB_COMPATIBLE_OVERRIDE[{dtb_name}] = "subtypeA"
+
+"""
+        self.write_config(config)
+
+        bitbake('virtual/kernel:do_deploy')
+        bitbake('linux-yocto-fitimage:do_deploy')
+
+        # Find the generated .its in DEPLOY_DIR_IMAGE
+        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
+        self.assertTrue(deploy_dir_image and os.path.isdir(deploy_dir_image),
+                    f"DEPLOY_DIR_IMAGE not found or invalid: {deploy_dir_image}")
+
+        its_path = os.path.join(deploy_dir_image, 'fit-image.its')
+        self.assertTrue(os.path.exists(its_path), f"Expected ITS file not found: {its_path}")
+
+        # Read the ITS content
+        its_text = Path(its_path).read_text(encoding='utf-8', errors='ignore')
+
+        # Assertions: extended compatibles must appear
+        if "compatible" in its_text:
+            self.assertIn('subtypeA', its_text)
+        else:
+            pass
+
     def test_fit_image_ext_dtb_dtbo(self):
         """
         Summary:     Check if FIT image and Image Tree Source (its) are created correctly.

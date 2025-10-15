@@ -289,7 +289,8 @@ class ItsNodeRootKernel(ItsNode):
         self._kernel = kernel_node
 
     def fitimage_emit_section_dtb(self, dtb_id, dtb_path, dtb_loadaddress=None,
-                                  dtbo_loadaddress=None, add_compatible=False):
+                                  dtbo_loadaddress=None, add_compatible=False,
+                                  compatible_override=None):
         """Emit the fitImage ITS DTB section"""
         load=None
         dtb_ext = os.path.splitext(dtb_path)[1]
@@ -309,7 +310,10 @@ class ItsNodeRootKernel(ItsNode):
         # Preserve the DTB's compatible string to be added to the configuration node
         compatible = None
         if add_compatible:
-            compatible = get_compatible_from_dtb(dtb_path)
+            if compatible_override:
+                compatible = str(compatible_override).split()
+            else:
+                compatible = get_compatible_from_dtb(dtb_path)
 
         dtb_node = self.its_add_node_dtb(
             "fdt-" + dtb_id,
@@ -321,12 +325,16 @@ class ItsNodeRootKernel(ItsNode):
         )
         self._dtbs.append(dtb_node)
 
-    def fitimage_emit_section_dtb_alias(self, dtb_alias_id, dtb_path, add_compatible=False):
+    def fitimage_emit_section_dtb_alias(self, dtb_alias_id, dtb_path, add_compatible=False,
+                                        compatible_override=None):
         """Add a configuration node referring to another DTB"""
         # Preserve the DTB's compatible string to be added to the configuration node
         compatible = None
         if add_compatible:
-            compatible = get_compatible_from_dtb(dtb_path)
+            if compatible_override:
+                compatible = str(compatible_override).split()
+            else:
+                compatible = get_compatible_from_dtb(dtb_path)
 
         dtb_id = os.path.basename(dtb_path)
         dtb_alias_node = ItsNodeDtbAlias("fdt-" + dtb_id, dtb_alias_id, compatible)
