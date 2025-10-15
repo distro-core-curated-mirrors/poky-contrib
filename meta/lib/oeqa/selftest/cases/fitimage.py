@@ -226,7 +226,7 @@ class FitImageTestCase(OESelftestTestCase):
             else:
                 self.assertEqual(value, found_dict[key])
 
-    def _check_its_file(self, bb_vars, its_file_path):
+    def _check_its_file(self, its_file_path, bb_vars, bb_var_flags=None):
         """Check if the its file contains the expected sections and fields"""
         # print the its file for debugging
         if logging.DEBUG >= self.logger.level:
@@ -355,7 +355,7 @@ class FitImageTestCase(OESelftestTestCase):
         self.logger.error("This function needs to be implemented")
         return []
 
-    def _get_req_its_fields(self, bb_vars):
+    def _get_req_its_fields(self, bb_vars, bb_var_flags=None):
         self.logger.error("This function needs to be implemented")
         return []
 
@@ -386,7 +386,7 @@ class FitImageTestCase(OESelftestTestCase):
         self.assertExists(fitimage_path, "%s FIT image doesn't exist" % (fitimage_path))
 
         self.logger.debug("Checking its: %s" % fitimage_its_path)
-        self._check_its_file(bb_vars, fitimage_its_path)
+        self._check_its_file(fitimage_its_path, bb_vars)
 
         # Setup u-boot-tools-native
         uboot_tools_bindir = FitImageTestCase._setup_native('u-boot-tools-native')
@@ -543,7 +543,7 @@ class KernelFitImageBase(FitImageTestCase):
                 req_its_paths.append(['/', 'configurations', configuration, 'signature-1'])
         return req_its_paths
 
-    def _get_req_its_fields(self, bb_vars):
+    def _get_req_its_fields(self, bb_vars, bb_var_flags=None):
         initramfs_image = bb_vars['INITRAMFS_IMAGE']
         initramfs_image_bundle = bb_vars['INITRAMFS_IMAGE_BUNDLE']
         uboot_rd_loadaddress = bb_vars.get('UBOOT_RD_LOADADDRESS')
@@ -576,6 +576,19 @@ class KernelFitImageBase(FitImageTestCase):
 
         if initramfs_image and initramfs_image_bundle != "1":
             its_field_check.append('ramdisk = "ramdisk-1";')
+
+        # Test compatible overrides
+        if bb_var_flags:
+            dtb_files, _ = FitImageTestCase._get_dtb_files(bb_vars)
+            for dtb in dtb_files:
+                dtb_base = os.path.splitext(os.path.basename(dtb))[0]
+                compatible_override_str = None
+                try:
+                    compatible_override_str = bb_var_flags["FIT_DTB_COMPATIBLE_OVERRIDE"][dtb_base]
+                except KeyError:
+                    pass
+                if compatible_override_str:
+                    its_field_check.append('compatible = "%s";' % str(compatible_override_str))
 
         return its_field_check
 
@@ -821,56 +834,6 @@ MACHINE:forcevariable = "beaglebone-yocto"
         # The alias is a symlink, therefore the compatible string is equal
         self.assertEqual(comp_alias, comp)
 
-    def test_fitimage_custom_compatible_in_its(self):
-        """
-        Verify that FIT_DTB_COMPATIBLE_OVERRIDE[...] is honored in the generated .its.
-        This test:
-        1) Selects beaglebone-yocto machine and a DTB that is part of its kernel.
-        2) Sets FIT_DTB_COMPATIBLE_EXTENTION[am335x-bonegreen-ext] to a custom string.
-        3) Runs do_assemble_fitimage to generate the FIT .its.
-        4) Asserts the .its 'compatible = ...' includes custom compatible string.
-
-        """
-
-        kernel_dtb = "am335x-bonegreen-ext.dtb"
-        dtb_name = os.path.splitext(os.path.basename(kernel_dtb))[0]
-
-        config = f"""
-DISTRO = "poky"
-MACHINE = "beaglebone-yocto"
-
-# Ensure the FIT flow is active
-KERNEL_CLASSES += "kernel-fit-extra-artifacts "
-
-# Ensure the selected DTB is built into the kernel deploy output
-KERNEL_DEVICETREE = "{kernel_dtb}"
-
-# Original compatibles: "ti,am335x-bone-green", "ti,am335x-bone-black"
-FIT_DTB_COMPATIBLE_OVERRIDE[{dtb_name}] = "subtypeA"
-
-"""
-        self.write_config(config)
-
-        bitbake('virtual/kernel:do_deploy')
-        bitbake('linux-yocto-fitimage:do_deploy')
-
-        # Find the generated .its in DEPLOY_DIR_IMAGE
-        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
-        self.assertTrue(deploy_dir_image and os.path.isdir(deploy_dir_image),
-                    f"DEPLOY_DIR_IMAGE not found or invalid: {deploy_dir_image}")
-
-        its_path = os.path.join(deploy_dir_image, 'fit-image.its')
-        self.assertTrue(os.path.exists(its_path), f"Expected ITS file not found: {its_path}")
-
-        # Read the ITS content
-        its_text = Path(its_path).read_text(encoding='utf-8', errors='ignore')
-
-        # Assertions: extended compatibles must appear
-        if "compatible" in its_text:
-            self.assertIn('subtypeA', its_text)
-        else:
-            pass
-
     def test_fit_image_ext_dtb_dtbo(self):
         """
         Summary:     Check if FIT image and Image Tree Source (its) are created correctly.
@@ -1075,7 +1038,7 @@ FIT_HASH_ALG = "sha256"
 class FitImagePyTests(KernelFitImageBase):
     """Test cases for the fitimage.py module without calling bitbake"""
 
-    def _test_fitimage_py(self, bb_vars_overrides=None):
+    def _test_fitimage_py(self, bb_vars_overrides=None, bb_var_flags_overrides=None):
         topdir = os.path.join(os.environ['BUILDDIR'])
         fitimage_its_path = os.path.join(topdir, self._testMethodName + '.its')
 
@@ -1123,6 +1086,10 @@ class FitImagePyTests(KernelFitImageBase):
         if bb_vars_overrides:
             bb_vars.update(bb_vars_overrides)
 
+        bb_var_flags = None
+        if bb_var_flags_overrides:
+            bb_var_flags = bb_var_flags_overrides
+
         root_node = oe.fitimage.ItsNodeRootKernel(
             bb_vars["FIT_DESC"], bb_vars["FIT_ADDRESS_CELLS"],
             bb_vars['HOST_PREFIX'], bb_vars['UBOOT_ARCH'],  bb_vars["FIT_CONF_PREFIX"],
@@ -1141,8 +1108,18 @@ class FitImagePyTests(KernelFitImageBase):
 
         dtb_files, _ = FitImageTestCase._get_dtb_files(bb_vars)
         for dtb in dtb_files:
+            dtb_base = os.path.splitext(os.path.basename(dtb))[0]
+            compatible_override_str = None
+            add_compatible = False
+            if bb_var_flags:
+                try:
+                    compatible_override_str = bb_var_flags["FIT_DTB_COMPATIBLE_OVERRIDE"][dtb_base]
+                    add_compatible = True
+                except KeyError:
+                    pass
             root_node.fitimage_emit_section_dtb(dtb, os.path.join("a-dir", dtb),
-                bb_vars.get("UBOOT_DTB_LOADADDRESS"), bb_vars.get("UBOOT_DTBO_LOADADDRESS"))
+                bb_vars.get("UBOOT_DTB_LOADADDRESS"), bb_vars.get("UBOOT_DTBO_LOADADDRESS"),
+                add_compatible, compatible_override_str)
 
         if bb_vars.get('FIT_UBOOT_ENV'):
             root_node.fitimage_emit_section_boot_script(
@@ -1161,7 +1138,7 @@ class FitImagePyTests(KernelFitImageBase):
 
         self.assertExists(fitimage_its_path, "%s image tree source doesn't exist" % (fitimage_its_path))
         self.logger.debug("Checking its: %s" % fitimage_its_path)
-        self._check_its_file(bb_vars, fitimage_its_path)
+        self._check_its_file(fitimage_its_path, bb_vars, bb_var_flags)
 
     def test_fitimage_py_default(self):
         self._test_fitimage_py()
@@ -1172,6 +1149,18 @@ class FitImagePyTests(KernelFitImageBase):
             'FIT_CONF_DEFAULT_DTB': "two.dtb"
         }
         self._test_fitimage_py(bb_vars_overrides)
+
+    def test_fitimage_py_dtb_comp_override(self):
+        """Test the FIT_DTB_COMPATIBLE_OVERRIDE var flag"""
+        bb_vars_overrides = {
+            'KERNEL_DEVICETREE': "keep-me.dtb override-me.dtb"
+        }
+        bb_var_flags_overrides = {
+            "FIT_DTB_COMPATIBLE_OVERRIDE": {
+                "override-me": "compatible-override"
+            }
+        }
+        self._test_fitimage_py(bb_vars_overrides, bb_var_flags_overrides)
 
 
 class UBootFitImageTests(FitImageTestCase):
@@ -1256,7 +1245,7 @@ class UBootFitImageTests(FitImageTestCase):
             req_its_paths.append(['/', 'configurations', configuration])
         return req_its_paths
 
-    def _get_req_its_fields(self, bb_vars):
+    def _get_req_its_fields(self, bb_vars, bb_var_flags=None):
         loadables = ["uboot"]
         its_field_check = [
             'description = "%s";' % bb_vars['UBOOT_FIT_DESC'],
