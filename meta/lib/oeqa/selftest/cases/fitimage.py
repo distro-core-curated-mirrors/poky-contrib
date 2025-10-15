@@ -290,21 +290,23 @@ class FitImageTestCase(OESelftestTestCase):
                     self.assertEqual(value, reqvalue)
 
         # Generate a list of expected fields in the its file
-        req_its_fields = self._get_req_its_fields(bb_vars)
+        req_its_fields = self._get_req_its_fields(bb_vars, bb_var_flags)
         self.logger.debug("req_its_fields:\n%s\n" % pprint.pformat(req_its_fields, indent=4))
 
         # Check if all expected fields are in the its file
         if req_its_fields:
             field_index = 0
             field_index_last = len(req_its_fields) - 1
+            found_all = False
             with open(its_file_path) as its_file:
                 for line in its_file:
                     if req_its_fields[field_index] in line:
                         if field_index < field_index_last:
                             field_index +=1
                         else:
+                            found_all = True
                             break
-            self.assertEqual(field_index, field_index_last,
+            self.assertTrue(found_all,
                 "Fields in Image Tree Source File %s did not match, error in finding %s"
                 % (its_file_path, req_its_fields[field_index]))
 
