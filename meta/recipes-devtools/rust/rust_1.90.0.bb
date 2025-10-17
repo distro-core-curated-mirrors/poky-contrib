@@ -10,8 +10,8 @@ inherit cargo_common
 DEPENDS += "llvm"
 # native rust uses cargo/rustc from binary snapshots to bootstrap
 # but everything else should use our native builds
-DEPENDS:append:class-target = " cargo-native rust-native"
-DEPENDS:append:class-nativesdk = " cargo-native rust-native"
+DEPENDS:append:class-target = " cargo-native rust-native ${@bb.utils.contains('TC_CXX_RUNTIME', 'llvm', 'compiler-rt-native libcxx-native', '', d)}"
+DEPENDS:append:class-nativesdk = " cargo-native rust-native ${@bb.utils.contains('TC_CXX_RUNTIME', 'llvm', 'compiler-rt-native libcxx-native', '', d)}"
 
 RDEPENDS:${PN}:append:class-target = " gcc g++ binutils"
 
@@ -31,6 +31,8 @@ export FORCE_CRATE_HASH = "${BB_TASKHASH}"
 RUST_ALTERNATE_EXE_PATH ?= "${STAGING_BINDIR}/llvm-config"
 RUST_ALTERNATE_EXE_PATH_NATIVE = "${STAGING_BINDIR_NATIVE}/llvm-config"
 
+LDFLAGS:append:toolchain-clang = " -fuse-ld=bfd"
+LDFLAGS:append:toolchain-clang:class-target = "${@bb.utils.contains('TC_CXX_RUNTIME', 'llvm', ' -lstdc++', '', d)}"
 # We don't want to use bitbakes vendoring because the rust sources do their
 # own vendoring.
 CARGO_DISABLE_BITBAKE_VENDORING = "1"
@@ -124,10 +126,11 @@ python do_configure() {
 
     # [llvm]
     config.add_section("llvm")
+    if not (target_section == host_section and target_section == build_section):
+        if "llvm" in (d.getVar('TC_CXX_RUNTIME')):
+            config.set("llvm", "use-libcxx", e(True))
     config.set("llvm", "static-libstdcpp", e(False))
     config.set("llvm", "download-ci-llvm", e(False))
-    if "llvm" in (d.getVar('TC_CXX_RUNTIME') or ""):
-        config.set("llvm", "use-libcxx", e(True))
 
     # [rust]
     config.add_section("rust")
@@ -237,11 +240,7 @@ rust_runx () {
     if [ ${RUST_ALTERNATE_EXE_PATH_NATIVE} != ${RUST_ALTERNATE_EXE_PATH} -a ! -f ${RUST_ALTERNATE_EXE_PATH} ]; then
         mkdir -p `dirname ${RUST_ALTERNATE_EXE_PATH}`
         cp ${RUST_ALTERNATE_EXE_PATH_NATIVE} ${RUST_ALTERNATE_EXE_PATH}
-        if [ -e ${STAGING_LIBDIR_NATIVE}/libc++.so.1 ]; then
-            patchelf --set-rpath \$ORIGIN/../../../../../`basename ${STAGING_DIR_NATIVE}`${libdir_native} ${RUST_ALTERNATE_EXE_PATH}
-        else
-            patchelf --remove-rpath ${RUST_ALTERNATE_EXE_PATH}
-        fi
+        patchelf --remove-rpath ${RUST_ALTERNATE_EXE_PATH}
     fi
 
     oe_cargo_fix_env
