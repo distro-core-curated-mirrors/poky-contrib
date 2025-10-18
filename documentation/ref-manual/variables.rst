@@ -3414,6 +3414,47 @@ system and gives an overview of their function and contents.
       set :term:`FIT_KERNEL_COMP_ALG` to "lzo", you may want to set this
       variable to ".lzo".
 
+   :term:`FIT_KERNEL_SIGN_ENABLE`
+
+      This variable is used by the :ref:`ref-classes-kernel-fit-image` class
+      to enable or disable signing of the FIT image.
+      By default it gets the value from :term:`UBOOT_SIGN_ENABLE`, which means
+      that when U-Boot FIT image signing is enabled, the FIT image will also be
+      signed at build-time and U-Boot will verify the FIT image signature at
+      run-time.
+
+      If this variable is set to "1", the FIT image will be signed using the
+      key specified by :term:`FIT_KERNEL_SIGN_KEYNAME` from the directory
+      :term:`FIT_KERNEL_SIGN_KEYDIR`.
+
+      If this variable is overridden independently from :term:`UBOOT_SIGN_ENABLE`,
+      the :term:`FIT_KERNEL_SIGN_KEYDIR` and :term:`FIT_KERNEL_SIGN_KEYNAME`
+      variables should also be set appropriately.
+
+   :term:`FIT_KERNEL_SIGN_KEYDIR`
+
+      This variable is used by the :ref:`ref-classes-kernel-fit-image` class.
+      By default it gets the value from :term:`UBOOT_SIGN_KEYDIR` assigned which
+      means the kernel is signed at build-time with a private key found in
+      :term:`UBOOT_SIGN_KEYDIR` and the U-Boot gets the public key from the
+      same directory injected into its DTB for the on-target verification of the
+      FIT image.
+
+      If this variable is overridden, also the :term:`FIT_KERNEL_SIGN_ENABLE` and
+      :term:`FIT_KERNEL_SIGN_KEYNAME` probably need to be overridden.
+
+   :term:`FIT_KERNEL_SIGN_KEYNAME`
+
+      This variable is used by the :ref:`ref-classes-kernel-fit-image` class.
+      By default it gets the value from :term:`UBOOT_SIGN_KEYNAME`, which
+      means the kernel is signed at build-time with a private key named according
+      to :term:`FIT_KERNEL_SIGN_KEYDIR` and U-Boot gets the public key with
+      the same name injected into its DTB for on-target verification
+      of the FIT image.
+
+      If this variable is overridden, the :term:`FIT_KERNEL_SIGN_ENABLE` and
+      :term:`FIT_KERNEL_SIGN_KEYDIR` variables should also be set appropriately.
+
    :term:`FIT_KEY_GENRSA_ARGS`
       Arguments to ``openssl genrsa`` for generating a RSA private key for
       signing the FIT image. The default value is set to "-F4" by the
@@ -10842,17 +10883,31 @@ system and gives an overview of their function and contents.
    :term:`UBOOT_SIGN_ENABLE`
       Enable signing of FIT image. The default value is "0".
 
-      This variable is used by the :ref:`ref-classes-kernel-fit-image`,
-      :ref:`ref-classes-uboot-config` and :ref:`ref-classes-uboot-sign`
-      classes.
+      This variable is defined by :ref:`ref-classes-uboot-config` class.
+
+      It is used by the :ref:`ref-classes-uboot-sign` class.
+      Additionally, it serves as the default value for the
+      :term:`FIT_KERNEL_SIGN_ENABLE` variable, which is
+      used by the :ref:`ref-classes-kernel-fit-image` class.
+
+      That means, if :term:`UBOOT_SIGN_ENABLE` is set to "1", the
+      :ref:`ref-classes-kernel-fit-image` class will sign the FIT image at
+      build-time using the specified private key, and the
+      :ref:`ref-classes-uboot-sign` class will inject the corresponding public
+      key into U-Boot's device tree. This enables U-Boot to verify the
+      authenticity and integrity of the FIT image at boot time, providing a
+      secure boot workflow that helps prevent unauthorized or tampered images
+      from being loaded.
 
    :term:`UBOOT_SIGN_KEYDIR`
       Location of the directory containing the RSA key and certificate used for
-      signing FIT image, used by the :ref:`ref-classes-kernel-fit-image` and
-      :ref:`ref-classes-uboot-sign` classes.
+      signing the FIT image, used by the :ref:`ref-classes-kernel-fit-image`
+      (via the :term:`FIT_KERNEL_SIGN_KEYDIR` variable)
+      and :ref:`ref-classes-uboot-sign` classes.
 
    :term:`UBOOT_SIGN_KEYNAME`
       The name of keys used by the :ref:`ref-classes-kernel-fit-image` class
+      (via the :term:`FIT_KERNEL_SIGN_KEYNAME` variable)
       for signing U-Boot FIT image stored in the :term:`UBOOT_SIGN_KEYDIR`
       directory. If we have for example a ``dev.key`` key and a ``dev.crt``
       certificate stored in the :term:`UBOOT_SIGN_KEYDIR` directory, you will
