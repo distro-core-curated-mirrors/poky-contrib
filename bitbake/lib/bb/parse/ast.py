@@ -412,6 +412,14 @@ class AddFragmentsNode(AstNode):
             else:
                 bb.error("Could not find fragment {} in enabled layers: {}".format(f, layers))
 
+class BbMinVersionNode(AstNode):
+    def __init__(self, filename, lineno, bb_min_version):
+        AstNode.__init__(self, filename, lineno)
+        self.bb_min_version = bb_min_version
+
+    def eval(self, data):
+        bb.parse.ConfHandler.check_bb_version(self.filename, self.lineno, data.expand(self.bb_min_version))
+
 def handleInclude(statements, filename, lineno, m, force):
     statements.append(IncludeNode(filename, lineno, m.group(1), force))
 
@@ -465,6 +473,10 @@ def handleAddFragments(statements, filename, lineno, m):
     flagged_variables_list_variable = m.group(3)
     builtin_fragments_variable = m.group(4)
     statements.append(AddFragmentsNode(filename, lineno, fragments_path_prefix, fragments_variable, flagged_variables_list_variable, builtin_fragments_variable))
+
+def handleBbMinVersion(statements, filename, lineno, m):
+    bb_min_version = m.group(1)
+    statements.append(BbMinVersionNode(filename, lineno, bb_min_version))
 
 def runAnonFuncs(d):
     code = []

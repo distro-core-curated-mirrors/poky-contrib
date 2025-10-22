@@ -49,6 +49,7 @@ __unset_regexp__ = re.compile( r"unset\s+([a-zA-Z0-9\-_+.${}/~]+)$" )
 __unset_flag_regexp__ = re.compile( r"unset\s+([a-zA-Z0-9\-_+.${}/~]+)\[([a-zA-Z0-9\-_+.][a-zA-Z0-9\-_+.@]+)\]$" )
 __addpylib_regexp__      = re.compile(r"addpylib\s+(.+)\s+(.+)" )
 __addfragments_regexp__  = re.compile(r"addfragments\s+(.+)\s+(.+)\s+(.+)\s+(.+)" )
+__bitbake_min_version_regexp__ = re.compile(r"bitbake_min_version\s+(.+)" )
 
 def init(data):
     return
@@ -101,6 +102,10 @@ def include_single_file(parentfn, fn, lineno, data, error_out):
                 raise ParseError("Could not %s file %s: %s" % (error_out, fn, exc.strerror), parentfn, lineno)
             else:
                 raise ParseError("Error parsing %s: %s" % (fn, exc.strerror), parentfn, lineno)
+
+def check_bb_version(fn, lineno, min_version):
+    if bb.utils.vercmp_string_op(bb.__version__, min_version, "<"):
+        raise ParseError('Bitbake version %s is required and version %s is used\n' % (min_version, bb.__version__), fn, lineno)
 
 # We have an issue where a UI might want to enforce particular settings such as
 # an empty DISTRO variable. If configuration files do something like assigning
@@ -211,6 +216,11 @@ def feeder(lineno, s, fn, statements, baseconfig=False, conffile=True):
     m = __addfragments_regexp__.match(s)
     if m:
         ast.handleAddFragments(statements, fn, lineno, m)
+        return
+
+    m = __bitbake_min_version_regexp__.match(s)
+    if m:
+        ast.handleBbMinVersion(statements, fn, lineno, m)
         return
 
     raise ParseError("unparsed line: '%s'" % s, fn, lineno);
