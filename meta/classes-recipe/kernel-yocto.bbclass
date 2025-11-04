@@ -463,6 +463,10 @@ do_kernel_configme[depends] += "virtual/cross-binutils:do_populate_sysroot"
 do_kernel_configme[depends] += "virtual/cross-cc:do_populate_sysroot"
 do_kernel_configme[depends] += "bc-native:do_populate_sysroot bison-native:do_populate_sysroot"
 do_kernel_configme[depends] += "kern-tools-native:do_populate_sysroot"
+do_kernel_configme[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'rust-kernel', \
+                                'rust-native:do_populate_sysroot \
+                                 clang-native:do_populate_sysroot \
+                                 bindgen-cli-native:do_populate_sysroot', '', d)}"
 do_kernel_configme[dirs] += "${S} ${B}"
 do_kernel_configme() {
 	do_kernel_metadata config
@@ -506,6 +510,11 @@ do_kernel_configme() {
 		echo "# Global settings from linux recipe" >> ${B}/.config
 		echo "CONFIG_LOCALVERSION="\"${LINUX_VERSION_EXTENSION}\" >> ${B}/.config
 	fi
+}
+do_kernel_configme:append() {
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'rust-kernel', 'true', 'false', d)}; then
+        oe_runmake -C ${S} O=${B} rustavailable
+    fi
 }
 
 addtask kernel_configme before do_configure after do_patch
