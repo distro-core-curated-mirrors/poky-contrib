@@ -71,6 +71,14 @@ do_install:append(){
 		rm -rf ${STAGING_KERNEL_DIR}/${KMETA}
 	fi
 }
+do_patch:append(){
+       if ${@bb.utils.contains('DISTRO_FEATURES','rust-kernel','true','false',d)}; then
+               if [ ! -d ${STAGING_DIR_NATIVE}/usr/lib/rustlib/src/rust ]; then
+                       mkdir -p ${STAGING_DIR_NATIVE}/usr/lib/rustlib/src/rust/
+                       cp -r ${TMPDIR}/work-shared/rust ${STAGING_DIR_NATIVE}/usr/lib/rustlib/src/.
+               fi
+        fi
+}
 
 # enable kernel-sample for oeqa/runtime/cases's ksample.py test
 KERNEL_FEATURES:append:qemuall = " features/kernel-sample/kernel-sample.scc"
