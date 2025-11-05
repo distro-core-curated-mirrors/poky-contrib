@@ -104,8 +104,10 @@ python () {
 
     clsextend.set_filter("DEPENDS", deps=True)
     clsextend.set_filter("PACKAGE_WRITE_DEPS", deps=False)
-    clsextend.map_packagevars()
     clsextend.set_filter("PROVIDES", deps=False)
+
+    if not bb.utils.to_boolean(d.getVar("NATIVESDK_INHIBIT_PACKAGE_MAPPING")):
+        clsextend.map_packagevars()
 
     d.setVar("LIBCEXTENSION", "")
     d.setVar("ABIEXTENSION", "")
