@@ -1,0 +1,78 @@
+From 6afe3c2ed510dd68d5bb3048a313cdd7b7eff5fc Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Wed, 5 Nov 2025 13:32:52 -0800
+Subject: [PATCH] =?UTF-8?q?c11:=20use=20glibc=E2=80=99s=20once=5Fflag/ONCE?=
+ =?UTF-8?q?=5FFLAG=5FINIT=20when=20present?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+don’t build Mesa’s call_once shim on such systems
+
+glibc recently grew C11/C23 one-time initialization primitives (commit
+a7ddbf456d97, released with 2.42+) [1], providing once_flag and
+ONCE_FLAG_INIT via bits/types/once_flag.h and advertising their
+presence with __once_flag_defined. Mesa’s C11 shim currently typedefs
+once_flag to pthread_once_t, defines ONCE_FLAG_INIT as
+PTHREAD_ONCE_INIT, and implements call_once() using pthread_once().
+
+On new glibc this causes two problems during Mesa build:
+
+typedef redefinition:
+
+src/c11/threads.h:121:25: error: typedef redefinition with different types
+('pthread_once_t' vs '__once_flag')
+
+pointer type mismatch when calling pthread_once() with the glibc
+once_flag:
+
+error: incompatible pointer types passing 'once_flag *' to parameter of type 'pthread_once_t *'
+
+This patch makes Mesa prefer the system-provided types/initializers when
+available and only keep the shim otherwise.
+
+[1] https://sourceware.org/git/?p=glibc.git;a=commit;h=a7ddbf456d97
+
+Upstream-Status: Submitted [https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/38272]
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ src/c11/impl/threads_posix.c | 3 ++-
+ src/c11/threads.h            | 4 ++++
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/c11/impl/threads_posix.c b/src/c11/impl/threads_posix.c
+index 3b8692482bb..b108ba4ae0f 100644
+--- a/src/c11/impl/threads_posix.c
++++ b/src/c11/impl/threads_posix.c
+@@ -46,12 +46,13 @@ impl_thrd_routine(void *p)
+
+ /*--------------- 7.25.2 Initialization functions ---------------*/
+ // 7.25.2.1
++#ifndef USE_SYSTEM_CALL_ONCE
+ void
+ call_once(once_flag *flag, void (*func)(void))
+ {
+     pthread_once(flag, func);
+ }
+-
++#endif
+
+ /*------------- 7.25.3 Condition variable functions -------------*/
+ // 7.25.3.1
+diff --git a/src/c11/threads.h b/src/c11/threads.h
+index dbcb3459a9b..a6c6f38aa85 100644
+--- a/src/c11/threads.h
++++ b/src/c11/threads.h
+@@ -118,8 +118,12 @@ typedef pthread_cond_t  cnd_t;
+ typedef pthread_t       thrd_t;
+ typedef pthread_key_t   tss_t;
+ typedef pthread_mutex_t mtx_t;
++#ifdef __once_flag_defined
++#  define USE_SYSTEM_CALL_ONCE 1
++#else
+ typedef pthread_once_t  once_flag;
+ #  define ONCE_FLAG_INIT PTHREAD_ONCE_INIT
++#endif
+ #  ifdef PTHREAD_DESTRUCTOR_ITERATIONS
+ #    define TSS_DTOR_ITERATIONS PTHREAD_DESTRUCTOR_ITERATIONS
+ #  else
