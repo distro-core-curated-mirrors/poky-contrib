@@ -7,6 +7,8 @@ inherit allarch
 
 INHIBIT_DEFAULT_DEPS = "1"
 
+NATIVESDK_INHIBIT_PACKAGE_MAPPING = "1"
+
 python() {
     # Put the package somewhere separate to ensure it's never used except
     # when we want it
@@ -24,10 +26,6 @@ DUMMYPROVIDES_PACKAGES ??= ""
 DUMMYPROVIDES_PACKAGES_MULTILIB = "${@' '.join([multilib_pkg_extend(d, pkg) for pkg in d.getVar('DUMMYPROVIDES_PACKAGES').split()])}"
 DUMMYPROVIDES += "${DUMMYPROVIDES_PACKAGES_MULTILIB}"
 
-python populate_packages:prepend() {
-    p = d.getVar("PN")
-    d.appendVar("RPROVIDES:%s" % p, "${DUMMYPROVIDES}")
-    d.appendVar("RCONFLICTS:%s" % p, "${DUMMYPROVIDES}")
-    d.appendVar("RREPLACES:%s" % p, "${DUMMYPROVIDES_PACKAGES_MULTILIB}")
-}
-
+RPROVIDES:${PN} += "${DUMMYPROVIDES}"
+RCONFLICTS:${PN} += "${DUMMYPROVIDES}"
+RREPLACES:${PN} += "${DUMMYPROVIDES_PACKAGES_MULTILIB}"
